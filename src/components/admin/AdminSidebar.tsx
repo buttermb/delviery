@@ -52,46 +52,66 @@ const menuGroups = [
     ]
   },
   {
-    title: "Inventory",
+    title: "CRM & Customers",
+    items: [
+      { title: "Customer Management", url: "/admin/customer-management", icon: UserCircle },
+      { title: "Live Chat Support", url: "/admin/live-chat", icon: MessageCircle },
+      { title: "Users", url: "/admin/users", icon: Users },
+    ]
+  },
+  {
+    title: "Sales & Orders",
+    items: [
+      { title: "Point of Sale", url: "/admin/pos", icon: ShoppingCart },
+      { title: "Order Management", url: "/admin/order-management", icon: Package },
+      { title: "Invoices", url: "/admin/invoices", icon: Receipt },
+    ]
+  },
+  {
+    title: "Inventory & Products",
     items: [
       { title: "Products", url: "/admin/inventory/products", icon: Package },
       { title: "Fronted Inventory", url: "/admin/inventory/fronted", icon: Package },
       { title: "Dispatch", url: "/admin/inventory/dispatch", icon: Package },
-      { title: "Analytics", url: "/admin/inventory/analytics", icon: BarChart3 },
+      { title: "Inventory Analytics", url: "/admin/inventory/analytics", icon: BarChart3 },
     ]
   },
   {
-    title: "Business Operations",
+    title: "Delivery & Logistics",
     items: [
-      { title: "Order Management", url: "/admin/order-management", icon: Package },
-      { title: "Point of Sale", url: "/admin/pos", icon: ShoppingCart },
       { title: "Deliveries", url: "/admin/deliveries", icon: Truck },
-      { title: "Customer Management", url: "/admin/customer-management", icon: UserCircle },
       { title: "Locations", url: "/admin/locations", icon: Building },
+    ]
+  },
+  {
+    title: "Partners & Team",
+    items: [
       { title: "Vendors", url: "/admin/vendors", icon: Store },
       { title: "Team", url: "/admin/team", icon: Users },
-      { title: "Invoices", url: "/admin/invoices", icon: Receipt },
-      { title: "Reports", url: "/admin/reports", icon: BarChart3 }
     ]
   },
   {
-    title: "Users & Security",
+    title: "Analytics & Reports",
     items: [
-      { title: "Live Chat Support", url: "/admin/live-chat", icon: MessageCircle },
-      { title: "Users", url: "/admin/users", icon: Users },
+      { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
+      { title: "Reports", url: "/admin/reports", icon: BarChart3 },
+    ]
+  },
+  {
+    title: "Compliance & Security",
+    items: [
       { title: "Age Verification", url: "/admin/age-verification", icon: CheckCircle },
       { title: "Compliance", url: "/admin/compliance", icon: Shield },
       { title: "Risk Factors", url: "/admin/risk-factors", icon: AlertTriangle },
     ]
   },
   {
-    title: "System",
+    title: "System & Tools",
     items: [
-      { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
-      { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
-      { title: "Quick Export", url: "/admin/quick-export", icon: FileUp },
       { title: "Company Settings", url: "/admin/company-settings", icon: Settings },
       { title: "System Settings", url: "/admin/settings", icon: Settings },
+      { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
+      { title: "Quick Export", url: "/admin/quick-export", icon: FileUp },
       { title: "Test Notifications", url: "/admin/notifications", icon: Bell },
       { title: "Button Tester", url: "/admin/button-tester", icon: Bug },
       { title: "Bug Scanner", url: "/admin/bug-scanner", icon: Bug },
@@ -139,13 +159,13 @@ export function AdminSidebar() {
         {menuGroups.map((group) => (
           <Collapsible
             key={group.title}
-            defaultOpen={isGroupActive(group.items)}
+            defaultOpen={true}
             className="group/collapsible"
           >
             <SidebarGroup>
               <SidebarGroupLabel asChild>
                 <CollapsibleTrigger className="flex w-full items-center justify-between hover:bg-muted/50 rounded-md px-2">
-                  {!isCollapsed && <span>{group.title}</span>}
+                  {!isCollapsed && <span className="text-xs font-semibold uppercase tracking-wider">{group.title}</span>}
                   {!isCollapsed && (
                     <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                   )}
