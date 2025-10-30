@@ -69,23 +69,23 @@ const AdminDashboard = () => {
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-            if (isMounted) {
+            if (isMounted && payload?.new) {
               setLastUpdate(new Date());
               setRealtimeActivity(prev => [{
                 type: 'new_order',
-                message: `New order #${payload.new.order_number}`,
+                message: `New order #${payload.new.order_number || 'Unknown'}`,
                 timestamp: new Date(),
                 data: payload.new
               }, ...prev].slice(0, 10));
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
-            if (isMounted) {
+            if (isMounted && payload?.new) {
               setLastUpdate(new Date());
               setSystemAlerts(prev => [{
                 type: 'fraud_alert',
                 severity: 'high',
-                message: `Fraud detected: ${payload.new.flag_type}`,
+                message: `Fraud detected: ${payload.new.flag_type || 'Unknown'}`,
                 timestamp: new Date()
               }, ...prev].slice(0, 5));
             }
@@ -95,8 +95,8 @@ const AdminDashboard = () => {
               setIsConnected(status === 'SUBSCRIBED');
               if (status === 'SUBSCRIBED') setLastUpdate(new Date());
             }
-            if (status === 'CHANNEL_ERROR' && isMounted) {
-              console.error('Failed to subscribe to admin dashboard channel');
+            if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && isMounted) {
+              console.error('Failed to subscribe to admin dashboard channel:', status);
               setIsConnected(false);
             }
           });

@@ -48,7 +48,11 @@ export default function FrontedInventoryDetails() {
         },
         () => loadFrontDetails()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to fronted inventory updates:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

@@ -90,7 +90,11 @@ export default function AccountSettings() {
           init();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to account settings updates:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

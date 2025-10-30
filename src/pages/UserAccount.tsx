@@ -65,7 +65,11 @@ export default function UserAccount() {
           fetchUserData();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to user account updates:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

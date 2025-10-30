@@ -98,10 +98,16 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           filter: `session_id=eq.${sessionId}`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          if (payload?.new) {
+            setMessages(prev => [...prev, payload.new as Message]);
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to chat messages:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

@@ -38,27 +38,37 @@ export const AdminNotificationCenter = () => {
     const channel = supabase
       .channel('admin-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
-        addNotification({
-          type: 'warning',
-          title: 'Fraud Alert',
-          message: `New fraud flag: ${payload.new.flag_type}`,
-        });
+        if (payload?.new) {
+          addNotification({
+            type: 'warning',
+            title: 'Fraud Alert',
+            message: `New fraud flag: ${payload.new.flag_type || 'Unknown'}`,
+          });
+        }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, () => {
-        addNotification({
-          type: 'info',
-          title: 'Age Verification',
-          message: 'New age verification request pending',
-        });
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, (payload) => {
+        if (payload?.new) {
+          addNotification({
+            type: 'info',
+            title: 'Age Verification',
+            message: 'New age verification request pending',
+          });
+        }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, () => {
-        addNotification({
-          type: 'info',
-          title: 'Courier Application',
-          message: 'New courier application received',
-        });
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, (payload) => {
+        if (payload?.new) {
+          addNotification({
+            type: 'info',
+            title: 'Courier Application',
+            message: 'New courier application received',
+          });
+        }
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to admin notifications:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

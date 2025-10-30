@@ -46,7 +46,11 @@ export default function DriverPortal() {
         },
         () => loadDriverData()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to driver fronts updates:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

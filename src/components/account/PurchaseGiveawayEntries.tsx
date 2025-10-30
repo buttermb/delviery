@@ -33,7 +33,11 @@ export default function PurchaseGiveawayEntries() {
           fetchEntries();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to giveaway entries:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

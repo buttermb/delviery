@@ -55,8 +55,8 @@ const AdminAgeVerification = () => {
           }
         )
         .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR') {
-            console.error('Failed to subscribe to age verifications channel');
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('Failed to subscribe to age verifications channel:', status);
           }
         });
     };

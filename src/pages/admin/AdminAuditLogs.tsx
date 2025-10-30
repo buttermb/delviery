@@ -88,8 +88,8 @@ const AdminAuditLogs = () => {
           }
         )
         .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR') {
-            console.error('Failed to subscribe to audit logs channel');
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('Failed to subscribe to audit logs channel:', status);
           }
         });
     };
