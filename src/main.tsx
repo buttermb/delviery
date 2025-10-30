@@ -20,7 +20,6 @@ import { PerformanceMonitor } from "./utils/performance";
 import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
-import { AccountProvider } from "./contexts/AccountContext";
 
 // Log app initialization
 console.log('[NYM] Starting app initialization...');
@@ -102,9 +101,7 @@ try {
   
   createRoot(rootElement).render(
     <ErrorBoundary>
-      <AccountProvider>
-        <App />
-      </AccountProvider>
+      <App />
     </ErrorBoundary>
   );
   

@@ -24,6 +24,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AccountProvider } from "./contexts/AccountContext";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { CourierProvider } from "./contexts/CourierContext";
 import { DeviceTracker } from "./components/DeviceTracker";
@@ -198,9 +199,10 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <AdminAuthProvider>
-              <DeviceTracker />
-              <CourierProvider>
+            <AccountProvider>
+              <AdminAuthProvider>
+                <DeviceTracker />
+                <CourierProvider>
                 <CourierPinProvider>
                   <TooltipProvider>
                       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -347,12 +349,13 @@ const App = () => {
                  </BrowserRouter>
                 <DevTools />
               </TooltipProvider>
-            </CourierPinProvider>
-          </CourierProvider>
-          </AdminAuthProvider>
-        </AuthProvider>
-    </ThemeProvider>
-    </QueryClientProvider>
+                </CourierPinProvider>
+              </CourierProvider>
+            </AdminAuthProvider>
+            </AccountProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 };
