@@ -51,6 +51,9 @@ const SuperAdminCustomers = lazy(() => import("./pages/SuperAdminCustomers"));
 const SuperAdminSubscriptions = lazy(() => import("./pages/SuperAdminSubscriptions"));
 const SuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
 const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
+const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
+const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
+const CustomerManagement = lazy(() => import("./pages/admin/CustomerManagement"));
 const AccountSubscription = lazy(() => import("./pages/AccountSubscription"));
 
 // Admin Pages
@@ -234,6 +237,9 @@ const App = () => {
                           <Route path="reports" element={<AdminErrorBoundary><Reports /></AdminErrorBoundary>} />
                           <Route path="company-settings" element={<AdminErrorBoundary><CompanySettings /></AdminErrorBoundary>} />
                           <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
+                          <Route path="customer-management" element={<AdminErrorBoundary><CustomerManagement /></AdminErrorBoundary>} />
+                          <Route path="customer/:id" element={<AdminErrorBoundary><CustomerDetails /></AdminErrorBoundary>} />
+                          <Route path="pos" element={<AdminErrorBoundary><PointOfSale /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
                           <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
