@@ -1583,6 +1583,265 @@ export type Database = {
           },
         ]
       }
+      customer_payments: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string | null
+          customer_id: string
+          external_payment_reference: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          payment_method: string
+          payment_status: string | null
+          recorded_at: string | null
+          recorded_by: string | null
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string | null
+          customer_id: string
+          external_payment_reference?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          payment_method: string
+          payment_status?: string | null
+          recorded_at?: string | null
+          recorded_by?: string | null
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string | null
+          customer_id?: string
+          external_payment_reference?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          payment_method?: string
+          payment_status?: string | null
+          recorded_at?: string | null
+          recorded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_payments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_referrals: {
+        Row: {
+          account_id: string
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          referral_status: string | null
+          referred_customer_id: string
+          referred_reward_value: string | null
+          referrer_customer_id: string
+          referrer_reward_points: number | null
+        }
+        Insert: {
+          account_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_status?: string | null
+          referred_customer_id: string
+          referred_reward_value?: string | null
+          referrer_customer_id: string
+          referrer_reward_points?: number | null
+        }
+        Update: {
+          account_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          referral_status?: string | null
+          referred_customer_id?: string
+          referred_reward_value?: string | null
+          referrer_customer_id?: string
+          referrer_reward_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_referrals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_referrals_referred_customer_id_fkey"
+            columns: ["referred_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_referrals_referrer_customer_id_fkey"
+            columns: ["referrer_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          account_id: string
+          address: string | null
+          allergies: string[] | null
+          caregiver_name: string | null
+          caregiver_phone: string | null
+          cbd_preference: string | null
+          city: string | null
+          created_at: string | null
+          customer_type: string | null
+          date_of_birth: string | null
+          email: string | null
+          email_opt_in: boolean | null
+          first_name: string
+          flavor_preferences: string[] | null
+          id: string
+          last_name: string
+          last_purchase_at: string | null
+          loyalty_points: number | null
+          loyalty_tier: string | null
+          marketing_opt_in: boolean | null
+          medical_card_expiration: string | null
+          medical_card_number: string | null
+          medical_card_photo_url: string | null
+          medical_card_state: string | null
+          monthly_allotment_limit: number | null
+          phone: string | null
+          physician_name: string | null
+          preferred_consumption_method: string[] | null
+          preferred_products: string[] | null
+          preferred_strains: string[] | null
+          qualifying_conditions: string[] | null
+          referral_source: string | null
+          sms_opt_in: boolean | null
+          state: string | null
+          status: string | null
+          thc_preference: string | null
+          total_spent: number | null
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          account_id: string
+          address?: string | null
+          allergies?: string[] | null
+          caregiver_name?: string | null
+          caregiver_phone?: string | null
+          cbd_preference?: string | null
+          city?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          email_opt_in?: boolean | null
+          first_name: string
+          flavor_preferences?: string[] | null
+          id?: string
+          last_name: string
+          last_purchase_at?: string | null
+          loyalty_points?: number | null
+          loyalty_tier?: string | null
+          marketing_opt_in?: boolean | null
+          medical_card_expiration?: string | null
+          medical_card_number?: string | null
+          medical_card_photo_url?: string | null
+          medical_card_state?: string | null
+          monthly_allotment_limit?: number | null
+          phone?: string | null
+          physician_name?: string | null
+          preferred_consumption_method?: string[] | null
+          preferred_products?: string[] | null
+          preferred_strains?: string[] | null
+          qualifying_conditions?: string[] | null
+          referral_source?: string | null
+          sms_opt_in?: boolean | null
+          state?: string | null
+          status?: string | null
+          thc_preference?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          account_id?: string
+          address?: string | null
+          allergies?: string[] | null
+          caregiver_name?: string | null
+          caregiver_phone?: string | null
+          cbd_preference?: string | null
+          city?: string | null
+          created_at?: string | null
+          customer_type?: string | null
+          date_of_birth?: string | null
+          email?: string | null
+          email_opt_in?: boolean | null
+          first_name?: string
+          flavor_preferences?: string[] | null
+          id?: string
+          last_name?: string
+          last_purchase_at?: string | null
+          loyalty_points?: number | null
+          loyalty_tier?: string | null
+          marketing_opt_in?: boolean | null
+          medical_card_expiration?: string | null
+          medical_card_number?: string | null
+          medical_card_photo_url?: string | null
+          medical_card_state?: string | null
+          monthly_allotment_limit?: number | null
+          phone?: string | null
+          physician_name?: string | null
+          preferred_consumption_method?: string[] | null
+          preferred_products?: string[] | null
+          preferred_strains?: string[] | null
+          qualifying_conditions?: string[] | null
+          referral_source?: string | null
+          sms_opt_in?: boolean | null
+          state?: string | null
+          status?: string | null
+          thc_preference?: string | null
+          total_spent?: number | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deliveries: {
         Row: {
           actual_dropoff_time: string | null
@@ -2944,6 +3203,50 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_rewards: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          points_required: number
+          reward_description: string | null
+          reward_name: string
+          reward_type: string
+          reward_value: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_required: number
+          reward_description?: string | null
+          reward_name: string
+          reward_type: string
+          reward_value?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_required?: number
+          reward_description?: string | null
+          reward_name?: string
+          reward_type?: string
+          reward_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_transactions: {
         Row: {
           created_at: string | null
@@ -3317,7 +3620,9 @@ export type Database = {
       orders: {
         Row: {
           accepted_at: string | null
+          account_id: string | null
           address_id: string | null
+          cashier_id: string | null
           courier_accepted_at: string | null
           courier_assigned_at: string | null
           courier_feedback: string | null
@@ -3338,6 +3643,8 @@ export type Database = {
           delivery_borough: string
           delivery_fee: number
           delivery_notes: string | null
+          discount_amount: number | null
+          discount_reason: string | null
           distance_miles: number | null
           dropoff_lat: number | null
           dropoff_lng: number | null
@@ -3359,6 +3666,7 @@ export type Database = {
           notification_sent_stage_7: boolean | null
           notification_sent_stage_8: boolean | null
           order_number: string | null
+          order_type: string | null
           payment_method: string
           payment_status: string | null
           pickup_lat: number | null
@@ -3377,7 +3685,9 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          account_id?: string | null
           address_id?: string | null
+          cashier_id?: string | null
           courier_accepted_at?: string | null
           courier_assigned_at?: string | null
           courier_feedback?: string | null
@@ -3398,6 +3708,8 @@ export type Database = {
           delivery_borough: string
           delivery_fee: number
           delivery_notes?: string | null
+          discount_amount?: number | null
+          discount_reason?: string | null
           distance_miles?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
@@ -3419,6 +3731,7 @@ export type Database = {
           notification_sent_stage_7?: boolean | null
           notification_sent_stage_8?: boolean | null
           order_number?: string | null
+          order_type?: string | null
           payment_method: string
           payment_status?: string | null
           pickup_lat?: number | null
@@ -3437,7 +3750,9 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          account_id?: string | null
           address_id?: string | null
+          cashier_id?: string | null
           courier_accepted_at?: string | null
           courier_assigned_at?: string | null
           courier_feedback?: string | null
@@ -3458,6 +3773,8 @@ export type Database = {
           delivery_borough?: string
           delivery_fee?: number
           delivery_notes?: string | null
+          discount_amount?: number | null
+          discount_reason?: string | null
           distance_miles?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
@@ -3479,6 +3796,7 @@ export type Database = {
           notification_sent_stage_7?: boolean | null
           notification_sent_stage_8?: boolean | null
           order_number?: string | null
+          order_type?: string | null
           payment_method?: string
           payment_status?: string | null
           pickup_lat?: number | null
@@ -3496,6 +3814,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_address_id_fkey"
             columns: ["address_id"]
@@ -3788,6 +4113,67 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_sales: {
+        Row: {
+          account_id: string
+          discount: number | null
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          sold_at: string | null
+          sold_by: string | null
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          account_id: string
+          discount?: number | null
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          sold_at?: string | null
+          sold_by?: string | null
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          account_id?: string
+          discount?: number | null
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          sold_at?: string | null
+          sold_by?: string | null
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_sales_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -4353,6 +4739,65 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_redemptions: {
+        Row: {
+          account_id: string
+          customer_id: string
+          id: string
+          order_id: string | null
+          points_used: number
+          redeemed_at: string | null
+          reward_id: string
+        }
+        Insert: {
+          account_id: string
+          customer_id: string
+          id?: string
+          order_id?: string | null
+          points_used: number
+          redeemed_at?: string | null
+          reward_id: string
+        }
+        Update: {
+          account_id?: string
+          customer_id?: string
+          id?: string
+          order_id?: string | null
+          points_used?: number
+          redeemed_at?: string | null
+          reward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
             referencedColumns: ["id"]
           },
         ]
