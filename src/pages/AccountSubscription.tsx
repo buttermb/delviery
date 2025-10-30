@@ -37,27 +37,55 @@ export default function AccountSubscription() {
     if (!account) return;
 
     try {
-      // Get subscription
-      const { data: subData } = await supabase
+      // Get subscription with plan details
+      const { data: subData, error: subError } = await supabase
         .from('subscriptions')
-        .select('*, plan:plans(*)')
+        .select(`
+          *,
+          plan:plans(*)
+        `)
         .eq('account_id', account.id)
+        .eq('status', 'active')
         .single();
+
+      if (subError) throw subError;
 
       if (subData) {
         setSubscription(subData);
         setPlan(subData.plan);
       }
 
-      // Get usage counts (temporary hardcoded for demo)
-      // TODO: Implement proper usage tracking
+      // Get actual usage counts (with type assertions to avoid deep type issues)
+      // @ts-ignore - Complex Supabase types
+      const locationsData: any = await supabase
+        .from('locations')
+        .select('id')
+        .eq('account_id', account.id);
+      
+      // @ts-ignore - Complex Supabase types  
+      const productsData: any = await supabase
+        .from('products')
+        .select('id')
+        .eq('account_id', account.id);
+      
+      // @ts-ignore - Complex Supabase types
+      const teamData: any = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('account_id', account.id);
+
       setUsage({
-        locations: 1,
-        products: 25,
-        teamMembers: 3
+        locations: locationsData.data?.length || 0,
+        products: productsData.data?.length || 0,
+        teamMembers: teamData.data?.length || 0
       });
     } catch (error) {
       console.error('Error loading subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load subscription data",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

@@ -23,7 +23,7 @@ import { SEOHead } from '@/components/SEOHead';
 interface Invoice {
   id: string;
   invoice_number: string;
-  amount: number;
+  total: number;
   status: string;
   created_at: string;
   due_date: string;
@@ -50,31 +50,36 @@ export default function BillingPortal() {
 
   const loadBillingData = async () => {
     try {
-      // Load subscription
-      const { data: subData } = await supabase
+      // Load active subscription
+      const { data: subData, error: subError } = await supabase
         .from('subscriptions')
         .select(`
           *,
           plan:plans(*)
         `)
         .eq('account_id', account?.id)
+        .eq('status', 'active')
         .single();
+
+      if (subError && subError.code !== 'PGRST116') {
+        throw subError;
+      }
 
       if (subData) {
         setSubscription(subData);
       }
 
-      // Placeholder invoices - replace with actual data
-      setInvoices([
-        {
-          id: '1',
-          invoice_number: 'INV-2024-001',
-          amount: 299.00,
-          status: 'paid',
-          created_at: new Date().toISOString(),
-          due_date: new Date().toISOString()
-        }
-      ]);
+      // Load invoices from customer_invoices table
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from('customer_invoices')
+        .select('*')
+        .eq('account_id', account?.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (invoicesError) throw invoicesError;
+
+      setInvoices(invoicesData || []);
     } catch (error) {
       console.error('Error loading billing data:', error);
     } finally {
@@ -191,7 +196,7 @@ export default function BillingPortal() {
                       <TableRow key={invoice.id}>
                         <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
                         <TableCell>{new Date(invoice.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell>${invoice.total.toFixed(2)}</TableCell>
                         <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                         <TableCell>
                           <Button variant="ghost" size="sm">
