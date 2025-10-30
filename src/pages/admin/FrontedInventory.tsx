@@ -128,9 +128,14 @@ export default function FrontedInventory() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">📊 Fronted Inventory Tracking</h1>
-          <Button onClick={() => navigate('/admin/inventory/dispatch')}>
-            + New Front
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/inventory/barcodes')}>
+              Generate Barcodes
+            </Button>
+            <Button onClick={() => navigate('/admin/inventory/dispatch')}>
+              + New Front
+            </Button>
+          </div>
         </div>
 
         {/* Overview Cards */}
