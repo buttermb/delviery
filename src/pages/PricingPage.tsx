@@ -6,25 +6,24 @@ import { SEOHead } from "@/components/SEOHead";
 const plans = [
   {
     name: "Starter",
-    price: 99,
-    yearlyPrice: 990,
-    description: "Perfect for new THCA businesses getting started",
+    price: 149,
+    yearlyPrice: 1490,
+    description: "Perfect for small businesses getting started",
     features: [
       "1 Location",
-      "1,000 Products",
-      "5 Team Members",
-      "500 Orders/month",
-      "Basic Inventory Management",
-      "Order Management",
-      "Customer Portal",
+      "Up to 5 Team Members",
+      "Basic CRM & Customer Portal",
+      "Order & Inventory Management",
+      "Email Support",
       "Basic Analytics",
-      "Email Support"
+      "Mobile App Access",
+      "14-day free trial"
     ],
     limitations: [
       "No API Access",
+      "No Custom Integrations",
       "No White-Label",
-      "No Multi-Location",
-      "No Advanced Analytics"
+      "Limited Reporting"
     ]
   },
   {
@@ -34,44 +33,41 @@ const plans = [
     description: "Most popular for growing businesses",
     popular: true,
     features: [
-      "3 Locations",
-      "5,000 Products",
-      "15 Team Members",
-      "2,000 Orders/month",
-      "Advanced Inventory Management",
-      "Multi-Location Support",
-      "Purchase Orders & Vendors",
-      "Advanced Analytics & Forecasting",
-      "API Access",
-      "Custom Reports",
+      "Up to 5 Locations",
+      "Up to 25 Team Members",
+      "Advanced CRM & Automation",
+      "Multi-Location Management",
       "Priority Support",
-      "Appointment Booking",
-      "Label Generation"
+      "Advanced Analytics & Reporting",
+      "API Access",
+      "Custom Workflows",
+      "Integrations Hub",
+      "Role-Based Permissions",
+      "Everything in Starter"
     ],
     limitations: [
       "No White-Label",
-      "Limited Custom Integrations"
+      "Limited Custom Development"
     ]
   },
   {
     name: "Enterprise",
     price: 699,
     yearlyPrice: 6990,
-    description: "Unlimited everything for large operations",
+    description: "Unlimited scale for large operations",
     features: [
       "Unlimited Locations",
-      "Unlimited Products",
       "Unlimited Team Members",
-      "Unlimited Orders",
       "Everything in Professional",
       "White-Label Options",
-      "Custom Domain",
-      "Custom Integrations",
+      "Custom Domain & Branding",
       "Dedicated Account Manager",
       "24/7 Priority Support",
-      "Custom Mobile App",
-      "Advanced Security Features",
-      "Custom Development Hours"
+      "Custom Integrations",
+      "Advanced Security & Compliance",
+      "SLA Guarantees",
+      "Custom Development Hours",
+      "On-Premise Options Available"
     ],
     limitations: []
   }
@@ -79,14 +75,14 @@ const plans = [
 
 const addons = [
   {
-    name: "AI Forecasting & Insights",
+    name: "AI-Powered Analytics",
     price: 99,
-    description: "Demand forecasting, inventory optimization, and predictive analytics"
+    description: "Advanced forecasting, insights, and predictive analytics powered by AI"
   },
   {
-    name: "White-Label Mobile App",
+    name: "White-Label Solution",
     price: 299,
-    description: "Custom branded iOS and Android apps for your business"
+    description: "Custom branded platform with your logo, colors, and domain"
   },
   {
     name: "Additional Location",
@@ -94,9 +90,9 @@ const addons = [
     description: "Add extra locations beyond your plan limit"
   },
   {
-    name: "Metrc Integration",
-    price: 149,
-    description: "Full bi-directional sync with state compliance systems"
+    name: "Custom Integration",
+    price: 199,
+    description: "Connect to your existing tools and systems with custom integrations"
   }
 ];
 
@@ -104,15 +100,15 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
       <SEOHead 
-        title="Pricing Plans | BuddasH Platform"
-        description="Simple, transparent pricing for THCA operations. Start with our 14-day free trial. Plans from $99/month."
+        title="Pricing Plans | Business Management Platform"
+        description="Simple, transparent pricing for your business operations. Start with our 14-day free trial. Plans from $149/month."
       />
 
       {/* Navigation */}
       <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">
-            BuddasH <span className="text-primary">Platform</span>
+          <Link to="/marketing" className="text-2xl font-bold">
+            Business <span className="text-primary">Platform</span>
           </Link>
           
           <Link to="/signup">
