@@ -95,6 +95,8 @@ const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const RecordFrontedSale = lazy(() => import("./pages/admin/RecordFrontedSale"));
 const RecordFrontedPayment = lazy(() => import("./pages/admin/RecordFrontedPayment"));
+const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
+const RecordFrontedReturn = lazy(() => import("./pages/admin/RecordFrontedReturn"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -234,8 +236,10 @@ const App = () => {
                           <Route path="inventory/fronted" element={<AdminErrorBoundary><FrontedInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/dispatch" element={<AdminErrorBoundary><DispatchInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/barcodes" element={<AdminErrorBoundary><GenerateBarcodes /></AdminErrorBoundary>} />
+                          <Route path="inventory/fronted/:id" element={<AdminErrorBoundary><FrontedInventoryDetails /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/sale" element={<AdminErrorBoundary><RecordFrontedSale /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/payment" element={<AdminErrorBoundary><RecordFrontedPayment /></AdminErrorBoundary>} />
+                          <Route path="inventory/fronted/:id/return" element={<AdminErrorBoundary><RecordFrontedReturn /></AdminErrorBoundary>} />
                         </Route>
 
                         <Route path="*" element={<NotFound />} />
