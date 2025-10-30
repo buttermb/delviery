@@ -63,6 +63,8 @@ const SuperAdminSubscriptions = lazy(() => import("./pages/SuperAdminSubscriptio
 const SuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
 const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
 const AccountSubscription = lazy(() => import("./pages/AccountSubscription"));
+const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
+const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
@@ -335,6 +337,8 @@ const App = () => {
                 <Route path="bug-scanner" element={<AdminErrorBoundary><BugScanner /></AdminErrorBoundary>} />
                         <Route path="live-chat" element={<AdminErrorBoundary><AdminLiveChat /></AdminErrorBoundary>} />
                         <Route path="quick-export" element={<AdminErrorBoundary><AdminQuickExport /></AdminErrorBoundary>} />
+                        <Route path="locations" element={<AdminErrorBoundary><LocationsManagement /></AdminErrorBoundary>} />
+                        <Route path="vendors" element={<AdminErrorBoundary><VendorManagement /></AdminErrorBoundary>} />
                       </Route>
 
                       <Route path="*" element={<NotFound />} />

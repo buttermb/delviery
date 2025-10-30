@@ -22,7 +22,9 @@ import {
   Bell,
   Search,
   Bug,
-  MessageCircle
+  MessageCircle,
+  Building,
+  Store
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +64,13 @@ const menuGroups = [
       { title: "Templates", url: "/admin/templates", icon: FileText },
       { title: "Import/Export", url: "/admin/import-export", icon: FileUp },
       { title: "COA Management", url: "/admin/coa-management", icon: Shield },
+    ]
+  },
+  {
+    title: "Business Operations",
+    items: [
+      { title: "Locations", url: "/admin/locations", icon: Building },
+      { title: "Vendors", url: "/admin/vendors", icon: Store },
     ]
   },
   {

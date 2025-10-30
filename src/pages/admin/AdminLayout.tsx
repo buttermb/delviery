@@ -1,6 +1,7 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
 import InstallPWA from "@/components/InstallPWA";
 import { Suspense, useState } from "react";
@@ -55,6 +56,7 @@ const AdminLayout = () => {
       <div className="min-h-screen flex w-full overflow-hidden">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
+          <AccountSwitcher />
           <header className="h-14 border-b flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe">
             <SidebarTrigger className="h-10 w-10 touch-manipulation active:scale-95 transition-transform" />
             
