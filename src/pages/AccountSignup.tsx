@@ -74,7 +74,7 @@ export default function AccountSignup() {
         .from('accounts')
         .insert({
           company_name: companyName,
-          slug,
+          slug: `${slug}-${Date.now()}`,
           plan_id: planId,
           status: 'trial',
           trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
@@ -85,14 +85,23 @@ export default function AccountSignup() {
 
       if (accountError) throw accountError;
 
-      // Update profile with account_id and role
+      // Create user role (separate from profile for security)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          account_id: account.id,
+          role: 'account_owner'
+        } as any);
+
+      if (roleError) throw roleError;
+
+      // Update profile with account_id
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
           account_id: account.id,
-          role: 'account_owner',
-          full_name: fullName,
-          phone
+          full_name: fullName
         })
         .eq('user_id', authData.user.id);
 
@@ -107,9 +116,20 @@ export default function AccountSignup() {
           operating_states: [businessState]
         });
 
+      // Create subscription
+      await supabase
+        .from('subscriptions')
+        .insert({
+          account_id: account.id,
+          plan_id: planId,
+          status: 'trialing',
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        });
+
       toast({
         title: 'Account created successfully!',
-        description: 'Welcome to BuddasH Platform'
+        description: 'Welcome to the Platform. Your 14-day trial has started!'
       });
 
       navigate('/admin/dashboard');
@@ -128,8 +148,8 @@ export default function AccountSignup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <SEOHead 
-        title="Sign Up | BuddasH Platform"
-        description="Create your THCA operations platform account"
+        title="Sign Up | Business Platform"
+        description="Create your business management platform account"
       />
 
       <Card className="w-full max-w-2xl">
@@ -189,7 +209,7 @@ export default function AccountSignup() {
                       <SelectValue placeholder="Select plan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="starter">Starter - $99/month</SelectItem>
+                      <SelectItem value="starter">Starter - $149/month</SelectItem>
                       <SelectItem value="professional">Professional - $299/month (Popular)</SelectItem>
                       <SelectItem value="enterprise">Enterprise - $699/month</SelectItem>
                     </SelectContent>

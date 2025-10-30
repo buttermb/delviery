@@ -27,8 +27,12 @@ export default function LocationsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
-    license_number: '',
-    operating_hours: {}
+    city: '',
+    state: '',
+    zip_code: '',
+    phone: '',
+    email: '',
+    license_number: ''
   });
 
   useEffect(() => {
@@ -96,7 +100,7 @@ export default function LocationsManagement() {
 
       setIsDialogOpen(false);
       setEditingLocation(null);
-      setFormData({ name: '', address: '', license_number: '', operating_hours: {} });
+      setFormData({ name: '', address: '', city: '', state: '', zip_code: '', phone: '', email: '', license_number: '' });
       loadLocations();
     } catch (error: any) {
       toast({
@@ -112,8 +116,12 @@ export default function LocationsManagement() {
     setFormData({
       name: location.name,
       address: location.address,
-      license_number: location.license_number,
-      operating_hours: location.operating_hours || {}
+      city: location.city,
+      state: location.state,
+      zip_code: location.zip_code,
+      phone: location.phone || '',
+      email: location.email || '',
+      license_number: location.license_number || ''
     });
     setIsDialogOpen(true);
   };
@@ -169,7 +177,7 @@ export default function LocationsManagement() {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingLocation(null);
-              setFormData({ name: '', address: '', license_number: '', operating_hours: {} });
+              setFormData({ name: '', address: '', city: '', state: '', zip_code: '', phone: '', email: '', license_number: '' });
             }}>
               <Plus className="w-4 h-4 mr-2" />
               Add Location
@@ -195,14 +203,72 @@ export default function LocationsManagement() {
               </div>
 
               <div>
-                <Label htmlFor="address">Address *</Label>
+                <Label htmlFor="address">Street Address *</Label>
                 <Input
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="123 Main St, New York, NY 10001"
+                  placeholder="123 Main St"
                   required
                 />
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="New York"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="state">State *</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="NY"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="zip">ZIP Code *</Label>
+                  <Input
+                    id="zip"
+                    value={formData.zip_code}
+                    onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                    placeholder="10001"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="location@company.com"
+                  />
+                </div>
               </div>
 
               <div>
@@ -281,8 +347,14 @@ export default function LocationsManagement() {
                 <div className="space-y-2 text-sm">
                   <div>
                     <span className="text-muted-foreground">Address:</span>
-                    <p className="font-medium">{location.address}</p>
+                    <p className="font-medium">{location.address}, {location.city}, {location.state} {location.zip_code}</p>
                   </div>
+                  {location.phone && (
+                    <div>
+                      <span className="text-muted-foreground">Phone:</span>
+                      <p className="font-medium">{location.phone}</p>
+                    </div>
+                  )}
                   {location.license_number && (
                     <div>
                       <span className="text-muted-foreground">License:</span>

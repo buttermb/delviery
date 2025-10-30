@@ -26,10 +26,13 @@ export default function VendorManagement() {
   const [editingVendor, setEditingVendor] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
-    contact_email: '',
-    contact_phone: '',
+    contact_name: '',
+    email: '',
+    phone: '',
     address: '',
-    payment_terms: 'Net 30'
+    website: '',
+    license_number: '',
+    notes: ''
   });
 
   useEffect(() => {
@@ -97,7 +100,7 @@ export default function VendorManagement() {
 
       setIsDialogOpen(false);
       setEditingVendor(null);
-      setFormData({ name: '', contact_email: '', contact_phone: '', address: '', payment_terms: 'Net 30' });
+      setFormData({ name: '', contact_name: '', email: '', phone: '', address: '', website: '', license_number: '', notes: '' });
       loadVendors();
     } catch (error: any) {
       toast({
@@ -112,10 +115,13 @@ export default function VendorManagement() {
     setEditingVendor(vendor);
     setFormData({
       name: vendor.name,
-      contact_email: vendor.contact_email,
-      contact_phone: vendor.contact_phone,
-      address: vendor.address,
-      payment_terms: vendor.payment_terms
+      contact_name: vendor.contact_name || '',
+      email: vendor.email || '',
+      phone: vendor.phone || '',
+      address: vendor.address || '',
+      website: vendor.website || '',
+      license_number: vendor.license_number || '',
+      notes: vendor.notes || ''
     });
     setIsDialogOpen(true);
   };
@@ -171,7 +177,7 @@ export default function VendorManagement() {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingVendor(null);
-              setFormData({ name: '', contact_email: '', contact_phone: '', address: '', payment_terms: 'Net 30' });
+              setFormData({ name: '', contact_name: '', email: '', phone: '', address: '', website: '', license_number: '', notes: '' });
             }}>
               <Plus className="w-4 h-4 mr-2" />
               Add Vendor
@@ -196,24 +202,34 @@ export default function VendorManagement() {
                 />
               </div>
 
+              <div>
+                <Label htmlFor="contact_name">Contact Name</Label>
+                <Input
+                  id="contact_name"
+                  value={formData.contact_name}
+                  onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                  placeholder="John Doe"
+                />
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="email">Contact Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    value={formData.contact_email}
-                    onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="contact@vendor.com"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="phone">Contact Phone</Label>
+                  <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
-                    value={formData.contact_phone}
-                    onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -229,14 +245,26 @@ export default function VendorManagement() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="terms">Payment Terms</Label>
-                <Input
-                  id="terms"
-                  value={formData.payment_terms}
-                  onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
-                  placeholder="Net 30"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    placeholder="https://vendor.com"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="license_number">License Number</Label>
+                  <Input
+                    id="license_number"
+                    value={formData.license_number}
+                    onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                    placeholder="LIC-12345"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
@@ -300,22 +328,29 @@ export default function VendorManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
-                  {vendor.contact_email && (
+                  {vendor.contact_name && (
+                    <div>
+                      <span className="text-muted-foreground">Contact:</span>
+                      <span className="ml-2 font-medium">{vendor.contact_name}</span>
+                    </div>
+                  )}
+                  {vendor.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{vendor.contact_email}</span>
+                      <span>{vendor.email}</span>
                     </div>
                   )}
-                  {vendor.contact_phone && (
+                  {vendor.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{vendor.contact_phone}</span>
+                      <span>{vendor.phone}</span>
                     </div>
                   )}
-                  {vendor.payment_terms && (
-                    <div>
-                      <span className="text-muted-foreground">Terms:</span>
-                      <span className="ml-2 font-medium">{vendor.payment_terms}</span>
+                  {vendor.website && (
+                    <div className="text-sm">
+                      <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Visit Website
+                      </a>
                     </div>
                   )}
                 </div>

@@ -87,8 +87,12 @@ export default function CustomerInvoices() {
     const total = subtotal + tax - discount;
 
     try {
+      const invoiceNumber = `INV-${Date.now()}`;
+      
       const invoiceData: any = {
+        account_id: account.id,
         customer_id: formData.customer_id,
+        invoice_number: invoiceNumber,
         subtotal,
         tax,
         discount,
