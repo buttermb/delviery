@@ -561,6 +561,60 @@ export type Database = {
         }
         Relationships: []
       }
+      barcode_labels: {
+        Row: {
+          account_id: string
+          barcode: string
+          barcode_type: string | null
+          created_at: string | null
+          id: string
+          label_size: string | null
+          label_template_id: string | null
+          printed_at: string | null
+          product_id: string | null
+          status: string | null
+        }
+        Insert: {
+          account_id: string
+          barcode: string
+          barcode_type?: string | null
+          created_at?: string | null
+          id?: string
+          label_size?: string | null
+          label_template_id?: string | null
+          printed_at?: string | null
+          product_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          account_id?: string
+          barcode?: string
+          barcode_type?: string | null
+          created_at?: string | null
+          id?: string
+          label_size?: string | null
+          label_template_id?: string | null
+          printed_at?: string | null
+          product_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barcode_labels_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barcode_labels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_devices: {
         Row: {
           blocked_at: string | null
@@ -1736,6 +1790,255 @@ export type Database = {
         }
         Relationships: []
       }
+      fronted_inventory: {
+        Row: {
+          account_id: string
+          batch_number: string | null
+          completed_at: string | null
+          completed_by: string | null
+          cost_per_unit: number
+          created_at: string | null
+          deal_type: string
+          dispatched_at: string | null
+          dispatched_by: string | null
+          expected_profit: number | null
+          expected_revenue: number | null
+          fronted_to_customer_name: string | null
+          fronted_to_location_id: string | null
+          fronted_to_user_id: string | null
+          id: string
+          notes: string | null
+          payment_due_date: string | null
+          payment_received: number | null
+          payment_status: string | null
+          price_per_unit: number
+          product_id: string
+          quantity_damaged: number | null
+          quantity_fronted: number
+          quantity_returned: number | null
+          quantity_sold: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          batch_number?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          cost_per_unit: number
+          created_at?: string | null
+          deal_type: string
+          dispatched_at?: string | null
+          dispatched_by?: string | null
+          expected_profit?: number | null
+          expected_revenue?: number | null
+          fronted_to_customer_name?: string | null
+          fronted_to_location_id?: string | null
+          fronted_to_user_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_due_date?: string | null
+          payment_received?: number | null
+          payment_status?: string | null
+          price_per_unit: number
+          product_id: string
+          quantity_damaged?: number | null
+          quantity_fronted: number
+          quantity_returned?: number | null
+          quantity_sold?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          batch_number?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          cost_per_unit?: number
+          created_at?: string | null
+          deal_type?: string
+          dispatched_at?: string | null
+          dispatched_by?: string | null
+          expected_profit?: number | null
+          expected_revenue?: number | null
+          fronted_to_customer_name?: string | null
+          fronted_to_location_id?: string | null
+          fronted_to_user_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_due_date?: string | null
+          payment_received?: number | null
+          payment_status?: string | null
+          price_per_unit?: number
+          product_id?: string
+          quantity_damaged?: number | null
+          quantity_fronted?: number
+          quantity_returned?: number | null
+          quantity_sold?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fronted_inventory_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_fronted_to_location_id_fkey"
+            columns: ["fronted_to_location_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fronted_inventory_scans: {
+        Row: {
+          account_id: string
+          barcode: string | null
+          fronted_inventory_id: string | null
+          id: string
+          latitude: number | null
+          location_id: string | null
+          longitude: number | null
+          notes: string | null
+          product_id: string | null
+          quantity: number
+          scan_type: string
+          scanned_at: string | null
+          scanned_by: string | null
+        }
+        Insert: {
+          account_id: string
+          barcode?: string | null
+          fronted_inventory_id?: string | null
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          notes?: string | null
+          product_id?: string | null
+          quantity: number
+          scan_type: string
+          scanned_at?: string | null
+          scanned_by?: string | null
+        }
+        Update: {
+          account_id?: string
+          barcode?: string | null
+          fronted_inventory_id?: string | null
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          notes?: string | null
+          product_id?: string | null
+          quantity?: number
+          scan_type?: string
+          scanned_at?: string | null
+          scanned_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fronted_inventory_scans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_scans_fronted_inventory_id_fkey"
+            columns: ["fronted_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "fronted_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_scans_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_inventory_scans_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fronted_payments: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string | null
+          fronted_inventory_id: string | null
+          id: string
+          notes: string | null
+          paid_by_name: string | null
+          paid_by_user_id: string | null
+          payment_method: string
+          payment_reference: string | null
+          received_at: string | null
+          received_by: string | null
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string | null
+          fronted_inventory_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_by_name?: string | null
+          paid_by_user_id?: string | null
+          payment_method: string
+          payment_reference?: string | null
+          received_at?: string | null
+          received_by?: string | null
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string | null
+          fronted_inventory_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_by_name?: string | null
+          paid_by_user_id?: string | null
+          payment_method?: string
+          payment_reference?: string | null
+          received_at?: string | null
+          received_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fronted_payments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fronted_payments_fronted_inventory_id_fkey"
+            columns: ["fronted_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "fronted_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geofence_checks: {
         Row: {
           action_allowed: boolean
@@ -2375,6 +2678,59 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_locations: {
+        Row: {
+          account_id: string
+          address: string | null
+          assigned_to_user_id: string | null
+          city: string | null
+          created_at: string | null
+          id: string
+          location_name: string
+          location_type: string
+          state: string | null
+          status: string | null
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          account_id: string
+          address?: string | null
+          assigned_to_user_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          location_name: string
+          location_type: string
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          account_id?: string
+          address?: string | null
+          assigned_to_user_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          location_name?: string
+          location_type?: string
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_locations_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -3438,10 +3794,13 @@ export type Database = {
       }
       products: {
         Row: {
+          available_quantity: number | null
           average_rating: number | null
+          barcode: string | null
           batch_number: string | null
           category: string
           cbd_content: number | null
+          cbd_percent: number | null
           coa_pdf_url: string | null
           coa_qr_code_url: string | null
           coa_url: string | null
@@ -3451,6 +3810,7 @@ export type Database = {
           description: string | null
           effects: string[] | null
           effects_timeline: Json | null
+          fronted_quantity: number | null
           growing_info: Json | null
           id: string
           image_url: string | null
@@ -3465,25 +3825,34 @@ export type Database = {
           name: string
           price: number
           prices: Json | null
+          retail_price: number | null
           review_count: number | null
           sale_price: number | null
+          sku: string | null
           stock_quantity: number | null
           strain_info: string | null
           strain_lineage: string | null
+          strain_name: string | null
           strain_type: string | null
           terpenes: Json | null
           test_date: string | null
           thc_content: number | null
+          thc_percent: number | null
           thca_percentage: number
+          total_quantity: number | null
           usage_tips: string | null
           vendor_name: string | null
           weight_grams: number | null
+          wholesale_price: number | null
         }
         Insert: {
+          available_quantity?: number | null
           average_rating?: number | null
+          barcode?: string | null
           batch_number?: string | null
           category: string
           cbd_content?: number | null
+          cbd_percent?: number | null
           coa_pdf_url?: string | null
           coa_qr_code_url?: string | null
           coa_url?: string | null
@@ -3493,6 +3862,7 @@ export type Database = {
           description?: string | null
           effects?: string[] | null
           effects_timeline?: Json | null
+          fronted_quantity?: number | null
           growing_info?: Json | null
           id?: string
           image_url?: string | null
@@ -3507,25 +3877,34 @@ export type Database = {
           name: string
           price: number
           prices?: Json | null
+          retail_price?: number | null
           review_count?: number | null
           sale_price?: number | null
+          sku?: string | null
           stock_quantity?: number | null
           strain_info?: string | null
           strain_lineage?: string | null
+          strain_name?: string | null
           strain_type?: string | null
           terpenes?: Json | null
           test_date?: string | null
           thc_content?: number | null
+          thc_percent?: number | null
           thca_percentage: number
+          total_quantity?: number | null
           usage_tips?: string | null
           vendor_name?: string | null
           weight_grams?: number | null
+          wholesale_price?: number | null
         }
         Update: {
+          available_quantity?: number | null
           average_rating?: number | null
+          barcode?: string | null
           batch_number?: string | null
           category?: string
           cbd_content?: number | null
+          cbd_percent?: number | null
           coa_pdf_url?: string | null
           coa_qr_code_url?: string | null
           coa_url?: string | null
@@ -3535,6 +3914,7 @@ export type Database = {
           description?: string | null
           effects?: string[] | null
           effects_timeline?: Json | null
+          fronted_quantity?: number | null
           growing_info?: Json | null
           id?: string
           image_url?: string | null
@@ -3549,19 +3929,25 @@ export type Database = {
           name?: string
           price?: number
           prices?: Json | null
+          retail_price?: number | null
           review_count?: number | null
           sale_price?: number | null
+          sku?: string | null
           stock_quantity?: number | null
           strain_info?: string | null
           strain_lineage?: string | null
+          strain_name?: string | null
           strain_type?: string | null
           terpenes?: Json | null
           test_date?: string | null
           thc_content?: number | null
+          thc_percent?: number | null
           thca_percentage?: number
+          total_quantity?: number | null
           usage_tips?: string | null
           vendor_name?: string | null
           weight_grams?: number | null
+          wholesale_price?: number | null
         }
         Relationships: [
           {
