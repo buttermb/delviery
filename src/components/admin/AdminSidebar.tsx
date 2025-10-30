@@ -49,6 +49,15 @@ const menuGroups = [
     ]
   },
   {
+    title: "Inventory",
+    items: [
+      { title: "Products", url: "/admin/inventory/products", icon: Package },
+      { title: "Fronted Inventory", url: "/admin/inventory/fronted", icon: Package },
+      { title: "Dispatch", url: "/admin/inventory/dispatch", icon: Package },
+      { title: "Analytics", url: "/admin/inventory/analytics", icon: BarChart3 },
+    ]
+  },
+  {
     title: "Business Operations",
     items: [
       { title: "Order Management", url: "/admin/order-management", icon: Package },

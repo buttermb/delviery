@@ -98,6 +98,8 @@ const RecordFrontedPayment = lazy(() => import("./pages/admin/RecordFrontedPayme
 const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const RecordFrontedReturn = lazy(() => import("./pages/admin/RecordFrontedReturn"));
 const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
+const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -238,11 +240,15 @@ const App = () => {
                           <Route path="inventory/fronted" element={<AdminErrorBoundary><FrontedInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/dispatch" element={<AdminErrorBoundary><DispatchInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/barcodes" element={<AdminErrorBoundary><GenerateBarcodes /></AdminErrorBoundary>} />
+                          <Route path="inventory/analytics" element={<AdminErrorBoundary><FrontedInventoryAnalytics /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id" element={<AdminErrorBoundary><FrontedInventoryDetails /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/sale" element={<AdminErrorBoundary><RecordFrontedSale /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/payment" element={<AdminErrorBoundary><RecordFrontedPayment /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/return" element={<AdminErrorBoundary><RecordFrontedReturn /></AdminErrorBoundary>} />
                         </Route>
+                        
+                        {/* Driver Portal */}
+                        <Route path="/driver" element={<DriverPortal />} />
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>
