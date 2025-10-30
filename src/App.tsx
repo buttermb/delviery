@@ -85,6 +85,9 @@ const Reports = lazy(() => import("./pages/admin/Reports"));
 const CompanySettings = lazy(() => import("./pages/admin/CompanySettings"));
 const OrderManagement = lazy(() => import("./pages/admin/OrderManagement"));
 const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const BillingPortal = lazy(() => import("./pages/BillingPortal"));
+const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -183,8 +186,11 @@ const App = () => {
                           <ProtectedRoute><NotificationPreferences /></ProtectedRoute>
                         } />
 
-                        {/* Customer Portal */}
+                        {/* Customer Routes */}
                         <Route path="/portal" element={<CustomerPortal />} />
+                        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                        <Route path="/billing" element={<ProtectedRoute><BillingPortal /></ProtectedRoute>} />
+                        <Route path="/service-requests" element={<ProtectedRoute><ServiceRequests /></ProtectedRoute>} />
 
                         {/* Admin Login */}
                         <Route path="/admin/login" element={<AdminLogin />} />
