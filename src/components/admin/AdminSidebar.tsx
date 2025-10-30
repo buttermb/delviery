@@ -71,6 +71,8 @@ const menuGroups = [
     items: [
       { title: "Locations", url: "/admin/locations", icon: Building },
       { title: "Vendors", url: "/admin/vendors", icon: Store },
+      { title: "Team", url: "/admin/team", icon: Users },
+      { title: "Invoices", url: "/admin/invoices", icon: FileText },
     ]
   },
   {

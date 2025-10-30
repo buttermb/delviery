@@ -66,6 +66,8 @@ const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
 const AccountSubscription = lazy(() => import("./pages/AccountSubscription"));
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
+const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
+const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
@@ -341,6 +343,8 @@ const App = () => {
                         <Route path="quick-export" element={<AdminErrorBoundary><AdminQuickExport /></AdminErrorBoundary>} />
                         <Route path="locations" element={<AdminErrorBoundary><LocationsManagement /></AdminErrorBoundary>} />
                         <Route path="vendors" element={<AdminErrorBoundary><VendorManagement /></AdminErrorBoundary>} />
+                        <Route path="team" element={<AdminErrorBoundary><TeamManagement /></AdminErrorBoundary>} />
+                        <Route path="invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
                       </Route>
 
                       <Route path="*" element={<NotFound />} />
