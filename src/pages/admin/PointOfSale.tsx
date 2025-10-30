@@ -58,15 +58,29 @@ export default function PointOfSale() {
 
   const loadProducts = async () => {
     try {
-      const { data, error } = await supabase
+      // Explicitly cast supabase to avoid deep type inference
+      const response = await (supabase as any)
         .from('products')
-        .select('*')
+        .select('id, name, price, category, stock_quantity, thc_percent, image_url')
         .eq('status', 'active')
         .gt('stock_quantity', 0)
         .order('name');
 
+      const { data, error } = response;
       if (error) throw error;
-      setProducts(data || []);
+      
+      // Map to our Product interface
+      const mappedProducts: Product[] = (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        category: p.category,
+        stock_quantity: p.stock_quantity,
+        thc_percent: p.thc_percent,
+        image_url: p.image_url
+      }));
+      
+      setProducts(mappedProducts);
     } catch (error) {
       console.error('Error loading products:', error);
       toast({ title: 'Error loading products', variant: 'destructive' });
@@ -75,13 +89,25 @@ export default function PointOfSale() {
 
   const loadCustomers = async () => {
     try {
-      const { data, error } = await supabase
+      // Explicitly cast supabase to avoid deep type inference
+      const response = await (supabase as any)
         .from('customers')
-        .select('*')
+        .select('id, first_name, last_name, customer_type, loyalty_points')
         .order('first_name');
 
+      const { data, error } = response;
       if (error) throw error;
-      setCustomers(data || []);
+      
+      // Map to our Customer interface
+      const mappedCustomers: Customer[] = (data || []).map((c: any) => ({
+        id: c.id,
+        first_name: c.first_name,
+        last_name: c.last_name,
+        customer_type: c.customer_type,
+        loyalty_points: c.loyalty_points || 0
+      }));
+      
+      setCustomers(mappedCustomers);
     } catch (error) {
       console.error('Error loading customers:', error);
     }
