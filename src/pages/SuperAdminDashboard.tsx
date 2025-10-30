@@ -10,6 +10,7 @@ import {
   Building, Package, CreditCard, LogOut 
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { toast } from 'sonner';
 
 interface DashboardMetrics {
   totalCustomers: number;
@@ -49,16 +50,17 @@ export default function SuperAdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Get all accounts
-      const { data: accountsData } = await supabase
+      // Get all accounts with their plans
+      const { data: accountsData, error: accountsError } = await supabase
         .from('accounts')
         .select(`
           *,
-          plan:plans(name, price_monthly),
-          subscription:subscriptions(status, current_period_end)
+          plan:plans(name, price_monthly)
         `)
         .order('created_at', { ascending: false })
         .limit(10);
+
+      if (accountsError) throw accountsError;
 
       if (accountsData) {
         setAccounts(accountsData);
@@ -66,25 +68,29 @@ export default function SuperAdminDashboard() {
         // Calculate metrics
         const active = accountsData.filter(a => a.status === 'active').length;
         const trial = accountsData.filter(a => a.status === 'trial').length;
-        const mrr = accountsData
+        const totalMrr = accountsData
           .filter(a => a.status === 'active')
-          .reduce((sum, a) => sum + (a.plan?.price_monthly || 0), 0);
+          .reduce((sum, a: any) => sum + ((a.mrr as number) || (a.plan?.price_monthly as number) || 0), 0);
+
+        const now = new Date();
+        const newThisMonth = accountsData.filter(a => {
+          const created = new Date(a.created_at);
+          return created.getMonth() === now.getMonth() && 
+                 created.getFullYear() === now.getFullYear();
+        }).length;
 
         setMetrics({
           totalCustomers: accountsData.length,
           activeCustomers: active,
           trialCustomers: trial,
-          mrr,
+          mrr: totalMrr,
           churnRate: 0, // TODO: Calculate from historical data
-          newSignupsThisMonth: accountsData.filter(a => {
-            const created = new Date(a.created_at);
-            const now = new Date();
-            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-          }).length
+          newSignupsThisMonth: newThisMonth
         });
       }
     } catch (error) {
       console.error('Error loading dashboard:', error);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -221,13 +227,13 @@ export default function SuperAdminDashboard() {
                   <div className="flex-1">
                     <h3 className="font-semibold">{account.company_name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {account.plan?.name || 'No plan'} • ${account.plan?.price_monthly || 0}/mo
+                      {account.plan?.name || 'No plan'} • ${((account as any).mrr || account.plan?.price_monthly || 0).toFixed(2)}/mo
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Status: <span className={`font-medium ${
-                        account.status === 'active' ? 'text-green-600' :
-                        account.status === 'trial' ? 'text-blue-600' :
-                        'text-gray-600'
+                        account.status === 'active' ? 'text-green-600 dark:text-green-400' :
+                        account.status === 'trial' ? 'text-blue-600 dark:text-blue-400' :
+                        'text-gray-600 dark:text-gray-400'
                       }`}>{account.status}</span>
                     </p>
                   </div>
