@@ -97,6 +97,7 @@ const RecordFrontedSale = lazy(() => import("./pages/admin/RecordFrontedSale"));
 const RecordFrontedPayment = lazy(() => import("./pages/admin/RecordFrontedPayment"));
 const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
 const RecordFrontedReturn = lazy(() => import("./pages/admin/RecordFrontedReturn"));
+const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -233,6 +234,7 @@ const App = () => {
                           <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
+                          <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted" element={<AdminErrorBoundary><FrontedInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/dispatch" element={<AdminErrorBoundary><DispatchInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/barcodes" element={<AdminErrorBoundary><GenerateBarcodes /></AdminErrorBoundary>} />

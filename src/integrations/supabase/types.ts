@@ -3987,6 +3987,7 @@ export type Database = {
           name_change_count: number | null
           order_limit: number | null
           phone: string | null
+          referral_code: string | null
           reported_issues: number | null
           risk_score: number | null
           selfie_verified: boolean | null
@@ -4028,6 +4029,7 @@ export type Database = {
           name_change_count?: number | null
           order_limit?: number | null
           phone?: string | null
+          referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
           selfie_verified?: boolean | null
@@ -4069,6 +4071,7 @@ export type Database = {
           name_change_count?: number | null
           order_limit?: number | null
           phone?: string | null
+          referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
           selfie_verified?: boolean | null
