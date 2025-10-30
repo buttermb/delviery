@@ -106,7 +106,6 @@ export default function PricingPage() {
       <SEOHead 
         title="Pricing Plans | BuddasH Platform"
         description="Simple, transparent pricing for THCA operations. Start with our 14-day free trial. Plans from $99/month."
-        keywords="THCA software pricing, cannabis platform cost, dispensary software"
       />
 
       {/* Navigation */}

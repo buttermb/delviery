@@ -115,7 +115,7 @@ export default function AddressBook() {
 
   const getIcon = (label: string) => {
     if (label.toLowerCase().includes('home')) return <Home className="h-5 w-5" />;
-    if (label.toLowerCase().includes('work') || label.toLowerCase().includes('office')) return <Work className="h-5 w-5" />;
+    if (label.toLowerCase().includes('work') || label.toLowerCase().includes('office')) return <Building className="h-5 w-5" />;
     return <Building className="h-5 w-5" />;
   };
 

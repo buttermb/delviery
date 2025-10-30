@@ -157,7 +157,7 @@ export function PremiumHero() {
             
             <Button
               variant="outline"
-              onClick={scrollToProducts}
+              onClick={() => scrollToProducts()}
               className="px-10 py-4 text-white text-sm font-light tracking-wide rounded-full border border-white/10 hover:border-emerald-500/50 hover:bg-white/5 transition-all duration-300 h-auto bg-white/5 backdrop-blur-sm"
             >
               View Menu
@@ -200,7 +200,7 @@ export function PremiumHero() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.2 }}
         className="absolute bottom-12 left-1/2 -translate-x-1/2 cursor-pointer"
-        onClick={scrollToProducts}
+        onClick={() => scrollToProducts()}
       >
         <div className="flex flex-col items-center gap-2 text-white/20">
           <span className="text-[10px] font-light tracking-widest uppercase">Scroll</span>

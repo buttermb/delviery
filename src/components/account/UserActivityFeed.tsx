@@ -7,15 +7,14 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  ShoppingCart, Package, Gift, Award, CreditCard, 
-  Settings, User, Star, TrendingUp, Bell, Heart
+  ShoppingCart, Package, Settings, TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityItem {
   id: string;
-  type: 'order' | 'reward' | 'achievement' | 'update' | 'view' | 'favorite';
+  type: 'order' | 'update';
   title: string;
   description: string;
   timestamp: string;
@@ -33,62 +32,60 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
   const fetchActivity = async () => {
     try {
-      const [ordersResult, rewardsResult, profileResult] = await Promise.all([
+      const [ordersResult, logsResult] = await Promise.all([
         supabase
           .from('orders')
           .select('id, created_at, status, total_amount')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
         
         supabase
-          .from('referral_rewards')
-          .select('id, created_at, reward_type, reward_amount, status')
-          .eq('referred_user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(3),
-        
-        supabase
-          .from('profiles')
-          .select('updated_at, referral_code')
+          .from('account_logs')
+          .select('*')
           .eq('user_id', userId)
-          .single()
+          .order('created_at', { ascending: false })
+          .limit(10)
       ]);
 
-      const activityItems: ActivityItem[] = [];
+      const combinedActivities: ActivityItem[] = [];
 
-      // Add order activities
-      ordersResult.data?.forEach(order => {
-        activityItems.push({
-          id: order.id,
-          type: 'order' as const,
-          title: 'Order Placed',
-          description: `Order #${order.id.slice(0, 8)} - $${order.total_amount}`,
-          timestamp: order.created_at,
-          icon: Package,
-          color: order.status === 'delivered' ? 'text-green-600' : 'text-blue-600'
+      // Add orders
+      if (ordersResult.data) {
+        ordersResult.data.forEach((order: any) => {
+          combinedActivities.push({
+            id: order.id,
+            type: 'order',
+            title: `Order ${order.status}`,
+            description: `$${order.total_amount}`,
+            timestamp: order.created_at,
+            icon: ShoppingCart,
+            color: 'text-blue-500'
+          });
         });
-      });
+      }
 
-      // Add reward activities
-      rewardsResult.data?.forEach(reward => {
-        activityItems.push({
-          id: reward.id,
-          type: 'reward' as const,
-          title: 'Reward Earned',
-          description: `${reward.reward_type}: $${reward.reward_amount}`,
-          timestamp: reward.created_at,
-          icon: Gift,
-          color: 'text-purple-600'
+      // Add account logs
+      if (logsResult.data) {
+        logsResult.data.forEach((log: any) => {
+          combinedActivities.push({
+            id: log.id,
+            type: 'update',
+            title: log.action_type,
+            description: log.description || '',
+            timestamp: log.created_at,
+            icon: Settings,
+            color: 'text-gray-500'
+          });
         });
-      });
+      }
 
       // Sort by timestamp
-      activityItems.sort((a, b) => 
+      combinedActivities.sort((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
-      setActivities(activityItems.slice(0, 10));
+      setActivities(combinedActivities.slice(0, 15));
     } catch (error) {
       console.error('Error fetching activity:', error);
     } finally {
@@ -96,33 +93,29 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
     }
   };
 
+  const getIcon = (activity: ActivityItem) => {
+    const Icon = activity.icon;
+    return <Icon className={`h-5 w-5 ${activity.color}`} />;
+  };
+
   if (loading) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-4 bg-muted rounded w-1/2"></div>
-            <div className="h-4 bg-muted rounded w-5/6"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (activities.length === 0) {
-    return (
-      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Recent Activity
-          </CardTitle>
+          <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No recent activity
-          </p>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-start gap-3 animate-pulse">
+                <div className="w-10 h-10 bg-muted rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                  <div className="h-3 bg-muted rounded w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     );
@@ -131,37 +124,38 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
-          Recent Activity
-        </CardTitle>
+        <CardTitle>Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {activities.map((activity) => {
-            const Icon = activity.icon;
-            return (
-              <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                <div className={`mt-0.5 ${activity.color}`}>
-                  <Icon className="h-5 w-5" />
+        {activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No recent activity</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => (
+              <div key={activity.id} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                  {getIcon(activity)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-sm">{activity.title}</p>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
-                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {activity.type}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {activity.description}
+                  <p className="text-sm text-muted-foreground mb-1">{activity.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                   </p>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
-

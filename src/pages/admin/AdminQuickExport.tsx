@@ -22,7 +22,7 @@ interface QuickExportProps {
 
 export default function AdminQuickExport({ onExportComplete }: QuickExportProps) {
   const [exportType, setExportType] = useState<'orders' | 'users' | 'products'>('orders');
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
   const [customStartDate, setCustomStartDate] = useState<Date>();
   const [customEndDate, setCustomEndDate] = useState<Date>();
   const { toast } = useToast();
@@ -55,9 +55,9 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       if (customEndDate) endDate = customEndDate;
 
       const baseQuery = supabase
-        .from(exportType)
+        .from(exportType as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (startDate) {
         baseQuery.gte('created_at', startDate.toISOString());
@@ -178,44 +178,6 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
             </SelectContent>
           </Select>
         </div>
-
-        {/* Custom Date Range */}
-        {dateRange === 'custom' && (
-          <div className="grid grid-cols-2 gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className={cn('w-full justify-start text-left font-normal')}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customStartDate ? format(customStartDate, 'PPP') : 'Start date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={customStartDate}
-                  onSelect={(d) => setCustomStartDate(d)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className={cn('w-full justify-start text-left font-normal')}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customEndDate ? format(customEndDate, 'PPP') : 'End date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={customEndDate}
-                  onSelect={(d) => setCustomEndDate(d)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
 
         {/* Export Button */}
         <Button onClick={handleExport} className="w-full" disabled={isLoading}>

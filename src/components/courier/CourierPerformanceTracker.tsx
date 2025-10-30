@@ -18,8 +18,8 @@ export default function CourierPerformanceTracker() {
   const { data: performance, isLoading } = useQuery({
     queryKey: ['courier-performance', period],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.data.user) throw new Error('Not logged in');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not logged in');
 
       const { data, error } = await supabase.functions.invoke('courier-app', {
         body: { endpoint: 'performance-stats', period }

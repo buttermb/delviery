@@ -18,7 +18,6 @@ export default function MarketingHome() {
       <SEOHead 
         title="Complete THCA Operations Platform | BuddasH"
         description="Transform your THCA business with our all-in-one operations platform. Inventory, compliance, delivery, and CRM in one powerful system."
-        keywords="THCA platform, cannabis operations, inventory management, compliance software"
       />
       
       {/* Navigation */}

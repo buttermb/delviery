@@ -78,9 +78,9 @@ export default function MyOrders() {
             
             // Check for 400 Bad Request - means we can't access order_items due to RLS
             if (itemsError) {
-              const isBadRequest = itemsError.code === 'PGRST301' || 
+              const isBadRequest = (itemsError as any).code === 'PGRST301' || 
                                   itemsError.message?.includes('400') ||
-                                  itemsError.status === 400;
+                                  (itemsError as any).status === 400;
               if (isBadRequest) {
                 console.warn("Cannot access order_items (likely RLS restriction), showing orders without items");
               } else {
@@ -90,7 +90,7 @@ export default function MyOrders() {
               // Successfully fetched items - combine with orders
               const ordersWithItems = ordersData.map((order) => ({
                 ...order,
-                order_items: itemsData.filter(item => item.order_id === order.id) || []
+                order_items: itemsData.filter((item: any) => item.order_id === order.id) || []
               }));
               setOrders(ordersWithItems);
               haptics.light();

@@ -62,33 +62,40 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
   const loadAccountData = async (userId: string) => {
     try {
-      // Get user profile with account
+      // Get user profile first
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*, account:accounts(*)')
+        .select('*')
         .eq('user_id', userId)
         .single();
 
       if (profileError) throw profileError;
 
-      if (profile) {
+      if (profile && (profile as any).account_id) {
         setUserProfile({
           id: profile.id,
           user_id: profile.user_id,
-          account_id: profile.account_id,
-          role: profile.role || 'customer',
+          account_id: (profile as any).account_id,
+          role: (profile as any).role || 'customer',
           full_name: profile.full_name,
-          email: profile.email
+          email: (profile as any).email || null
         });
 
-        if (profile.account) {
-          setAccount(profile.account as Account);
+        // Get account separately
+        const { data: accountData } = await supabase
+          .from('accounts')
+          .select('*')
+          .eq('id', (profile as any).account_id)
+          .single();
+
+        if (accountData) {
+          setAccount(accountData as Account);
 
           // Get account settings
           const { data: settings } = await supabase
             .from('account_settings')
             .select('*')
-            .eq('account_id', profile.account_id)
+            .eq('account_id', (profile as any).account_id)
             .single();
 
           if (settings) {

@@ -87,15 +87,8 @@ export default function MyGiveawayEntries() {
             .eq('giveaway_id', entry.giveaway_id)
             .eq('converted', true);
 
-          // Get user's referral code
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('referral_code')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          if (profileError) console.error("Profile fetch error:", profileError);
-          const referralCode = profile?.referral_code || user.id.slice(0, 8);
+          // Get user's referral code - temporarily disabled due to schema changes
+          const referralCode = user.id.slice(0, 8);
           const referralLink = `${window.location.origin}/giveaway/${entry.giveaway.slug}?ref=${referralCode}`;
 
           return {
