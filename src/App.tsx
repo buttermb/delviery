@@ -68,6 +68,10 @@ const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
+const Reports = lazy(() => import("./pages/admin/Reports"));
+const CompanySettings = lazy(() => import("./pages/admin/CompanySettings"));
+const OrderManagement = lazy(() => import("./pages/admin/OrderManagement"));
+const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
@@ -345,7 +349,13 @@ const App = () => {
                         <Route path="vendors" element={<AdminErrorBoundary><VendorManagement /></AdminErrorBoundary>} />
                         <Route path="team" element={<AdminErrorBoundary><TeamManagement /></AdminErrorBoundary>} />
                         <Route path="invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
+                        <Route path="reports" element={<AdminErrorBoundary><Reports /></AdminErrorBoundary>} />
+                        <Route path="company-settings" element={<AdminErrorBoundary><CompanySettings /></AdminErrorBoundary>} />
+                        <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
                       </Route>
+                      
+                      {/* Customer Portal */}
+                      <Route path="/portal" element={<CustomerPortal />} />
 
                       <Route path="*" element={<NotFound />} />
                     </Routes>
