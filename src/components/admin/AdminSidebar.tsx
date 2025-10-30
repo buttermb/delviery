@@ -19,7 +19,10 @@ import {
   Store,
   Receipt,
   BarChart3,
-  ChevronDown
+  ChevronDown,
+  Truck,
+  ShoppingCart,
+  UserCircle
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,6 +64,9 @@ const menuGroups = [
     title: "Business Operations",
     items: [
       { title: "Order Management", url: "/admin/order-management", icon: Package },
+      { title: "Point of Sale", url: "/admin/pos", icon: ShoppingCart },
+      { title: "Deliveries", url: "/admin/deliveries", icon: Truck },
+      { title: "Customer Management", url: "/admin/customer-management", icon: UserCircle },
       { title: "Locations", url: "/admin/locations", icon: Building },
       { title: "Vendors", url: "/admin/vendors", icon: Store },
       { title: "Team", url: "/admin/team", icon: Users },
