@@ -1,24 +1,16 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
-  ShoppingCart, 
   Users, 
   Shield, 
   TrendingUp,
-  MapPin,
   FileText,
   LogOut,
-  Clock,
-  Truck,
   CheckCircle,
   AlertTriangle,
-  ShoppingBag,
   Package,
-  Image,
   FileUp,
   Settings,
-  Gift,
-  Ticket,
   Bell,
   Search,
   Bug,
@@ -26,7 +18,8 @@ import {
   Building,
   Store,
   Receipt,
-  BarChart3
+  BarChart3,
+  ChevronDown
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,7 +38,6 @@ import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ChevronDown } from "lucide-react";
 import { AdminQuickStatsHeader } from "@/components/admin/AdminQuickStatsHeader";
 
 const menuGroups = [
@@ -57,18 +49,6 @@ const menuGroups = [
     ]
   },
   {
-    title: "Product Management",
-    items: [
-      { title: "Products", url: "/admin/products", icon: ShoppingBag },
-      { title: "Inventory", url: "/admin/inventory", icon: Package },
-      { title: "Product Analytics", url: "/admin/products/analytics", icon: TrendingUp },
-      { title: "Media Library", url: "/admin/media", icon: Image },
-      { title: "Templates", url: "/admin/templates", icon: FileText },
-      { title: "Import/Export", url: "/admin/import-export", icon: FileUp },
-      { title: "COA Management", url: "/admin/coa-management", icon: Shield },
-    ]
-  },
-  {
     title: "Business Operations",
     items: [
       { title: "Order Management", url: "/admin/order-management", icon: Package },
@@ -77,17 +57,6 @@ const menuGroups = [
       { title: "Team", url: "/admin/team", icon: Users },
       { title: "Invoices", url: "/admin/invoices", icon: Receipt },
       { title: "Reports", url: "/admin/reports", icon: BarChart3 }
-    ]
-  },
-  {
-    title: "Orders & Delivery",
-    items: [
-      { title: "Live Map", url: "/admin/live-map", icon: MapPin },
-      { title: "Live Orders", url: "/admin/live-orders", icon: Clock },
-      { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
-      { title: "Couriers", url: "/admin/couriers", icon: Truck },
-      { title: "Applications", url: "/admin/courier-applications", icon: FileText },
-      { title: "Safety", url: "/admin/delivery-safety", icon: AlertTriangle },
     ]
   },
   {
@@ -108,9 +77,6 @@ const menuGroups = [
       { title: "Quick Export", url: "/admin/quick-export", icon: FileUp },
       { title: "Company Settings", url: "/admin/company-settings", icon: Settings },
       { title: "System Settings", url: "/admin/settings", icon: Settings },
-      { title: "All Giveaways", url: "/admin/giveaways", icon: Gift },
-      { title: "Current Giveaway", url: "/admin/giveaway", icon: Gift },
-      { title: "Coupon Codes", url: "/admin/coupons", icon: Ticket },
       { title: "Test Notifications", url: "/admin/notifications", icon: Bell },
       { title: "Button Tester", url: "/admin/button-tester", icon: Bug },
       { title: "Bug Scanner", url: "/admin/bug-scanner", icon: Bug },
