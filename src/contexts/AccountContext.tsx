@@ -72,34 +72,46 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
       if (profileError) throw profileError;
 
       if (profile && (profile as any).account_id) {
+        // Get user role from user_roles table (secure)
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role, account_id')
+          .eq('user_id', userId)
+          .single() as any;
+
+        const role = roleData?.role || 'customer';
+        const accountId = (profile as any).account_id || roleData?.account_id;
+
         setUserProfile({
           id: profile.id,
           user_id: profile.user_id,
-          account_id: (profile as any).account_id,
-          role: (profile as any).role || 'customer',
+          account_id: accountId,
+          role: role as any,
           full_name: profile.full_name,
           email: (profile as any).email || null
         });
 
-        // Get account separately
-        const { data: accountData } = await supabase
-          .from('accounts')
-          .select('*')
-          .eq('id', (profile as any).account_id)
-          .single();
-
-        if (accountData) {
-          setAccount(accountData as Account);
-
-          // Get account settings
-          const { data: settings } = await supabase
-            .from('account_settings')
+        if (accountId) {
+          // Get account separately
+          const { data: accountData } = await supabase
+            .from('accounts')
             .select('*')
-            .eq('account_id', (profile as any).account_id)
+            .eq('id', accountId)
             .single();
 
-          if (settings) {
-            setAccountSettings(settings as AccountSettings);
+          if (accountData) {
+            setAccount(accountData as Account);
+
+            // Get account settings
+            const { data: settings } = await supabase
+              .from('account_settings')
+              .select('*')
+              .eq('account_id', accountId)
+              .single();
+
+            if (settings) {
+              setAccountSettings(settings as AccountSettings);
+            }
           }
         }
       }

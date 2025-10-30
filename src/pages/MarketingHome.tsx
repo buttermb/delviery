@@ -16,15 +16,15 @@ export default function MarketingHome() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
       <SEOHead 
-        title="Complete THCA Operations Platform | BuddasH"
-        description="Transform your THCA business with our all-in-one operations platform. Inventory, compliance, delivery, and CRM in one powerful system."
+        title="Business Management Platform | Complete Operations Solution"
+        description="Transform your business with our all-in-one operations platform. Inventory, CRM, team management, and more in one powerful system."
       />
       
       {/* Navigation */}
       <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">
-            BuddasH <span className="text-primary">Platform</span>
+          <Link to="/marketing" className="text-2xl font-bold">
+            Business <span className="text-primary">Platform</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-6">
@@ -51,15 +51,15 @@ export default function MarketingHome() {
       <section className="container mx-auto px-4 py-20 md:py-32">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            🚀 The Complete THCA Operations Platform
+            🚀 The Complete Business Operations Platform
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-            Run Your Entire THCA Business From One Platform
+            Run Your Entire Business From One Platform
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Inventory management, compliance tracking, delivery coordination, and customer relationships—all in one powerful system built specifically for THCA operations.
+            Inventory management, customer relationships, team collaboration, and business intelligence—all in one powerful system built for modern businesses.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -101,7 +101,7 @@ export default function MarketingHome() {
               Everything You Need to Scale
             </h2>
             <p className="text-xl text-muted-foreground">
-              Built by operators, for operators. 120+ features designed for THCA businesses.
+              Built by operators, for operators. 120+ features designed for growing businesses.
             </p>
           </div>
 
@@ -114,8 +114,8 @@ export default function MarketingHome() {
               },
               {
                 icon: Shield,
-                title: "Compliance Built-In",
-                description: "State-specific compliance tracking, COA management, and regulatory reporting. Stay audit-ready."
+                title: "Security & Compliance",
+                description: "Enterprise-grade security, role-based access control, and compliance tracking. Stay audit-ready."
               },
               {
                 icon: TrendingUp,
@@ -129,8 +129,8 @@ export default function MarketingHome() {
               },
               {
                 icon: Zap,
-                title: "Smart Delivery",
-                description: "Route optimization, live tracking, courier management, and automated notifications."
+                title: "Automation & Workflows",
+                description: "Automated processes, smart notifications, and workflow optimization to save time."
               },
               {
                 icon: CheckCircle,
@@ -164,7 +164,7 @@ export default function MarketingHome() {
             {[
               {
                 name: "Starter",
-                price: "$99",
+                price: "$149",
                 features: ["1 Location", "1,000 Products", "5 Team Members", "Basic Features"]
               },
               {
@@ -228,32 +228,32 @@ export default function MarketingHome() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Trusted by Leading THCA Operators
+              Trusted by Growing Businesses
             </h2>
             <div className="flex items-center justify-center gap-2">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-6 w-6 fill-primary text-primary" />
               ))}
-              <span className="ml-2 text-lg font-medium">4.9/5 from 200+ businesses</span>
+              <span className="ml-2 text-lg font-medium">4.9/5 from 200+ companies</span>
             </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                quote: "Cut our inventory discrepancies by 95% in the first month. The compliance features alone are worth 10x the price.",
+                quote: "Cut our operational costs by 40% in the first quarter. The automation features save us hours every day.",
                 author: "Sarah M.",
-                role: "Owner, Green Valley Dispensary"
+                role: "Owner, Growing Retail Company"
               },
               {
-                quote: "Our delivery times dropped from 45min to 22min average. Customers love the real-time tracking!",
+                quote: "Customer satisfaction improved dramatically with better tracking and communication. Game changer for our business!",
                 author: "Mike R.",
                 role: "Operations Manager"
               },
               {
-                quote: "Finally, a platform that understands THCA operations. Switched from 5 different tools to just BuddasH.",
+                quote: "Finally, a platform that understands small business operations. Switched from 5 different tools to just one.",
                 author: "Jessica L.",
-                role: "CEO, Elevated Solutions"
+                role: "CEO, Service Company"
               }
             ].map((testimonial, index) => (
               <div key={index} className="p-6 rounded-2xl bg-card border border-border">
@@ -278,7 +278,7 @@ export default function MarketingHome() {
             Ready to Transform Your Operations?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join 200+ THCA businesses already running on BuddasH Platform.
+            Join 200+ businesses already running on our platform.
           </p>
           <Link to="/signup">
             <Button size="lg" className="bg-primary hover:bg-primary/90 h-14 px-10 text-lg">
@@ -330,7 +330,7 @@ export default function MarketingHome() {
             </div>
           </div>
           <div className="pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
-            <p>© 2025 BuddasH Platform. All rights reserved.</p>
+            <p>© 2025 Business Platform. All rights reserved.</p>
           </div>
         </div>
       </footer>
