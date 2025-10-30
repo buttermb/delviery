@@ -54,6 +54,15 @@ import NotFound from "./pages/NotFound";
 // Lazy load non-critical pages
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Blog = lazy(() => import("./pages/Blog"));
+const MarketingHome = lazy(() => import("./pages/MarketingHome"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const AccountSignup = lazy(() => import("./pages/AccountSignup"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const SuperAdminCustomers = lazy(() => import("./pages/SuperAdminCustomers"));
+const SuperAdminSubscriptions = lazy(() => import("./pages/SuperAdminSubscriptions"));
+const SuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
+const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
+const AccountSubscription = lazy(() => import("./pages/AccountSubscription"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
@@ -203,7 +212,23 @@ const App = () => {
                     <Sonner />
                     <Suspense fallback={<LoadingFallback />}>
                     <Routes>
+                      {/* Marketing & Public Routes */}
                       <Route path="/" element={<Index />} />
+                      <Route path="/marketing" element={<MarketingHome />} />
+                      <Route path="/pricing" element={<PricingPage />} />
+                      <Route path="/signup" element={<AccountSignup />} />
+                      
+                      {/* Super Admin Routes */}
+                      <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+                      <Route path="/super-admin/customers" element={<SuperAdminCustomers />} />
+                      <Route path="/super-admin/customers/:id" element={<SuperAdminCustomers />} />
+                      <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
+                      <Route path="/super-admin/support" element={<SuperAdminSupport />} />
+                      <Route path="/super-admin/analytics" element={<SuperAdminAnalytics />} />
+                      
+                      {/* Account Management */}
+                      <Route path="/account/subscription" element={<ProtectedRoute><AccountSubscription /></ProtectedRoute>} />
+                      
                       <Route path="/product/:id" element={<ProductDetail />} />
                       <Route path="/blog" element={<Blog />} />
                       <Route path="/blog/:slug" element={<BlogPost />} />
