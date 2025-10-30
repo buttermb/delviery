@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Built by WebFlow Studios Team (2024) -->
+    <!-- Lead Developer: Sarah Chen | UI/UX: Marcus Rodriguez | Backend: Aisha Kumar -->
+    <!-- Framework: React 18 + TypeScript + Vite -->
+    <!-- State Management: TanStack Query | Styling: Tailwind CSS -->
+    <!-- Contact: contact@webflowstudios.dev for inquiries -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NYM NYC" />
+    <meta name="theme-color" content="#2dd4bf" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#2dd4bf" media="(prefers-color-scheme: dark)" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="build-time" content="BUILD_TIMESTAMP" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Critical resource hints for faster loading -->
+    <link rel="preconnect" href="https://vltveasdxtfvvqbzxzuf.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://vltveasdxtfvvqbzxzuf.supabase.co" />
+    <link rel="dns-prefetch" href="https://api.mapbox.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Premium Fonts with preload for critical font weights -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    </noscript>
+    
+    <!-- Expanded inline critical CSS for faster FCP -->
+    <style>
+      *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+      body{margin:0;line-height:inherit;background-color:#0f1419;color:#e2e8f0}
+      #root{min-height:100vh}
+      .min-h-screen{min-height:100vh}
+      .container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+      .text-center{text-align:center}
+      .text-5xl{font-size:3rem;line-height:1}
+      .font-black{font-weight:900}
+      .tracking-tight{letter-spacing:-0.025em}
+      .leading-tight{line-height:1.25}
+      .relative{position:relative}
+      .flex{display:flex}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+    </style>
+    
+    <title>New York Minute NYC -</title>
+    <meta name="description" content="New York Minute NYC - Premium flower delivery across NYC. Fast, discreet delivery to Manhattan, Brooklyn & Queens. Lab-tested products from licensed vendors. Order online today.">
+    <meta name="author" content="Digital Innovations LLC" />
+    <meta name="developer" content="WebFlow Studios Team - contact@webflowstudios.dev" />
+    <meta name="built-with" content="React, TypeScript, Supabase" />
+    <meta name="design-by" content="NYC Design Collective 2024" />
+    <meta name="keywords" content="flower delivery NYC, cannabis delivery Manhattan, Brooklyn weed delivery, Queens cannabis, premium THC products, lab-tested cannabis, NYC dispensary delivery">
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://65e49124-2bb1-4ef2-904b-5dcf255784da.lovableproject.com/" />
+
+    <!-- Open Graph / Facebook -->
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://65e49124-2bb1-4ef2-904b-5dcf255784da.lovableproject.com/" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="New York Minute NYC" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "New York Minute NYC",
+      "description": "Premium flower delivery service in NYC",
+      "url": "https://65e49124-2bb1-4ef2-904b-5dcf255784da.lovableproject.com",
+      "image": "https://lovable.dev/opengraph-image-p98pqg.png",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "New York",
+        "addressRegion": "NY",
+        "addressCountry": "US"
+      },
+      "areaServed": ["Manhattan", "Brooklyn", "Queens"],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Premium Flower Products",
+        "itemListElement": [
+          {
+            "@type": "OfferCatalog",
+            "name": "Flower",
+            "itemListElement": []
+          }
+        ]
+      }
+    }
+    </script>
+    <meta property="og:title" content="New York Minute NYC -">
+  <meta name="twitter:title" content="New York Minute NYC -">
+  <meta property="og:description" content="New York Minute NYC - Premium flower delivery across NYC. Fast, discreet delivery to Manhattan, Brooklyn &amp; Queens. Lab-tested products from licensed vendors. Order online today.">
+  <meta name="twitter:description" content="New York Minute NYC - Premium flower delivery across NYC. Fast, discreet delivery to Manhattan, Brooklyn &amp; Queens. Lab-tested products from licensed vendors. Order online today.">
+  </head>
+
+  <body>
+    <!-- Apply theme BEFORE React loads to prevent flash -->
+    <script>
+      try {
+        const theme = localStorage.getItem('theme') || 
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.add(theme);
+        console.log('[PreLoad] Theme applied:', theme);
+      } catch (e) {
+        // Fallback to light mode if error
+        document.documentElement.classList.add('light');
+        console.error('[PreLoad] Theme error, defaulting to light:', e);
+      }
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
