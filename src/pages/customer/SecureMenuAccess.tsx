@@ -13,7 +13,7 @@ const SecureMenuAccess = () => {
   const [searchParams] = useSearchParams();
   const uniqueToken = searchParams.get('u');
 
-  const [accessCode, setAccessCode] = useState('');
+  const [codeDigits, setCodeDigits] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'checking' | 'granted' | 'denied'>('checking');
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -60,9 +60,66 @@ const SecureMenuAccess = () => {
     };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDigitChange = (index: number, value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, '');
+    
+    if (numericValue.length <= 1) {
+      const newDigits = [...codeDigits];
+      newDigits[index] = numericValue;
+      setCodeDigits(newDigits);
+      
+      if (numericValue && index < 3) {
+        const nextInput = document.getElementById(`code-${index + 1}`);
+        nextInput?.focus();
+      }
+      
+      if (index === 3 && numericValue) {
+        const fullCode = [...newDigits.slice(0, 3), numericValue].join('');
+        if (fullCode.length === 4) {
+          handleSubmit(fullCode);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
+      const prevInput = document.getElementById(`code-${index - 1}`);
+      prevInput?.focus();
+    } else if (e.key === 'Enter') {
+      const fullCode = codeDigits.join('');
+      if (fullCode.length === 4) {
+        handleSubmit(fullCode);
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    if (!accessCode) return;
+    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+    if (pastedData) {
+      const newDigits = pastedData.split('').concat(['', '', '', '']).slice(0, 4);
+      setCodeDigits(newDigits);
+      
+      const nextEmptyIndex = newDigits.findIndex(d => !d);
+      if (nextEmptyIndex !== -1) {
+        document.getElementById(`code-${nextEmptyIndex}`)?.focus();
+      } else {
+        document.getElementById('code-3')?.focus();
+        if (pastedData.length === 4) {
+          handleSubmit(pastedData);
+        }
+      }
+    }
+  };
+
+  const handleSubmit = async (code?: string) => {
+    const accessCode = code || codeDigits.join('');
+    
+    if (!accessCode || accessCode.length !== 4) {
+      setError('Please enter a 4-digit access code');
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -78,7 +135,7 @@ const SecureMenuAccess = () => {
           unique_access_token: uniqueToken,
           device_fingerprint: deviceHash,
           location,
-          ip_address: 'client', // Would be captured server-side in production
+          ip_address: 'client',
           user_agent: navigator.userAgent
         }
       });
@@ -86,7 +143,6 @@ const SecureMenuAccess = () => {
       if (validateError) throw validateError;
 
       if (data.access_granted) {
-        // Store menu data in session storage
         sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
         setMenuData(data.menu_data);
       } else {
@@ -117,7 +173,7 @@ const SecureMenuAccess = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
           {/* Location Status */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="flex items-center gap-2 text-sm">
@@ -143,29 +199,27 @@ const SecureMenuAccess = () => {
 
           {/* Access Code Input */}
           <div className="space-y-2">
-            <Label htmlFor="accessCode">Enter Access Code</Label>
-            <div className="flex gap-2">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Label htmlFor="code-0" className="text-center block">Enter 4-Digit Access Code</Label>
+            <div className="flex gap-3 justify-center">
+              {[0, 1, 2, 3].map((index) => (
                 <Input
-                  key={i}
+                  key={index}
+                  id={`code-${index}`}
                   type="text"
+                  inputMode="numeric"
                   maxLength={1}
-                  className="w-12 h-12 text-center text-lg font-bold"
-                  value={accessCode[i] || ''}
-                  onChange={(e) => {
-                    const newCode = accessCode.split('');
-                    newCode[i] = e.target.value;
-                    setAccessCode(newCode.join(''));
-                    
-                    // Auto-focus next input
-                    if (e.target.value && i < 5) {
-                      const nextInput = e.target.parentElement?.nextElementSibling?.querySelector('input');
-                      nextInput?.focus();
-                    }
-                  }}
+                  value={codeDigits[index]}
+                  onChange={(e) => handleDigitChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={index === 0 ? handlePaste : undefined}
+                  className="w-16 h-16 text-center text-3xl font-bold"
+                  autoFocus={index === 0}
                 />
               ))}
             </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Paste your code or type each digit
+            </p>
           </div>
 
           {/* Error Message */}
@@ -180,11 +234,19 @@ const SecureMenuAccess = () => {
             type="submit" 
             className="w-full" 
             size="lg"
-            disabled={accessCode.length !== 6 || loading || locationStatus !== 'granted'}
+            disabled={codeDigits.join('').length !== 4 || loading || locationStatus !== 'granted'}
           >
-            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            <Lock className="h-4 w-4 mr-2" />
-            Access Menu
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Validating...
+              </>
+            ) : (
+              <>
+                <Lock className="h-4 w-4 mr-2" />
+                Access Menu
+              </>
+            )}
           </Button>
         </form>
 
