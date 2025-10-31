@@ -107,6 +107,7 @@ const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const WholesaleInventory = lazy(() => import("./pages/admin/WholesaleInventory"));
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
+const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const WholesaleSetup = lazy(() => import("./pages/admin/WholesaleSetup"));
 const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
@@ -118,6 +119,7 @@ const RecordFrontedReturn = lazy(() => import("./pages/admin/RecordFrontedReturn
 const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
 const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
+const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -271,6 +273,7 @@ const App = () => {
                           <Route path="wholesale-inventory-manage" element={<AdminErrorBoundary><InventoryManagement /></AdminErrorBoundary>} />
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
+                          <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
@@ -287,6 +290,9 @@ const App = () => {
                         
                         {/* Driver Portal */}
                         <Route path="/driver" element={<DriverPortal />} />
+                        
+                        {/* Secure Menu Access (Public) */}
+                        <Route path="/m/:token" element={<SecureMenuAccess />} />
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
+import { ManageAccessDialog } from './ManageAccessDialog';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 
@@ -13,6 +14,7 @@ interface MenuCardProps {
 
 export const MenuCard = ({ menu }: MenuCardProps) => {
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
+  const [manageAccessOpen, setManageAccessOpen] = useState(false);
 
   const viewCount = menu.menu_access_logs?.[0]?.count || 0;
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
@@ -110,7 +112,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           {/* Actions */}
           {menu.status === 'active' && (
             <div className="flex gap-2 pt-2 border-t">
-              <Button variant="outline" size="sm" className="flex-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
+                onClick={() => setManageAccessOpen(true)}
+              >
                 <Settings className="h-4 w-4 mr-1" />
                 Manage
               </Button>
@@ -135,6 +142,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         menu={menu}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
+      />
+      
+      <ManageAccessDialog
+        menu={menu}
+        open={manageAccessOpen}
+        onOpenChange={setManageAccessOpen}
       />
     </>
   );
