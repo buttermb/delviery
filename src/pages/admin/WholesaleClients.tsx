@@ -24,11 +24,13 @@ import {
   AlertCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { PaymentDialog } from "@/components/admin/PaymentDialog";
 
 export default function WholesaleClients() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: any }>({ open: false });
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ["wholesale-clients", filter],
@@ -258,15 +260,21 @@ export default function WholesaleClients() {
                         <Phone className="h-4 w-4" />
                       </Button>
                       {client.outstanding_balance > 0 && (
-                        <Button size="sm" variant="destructive" onClick={(e) => e.stopPropagation()}>
+                        <Button size="sm" variant="destructive" onClick={(e) => {
+                          e.stopPropagation();
+                          setPaymentDialog({ open: true, client });
+                        }}>
                           <DollarSign className="h-4 w-4 mr-1" />
                           Collect
                         </Button>
                       )}
-                      <Button size="sm" variant="default" onClick={(e) => e.stopPropagation()}>
-                        <Package className="h-4 w-4 mr-1" />
-                        New Order
-                      </Button>
+              <Button size="sm" variant="default" onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/admin/wholesale-clients/new-order?client=${client.id}`);
+              }}>
+                <Package className="h-4 w-4 mr-1" />
+                New Order
+              </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -287,6 +295,17 @@ export default function WholesaleClients() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Payment Dialog */}
+      {paymentDialog.client && (
+        <PaymentDialog
+          clientId={paymentDialog.client.id}
+          clientName={paymentDialog.client.business_name}
+          outstandingBalance={paymentDialog.client.outstanding_balance}
+          open={paymentDialog.open}
+          onOpenChange={(open) => setPaymentDialog({ open, client: open ? paymentDialog.client : undefined })}
+        />
+      )}
     </div>
   );
 }
