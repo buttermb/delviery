@@ -349,7 +349,7 @@ export default function CustomerDetails() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => navigate(`/admin/invoices?order=${order.id}`)}
+                          onClick={() => navigate(`/admin/customers/${id}/invoices`)}
                         >
                           View Invoice
                         </Button>
@@ -438,7 +438,7 @@ export default function CustomerDetails() {
                   </Button>
                   <Button 
                     variant="outline"
-                    onClick={() => navigate(`/admin/invoices/new?customer=${id}`)}
+                    onClick={() => navigate(`/admin/customers/${id}/invoices`)}
                   >
                     Create Invoice
                   </Button>
