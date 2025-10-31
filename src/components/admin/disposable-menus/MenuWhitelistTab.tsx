@@ -12,13 +12,15 @@ import { formatMenuUrl } from '@/utils/menuHelpers';
 
 interface MenuWhitelistTabProps {
   menuId: string;
+  menu: any;
   whitelist: any[];
   isLoading: boolean;
   encryptedToken: string;
 }
 
 export const MenuWhitelistTab = ({ 
-  menuId, 
+  menuId,
+  menu,
   whitelist, 
   isLoading,
   encryptedToken 
@@ -91,11 +93,12 @@ export const MenuWhitelistTab = ({
 
   const shareViaWhatsApp = (entry: any) => {
     const url = formatMenuUrl(encryptedToken, entry.unique_access_token);
+    const accessCode = menu?.access_code || 'N/A';
     const message = encodeURIComponent(
       `Hi ${entry.customer_name}! 🔐\n\n` +
       `You've been granted access to our private catalog.\n\n` +
       `Access URL: ${url}\n` +
-      `Access Code: ${entry.access_code_hash?.slice(0, 6) || 'N/A'}\n\n` +
+      `Access Code: ${accessCode}\n\n` +
       `⚠️ IMPORTANT:\n` +
       `• Do not share this link\n` +
       `• Location verification required\n\n` +

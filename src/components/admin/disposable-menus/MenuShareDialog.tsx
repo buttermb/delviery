@@ -34,7 +34,7 @@ export const MenuShareDialog = ({
     whitelistEntry?.unique_access_token
   );
   
-  const accessCode = whitelistEntry?.access_code_hash?.slice(0, 6) || 'N/A';
+  const accessCode = menu.access_code || 'N/A';
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);

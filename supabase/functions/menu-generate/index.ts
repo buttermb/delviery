@@ -99,6 +99,7 @@ serve(async (req) => {
         name,
         description,
         encrypted_url_token,
+        access_code: accessCode, // Store plain text code
         access_code_hash: accessCodeHash,
         security_settings: security_settings || {},
         appearance_settings: appearance_settings || {},

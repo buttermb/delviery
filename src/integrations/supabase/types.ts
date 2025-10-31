@@ -2018,6 +2018,7 @@ export type Database = {
       }
       disposable_menus: {
         Row: {
+          access_code: string | null
           access_code_hash: string
           access_code_rotation_days: number | null
           access_type: string | null
@@ -2051,6 +2052,7 @@ export type Database = {
           view_limit_period: string | null
         }
         Insert: {
+          access_code?: string | null
           access_code_hash: string
           access_code_rotation_days?: number | null
           access_type?: string | null
@@ -2084,6 +2086,7 @@ export type Database = {
           view_limit_period?: string | null
         }
         Update: {
+          access_code?: string | null
           access_code_hash?: string
           access_code_rotation_days?: number | null
           access_type?: string | null
