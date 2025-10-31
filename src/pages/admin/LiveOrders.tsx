@@ -32,11 +32,26 @@ export default function LiveOrders() {
           schema: 'public',
           table: 'orders'
         },
-        () => {
-          loadLiveOrders();
+        (payload) => {
+          // Validate payload before processing
+          if (payload && payload.new) {
+            console.log('[APP] Order update received:', payload);
+            loadLiveOrders();
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        // Handle subscription status
+        if (status === 'SUBSCRIBED') {
+          console.log('[APP] Subscribed to live orders');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[APP] Channel error in live orders subscription');
+          toast.error('Connection error. Retrying...');
+        } else if (status === 'TIMED_OUT') {
+          console.error('[APP] Channel timed out');
+          toast.error('Connection timed out. Please refresh.');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
