@@ -43,7 +43,7 @@ interface Customer {
 
 export default function CustomerManagement() {
   const navigate = useNavigate();
-  const { account } = useAccount();
+  const { account, loading: accountLoading } = useAccount();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,10 +52,12 @@ export default function CustomerManagement() {
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
   useEffect(() => {
-    if (account) {
+    if (account && !accountLoading) {
       loadCustomers();
+    } else if (!accountLoading && !account) {
+      setLoading(false);
     }
-  }, [account, filterType, filterStatus]);
+  }, [account, accountLoading, filterType, filterStatus]);
 
   const loadCustomers = async () => {
     if (!account) return;
@@ -164,7 +166,7 @@ export default function CustomerManagement() {
     return <Badge variant="secondary">Regular</Badge>;
   };
 
-  if (loading) {
+  if (accountLoading || loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

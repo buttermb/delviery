@@ -46,6 +46,8 @@ export default function CustomerDetails() {
   useEffect(() => {
     if (id) {
       loadCustomerData();
+    } else {
+      setLoading(false);
     }
   }, [id]);
 

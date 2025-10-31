@@ -12,7 +12,7 @@ import {
 import { SEOHead } from '@/components/SEOHead';
 
 export default function CustomerReports() {
-  const { account } = useAccount();
+  const { account, loading: accountLoading } = useAccount();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalCustomers: 0,
@@ -27,10 +27,12 @@ export default function CustomerReports() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (account && !accountLoading) {
       loadReports();
+    } else if (!accountLoading && !account) {
+      setLoading(false);
     }
-  }, [account]);
+  }, [account, accountLoading]);
 
   const loadReports = async () => {
     if (!account) return;

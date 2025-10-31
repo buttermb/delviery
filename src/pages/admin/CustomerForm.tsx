@@ -14,10 +14,11 @@ import { SEOHead } from '@/components/SEOHead';
 export default function CustomerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { account } = useAccount();
+  const { account, loading: accountLoading } = useAccount();
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -32,15 +33,16 @@ export default function CustomerForm() {
   });
 
   useEffect(() => {
-    if (isEdit && id) {
+    if (isEdit && id && !accountLoading) {
       loadCustomer();
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, accountLoading]);
 
   const loadCustomer = async () => {
     if (!id) return;
 
     try {
+      setPageLoading(true);
       const { data, error } = await supabase
         .from('customers')
         .select('*')
@@ -66,6 +68,8 @@ export default function CustomerForm() {
     } catch (error: any) {
       console.error('Error loading customer:', error);
       toast.error('Failed to load customer data');
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -125,6 +129,14 @@ export default function CustomerForm() {
       setLoading(false);
     }
   };
+
+  if (accountLoading || pageLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">

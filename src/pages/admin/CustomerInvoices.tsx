@@ -34,11 +34,13 @@ export default function CustomerInvoices() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (account && !accountLoading) {
       loadInvoices();
       loadCustomers();
+    } else if (!accountLoading && !account) {
+      setLoading(false);
     }
-  }, [account]);
+  }, [account, accountLoading]);
 
   const loadInvoices = async () => {
     if (!account) return;
