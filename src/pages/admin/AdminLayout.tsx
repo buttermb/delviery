@@ -21,8 +21,9 @@ import {
 } from "@/components/ui/tooltip";
 
 /**
- * Admin Layout Component - v2.1
+ * Admin Layout Component - v2.1.1
  * Provides the main layout structure for all admin pages
+ * Updated: 2025-10-31
  */
 const AdminLayout = () => {
   const location = useLocation();
