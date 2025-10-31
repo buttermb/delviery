@@ -70,7 +70,15 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           refetch();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to delivery updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Channel error - failed to subscribe to delivery updates');
+        } else if (status === 'TIMED_OUT') {
+          console.error('Subscription timed out - retrying delivery updates');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
