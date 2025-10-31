@@ -10,6 +10,7 @@ import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigatio
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
+import { toast } from "@/hooks/use-toast";
 
 export default function FleetManagement() {
   const navigate = useNavigate();
@@ -81,6 +82,13 @@ export default function FleetManagement() {
     return colors[status] || "bg-muted-foreground";
   };
 
+  const handleApplyRoute = () => {
+    toast({
+      title: "Success",
+      description: "Route applied successfully! Runner has been notified.",
+    });
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -112,6 +120,7 @@ export default function FleetManagement() {
           totalDistance="24.5 mi"
           totalTime="1h 45m"
           fuelSavings="$12.50"
+          onApplyRoute={handleApplyRoute}
         />
       )}
 
