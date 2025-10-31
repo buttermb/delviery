@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -21,6 +22,8 @@ import { TerritoryMapView } from "@/components/admin/TerritoryMapView";
 import { SmartAlertsDashboard } from "@/components/admin/SmartAlertsDashboard";
 
 export default function WholesaleDashboard() {
+  const navigate = useNavigate();
+  
   // Fetch today's metrics
   const { data: metrics } = useQuery({
     queryKey: ["wholesale-metrics"],
@@ -217,7 +220,7 @@ export default function WholesaleDashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono font-bold text-destructive">${Number(client.outstanding_balance).toLocaleString()}</span>
-                <Button size="sm" variant="destructive">COLLECT NOW</Button>
+                <Button size="sm" variant="destructive" onClick={() => navigate('/admin/financial-center')}>COLLECT NOW</Button>
               </div>
             </div>
           ))}
@@ -230,7 +233,7 @@ export default function WholesaleDashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono text-yellow-600">{Number(item.quantity_lbs).toFixed(1)} lbs left</span>
-                <Button size="sm" variant="outline">Restock</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate('/admin/wholesale-inventory')}>Restock</Button>
               </div>
             </div>
           ))}
@@ -241,7 +244,7 @@ export default function WholesaleDashboard() {
                 <Badge variant="outline" className="border-emerald-500 text-emerald-600">🟢 ACTIVE</Badge>
                 <span className="text-foreground">{alerts.activeDeliveries.length} deliveries in progress</span>
               </div>
-              <Button size="sm" variant="outline">Track Live</Button>
+              <Button size="sm" variant="outline" onClick={() => navigate('/admin/fleet-management')}>Track Live</Button>
             </div>
           )}
         </div>
@@ -264,7 +267,7 @@ export default function WholesaleDashboard() {
               <span className="font-mono font-semibold text-foreground">{operations?.pendingOrders || 0}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/fleet-management'}>View Tracking</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => navigate('/admin/fleet-management')}>View Tracking</Button>
         </Card>
 
         <Card className="p-6">
@@ -282,7 +285,7 @@ export default function WholesaleDashboard() {
               <span className="font-mono font-semibold text-destructive">${operations?.overdueAmount.toLocaleString() || '0'}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/financial-center'}>Collections</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => navigate('/admin/financial-center')}>Collections</Button>
         </Card>
 
         <Card className="p-6">
@@ -293,14 +296,14 @@ export default function WholesaleDashboard() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total Stock:</span>
-              <span className="font-mono font-semibold text-foreground">{inventory?.totalLbs.toFixed(0) || '0'} lbs</span>
+              <span className="font-mono font-semibold text-foreground">{inventory?.totalLbs.toFixed(0) || '0'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Value:</span>
               <span className="font-mono font-semibold text-foreground">${inventory?.totalValue.toLocaleString() || '0'}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/wholesale-inventory'}>Manage Stock</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => navigate('/admin/wholesale-inventory')}>Manage Stock</Button>
         </Card>
 
         <Card className="p-6">
@@ -309,9 +312,9 @@ export default function WholesaleDashboard() {
             <h3 className="font-semibold text-foreground">💼 Quick Actions</h3>
           </div>
           <div className="space-y-2">
-            <Button className="w-full" size="sm" variant="default" onClick={() => window.location.href = '/admin/wholesale-clients/new-order'}>📦 New Order</Button>
-            <Button className="w-full" size="sm" variant="outline" onClick={() => window.location.href = '/admin/financial-center'}>💼 View Clients</Button>
-            <Button className="w-full" size="sm" variant="outline" onClick={() => window.location.href = '/admin/fleet-management'}>🚗 Assign Runner</Button>
+            <Button className="w-full" size="sm" variant="default" onClick={() => navigate('/admin/wholesale-clients/new-order')}>📦 New Order</Button>
+            <Button className="w-full" size="sm" variant="outline" onClick={() => navigate('/admin/financial-center')}>💼 View Clients</Button>
+            <Button className="w-full" size="sm" variant="outline" onClick={() => navigate('/admin/fleet-management')}>🚗 Assign Runner</Button>
           </div>
         </Card>
       </div>
