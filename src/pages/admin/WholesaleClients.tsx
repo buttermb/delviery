@@ -33,35 +33,31 @@ export default function WholesaleClients() {
   const { data: clients, isLoading } = useQuery({
     queryKey: ["wholesale-clients", filter],
     queryFn: async () => {
-      // Mock data until types refresh
-      return [
-        {
-          id: "1",
-          business_name: "Big Mike's Operation",
-          contact_name: "Mike Johnson",
-          phone: "555-1234",
-          client_type: "sub_dealer",
-          territory: "Brooklyn East",
-          outstanding_balance: 38000,
-          reliability_score: 68,
-          monthly_volume_lbs: 45,
-          total_spent: 135000,
-          status: "active"
-        },
-        {
-          id: "2",
-          business_name: "Eastside Collective",
-          contact_name: "Sarah Chen",
-          phone: "555-5678",
-          client_type: "small_shop",
-          territory: "Manhattan",
-          outstanding_balance: 0,
-          reliability_score: 98,
-          monthly_volume_lbs: 62,
-          total_spent: 186000,
-          status: "active"
-        }
-      ];
+      let query = supabase
+        .from("wholesale_clients")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      // Apply filters
+      if (filter === "active") {
+        query = query.eq("status", "active");
+      } else if (filter === "credit_approved") {
+        query = query.gt("credit_limit", 0);
+      } else if (filter === "overdue") {
+        query = query.gt("outstanding_balance", 10000);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) throw error;
+
+      // Map to expected format
+      return (data || []).map(client => ({
+        ...client,
+        territory: client.address.split(',')[1]?.trim() || 'Unknown',
+        monthly_volume_lbs: client.monthly_volume,
+        total_spent: Number(client.outstanding_balance) + 100000 // Estimate
+      }));
     }
   });
 

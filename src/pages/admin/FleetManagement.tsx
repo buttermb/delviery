@@ -10,27 +10,25 @@ export default function FleetManagement() {
   const { data: activeDeliveries } = useQuery({
     queryKey: ["active-deliveries"],
     queryFn: async () => {
-      // Mock data until types refresh
-      return [
-        {
-          id: "1",
-          status: "in_transit",
-          delivery_address: "123 Manhattan Ave, Manhattan",
-          eta_minutes: 15,
-          collection_amount: 22000,
-          notes_for_runner: "MUST collect $38k before dropping off new product",
-          runners: {
-            full_name: "Marcus Williams",
-            phone: "555-7777",
-            vehicle_type: "car",
-            rating: 4.9
-          },
-          orders: {
-            order_number: "WHL-1463",
-            total_amount: 60000
-          }
-        }
-      ];
+      const { data, error } = await supabase
+        .from("wholesale_deliveries")
+        .select(`
+          *,
+          runners:wholesale_runners(full_name, phone, vehicle_type, rating),
+          orders:wholesale_orders(order_number, total_amount, delivery_address, delivery_notes)
+        `)
+        .in("status", ["assigned", "picked_up", "in_transit"])
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((delivery: any) => ({
+        ...delivery,
+        delivery_address: delivery.orders?.delivery_address || 'Unknown',
+        eta_minutes: 15, // TODO: Calculate from location
+        collection_amount: 0,
+        notes_for_runner: delivery.orders?.delivery_notes || delivery.notes
+      }));
     },
     refetchInterval: 30000
   });
@@ -39,29 +37,17 @@ export default function FleetManagement() {
   const { data: runners } = useQuery({
     queryKey: ["runners"],
     queryFn: async () => {
-      // Mock data until types refresh
-      return [
-        {
-          id: "1",
-          full_name: "Marcus Williams",
-          phone: "555-7777",
-          vehicle_type: "car",
-          status: "active",
-          rating: 4.9,
-          total_deliveries: 87,
-          success_rate: 98.5
-        },
-        {
-          id: "2",
-          full_name: "DeShawn Carter",
-          phone: "555-8888",
-          vehicle_type: "suv",
-          status: "available",
-          rating: 4.7,
-          total_deliveries: 72,
-          success_rate: 94.2
-        }
-      ];
+      const { data, error } = await supabase
+        .from("wholesale_runners")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(runner => ({
+        ...runner,
+        success_rate: 95.0 // TODO: Calculate from completed deliveries
+      }));
     }
   });
 

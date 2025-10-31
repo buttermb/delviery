@@ -21,7 +21,7 @@ export default function WholesaleDashboard() {
       const today = new Date().toISOString().split('T')[0];
       
       const { data: orders } = await supabase
-        .from("orders")
+        .from("wholesale_orders")
         .select("total_amount, created_at")
         .gte("created_at", today);
 
@@ -45,25 +45,37 @@ export default function WholesaleDashboard() {
   const { data: alerts } = useQuery({
     queryKey: ["wholesale-alerts"],
     queryFn: async () => {
-      // Mock data for now - will be real once types refresh
-      const overdueClients = [
-        { business_name: "Big Mike's Operation", outstanding_balance: 38000 },
-        { business_name: "South Bronx Connect", outstanding_balance: 12000 }
-      ];
+      // Fetch overdue clients (balance > $10k)
+      const { data: overdueClients } = await supabase
+        .from("wholesale_clients")
+        .select("business_name, outstanding_balance")
+        .gt("outstanding_balance", 10000)
+        .eq("status", "active")
+        .order("outstanding_balance", { ascending: false })
+        .limit(5);
 
-      const lowStock = [
-        { quantity_lbs: 11, products: { name: "Sundae Driver" }, warehouses: { name: "Warehouse A" } }
-      ];
+      // Fetch low stock items
+      const { data: lowStock } = await supabase
+        .from("wholesale_inventory")
+        .select("product_name, quantity_lbs, warehouse_location, reorder_point")
+        .lt("quantity_lbs", 50)
+        .order("quantity_lbs", { ascending: true })
+        .limit(3);
 
-      const activeDeliveries = [
-        { id: "1", status: "in_transit" },
-        { id: "2", status: "picked_up" }
-      ];
+      // Fetch active deliveries
+      const { data: activeDeliveries } = await supabase
+        .from("wholesale_deliveries")
+        .select("id, status")
+        .in("status", ["assigned", "picked_up", "in_transit"]);
 
       return {
-        overdueClients,
-        lowStock,
-        activeDeliveries
+        overdueClients: overdueClients || [],
+        lowStock: (lowStock || []).map(item => ({
+          quantity_lbs: item.quantity_lbs,
+          products: { name: item.product_name },
+          warehouses: { name: item.warehouse_location }
+        })),
+        activeDeliveries: activeDeliveries || []
       };
     },
     refetchInterval: 30000
@@ -73,16 +85,29 @@ export default function WholesaleDashboard() {
   const { data: operations } = useQuery({
     queryKey: ["active-operations"],
     queryFn: async () => {
-      const { data: orders } = await supabase
-        .from("orders")
-        .select("id, status")
+      const { data: pendingOrders } = await supabase
+        .from("wholesale_orders")
+        .select("id")
         .eq("status", "pending");
 
+      const { data: activeDeliveries } = await supabase
+        .from("wholesale_deliveries")
+        .select("id")
+        .in("status", ["assigned", "picked_up", "in_transit"]);
+
+      const { data: clients } = await supabase
+        .from("wholesale_clients")
+        .select("outstanding_balance");
+
+      const totalOutstanding = clients?.reduce((sum, c) => sum + Number(c.outstanding_balance), 0) || 0;
+      const overdueAmount = clients?.filter(c => Number(c.outstanding_balance) > 10000)
+        .reduce((sum, c) => sum + Number(c.outstanding_balance), 0) || 0;
+
       return {
-        activeDeliveries: 4,
-        pendingOrders: orders?.length || 0,
-        totalOutstanding: 245000,
-        overdueAmount: 58000
+        activeDeliveries: activeDeliveries?.length || 0,
+        pendingOrders: pendingOrders?.length || 0,
+        totalOutstanding,
+        overdueAmount
       };
     }
   });
@@ -91,9 +116,16 @@ export default function WholesaleDashboard() {
   const { data: inventory } = useQuery({
     queryKey: ["total-inventory"],
     queryFn: async () => {
+      const { data: inventoryItems } = await supabase
+        .from("wholesale_inventory")
+        .select("quantity_lbs");
+
+      const totalLbs = inventoryItems?.reduce((sum, item) => sum + Number(item.quantity_lbs), 0) || 0;
+      const totalValue = totalLbs * 3000; // Estimate $3000/lb average
+
       return { 
-        totalLbs: 284, 
-        totalValue: 852000 
+        totalLbs, 
+        totalValue 
       };
     }
   });
