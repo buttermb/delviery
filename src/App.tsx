@@ -106,6 +106,7 @@ const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const WholesaleInventory = lazy(() => import("./pages/admin/WholesaleInventory"));
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenter"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
+const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const RecordFrontedSale = lazy(() => import("./pages/admin/RecordFrontedSale"));
 const RecordFrontedPayment = lazy(() => import("./pages/admin/RecordFrontedPayment"));
@@ -261,6 +262,7 @@ const App = () => {
                           <Route path="wholesale-dashboard" element={<AdminErrorBoundary><WholesaleDashboard /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients/:id" element={<AdminErrorBoundary><ClientDetail /></AdminErrorBoundary>} />
+                          <Route path="wholesale-clients/new-order" element={<AdminErrorBoundary><NewWholesaleOrder /></AdminErrorBoundary>} />
                           <Route path="wholesale-inventory" element={<AdminErrorBoundary><WholesaleInventory /></AdminErrorBoundary>} />
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
