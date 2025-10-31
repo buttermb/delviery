@@ -65,6 +65,9 @@ export const AdminNotificationCenter = () => {
         }
       })
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to admin notifications');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to admin notifications:', status);
         }

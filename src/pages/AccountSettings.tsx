@@ -91,6 +91,9 @@ export default function AccountSettings() {
         }
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to account settings');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to account settings updates:', status);
         }

@@ -49,6 +49,9 @@ export default function FrontedInventoryDetails() {
         () => loadFrontDetails()
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to fronted inventory updates');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to fronted inventory updates:', status);
         }

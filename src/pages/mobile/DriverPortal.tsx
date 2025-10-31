@@ -47,6 +47,9 @@ export default function DriverPortal() {
         () => loadDriverData()
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to driver fronts');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to driver fronts updates:', status);
         }

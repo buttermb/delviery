@@ -104,6 +104,9 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
         }
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to chat messages');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to chat messages:', status);
         }

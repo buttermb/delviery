@@ -66,6 +66,9 @@ export default function UserAccount() {
         }
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to user account updates');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to user account updates:', status);
         }

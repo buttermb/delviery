@@ -34,6 +34,9 @@ export default function PurchaseGiveawayEntries() {
         }
       )
       .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to giveaway entries');
+        }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           console.error('Failed to subscribe to giveaway entries:', status);
         }
