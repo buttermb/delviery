@@ -1,170 +1,225 @@
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Bell, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Bell, Mail, MessageSquare, Save, Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
-interface NotificationSettingsProps {
-  settings: any;
-  onChange: (settings: any) => void;
+interface NotificationTemplate {
+  event: string;
+  enabled: boolean;
+  subject?: string;
+  message: string;
 }
 
-export const NotificationSettings = ({ settings, onChange }: NotificationSettingsProps) => {
-  const [config, setConfig] = useState(settings || {
-    email_enabled: true,
-    email_addresses: [],
-    sms_enabled: false,
-    sms_numbers: [],
-    webhook_enabled: false,
-    webhook_url: '',
-    events: {
-      access_attempt: true,
-      screenshot_detected: true,
-      geofence_violation: true,
-      suspicious_activity: true,
-      order_placed: true,
-      view_limit_reached: true
+export const NotificationSettings = () => {
+  const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<NotificationTemplate[]>([
+    {
+      event: 'order_placed',
+      enabled: true,
+      subject: 'Order Confirmation',
+      message: 'Thank you for your order! Your order #{{order_id}} has been received and is being processed.'
+    },
+    {
+      event: 'order_processing',
+      enabled: true,
+      subject: 'Order Processing',
+      message: 'Your order #{{order_id}} is now being prepared.'
+    },
+    {
+      event: 'order_completed',
+      enabled: true,
+      subject: 'Order Ready',
+      message: 'Your order #{{order_id}} is ready! Total: ${{total_amount}}'
+    },
+    {
+      event: 'order_cancelled',
+      enabled: true,
+      subject: 'Order Cancelled',
+      message: 'Your order #{{order_id}} has been cancelled.'
     }
+  ]);
+
+  const [notificationChannels, setNotificationChannels] = useState({
+    email: true,
+    sms: false,
+    push: false
   });
 
-  const updateConfig = (updates: any) => {
-    const newConfig = { ...config, ...updates };
-    setConfig(newConfig);
-    onChange(newConfig);
+  useEffect(() => {
+    const saved = localStorage.getItem('notification_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setTemplates(parsed.templates || templates);
+      setNotificationChannels(parsed.channels || notificationChannels);
+    }
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      localStorage.setItem('notification_settings', JSON.stringify({
+        templates,
+        channels: notificationChannels
+      }));
+
+      toast({
+        title: 'Settings Saved',
+        description: 'Notification settings have been updated successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Save Failed',
+        description: error.message,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateTemplate = (index: number, field: keyof NotificationTemplate, value: any) => {
+    const updated = [...templates];
+    updated[index] = { ...updated[index], [field]: value };
+    setTemplates(updated);
   };
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Mail className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Email Notifications</h3>
-        </div>
-        
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notification Channels
+          </CardTitle>
+          <CardDescription>
+            Choose how to notify customers about their orders
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="email-enabled">Enable Email Alerts</Label>
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label>Email Notifications</Label>
+                <p className="text-sm text-muted-foreground">Send order updates via email</p>
+              </div>
+            </div>
             <Switch
-              id="email-enabled"
-              checked={config.email_enabled}
-              onCheckedChange={(checked) => updateConfig({ email_enabled: checked })}
+              checked={notificationChannels.email}
+              onCheckedChange={(checked) => 
+                setNotificationChannels({ ...notificationChannels, email: checked })
+              }
             />
           </div>
-          
-          {config.email_enabled && (
-            <div>
-              <Label>Email Addresses</Label>
-              <Input
-                placeholder="admin@example.com, security@example.com"
-                value={config.email_addresses.join(', ')}
-                onChange={(e) => {
-                  const emails = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                  updateConfig({ email_addresses: emails });
-                }}
-                className="mt-2"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Separate multiple emails with commas
-              </p>
-            </div>
-          )}
-        </div>
-      </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">SMS Notifications</h3>
-        </div>
-        
-        <div className="space-y-4">
+          <Separator />
+
           <div className="flex items-center justify-between">
-            <Label htmlFor="sms-enabled">Enable SMS Alerts</Label>
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label>SMS Notifications</Label>
+                <p className="text-sm text-muted-foreground">Send order updates via SMS</p>
+              </div>
+            </div>
             <Switch
-              id="sms-enabled"
-              checked={config.sms_enabled}
-              onCheckedChange={(checked) => updateConfig({ sms_enabled: checked })}
+              checked={notificationChannels.sms}
+              onCheckedChange={(checked) => 
+                setNotificationChannels({ ...notificationChannels, sms: checked })
+              }
             />
           </div>
-          
-          {config.sms_enabled && (
-            <div>
-              <Label>Phone Numbers</Label>
-              <Input
-                placeholder="+1234567890, +0987654321"
-                value={config.sms_numbers.join(', ')}
-                onChange={(e) => {
-                  const numbers = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                  updateConfig({ sms_numbers: numbers });
-                }}
-                className="mt-2"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Include country code, separate with commas
-              </p>
-            </div>
-          )}
-        </div>
-      </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Bell className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Webhook Integration</h3>
-        </div>
-        
-        <div className="space-y-4">
+          <Separator />
+
           <div className="flex items-center justify-between">
-            <Label htmlFor="webhook-enabled">Enable Webhook</Label>
+            <div className="flex items-center gap-3">
+              <Bell className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label>Push Notifications</Label>
+                <p className="text-sm text-muted-foreground">Send browser push notifications</p>
+              </div>
+            </div>
             <Switch
-              id="webhook-enabled"
-              checked={config.webhook_enabled}
-              onCheckedChange={(checked) => updateConfig({ webhook_enabled: checked })}
+              checked={notificationChannels.push}
+              onCheckedChange={(checked) => 
+                setNotificationChannels({ ...notificationChannels, push: checked })
+              }
             />
           </div>
-          
-          {config.webhook_enabled && (
-            <div>
-              <Label>Webhook URL</Label>
-              <Input
-                placeholder="https://your-server.com/webhook"
-                value={config.webhook_url}
-                onChange={(e) => updateConfig({ webhook_url: e.target.value })}
-                className="mt-2"
-              />
-            </div>
-          )}
-        </div>
+        </CardContent>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <AlertTriangle className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Event Selection</h3>
-        </div>
-        
-        <div className="space-y-3">
-          {Object.entries(config.events).map(([event, enabled]) => (
-            <div key={event} className="flex items-center justify-between">
-              <Label htmlFor={event} className="text-sm capitalize">
-                {event.replace(/_/g, ' ')}
-              </Label>
-              <Switch
-                id={event}
-                checked={enabled as boolean}
-                onCheckedChange={(checked) => {
-                  updateConfig({
-                    events: { ...config.events, [event]: checked }
-                  });
-                }}
-              />
+      <Card>
+        <CardHeader>
+          <CardTitle>Notification Templates</CardTitle>
+          <CardDescription>
+            Customize messages for different order events. Use variables like {'{{order_id}}'}, {'{{total_amount}}'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {templates.map((template, index) => (
+            <div key={template.event} className="space-y-3 p-4 border rounded-lg">
+              <div className="flex items-center justify-between">
+                <Label className="text-base capitalize">
+                  {template.event.replace('_', ' ')}
+                </Label>
+                <Switch
+                  checked={template.enabled}
+                  onCheckedChange={(checked) => updateTemplate(index, 'enabled', checked)}
+                />
+              </div>
+
+              {template.enabled && (
+                <>
+                  {template.subject && (
+                    <div className="space-y-2">
+                      <Label className="text-sm">Subject</Label>
+                      <Input
+                        value={template.subject}
+                        onChange={(e) => updateTemplate(index, 'subject', e.target.value)}
+                        placeholder="Email subject"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Message</Label>
+                    <Textarea
+                      value={template.message}
+                      onChange={(e) => updateTemplate(index, 'message', e.target.value)}
+                      placeholder="Notification message"
+                      rows={3}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           ))}
-        </div>
+        </CardContent>
       </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving} size="lg">
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Save Settings
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 };

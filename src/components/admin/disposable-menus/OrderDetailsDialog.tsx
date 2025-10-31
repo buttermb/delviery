@@ -30,6 +30,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
+import { useSendNotification } from '@/hooks/useNotifications';
 
 interface OrderDetailsDialogProps {
   order: any;
@@ -47,6 +48,7 @@ export const OrderDetailsDialog = ({
   const [updating, setUpdating] = useState(false);
   const [newStatus, setNewStatus] = useState(order.status);
   const [notes, setNotes] = useState('');
+  const sendNotification = useSendNotification();
 
   const handleUpdateStatus = async () => {
     setUpdating(true);
@@ -60,6 +62,21 @@ export const OrderDetailsDialog = ({
         .eq('id', order.id);
 
       if (error) throw error;
+
+      // Send notification if status changed
+      if (newStatus !== order.status) {
+        const eventMap: any = {
+          'pending': 'order_placed',
+          'processing': 'order_processing',
+          'completed': 'order_completed',
+          'cancelled': 'order_cancelled'
+        };
+
+        const event = eventMap[newStatus];
+        if (event) {
+          sendNotification.mutate({ orderId: order.id, event });
+        }
+      }
 
       toast({
         title: 'Order Updated',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activity, Settings } from 'lucide-react';
+import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activity, Settings, Bell, MessageSquare } from 'lucide-react';
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
@@ -9,6 +9,8 @@ import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeBu
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
 import { SecurityMonitoringPanel } from '@/components/admin/disposable-menus/SecurityMonitoringPanel';
 import { AutomatedSecuritySettings } from '@/components/admin/disposable-menus/AutomatedSecuritySettings';
+import { NotificationSettings } from '@/components/admin/disposable-menus/NotificationSettings';
+import { CustomerMessaging } from '@/components/admin/disposable-menus/CustomerMessaging';
 import { BulkActionsDialog } from '@/components/admin/disposable-menus/BulkActionsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -143,7 +145,7 @@ const DisposableMenus = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="menus" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="security">
             Security
@@ -157,9 +159,17 @@ const DisposableMenus = () => {
             <Activity className="h-4 w-4 mr-2" />
             Live Monitor
           </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="h-4 w-4 mr-2" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="messaging">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Messaging
+          </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="h-4 w-4 mr-2" />
-            Security Settings
+            Settings
           </TabsTrigger>
         </TabsList>
 
@@ -238,6 +248,14 @@ const DisposableMenus = () => {
 
         <TabsContent value="monitoring" className="mt-6">
           <SecurityMonitoringPanel />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="mt-6">
+          <NotificationSettings />
+        </TabsContent>
+
+        <TabsContent value="messaging" className="mt-6">
+          <CustomerMessaging />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">
