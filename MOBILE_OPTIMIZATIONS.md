@@ -99,7 +99,7 @@ haptics.error();
 ```tsx
 <NativeShare
   title="Check out this product"
-  text="Amazing flower from NYM NYC"
+  text="Amazing flower from Premium Delivery"
   url={window.location.href}
 />
 ```

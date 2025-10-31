@@ -42,8 +42,8 @@ This project is now configured with Capacitor for native iOS and Android deploym
    npx cap init
    ```
    The config is already set with:
-   - App ID: `com.newyorkminute.nyc`
-   - App Name: `New York Minute NYC`
+   - App ID: `com.delivery.app`
+   - App Name: `Premium Delivery`
 
 3. **Add iOS and/or Android platforms**
    ```bash

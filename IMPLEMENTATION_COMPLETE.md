@@ -225,5 +225,5 @@ The premium homepage redesign is **100% COMPLETE** and ready for production.
 
 ---
 
-**This is premium. This is sophisticated. This is Bud Dash NYC.** 🌿✨
+**This is premium. This is sophisticated.** 🌿✨
 

@@ -1,4 +1,4 @@
-# 🚀 User Management Improvements - Bud Dash NYC
+# 🚀 User Management Improvements
 
 ## ✅ Features Added
 

@@ -1,4 +1,4 @@
-# 🎯 Complete Referral System - Bud Dash NYC
+# 🎯 Complete Referral System
 
 ## ✅ Database Migration Created
 **File:** `supabase/migrations/20251028000000_create_referral_system.sql`

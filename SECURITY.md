@@ -1,7 +1,6 @@
 # Security & Anonymization Documentation
 
-**New York Minute NYC E-Commerce Platform**  
-Built by WebFlow Studios Team (2024)
+**E-Commerce Delivery Platform**
 
 ## Identity Protection Measures
 
