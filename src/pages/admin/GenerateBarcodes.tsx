@@ -96,20 +96,8 @@ export default function GenerateBarcodes() {
   });
 
   // Fetch batches
-  const { data: batches } = useQuery({
-    queryKey: ['batches-for-barcode', account?.id],
-    queryFn: async () => {
-      if (!account?.id) return [];
-      const { data } = await supabase
-        .from('inventory_batches')
-        .select('id, batch_number, product_id, products(name), remaining_quantity_lbs')
-        .eq('account_id', account.id)
-        .gt('remaining_quantity_lbs', 0)
-        .order('created_at', { ascending: false });
-      return data || [];
-    },
-    enabled: !!account?.id && !accountLoading && mode === 'package',
-  });
+  // Temporarily disabled - inventory_batches table not yet created
+  const batches: any[] = [];
 
   // Generate barcodes based on mode
   const handleGenerate = async () => {

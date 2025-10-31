@@ -4,7 +4,7 @@
  */
 
 import JsBarcode from 'jsbarcode';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 // Barcode types
 export type BarcodeType = 'CODE128' | 'EAN13' | 'EAN8' | 'CODE39';

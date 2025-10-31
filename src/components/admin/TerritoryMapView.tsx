@@ -54,7 +54,6 @@ export function TerritoryMapView() {
 
     // Add markers for each client with coordinates
     clients.forEach((client) => {
-      // @ts-expect-error - coordinates may be added dynamically at runtime
       const coords = client.coordinates as { lat: number; lng: number } | undefined;
       if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
 

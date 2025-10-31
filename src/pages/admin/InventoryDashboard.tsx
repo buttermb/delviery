@@ -58,37 +58,23 @@ export default function InventoryDashboard() {
     queryFn: async () => {
       if (!account?.id) return null;
 
-      // Get packages by status
-      const { data: packages } = await supabase
-        .from('inventory_packages')
-        .select('quantity_lbs, status, product_id, products(wholesale_price)')
-        .eq('account_id', account.id);
+      // Temporarily disabled - inventory_packages table not yet created
+      const packages: any[] = [];
+      const totalQuantity = 0;
+      const inStock = 0;
+      const inTransit = 0;
+      const atRisk = 0;
+      const totalValue = 0;
 
-      const totalQuantity = packages?.reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
-      const inStock = packages?.filter(p => p.status === 'available').reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
-      const inTransit = packages?.filter(p => p.status === 'in_transit').reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
-      const atRisk = packages?.filter(p => ['damaged', 'expired'].includes(p.status || '')).reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
-      
-      const totalValue = packages?.reduce((sum, p) => {
-        const price = (p.products as any)?.wholesale_price || 0;
-        return sum + ((p.quantity_lbs || 0) * price);
-      }, 0) || 0;
-
-      // Get counts
+      // Get location count
       const { count: locationCount } = await supabase
         .from('inventory_locations')
         .select('*', { count: 'exact', head: true })
         .eq('account_id', account.id);
 
-      const { count: packageCount } = await supabase
-        .from('inventory_packages')
-        .select('*', { count: 'exact', head: true })
-        .eq('account_id', account.id);
-
-      const { count: batchCount } = await supabase
-        .from('inventory_batches')
-        .select('*', { count: 'exact', head: true })
-        .eq('account_id', account.id);
+      // Temporarily disabled - table not yet created
+      const packageCount = 0;
+      const batchCount = 0;
 
       return {
         total_quantity_lbs: totalQuantity,
@@ -104,79 +90,12 @@ export default function InventoryDashboard() {
     enabled: !!account?.id && !accountLoading,
   });
 
-  // Fetch locations with inventory
-  const { data: locations, isLoading: locationsLoading } = useQuery<LocationInventory[]>({
-    queryKey: ['location-inventory', account?.id],
-    queryFn: async () => {
-      if (!account?.id) return [];
+  // Temporarily disabled - inventory_packages table not yet created
+  const locations: LocationInventory[] = [];
+  const locationsLoading = false;
 
-      const { data: locations } = await supabase
-        .from('inventory_locations')
-        .select('id, location_name, location_type, capacity_lbs, current_stock_lbs')
-        .eq('account_id', account.id)
-        .eq('status', 'active');
-
-      if (!locations) return [];
-
-      // Get package and batch counts per location
-      const locationsWithCounts = await Promise.all(
-        locations.map(async (loc) => {
-          const { count: packageCount } = await supabase
-            .from('inventory_packages')
-            .select('*', { count: 'exact', head: true })
-            .eq('current_location_id', loc.id);
-
-          const { data: packages } = await supabase
-            .from('inventory_packages')
-            .select('quantity_lbs, product_id, products(wholesale_price)')
-            .eq('current_location_id', loc.id);
-
-          const totalValue = packages?.reduce((sum, p) => {
-            const price = (p.products as any)?.wholesale_price || 0;
-            return sum + ((p.quantity_lbs || 0) * price);
-          }, 0) || 0;
-
-          const { count: batchCount } = await supabase
-            .from('inventory_packages')
-            .select('batch_id', { count: 'exact', head: true })
-            .eq('current_location_id', loc.id);
-
-          return {
-            ...loc,
-            package_count: packageCount || 0,
-            batch_count: batchCount || 0,
-            total_value: totalValue,
-          };
-        })
-      );
-
-      return locationsWithCounts;
-    },
-    enabled: !!account?.id && !accountLoading,
-  });
-
-  // Get active transfers
-  const { data: activeTransfers } = useQuery({
-    queryKey: ['active-transfers', account?.id],
-    queryFn: async () => {
-      if (!account?.id) return [];
-
-      const { data } = await supabase
-        .from('inventory_transfers_enhanced')
-        .select(`
-          *,
-          from_location:inventory_locations!inventory_transfers_enhanced_from_location_id_fkey(location_name),
-          to_location:inventory_locations!inventory_transfers_enhanced_to_location_id_fkey(location_name)
-        `)
-        .eq('account_id', account.id)
-        .in('status', ['pending', 'approved', 'in_progress', 'in_transit'])
-        .order('scheduled_at', { ascending: false })
-        .limit(5);
-
-      return data || [];
-    },
-    enabled: !!account?.id && !accountLoading,
-  });
+  // Temporarily disabled - inventory_transfers_enhanced view not yet created
+  const activeTransfers: any[] = [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

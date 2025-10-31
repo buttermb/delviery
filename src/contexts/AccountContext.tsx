@@ -72,14 +72,17 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
       if (profileError) throw profileError;
 
       if (profile && (profile as any).account_id) {
-        // Get user role from user_roles table (secure)
+        // Get role from profile table (with fallback to user_roles)
+        const profileRole = (profile as any).role;
+        
+        // Fallback to user_roles table if role not in profile
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role, account_id')
           .eq('user_id', userId)
-          .single() as any;
+          .maybeSingle() as any;
 
-        const role = roleData?.role || 'customer';
+        const role = profileRole || roleData?.role || 'customer';
         const accountId = (profile as any).account_id || roleData?.account_id;
 
         setUserProfile({
