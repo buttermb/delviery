@@ -58,7 +58,19 @@ export const useSecurityAlerts = () => {
           table: 'menu_security_events'
         },
         async (payload) => {
+          // Validate payload
+          if (!payload.new || typeof payload.new !== 'object') {
+            console.error('Invalid realtime payload received');
+            return;
+          }
+
           const newEvent = payload.new as any;
+          
+          // Validate required fields
+          if (!newEvent.id || !newEvent.menu_id || !newEvent.event_type) {
+            console.error('Missing required fields in security event');
+            return;
+          }
           
           // Fetch menu name
           const { data: menu } = await supabase
@@ -71,7 +83,7 @@ export const useSecurityAlerts = () => {
             id: newEvent.id,
             menu_id: newEvent.menu_id,
             event_type: newEvent.event_type,
-            severity: newEvent.severity,
+            severity: newEvent.severity || 'low',
             description: `${newEvent.event_type.replace(/_/g, ' ')} detected`,
             metadata: newEvent.event_data || {},
             created_at: newEvent.created_at,
@@ -101,7 +113,13 @@ export const useSecurityAlerts = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Failed to subscribe to security alerts channel');
+        } else if (status === 'TIMED_OUT') {
+          console.error('Security alerts subscription timed out');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
