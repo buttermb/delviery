@@ -6570,6 +6570,7 @@ export type Database = {
         Returns: undefined
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_user: { Args: never; Returns: boolean }
       is_age_verified: { Args: { _user_id: string }; Returns: boolean }
       is_device_blocked: { Args: { _fingerprint: string }; Returns: boolean }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }

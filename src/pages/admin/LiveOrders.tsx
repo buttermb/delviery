@@ -22,7 +22,7 @@ export default function LiveOrders() {
   useEffect(() => {
     loadLiveOrders();
     
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates with proper validation
     const channel = supabase
       .channel('live-orders')
       .on(
@@ -33,9 +33,13 @@ export default function LiveOrders() {
           table: 'orders'
         },
         (payload) => {
-          // Validate payload before processing
-          if (payload && payload.new) {
+          // Validate payload structure before processing
+          if (payload?.new) {
             console.log('[APP] Order update received:', payload);
+            loadLiveOrders();
+          } else if (payload?.old) {
+            // Handle DELETE events
+            console.log('[APP] Order deleted:', payload);
             loadLiveOrders();
           }
         }

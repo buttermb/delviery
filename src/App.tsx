@@ -74,7 +74,7 @@ const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
 const AdminQuickExport = lazy(() => import("./pages/admin/AdminQuickExport"));
 const AdminAgeVerification = lazy(() => import("./pages/admin/AdminAgeVerification"));
-const BugScanner = lazy(() => import("./components/admin/BugScanner"));
+const BugScanner = lazy(() => import("./pages/admin/BugScanner"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));

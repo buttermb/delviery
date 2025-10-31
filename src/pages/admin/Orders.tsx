@@ -47,11 +47,16 @@ export default function Orders() {
 
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading orders:', error);
+        toast.error(`Failed to load orders: ${error.message}`);
+        return;
+      }
+      
       setOrders(data || []);
     } catch (error: any) {
-      console.error('Error loading orders:', error);
-      toast.error('Failed to load orders');
+      console.error('Unexpected error loading orders:', error);
+      toast.error('Failed to load orders. Please check your connection.');
     } finally {
       setLoading(false);
     }

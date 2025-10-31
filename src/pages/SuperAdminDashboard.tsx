@@ -60,7 +60,11 @@ export default function SuperAdminDashboard() {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (accountsError) throw accountsError;
+      if (accountsError) {
+        console.error('Error loading accounts:', accountsError);
+        toast.error(`Failed to load dashboard data: ${accountsError.message}`);
+        return;
+      }
 
       if (accountsData) {
         setAccounts(accountsData);
