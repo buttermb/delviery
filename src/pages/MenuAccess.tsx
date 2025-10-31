@@ -5,12 +5,16 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Lock, Eye, ShoppingCart, AlertTriangle, MapPin, Clock } from 'lucide-react';
+import { Shield, Lock, Eye, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useScreenshotProtection } from '@/hooks/useScreenshotProtection';
 import { useGeofencing } from '@/hooks/useGeofencing';
 import { toast } from 'sonner';
 import { initHoneypotSystem } from '@/utils/honeypotDetection';
+import { MenuProductGrid } from '@/components/customer/MenuProductGrid';
+import { MenuCart, CartItem } from '@/components/customer/MenuCart';
+import { MenuOrderForm, OrderData } from '@/components/customer/MenuOrderForm';
+import { ViewLimitExceeded } from '@/components/customer/ViewLimitExceeded';
 
 const MenuAccess = () => {
   const { token } = useParams();
@@ -25,6 +29,10 @@ const MenuAccess = () => {
   const [error, setError] = useState('');
   const [viewCount, setViewCount] = useState(0);
   const [honeypotSystem, setHoneypotSystem] = useState<any>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [viewLimitExceeded, setViewLimitExceeded] = useState(false);
 
   // Enable screenshot protection if menu is loaded
   useScreenshotProtection({
@@ -145,6 +153,12 @@ const MenuAccess = () => {
         setMenu(data.menu);
         setAccessGranted(true);
         setViewCount(data.remaining_views || 0);
+        
+        // Check if view limit exceeded
+        if (data.remaining_views <= 0) {
+          setViewLimitExceeded(true);
+        }
+        
         toast.success('Access granted!');
       } else {
         setError(data.violations?.join(', ') || 'Access denied');
@@ -165,6 +179,91 @@ const MenuAccess = () => {
       new Date().getTimezoneOffset(),
     ];
     return btoa(components.join('|'));
+  };
+
+  const handleAddToCart = (productId: string, quantity: number) => {
+    const product = menu.products.find((p: any) => p.id === productId);
+    if (!product) return;
+
+    const existingItem = cart.find(item => item.product_id === productId);
+    
+    if (existingItem) {
+      setCart(cart.map(item =>
+        item.product_id === productId
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      ));
+    } else {
+      setCart([...cart, {
+        product_id: productId,
+        name: product.name,
+        price: product.price,
+        quantity,
+        min_quantity: product.min_quantity || 1,
+        max_quantity: product.stock || 999
+      }]);
+    }
+
+    toast.success('Added to cart!');
+  };
+
+  const handleUpdateCartQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveFromCart(productId);
+      return;
+    }
+    
+    setCart(cart.map(item =>
+      item.product_id === productId
+        ? { ...item, quantity }
+        : item
+    ));
+  };
+
+  const handleRemoveFromCart = (productId: string) => {
+    setCart(cart.filter(item => item.product_id !== productId));
+    toast.success('Removed from cart');
+  };
+
+  const handleCheckout = () => {
+    setShowOrderForm(true);
+  };
+
+  const handleSubmitOrder = async (orderData: OrderData) => {
+    setIsSubmittingOrder(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('menu-order-place', {
+        body: {
+          menu_id: menu.id,
+          access_token: uniqueToken,
+          order_items: cart.map(item => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price_per_unit: item.price
+          })),
+          ...orderData
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Order placed successfully!', {
+        description: `Order #${data.order_id} is being reviewed`
+      });
+
+      // Clear cart and reset
+      setCart([]);
+      setShowOrderForm(false);
+      
+      // Optionally redirect or show confirmation
+    } catch (err: any) {
+      toast.error('Failed to place order', {
+        description: err.message
+      });
+    } finally {
+      setIsSubmittingOrder(false);
+    }
   };
 
   if (!accessGranted) {
@@ -250,25 +349,46 @@ const MenuAccess = () => {
     );
   }
 
+  // View limit exceeded
+  if (viewLimitExceeded) {
+    return (
+      <ViewLimitExceeded
+        viewLimit={menu?.view_limit || 5}
+        menuName={menu?.name}
+        contactInfo={menu?.contact_info}
+      />
+    );
+  }
+
+  // Order form view
+  if (showOrderForm) {
+    return (
+      <MenuOrderForm
+        items={cart}
+        onBack={() => setShowOrderForm(false)}
+        onSubmit={handleSubmitOrder}
+        isSubmitting={isSubmittingOrder}
+      />
+    );
+  }
+
   // Menu view after access granted
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">{menu.custom_message || 'Wholesale Catalog'}</h1>
-              {menu.show_availability && (
-                <p className="text-sm text-muted-foreground">
-                  Available: {menu.allowed_hours?.start}:00 - {menu.allowed_hours?.end}:00
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                Min order: {menu.min_order_quantity || 5} lbs
+              </p>
             </div>
             {viewCount > 0 && (
-              <Badge variant="outline">
+              <Badge variant={viewCount <= 2 ? 'destructive' : 'outline'}>
                 <Eye className="h-3 w-3 mr-1" />
-                {viewCount} views remaining
+                {viewCount} views left
               </Badge>
             )}
           </div>
@@ -277,47 +397,24 @@ const MenuAccess = () => {
 
       {/* Products */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menu.products?.map((product: any) => (
-            <Card key={product.id} className="p-6">
-              {menu.show_product_images && product.image_url && (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-              )}
-              <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-              <p className="text-2xl font-bold text-primary mb-2">
-                ${product.price}/lb
-              </p>
-              {menu.show_availability && (
-                <Badge variant={product.available ? 'default' : 'secondary'}>
-                  {product.available ? `${product.stock} lbs available` : 'Out of stock'}
-                </Badge>
-              )}
-              <p className="text-sm text-muted-foreground mt-2">
-                Min order: {product.min_quantity} lbs
-              </p>
-              <Button className="w-full mt-4" disabled={!product.available}>
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Order
-              </Button>
-            </Card>
-          ))}
-        </div>
+        <MenuProductGrid
+          products={menu.products || []}
+          showImages={menu.show_product_images}
+          showAvailability={menu.show_availability}
+          onAddToCart={handleAddToCart}
+          minOrderQty={menu.min_order_quantity}
+        />
       </div>
 
-      {/* Footer */}
-      {menu.show_contact_info && (
-        <div className="border-t bg-muted/30 py-8">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Need help? Contact us at contact@example.com
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Cart */}
+      <MenuCart
+        items={cart}
+        minOrderTotal={menu.min_order_quantity || 0}
+        maxOrderTotal={menu.max_order_quantity || 999999}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveFromCart}
+        onCheckout={handleCheckout}
+      />
     </div>
   );
 };
