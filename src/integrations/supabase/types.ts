@@ -5606,6 +5606,7 @@ export type Database = {
           created_at: string
           current_lat: number | null
           current_lng: number | null
+          current_location: Json | null
           full_name: string
           id: string
           phone: string
@@ -5620,6 +5621,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          current_location?: Json | null
           full_name: string
           id?: string
           phone: string
@@ -5634,6 +5636,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          current_location?: Json | null
           full_name?: string
           id?: string
           phone?: string
