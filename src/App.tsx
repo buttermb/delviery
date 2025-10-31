@@ -124,6 +124,7 @@ const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventor
 const RecordFrontedReturn = lazy(() => import("./pages/admin/RecordFrontedReturn"));
 const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
@@ -293,6 +294,7 @@ const App = () => {
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
+                          <Route path="inventory" element={<AdminErrorBoundary><InventoryDashboard /></AdminErrorBoundary>} />
                           <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted" element={<AdminErrorBoundary><FrontedInventory /></AdminErrorBoundary>} />
                           <Route path="inventory/dispatch" element={<AdminErrorBoundary><DispatchInventory /></AdminErrorBoundary>} />

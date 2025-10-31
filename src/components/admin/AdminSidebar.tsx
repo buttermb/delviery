@@ -73,6 +73,7 @@ const menuGroups = [
   {
     title: "Inventory & Products",
     items: [
+      { title: "Inventory Overview", url: "/admin/inventory", icon: Package },
       { title: "Products", url: "/admin/inventory/products", icon: Package },
       { title: "Fronted Inventory", url: "/admin/inventory/fronted", icon: Package },
       { title: "Dispatch", url: "/admin/inventory/dispatch", icon: Package },
