@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Truck, Clock, CheckCircle, Package } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { subscribeWithErrorTracking } from '@/utils/realtimeHelper';
 
 interface LiveOrder {
   id: string;
@@ -22,7 +23,7 @@ export default function LiveOrders() {
   useEffect(() => {
     loadLiveOrders();
     
-    // Subscribe to real-time updates with proper validation
+    // Subscribe to real-time updates with proper validation and error tracking
     const channel = supabase
       .channel('live-orders')
       .on(
@@ -34,28 +35,32 @@ export default function LiveOrders() {
         },
         (payload) => {
           // Validate payload structure before processing
-          if (payload?.new) {
-            console.log('[APP] Order update received:', payload);
-            loadLiveOrders();
-          } else if (payload?.old) {
-            // Handle DELETE events
-            console.log('[APP] Order deleted:', payload);
-            loadLiveOrders();
+          if (payload && typeof payload === 'object') {
+            if (payload.new) {
+              console.log('[APP] Order update received:', payload);
+              loadLiveOrders();
+            } else if (payload.old) {
+              // Handle DELETE events
+              console.log('[APP] Order deleted:', payload);
+              loadLiveOrders();
+            }
           }
         }
-      )
-      .subscribe((status) => {
-        // Handle subscription status
+      );
+
+    // Use error tracking helper for subscription
+    subscribeWithErrorTracking(channel, {
+      channelName: 'live-orders',
+      onSubscribe: (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('[APP] Subscribed to live orders');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('[APP] Channel error in live orders subscription');
-          toast.error('Connection error. Retrying...');
-        } else if (status === 'TIMED_OUT') {
-          console.error('[APP] Channel timed out');
-          toast.error('Connection timed out. Please refresh.');
         }
-      });
+      },
+      onError: (error) => {
+        console.error('[APP] Realtime error:', error);
+        toast.error('Connection issue. Please refresh if orders stop updating.');
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);
