@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign } from "lucide-react";
+import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 
 export default function FleetManagement() {
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState("");
+  const [selectedOrderNumber, setSelectedOrderNumber] = useState("");
+  const [selectedDeliveryStatus, setSelectedDeliveryStatus] = useState("");
+
   // Fetch active deliveries
   const { data: activeDeliveries } = useQuery({
     queryKey: ["active-deliveries"],
@@ -149,9 +156,17 @@ export default function FleetManagement() {
                       <Phone className="h-4 w-4 mr-1" />
                       Call
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Message
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedDeliveryId(delivery.id);
+                        setSelectedOrderNumber(delivery.orders?.order_number || "");
+                        setSelectedDeliveryStatus(delivery.status);
+                        setStatusDialogOpen(true);
+                      }}
+                    >
+                      Update Status
                     </Button>
                     <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
                       <MapPin className="h-4 w-4 mr-1" />
@@ -237,6 +252,14 @@ export default function FleetManagement() {
           ))}
         </div>
       </div>
+
+      <DeliveryStatusDialog
+        deliveryId={selectedDeliveryId}
+        currentStatus={selectedDeliveryStatus}
+        orderNumber={selectedOrderNumber}
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+      />
     </div>
   );
 }
