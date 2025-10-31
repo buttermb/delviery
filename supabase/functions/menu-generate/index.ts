@@ -64,7 +64,7 @@ serve(async (req) => {
         name,
         product_id,
         access_code: accessCode,
-        expires_at: expiresAt.toISOString(),
+        expiration_date: expiresAt.toISOString(),
         max_uses: max_uses || null,
         status: 'active',
         created_by: user.id

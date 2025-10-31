@@ -111,7 +111,7 @@ serve(async (req) => {
           name: menu.name + ' (Regenerated)',
           product_id: menu.product_id,
           access_code: newAccessCode,
-          expires_at: newExpiresAt.toISOString(),
+          expiration_date: newExpiresAt.toISOString(),
           max_uses: menu.max_uses,
           status: 'active',
           created_by: user.id
