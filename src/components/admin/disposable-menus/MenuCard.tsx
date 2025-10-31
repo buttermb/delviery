@@ -280,7 +280,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         open={accessDetailsOpen}
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
-        shareableUrl={`${window.location.origin}/menu/${menu.encrypted_url_token}`}
+        shareableUrl={`${window.location.origin}/m/${menu.encrypted_url_token}`}
         menuName={menu.name}
       />
     </>
