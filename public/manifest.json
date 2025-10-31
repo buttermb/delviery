@@ -1,0 +1,65 @@
+{
+  "name": "Premium Delivery Platform - Fast & Reliable Service",
+  "short_name": "Delivery App",
+  "description": "Premium delivery service. Order quality products from licensed vendors with fast, discreet delivery.",
+  "version": "3.0.0",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1419",
+  "theme_color": "#2dd4bf",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle", "food"],
+  "shortcuts": [
+    {
+      "name": "Browse Products",
+      "short_name": "Shop",
+      "description": "Browse our product catalog",
+      "url": "/#products",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "description": "Track your delivery",
+      "url": "/track-order",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "View order history",
+      "url": "/my-orders",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Giveaway",
+      "short_name": "Win",
+      "description": "Enter giveaway",
+      "url": "/giveaway/nyc-biggest-flower",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}

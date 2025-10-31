@@ -1,0 +1,16 @@
+project_id = "aejugtmhwwknrowfyzie"
+
+[functions.menu-access-validate]
+verify_jwt = false
+
+[functions.menu-generate]
+verify_jwt = true
+
+[functions.menu-burn]
+verify_jwt = true
+
+[functions.menu-whitelist-manage]
+verify_jwt = true
+
+[functions.generate-product-images]
+verify_jwt = true
