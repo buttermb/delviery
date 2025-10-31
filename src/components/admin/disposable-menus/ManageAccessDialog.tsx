@@ -217,7 +217,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
               ) : (
                 pendingCustomers.map(customer => (
                   <div key={customer.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between mb-3">
                       <div>
                         <div className="font-semibold">{customer.customer_name}</div>
                         <div className="text-sm text-muted-foreground">
@@ -230,6 +230,32 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                       <Badge variant="outline" className="bg-yellow-500/10">
                         Pending
                       </Badge>
+                    </div>
+                    
+                    <div className="bg-muted p-2 rounded text-xs mb-3">
+                      <code className="break-all">
+                        /m/{menu.encrypted_url_token}?u={customer.unique_access_token}
+                      </code>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => copyAccessUrl(customer.unique_access_token)}
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copy Invite URL
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => handleRevoke(customer.id)}
+                        disabled={manageWhitelist.isPending}
+                      >
+                        <Ban className="h-3 w-3 mr-1" />
+                        Cancel Invite
+                      </Button>
                     </div>
                   </div>
                 ))

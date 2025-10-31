@@ -78,12 +78,20 @@ export const useBurnMenu = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      showSuccessToast(
-        'Menu Burned',
-        data.regenerated_menu_id 
-          ? 'Menu burned and regenerated successfully' 
-          : 'Menu burned successfully'
-      );
+      
+      if (data.regenerated_menu_id && data.customers_to_notify?.length > 0) {
+        showSuccessToast(
+          'Menu Burned & Regenerated',
+          `New menu created with ${data.customers_to_notify.length} customers migrated. Copy new links from Manage Access.`
+        );
+      } else if (data.regenerated_menu_id) {
+        showSuccessToast(
+          'Menu Burned & Regenerated',
+          'New menu created successfully. Add customers from Manage Access.'
+        );
+      } else {
+        showSuccessToast('Menu Burned', 'Menu burned and all access revoked');
+      }
     },
     onError: (error: any) => {
       console.error('Burn error:', error);
