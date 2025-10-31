@@ -24,7 +24,8 @@ import {
   ShoppingCart,
   UserCircle,
   PieChart,
-  Lock
+  Lock,
+  DollarSign
 } from "lucide-react";
 import {
   Sidebar,
