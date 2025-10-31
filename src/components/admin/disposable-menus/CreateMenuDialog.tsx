@@ -259,18 +259,38 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const productsWithoutImages = inventory
-                        .filter(p => !((p as any).image_url || (p as any).images?.[0]))
-                        .map(p => ({
-                          id: p.id,
-                          name: p.product_name,
-                          category: (p as any).category || 'flower',
-                          strain_type: (p as any).strain_type
-                        }));
-                      
-                      if (productsWithoutImages.length > 0) {
-                        bulkGenerateImages.mutate(productsWithoutImages);
+                    onClick={async () => {
+                      try {
+                        console.log('Generate images button clicked');
+                        const productsWithoutImages = inventory
+                          .filter(p => !((p as any).image_url || (p as any).images?.[0]))
+                          .map(p => {
+                            const category = (p as any).category?.toLowerCase() || 'flower';
+                            console.log('Product to generate:', { 
+                              name: p.product_name, 
+                              category,
+                              hasCategory: !!(p as any).category 
+                            });
+                            return {
+                              id: p.id,
+                              name: p.product_name,
+                              category: category,
+                              strain_type: (p as any).strain_type
+                            };
+                          });
+                        
+                        console.log(`Found ${productsWithoutImages.length} products without images`);
+                        
+                        if (productsWithoutImages.length === 0) {
+                          toast.error('No products need images');
+                          return;
+                        }
+                        
+                        toast.info(`Generating images for ${productsWithoutImages.length} product(s)...`);
+                        await bulkGenerateImages.mutateAsync(productsWithoutImages);
+                      } catch (error) {
+                        console.error('Button click error:', error);
+                        toast.error('Failed to start image generation');
                       }
                     }}
                     disabled={bulkGenerateImages.isPending}

@@ -82,12 +82,15 @@ export const useBulkGenerateImages = () => {
       category: string; 
       strain_type?: string; 
     }>) => {
+      console.log('useBulkGenerateImages called with:', products.length, 'products');
       const results = [];
       
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
         
         try {
+          console.log(`Generating image ${i + 1}/${products.length} for:`, product.name);
+          
           // Call edge function to generate image
           const { data, error } = await supabase.functions.invoke('generate-product-images', {
             body: { 
@@ -96,6 +99,8 @@ export const useBulkGenerateImages = () => {
               strainType: product.strain_type 
             }
           });
+
+          console.log('Edge function response:', { data, error });
 
           if (error) throw error;
           if (!data?.imageUrl) throw new Error('No image URL returned');
@@ -112,6 +117,8 @@ export const useBulkGenerateImages = () => {
 
           // Upload to storage
           const fileName = `${product.id}-${Date.now()}.png`;
+          console.log('Uploading to storage:', fileName);
+          
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('product-images')
             .upload(fileName, blob, {
@@ -119,12 +126,17 @@ export const useBulkGenerateImages = () => {
               upsert: true
             });
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+          }
 
           // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('product-images')
             .getPublicUrl(fileName);
+
+          console.log('Public URL:', publicUrl);
 
           // Update product with image URL
           const { error: updateError } = await supabase
@@ -132,8 +144,12 @@ export const useBulkGenerateImages = () => {
             .update({ image_url: publicUrl })
             .eq('id', product.id);
 
-          if (updateError) throw updateError;
+          if (updateError) {
+            console.error('Database update error:', updateError);
+            throw updateError;
+          }
 
+          console.log(`Successfully generated image for ${product.name}`);
           results.push({ productId: product.id, success: true, url: publicUrl });
           
           // Add delay between requests to avoid rate limits
@@ -146,6 +162,7 @@ export const useBulkGenerateImages = () => {
         }
       }
 
+      console.log('Bulk generation complete. Results:', results);
       return results;
     },
     onSuccess: (results) => {
