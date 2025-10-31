@@ -61,8 +61,8 @@ const MenuAccess = () => {
   }, [honeypotSystem]);
 
   const handleValidate = async () => {
-    if (!accessCode || accessCode.length < 4) {
-      setError('Please enter a valid access code');
+    if (!accessCode || accessCode.length < 4 || accessCode.length > 6) {
+      setError('Please enter a 4-6 digit access code');
       return;
     }
 
@@ -126,11 +126,11 @@ const MenuAccess = () => {
               <Input
                 id="accessCode"
                 type="text"
-                placeholder="Enter 4-6 digit code"
+                placeholder="Enter your access code"
                 value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value)}
+                onChange={(e) => setAccessCode(e.target.value.replace(/[^0-9]/g, ''))}
                 maxLength={6}
-                className="text-center text-2xl tracking-widest"
+                className="text-center text-2xl tracking-widest font-mono"
                 onKeyDown={(e) => e.key === 'Enter' && handleValidate()}
               />
             </div>
