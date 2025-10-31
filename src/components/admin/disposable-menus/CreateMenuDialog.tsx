@@ -8,7 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
-import { Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette, CheckCircle2 } from 'lucide-react';
+import { useBulkGenerateImages } from '@/hooks/useProductImages';
+import { Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette, CheckCircle2, Sparkles } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
@@ -89,6 +90,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
   const { data: inventory } = useWholesaleInventory();
   const createMenu = useCreateDisposableMenu();
+  const bulkGenerateImages = useBulkGenerateImages();
 
   const progress = (currentStep / STEPS.length) * 100;
 
@@ -251,7 +253,42 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           {/* Step 2: Products */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Products</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Select Products</h3>
+                {inventory && inventory.filter(p => !((p as any).image_url || (p as any).images?.[0])).length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const productsWithoutImages = inventory
+                        .filter(p => !((p as any).image_url || (p as any).images?.[0]))
+                        .map(p => ({
+                          id: p.id,
+                          name: p.product_name,
+                          category: (p as any).category || 'flower',
+                          strain_type: (p as any).strain_type
+                        }));
+                      
+                      if (productsWithoutImages.length > 0) {
+                        bulkGenerateImages.mutate(productsWithoutImages);
+                      }
+                    }}
+                    disabled={bulkGenerateImages.isPending}
+                  >
+                    {bulkGenerateImages.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Missing Images
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
               <div className="space-y-4">
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
                   {inventory?.map(product => {
