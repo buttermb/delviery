@@ -611,6 +611,7 @@ export default function GenerateBarcodes() {
                           />
                           {barcode.qrData && (
                             <div className="pt-2 border-t">
+                              <p className="text-xs text-muted-foreground mb-1">Package QR Code</p>
                               <QRCodeSVG 
                                 value={JSON.stringify(barcode.qrData)}
                                 size={100}
@@ -619,17 +620,6 @@ export default function GenerateBarcodes() {
                             </div>
                           )}
                         </>
-                      )}
-                      
-                      {barcode.qrData && barcode.type !== 'QR' && (
-                        <div className="pt-2 border-t">
-                          <p className="text-xs text-muted-foreground mb-1">Package QR Code</p>
-                          <QRCodeSVG 
-                            value={JSON.stringify(barcode.qrData)}
-                            size={100}
-                            level="M"
-                          />
-                        </div>
                       )}
                       
                       <p className="text-xs font-mono text-muted-foreground break-all">
