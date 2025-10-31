@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2 } from 'lucide-react';
+import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
@@ -64,6 +64,36 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
               {statusLabels[menu.status as keyof typeof statusLabels]}
             </Badge>
           </div>
+
+          {/* Security Features */}
+          {(menu.screenshot_protection || menu.geofence_enabled || menu.device_lock_enabled || menu.max_views_per_period) && (
+            <div className="flex flex-wrap gap-2">
+              {menu.screenshot_protection && (
+                <Badge variant="outline" className="text-xs">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Screenshot Protection
+                </Badge>
+              )}
+              {menu.geofence_enabled && (
+                <Badge variant="outline" className="text-xs">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  Geofencing
+                </Badge>
+              )}
+              {menu.device_lock_enabled && (
+                <Badge variant="outline" className="text-xs">
+                  <Lock className="h-3 w-3 mr-1" />
+                  Device Lock
+                </Badge>
+              )}
+              {menu.max_views_per_period && (
+                <Badge variant="outline" className="text-xs">
+                  <Clock className="h-3 w-3 mr-1" />
+                  View Limit: {menu.max_views_per_period}
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3">
