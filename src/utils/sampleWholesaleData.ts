@@ -159,7 +159,7 @@ export async function createSampleWholesaleData() {
         phone: "555-6789",
         vehicle_type: "car",
         vehicle_plate: "NYK-7890",
-        status: "busy",
+        status: "on_delivery",
         rating: 4.6,
         total_deliveries: 65,
         current_location: { lat: 40.8448, lng: -73.8648 }
