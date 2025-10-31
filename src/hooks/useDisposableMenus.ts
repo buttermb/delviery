@@ -16,7 +16,7 @@ export const useDisposableMenus = () => {
           ),
           menu_access_whitelist(count),
           menu_access_logs(count),
-          menu_orders(count, total_amount)
+          menu_orders(*)
         `)
         .order('created_at', { ascending: false });
 

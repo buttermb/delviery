@@ -20,7 +20,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
 
   const viewCount = menu.menu_access_logs?.[0]?.count || 0;
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
-  const orderCount = menu.menu_orders?.[0]?.count || 0;
+  const orderCount = menu.menu_orders?.length || 0;
   
   const totalRevenue = menu.menu_orders?.reduce((sum: number, order: any) => {
     return sum + parseFloat(order.total_amount || 0);
