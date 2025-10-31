@@ -55,6 +55,12 @@ serve(async (req) => {
       .eq('encrypted_url_token', encrypted_url_token)
       .maybeSingle();
 
+    console.log('Query result:', JSON.stringify({ 
+      hasMenu: !!menu, 
+      menuProductsCount: menu?.disposable_menu_products?.length || 0,
+      firstProduct: menu?.disposable_menu_products?.[0] 
+    }));
+
     if (menuError) {
       console.error('Menu lookup error:', menuError);
       return new Response(
