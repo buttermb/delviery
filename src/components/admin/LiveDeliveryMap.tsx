@@ -22,9 +22,9 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
   const [mapLoaded, setMapLoaded] = useState(false);
   const { data: deliveries = [], refetch } = useWholesaleDeliveries();
 
-  // Filter deliveries based on props
+  // Filter deliveries based on props - include all active statuses
   const activeDeliveries = deliveries.filter(d => 
-    d.status === 'in_transit' && (showAll || d.id === deliveryId)
+    ['in_transit', 'picked_up', 'assigned'].includes(d.status) && (showAll || d.id === deliveryId)
   );
 
   useEffect(() => {
