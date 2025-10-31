@@ -42,20 +42,28 @@ const DisposableMenus = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            Disposable Encrypted Menus
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            OPSEC-focused menu system with instant burn capability
-          </p>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Disposable Encrypted Menus</h1>
+            <p className="text-muted-foreground">
+              Create secure, self-destructing catalogs with advanced access control
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/admin/disposable-menus/help'}
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Help & Guide
+            </Button>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Menu
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} size="lg">
-          <Plus className="h-5 w-5 mr-2" />
-          Create New Menu
-        </Button>
       </div>
 
       {/* Overview Stats */}

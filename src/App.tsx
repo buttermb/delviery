@@ -122,6 +122,7 @@ const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
+const DisposableMenusHelp = lazy(() => import("./pages/admin/DisposableMenusHelp"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -276,6 +277,7 @@ const App = () => {
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
                           <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
+                          <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
                           <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
