@@ -113,8 +113,6 @@ serve(async (req) => {
           access_code: newAccessCode,
           expires_at: newExpiresAt.toISOString(),
           max_uses: menu.max_uses,
-          require_pin: menu.require_pin,
-          access_pin: menu.access_pin,
           status: 'active',
           created_by: user.id
         })
