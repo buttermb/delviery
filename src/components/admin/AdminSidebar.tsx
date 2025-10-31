@@ -98,6 +98,7 @@ const menuGroups = [
     title: "Wholesale Operations",
     items: [
       { title: "Wholesale Dashboard", url: "/admin/wholesale-dashboard", icon: LayoutDashboard },
+      { title: "Analytics", url: "/admin/analytics/comprehensive", icon: TrendingUp },
       { title: "Inventory", url: "/admin/wholesale-inventory", icon: Package },
       { title: "Financial Center", url: "/admin/financial-center", icon: Receipt },
       { title: "Fleet Management", url: "/admin/fleet-management", icon: Truck },

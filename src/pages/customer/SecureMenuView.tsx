@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
+import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
+import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
 import { toast } from 'sonner';
@@ -82,6 +84,8 @@ const SecureMenuView = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
 
+  const cleanupScreenshotProtection = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     // Check session storage for validated menu access
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
@@ -92,6 +96,25 @@ const SecureMenuView = () => {
       console.log('Products count:', parsed.products?.length || 0);
       setMenuData(parsed);
       setLoading(false);
+
+      // Enable screenshot protection if enabled in menu settings
+      if (parsed.security_settings?.screenshot_protection?.enabled) {
+        generateDeviceFingerprint().then((fingerprint) => {
+          cleanupScreenshotProtection.current = enableScreenshotProtection(
+            parsed.menu_id,
+            parsed.whitelist_id,
+            (event) => {
+              console.log('Security event detected:', event);
+            }
+          );
+        });
+      }
+
+      return () => {
+        if (cleanupScreenshotProtection.current) {
+          cleanupScreenshotProtection.current();
+        }
+      };
     } else {
       // Redirect back to access page if not validated
       navigate(`/m/${token}`);

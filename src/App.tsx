@@ -129,6 +129,7 @@ const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
+const ComprehensiveAnalytics = lazy(() => import("./pages/admin/ComprehensiveAnalytics"));
 const DisposableMenusHelp = lazy(() => import("./pages/admin/DisposableMenusHelp"));
 
 const queryClient = new QueryClient({
@@ -291,6 +292,7 @@ const App = () => {
                           <Route path="disposable-menus/orders" element={<AdminErrorBoundary><DisposableMenuOrders /></AdminErrorBoundary>} />
                           <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
                           <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
+                          <Route path="analytics/comprehensive" element={<AdminErrorBoundary><ComprehensiveAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
