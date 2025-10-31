@@ -114,10 +114,20 @@ export const useSecurityAlerts = () => {
         }
       )
       .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to security alerts channel');
+        } else if (status === 'CHANNEL_ERROR') {
           console.error('Failed to subscribe to security alerts channel');
+          toast.error('Security alerts subscription failed', {
+            description: 'Real-time security alerts may not work properly'
+          });
         } else if (status === 'TIMED_OUT') {
           console.error('Security alerts subscription timed out');
+          toast.warning('Security alerts connection timed out', {
+            description: 'Attempting to reconnect...'
+          });
+        } else if (status === 'CLOSED') {
+          console.log('Security alerts channel closed');
         }
       });
 
