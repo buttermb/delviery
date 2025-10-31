@@ -6,6 +6,7 @@ import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activi
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
+import { EnhancedMenuDashboard } from '@/components/admin/disposable-menus/EnhancedMenuDashboard';
 import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
 import { SecurityMonitoringPanel } from '@/components/admin/disposable-menus/SecurityMonitoringPanel';
