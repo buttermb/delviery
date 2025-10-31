@@ -109,6 +109,7 @@ const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
+const MenuAccess = lazy(() => import("./pages/MenuAccess"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const WholesaleSetup = lazy(() => import("./pages/admin/WholesaleSetup"));
 const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
@@ -301,6 +302,9 @@ const App = () => {
                         {/* Secure Menu Access (Public) */}
                         <Route path="/m/:token" element={<SecureMenuAccess />} />
                         <Route path="/m/:token/view" element={<SecureMenuView />} />
+                        
+                        {/* Public Disposable Menu Access */}
+                        <Route path="/menu/:token" element={<MenuAccess />} />
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>
