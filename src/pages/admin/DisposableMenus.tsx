@@ -10,7 +10,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const DisposableMenus = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { data: menus, isLoading } = useDisposableMenus();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  
+  const { data: menus, isLoading, refetch } = useDisposableMenus();
   const { data: securityEvents } = useMenuSecurityEvents();
 
   const activeMenus = menus?.filter(m => m.status === 'active') || [];

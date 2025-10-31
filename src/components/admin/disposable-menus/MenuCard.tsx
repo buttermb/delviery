@@ -1,10 +1,11 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
+import { MenuShareDialog } from './MenuShareDialog';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 
@@ -15,6 +16,7 @@ interface MenuCardProps {
 export const MenuCard = ({ menu }: MenuCardProps) => {
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const viewCount = menu.menu_access_logs?.[0]?.count || 0;
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
@@ -116,6 +118,15 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                 variant="outline" 
                 size="sm" 
                 className="flex-1"
+                onClick={() => setShareDialogOpen(true)}
+              >
+                <Share2 className="h-4 w-4 mr-1" />
+                Share
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
                 onClick={() => setManageAccessOpen(true)}
               >
                 <Settings className="h-4 w-4 mr-1" />
@@ -153,6 +164,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         menu={menu}
         open={manageAccessOpen}
         onOpenChange={setManageAccessOpen}
+      />
+
+      <MenuShareDialog
+        menu={menu}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
       />
     </>
   );
