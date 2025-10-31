@@ -47,6 +47,8 @@ export default function FrontedInventoryAnalytics() {
 
   const loadAnalytics = async () => {
     try {
+      setLoading(true);
+      
       // Get all fronted inventory
       const { data: fronts, error } = await supabase
         .from("fronted_inventory")
@@ -56,7 +58,17 @@ export default function FrontedInventoryAnalytics() {
           fronted_payments (amount)
         `);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading fronted inventory:', error);
+        toast.error(`Failed to load analytics: ${error.message}`);
+        return;
+      }
+
+      if (!fronts || fronts.length === 0) {
+        toast.error('No fronted inventory data found');
+        setLoading(false);
+        return;
+      }
 
       // Calculate stats
       const totalFronted = fronts?.reduce(

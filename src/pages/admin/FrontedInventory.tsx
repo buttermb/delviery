@@ -51,13 +51,19 @@ export default function FrontedInventory() {
 
   const loadFrontedInventory = async () => {
     try {
+      setLoading(true);
+      
       let query = supabase
         .from('fronted_inventory')
         .select(`
           *,
           product:products(name)
-        `)
-        .eq('account_id', account?.id);
+        `);
+
+      // Only filter by account_id if account exists
+      if (account?.id) {
+        query = query.eq('account_id', account.id);
+      }
 
       if (filter === 'pending') {
         query = query.eq('payment_status', 'pending');
@@ -69,13 +75,22 @@ export default function FrontedInventory() {
 
       const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading fronted inventory:', error);
+        toast({
+          title: 'Database Error',
+          description: `Failed to load fronted inventory: ${error.message}`,
+          variant: 'destructive'
+        });
+        return;
+      }
+      
       setFrontedItems(data || []);
-    } catch (error) {
-      console.error('Error loading fronted inventory:', error);
+    } catch (error: any) {
+      console.error('Unexpected error loading fronted inventory:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load fronted inventory',
+        description: 'An unexpected error occurred. Please check your connection.',
         variant: 'destructive'
       });
     } finally {
