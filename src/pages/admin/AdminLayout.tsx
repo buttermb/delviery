@@ -11,6 +11,7 @@ import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCen
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
