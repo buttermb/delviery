@@ -56,9 +56,9 @@ serve(async (req) => {
       return token;
     };
 
-    // Generate unique access code (6 digits)
+    // Generate unique access code (4 digits)
     const generateAccessCode = () => {
-      return Math.floor(100000 + Math.random() * 900000).toString();
+      return Math.floor(1000 + Math.random() * 9000).toString();
     };
 
     // Hash access code using Web Crypto API
