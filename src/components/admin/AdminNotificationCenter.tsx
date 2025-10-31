@@ -38,31 +38,40 @@ export const AdminNotificationCenter = () => {
     const channel = supabase
       .channel('admin-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
-        if (payload?.new) {
-          addNotification({
-            type: 'warning',
-            title: 'Fraud Alert',
-            message: `New fraud flag: ${payload.new.flag_type || 'Unknown'}`,
-          });
+        // Validate payload before processing
+        if (!payload || !payload.new) {
+          console.warn('Invalid fraud_flags payload');
+          return;
         }
+        addNotification({
+          type: 'warning',
+          title: 'Fraud Alert',
+          message: `New fraud flag: ${payload.new.flag_type || 'Unknown'}`,
+        });
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, (payload) => {
-        if (payload?.new) {
-          addNotification({
-            type: 'info',
-            title: 'Age Verification',
-            message: 'New age verification request pending',
-          });
+        // Validate payload before processing
+        if (!payload || !payload.new) {
+          console.warn('Invalid age_verification_requests payload');
+          return;
         }
+        addNotification({
+          type: 'info',
+          title: 'Age Verification',
+          message: 'New age verification request pending',
+        });
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, (payload) => {
-        if (payload?.new) {
-          addNotification({
-            type: 'info',
-            title: 'Courier Application',
-            message: 'New courier application received',
-          });
+        // Validate payload before processing
+        if (!payload || !payload.new) {
+          console.warn('Invalid courier_applications payload');
+          return;
         }
+        addNotification({
+          type: 'info',
+          title: 'Courier Application',
+          message: 'New courier application received',
+        });
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {

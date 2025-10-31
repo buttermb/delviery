@@ -13,7 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload
+} from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 
@@ -40,17 +49,19 @@ export default function CustomerManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
   useEffect(() => {
     if (account) {
       loadCustomers();
     }
-  }, [account]);
+  }, [account, filterType, filterStatus]);
 
   const loadCustomers = async () => {
     if (!account) return;
 
     try {
+      setLoading(true);
       let query = supabase
         .from("customers")
         .select("*")
@@ -68,6 +79,7 @@ export default function CustomerManagement() {
 
       if (error) throw error;
       setCustomers(data || []);
+      toast.success("Customers loaded");
     } catch (error: any) {
       toast.error("Failed to load customers", {
         description: error.message
@@ -75,6 +87,52 @@ export default function CustomerManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = async (customerId: string, customerName: string) => {
+    if (!confirm(`Are you sure you want to delete ${customerName}? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("customers")
+        .delete()
+        .eq("id", customerId);
+
+      if (error) throw error;
+
+      toast.success("Customer deleted successfully");
+      loadCustomers(); // Refresh the list
+    } catch (error: any) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete customer", {
+        description: error.message
+      });
+    }
+  };
+
+  const handleExport = () => {
+    const csv = [
+      ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
+      ...filteredCustomers.map(c => [
+        `${c.first_name} ${c.last_name}`,
+        c.email || '',
+        c.phone || '',
+        c.customer_type,
+        c.total_spent,
+        c.loyalty_points,
+        c.status
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    toast.success("Customer data exported");
   };
 
   const filteredCustomers = customers.filter((customer) => {
@@ -93,6 +151,18 @@ export default function CustomerManagement() {
   const medicalPatients = customers.filter(c => c.customer_type === 'medical').length;
   const totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
   const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+
+  const getCustomerStatus = (customer: Customer) => {
+    if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
+    
+    const daysSince = Math.floor(
+      (Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysSince > 60) return <Badge variant="destructive">At Risk</Badge>;
+    if (daysSince <= 7) return <Badge className="bg-green-600">Active</Badge>;
+    return <Badge variant="secondary">Regular</Badge>;
+  };
 
   if (loading) {
     return (
@@ -122,7 +192,7 @@ export default function CustomerManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
@@ -141,7 +211,9 @@ export default function CustomerManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{medicalPatients}</div>
-            <p className="text-xs text-muted-foreground">{Math.round((medicalPatients/totalCustomers)*100)}% of total</p>
+            <p className="text-xs text-muted-foreground">
+              {totalCustomers > 0 ? Math.round((medicalPatients/totalCustomers)*100) : 0}% of total
+            </p>
           </CardContent>
         </Card>
 
@@ -166,12 +238,29 @@ export default function CustomerManagement() {
             <p className="text-xs text-muted-foreground">Per customer</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {customers.filter(c => {
+                if (!c.last_purchase_at) return false;
+                const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+                return days > 60;
+              }).length}
+            </div>
+            <p className="text-xs text-muted-foreground">60+ days</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex gap-4">
+          <div className="flex gap-4 mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -202,72 +291,154 @@ export default function CustomerManagement() {
                 <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={loadCustomers}>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="w-4 h-4 mr-2" />
+              Import
+            </Button>
+            <Button variant="outline" size="sm" onClick={loadCustomers}>
+              <Filter className="w-4 h-4 mr-2" />
               Refresh
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Customer List */}
+      {/* Customer Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Customers ({filteredCustomers.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredCustomers.map((customer) => (
-              <div
-                key={customer.id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/customers/${customer.id}`)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <UserCircle className="w-7 h-7 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      {customer.first_name} {customer.last_name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <input 
+                      type="checkbox" 
+                      className="rounded"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCustomers(filteredCustomers.map(c => c.id));
+                        } else {
+                          setSelectedCustomers([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total Spent
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Points
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Last Order
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-background divide-y divide-border">
+                {filteredCustomers.map((customer) => (
+                  <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        className="rounded"
+                        checked={selectedCustomers.includes(customer.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCustomers([...selectedCustomers, customer.id]);
+                          } else {
+                            setSelectedCustomers(selectedCustomers.filter(id => id !== customer.id));
+                          }
+                        }}
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                          {customer.first_name?.[0]}{customer.last_name?.[0]}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium">
+                            {customer.first_name} {customer.last_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">{customer.email || customer.phone}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                        {customer.customer_type}
+                        {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
                       </Badge>
-                      <span className="text-sm text-muted-foreground">{customer.email || customer.phone}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="text-right">
-                    <div className="font-medium">${customer.total_spent.toFixed(2)}</div>
-                    <div className="text-muted-foreground">Total Spent</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium flex items-center gap-1">
-                      <Award className="w-4 h-4" />
-                      {customer.loyalty_points}
-                    </div>
-                    <div className="text-muted-foreground">Points</div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={
-                      customer.loyalty_tier === 'platinum' ? 'default' :
-                      customer.loyalty_tier === 'gold' ? 'default' :
-                      customer.loyalty_tier === 'silver' ? 'secondary' : 'outline'
-                    }>
-                      {customer.loyalty_tier}
-                    </Badge>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
-                      {customer.status}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold">
+                      ${customer.total_spent?.toFixed(2) || '0.00'}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className="flex items-center gap-1">
+                        <Award className="w-4 h-4 text-yellow-600" />
+                        {customer.loyalty_points || 0}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {customer.last_purchase_at 
+                        ? new Date(customer.last_purchase_at).toLocaleDateString()
+                        : 'Never'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {getCustomerStatus(customer)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/admin/customers/${customer.id}`)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/customers/${customer.id}/edit`)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/pos?customer=${customer.id}`)}>
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            New Order
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDelete(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             {filteredCustomers.length === 0 && (
               <div className="text-center py-12">
@@ -282,6 +453,20 @@ export default function CustomerManagement() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {filteredCustomers.length > 0 && (
+            <div className="px-6 py-4 border-t flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {filteredCustomers.length} of {customers.length} customers
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled>Previous</Button>
+                <Button variant="outline" size="sm" disabled>1</Button>
+                <Button variant="outline" size="sm" disabled>Next</Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

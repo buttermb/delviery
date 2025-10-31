@@ -69,7 +69,12 @@ const AdminDashboard = () => {
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-            if (isMounted && payload?.new) {
+            // Validate payload before processing
+            if (!payload || !payload.new) {
+              console.warn('Invalid payload received for orders');
+              return;
+            }
+            if (isMounted) {
               setLastUpdate(new Date());
               setRealtimeActivity(prev => [{
                 type: 'new_order',
@@ -80,7 +85,12 @@ const AdminDashboard = () => {
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
-            if (isMounted && payload?.new) {
+            // Validate payload before processing
+            if (!payload || !payload.new) {
+              console.warn('Invalid payload received for fraud_flags');
+              return;
+            }
+            if (isMounted) {
               setLastUpdate(new Date());
               setSystemAlerts(prev => [{
                 type: 'fraud_alert',
