@@ -32,7 +32,7 @@ serve(async (req) => {
           id,
           title,
           description,
-          expires_at,
+          expiration_date,
           access_code_required
         )
       `)
@@ -60,7 +60,7 @@ ${accessUrl}
 
 ${menu.access_code_required ? 'Note: You will need an access code to view this menu. Please check your messages or contact us.' : ''}
 
-This link expires on: ${new Date(menu.expires_at).toLocaleDateString()}
+This link expires on: ${new Date(menu.expiration_date).toLocaleDateString()}
 
 Best regards,
 Your Team
