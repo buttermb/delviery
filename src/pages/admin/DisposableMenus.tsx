@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Shield, AlertTriangle, Download } from 'lucide-react';
+import { Plus, Shield, AlertTriangle, Download, ShoppingBag } from 'lucide-react';
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
@@ -54,6 +54,13 @@ const DisposableMenus = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/admin/disposable-menus/orders'}
+            >
+              <ShoppingBag className="h-4 w-4 mr-2" />
+              View Orders
+            </Button>
             <PanicModeButton />
             <Button 
               variant="outline"

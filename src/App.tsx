@@ -108,6 +108,7 @@ const WholesaleInventory = lazy(() => import("./pages/admin/WholesaleInventory")
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
+const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const WholesaleSetup = lazy(() => import("./pages/admin/WholesaleSetup"));
 const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
@@ -277,6 +278,7 @@ const App = () => {
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
                           <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
+                          <Route path="disposable-menus/orders" element={<AdminErrorBoundary><DisposableMenuOrders /></AdminErrorBoundary>} />
                           <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
                           <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
