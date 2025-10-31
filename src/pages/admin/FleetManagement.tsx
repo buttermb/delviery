@@ -287,11 +287,30 @@ export default function FleetManagement() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => {
+                    if (runner.phone) {
+                      window.location.href = `tel:${runner.phone}`;
+                    }
+                  }}
+                >
                   <Phone className="h-3 w-3 mr-1" />
                   Call
                 </Button>
-                <Button size="sm" variant="default" className="flex-1">
+                <Button 
+                  size="sm" 
+                  variant="default" 
+                  className="flex-1"
+                  onClick={() => {
+                    toast({
+                      title: "Assign Delivery",
+                      description: "Select a delivery from Active Deliveries and assign to this runner.",
+                    });
+                  }}
+                >
                   Assign Delivery
                 </Button>
               </div>
