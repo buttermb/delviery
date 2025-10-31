@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 
 /**
- * Admin Layout Component - v2.0
+ * Admin Layout Component - v2.1
  * Provides the main layout structure for all admin pages
  */
 const AdminLayout = () => {
@@ -31,6 +31,9 @@ const AdminLayout = () => {
   
   // Enable keyboard shortcuts
   const { shortcutsVisible, setShortcutsVisible } = useAdminKeyboardShortcuts();
+  
+  // Force module refresh
+  const moduleVersion = "2.1.0";
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
