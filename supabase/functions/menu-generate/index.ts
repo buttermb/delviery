@@ -44,12 +44,16 @@ serve(async (req) => {
     const accessCode = generateAccessCode();
     const urlToken = generateUrlToken();
     
+    console.log('Generated access code:', accessCode);
+    
     // Hash the access code using SHA-256
     const encoder = new TextEncoder();
     const data = encoder.encode(accessCode);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const accessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    console.log('Generated hash:', accessCodeHash);
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + (expires_in_hours || 24));
@@ -61,6 +65,15 @@ serve(async (req) => {
     if (!user) {
       throw new Error('Unauthorized');
     }
+
+    console.log('Inserting menu with data:', {
+      name,
+      access_code_hash: accessCodeHash,
+      encrypted_url_token: urlToken,
+      expiration_date: expiresAt.toISOString(),
+      status: 'active',
+      created_by: user.id
+    });
 
     const { data: menu, error: menuError } = await supabase
       .from('disposable_menus')
