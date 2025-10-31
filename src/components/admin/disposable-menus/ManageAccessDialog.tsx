@@ -11,6 +11,7 @@ import { Copy, RefreshCw, Ban, Send, Loader2, Users, Eye } from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { ImportCustomersDialog } from './ImportCustomersDialog';
 import { CustomerActivityTimeline } from './CustomerActivityTimeline';
+import { SendAccessLinkDialog } from './SendAccessLinkDialog';
 
 interface ManageAccessDialogProps {
   menu: any;
@@ -24,6 +25,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   const [customerEmail, setCustomerEmail] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [sendLinkCustomer, setSendLinkCustomer] = useState<any>(null);
 
   const { data: whitelist, refetch } = useMenuWhitelist(menu.id);
   const manageWhitelist = useManageWhitelist();
@@ -225,6 +227,14 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                       <Button 
                         size="sm" 
                         variant="outline"
+                        onClick={() => setSendLinkCustomer(customer)}
+                      >
+                        <Send className="h-3 w-3 mr-1" />
+                        Send Link
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
                         onClick={() => handleRegenerateToken(customer.id)}
                         disabled={manageWhitelist.isPending}
                       >
@@ -346,6 +356,15 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
           setImportDialogOpen(false);
         }}
       />
+
+      {sendLinkCustomer && (
+        <SendAccessLinkDialog
+          open={!!sendLinkCustomer}
+          onClose={() => setSendLinkCustomer(null)}
+          whitelistEntry={sendLinkCustomer}
+          menuTitle={menu.name}
+        />
+      )}
     </>
   );
 };

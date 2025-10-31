@@ -73,6 +73,11 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
 
       if (orderError) throw orderError;
 
+      // Send order notifications
+      supabase.functions.invoke('notify-order-placed', {
+        body: { orderId: order.id },
+      }).catch(err => console.error('Notification error:', err));
+
       // Clear cart and close
       clearCart();
       onClose();
