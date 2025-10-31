@@ -7,11 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle, CheckCircle2, MapPin, Clock, Shield } from 'lucide-react';
-import { MenuProductGrid } from '@/components/menu/MenuProductGrid';
+import { EnhancedMenuProductGrid } from '@/components/menu/EnhancedMenuProductGrid';
 import { MenuHeader } from '@/components/menu/MenuHeader';
 import { CartButton } from '@/components/menu/CartButton';
 import { CartDrawer } from '@/components/menu/CartDrawer';
-import { OrderFormDialog } from '@/components/menu/OrderFormDialog';
+import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
 import type { GeofenceRule } from '@/utils/geofencing';
@@ -290,7 +290,7 @@ export default function MenuAccess() {
         </Alert>
 
         {/* Products */}
-        <MenuProductGrid 
+        <EnhancedMenuProductGrid 
           products={menu.products} 
           menuId={menu.id}
           whitelistEntryId={validation.whitelist_entry?.id}
@@ -309,8 +309,8 @@ export default function MenuAccess() {
           }}
         />
 
-        {/* Order Form Dialog */}
-        <OrderFormDialog
+        {/* Modern Checkout Flow */}
+        <ModernCheckoutFlow
           open={orderFormOpen}
           onClose={() => setOrderFormOpen(false)}
           menuId={menu.id}

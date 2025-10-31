@@ -285,8 +285,8 @@ serve(async (req) => {
           quantity_lbs: product.quantity_lbs || 0,
           category: product.category || '',
           display_order: mp.display_order,
-          image_url: null,
-          images: []
+          image_url: product.image_url || null,
+          images: product.images || []
         };
       });
 
