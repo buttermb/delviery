@@ -1,14 +1,8 @@
 {
-  "name": "New York Minute NYC - Premium Flower Delivery",
-  "short_name": "NYM NYC",
-  "description": "Premium flower delivery in NYC. Order quality products from licensed vendors with fast, discreet delivery.",
+  "name": "Premium Delivery Platform - Fast & Reliable Service",
+  "short_name": "Delivery App",
+  "description": "Premium delivery service. Order quality products from licensed vendors with fast, discreet delivery.",
   "version": "3.0.0",
-  "author": "Digital Innovations LLC",
-  "developer": {
-    "name": "WebFlow Studios Team",
-    "url": "https://webflowstudios.dev",
-    "contact": "contact@webflowstudios.dev"
-  },
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1419",

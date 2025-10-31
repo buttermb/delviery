@@ -31,7 +31,7 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
   const [postUrl, setPostUrl] = useState('');
   const [showQR, setShowQR] = useState(false);
 
-  const shareText = `🎉 Join me in Bud Dash NYC's giveaway! Win premium flower and more! ${entry.referralLink}`;
+  const shareText = `🎉 Join me in this amazing giveaway! Win premium prizes and more! ${entry.referralLink}`;
 
   const copyReferralLink = () => {
     navigator.clipboard.writeText(entry.referralLink);
@@ -50,7 +50,7 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
       try {
         await navigator.share({
           title: giveaway.title,
-          text: `🎉 Join me in winning ${giveaway.grand_prize_title}! Enter BudDash NYC's giveaway now!`,
+          text: `🎉 Join me in winning ${giveaway.grand_prize_title}! Enter this amazing giveaway now!`,
           url: entry.referralLink
         });
         toast.success('Thanks for sharing!');
@@ -231,7 +231,7 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
 
           {/* Social share buttons */}
           <div className="flex items-center justify-center gap-3 mb-3">
-            <FacebookShareButton url={entry.referralLink} hashtag="#BudDashNYC">
+            <FacebookShareButton url={entry.referralLink}>
               <FacebookIcon size={40} round />
             </FacebookShareButton>
             <TwitterShareButton url={entry.referralLink} title={shareText}>

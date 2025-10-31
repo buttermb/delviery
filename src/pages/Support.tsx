@@ -91,7 +91,7 @@ const Support = () => {
             
             {/* Email */}
             <a 
-              href="mailto:support@nym.nyc"
+              href="mailto:support@example.com"
               className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-2xl p-8 hover:border-emerald-500/30 transition-colors group"
             >
               <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 mb-4 group-hover:bg-emerald-500/20 transition-colors">
@@ -100,7 +100,7 @@ const Support = () => {
                 </svg>
               </div>
               <h3 className="text-white text-lg font-light mb-2">Email</h3>
-              <p className="text-white/60 text-sm font-light">support@nym.nyc</p>
+              <p className="text-white/60 text-sm font-light">support@example.com</p>
             </a>
             
             {/* Hours */}

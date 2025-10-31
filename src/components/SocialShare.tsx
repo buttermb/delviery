@@ -32,7 +32,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
           <DialogTitle>Share this</DialogTitle>
         </DialogHeader>
         <div className="flex gap-4 justify-center py-6">
-          <FacebookShareButton url={shareUrl} hashtag="#BudDashNYC">
+          <FacebookShareButton url={shareUrl}>
             <FacebookIcon size={48} round />
           </FacebookShareButton>
           <TwitterShareButton url={shareUrl} title={title}>

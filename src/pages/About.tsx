@@ -24,13 +24,12 @@ const About = () => {
               </div>
               
               <h1 className="text-white font-light text-6xl md:text-7xl tracking-tight mb-6">
-                About New York Minute NYC
+                About Our Service
               </h1>
               
               <p className="text-white/40 text-xl font-light leading-relaxed max-w-2xl mx-auto">
-                New York's trusted premium flower delivery service. We partner with licensed NYC cultivators
-                to bring you the finest selection of flower, pre-rolls, and edibles—delivered fast and discreetly to 
-                Manhattan, Brooklyn, and Queens.
+                Your trusted premium delivery service. We partner with licensed cultivators
+                to bring you the finest selection of products—delivered fast and discreetly.
               </p>
             </div>
             
@@ -85,8 +84,8 @@ const About = () => {
             <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-2xl p-8 mb-8">
               <h2 className="text-white text-2xl font-light mb-4">Our Mission</h2>
               <p className="text-white/60 text-sm font-light leading-relaxed">
-                We started New York Minute with a simple mission: make premium products accessible to New Yorkers who want 
-                quality, consistency, and convenience. No hassle, no compromise—just great flower delivered fast.
+                We started with a simple mission: make premium products accessible to customers who want 
+                quality, consistency, and convenience. No hassle, no compromise—just great products delivered fast.
               </p>
             </div>
 
@@ -136,8 +135,8 @@ const About = () => {
                 Our team is here to help.
               </p>
               <div className="space-y-2 text-white/60 text-sm font-light mb-6">
-                <p>Email: support@newyorkminutenyc.com</p>
-                <p>Phone: (212) 555-DASH</p>
+                <p>Email: support@example.com</p>
+                <p>Phone: (555) 123-4567</p>
                 <p>Hours: 8 AM - 10 PM, 7 Days a Week</p>
               </div>
               <div className="pt-6 border-t border-white/5 text-xs text-white/30 font-light">

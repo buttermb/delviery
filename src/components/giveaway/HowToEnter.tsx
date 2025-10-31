@@ -10,7 +10,7 @@ export default function HowToEnter({ giveaway }: HowToEnterProps) {
     {
       icon: UserPlus,
       title: 'Create Account',
-      description: 'Sign up with your email and create your Bud Dash account',
+      description: 'Sign up with your email and create your account',
       entries: giveaway.base_entries,
       gradient: 'from-blue-500 to-cyan-500',
       required: true
@@ -18,7 +18,7 @@ export default function HowToEnter({ giveaway }: HowToEnterProps) {
     {
       icon: Instagram,
       title: 'Follow & Tag',
-      description: 'Follow @buddashnyc and tag 2+ friends on Instagram',
+      description: 'Follow us on Instagram and tag 2+ friends',
       entries: 0,
       gradient: 'from-pink-500 to-purple-500',
       required: true

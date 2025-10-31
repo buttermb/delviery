@@ -375,7 +375,7 @@ export default function EntryForm({ giveaway, referralCode, onSuccess }: EntryFo
 
               <input
                 type="url"
-                placeholder="Instagram post URL (where you tagged @buddashnyc)"
+                placeholder="Instagram post URL (where you tagged us)"
                 className="w-full px-4 py-3.5 rounded-xl bg-slate-800/50 border border-slate-700 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400/20 transition-all placeholder:text-slate-500 text-white font-light"
                 value={formData.instagramTagUrl}
                 onChange={(e) => setFormData({ ...formData, instagramTagUrl: e.target.value })}
@@ -385,7 +385,7 @@ export default function EntryForm({ giveaway, referralCode, onSuccess }: EntryFo
 
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-400 font-light">
               <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" /> Follow @buddashnyc
+                <Check className="w-4 h-4 text-emerald-400" /> Follow on Instagram
               </span>
               <span className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-400" /> Tag 2+ friends

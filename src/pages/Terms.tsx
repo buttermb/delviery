@@ -107,7 +107,7 @@ const Terms = () => {
               <section className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-2xl p-8">
                 <h2 className="text-white text-2xl font-light mb-4">10. Contact Information</h2>
                 <p className="text-white/60 text-sm font-light leading-relaxed">
-                  For questions about these Terms of Service, please contact us at legal@newyorkminutenyc.com or visit our 
+                  For questions about these Terms of Service, please contact us at legal@example.com or visit our 
                   support page.
                 </p>
               </section>

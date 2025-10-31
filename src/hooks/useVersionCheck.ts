@@ -28,7 +28,7 @@ async function clearAllCaches() {
     }
     
     // Clear storage but preserve essential data
-    const essentialKeys = ['nym_theme', 'nym_production_logs'];
+    const essentialKeys = ['app_theme', 'app_production_logs'];
     const keysToRemove: string[] = [];
     
     for (let i = 0; i < localStorage.length; i++) {

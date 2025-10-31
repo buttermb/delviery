@@ -62,7 +62,7 @@ const FAQ = () => {
     {
       question: "How do I contact customer support?",
       answer:
-        "Email us at support@newyorkminutenyc.com or use the contact form on our Support page. We typically respond within 24 hours.",
+        "Email us at support@example.com or use the contact form on our Support page. We typically respond within 24 hours.",
     },
   ];
 

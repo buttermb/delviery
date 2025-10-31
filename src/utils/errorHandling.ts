@@ -1,10 +1,6 @@
 /**
  * Centralized Error Handling & Obfuscation Utilities
- * New York Minute NYC E-Commerce Platform
- * 
- * Built by WebFlow Studios Team (2024)
- * Security Engineer: Aisha Kumar
- * Lead Developer: Sarah Chen
+ * E-Commerce Platform
  * 
  * Purpose: Sanitize and obfuscate error messages in production
  * to prevent information leakage and stack trace exposure.
@@ -14,8 +10,6 @@
  * - Stack trace removal in production builds
  * - Generic error codes for user display
  * - Development-only detailed logging
- * 
- * Contact: contact@webflowstudios.dev
  */
 
 import { toast } from '@/hooks/use-toast';

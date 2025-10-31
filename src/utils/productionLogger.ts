@@ -12,7 +12,7 @@ interface LogEntry {
 }
 
 const MAX_LOGS = 100;
-const STORAGE_KEY = 'nym_production_logs';
+const STORAGE_KEY = 'app_production_logs';
 
 class ProductionLogger {
   private logs: LogEntry[] = [];
@@ -56,7 +56,7 @@ class ProductionLogger {
 
     // Keep console.error in production for critical issues
     if (typeof console !== 'undefined' && console.error) {
-      console.error('[NYM Production Error]', message, context);
+      console.error('[Production Error]', message, context);
     }
   }
 

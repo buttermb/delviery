@@ -30,8 +30,8 @@ export async function showServiceWorkerNotification(
     await registration.showNotification(title, {
       body: options.body,
       tag: options.tag || 'default',
-      icon: options.icon || '/nym-logo.svg',
-      badge: options.badge || '/nym-logo.svg',
+      icon: options.icon || '/logo.svg',
+      badge: options.badge || '/logo.svg',
       data: options.data,
       requireInteraction: options.requireInteraction || false
     } as any); // Cast to any to support vibrate at runtime
@@ -44,8 +44,8 @@ export async function showServiceWorkerNotification(
     if (Notification.permission === 'granted') {
       new Notification(title, {
         body: options.body,
-        icon: options.icon || '/nym-logo.svg',
-        badge: options.badge || '/nym-logo.svg',
+        icon: options.icon || '/logo.svg',
+        badge: options.badge || '/logo.svg',
         tag: options.tag
       });
     }

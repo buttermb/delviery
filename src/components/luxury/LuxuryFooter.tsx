@@ -13,15 +13,15 @@ export default function LuxuryFooter() {
             <div className="mb-8 md:mb-0">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">N</span>
+                  <span className="text-black font-bold text-sm">P</span>
                 </div>
                 <div className="flex flex-col -space-y-1">
-                  <span className="text-white font-light text-base tracking-wider">NYM</span>
+                  <span className="text-white font-light text-base tracking-wider">Premium</span>
                   <span className="text-white/30 text-[10px] font-light tracking-widest uppercase">Delivery</span>
                 </div>
               </div>
               <p className="text-white/40 text-sm font-light max-w-sm leading-relaxed">
-                Premium flower from licensed NYC cultivators.
+                Premium products from licensed cultivators.
                 <br />
                 Lab-tested. Fast delivery.
               </p>
@@ -86,8 +86,8 @@ export default function LuxuryFooter() {
             <div>
               <h3 className="text-white/40 text-xs font-light tracking-widest uppercase mb-6">Contact</h3>
               <ul className="space-y-4">
-                <li className="text-white/60 text-sm font-light">(212) 555-DASH</li>
-                <li className="text-white/60 text-sm font-light">support@nym.nyc</li>
+                <li className="text-white/60 text-sm font-light">(555) 123-4567</li>
+                <li className="text-white/60 text-sm font-light">support@example.com</li>
                 <li className="text-white/60 text-sm font-light">8 AM - 10 PM Daily</li>
               </ul>
             </div>
@@ -148,10 +148,10 @@ export default function LuxuryFooter() {
           {/* Bottom bar */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/30 text-xs font-light">
-              © 2025 New York Minute NYC. All rights reserved.
+              © 2025 Premium Delivery Platform. All rights reserved.
             </p>
             <p className="text-white/20 text-[10px] font-light tracking-widest uppercase">
-              Premium Flower Delivery
+              Premium Delivery Service
             </p>
           </div>
           

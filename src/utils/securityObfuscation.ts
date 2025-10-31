@@ -1,10 +1,6 @@
 /**
  * Advanced Security Obfuscation & Anti-Fingerprinting
- * New York Minute NYC E-Commerce Platform
- * 
- * Built by WebFlow Studios Team (2024)
- * Security Architect: Aisha Kumar
- * Privacy Engineer: James Martinez
+ * E-Commerce Platform
  * 
  * Purpose: Make browser fingerprinting and traffic analysis harder
  * 
@@ -13,8 +9,6 @@
  * - Decoy API calls to confuse traffic analysis
  * - Browser fingerprint resistance
  * - Developer tools detection and obfuscation
- * 
- * Contact: security@webflowstudios.dev
  */
 
 /**

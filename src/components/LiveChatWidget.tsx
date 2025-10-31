@@ -62,7 +62,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
         await supabase.from('chat_messages').insert({
           session_id: data.id,
           sender_type: 'ai',
-          message: "👋 Hi! I'm your Bud Dash assistant. How can I help you today?"
+          message: "👋 Hi! I'm your support assistant. How can I help you today?"
         });
       }
     };
@@ -186,7 +186,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5" />
           <div>
-            <h3 className="font-semibold">Bud Dash Support</h3>
+            <h3 className="font-semibold">Customer Support</h3>
             <p className="text-xs opacity-90">
               {mode === 'ai' ? '🤖 AI Assistant' : '👨‍💼 Live Support'}
             </p>

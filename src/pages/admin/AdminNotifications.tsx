@@ -76,8 +76,8 @@ const AdminNotifications = () => {
           subject: emailData.subject,
           html: emailData.html,
           text: emailData.text,
-          fromEmail: 'noreply@nymdelivery.com',
-          fromName: 'NYM Delivery',
+          fromEmail: 'noreply@example.com',
+          fromName: 'Delivery Service',
           metadata: {
             test: true,
             timestamp: new Date().toISOString()

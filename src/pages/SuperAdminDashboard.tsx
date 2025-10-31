@@ -121,7 +121,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="Super Admin Dashboard | BuddasH Platform"
+        title="Super Admin Dashboard | Platform Management"
         description="Platform administration and customer management"
       />
 

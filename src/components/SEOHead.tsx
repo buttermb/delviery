@@ -11,8 +11,8 @@ interface SEOHeadProps {
 }
 
 export const SEOHead = ({ 
-  title = 'New York Minute NYC - Premium Flower Delivery',
-  description = 'Premium flower delivery across NYC. Fast, discreet delivery to Manhattan, Brooklyn & Queens. Lab-tested products from licensed vendors.',
+  title = 'Premium Delivery Platform - Fast & Reliable Service',
+  description = 'Premium delivery service with fast, discreet delivery. Lab-tested products from licensed vendors.',
   image = 'https://lovable.dev/opengraph-image-p98pqg.png',
   type = 'website',
   structuredData,

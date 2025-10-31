@@ -8,8 +8,8 @@ export default function GiveawayHeader() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex flex-col hover:opacity-80 transition-opacity">
-            <span className="font-black text-white text-2xl tracking-tight">NYM</span>
-            <span className="text-[10px] text-primary font-semibold tracking-wider uppercase">Premium Delivery</span>
+            <span className="font-black text-white text-2xl tracking-tight">PREMIUM</span>
+            <span className="text-[10px] text-primary font-semibold tracking-wider uppercase">Delivery Service</span>
           </Link>
 
           {/* Navigation */}

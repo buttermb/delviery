@@ -43,11 +43,11 @@ export default function LuxuryNav() {
                   {/* Glowing orb effect */}
                   <div className="absolute inset-0 bg-emerald-500 rounded-full blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
                   <div className="relative w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
-                    <span className="text-black font-bold text-sm">N</span>
+                    <span className="text-black font-bold text-sm">P</span>
                   </div>
                 </div>
                 <div className="flex flex-col -space-y-1">
-                  <span className="text-white font-light text-sm tracking-wider">NYM</span>
+                  <span className="text-white font-light text-sm tracking-wider">Premium</span>
                   <span className="text-white/40 text-[10px] font-light tracking-widest uppercase">Delivery</span>
                 </div>
               </Link>

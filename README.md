@@ -1,16 +1,8 @@
-# New York Minute NYC - E-Commerce Platform
+# Premium Delivery Platform - E-Commerce Application
 
 ## Project Overview
 
-Built by **WebFlow Studios Team** (2024)  
-A full-stack progressive web application for premium flower delivery across NYC.
-
-## Team Credits
-
-- **Lead Developer:** Sarah Chen ([@sarahchen_dev](https://github.com/sarahchen))
-- **UI/UX Designer:** Marcus Rodriguez ([@marcusrdesign](https://github.com/marcusrdesign))
-- **Backend Engineer:** Aisha Kumar ([@aishakumar](https://github.com/aishakumar))
-- **DevOps Lead:** James Martinez ([@jmartinez-dev](https://github.com/jmartinez))
+A full-stack progressive web application for premium delivery services.
 
 ## Technology Stack
 
@@ -36,7 +28,7 @@ Prerequisites:
 ```sh
 # Clone the repository
 git clone <repository-url>
-cd new-york-minute-nyc
+cd premium-delivery-platform
 
 # Install dependencies
 npm install
@@ -93,10 +85,8 @@ npm run preview
 
 ## License
 
-Proprietary - All rights reserved by New York Minute NYC  
-Built by WebFlow Studios Team (2024)
+Proprietary - All rights reserved  
 
 ## Contact
 
-For technical inquiries: contact@webflowstudios.dev  
-For business inquiries: support@newyorkminutenyc.com
+For inquiries: support@example.com

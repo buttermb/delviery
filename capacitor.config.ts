@@ -1,11 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.newyorkminute.nyc',
-  appName: 'New York Minute NYC',
+  appId: 'com.premium.delivery',
+  appName: 'Premium Delivery',
   webDir: 'dist',
   server: {
-    url: 'https://newyorkminutenyc.com',
+    url: 'https://localhost',
     cleartext: true
   },
   plugins: {

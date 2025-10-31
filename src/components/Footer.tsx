@@ -70,12 +70,12 @@ const Footer = () => {
             <div className="flex items-center gap-2">
               <NYMLogo size={50} />
               <div className="flex flex-col">
-                <span className="font-black text-lg tracking-wider">NEW YORK MINUTE NYC</span>
-                <span className="text-xs text-white/50 tracking-widest">PREMIUM FLOWER DELIVERY</span>
+                <span className="font-black text-lg tracking-wider">PREMIUM DELIVERY</span>
+                <span className="text-xs text-white/50 tracking-widest">EXPRESS SERVICE</span>
               </div>
             </div>
             <p className="text-sm text-white/60">
-              Premium flower from licensed NYC cultivators. Lab-tested. Fast delivery.
+              Premium products from licensed cultivators. Lab-tested. Fast delivery.
             </p>
           </div>
 
@@ -143,8 +143,8 @@ const Footer = () => {
             </ul>
             <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
               <p className="font-semibold text-white">Contact Us</p>
-              <p className="text-xs text-white/60">📞 (212) 555-DASH</p>
-              <p className="text-xs text-white/60">📧 support@newyorkminutenyc.com</p>
+              <p className="text-xs text-white/60">📞 (555) 123-4567</p>
+              <p className="text-xs text-white/60">📧 support@example.com</p>
               <p className="text-xs text-white/60">🕐 8 AM - 10 PM Daily</p>
             </div>
           </div>
@@ -207,7 +207,7 @@ const Footer = () => {
             {/* Desktop Layout */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-2">
               <div className="flex items-center gap-4">
-                <p className="text-center md:text-left">© 2025 New York Minute NYC. All rights reserved.</p>
+                <p className="text-center md:text-left">© 2025 Premium Delivery Platform. All rights reserved.</p>
                 
                 {/* Desktop Hidden Buttons */}
                 <div className="hidden md:flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity">

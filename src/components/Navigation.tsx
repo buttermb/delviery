@@ -128,8 +128,8 @@ const Navigation = () => {
           <Link to="/" className="flex items-center gap-4 min-w-fit">
             <NYMLogo size={48} />
             <div className="flex flex-col gap-0.5">
-              <span className="font-black text-base tracking-wider">NYM</span>
-              <span className="text-[10px] text-white/50 tracking-widest uppercase">Premium Delivery</span>
+              <span className="font-black text-base tracking-wider">DELIVERY</span>
+              <span className="text-[10px] text-white/50 tracking-widest uppercase">Premium Service</span>
             </div>
           </Link>
 

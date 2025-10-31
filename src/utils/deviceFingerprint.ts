@@ -21,7 +21,7 @@ export function generateDeviceFingerprint(): DeviceInfo {
   if (ctx) {
     ctx.textBaseline = 'top';
     ctx.font = '14px Arial';
-    ctx.fillText('Bud Dash', 2, 2);
+    ctx.fillText('Delivery Service', 2, 2);
     canvasFingerprint = canvas.toDataURL().slice(-50);
   }
 

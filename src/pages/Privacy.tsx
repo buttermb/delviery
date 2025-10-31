@@ -80,10 +80,10 @@ const Privacy = () => {
               </section>
 
               <section className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-2xl p-8">
-                <h2 className="text-white text-2xl font-light mb-4">7. Your Rights</h2>
+              <h2 className="text-white text-2xl font-light mb-4">7. Your Rights</h2>
                 <p className="text-white/60 text-sm font-light leading-relaxed">
                   You have the right to access, correct, or delete your personal information. You can also opt out of 
-                  marketing communications at any time. To exercise these rights, contact us at privacy@newyorkminutenyc.com.
+                  marketing communications at any time. To exercise these rights, contact us at privacy@example.com.
                 </p>
               </section>
 
@@ -114,7 +114,7 @@ const Privacy = () => {
               <section className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-2xl p-8">
                 <h2 className="text-white text-2xl font-light mb-4">11. Contact Us</h2>
                 <p className="text-white/60 text-sm font-light leading-relaxed">
-                  For questions about this Privacy Policy, please contact us at privacy@newyorkminutenyc.com or 
+                  For questions about this Privacy Policy, please contact us at privacy@example.com or 
                   visit our support page.
                 </p>
               </section>

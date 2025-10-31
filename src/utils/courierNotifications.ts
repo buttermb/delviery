@@ -45,8 +45,8 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 export const showBrowserNotification = (title: string, options?: NotificationOptions) => {
   if (Notification.permission === 'granted') {
     new Notification(title, {
-      icon: '/nym-logo.svg',
-      badge: '/nym-logo.svg',
+      icon: '/logo.svg',
+      badge: '/logo.svg',
       ...options
     });
   }
