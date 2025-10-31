@@ -12,6 +12,10 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== EDGE FUNCTION INVOKED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Request method:', req.method);
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -31,19 +35,23 @@ serve(async (req) => {
     } = requestBody;
 
     // Validate input
-    if (!encrypted_url_token || !access_code) {
-      console.error('Missing required fields:', { 
-        has_token: !!encrypted_url_token, 
-        has_access_code: !!access_code,
-        received_body: JSON.stringify(requestBody)
-      });
+    if (!encrypted_url_token) {
+      console.error('Missing encrypted_url_token');
       return new Response(
         JSON.stringify({ 
-          error: 'Missing required fields',
-          details: {
-            encrypted_url_token: !!encrypted_url_token,
-            access_code: !!access_code
-          }
+          error: 'Missing menu token',
+          field: 'encrypted_url_token'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!access_code) {
+      console.error('Missing access_code');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing access code',
+          field: 'access_code'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

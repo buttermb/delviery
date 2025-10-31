@@ -118,11 +118,20 @@ export default function MenuAccess() {
       }
 
       // Call validation edge function
+      console.log('=== MenuAccess calling menu-access-validate ===');
+      console.log('Payload:', {
+        encrypted_url_token: token,
+        access_code: accessCode,
+        location: userLocation,
+        device_fingerprint: localStorage.getItem('device_fingerprint'),
+        user_agent: navigator.userAgent,
+      });
+
       const { data, error: validationError } = await supabase.functions.invoke('menu-access-validate', {
         body: {
           encrypted_url_token: token,
           access_code: accessCode,
-          user_location: userLocation,
+          location: userLocation,
           device_fingerprint: localStorage.getItem('device_fingerprint'),
           user_agent: navigator.userAgent,
         },

@@ -75,6 +75,17 @@ const SecureMenuAccess = () => {
       const fingerprint = generateDeviceFingerprint();
       const deviceHash = btoa(JSON.stringify(fingerprint));
 
+      console.log('=== SecureMenuAccess calling menu-access-validate ===');
+      console.log('Payload:', {
+        encrypted_url_token: token,
+        access_code: accessCode.toUpperCase(),
+        unique_access_token: uniqueToken,
+        device_fingerprint: deviceHash,
+        location,
+        ip_address: 'client',
+        user_agent: navigator.userAgent
+      });
+
       console.log('Validating access with token:', token);
       const { data, error: validateError } = await supabase.functions.invoke('menu-access-validate', {
         body: {
