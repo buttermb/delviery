@@ -23,7 +23,8 @@ import {
   Truck,
   ShoppingCart,
   UserCircle,
-  PieChart
+  PieChart,
+  Lock
 } from "lucide-react";
 import {
   Sidebar,
@@ -99,6 +100,7 @@ const menuGroups = [
       { title: "Inventory", url: "/admin/wholesale-inventory", icon: Package },
       { title: "Financial Center", url: "/admin/financial-center", icon: Receipt },
       { title: "Fleet Management", url: "/admin/fleet-management", icon: Truck },
+      { title: "Disposable Menus", url: "/admin/disposable-menus", icon: Lock },
     ]
   },
   {
