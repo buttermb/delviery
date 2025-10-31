@@ -5,9 +5,11 @@ import { AlertCircle, Phone } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { differenceInDays } from "date-fns";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PaymentDialog } from "./PaymentDialog";
 
 export function QuickCollectionsWidget() {
+  const navigate = useNavigate();
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -81,7 +83,12 @@ export function QuickCollectionsWidget() {
         </div>
 
         <div className="mt-4 pt-4 border-t text-center">
-          <Button variant="link" size="sm" className="text-yellow-500">
+          <Button 
+            variant="link" 
+            size="sm" 
+            className="text-yellow-500"
+            onClick={() => navigate("/admin/wholesale-clients")}
+          >
             View All Collections →
           </Button>
         </div>

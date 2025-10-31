@@ -4,8 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Phone, MessageSquare, DollarSign } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { format, differenceInDays } from "date-fns";
+import { useState } from "react";
+import { PaymentDialog } from "./PaymentDialog";
+import { showInfoToast } from "@/utils/toastHelpers";
 
 export function CollectionsDashboard() {
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
 
@@ -110,11 +115,24 @@ export function CollectionsDashboard() {
                         ${Number(client.outstanding_balance).toLocaleString()}
                       </div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="destructive">
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setPaymentDialogOpen(true);
+                          }}
+                        >
                           <Phone className="h-3 w-3 mr-1" />
                           Call
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            showInfoToast("SMS Feature", `Would send SMS to ${client.contact_name}`);
+                          }}
+                        >
                           <MessageSquare className="h-3 w-3" />
                         </Button>
                       </div>
@@ -146,7 +164,14 @@ export function CollectionsDashboard() {
                       <div className="font-mono font-semibold">
                         ${Number(client.outstanding_balance).toLocaleString()}
                       </div>
-                      <Button size="sm" variant="outline" className="mt-1">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="mt-1"
+                        onClick={() => {
+                          showInfoToast("Reminder Sent", `Payment reminder sent to ${client.business_name}`);
+                        }}
+                      >
                         Send Reminder
                       </Button>
                     </div>
@@ -164,6 +189,16 @@ export function CollectionsDashboard() {
           </div>
         )}
       </Card>
+
+      {selectedClient && (
+        <PaymentDialog
+          clientId={selectedClient.id}
+          clientName={selectedClient.business_name}
+          outstandingBalance={Number(selectedClient.outstanding_balance || 0)}
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+        />
+      )}
     </div>
   );
 }

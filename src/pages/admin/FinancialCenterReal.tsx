@@ -4,8 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2 } from "lucide-react";
 import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
 import { format, isToday, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { PaymentDialog } from "@/components/admin/PaymentDialog";
 
 export default function FinancialCenterReal() {
+  const navigate = useNavigate();
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();
@@ -186,19 +192,43 @@ export default function FinancialCenterReal() {
               </span>
             </div>
             <div className="space-y-2">
-              {overdueClients.slice(0, 5).map((client, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
-                  <Button size="sm" variant="destructive">Collect</Button>
-                </div>
-              ))}
+              {overdueClients.slice(0, 5).map((client, idx) => {
+                const clientData = clients.find(c => c.business_name === client.client);
+                return (
+                  <div key={idx} className="flex items-center justify-between text-sm">
+                    <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => {
+                        if (clientData) {
+                          setSelectedClient(clientData);
+                          setPaymentDialogOpen(true);
+                        }
+                      }}
+                    >
+                      Collect
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
         <div className="flex gap-2">
-          <Button className="bg-emerald-500 hover:bg-emerald-600">Collections Dashboard</Button>
-          <Button variant="outline">Send Reminders</Button>
+          <Button 
+            className="bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => navigate("/admin/wholesale-clients")}
+          >
+            Collections Dashboard
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate("/admin/wholesale-clients")}
+          >
+            Send Reminders
+          </Button>
         </div>
       </Card>
 
@@ -271,6 +301,16 @@ export default function FinancialCenterReal() {
           </div>
         </div>
       </Card>
+
+      {selectedClient && (
+        <PaymentDialog
+          clientId={selectedClient.id}
+          clientName={selectedClient.business_name}
+          outstandingBalance={Number(selectedClient.outstanding_balance || 0)}
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+        />
+      )}
     </div>
   );
 }
