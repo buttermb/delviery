@@ -1971,6 +1971,108 @@ export type Database = {
         }
         Relationships: []
       }
+      disposable_menu_products: {
+        Row: {
+          created_at: string
+          custom_price: number | null
+          display_availability: boolean
+          display_order: number
+          id: string
+          menu_id: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_price?: number | null
+          display_availability?: boolean
+          display_order?: number
+          id?: string
+          menu_id: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_price?: number | null
+          display_availability?: boolean
+          display_order?: number
+          id?: string
+          menu_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disposable_menu_products_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disposable_menu_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disposable_menus: {
+        Row: {
+          access_code_hash: string
+          appearance_settings: Json
+          burn_reason: string | null
+          burned_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          encrypted_url_token: string
+          expiration_date: string | null
+          id: string
+          max_order_quantity: number | null
+          min_order_quantity: number | null
+          name: string
+          never_expires: boolean
+          security_settings: Json
+          status: Database["public"]["Enums"]["menu_status"]
+        }
+        Insert: {
+          access_code_hash: string
+          appearance_settings?: Json
+          burn_reason?: string | null
+          burned_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          encrypted_url_token: string
+          expiration_date?: string | null
+          id?: string
+          max_order_quantity?: number | null
+          min_order_quantity?: number | null
+          name: string
+          never_expires?: boolean
+          security_settings?: Json
+          status?: Database["public"]["Enums"]["menu_status"]
+        }
+        Update: {
+          access_code_hash?: string
+          appearance_settings?: Json
+          burn_reason?: string | null
+          burned_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          encrypted_url_token?: string
+          expiration_date?: string | null
+          id?: string
+          max_order_quantity?: number | null
+          min_order_quantity?: number | null
+          name?: string
+          never_expires?: boolean
+          security_settings?: Json
+          status?: Database["public"]["Enums"]["menu_status"]
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           context: Json | null
@@ -3337,6 +3439,315 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_access_logs: {
+        Row: {
+          access_code_correct: boolean | null
+          access_whitelist_id: string | null
+          accessed_at: string
+          actions_taken: Json | null
+          device_fingerprint: string | null
+          geofence_pass: boolean | null
+          id: string
+          ip_address: string | null
+          location: Json | null
+          menu_id: string
+          session_duration_seconds: number | null
+          suspicious_flags: string[] | null
+          time_restriction_pass: boolean | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_code_correct?: boolean | null
+          access_whitelist_id?: string | null
+          accessed_at?: string
+          actions_taken?: Json | null
+          device_fingerprint?: string | null
+          geofence_pass?: boolean | null
+          id?: string
+          ip_address?: string | null
+          location?: Json | null
+          menu_id: string
+          session_duration_seconds?: number | null
+          suspicious_flags?: string[] | null
+          time_restriction_pass?: boolean | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_code_correct?: boolean | null
+          access_whitelist_id?: string | null
+          accessed_at?: string
+          actions_taken?: Json | null
+          device_fingerprint?: string | null
+          geofence_pass?: boolean | null
+          id?: string
+          ip_address?: string | null
+          location?: Json | null
+          menu_id?: string
+          session_duration_seconds?: number | null
+          suspicious_flags?: string[] | null
+          time_restriction_pass?: boolean | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_access_logs_access_whitelist_id_fkey"
+            columns: ["access_whitelist_id"]
+            isOneToOne: false
+            referencedRelation: "menu_access_whitelist"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_access_logs_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_access_whitelist: {
+        Row: {
+          customer_email: string | null
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          device_fingerprint: string | null
+          first_access_at: string | null
+          id: string
+          invited_at: string
+          invited_by: string | null
+          last_access_at: string | null
+          menu_id: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          status: Database["public"]["Enums"]["whitelist_status"]
+          unique_access_token: string
+          view_count: number
+        }
+        Insert: {
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          device_fingerprint?: string | null
+          first_access_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          last_access_at?: string | null
+          menu_id: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: Database["public"]["Enums"]["whitelist_status"]
+          unique_access_token: string
+          view_count?: number
+        }
+        Update: {
+          customer_email?: string | null
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          device_fingerprint?: string | null
+          first_access_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          last_access_at?: string | null
+          menu_id?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: Database["public"]["Enums"]["whitelist_status"]
+          unique_access_token?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_access_whitelist_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_access_whitelist_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_burn_history: {
+        Row: {
+          burn_reason: string
+          burn_type: Database["public"]["Enums"]["burn_type"]
+          burned_at: string
+          burned_by: string
+          customers_migrated: number
+          id: string
+          menu_id: string
+          regenerated_menu_id: string | null
+          stats_snapshot: Json
+        }
+        Insert: {
+          burn_reason: string
+          burn_type: Database["public"]["Enums"]["burn_type"]
+          burned_at?: string
+          burned_by: string
+          customers_migrated?: number
+          id?: string
+          menu_id: string
+          regenerated_menu_id?: string | null
+          stats_snapshot?: Json
+        }
+        Update: {
+          burn_reason?: string
+          burn_type?: Database["public"]["Enums"]["burn_type"]
+          burned_at?: string
+          burned_by?: string
+          customers_migrated?: number
+          id?: string
+          menu_id?: string
+          regenerated_menu_id?: string | null
+          stats_snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_burn_history_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_burn_history_regenerated_menu_id_fkey"
+            columns: ["regenerated_menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_orders: {
+        Row: {
+          access_whitelist_id: string
+          contact_phone: string
+          created_at: string
+          customer_notes: string | null
+          delivery_address: string | null
+          delivery_method: string | null
+          id: string
+          menu_id: string
+          order_data: Json
+          payment_method: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: Database["public"]["Enums"]["menu_order_status"]
+          total_amount: number
+        }
+        Insert: {
+          access_whitelist_id: string
+          contact_phone: string
+          created_at?: string
+          customer_notes?: string | null
+          delivery_address?: string | null
+          delivery_method?: string | null
+          id?: string
+          menu_id: string
+          order_data: Json
+          payment_method?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["menu_order_status"]
+          total_amount: number
+        }
+        Update: {
+          access_whitelist_id?: string
+          contact_phone?: string
+          created_at?: string
+          customer_notes?: string | null
+          delivery_address?: string | null
+          delivery_method?: string | null
+          id?: string
+          menu_id?: string
+          order_data?: Json
+          payment_method?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: Database["public"]["Enums"]["menu_order_status"]
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_orders_access_whitelist_id_fkey"
+            columns: ["access_whitelist_id"]
+            isOneToOne: false
+            referencedRelation: "menu_access_whitelist"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_security_events: {
+        Row: {
+          access_whitelist_id: string | null
+          acknowledged: boolean
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          event_data: Json
+          event_type: Database["public"]["Enums"]["security_event_type"]
+          id: string
+          menu_id: string
+          severity: Database["public"]["Enums"]["event_severity"]
+        }
+        Insert: {
+          access_whitelist_id?: string | null
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type: Database["public"]["Enums"]["security_event_type"]
+          id?: string
+          menu_id: string
+          severity?: Database["public"]["Enums"]["event_severity"]
+        }
+        Update: {
+          access_whitelist_id?: string | null
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type?: Database["public"]["Enums"]["security_event_type"]
+          id?: string
+          menu_id?: string
+          severity?: Database["public"]["Enums"]["event_severity"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_security_events_access_whitelist_id_fkey"
+            columns: ["access_whitelist_id"]
+            isOneToOne: false
+            referencedRelation: "menu_access_whitelist"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_security_events_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
             referencedColumns: ["id"]
           },
         ]
@@ -5855,6 +6266,11 @@ export type Database = {
     Enums: {
       admin_role: "super_admin" | "admin" | "compliance_officer" | "support"
       app_role: "admin" | "courier" | "user"
+      burn_type: "soft" | "hard"
+      event_severity: "low" | "medium" | "high" | "critical"
+      menu_access_type: "invite_only" | "shared_link" | "hybrid"
+      menu_order_status: "pending" | "confirmed" | "rejected"
+      menu_status: "active" | "soft_burned" | "hard_burned"
       order_status_type:
         | "pending"
         | "accepted"
@@ -5870,9 +6286,18 @@ export type Database = {
         | "vapes"
         | "concentrates"
         | "pre-rolls"
+      security_event_type:
+        | "failed_access_code"
+        | "geofence_violation"
+        | "screenshot_attempt"
+        | "new_device_detected"
+        | "excessive_views"
+        | "suspicious_ip"
+        | "link_sharing_detected"
       vehicle_type: "car" | "bike" | "scooter" | "ebike"
       verification_method_type: "jumio" | "manual_scan" | "automatic"
       verification_type: "registration" | "delivery"
+      whitelist_status: "pending" | "active" | "revoked" | "blocked"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6002,6 +6427,11 @@ export const Constants = {
     Enums: {
       admin_role: ["super_admin", "admin", "compliance_officer", "support"],
       app_role: ["admin", "courier", "user"],
+      burn_type: ["soft", "hard"],
+      event_severity: ["low", "medium", "high", "critical"],
+      menu_access_type: ["invite_only", "shared_link", "hybrid"],
+      menu_order_status: ["pending", "confirmed", "rejected"],
+      menu_status: ["active", "soft_burned", "hard_burned"],
       order_status_type: [
         "pending",
         "accepted",
@@ -6019,9 +6449,19 @@ export const Constants = {
         "concentrates",
         "pre-rolls",
       ],
+      security_event_type: [
+        "failed_access_code",
+        "geofence_violation",
+        "screenshot_attempt",
+        "new_device_detected",
+        "excessive_views",
+        "suspicious_ip",
+        "link_sharing_detected",
+      ],
       vehicle_type: ["car", "bike", "scooter", "ebike"],
       verification_method_type: ["jumio", "manual_scan", "automatic"],
       verification_type: ["registration", "delivery"],
+      whitelist_status: ["pending", "active", "revoked", "blocked"],
     },
   },
 } as const
