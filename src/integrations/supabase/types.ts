@@ -2019,12 +2019,18 @@ export type Database = {
       disposable_menus: {
         Row: {
           access_code_hash: string
+          access_code_rotation_days: number | null
+          access_type: string | null
           appearance_settings: Json
+          appearance_style: string | null
+          auto_burn_hours: number | null
           burn_reason: string | null
           burned_at: string | null
           created_at: string
           created_by: string | null
+          custom_message: string | null
           description: string | null
+          device_locking_enabled: boolean | null
           encrypted_url_token: string
           expiration_date: string | null
           id: string
@@ -2032,17 +2038,32 @@ export type Database = {
           min_order_quantity: number | null
           name: string
           never_expires: boolean
+          notification_settings: Json | null
+          screenshot_protection_enabled: boolean | null
+          screenshot_watermark_enabled: boolean | null
           security_settings: Json
+          show_availability: boolean | null
+          show_contact_info: boolean | null
+          show_minimum_order: boolean | null
+          show_product_images: boolean | null
           status: Database["public"]["Enums"]["menu_status"]
+          view_limit_per_customer: number | null
+          view_limit_period: string | null
         }
         Insert: {
           access_code_hash: string
+          access_code_rotation_days?: number | null
+          access_type?: string | null
           appearance_settings?: Json
+          appearance_style?: string | null
+          auto_burn_hours?: number | null
           burn_reason?: string | null
           burned_at?: string | null
           created_at?: string
           created_by?: string | null
+          custom_message?: string | null
           description?: string | null
+          device_locking_enabled?: boolean | null
           encrypted_url_token: string
           expiration_date?: string | null
           id?: string
@@ -2050,17 +2071,32 @@ export type Database = {
           min_order_quantity?: number | null
           name: string
           never_expires?: boolean
+          notification_settings?: Json | null
+          screenshot_protection_enabled?: boolean | null
+          screenshot_watermark_enabled?: boolean | null
           security_settings?: Json
+          show_availability?: boolean | null
+          show_contact_info?: boolean | null
+          show_minimum_order?: boolean | null
+          show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          view_limit_per_customer?: number | null
+          view_limit_period?: string | null
         }
         Update: {
           access_code_hash?: string
+          access_code_rotation_days?: number | null
+          access_type?: string | null
           appearance_settings?: Json
+          appearance_style?: string | null
+          auto_burn_hours?: number | null
           burn_reason?: string | null
           burned_at?: string | null
           created_at?: string
           created_by?: string | null
+          custom_message?: string | null
           description?: string | null
+          device_locking_enabled?: boolean | null
           encrypted_url_token?: string
           expiration_date?: string | null
           id?: string
@@ -2068,8 +2104,17 @@ export type Database = {
           min_order_quantity?: number | null
           name?: string
           never_expires?: boolean
+          notification_settings?: Json | null
+          screenshot_protection_enabled?: boolean | null
+          screenshot_watermark_enabled?: boolean | null
           security_settings?: Json
+          show_availability?: boolean | null
+          show_contact_info?: boolean | null
+          show_minimum_order?: boolean | null
+          show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          view_limit_per_customer?: number | null
+          view_limit_period?: string | null
         }
         Relationships: []
       }
@@ -3443,6 +3488,44 @@ export type Database = {
           },
         ]
       }
+      menu_access_code_history: {
+        Row: {
+          id: string
+          menu_id: string | null
+          new_code_hash: string
+          old_code_hash: string | null
+          reason: string | null
+          rotated_at: string | null
+          rotated_by: string | null
+        }
+        Insert: {
+          id?: string
+          menu_id?: string | null
+          new_code_hash: string
+          old_code_hash?: string | null
+          reason?: string | null
+          rotated_at?: string | null
+          rotated_by?: string | null
+        }
+        Update: {
+          id?: string
+          menu_id?: string | null
+          new_code_hash?: string
+          old_code_hash?: string | null
+          reason?: string | null
+          rotated_at?: string | null
+          rotated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_access_code_history_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_access_logs: {
         Row: {
           access_code_correct: boolean | null
@@ -3632,6 +3715,106 @@ export type Database = {
           },
         ]
       }
+      menu_device_locks: {
+        Row: {
+          access_count: number | null
+          created_at: string | null
+          customer_id: string | null
+          device_fingerprint: string
+          device_info: Json | null
+          first_access_at: string | null
+          id: string
+          is_locked: boolean | null
+          last_access_at: string | null
+          menu_id: string | null
+          whitelist_entry_id: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          created_at?: string | null
+          customer_id?: string | null
+          device_fingerprint: string
+          device_info?: Json | null
+          first_access_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          last_access_at?: string | null
+          menu_id?: string | null
+          whitelist_entry_id?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          created_at?: string | null
+          customer_id?: string | null
+          device_fingerprint?: string
+          device_info?: Json | null
+          first_access_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          last_access_at?: string | null
+          menu_id?: string | null
+          whitelist_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_device_locks_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_honeypots: {
+        Row: {
+          access_count: number | null
+          created_at: string | null
+          description: string | null
+          first_accessed_at: string | null
+          honeypot_token: string
+          id: string
+          is_active: boolean | null
+          last_accessed_at: string | null
+          menu_id: string | null
+          suspected_leaker_id: string | null
+          suspected_leaker_name: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          first_accessed_at?: string | null
+          honeypot_token: string
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          menu_id?: string | null
+          suspected_leaker_id?: string | null
+          suspected_leaker_name?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          first_accessed_at?: string | null
+          honeypot_token?: string
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          menu_id?: string | null
+          suspected_leaker_id?: string | null
+          suspected_leaker_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_honeypots_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_orders: {
         Row: {
           access_whitelist_id: string
@@ -3698,6 +3881,83 @@ export type Database = {
           },
         ]
       }
+      menu_panic_events: {
+        Row: {
+          actions_taken: Json | null
+          affected_menus: Json | null
+          id: string
+          notifications_sent: Json | null
+          reason: string | null
+          triggered_at: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          affected_menus?: Json | null
+          id?: string
+          notifications_sent?: Json | null
+          reason?: string | null
+          triggered_at?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          affected_menus?: Json | null
+          id?: string
+          notifications_sent?: Json | null
+          reason?: string | null
+          triggered_at?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      menu_screenshot_attempts: {
+        Row: {
+          action_taken: string | null
+          attempted_at: string | null
+          created_at: string | null
+          customer_id: string | null
+          customer_name: string | null
+          device_fingerprint: string | null
+          id: string
+          ip_address: string | null
+          menu_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_taken?: string | null
+          attempted_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: string | null
+          menu_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_taken?: string | null
+          attempted_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: string | null
+          menu_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_screenshot_attempts_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_security_events: {
         Row: {
           access_whitelist_id: string | null
@@ -3745,6 +4005,56 @@ export type Database = {
           },
           {
             foreignKeyName: "menu_security_events_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_view_tracking: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          last_view_at: string | null
+          limit_exceeded: boolean | null
+          menu_id: string | null
+          period_end: string
+          period_start: string
+          updated_at: string | null
+          view_count: number | null
+          whitelist_entry_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          last_view_at?: string | null
+          limit_exceeded?: boolean | null
+          menu_id?: string | null
+          period_end: string
+          period_start: string
+          updated_at?: string | null
+          view_count?: number | null
+          whitelist_entry_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          last_view_at?: string | null
+          limit_exceeded?: boolean | null
+          menu_id?: string | null
+          period_end?: string
+          period_start?: string
+          updated_at?: string | null
+          view_count?: number | null
+          whitelist_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_view_tracking_menu_id_fkey"
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "disposable_menus"

@@ -5,6 +5,7 @@ import { Plus, Shield, AlertTriangle } from 'lucide-react';
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
+import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
