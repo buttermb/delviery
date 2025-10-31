@@ -128,3 +128,123 @@ export const useUpdateDeliveryStatus = () => {
     }
   });
 };
+
+export const useWholesaleInventory = () => {
+  return useQuery({
+    queryKey: ["wholesale-inventory"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_inventory")
+        .select("*")
+        .order("product_name");
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+export const useWholesaleRunners = () => {
+  return useQuery({
+    queryKey: ["wholesale-runners"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_runners")
+        .select("*")
+        .order("full_name");
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+export const useWholesalePayments = () => {
+  return useQuery({
+    queryKey: ["wholesale-payments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_payments")
+        .select(`
+          *,
+          client:wholesale_clients(business_name)
+        `)
+        .order("payment_date", { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+export const useWholesaleDeliveries = () => {
+  return useQuery({
+    queryKey: ["wholesale-deliveries"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_deliveries")
+        .select(`
+          *,
+          order:wholesale_orders(order_number, total_amount),
+          runner:wholesale_runners(full_name, phone, vehicle_type)
+        `)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+export const useClientDetail = (clientId: string) => {
+  return useQuery({
+    queryKey: ["wholesale-client", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_clients")
+        .select("*")
+        .eq("id", clientId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clientId
+  });
+};
+
+export const useClientOrders = (clientId: string) => {
+  return useQuery({
+    queryKey: ["wholesale-client-orders", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_orders")
+        .select("*")
+        .eq("client_id", clientId)
+        .order("order_date", { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clientId
+  });
+};
+
+export const useClientPayments = (clientId: string) => {
+  return useQuery({
+    queryKey: ["wholesale-client-payments", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wholesale_payments")
+        .select("*")
+        .eq("client_id", clientId)
+        .order("payment_date", { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clientId
+  });
+};
