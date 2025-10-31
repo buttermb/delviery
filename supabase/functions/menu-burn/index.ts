@@ -109,10 +109,8 @@ serve(async (req) => {
         .from('disposable_menus')
         .insert({
           name: menu.name + ' (Regenerated)',
-          product_id: menu.product_id,
           access_code: newAccessCode,
           expiration_date: newExpiresAt.toISOString(),
-          max_uses: menu.max_uses,
           status: 'active',
           created_by: user.id
         })

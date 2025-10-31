@@ -63,10 +63,8 @@ serve(async (req) => {
       .from('disposable_menus')
       .insert({
         name,
-        product_id,
         access_code: accessCode,
         expiration_date: expiresAt.toISOString(),
-        max_uses: max_uses || null,
         status: 'active',
         created_by: user.id
       })
