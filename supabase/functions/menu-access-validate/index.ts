@@ -293,7 +293,7 @@ serve(async (req) => {
         return {
           id: mp.product_id,
           name: product.product_name || 'Unknown Product',
-          description: product.description || `${product.category || ''} - ${product.warehouse_location || ''}`.trim(),
+          description: product.description || `Premium ${product.category || 'cannabis'} product`,
           price: mp.custom_price || product.base_price || 0,
           prices: mp.prices || product.prices || null,
           quantity_lbs: product.quantity_lbs || 0,
@@ -308,6 +308,7 @@ serve(async (req) => {
           effects: product.effects || [],
           flavors: product.flavors || [],
           lineage: product.lineage,
+          grow_info: product.grow_info,
         };
       });
 
