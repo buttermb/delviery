@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.menu-whitelist-manage]
 verify_jwt = true
+
+[functions.generate-product-images]
+verify_jwt = true
