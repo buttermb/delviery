@@ -39,19 +39,45 @@ export const SecurityMonitoringPanel = () => {
         (payload) => {
           console.log('New security event:', payload);
           
+          // Validate payload structure
+          if (!payload?.new || typeof payload.new !== 'object') {
+            console.error('Invalid payload structure:', payload);
+            return;
+          }
+
+          const newEvent = payload.new as any;
+          
           // Show toast for critical events
-          if (payload.new.severity === 'critical' || payload.new.severity === 'high') {
+          if (newEvent.severity === 'critical' || newEvent.severity === 'high') {
             toast({
               variant: 'destructive',
               title: '🚨 Security Alert',
-              description: `${payload.new.event_type}: ${payload.new.description}`,
+              description: `${newEvent.event_type || 'Security Event'}: ${newEvent.description || 'New threat detected'}`,
             });
           }
           
           refetch();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Security monitoring subscribed successfully');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Security monitoring channel error');
+          toast({
+            variant: 'destructive',
+            title: 'Monitoring Error',
+            description: 'Failed to connect to security monitoring. Retrying...',
+          });
+        } else if (status === 'TIMED_OUT') {
+          console.error('Security monitoring subscription timed out');
+          toast({
+            variant: 'destructive',
+            title: 'Connection Timeout',
+            description: 'Security monitoring connection timed out',
+          });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
