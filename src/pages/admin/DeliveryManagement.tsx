@@ -457,7 +457,11 @@ export default function DeliveryManagement() {
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         Mark Delivered
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => navigate(`/admin/delivery-tracking/${delivery.id}`)}
+                      >
                         <Navigation className="w-4 h-4 mr-2" />
                         Track Live
                       </Button>

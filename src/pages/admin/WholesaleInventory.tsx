@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -6,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Plus, ArrowRightLeft, TrendingUp, Clock, Truck } from "lucide-react";
+import { showInfoToast } from "@/utils/toastHelpers";
 
 export default function WholesaleInventory() {
+  const navigate = useNavigate();
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
 
   // Mock data
@@ -211,9 +214,27 @@ export default function WholesaleInventory() {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button variant="outline" size="sm">Track Live</Button>
-          <Button variant="outline" size="sm">Call Runners</Button>
-          <Button variant="outline" size="sm">Delivery Log</Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/admin/fleet-management')}
+          >
+            Track Live
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => showInfoToast("Calling Runners", "Calling all active runners")}
+          >
+            Call Runners
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/admin/delivery-management')}
+          >
+            Delivery Log
+          </Button>
         </div>
       </Card>
 

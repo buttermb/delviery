@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 
 export default function FleetManagement() {
+  const navigate = useNavigate();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState("");
   const [selectedOrderNumber, setSelectedOrderNumber] = useState("");
@@ -176,7 +178,15 @@ export default function FleetManagement() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        if (delivery.runners?.phone) {
+                          window.location.href = `tel:${delivery.runners.phone}`;
+                        }
+                      }}
+                    >
                       <Phone className="h-4 w-4 mr-1" />
                       Call
                     </Button>
@@ -192,7 +202,11 @@ export default function FleetManagement() {
                     >
                       Update Status
                     </Button>
-                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+                    <Button 
+                      size="sm" 
+                      className="bg-emerald-500 hover:bg-emerald-600"
+                      onClick={() => navigate(`/admin/delivery-tracking/${delivery.id}`)}
+                    >
                       <MapPin className="h-4 w-4 mr-1" />
                       Track Live
                     </Button>
