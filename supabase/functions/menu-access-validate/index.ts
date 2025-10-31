@@ -234,17 +234,18 @@ serve(async (req) => {
     const access_granted = violations.length === 0;
 
     if (access_granted) {
-      // Transform products: flatten the nested structure and include custom prices
+      // Transform products: flatten the nested structure
       const products = (menu.disposable_menu_products || []).map((mp: any) => ({
-        id: mp.product.id,
-        name: mp.product.name,
-        description: mp.product.description,
-        price: mp.custom_price || mp.product.price_per_unit,
-        quantity_lbs: mp.product.quantity_lbs,
-        category: mp.product.category,
-        custom_price: mp.custom_price,
+        id: mp.product_id,
+        name: mp.product?.name || 'Unknown Product',
+        description: mp.product?.description || '',
+        price: mp.custom_price || mp.product?.price_per_unit || 0,
+        quantity_lbs: mp.product?.quantity_lbs || 0,
+        category: mp.product?.category || '',
         display_order: mp.display_order
       }));
+
+      console.log('Transformed products:', products.length, 'items');
 
       return new Response(
         JSON.stringify({

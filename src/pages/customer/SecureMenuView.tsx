@@ -21,8 +21,12 @@ const SecureMenuView = () => {
   useEffect(() => {
     // Check session storage for validated menu access
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
+    console.log('Checking for menu data:', token, storedMenu ? 'found' : 'not found');
     if (storedMenu) {
-      setMenuData(JSON.parse(storedMenu));
+      const parsed = JSON.parse(storedMenu);
+      console.log('Menu data loaded:', parsed);
+      console.log('Products count:', parsed.products?.length || 0);
+      setMenuData(parsed);
       setLoading(false);
     } else {
       // Redirect back to access page if not validated
@@ -47,7 +51,7 @@ const SecureMenuView = () => {
   const calculateTotal = () => {
     return Object.entries(cart).reduce((sum, [productId, quantity]) => {
       const product = menuData?.products?.find((p: any) => p.id === productId);
-      const price = menuData?.custom_prices?.[productId] || product?.price || 0;
+      const price = product?.price || 0;
       return sum + (price * quantity);
     }, 0);
   };
@@ -150,69 +154,71 @@ const SecureMenuView = () => {
 
         {/* Products Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-24">
-          {menuData.products?.map((product: any) => {
-            const customPrice = menuData.custom_prices?.[product.id];
-            const displayPrice = customPrice || product.price || 0;
-            const quantity = cart[product.id] || 0;
+          {!menuData.products || menuData.products.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <p className="text-lg text-muted-foreground">No products available in this menu</p>
+            </div>
+          ) : (
+            menuData.products.map((product: any) => {
+              const quantity = cart[product.id] || 0;
 
-            return (
-              <Card key={product.id} className="p-4">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-bold">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {product.description || 'No description'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-lg font-bold text-primary">
-                      ${displayPrice.toFixed(2)}
-                      {customPrice && (
-                        <span className="text-xs text-muted-foreground ml-1">(Special)</span>
-                      )}
+              return (
+                <Card key={product.id} className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="font-bold">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {product.description || 'No description'}
+                      </p>
                     </div>
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      <Package className="h-3 w-3" />
-                      {product.quantity_lbs || 0} lbs
-                    </Badge>
-                  </div>
 
-                  {/* Quantity Controls */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateQuantity(product.id, -1)}
-                      disabled={quantity === 0}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setCart(prev => val === 0 ? 
-                          Object.fromEntries(Object.entries(prev).filter(([k]) => k !== product.id)) :
-                          { ...prev, [product.id]: val }
-                        );
-                      }}
-                      className="w-20 text-center"
-                      min={0}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateQuantity(product.id, 1)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-bold text-primary">
+                        ${(product.price || 0).toFixed(2)}
+                      </div>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Package className="h-3 w-3" />
+                        {product.quantity_lbs || 0} lbs
+                      </Badge>
+                    </div>
+
+                    {/* Quantity Controls */}
+                    <div className="flex items-center justify-between gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateQuantity(product.id, -1)}
+                        disabled={quantity === 0}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          setCart(prev => val === 0 ? 
+                            Object.fromEntries(Object.entries(prev).filter(([k]) => k !== product.id)) :
+                            { ...prev, [product.id]: val }
+                          );
+                        }}
+                        className="w-20 text-center"
+                        min={0}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateQuantity(product.id, 1)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
+                </Card>
+              );
+            })
+          )}
         </div>
 
         {/* Floating Cart Summary */}
