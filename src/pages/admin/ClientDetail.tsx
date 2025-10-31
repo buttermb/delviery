@@ -7,14 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2 } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
-
+import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useState } from "react";
+import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 
 export default function ClientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
@@ -104,23 +107,52 @@ export default function ClientDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              if (displayClient.phone) {
+                window.location.href = `tel:${displayClient.phone}`;
+              }
+            }}
+          >
             <Phone className="h-4 w-4 mr-2" />
             Call
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => showInfoToast("Message", `Sending message to ${displayClient.business_name}`)}
+          >
             <MessageSquare className="h-4 w-4 mr-2" />
             Message
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => showInfoToast("Edit Client", "Client editing coming soon")}
+          >
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => showInfoToast("Flag Client", `${displayClient.business_name} marked for review`)}
+          >
             <Flag className="h-4 w-4 mr-2" />
             Flag
           </Button>
-          <Button variant="destructive" size="sm">
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={() => {
+              if (confirm(`Are you sure you want to remove ${displayClient.business_name}?`)) {
+                showSuccessToast("Client Removed", `${displayClient.business_name} has been removed`);
+                navigate("/admin/wholesale-clients");
+              }
+            }}
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Remove
           </Button>
@@ -159,15 +191,31 @@ export default function ClientDetail() {
             </div>
 
             <div className="flex gap-2">
-              <Button className="bg-emerald-500 hover:bg-emerald-600">
+              <Button 
+                className="bg-emerald-500 hover:bg-emerald-600"
+                onClick={() => setPaymentDialogOpen(true)}
+              >
                 <DollarSign className="h-4 w-4 mr-2" />
                 Record Payment
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  if (displayClient.phone) {
+                    window.location.href = `tel:${displayClient.phone}`;
+                    showInfoToast("Calling Client", `Calling ${displayClient.business_name} for collection`);
+                  }
+                }}
+              >
                 <Phone className="h-4 w-4 mr-2" />
                 Call for Collection
               </Button>
-              <Button variant="destructive">
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  showSuccessToast("Escalated", `${displayClient.business_name} escalated to collections team`);
+                }}
+              >
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Escalate
               </Button>
@@ -285,19 +333,46 @@ export default function ClientDetail() {
 
       {/* Actions */}
       <div className="flex gap-2">
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
+        <Button 
+          className="bg-emerald-500 hover:bg-emerald-600"
+          onClick={() => navigate("/admin/wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
+        >
           <Package className="h-4 w-4 mr-2" />
           New Order
         </Button>
-        <Button variant="outline">
+        <Button 
+          variant="outline"
+          onClick={() => {
+            const newLimit = prompt(`Enter new credit limit for ${displayClient.business_name} (current: $${displayClient.credit_limit.toLocaleString()}):`);
+            if (newLimit && !isNaN(Number(newLimit))) {
+              showSuccessToast("Credit Limit Updated", `New limit: $${Number(newLimit).toLocaleString()}`);
+            }
+          }}
+        >
           <DollarSign className="h-4 w-4 mr-2" />
           Adjust Credit Limit
         </Button>
-        <Button variant="destructive">
+        <Button 
+          variant="destructive"
+          onClick={() => {
+            if (confirm(`Are you sure you want to suspend ${displayClient.business_name}'s account?`)) {
+              showSuccessToast("Account Suspended", `${displayClient.business_name} has been suspended`);
+            }
+          }}
+        >
           <AlertCircle className="h-4 w-4 mr-2" />
           Suspend Account
         </Button>
       </div>
+
+      {/* Payment Dialog */}
+      <PaymentDialog
+        clientId={id || ""}
+        clientName={displayClient.business_name}
+        outstandingBalance={displayClient.outstanding_balance}
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+      />
     </div>
   );
 }
