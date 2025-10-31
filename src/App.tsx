@@ -242,6 +242,7 @@ const App = () => {
                           <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
                           <Route path="customer-management" element={<AdminErrorBoundary><CustomerManagement /></AdminErrorBoundary>} />
                           <Route path="customers/:id" element={<AdminErrorBoundary><CustomerDetails /></AdminErrorBoundary>} />
+                          <Route path="customers/:id/invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
                           <Route path="customers/new" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
                           <Route path="customer-management/:id/edit" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
                           <Route path="customer-reports" element={<AdminErrorBoundary><CustomerReports /></AdminErrorBoundary>} />
