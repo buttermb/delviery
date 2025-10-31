@@ -41,7 +41,17 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   // Step 3: Access Control
   const [accessType, setAccessType] = useState<'invite_only' | 'shared' | 'hybrid'>('invite_only');
   const [requireAccessCode, setRequireAccessCode] = useState(true);
-  const [accessCode, setAccessCode] = useState(Math.floor(1000 + Math.random() * 9000).toString());
+  // Generate 8-character alphanumeric code (matches backend)
+  const generateAccessCode = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  };
+
+  const [accessCode, setAccessCode] = useState(generateAccessCode());
   
   // Step 4: Security Options
   const [requireGeofence, setRequireGeofence] = useState(false);
@@ -169,7 +179,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     setSelectedProducts([]);
     setAccessType('invite_only');
     setRequireAccessCode(true);
-    setAccessCode(Math.floor(1000 + Math.random() * 9000).toString());
+    setAccessCode(generateAccessCode());
     onOpenChange(false);
     } catch (error) {
       console.error('Error creating menu:', error);
@@ -178,7 +188,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   };
 
   const generateNewCode = () => {
-    setAccessCode(Math.floor(1000 + Math.random() * 9000).toString());
+    setAccessCode(generateAccessCode());
   };
 
   return (
@@ -349,7 +359,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               <div className="flex items-center justify-between border rounded p-3">
                 <div>
                   <Label>Require Access Code</Label>
-                  <p className="text-xs text-muted-foreground">4-digit PIN for additional security</p>
+                  <p className="text-xs text-muted-foreground">8-character alphanumeric code for additional security</p>
                 </div>
                 <Switch
                   checked={requireAccessCode}
