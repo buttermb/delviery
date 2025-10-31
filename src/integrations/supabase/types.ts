@@ -5511,6 +5511,7 @@ export type Database = {
           delivery_notes: string | null
           id: string
           order_number: string
+          payment_status: string
           runner_id: string | null
           status: string
           total_amount: number
@@ -5525,6 +5526,7 @@ export type Database = {
           delivery_notes?: string | null
           id?: string
           order_number: string
+          payment_status?: string
           runner_id?: string | null
           status?: string
           total_amount: number
@@ -5539,6 +5541,7 @@ export type Database = {
           delivery_notes?: string | null
           id?: string
           order_number?: string
+          payment_status?: string
           runner_id?: string | null
           status?: string
           total_amount?: number
