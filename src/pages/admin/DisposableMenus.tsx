@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare } from 'lucide-react';
+import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activity, Settings } from 'lucide-react';
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
 import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
+import { SecurityMonitoringPanel } from '@/components/admin/disposable-menus/SecurityMonitoringPanel';
+import { AutomatedSecuritySettings } from '@/components/admin/disposable-menus/AutomatedSecuritySettings';
 import { BulkActionsDialog } from '@/components/admin/disposable-menus/BulkActionsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -141,7 +143,7 @@ const DisposableMenus = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="menus" className="w-full">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="security">
             Security
@@ -150,6 +152,14 @@ const DisposableMenus = () => {
                 {recentAlerts.length}
               </span>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="monitoring">
+            <Activity className="h-4 w-4 mr-2" />
+            Live Monitor
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="h-4 w-4 mr-2" />
+            Security Settings
           </TabsTrigger>
         </TabsList>
 
@@ -224,6 +234,14 @@ const DisposableMenus = () => {
 
         <TabsContent value="security" className="mt-6">
           <SecurityAlertsPanel />
+        </TabsContent>
+
+        <TabsContent value="monitoring" className="mt-6">
+          <SecurityMonitoringPanel />
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <AutomatedSecuritySettings />
         </TabsContent>
       </Tabs>
 
