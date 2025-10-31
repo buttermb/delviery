@@ -234,6 +234,18 @@ serve(async (req) => {
     const access_granted = violations.length === 0;
 
     if (access_granted) {
+      // Transform products: flatten the nested structure and include custom prices
+      const products = (menu.disposable_menu_products || []).map((mp: any) => ({
+        id: mp.product.id,
+        name: mp.product.name,
+        description: mp.product.description,
+        price: mp.custom_price || mp.product.price_per_unit,
+        quantity_lbs: mp.product.quantity_lbs,
+        category: mp.product.category,
+        custom_price: mp.custom_price,
+        display_order: mp.display_order
+      }));
+
       return new Response(
         JSON.stringify({
           access_granted: true,
@@ -241,7 +253,8 @@ serve(async (req) => {
             id: menu.id,
             name: menu.name,
             description: menu.description,
-            products: menu.disposable_menu_products,
+            products: products,
+            menu_id: menu.id,
             min_order_quantity: menu.min_order_quantity,
             max_order_quantity: menu.max_order_quantity,
             appearance_settings: menu.appearance_settings
