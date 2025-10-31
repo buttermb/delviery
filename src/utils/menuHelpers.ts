@@ -1,7 +1,6 @@
 /**
  * Browser-compatible cryptographic utilities for disposable menus
  * Uses Web Crypto API instead of Node.js crypto module
- * 
  * @module menuHelpers
  */
 
@@ -9,17 +8,15 @@
  * Generate a cryptographically secure URL token (browser-compatible)
  */
 export const generateUrlToken = (): string => {
-  // Use browser's crypto.randomUUID() for secure token generation
-  return crypto.randomUUID().replace(/-/g, '');
+  return window.crypto.randomUUID().replace(/-/g, '');
 };
 
 /**
  * Generate a 6-digit access code
  */
 export const generateAccessCode = (): string => {
-  // Use crypto.getRandomValues for secure random number
   const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
+  window.crypto.getRandomValues(array);
   return String(array[0] % 900000 + 100000);
 };
 
@@ -29,7 +26,7 @@ export const generateAccessCode = (): string => {
 export const hashToken = async (token: string): Promise<string> => {
   const encoder = new TextEncoder();
   const data = encoder.encode(token);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
@@ -43,7 +40,7 @@ export const calculateDistance = (
   lat2: number,
   lng2: number
 ): number => {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = toRadians(lat2 - lat1);
   const dLng = toRadians(lng2 - lng1);
   
@@ -55,7 +52,7 @@ export const calculateDistance = (
       Math.sin(dLng / 2);
   
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
+  return R * c;
 };
 
 const toRadians = (degrees: number): number => {
@@ -97,7 +94,6 @@ export const isWithinAllowedHours = (
   if (startHour <= endHour) {
     return currentHour >= startHour && currentHour < endHour;
   } else {
-    // Handles overnight time ranges (e.g., 22:00 to 06:00)
     return currentHour >= startHour || currentHour < endHour;
   }
 };
