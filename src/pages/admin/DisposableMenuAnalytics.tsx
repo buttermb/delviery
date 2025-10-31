@@ -8,6 +8,8 @@ import { useDisposableMenus, useMenuAccessLogs, useMenuSecurityEvents } from '@/
 import { EnhancedAnalyticsCard } from '@/components/admin/disposable-menus/EnhancedAnalyticsCard';
 import { SecurityEventsTable } from '@/components/admin/disposable-menus/SecurityEventsTable';
 import { ViewTrackingChart } from '@/components/admin/disposable-menus/ViewTrackingChart';
+import { AdvancedReportsCard } from '@/components/admin/disposable-menus/AdvancedReportsCard';
+import { SecurityAuditLog } from '@/components/admin/disposable-menus/SecurityAuditLog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, parseISO } from 'date-fns';
 
@@ -156,6 +158,8 @@ const DisposableMenuAnalytics = () => {
           <TabsTrigger value="access">Access Logs</TabsTrigger>
           <TabsTrigger value="security">Security Events</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -251,6 +255,27 @@ const DisposableMenuAnalytics = () => {
               <p className="text-center text-muted-foreground py-8">No orders yet</p>
             )}
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <AdvancedReportsCard
+            menuId={menuId!}
+            stats={{
+              totalViews,
+              uniqueVisitors,
+              conversionRate,
+              securityIncidents: securityEvents?.filter(e => e.severity === 'high' || e.severity === 'critical').length || 0,
+              avgSessionDuration: avgViewDuration,
+              peakAccessTime: '2-5pm'
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="audit">
+          <SecurityAuditLog
+            events={securityEvents || []}
+            onRefresh={refetchEvents}
+          />
         </TabsContent>
       </Tabs>
     </div>
