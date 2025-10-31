@@ -13,7 +13,7 @@ const SecureMenuAccess = () => {
   const [searchParams] = useSearchParams();
   const uniqueToken = searchParams.get('u');
 
-  const [codeDigits, setCodeDigits] = useState(['', '', '', '']);
+  const [accessCode, setAccessCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'checking' | 'granted' | 'denied'>('checking');
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -60,64 +60,11 @@ const SecureMenuAccess = () => {
     };
   };
 
-  const handleDigitChange = (index: number, value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
-    if (numericValue.length <= 1) {
-      const newDigits = [...codeDigits];
-      newDigits[index] = numericValue;
-      setCodeDigits(newDigits);
-      
-      if (numericValue && index < 3) {
-        const nextInput = document.getElementById(`code-${index + 1}`);
-        nextInput?.focus();
-      }
-      
-      if (index === 3 && numericValue) {
-        const fullCode = [...newDigits.slice(0, 3), numericValue].join('');
-        if (fullCode.length === 4) {
-          handleSubmit(fullCode);
-        }
-      }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
-      const prevInput = document.getElementById(`code-${index - 1}`);
-      prevInput?.focus();
-    } else if (e.key === 'Enter') {
-      const fullCode = codeDigits.join('');
-      if (fullCode.length === 4) {
-        handleSubmit(fullCode);
-      }
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
-    if (pastedData) {
-      const newDigits = pastedData.split('').concat(['', '', '', '']).slice(0, 4);
-      setCodeDigits(newDigits);
-      
-      const nextEmptyIndex = newDigits.findIndex(d => !d);
-      if (nextEmptyIndex !== -1) {
-        document.getElementById(`code-${nextEmptyIndex}`)?.focus();
-      } else {
-        document.getElementById('code-3')?.focus();
-        if (pastedData.length === 4) {
-          handleSubmit(pastedData);
-        }
-      }
-    }
-  };
-
-  const handleSubmit = async (code?: string) => {
-    const accessCode = code || codeDigits.join('');
-    
-    if (!accessCode || accessCode.length !== 4) {
-      setError('Please enter a 4-digit access code');
+    if (!accessCode || accessCode.length !== 8) {
+      setError('Please enter an 8-character access code');
       return;
     }
 
@@ -132,7 +79,7 @@ const SecureMenuAccess = () => {
       const { data, error: validateError } = await supabase.functions.invoke('menu-access-validate', {
         body: {
           encrypted_url_token: token,
-          access_code: accessCode,
+          access_code: accessCode.toUpperCase(),
           unique_access_token: uniqueToken,
           device_fingerprint: deviceHash,
           location,
@@ -194,7 +141,7 @@ const SecureMenuAccess = () => {
           </p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Location Status */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="flex items-center gap-2 text-sm">
@@ -220,26 +167,19 @@ const SecureMenuAccess = () => {
 
           {/* Access Code Input */}
           <div className="space-y-2">
-            <Label htmlFor="code-0" className="text-center block">Enter 4-Digit Access Code</Label>
-            <div className="flex gap-3 justify-center">
-              {[0, 1, 2, 3].map((index) => (
-                <Input
-                  key={index}
-                  id={`code-${index}`}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={codeDigits[index]}
-                  onChange={(e) => handleDigitChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={index === 0 ? handlePaste : undefined}
-                  className="w-16 h-16 text-center text-3xl font-bold"
-                  autoFocus={index === 0}
-                />
-              ))}
-            </div>
+            <Label htmlFor="access-code" className="text-center block">Enter Access Code</Label>
+            <Input
+              id="access-code"
+              type="text"
+              maxLength={8}
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+              placeholder="XXXXXXXX"
+              className="text-center text-2xl font-mono tracking-widest uppercase"
+              autoFocus
+            />
             <p className="text-xs text-muted-foreground text-center">
-              Paste your code or type each digit
+              Enter the 8-character code provided to you
             </p>
           </div>
 
@@ -255,7 +195,7 @@ const SecureMenuAccess = () => {
             type="submit" 
             className="w-full" 
             size="lg"
-            disabled={codeDigits.join('').length !== 4 || loading || locationStatus !== 'granted'}
+            disabled={accessCode.length !== 8 || loading || locationStatus !== 'granted'}
           >
             {loading ? (
               <>
