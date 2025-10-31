@@ -135,6 +135,13 @@ const SecureMenuView = () => {
   const handlePlaceOrder = async () => {
     if (Object.keys(cart).length === 0) return;
 
+    // Get contact phone
+    const contact_phone = prompt("Enter your contact phone number for order updates:");
+    if (!contact_phone?.trim()) {
+      showErrorToast('Required', 'Phone number is required to place an order');
+      return;
+    }
+
     setPlacingOrder(true);
     try {
       const orderItems = Object.entries(cart).map(([productId, { quantity, weight }]) => {
@@ -143,7 +150,7 @@ const SecureMenuView = () => {
         return {
           product_id: productId,
           quantity,
-          unit_price: price,
+          price: price,
           weight
         };
       });
@@ -151,9 +158,12 @@ const SecureMenuView = () => {
       const { data, error } = await supabase.functions.invoke('menu-order-place', {
         body: {
           menu_id: menuData!.menu_id,
-          whitelist_id: menuData!.whitelist_id,
+          access_token: menuData!.whitelist_id,
           order_items: orderItems,
-          total_amount: calculateTotal(),
+          contact_phone: contact_phone.trim(),
+          delivery_method: 'pickup',
+          payment_method: 'cash',
+          delivery_address: '',
           customer_notes: ''
         }
       });
