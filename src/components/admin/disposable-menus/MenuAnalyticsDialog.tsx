@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMenuAccessLogs, useMenuOrders, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
-import { Download, Eye, ShoppingCart, TrendingUp, Users, BarChart3, Shield } from 'lucide-react';
+import { Download, Eye, ShoppingCart, TrendingUp, Users, BarChart3, Shield, Image } from 'lucide-react';
 import { exportAccessLogs, exportOrders, exportMenuAnalytics, exportSecurityEvents } from '@/utils/exportHelpers';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { AnalyticsCharts } from './AnalyticsCharts';
 import { SecurityHeatmap } from './SecurityHeatmap';
+import { MenuImageAnalytics } from './MenuImageAnalytics';
 
 interface MenuAnalyticsDialogProps {
   menu: any;
@@ -70,7 +71,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">
               <Eye className="h-4 w-4 mr-2" />
               Overview
@@ -78,6 +79,10 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
             <TabsTrigger value="charts">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="images">
+              <Image className="h-4 w-4 mr-2" />
+              Images
             </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="h-4 w-4 mr-2" />
@@ -193,6 +198,11 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                 orders={orders || []}
                 securityEvents={securityEvents || []}
               />
+            </TabsContent>
+
+            {/* Images Tab */}
+            <TabsContent value="images" className="p-1">
+              <MenuImageAnalytics menuId={menu.id} />
             </TabsContent>
 
             {/* Security Tab */}

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { Loader2, ChevronRight, ChevronLeft, Eye, Shield, Bell, Palette, CheckCircle2 } from 'lucide-react';
@@ -220,7 +221,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               <div className="space-y-4">
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
                   {inventory?.map(product => {
-                    const imageUrl = product.image_url || product.images?.[0];
+                    const imageUrl = (product as any).image_url || (product as any).images?.[0];
                     return (
                       <div 
                         key={product.id} 

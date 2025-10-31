@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 
 const SecureMenuView = () => {
   const { token } = useParams();
@@ -175,7 +176,10 @@ const SecureMenuView = () => {
                     {shouldShowImage && imageUrl && (
                       <div 
                         className="relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer group"
-                        onClick={() => setZoomedImage({ url: imageUrl, name: product.name })}
+                        onClick={() => {
+                          setZoomedImage({ url: imageUrl, name: product.name });
+                          trackImageZoom(menuData.menu_id, product.id);
+                        }}
                       >
                         <OptimizedProductImage
                           src={imageUrl}
@@ -186,6 +190,9 @@ const SecureMenuView = () => {
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                           <ZoomIn className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
+                        <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                          Click to zoom
+                        </Badge>
                       </div>
                     )}
                     
