@@ -5151,6 +5151,403 @@ export type Database = {
           },
         ]
       }
+      wholesale_clients: {
+        Row: {
+          address: string
+          business_name: string
+          client_type: string
+          contact_name: string
+          created_at: string
+          credit_limit: number
+          email: string
+          id: string
+          last_order_date: string | null
+          last_payment_date: string | null
+          monthly_volume: number
+          notes: string | null
+          outstanding_balance: number
+          payment_terms: number
+          phone: string
+          reliability_score: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          business_name: string
+          client_type: string
+          contact_name: string
+          created_at?: string
+          credit_limit?: number
+          email: string
+          id?: string
+          last_order_date?: string | null
+          last_payment_date?: string | null
+          monthly_volume?: number
+          notes?: string | null
+          outstanding_balance?: number
+          payment_terms?: number
+          phone: string
+          reliability_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          business_name?: string
+          client_type?: string
+          contact_name?: string
+          created_at?: string
+          credit_limit?: number
+          email?: string
+          id?: string
+          last_order_date?: string | null
+          last_payment_date?: string | null
+          monthly_volume?: number
+          notes?: string | null
+          outstanding_balance?: number
+          payment_terms?: number
+          phone?: string
+          reliability_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wholesale_deliveries: {
+        Row: {
+          assigned_at: string
+          created_at: string
+          current_location: Json | null
+          delivered_at: string | null
+          failed_at: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          picked_up_at: string | null
+          runner_id: string
+          status: string
+        }
+        Insert: {
+          assigned_at?: string
+          created_at?: string
+          current_location?: Json | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          picked_up_at?: string | null
+          runner_id: string
+          status?: string
+        }
+        Update: {
+          assigned_at?: string
+          created_at?: string
+          current_location?: Json | null
+          delivered_at?: string | null
+          failed_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          picked_up_at?: string | null
+          runner_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_deliveries_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_inventory: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          last_restock_date: string | null
+          product_name: string
+          quantity_lbs: number
+          quantity_units: number
+          reorder_point: number
+          updated_at: string
+          warehouse_location: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          last_restock_date?: string | null
+          product_name: string
+          quantity_lbs?: number
+          quantity_units?: number
+          reorder_point?: number
+          updated_at?: string
+          warehouse_location?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          last_restock_date?: string | null
+          product_name?: string
+          quantity_lbs?: number
+          quantity_units?: number
+          reorder_point?: number
+          updated_at?: string
+          warehouse_location?: string
+        }
+        Relationships: []
+      }
+      wholesale_inventory_transfers: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          from_location: string
+          id: string
+          inventory_id: string
+          quantity_lbs: number
+          quantity_units: number
+          runner_id: string | null
+          status: string
+          to_location: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          from_location: string
+          id?: string
+          inventory_id: string
+          quantity_lbs: number
+          quantity_units: number
+          runner_id?: string | null
+          status?: string
+          to_location?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          from_location?: string
+          id?: string
+          inventory_id?: string
+          quantity_lbs?: number
+          quantity_units?: number
+          runner_id?: string | null
+          status?: string
+          to_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_inventory_transfers_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_inventory_transfers_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_name: string
+          quantity: number
+          subtotal: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_name: string
+          quantity: number
+          subtotal: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_name?: string
+          quantity?: number
+          subtotal?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_orders: {
+        Row: {
+          assigned_at: string | null
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          delivered_at: string | null
+          delivery_address: string
+          delivery_notes: string | null
+          id: string
+          order_number: string
+          runner_id: string | null
+          status: string
+          total_amount: number
+        }
+        Insert: {
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address: string
+          delivery_notes?: string | null
+          id?: string
+          order_number: string
+          runner_id?: string | null
+          status?: string
+          total_amount: number
+        }
+        Update: {
+          assigned_at?: string | null
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string
+          delivery_notes?: string | null
+          id?: string
+          order_number?: string
+          runner_id?: string | null
+          status?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_orders_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          payment_method: string
+          reference_number: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_runners: {
+        Row: {
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          full_name: string
+          id: string
+          phone: string
+          rating: number | null
+          status: string
+          total_deliveries: number
+          updated_at: string
+          vehicle_plate: string | null
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name: string
+          id?: string
+          phone: string
+          rating?: number | null
+          status?: string
+          total_deliveries?: number
+          updated_at?: string
+          vehicle_plate?: string | null
+          vehicle_type: string
+        }
+        Update: {
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          full_name?: string
+          id?: string
+          phone?: string
+          rating?: number | null
+          status?: string
+          total_deliveries?: number
+          updated_at?: string
+          vehicle_plate?: string | null
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -5205,6 +5602,14 @@ export type Database = {
         Args: { _product_id: string; _quantity: number }
         Returns: boolean
       }
+      decrement_wholesale_inventory: {
+        Args: {
+          p_product_name: string
+          p_quantity_lbs: number
+          p_quantity_units: number
+        }
+        Returns: boolean
+      }
       generate_admin_pin: { Args: never; Returns: string }
       generate_entry_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
@@ -5217,6 +5622,7 @@ export type Database = {
         Args: { p_borough: string; p_user_id: string }
         Returns: string
       }
+      generate_wholesale_order_number: { Args: never; Returns: string }
       get_admin_dashboard_metrics: { Args: never; Returns: Json }
       get_admin_orders: {
         Args: { limit_count?: number; offset_count?: number }
@@ -5318,6 +5724,10 @@ export type Database = {
       }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }
+        Returns: undefined
+      }
+      update_client_reliability: {
+        Args: { p_client_id: string; p_payment_made?: boolean }
         Returns: undefined
       }
       update_purchase_limits: {
