@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activity, Settings, Bell, MessageSquare } from 'lucide-react';
@@ -18,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const DisposableMenus = () => {
+  const navigate = useNavigate();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
   const [selectedMenuIds, setSelectedMenuIds] = useState<string[]>([]);
@@ -89,7 +91,7 @@ const DisposableMenus = () => {
             )}
             <Button 
               variant="outline"
-              onClick={() => window.location.href = '/admin/disposable-menus/orders'}
+              onClick={() => navigate('/admin/disposable-menus/orders')}
             >
               <ShoppingBag className="h-4 w-4 mr-2" />
               View Orders
@@ -97,7 +99,7 @@ const DisposableMenus = () => {
             <PanicModeButton />
             <Button 
               variant="outline"
-              onClick={() => window.location.href = '/admin/disposable-menus/help'}
+              onClick={() => navigate('/admin/disposable-menus/help')}
             >
               <Shield className="h-4 w-4 mr-2" />
               Help & Guide

@@ -80,7 +80,7 @@ const DisposableMenuOrders = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.location.href = '/admin/disposable-menus'}
+            onClick={() => window.history.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Menus

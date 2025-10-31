@@ -51,7 +51,8 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   };
 
   const openMenu = () => {
-    window.open(`/m/${menu.encrypted_url_token}`, '_blank');
+    const menuUrl = `/m/${menu.encrypted_url_token}`;
+    window.open(menuUrl, '_blank');
   };
 
   return (
