@@ -20,6 +20,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+/**
+ * Admin Layout Component - v2.0
+ * Provides the main layout structure for all admin pages
+ */
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
