@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { MenuAccessDetails } from './MenuAccessDetails';
 
 interface CreateMenuDialogProps {
   open: boolean;
@@ -68,6 +69,13 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const [showAvailability, setShowAvailability] = useState(true);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [customMessage, setCustomMessage] = useState('');
+  
+  // Created menu details for display
+  const [createdMenuDetails, setCreatedMenuDetails] = useState<{
+    accessCode: string;
+    shareableUrl: string;
+    menuName: string;
+  } | null>(null);
 
   const { data: inventory } = useWholesaleInventory();
   const createMenu = useCreateDisposableMenu();
@@ -105,19 +113,20 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
 
-    await createMenu.mutateAsync({
-      name,
-      description,
-      product_ids: selectedProducts,
-      min_order_quantity: parseFloat(minOrder),
-      max_order_quantity: parseFloat(maxOrder),
-      security_settings: {
-        access_type: accessType,
-        require_access_code: requireAccessCode,
-        access_code: requireAccessCode ? accessCode : null,
-        require_geofence: requireGeofence,
-        geofence_radius: requireGeofence ? parseFloat(geofenceRadius) : null,
-        geofence_location: requireGeofence ? geofenceLocation : null,
+    try {
+      const result = await createMenu.mutateAsync({
+        name,
+        description,
+        product_ids: selectedProducts,
+        min_order_quantity: parseFloat(minOrder),
+        max_order_quantity: parseFloat(maxOrder),
+        security_settings: {
+          access_type: accessType,
+          require_access_code: requireAccessCode,
+          access_code: requireAccessCode ? accessCode : null,
+          require_geofence: requireGeofence,
+          geofence_radius: requireGeofence ? parseFloat(geofenceRadius) : null,
+          geofence_location: requireGeofence ? geofenceLocation : null,
         time_restrictions: timeRestrictions,
         allowed_hours: timeRestrictions ? {
           start: parseInt(allowedHoursStart),
@@ -141,6 +150,17 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
         custom_message: customMessage,
       }
     });
+    
+    // Show access details if available
+    if (result.access_code && result.shareable_url) {
+      setCreatedMenuDetails({
+        accessCode: result.access_code,
+        shareableUrl: result.shareable_url,
+        menuName: name,
+      });
+    }
+    
+    toast.success('Menu created successfully!');
 
     // Reset all state
     setCurrentStep(1);
@@ -151,6 +171,10 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     setRequireAccessCode(true);
     setAccessCode(Math.floor(1000 + Math.random() * 9000).toString());
     onOpenChange(false);
+    } catch (error) {
+      console.error('Error creating menu:', error);
+      toast.error('Failed to create menu');
+    }
   };
 
   const generateNewCode = () => {
@@ -665,6 +689,16 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           )}
         </div>
       </DialogContent>
+
+      <MenuAccessDetails
+        open={createdMenuDetails !== null}
+        onOpenChange={(open) => {
+          if (!open) setCreatedMenuDetails(null);
+        }}
+        accessCode={createdMenuDetails?.accessCode || ""}
+        shareableUrl={createdMenuDetails?.shareableUrl || ""}
+        menuName={createdMenuDetails?.menuName || ""}
+      />
     </Dialog>
   );
 };

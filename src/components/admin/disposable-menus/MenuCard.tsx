@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus } from 'lucide-react';
+import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, Key } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
@@ -9,6 +9,7 @@ import { MenuShareDialog } from './MenuShareDialog';
 import { MenuAnalyticsDialog } from './MenuAnalyticsDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
+import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 
@@ -23,6 +24,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [qrCodeOpen, setQrCodeOpen] = useState(false);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
 
   const viewCount = menu.menu_access_logs?.[0]?.count || 0;
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
@@ -156,6 +158,15 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                   variant="outline" 
                   size="sm" 
                   className="flex-1"
+                  onClick={() => setAccessDetailsOpen(true)}
+                >
+                  <Key className="h-4 w-4 mr-1" />
+                  Access
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
                   onClick={() => setQrCodeOpen(true)}
                 >
                   <QrCode className="h-4 w-4 mr-1" />
@@ -263,6 +274,14 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         onClose={() => setCloneDialogOpen(false)}
         menu={menu}
         onComplete={() => window.location.reload()}
+      />
+
+      <MenuAccessDetails
+        open={accessDetailsOpen}
+        onOpenChange={setAccessDetailsOpen}
+        accessCode={menu.access_code || 'N/A'}
+        shareableUrl={`${window.location.origin}/menu/${menu.encrypted_url_token}`}
+        menuName={menu.name}
       />
     </>
   );

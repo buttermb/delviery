@@ -128,6 +128,7 @@ serve(async (req) => {
         .from('disposable_menus')
         .insert({
           name: menu.name + ' (Regenerated)',
+          access_code: newAccessCode,
           access_code_hash: newAccessCodeHash,
           encrypted_url_token: newUrlToken,
           expiration_date: newExpiresAt.toISOString(),
@@ -140,7 +141,11 @@ serve(async (req) => {
       if (createError) {
         console.error('Regeneration error:', createError);
       } else {
+        const shareableUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/menu/${newUrlToken}`;
+        
         response.regenerated_menu = newMenu;
+        response.access_code = newAccessCode;
+        response.shareable_url = shareableUrl;
         console.log('Menu regenerated:', newMenu.id);
       }
     }

@@ -68,6 +68,7 @@ serve(async (req) => {
 
     console.log('Inserting menu with data:', {
       name,
+      access_code: accessCode,
       access_code_hash: accessCodeHash,
       encrypted_url_token: urlToken,
       expiration_date: expiresAt.toISOString(),
@@ -79,6 +80,7 @@ serve(async (req) => {
       .from('disposable_menus')
       .insert({
         name,
+        access_code: accessCode,
         access_code_hash: accessCodeHash,
         encrypted_url_token: urlToken,
         expiration_date: expiresAt.toISOString(),
@@ -103,8 +105,16 @@ serve(async (req) => {
       event_data: { menu_id: menu.id, access_code: accessCode }
     });
 
+    const shareableUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/menu/${urlToken}`;
+
     return new Response(
-      JSON.stringify({ success: true, menu, access_code: accessCode }),
+      JSON.stringify({ 
+        success: true, 
+        menu, 
+        access_code: accessCode,
+        url_token: urlToken,
+        shareable_url: shareableUrl
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
