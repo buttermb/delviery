@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,7 +17,8 @@ const MenuAccess = () => {
   const [searchParams] = useSearchParams();
   const uniqueToken = searchParams.get('u');
 
-  const [accessCode, setAccessCode] = useState('');
+  const [codeDigits, setCodeDigits] = useState(['', '', '', '']);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   const [menu, setMenu] = useState<any>(null);
   const [accessGranted, setAccessGranted] = useState(false);
@@ -60,9 +61,67 @@ const MenuAccess = () => {
     }
   }, [honeypotSystem]);
 
-  const handleValidate = async () => {
-    if (!accessCode || accessCode.length < 4 || accessCode.length > 6) {
-      setError('Please enter a 4-6 digit access code');
+  const handleDigitChange = (index: number, value: string) => {
+    // Only allow numbers
+    const numericValue = value.replace(/[^0-9]/g, '');
+    
+    if (numericValue.length <= 1) {
+      const newDigits = [...codeDigits];
+      newDigits[index] = numericValue;
+      setCodeDigits(newDigits);
+      
+      // Auto-advance to next input
+      if (numericValue && index < 3) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      
+      // Auto-submit when all 4 digits are entered
+      if (index === 3 && numericValue) {
+        const fullCode = [...newDigits.slice(0, 3), numericValue].join('');
+        if (fullCode.length === 4) {
+          handleValidate(fullCode);
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
+      // Move to previous input on backspace if current is empty
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'Enter') {
+      const fullCode = codeDigits.join('');
+      if (fullCode.length === 4) {
+        handleValidate(fullCode);
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+    if (pastedData) {
+      const newDigits = pastedData.split('').concat(['', '', '', '']).slice(0, 4);
+      setCodeDigits(newDigits);
+      
+      // Focus the next empty input or last input
+      const nextEmptyIndex = newDigits.findIndex(d => !d);
+      if (nextEmptyIndex !== -1) {
+        inputRefs.current[nextEmptyIndex]?.focus();
+      } else {
+        inputRefs.current[3]?.focus();
+        if (pastedData.length === 4) {
+          handleValidate(pastedData);
+        }
+      }
+    }
+  };
+
+  const handleValidate = async (code?: string) => {
+    const accessCode = code || codeDigits.join('');
+    
+    if (!accessCode || accessCode.length !== 4) {
+      setError('Please enter a 4-digit access code');
       return;
     }
 
@@ -122,17 +181,30 @@ const MenuAccess = () => {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="accessCode">Enter Access Code</Label>
-              <Input
-                id="accessCode"
-                type="text"
-                placeholder="Enter your access code"
-                value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value.replace(/[^0-9]/g, ''))}
-                maxLength={6}
-                className="text-center text-2xl tracking-widest font-mono"
-                onKeyDown={(e) => e.key === 'Enter' && handleValidate()}
-              />
+              <Label htmlFor="code-0" className="text-center block mb-3">
+                Enter 4-Digit Access Code
+              </Label>
+              <div className="flex gap-3 justify-center">
+                {[0, 1, 2, 3].map((index) => (
+                  <Input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    id={`code-${index}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={codeDigits[index]}
+                    onChange={(e) => handleDigitChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={index === 0 ? handlePaste : undefined}
+                    className="w-16 h-16 text-center text-3xl font-bold"
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Paste your code or type each digit
+              </p>
             </div>
 
             {error && (
@@ -143,8 +215,8 @@ const MenuAccess = () => {
             )}
 
             <Button
-              onClick={handleValidate}
-              disabled={isValidating}
+              onClick={() => handleValidate()}
+              disabled={isValidating || codeDigits.join('').length !== 4}
               className="w-full"
               size="lg"
             >
