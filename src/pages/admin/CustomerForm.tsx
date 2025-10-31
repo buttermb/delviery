@@ -139,33 +139,39 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <SEOHead 
-        title={isEdit ? 'Edit Customer' : 'Add Customer'}
-        description="Customer form"
-      />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <SEOHead 
+          title={isEdit ? 'Edit Customer' : 'Add Customer'}
+          description="Customer form"
+        />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/admin/customer-management')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-3xl font-bold">
-            {isEdit ? 'Edit Customer' : 'Add New Customer'}
-          </h1>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate('/admin/customer-management')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {isEdit ? 'Edit Customer' : 'Add New Customer'}
+              </h1>
+              <p className="text-gray-500 mt-1">
+                {isEdit ? 'Update customer information' : 'Create a new customer profile'}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
+            {/* Basic Information */}
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
+              </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -250,11 +256,11 @@ export default function CustomerForm() {
             </CardContent>
           </Card>
 
-          {/* Customer Type */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Type</CardTitle>
-            </CardHeader>
+            {/* Customer Type */}
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Customer Type</CardTitle>
+              </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="customer_type">Type</Label>
@@ -296,31 +302,34 @@ export default function CustomerForm() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <div className="flex gap-4 justify-end">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate('/admin/customer-management')}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? (
-                <>Saving...</>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEdit ? 'Update Customer' : 'Create Customer'}
-                </>
-              )}
-            </Button>
+            {/* Actions */}
+            <div className="flex gap-4 justify-end pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => navigate('/admin/customer-management')}
+                className="border-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                disabled={loading}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                {loading ? (
+                  <>Saving...</>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {isEdit ? 'Update Customer' : 'Create Customer'}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

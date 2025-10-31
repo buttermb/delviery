@@ -150,30 +150,36 @@ export default function CustomerDetails() {
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
 
-      {/* Header */}
-      <div className="mb-6">
-        <Button variant="ghost" onClick={() => navigate('/admin/customer-management')} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Customers
-        </Button>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="mb-8">
+          <Button variant="ghost" onClick={() => navigate('/admin/customer-management')} className="mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Customers
+          </Button>
 
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-10 h-10 text-primary" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">
-                  {customer.first_name} {customer.last_name}
-                </h1>
-                <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                  {customer.customer_type === 'medical' ? 'Medical Patient' : 'Recreational'}
-                </Badge>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4">
+              <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center">
+                <User className="w-10 h-10 text-emerald-600" />
               </div>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {customer.first_name} {customer.last_name}
+                  </h1>
+                  <Badge 
+                    className={customer.customer_type === 'medical' 
+                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-100' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                    }
+                  >
+                    {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+                  </Badge>
+                </div>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
@@ -191,80 +197,95 @@ export default function CustomerDetails() {
             </div>
           </div>
 
-          <Button onClick={() => navigate(`/admin/customer-management/${id}/edit`)}>
-            Edit Profile
-          </Button>
+            <Button 
+              onClick={() => navigate(`/admin/customer-management/${id}/edit`)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            >
+              Edit Profile
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <DollarSign className="w-8 h-8 text-primary" />
-              <div>
-                <p className="text-2xl font-bold">${customer.total_spent?.toFixed(2) || '0.00'}</p>
-                <p className="text-xs text-muted-foreground">Total Spent</p>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Total Spent</p>
+                  <p className="text-3xl font-bold font-mono text-gray-900">
+                    ${customer.total_spent?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+                <div className="p-3 bg-emerald-100 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-emerald-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <ShoppingBag className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="text-2xl font-bold">{orders.length}</p>
-                <p className="text-xs text-muted-foreground">Total Orders</p>
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Total Orders</p>
+                  <p className="text-3xl font-bold font-mono text-gray-900">{orders.length}</p>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <ShoppingBag className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Gift className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="text-2xl font-bold">{customer.loyalty_points || 0}</p>
-                <p className="text-xs text-muted-foreground">Loyalty Points</p>
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Loyalty Points</p>
+                  <p className="text-3xl font-bold font-mono text-gray-900">{customer.loyalty_points || 0}</p>
+                </div>
+                <div className="p-3 bg-emerald-100 rounded-lg">
+                  <Gift className="w-6 h-6 text-emerald-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Star className="w-8 h-8 text-yellow-600" />
-              <div>
-                <p className="text-2xl font-bold">VIP</p>
-                <p className="text-xs text-muted-foreground">Customer Tier</p>
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-500 mb-1">Average Order</p>
+                  <p className="text-3xl font-bold font-mono text-gray-900">
+                    ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Star className="w-6 h-6 text-purple-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Purchase History</TabsTrigger>
-          <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
-          <TabsTrigger value="medical">Medical Info</TabsTrigger>
-          <TabsTrigger value="notes">Notes & Preferences</TabsTrigger>
-        </TabsList>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-white border border-gray-200">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="orders">Purchase History</TabsTrigger>
+            <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
+            <TabsTrigger value="medical">Medical Info</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-white border-gray-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Contact Information</CardTitle>
+                </CardHeader>
               <CardContent className="space-y-3">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Email</label>
@@ -285,10 +306,10 @@ export default function CustomerDetails() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Activity</CardTitle>
-              </CardHeader>
+              <Card className="bg-white border-gray-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">Account Activity</CardTitle>
+                </CardHeader>
               <CardContent className="space-y-3">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Last Purchase</label>
@@ -306,17 +327,17 @@ export default function CustomerDetails() {
                   <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
                   <Badge>VIP Member</Badge>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-        {/* Orders Tab */}
-        <TabsContent value="orders">
-          <Card>
-            <CardHeader>
-              <CardTitle>Purchase History</CardTitle>
-            </CardHeader>
+          {/* Orders Tab */}
+          <TabsContent value="orders">
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Purchase History</CardTitle>
+              </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {orders.length === 0 ? (
@@ -539,8 +560,9 @@ export default function CustomerDetails() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

@@ -133,119 +133,137 @@ export default function CustomerReports() {
   }
 
   return (
-    <div className="space-y-6">
-      <SEOHead 
-        title="Customer Reports | Admin"
-        description="Customer analytics and insights"
-      />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <SEOHead 
+          title="Customer Reports | Admin"
+          description="Customer analytics and insights"
+        />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Customer Reports & Analytics</h1>
-          <p className="text-muted-foreground">Insights into your customer base</p>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Customer Reports & Analytics</h1>
+            <p className="text-gray-500 mt-1">Insights into your customer base</p>
+          </div>
+          <Button 
+            onClick={handleExportReport}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export Report
+          </Button>
         </div>
-        <Button onClick={handleExportReport}>
-          <Download className="w-4 h-4 mr-2" />
-          Export Report
-        </Button>
-      </div>
 
-      {/* Key Metrics */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Key Metrics */}
+        <div className="grid md:grid-cols-4 gap-6">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Total Customers</CardTitle>
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Users className="h-5 w-5 text-emerald-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">{stats.totalCustomers}</div>
+              <p className="text-xs text-emerald-600 flex items-center gap-1 mt-2">
+                <TrendingUp className="w-3 h-3" />
+                +{stats.newThisMonth} this month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Active Customers</CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <ShoppingBag className="h-5 w-5 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">{stats.activeCustomers}</div>
+              <p className="text-xs text-gray-500 mt-2">
+                {((stats.activeCustomers / stats.totalCustomers) * 100).toFixed(1)}% of total
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">At Risk</CardTitle>
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Calendar className="h-5 w-5 text-amber-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-red-600">{stats.atRiskCustomers}</div>
+              <p className="text-xs text-gray-500 mt-2">60+ days since order</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Medical Patients</CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Award className="h-5 w-5 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">{stats.medicalPatients}</div>
+              <p className="text-xs text-gray-500 mt-2">
+                {((stats.medicalPatients / stats.totalCustomers) * 100).toFixed(1)}% of total
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Revenue Metrics */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle>
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-emerald-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">${stats.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-gray-500 mt-2">Lifetime value</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Avg Order Value</CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">${stats.avgOrderValue.toFixed(2)}</div>
+              <p className="text-xs text-gray-500 mt-2">Per transaction</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">Avg Lifetime Value</CardTitle>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold font-mono text-gray-900">${stats.avgLifetimeValue.toFixed(2)}</div>
+              <p className="text-xs text-gray-500 mt-2">Per customer</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Customers */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-900">Top 10 Customers by Spend</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-            <p className="text-xs text-green-600 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" />
-              +{stats.newThisMonth} this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeCustomers}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.activeCustomers / stats.totalCustomers) * 100).toFixed(1)}% of total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.atRiskCustomers}</div>
-            <p className="text-xs text-muted-foreground">60+ days since order</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Medical Patients</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.medicalPatients}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.medicalPatients / stats.totalCustomers) * 100).toFixed(1)}% of total
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Revenue Metrics */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Lifetime value</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.avgOrderValue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Per transaction</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Lifetime Value</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.avgLifetimeValue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Per customer</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Customers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top 10 Customers by Spend</CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {stats.topCustomers.map((customer, index) => (
@@ -270,9 +288,10 @@ export default function CustomerReports() {
                 </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
