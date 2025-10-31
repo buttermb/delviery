@@ -12,163 +12,137 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const { action, menu_id, whitelist_id, customer_name, customer_phone, customer_email } = await req.json();
+
+    console.log('Managing whitelist:', { action, menu_id, whitelist_id });
+
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const { data: { user } } = await supabase.auth.getUser(token);
+
+    if (!user) {
+      throw new Error('Unauthorized');
     }
 
-    const {
-      menu_id,
-      action,
-      customer_data,
-      whitelist_id
-    } = await req.json();
+    let response: any = { success: true };
 
-    // Validate input
-    if (!menu_id || !action) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: menu_id, action' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const generateToken = () => {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let token = '';
-      for (let i = 0; i < 12; i++) {
-        token += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return token;
-    };
-
-    // Handle different actions
     switch (action) {
-      case 'add': {
-        if (!customer_data?.name || !customer_data?.phone) {
-          return new Response(
-            JSON.stringify({ error: 'Missing customer data' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      case 'add':
+        const generateToken = () => {
+          return Array.from({ length: 32 }, () => 
+            Math.random().toString(36)[2] || '0'
+          ).join('');
+        };
 
-        const uniqueToken = generateToken();
+        const accessToken = generateToken();
 
-        const { data: whitelist, error: addError } = await supabaseClient
-          .from('menu_access_whitelist')
+        const { data: whitelistEntry, error: addError } = await supabase
+          .from('menu_whitelist')
           .insert({
             menu_id,
-            customer_id: customer_data.customer_id || null,
-            customer_name: customer_data.name,
-            customer_phone: customer_data.phone,
-            customer_email: customer_data.email || null,
-            unique_access_token: uniqueToken,
-            invited_by: user.id
+            customer_name,
+            customer_phone,
+            customer_email,
+            access_token: accessToken,
+            status: 'active'
           })
           .select()
           .single();
 
-        if (addError) throw addError;
-
-        // Get menu URL
-        const { data: menu } = await supabaseClient
-          .from('disposable_menus')
-          .select('encrypted_url_token')
-          .eq('id', menu_id)
-          .single();
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            whitelist_id: whitelist.id,
-            access_url: `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/m/${menu?.encrypted_url_token}?u=${uniqueToken}`,
-            invitation_sent: false // SMS/email sending would be implemented separately
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      case 'revoke': {
-        if (!whitelist_id) {
-          return new Response(
-            JSON.stringify({ error: 'Missing whitelist_id' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (addError) {
+          throw addError;
         }
 
-        const { error: revokeError } = await supabaseClient
-          .from('menu_access_whitelist')
-          .update({
+        response.whitelist_entry = whitelistEntry;
+        response.access_token = accessToken;
+
+        await supabase.from('menu_security_events').insert({
+          menu_id,
+          event_type: 'whitelist_added',
+          severity: 'info',
+          description: `Customer ${customer_name} added to whitelist`,
+          event_data: { whitelist_id: whitelistEntry.id, customer_name }
+        });
+
+        console.log('Whitelist entry created:', whitelistEntry.id);
+        break;
+
+      case 'revoke':
+        const { error: revokeError } = await supabase
+          .from('menu_whitelist')
+          .update({ 
             status: 'revoked',
-            revoked_at: new Date().toISOString(),
-            revoked_reason: customer_data?.reason || 'Manually revoked'
+            revoked_at: new Date().toISOString()
           })
           .eq('id', whitelist_id);
 
-        if (revokeError) throw revokeError;
-
-        return new Response(
-          JSON.stringify({ success: true }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      case 'regenerate_token': {
-        if (!whitelist_id) {
-          return new Response(
-            JSON.stringify({ error: 'Missing whitelist_id' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (revokeError) {
+          throw revokeError;
         }
 
-        const newToken = generateToken();
+        await supabase.from('menu_security_events').insert({
+          menu_id,
+          event_type: 'whitelist_revoked',
+          severity: 'medium',
+          description: 'Whitelist access revoked',
+          event_data: { whitelist_id }
+        });
 
-        const { error: updateError } = await supabaseClient
-          .from('menu_access_whitelist')
-          .update({
-            unique_access_token: newToken,
-            status: 'pending',
-            view_count: 0
+        console.log('Whitelist entry revoked:', whitelist_id);
+        break;
+
+      case 'regenerate':
+        const newToken = Array.from({ length: 32 }, () => 
+          Math.random().toString(36)[2] || '0'
+        ).join('');
+
+        const { data: updatedEntry, error: regenError } = await supabase
+          .from('menu_whitelist')
+          .update({ 
+            access_token: newToken,
+            status: 'active',
+            revoked_at: null
           })
-          .eq('id', whitelist_id);
-
-        if (updateError) throw updateError;
-
-        const { data: menu } = await supabaseClient
-          .from('disposable_menus')
-          .select('encrypted_url_token')
-          .eq('id', menu_id)
+          .eq('id', whitelist_id)
+          .select()
           .single();
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            new_access_url: `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/m/${menu?.encrypted_url_token}?u=${newToken}`
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+        if (regenError) {
+          throw regenError;
+        }
+
+        response.whitelist_entry = updatedEntry;
+        response.access_token = newToken;
+
+        await supabase.from('menu_security_events').insert({
+          menu_id,
+          event_type: 'token_regenerated',
+          severity: 'info',
+          description: 'Access token regenerated',
+          event_data: { whitelist_id }
+        });
+
+        console.log('Token regenerated for:', whitelist_id);
+        break;
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        throw new Error(`Unknown action: ${action}`);
     }
 
-  } catch (error) {
-    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify(response),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error: any) {
+    console.error('Error in menu-whitelist-manage:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
