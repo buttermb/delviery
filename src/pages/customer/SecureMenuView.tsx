@@ -5,22 +5,81 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
+import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn, Leaf, Sparkles, Wind, Coffee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
+import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
+
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price?: number;
+  prices?: Record<string, number>;
+  category?: string;
+  image_url?: string;
+  images?: string[];
+  quantity_lbs?: number;
+  strain_type?: 'Indica' | 'Sativa' | 'Hybrid' | 'CBD';
+  thc_percentage?: number;
+  cbd_percentage?: number;
+  terpenes?: Array<{ name: string; percentage: number }>;
+  effects?: string[];
+  flavors?: string[];
+  lineage?: string;
+  grow_info?: string;
+}
+
+interface MenuData {
+  menu_id: string;
+  whitelist_id?: string;
+  name: string;
+  description?: string;
+  products: Product[];
+  appearance_settings?: {
+    show_product_images?: boolean;
+    show_availability?: boolean;
+  };
+  min_order_quantity?: number;
+  max_order_quantity?: number;
+  custom_prices?: Record<string, number>;
+}
+
+const getStrainColor = (strainType?: string) => {
+  switch (strainType) {
+    case 'Indica': return 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20';
+    case 'Sativa': return 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20';
+    case 'Hybrid': return 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20';
+    case 'CBD': return 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20';
+    default: return 'bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20';
+  }
+};
+
+const getEffectIcon = (effect: string) => {
+  const lowerEffect = effect.toLowerCase();
+  if (lowerEffect.includes('relax') || lowerEffect.includes('calm')) return '😌';
+  if (lowerEffect.includes('energe') || lowerEffect.includes('upli')) return '⚡';
+  if (lowerEffect.includes('creative') || lowerEffect.includes('focus')) return '🎨';
+  if (lowerEffect.includes('happy') || lowerEffect.includes('euphori')) return '😊';
+  if (lowerEffect.includes('sleep') || lowerEffect.includes('sedat')) return '😴';
+  if (lowerEffect.includes('hungry') || lowerEffect.includes('munch')) return '🍕';
+  return '✨';
+};
 
 const SecureMenuView = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   
-  const [menuData, setMenuData] = useState<any>(null);
+  const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<Record<string, number>>({});
+  const [cart, setCart] = useState<Record<string, { quantity: number; weight: string }>>({});
   const [placingOrder, setPlacingOrder] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
 
   useEffect(() => {
     // Check session storage for validated menu access
@@ -38,9 +97,17 @@ const SecureMenuView = () => {
     }
   }, [token, navigate]);
 
+  const getProductPrice = (product: Product, weight?: string) => {
+    if (product.prices && typeof product.prices === 'object') {
+      const selectedWeight = weight || selectedWeights[product.id] || getDefaultWeight(product.prices);
+      return product.prices[selectedWeight] || 0;
+    }
+    return product.price || 0;
+  };
+
   const updateQuantity = (productId: string, delta: number) => {
     setCart(prev => {
-      const current = prev[productId] || 0;
+      const current = prev[productId]?.quantity || 0;
       const newQty = Math.max(0, current + delta);
       
       if (newQty === 0) {
@@ -48,14 +115,19 @@ const SecureMenuView = () => {
         return rest;
       }
       
-      return { ...prev, [productId]: newQty };
+      const weight = selectedWeights[productId] || getDefaultWeight(
+        menuData?.products.find(p => p.id === productId)?.prices
+      );
+      
+      return { ...prev, [productId]: { quantity: newQty, weight } };
     });
   };
 
   const calculateTotal = () => {
-    return Object.entries(cart).reduce((sum, [productId, quantity]) => {
-      const product = menuData?.products?.find((p: any) => p.id === productId);
-      const price = product?.price || 0;
+    return Object.entries(cart).reduce((sum, [productId, { quantity, weight }]) => {
+      const product = menuData?.products?.find((p: Product) => p.id === productId);
+      if (!product) return sum;
+      const price = getProductPrice(product, weight);
       return sum + (price * quantity);
     }, 0);
   };
@@ -65,20 +137,21 @@ const SecureMenuView = () => {
 
     setPlacingOrder(true);
     try {
-      const orderItems = Object.entries(cart).map(([productId, quantity]) => {
-        const product = menuData.products.find((p: any) => p.id === productId);
-        const price = menuData.custom_prices?.[productId] || product?.price || 0;
+      const orderItems = Object.entries(cart).map(([productId, { quantity, weight }]) => {
+        const product = menuData!.products.find((p: Product) => p.id === productId);
+        const price = getProductPrice(product!, weight);
         return {
           product_id: productId,
           quantity,
-          unit_price: price
+          unit_price: price,
+          weight
         };
       });
 
       const { data, error } = await supabase.functions.invoke('menu-order-place', {
         body: {
-          menu_id: menuData.menu_id,
-          whitelist_id: menuData.whitelist_id,
+          menu_id: menuData!.menu_id,
+          whitelist_id: menuData!.whitelist_id,
           order_items: orderItems,
           total_amount: calculateTotal(),
           customer_notes: ''
@@ -89,6 +162,7 @@ const SecureMenuView = () => {
 
       showSuccessToast('Order Placed', 'Your order has been submitted successfully');
       setCart({});
+      setSelectedWeights({});
       
       // Clear session after order
       setTimeout(() => {
@@ -115,7 +189,7 @@ const SecureMenuView = () => {
     return null;
   }
 
-  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = calculateTotal();
 
   return (
@@ -157,25 +231,32 @@ const SecureMenuView = () => {
         )}
 
         {/* Products Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-24">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
           {!menuData.products || menuData.products.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <p className="text-lg text-muted-foreground">No products available in this menu</p>
             </div>
           ) : (
-            menuData.products.map((product: any) => {
-              const quantity = cart[product.id] || 0;
+            menuData.products.map((product: Product) => {
+              const cartItem = cart[product.id];
+              const quantity = cartItem?.quantity || 0;
               const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
               const imageUrl = product.image_url || product.images?.[0];
+              
+              const hasPrices = product.prices && typeof product.prices === 'object';
+              const selectedWeight = selectedWeights[product.id] || getDefaultWeight(product.prices);
+              const currentPrice = getProductPrice(product, selectedWeight);
+              
+              const weights = hasPrices ? sortProductWeights(Object.keys(product.prices!)) : [];
 
               return (
-                <Card key={product.id} className="p-4">
-                  <div className="space-y-3">
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative">
                     {/* Product Image */}
                     {shouldShowImage && imageUrl && (
                       <div 
-                        className="relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer group"
+                        className="relative aspect-square overflow-hidden bg-muted cursor-pointer group"
                         onClick={() => {
                           setZoomedImage({ url: imageUrl, name: product.name });
                           trackImageZoom(menuData.menu_id, product.id);
@@ -184,29 +265,94 @@ const SecureMenuView = () => {
                         <OptimizedProductImage
                           src={imageUrl}
                           alt={product.name}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
                           priority={false}
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                           <ZoomIn className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
-                          Click to zoom
-                        </Badge>
                       </div>
                     )}
                     
+                    {/* Strain Badge Overlay */}
+                    {product.strain_type && (
+                      <Badge className={`absolute top-3 left-3 ${getStrainColor(product.strain_type)} font-semibold`}>
+                        {product.strain_type}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="p-4 space-y-3">
                     {/* Product Info */}
                     <div>
-                      <h3 className="font-bold">{product.name}</h3>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-lg leading-tight">{product.name}</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedProduct(product)}
+                          className="h-8 px-2"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* THC/CBD Badges */}
+                      {(product.thc_percentage || product.cbd_percentage) && (
+                        <div className="flex gap-2 mb-2">
+                          {product.thc_percentage && (
+                            <Badge variant="outline" className="text-xs">
+                              <Leaf className="h-3 w-3 mr-1" />
+                              {product.thc_percentage.toFixed(1)}% THC
+                            </Badge>
+                          )}
+                          {product.cbd_percentage && product.cbd_percentage > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {product.cbd_percentage.toFixed(1)}% CBD
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {product.description || 'No description'}
+                        {product.description || 'Premium cannabis flower'}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="text-lg font-bold text-primary">
-                        ${(product.price || 0).toFixed(2)}
+                    {/* Effects */}
+                    {product.effects && product.effects.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {product.effects.slice(0, 4).map((effect, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {getEffectIcon(effect)} {effect}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Weight Selector */}
+                    {hasPrices && weights.length > 0 && (
+                      <div className="flex gap-1 flex-wrap">
+                        {weights.map(weight => (
+                          <Button
+                            key={weight}
+                            size="sm"
+                            variant={selectedWeight === weight ? 'default' : 'outline'}
+                            onClick={() => {
+                              setSelectedWeights(prev => ({ ...prev, [product.id]: weight }));
+                            }}
+                            className="text-xs h-8"
+                          >
+                            {formatWeight(weight)}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Price and Stock */}
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div className="text-xl font-bold text-primary">
+                        ${currentPrice.toFixed(2)}
                       </div>
                       {menuData.appearance_settings?.show_availability !== false && (
                         <Badge variant="outline" className="flex items-center gap-1">
@@ -217,12 +363,13 @@ const SecureMenuView = () => {
                     </div>
 
                     {/* Quantity Controls */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => updateQuantity(product.id, -1)}
                         disabled={quantity === 0}
+                        className="h-9 w-9 p-0"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -231,20 +378,22 @@ const SecureMenuView = () => {
                         value={quantity}
                         onChange={(e) => {
                           const val = parseInt(e.target.value) || 0;
+                          const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
                           setCart(prev => val === 0 ? 
                             Object.fromEntries(Object.entries(prev).filter(([k]) => k !== product.id)) :
-                            { ...prev, [product.id]: val }
+                            { ...prev, [product.id]: { quantity: val, weight } }
                           );
                         }}
-                        className="w-20 text-center"
+                        className="flex-1 text-center h-9"
                         min={0}
                       />
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={() => updateQuantity(product.id, 1)}
+                        className="h-9 flex-1"
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
                       </Button>
                     </div>
                   </div>
@@ -307,6 +456,172 @@ const SecureMenuView = () => {
                 className="w-full h-auto"
                 priority={true}
               />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Detail Dialog */}
+      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedProduct?.name}</DialogTitle>
+            {selectedProduct?.strain_type && (
+              <Badge className={`w-fit ${getStrainColor(selectedProduct.strain_type)} font-semibold`}>
+                {selectedProduct.strain_type}
+              </Badge>
+            )}
+          </DialogHeader>
+          
+          {selectedProduct && (
+            <div className="space-y-6">
+              {/* Image */}
+              {(selectedProduct.image_url || selectedProduct.images?.[0]) && (
+                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                  <OptimizedProductImage
+                    src={selectedProduct.image_url || selectedProduct.images![0]}
+                    alt={selectedProduct.name}
+                    className="w-full h-full object-cover"
+                    priority={true}
+                  />
+                </div>
+              )}
+
+              {/* Price Range */}
+              {selectedProduct.prices && typeof selectedProduct.prices === 'object' && (
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Available Sizes
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(selectedProduct.prices).map(([weight, price]) => (
+                      <div key={weight} className="flex justify-between p-2 bg-muted rounded">
+                        <span className="font-medium">{formatWeight(weight)}</span>
+                        <span className="text-primary">${(price as number).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Lineage */}
+              {selectedProduct.lineage && (
+                <div>
+                  <h4 className="font-semibold mb-2">Lineage</h4>
+                  <p className="text-muted-foreground">{selectedProduct.lineage}</p>
+                </div>
+              )}
+
+              {/* THC/CBD Content */}
+              {(selectedProduct.thc_percentage || selectedProduct.cbd_percentage) && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Leaf className="h-4 w-4" />
+                    Cannabinoid Profile
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedProduct.thc_percentage && (
+                      <div className="p-3 bg-green-500/10 rounded-lg">
+                        <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                          {selectedProduct.thc_percentage.toFixed(1)}%
+                        </div>
+                        <div className="text-sm text-muted-foreground">THC</div>
+                      </div>
+                    )}
+                    {selectedProduct.cbd_percentage && (
+                      <div className="p-3 bg-blue-500/10 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                          {selectedProduct.cbd_percentage.toFixed(1)}%
+                        </div>
+                        <div className="text-sm text-muted-foreground">CBD</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Terpene Profile */}
+              {selectedProduct.terpenes && selectedProduct.terpenes.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Wind className="h-4 w-4" />
+                    Terpene Profile
+                  </h4>
+                  <div className="space-y-2">
+                    {selectedProduct.terpenes.map((terpene, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-sm">{terpene.name}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary rounded-full" 
+                              style={{ width: `${Math.min(terpene.percentage * 50, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium w-12 text-right">
+                            {terpene.percentage.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Effects */}
+              {selectedProduct.effects && selectedProduct.effects.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Effects
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.effects.map((effect, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-sm py-1">
+                        {getEffectIcon(effect)} {effect}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Flavors */}
+              {selectedProduct.flavors && selectedProduct.flavors.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Coffee className="h-4 w-4" />
+                    Flavor Profile
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.flavors.map((flavor, idx) => (
+                      <Badge key={idx} variant="outline" className="text-sm">
+                        {flavor}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {selectedProduct.description && (
+                <div>
+                  <h4 className="font-semibold mb-2">Description</h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {selectedProduct.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Grow Info */}
+              {selectedProduct.grow_info && (
+                <div>
+                  <h4 className="font-semibold mb-2">Grow Information</h4>
+                  <p className="text-muted-foreground text-sm">
+                    {selectedProduct.grow_info}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
