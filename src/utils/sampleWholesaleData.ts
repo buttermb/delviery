@@ -235,10 +235,134 @@ export async function createSampleWholesaleData() {
       throw new Error(`Failed to create inventory: ${inventoryError.message}`);
     }
 
+    // Create sample orders (mix of paid and unpaid)
+    if (!clientData || clientData.length === 0) {
+      throw new Error("No clients available for creating orders");
+    }
+
+    const sampleOrders = [
+      {
+        client_id: clientData[0].id, // Big Mike
+        order_number: "WO-1001",
+        total_amount: 60000,
+        status: "completed",
+        payment_status: "paid",
+        delivery_address: clientData[0].address,
+        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        client_id: clientData[1].id, // Eastside
+        order_number: "WO-1002",
+        total_amount: 85000,
+        status: "completed",
+        payment_status: "paid",
+        delivery_address: clientData[1].address,
+        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        client_id: clientData[0].id, // Big Mike - UNPAID
+        order_number: "WO-1003",
+        total_amount: 38000,
+        status: "completed",
+        payment_status: "unpaid",
+        delivery_address: clientData[0].address,
+        created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        client_id: clientData[2].id, // South Bronx - UNPAID
+        order_number: "WO-1004",
+        total_amount: 12000,
+        status: "completed",
+        payment_status: "unpaid",
+        delivery_address: clientData[2].address,
+        created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        client_id: clientData[3].id, // Queens Network - PENDING
+        order_number: "WO-1005",
+        total_amount: 18000,
+        status: "pending",
+        payment_status: "unpaid",
+        delivery_address: clientData[3].address,
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+
+    const { data: orderData, error: orderError } = await supabase
+      .from("wholesale_orders")
+      .insert(sampleOrders)
+      .select();
+
+    if (orderError) {
+      console.error("Order creation error:", orderError);
+      throw new Error(`Failed to create orders: ${orderError.message}`);
+    }
+
+    // Create sample payments
+    const samplePayments = [
+      {
+        client_id: clientData[0].id,
+        amount: 60000,
+        payment_method: "cash",
+        notes: "Payment for order WO-1001"
+      },
+      {
+        client_id: clientData[1].id,
+        amount: 85000,
+        payment_method: "bank_transfer",
+        notes: "Payment for order WO-1002"
+      }
+    ];
+
+    const { error: paymentError } = await supabase
+      .from("wholesale_payments")
+      .insert(samplePayments);
+
+    if (paymentError) {
+      console.error("Payment creation error:", paymentError);
+      throw new Error(`Failed to create payments: ${paymentError.message}`);
+    }
+
+    // Create sample active deliveries
+    if (!runnerData || runnerData.length === 0 || !orderData || orderData.length === 0) {
+      console.log("Skipping deliveries - no runners or orders available");
+    } else {
+      const sampleDeliveries = [
+        {
+          order_id: orderData[4]?.id, // Queens Network order
+          runner_id: runnerData[0].id, // Marcus
+          status: "in_transit",
+          current_location: { lat: 40.7489, lng: -73.9680 },
+          assigned_at: new Date().toISOString(),
+          picked_up_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          notes: "Client requested delivery after 2 PM"
+        },
+        {
+          order_id: orderData[3]?.id, // South Bronx order
+          runner_id: runnerData[1].id, // DeShawn
+          status: "assigned",
+          current_location: { lat: 40.7580, lng: -73.9855 },
+          assigned_at: new Date().toISOString(),
+          notes: "Collect outstanding balance"
+        }
+      ];
+
+      const { error: deliveryError } = await supabase
+        .from("wholesale_deliveries")
+        .insert(sampleDeliveries.filter(d => d.order_id)); // Only insert if order exists
+
+      if (deliveryError) {
+        console.error("Delivery creation error:", deliveryError);
+        // Don't throw, just log
+      }
+    }
+
     console.log("✅ Sample wholesale data created successfully!");
     console.log(`- ${clientData.length} clients created`);
     console.log(`- ${runnerData.length} runners created`);
     console.log(`- ${inventory.length} inventory items created`);
+    console.log(`- ${orderData?.length || 0} orders created`);
+    console.log(`- ${samplePayments.length} payments recorded`);
 
     return { success: true, clients: clientData, runners: runnerData };
   } catch (error) {

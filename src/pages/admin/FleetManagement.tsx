@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
+import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 
 export default function FleetManagement() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -88,6 +90,9 @@ export default function FleetManagement() {
           + Add Runner
         </Button>
       </div>
+
+      {/* Live GPS Tracking Map */}
+      <LiveDeliveryMap showAll={true} />
 
       {/* Active Deliveries */}
       <div>
