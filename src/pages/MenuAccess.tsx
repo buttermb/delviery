@@ -5,10 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Lock, Eye, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { Shield, Lock, Eye, ShoppingCart, AlertTriangle, MapPin, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useScreenshotProtection } from '@/hooks/useScreenshotProtection';
+import { useGeofencing } from '@/hooks/useGeofencing';
 import { toast } from 'sonner';
+import { initHoneypotSystem } from '@/utils/honeypotDetection';
 
 const MenuAccess = () => {
   const { token } = useParams();
@@ -21,16 +23,42 @@ const MenuAccess = () => {
   const [accessGranted, setAccessGranted] = useState(false);
   const [error, setError] = useState('');
   const [viewCount, setViewCount] = useState(0);
+  const [honeypotSystem, setHoneypotSystem] = useState<any>(null);
 
   // Enable screenshot protection if menu is loaded
   useScreenshotProtection({
     menuId: menu?.id || '',
     customerName: menu?.customer_name,
-    enabled: accessGranted && menu?.screenshot_protection_enabled,
-    watermarkEnabled: menu?.screenshot_watermark_enabled,
-    watermarkText: `CONFIDENTIAL - ${menu?.customer_name || 'View Only'}`,
+    enabled: accessGranted && menu?.screenshot_protection,
+    watermarkEnabled: menu?.watermark_enabled,
+    watermarkText: menu?.watermark_text || `CONFIDENTIAL - ${menu?.name}`,
     showToast: true,
+    disableRightClickEnabled: menu?.disable_right_click,
   });
+
+  // Geofencing validation
+  const { isChecking: isCheckingLocation, accessGranted: locationAllowed, violation } = useGeofencing({
+    geofences: menu?.geofence_rules || [],
+    enabled: menu?.geofence_enabled || false,
+    onViolation: async (details) => {
+      await supabase.from('menu_security_events').insert({
+        menu_id: menu?.id,
+        event_type: 'geofence_violation',
+        severity: 'high',
+        details
+      });
+    }
+  });
+
+  // Initialize honeypot
+  useEffect(() => {
+    const form = document.querySelector('form');
+    if (form && !honeypotSystem) {
+      const system = initHoneypotSystem(form);
+      setHoneypotSystem(system);
+      return () => system.cleanup();
+    }
+  }, [honeypotSystem]);
 
   const handleValidate = async () => {
     if (!accessCode || accessCode.length < 4) {
