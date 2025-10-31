@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Plus, Mail, DollarSign, Calendar, User } from 'lucide-react';
+import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -25,12 +27,16 @@ export default function CustomerInvoices() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [lineItems, setLineItems] = useState([
+    { description: '', quantity: 1, rate: 0, amount: 0 }
+  ]);
   const [formData, setFormData] = useState({
     customer_id: '',
-    subtotal: '',
-    tax: '',
-    discount: '',
-    due_date: ''
+    due_date: '',
+    payment_terms: 'net_30',
+    notes: '',
+    reference_number: '',
+    tax_rate: '8.875',
   });
 
   useEffect(() => {
@@ -79,14 +85,41 @@ export default function CustomerInvoices() {
     }
   };
 
+  const addLineItem = () => {
+    setLineItems([...lineItems, { description: '', quantity: 1, rate: 0, amount: 0 }]);
+  };
+
+  const removeLineItem = (index: number) => {
+    if (lineItems.length > 1) {
+      setLineItems(lineItems.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateLineItem = (index: number, field: string, value: any) => {
+    const updated = [...lineItems];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    // Calculate amount
+    if (field === 'quantity' || field === 'rate') {
+      updated[index].amount = updated[index].quantity * updated[index].rate;
+    }
+    
+    setLineItems(updated);
+  };
+
+  const calculateTotals = () => {
+    const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+    const taxRate = parseFloat(formData.tax_rate) / 100;
+    const tax = subtotal * taxRate;
+    const total = subtotal + tax;
+    return { subtotal, tax, total };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!account) return;
 
-    const subtotal = parseFloat(formData.subtotal);
-    const tax = parseFloat(formData.tax) || 0;
-    const discount = parseFloat(formData.discount) || 0;
-    const total = subtotal + tax - discount;
+    const { subtotal, tax, total } = calculateTotals();
 
     try {
       const invoiceNumber = `INV-${Date.now()}`;
@@ -97,10 +130,11 @@ export default function CustomerInvoices() {
         invoice_number: invoiceNumber,
         subtotal,
         tax,
-        discount,
+        discount: 0,
         total,
         status: 'unpaid',
-        due_date: formData.due_date || null
+        due_date: formData.due_date || null,
+        notes: formData.notes || null,
       };
 
       const { error } = await supabase
@@ -115,7 +149,15 @@ export default function CustomerInvoices() {
       });
 
       setIsDialogOpen(false);
-      setFormData({ customer_id: '', subtotal: '', tax: '', discount: '', due_date: '' });
+      setFormData({ 
+        customer_id: '', 
+        due_date: '', 
+        payment_terms: 'net_30',
+        notes: '',
+        reference_number: '',
+        tax_rate: '8.875'
+      });
+      setLineItems([{ description: '', quantity: 1, rate: 0, amount: 0 }]);
       loadInvoices();
     } catch (error: any) {
       toast({
@@ -163,82 +205,186 @@ export default function CustomerInvoices() {
               Create Invoice
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Invoice</DialogTitle>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="customer">Customer *</Label>
-                <select
-                  id="customer"
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.customer_id}
-                  onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                  required
-                >
-                  <option value="">Select customer</option>
-                  {customers.map((customer) => (
-                    <option key={customer.user_id} value={customer.user_id}>
-                      {customer.full_name || customer.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Customer & Invoice Details */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="subtotal">Subtotal *</Label>
-                  <Input
-                    id="subtotal"
-                    type="number"
-                    step="0.01"
-                    value={formData.subtotal}
-                    onChange={(e) => setFormData({ ...formData, subtotal: e.target.value })}
-                    placeholder="0.00"
+                  <Label htmlFor="customer">Customer *</Label>
+                  <select
+                    id="customer"
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                    value={formData.customer_id}
+                    onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="">Select customer</option>
+                    {customers.map((customer) => (
+                      <option key={customer.user_id} value={customer.user_id}>
+                        {customer.full_name || customer.email}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <Label htmlFor="tax">Tax</Label>
+                  <Label htmlFor="reference">Reference Number</Label>
                   <Input
-                    id="tax"
-                    type="number"
-                    step="0.01"
-                    value={formData.tax}
-                    onChange={(e) => setFormData({ ...formData, tax: e.target.value })}
-                    placeholder="0.00"
+                    id="reference"
+                    value={formData.reference_number}
+                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
+                    placeholder="PO-12345"
                   />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="discount">Discount</Label>
-                  <Input
-                    id="discount"
-                    type="number"
-                    step="0.01"
-                    value={formData.discount}
-                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="due_date">Due Date</Label>
+                  <Label htmlFor="due_date">Due Date *</Label>
                   <Input
                     id="due_date"
                     type="date"
                     value={formData.due_date}
                     onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                    required
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="payment_terms">Payment Terms</Label>
+                  <Select 
+                    value={formData.payment_terms} 
+                    onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>
+                      <SelectItem value="net_15">Net 15</SelectItem>
+                      <SelectItem value="net_30">Net 30</SelectItem>
+                      <SelectItem value="net_60">Net 60</SelectItem>
+                      <SelectItem value="net_90">Net 90</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2">
+              {/* Line Items */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-semibold">Line Items</Label>
+                  <Button type="button" size="sm" onClick={addLineItem}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Item
+                  </Button>
+                </div>
+
+                <div className="border rounded-lg p-4 space-y-3">
+                  {lineItems.map((item, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 items-start">
+                      <div className="col-span-5">
+                        <Input
+                          placeholder="Description / Service"
+                          value={item.description}
+                          onChange={(e) => updateLineItem(index, 'description', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Input
+                          type="number"
+                          placeholder="Qty"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Rate"
+                          value={item.rate}
+                          onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}
+                          required
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={item.amount.toFixed(2)}
+                          disabled
+                          className="bg-muted"
+                        />
+                      </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        {lineItems.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeLineItem(index)}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Totals Summary */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <div className="space-y-2 max-w-sm ml-auto">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span className="font-semibold">${calculateTotals().subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm gap-4">
+                    <span>Tax Rate:</span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="0.001"
+                        value={formData.tax_rate}
+                        onChange={(e) => setFormData({ ...formData, tax_rate: e.target.value })}
+                        className="w-20 h-8 text-right"
+                      />
+                      <span>%</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Tax:</span>
+                    <span className="font-semibold">${calculateTotals().tax.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between text-base font-bold">
+                    <span>Total:</span>
+                    <span className="text-primary">${calculateTotals().total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <Label htmlFor="notes">Notes / Memo</Label>
+                <Textarea
+                  id="notes"
+                  rows={3}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Add any additional notes or payment instructions..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button
                   type="button"
                   variant="outline"
