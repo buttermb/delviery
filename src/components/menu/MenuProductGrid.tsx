@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Package, Info } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
+import { useMenuCart } from '@/contexts/MenuCartContext';
+import { toast } from '@/hooks/use-toast';
 
 interface Product {
   id: string;
@@ -25,18 +27,24 @@ interface MenuProductGridProps {
 
 export function MenuProductGrid({ products, menuId, whitelistEntryId }: MenuProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [cart, setCart] = useState<Map<string, number>>(new Map());
+  const { items, addItem } = useMenuCart();
 
-  const addToCart = (productId: string) => {
-    setCart(prev => {
-      const newCart = new Map(prev);
-      newCart.set(productId, (newCart.get(productId) || 0) + 1);
-      return newCart;
+  const addToCart = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url,
+    });
+    toast({
+      title: 'Added to Cart',
+      description: `${product.name} has been added to your cart.`,
     });
   };
 
   const getCartQuantity = (productId: string) => {
-    return cart.get(productId) || 0;
+    const item = items.find(i => i.productId === productId);
+    return item?.quantity || 0;
   };
 
   if (products.length === 0) {
@@ -125,7 +133,7 @@ export function MenuProductGrid({ products, menuId, whitelistEntryId }: MenuProd
               <CardFooter className="pt-0">
                 <Button
                   className="w-full"
-                  onClick={() => addToCart(product.id)}
+                  onClick={() => addToCart(product)}
                   disabled={isOutOfStock}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
@@ -143,7 +151,7 @@ export function MenuProductGrid({ products, menuId, whitelistEntryId }: MenuProd
           open={!!selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToCart={() => {
-            addToCart(selectedProduct.id);
+            addToCart(selectedProduct);
             setSelectedProduct(null);
           }}
         />

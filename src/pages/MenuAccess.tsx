@@ -9,6 +9,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle, CheckCircle2, MapPin, Clock, Shield } from 'lucide-react';
 import { MenuProductGrid } from '@/components/menu/MenuProductGrid';
 import { MenuHeader } from '@/components/menu/MenuHeader';
+import { CartButton } from '@/components/menu/CartButton';
+import { CartDrawer } from '@/components/menu/CartDrawer';
+import { OrderFormDialog } from '@/components/menu/OrderFormDialog';
+import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
 import type { GeofenceRule } from '@/utils/geofencing';
 
@@ -50,6 +54,8 @@ export default function MenuAccess() {
   const [loading, setLoading] = useState(true);
   const [validation, setValidation] = useState<AccessValidation | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [orderFormOpen, setOrderFormOpen] = useState(false);
 
   // Initialize device tracking
   useDeviceTracking();
@@ -234,7 +240,8 @@ export default function MenuAccess() {
   const menu = validation.menu!;
 
   return (
-    <div className="min-h-screen bg-background">
+    <MenuCartProvider>
+      <div className="min-h-screen bg-background">
       <MenuHeader
         title={menu.title}
         description={menu.description}
@@ -279,7 +286,29 @@ export default function MenuAccess() {
           menuId={menu.id}
           whitelistEntryId={validation.whitelist_entry?.id}
         />
+
+        {/* Floating Cart Button */}
+        <CartButton onClick={() => setCartOpen(true)} />
+
+        {/* Cart Drawer */}
+        <CartDrawer
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}
+          onCheckout={() => {
+            setCartOpen(false);
+            setOrderFormOpen(true);
+          }}
+        />
+
+        {/* Order Form Dialog */}
+        <OrderFormDialog
+          open={orderFormOpen}
+          onClose={() => setOrderFormOpen(false)}
+          menuId={menu.id}
+          whitelistEntryId={validation.whitelist_entry?.id}
+        />
       </div>
-    </div>
+      </div>
+    </MenuCartProvider>
   );
 }
