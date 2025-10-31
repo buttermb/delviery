@@ -6041,6 +6041,8 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          image_url: string | null
+          images: string[] | null
           last_restock_date: string | null
           product_name: string
           quantity_lbs: number
@@ -6053,6 +6055,8 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          images?: string[] | null
           last_restock_date?: string | null
           product_name: string
           quantity_lbs?: number
@@ -6065,6 +6069,8 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          images?: string[] | null
           last_restock_date?: string | null
           product_name?: string
           quantity_lbs?: number

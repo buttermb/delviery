@@ -6,6 +6,7 @@ import { Package, TrendingUp, ArrowUpDown, Settings } from "lucide-react";
 import { useWholesaleInventory } from "@/hooks/useWholesaleData";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
+import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
 
 export default function InventoryManagement() {
   const { data: inventory = [], isLoading } = useWholesaleInventory();
@@ -42,9 +43,12 @@ export default function InventoryManagement() {
           <h1 className="text-3xl font-bold text-foreground">📦 Inventory Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
-          + Add Stock
-        </Button>
+        <div className="flex gap-2">
+          <BulkImageGenerator products={inventory} />
+          <Button className="bg-emerald-500 hover:bg-emerald-600">
+            + Add Stock
+          </Button>
+        </div>
       </div>
 
       {/* Overview Cards */}
