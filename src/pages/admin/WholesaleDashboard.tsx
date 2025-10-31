@@ -222,7 +222,7 @@ export default function WholesaleDashboard() {
               <span className="font-mono font-semibold text-foreground">{operations?.pendingOrders || 0}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm">View Tracking</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/fleet-management'}>View Tracking</Button>
         </Card>
 
         <Card className="p-6">
@@ -240,7 +240,7 @@ export default function WholesaleDashboard() {
               <span className="font-mono font-semibold text-destructive">${operations?.overdueAmount.toLocaleString() || '0'}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm">Collections</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/financial-center'}>Collections</Button>
         </Card>
 
         <Card className="p-6">
@@ -258,7 +258,7 @@ export default function WholesaleDashboard() {
               <span className="font-mono font-semibold text-foreground">${inventory?.totalValue.toLocaleString() || '0'}</span>
             </div>
           </div>
-          <Button className="w-full mt-4" variant="outline" size="sm">Manage Stock</Button>
+          <Button className="w-full mt-4" variant="outline" size="sm" onClick={() => window.location.href = '/admin/wholesale-inventory'}>Manage Stock</Button>
         </Card>
 
         <Card className="p-6">
@@ -267,9 +267,9 @@ export default function WholesaleDashboard() {
             <h3 className="font-semibold text-foreground">💼 Quick Actions</h3>
           </div>
           <div className="space-y-2">
-            <Button className="w-full" size="sm" variant="default">📦 New Order</Button>
-            <Button className="w-full" size="sm" variant="outline">💼 View Clients</Button>
-            <Button className="w-full" size="sm" variant="outline">🚗 Assign Runner</Button>
+            <Button className="w-full" size="sm" variant="default" onClick={() => window.location.href = '/admin/wholesale-clients/new-order'}>📦 New Order</Button>
+            <Button className="w-full" size="sm" variant="outline" onClick={() => window.location.href = '/admin/financial-center'}>💼 View Clients</Button>
+            <Button className="w-full" size="sm" variant="outline" onClick={() => window.location.href = '/admin/fleet-management'}>🚗 Assign Runner</Button>
           </div>
         </Card>
       </div>
