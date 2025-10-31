@@ -18,6 +18,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAccount } from '@/contexts/AccountContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,39 +48,19 @@ interface LocationInventory {
 }
 
 export default function InventoryDashboard() {
-  const [accountId, setAccountId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Get current user's account
-    const getAccount = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Get account from user_roles
-        const { data } = await supabase
-          .from('user_roles')
-          .select('account_id')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (data) {
-          setAccountId(data.account_id);
-        }
-      }
-    };
-    getAccount();
-  }, []);
+  const { account, loading: accountLoading } = useAccount();
 
   // Fetch inventory summary
   const { data: summary, isLoading: summaryLoading } = useQuery<InventorySummary>({
-    queryKey: ['inventory-summary', accountId],
+    queryKey: ['inventory-summary', account?.id],
     queryFn: async () => {
-      if (!accountId) return null;
+      if (!account?.id) return null;
 
       // Get packages by status
       const { data: packages } = await supabase
         .from('inventory_packages')
         .select('quantity_lbs, status, product_id, products(wholesale_price)')
-        .eq('account_id', accountId);
+        .eq('account_id', account.id);
 
       const totalQuantity = packages?.reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
       const inStock = packages?.filter(p => p.status === 'available').reduce((sum, p) => sum + (p.quantity_lbs || 0), 0) || 0;
@@ -95,17 +76,17 @@ export default function InventoryDashboard() {
       const { count: locationCount } = await supabase
         .from('inventory_locations')
         .select('*', { count: 'exact', head: true })
-        .eq('account_id', accountId);
+        .eq('account_id', account.id);
 
       const { count: packageCount } = await supabase
         .from('inventory_packages')
         .select('*', { count: 'exact', head: true })
-        .eq('account_id', accountId);
+        .eq('account_id', account.id);
 
       const { count: batchCount } = await supabase
         .from('inventory_batches')
         .select('*', { count: 'exact', head: true })
-        .eq('account_id', accountId);
+        .eq('account_id', account.id);
 
       return {
         total_quantity_lbs: totalQuantity,
@@ -118,19 +99,19 @@ export default function InventoryDashboard() {
         batch_count: batchCount || 0,
       };
     },
-    enabled: !!accountId,
+    enabled: !!account?.id && !accountLoading,
   });
 
   // Fetch locations with inventory
   const { data: locations, isLoading: locationsLoading } = useQuery<LocationInventory[]>({
-    queryKey: ['location-inventory', accountId],
+    queryKey: ['location-inventory', account?.id],
     queryFn: async () => {
-      if (!accountId) return [];
+      if (!account?.id) return [];
 
       const { data: locations } = await supabase
         .from('inventory_locations')
         .select('id, location_name, location_type, capacity_lbs, current_stock_lbs')
-        .eq('account_id', accountId)
+        .eq('account_id', account.id)
         .eq('status', 'active');
 
       if (!locations) return [];
@@ -169,14 +150,14 @@ export default function InventoryDashboard() {
 
       return locationsWithCounts;
     },
-    enabled: !!accountId,
+    enabled: !!account?.id && !accountLoading,
   });
 
   // Get active transfers
   const { data: activeTransfers } = useQuery({
-    queryKey: ['active-transfers', accountId],
+    queryKey: ['active-transfers', account?.id],
     queryFn: async () => {
-      if (!accountId) return [];
+      if (!account?.id) return [];
 
       const { data } = await supabase
         .from('inventory_transfers_enhanced')
@@ -185,14 +166,14 @@ export default function InventoryDashboard() {
           from_location:inventory_locations!inventory_transfers_enhanced_from_location_id_fkey(location_name),
           to_location:inventory_locations!inventory_transfers_enhanced_to_location_id_fkey(location_name)
         `)
-        .eq('account_id', accountId)
+        .eq('account_id', account.id)
         .in('status', ['pending', 'approved', 'in_progress', 'in_transit'])
         .order('scheduled_at', { ascending: false })
         .limit(5);
 
       return data || [];
     },
-    enabled: !!accountId,
+    enabled: !!account?.id && !accountLoading,
   });
 
   const formatCurrency = (value: number) => {
@@ -212,10 +193,12 @@ export default function InventoryDashboard() {
     return Math.min(100, (current / capacity) * 100);
   };
 
-  if (!accountId) {
+  if (accountLoading || !account) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">
+          {accountLoading ? 'Loading account...' : 'No account found. Please set up your account first.'}
+        </p>
       </div>
     );
   }
