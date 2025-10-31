@@ -245,7 +245,7 @@ export async function createSampleWholesaleData() {
         client_id: clientData[0].id, // Big Mike
         order_number: "WO-1001",
         total_amount: 60000,
-        status: "completed",
+        status: "delivered",
         payment_status: "paid",
         delivery_address: clientData[0].address,
         created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -254,7 +254,7 @@ export async function createSampleWholesaleData() {
         client_id: clientData[1].id, // Eastside
         order_number: "WO-1002",
         total_amount: 85000,
-        status: "completed",
+        status: "delivered",
         payment_status: "paid",
         delivery_address: clientData[1].address,
         created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
@@ -263,7 +263,7 @@ export async function createSampleWholesaleData() {
         client_id: clientData[0].id, // Big Mike - UNPAID
         order_number: "WO-1003",
         total_amount: 38000,
-        status: "completed",
+        status: "delivered",
         payment_status: "unpaid",
         delivery_address: clientData[0].address,
         created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
@@ -272,7 +272,7 @@ export async function createSampleWholesaleData() {
         client_id: clientData[2].id, // South Bronx - UNPAID
         order_number: "WO-1004",
         total_amount: 12000,
-        status: "completed",
+        status: "delivered",
         payment_status: "unpaid",
         delivery_address: clientData[2].address,
         created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString()
