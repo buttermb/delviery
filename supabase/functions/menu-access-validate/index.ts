@@ -39,7 +39,19 @@ serve(async (req) => {
     console.log('Looking up menu with token:', encrypted_url_token);
     const { data: menu, error: menuError } = await supabaseClient
       .from('disposable_menus')
-      .select('*, disposable_menu_products(*, product:wholesale_inventory(*))')
+      .select(`
+        *,
+        disposable_menu_products(
+          *,
+          product:wholesale_inventory(
+            id,
+            product_name,
+            category,
+            quantity_lbs,
+            warehouse_location
+          )
+        )
+      `)
       .eq('encrypted_url_token', encrypted_url_token)
       .maybeSingle();
 
@@ -235,17 +247,21 @@ serve(async (req) => {
 
     if (access_granted) {
       // Transform products: flatten the nested structure
-      const products = (menu.disposable_menu_products || []).map((mp: any) => ({
-        id: mp.product_id,
-        name: mp.product?.name || 'Unknown Product',
-        description: mp.product?.description || '',
-        price: mp.custom_price || mp.product?.price_per_unit || 0,
-        quantity_lbs: mp.product?.quantity_lbs || 0,
-        category: mp.product?.category || '',
-        display_order: mp.display_order
-      }));
+      const products = (menu.disposable_menu_products || []).map((mp: any) => {
+        const product = mp.product || {};
+        return {
+          id: mp.product_id,
+          name: product.product_name || 'Unknown Product',
+          description: `${product.category || ''} - ${product.warehouse_location || ''}`.trim(),
+          price: mp.custom_price || 0,
+          quantity_lbs: product.quantity_lbs || 0,
+          category: product.category || '',
+          display_order: mp.display_order
+        };
+      });
 
       console.log('Transformed products:', products.length, 'items');
+      console.log('Product details:', JSON.stringify(products));
 
       return new Response(
         JSON.stringify({
