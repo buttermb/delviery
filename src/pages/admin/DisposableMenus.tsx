@@ -52,6 +52,7 @@ const DisposableMenus = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <PanicModeButton />
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/admin/disposable-menus/help'}
