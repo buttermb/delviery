@@ -98,6 +98,11 @@ const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 // Fronted Inventory Pages
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
+
+// Wholesale CRM Pages
+const WholesaleDashboard = lazy(() => import("./pages/admin/WholesaleDashboard"));
+const WholesaleClients = lazy(() => import("./pages/admin/WholesaleClients"));
+const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const RecordFrontedSale = lazy(() => import("./pages/admin/RecordFrontedSale"));
 const RecordFrontedPayment = lazy(() => import("./pages/admin/RecordFrontedPayment"));
@@ -248,6 +253,11 @@ const App = () => {
                           <Route path="customer-reports" element={<AdminErrorBoundary><CustomerReports /></AdminErrorBoundary>} />
                           <Route path="pos" element={<AdminErrorBoundary><PointOfSale /></AdminErrorBoundary>} />
                           <Route path="deliveries" element={<AdminErrorBoundary><DeliveryManagement /></AdminErrorBoundary>} />
+                          
+                          {/* Wholesale CRM Routes */}
+                          <Route path="wholesale-dashboard" element={<AdminErrorBoundary><WholesaleDashboard /></AdminErrorBoundary>} />
+                          <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
+                          <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
                           <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
