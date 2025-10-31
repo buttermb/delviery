@@ -169,7 +169,7 @@ export const useWholesalePayments = () => {
           *,
           client:wholesale_clients(business_name)
         `)
-        .order("payment_date", { ascending: false });
+        .order("created_at", { ascending: false });
       
       if (error) throw error;
       return data;
@@ -221,7 +221,7 @@ export const useClientOrders = (clientId: string) => {
         .from("wholesale_orders")
         .select("*")
         .eq("client_id", clientId)
-        .order("order_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(20);
       
       if (error) throw error;
@@ -239,7 +239,7 @@ export const useClientPayments = (clientId: string) => {
         .from("wholesale_payments")
         .select("*")
         .eq("client_id", clientId)
-        .order("payment_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(20);
       
       if (error) throw error;

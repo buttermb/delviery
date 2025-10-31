@@ -7,7 +7,7 @@ import { DollarSign, Calendar, CheckCircle, Clock, AlertCircle } from "lucide-re
 interface Payment {
   id: string;
   amount: number;
-  payment_date: string;
+  created_at: string;
   payment_method: string;
   status: string;
   notes?: string;
@@ -117,7 +117,7 @@ export function PaymentTrackingModal({
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
+                            {format(new Date(payment.created_at), 'MMM dd, yyyy')}
                           </span>
                           <span className="capitalize">{payment.payment_method}</span>
                         </div>

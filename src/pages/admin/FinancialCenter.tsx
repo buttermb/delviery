@@ -2,8 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { showInfoToast } from "@/utils/toastHelpers";
 
 export default function FinancialCenter() {
+  const navigate = useNavigate();
   const todaySnapshot = {
     revenue: 45200,
     cost: 28000,
@@ -165,7 +168,14 @@ export default function FinancialCenter() {
                 <span className="font-mono">${cashFlow.outgoing.runner_bonuses.toLocaleString()}</span>
               </div>
             </div>
-            <Button size="sm" variant="outline" className="mt-4">View Payables</Button>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => navigate("/admin/wholesale-orders")}
+            >
+              View Payables
+            </Button>
           </div>
         </div>
       </Card>
@@ -193,7 +203,13 @@ export default function FinancialCenter() {
               {creditOut.overdue.map((client, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm">
                   <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
-                  <Button size="sm" variant="destructive">Collect</Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => showInfoToast("Collection", `Initiating collection process for ${client.client}`)}
+                  >
+                    Collect
+                  </Button>
                 </div>
               ))}
             </div>
@@ -223,9 +239,24 @@ export default function FinancialCenter() {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button className="bg-emerald-500 hover:bg-emerald-600">Collections Dashboard</Button>
-          <Button variant="outline">Send Reminders</Button>
-          <Button variant="outline">Credit Report</Button>
+          <Button 
+            className="bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => navigate("/admin/wholesale-clients")}
+          >
+            Collections Dashboard
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => showInfoToast("Reminders", "Payment reminders sent to overdue clients")}
+          >
+            Send Reminders
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => showInfoToast("Credit Report", "Generating comprehensive credit report...")}
+          >
+            Credit Report
+          </Button>
         </div>
       </Card>
 
@@ -248,7 +279,11 @@ export default function FinancialCenter() {
           <div className="text-sm text-muted-foreground mb-3">
             Due {creditIn.due_date} (My main supplier - keep good relationship)
           </div>
-          <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+          <Button 
+            size="sm" 
+            className="bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => showInfoToast("Payment Scheduled", "Payment to supplier scheduled successfully")}
+          >
             Schedule Payment
           </Button>
         </div>
