@@ -1,12 +1,14 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock } from 'lucide-react';
+import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
 import { MenuShareDialog } from './MenuShareDialog';
 import { MenuAnalyticsDialog } from './MenuAnalyticsDialog';
+import { QRCodeDialog } from './QRCodeDialog';
+import { CloneMenuDialog } from './CloneMenuDialog';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 
@@ -19,6 +21,8 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [qrCodeOpen, setQrCodeOpen] = useState(false);
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
 
   const viewCount = menu.menu_access_logs?.[0]?.count || 0;
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
@@ -144,42 +148,77 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           </div>
 
           {/* Actions */}
-          {menu.status === 'active' && (
-            <div className="flex gap-2 pt-2 border-t">
+          {menu.status === 'active' ? (
+            <div className="space-y-2 pt-2 border-t">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setQrCodeOpen(true)}
+                >
+                  <QrCode className="h-4 w-4 mr-1" />
+                  QR Code
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setShareDialogOpen(true)}
+                >
+                  <Share2 className="h-4 w-4 mr-1" />
+                  Share
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setManageAccessOpen(true)}
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Manage
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setAnalyticsOpen(true)}
+                >
+                  <BarChart3 className="h-4 w-4 mr-1" />
+                  Analytics
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => setCloneDialogOpen(true)}
+                >
+                  <CopyPlus className="h-4 w-4 mr-1" />
+                  Clone
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setBurnDialogOpen(true)}
+                >
+                  <Flame className="h-4 w-4 mr-1" />
+                  Burn
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-2 border-t">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1"
-                onClick={() => setShareDialogOpen(true)}
+                className="w-full"
+                onClick={() => setCloneDialogOpen(true)}
               >
-                <Share2 className="h-4 w-4 mr-1" />
-                Share
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => setManageAccessOpen(true)}
-              >
-                <Settings className="h-4 w-4 mr-1" />
-                Manage
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1"
-                onClick={() => setAnalyticsOpen(true)}
-              >
-                <BarChart3 className="h-4 w-4 mr-1" />
-                Analytics
-              </Button>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={() => setBurnDialogOpen(true)}
-              >
-                <Flame className="h-4 w-4 mr-1" />
-                Burn
+                <CopyPlus className="h-4 w-4 mr-1" />
+                Clone Menu
               </Button>
             </div>
           )}
@@ -208,6 +247,21 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         menu={menu}
         open={analyticsOpen}
         onOpenChange={setAnalyticsOpen}
+      />
+
+      <QRCodeDialog
+        open={qrCodeOpen}
+        onClose={() => setQrCodeOpen(false)}
+        menuTitle={menu.name}
+        accessUrl={`${window.location.origin}/m/${menu.encrypted_url_token}`}
+        menuId={menu.id}
+      />
+
+      <CloneMenuDialog
+        open={cloneDialogOpen}
+        onClose={() => setCloneDialogOpen(false)}
+        menu={menu}
+        onComplete={() => window.location.reload()}
       />
     </>
   );

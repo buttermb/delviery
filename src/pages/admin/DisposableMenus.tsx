@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Shield, AlertTriangle, Download, ShoppingBag } from 'lucide-react';
+import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare } from 'lucide-react';
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
 import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
+import { BulkActionsDialog } from '@/components/admin/disposable-menus/BulkActionsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const DisposableMenus = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
+  const [selectedMenuIds, setSelectedMenuIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
@@ -42,6 +46,22 @@ const DisposableMenus = () => {
     return sum + orders;
   }, 0) || 0;
 
+  const toggleMenuSelection = (menuId: string) => {
+    setSelectedMenuIds(prev => 
+      prev.includes(menuId) 
+        ? prev.filter(id => id !== menuId)
+        : [...prev, menuId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedMenuIds.length === activeMenus.length) {
+      setSelectedMenuIds([]);
+    } else {
+      setSelectedMenuIds(activeMenus.map(m => m.id));
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -54,6 +74,15 @@ const DisposableMenus = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            {selectedMenuIds.length > 0 && (
+              <Button 
+                variant="secondary"
+                onClick={() => setBulkActionsOpen(true)}
+              >
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Bulk Actions ({selectedMenuIds.length})
+              </Button>
+            )}
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/admin/disposable-menus/orders'}
@@ -127,7 +156,20 @@ const DisposableMenus = () => {
         <TabsContent value="menus" className="space-y-6 mt-6">
           {/* Active Menus */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">Active Menus</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Active Menus</h2>
+              {activeMenus.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedMenuIds.length === activeMenus.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    Select All
+                  </span>
+                </div>
+              )}
+            </div>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[1, 2, 3].map(i => (
@@ -152,7 +194,16 @@ const DisposableMenus = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {activeMenus.map(menu => (
-                  <MenuCard key={menu.id} menu={menu} />
+                  <div key={menu.id} className="relative">
+                    <div className="absolute top-4 left-4 z-10">
+                      <Checkbox
+                        checked={selectedMenuIds.includes(menu.id)}
+                        onCheckedChange={() => toggleMenuSelection(menu.id)}
+                        className="bg-background"
+                      />
+                    </div>
+                    <MenuCard menu={menu} />
+                  </div>
                 ))}
               </div>
             )}
@@ -176,10 +227,23 @@ const DisposableMenus = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Create Menu Dialog */}
+      {/* Dialogs */}
       <CreateMenuDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen} 
+      />
+
+      <BulkActionsDialog
+        open={bulkActionsOpen}
+        onClose={() => {
+          setBulkActionsOpen(false);
+          setSelectedMenuIds([]);
+        }}
+        selectedMenuIds={selectedMenuIds}
+        onComplete={() => {
+          refetch();
+          setSelectedMenuIds([]);
+        }}
       />
     </div>
   );
