@@ -1,4 +1,11 @@
 /**
+ * Browser-compatible cryptographic utilities for disposable menus
+ * Uses Web Crypto API instead of Node.js crypto module
+ * 
+ * @module menuHelpers
+ */
+
+/**
  * Generate a cryptographically secure URL token (browser-compatible)
  */
 export const generateUrlToken = (): string => {
