@@ -62,7 +62,7 @@ export default function PointOfSale() {
       const response = await (supabase as any)
         .from('products')
         .select('id, name, price, category, stock_quantity, thc_percent, image_url')
-        .eq('status', 'active')
+        .eq('in_stock', true)
         .gt('stock_quantity', 0)
         .order('name');
 
