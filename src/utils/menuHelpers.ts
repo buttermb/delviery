@@ -1,24 +1,30 @@
-import { createHash, randomBytes } from 'crypto';
-
 /**
- * Generate a cryptographically secure URL token
+ * Generate a cryptographically secure URL token (browser-compatible)
  */
 export const generateUrlToken = (): string => {
-  return randomBytes(32).toString('base64url');
+  // Use browser's crypto.randomUUID() for secure token generation
+  return crypto.randomUUID().replace(/-/g, '');
 };
 
 /**
  * Generate a 6-digit access code
  */
 export const generateAccessCode = (): string => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // Use crypto.getRandomValues for secure random number
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return String(array[0] % 900000 + 100000);
 };
 
 /**
- * Hash a token for storage (SHA-256)
+ * Hash a token for storage (SHA-256) - browser-compatible
  */
-export const hashToken = (token: string): string => {
-  return createHash('sha256').update(token).digest('hex');
+export const hashToken = async (token: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
 /**
