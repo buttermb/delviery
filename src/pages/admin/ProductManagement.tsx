@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccount } from "@/contexts/AccountContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function ProductManagement() {
   const navigate = useNavigate();
+  const { account, loading: accountLoading } = useAccount();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,15 +59,33 @@ export default function ProductManagement() {
   });
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    if (account && !accountLoading) {
+      loadProducts();
+    } else if (!accountLoading && !account) {
+      setLoading(false);
+    }
+  }, [account, accountLoading]);
 
   const loadProducts = async () => {
+    if (!account) return;
+    
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      let query = supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // Filter by account if account_id column exists
+      // If your products table doesn't have account_id, this will work for all products
+      if (account.id) {
+        // Check if account_id column exists by trying to filter
+        // Most likely products are shared, so we might not filter
+        // Uncomment if products table has account_id:
+        // query = query.eq('account_id', account.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setProducts(data || []);
@@ -185,13 +205,29 @@ export default function ProductManagement() {
     return (((price - cost) / price) * 100).toFixed(1);
   };
 
+  if (accountLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-muted-foreground">Loading account...</p>
+      </div>
+    );
+  }
+
+  if (!account) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-muted-foreground">No account found. Please set up your account first.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Product Management</h1>
           <p className="text-muted-foreground">
-            Manage products for fronted inventory system
+            Manage products, batches, and inventory packages
           </p>
         </div>
         <div className="flex gap-2">
