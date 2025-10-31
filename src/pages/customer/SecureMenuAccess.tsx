@@ -86,6 +86,8 @@ const SecureMenuAccess = () => {
       if (validateError) throw validateError;
 
       if (data.access_granted) {
+        // Store menu data in session storage
+        sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
         setMenuData(data.menu_data);
       } else {
         setError(data.violations?.join(', ') || 'Access denied');

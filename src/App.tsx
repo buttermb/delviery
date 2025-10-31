@@ -120,6 +120,8 @@ const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
 const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
+const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
+const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -274,6 +276,7 @@ const App = () => {
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
                           <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
+                          <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
@@ -293,6 +296,7 @@ const App = () => {
                         
                         {/* Secure Menu Access (Public) */}
                         <Route path="/m/:token" element={<SecureMenuAccess />} />
+                        <Route path="/m/:token/view" element={<SecureMenuView />} />
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>

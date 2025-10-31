@@ -121,7 +121,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                 <Settings className="h-4 w-4 mr-1" />
                 Manage
               </Button>
-              <Button variant="outline" size="sm" className="flex-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1"
+                onClick={() => window.location.href = `/admin/menu-analytics/${menu.id}`}
+              >
                 <BarChart3 className="h-4 w-4 mr-1" />
                 Analytics
               </Button>
