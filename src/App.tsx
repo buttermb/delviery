@@ -94,6 +94,7 @@ const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const BillingPortal = lazy(() => import("./pages/BillingPortal"));
 const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
+const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 
 // Fronted Inventory Pages
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
@@ -270,6 +271,7 @@ const App = () => {
                           <Route path="wholesale-inventory-manage" element={<AdminErrorBoundary><InventoryManagement /></AdminErrorBoundary>} />
                           <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
                           <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
+                          <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Fronted Inventory Routes */}
                           <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
