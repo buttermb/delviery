@@ -143,31 +143,35 @@ const SecureMenuAccess = () => {
 
       console.log('Validation response:', { data, error: validateError });
 
-      if (validateError) {
-        console.error('Validation error:', validateError);
-        throw validateError;
+      // Handle response (including 403 errors with violation details)
+      if (data) {
+        if (data.access_granted) {
+          sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
+          setMenuData(data.menu_data);
+          return;
+        } else if (data.violations) {
+          setError(data.violations.join(', '));
+          return;
+        } else if (data.error) {
+          setError(data.error);
+          return;
+        }
       }
 
-      if (data?.access_granted) {
-        sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
-        setMenuData(data.menu_data);
-      } else if (data?.violations) {
-        setError(data.violations.join(', '));
-      } else if (data?.error) {
-        setError(data.error);
-      } else {
-        setError('Access denied');
+      // If we have an error object, try to extract details from it
+      if (validateError) {
+        console.error('Validation error:', validateError);
+        // Try to get error details from the error context
+        const errorMessage = validateError.message || 'Failed to validate access';
+        setError(errorMessage);
+        return;
       }
+
+      // Fallback error
+      setError('Access denied');
     } catch (err: any) {
       console.error('Access validation error:', err);
-      // Show more detailed error message
-      if (err?.message) {
-        setError(err.message);
-      } else if (typeof err === 'string') {
-        setError(err);
-      } else {
-        setError('Failed to validate access. Please check your code and try again.');
-      }
+      setError(err.message || 'Failed to validate access. Please try again.');
     } finally {
       setLoading(false);
     }

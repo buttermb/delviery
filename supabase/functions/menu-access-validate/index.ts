@@ -62,7 +62,7 @@ serve(async (req) => {
           access_granted: false,
           violations: ['Invalid menu URL']
         }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -75,7 +75,7 @@ serve(async (req) => {
           access_granted: false,
           violations: ['Menu is no longer available']
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -89,7 +89,7 @@ serve(async (req) => {
             access_granted: false,
             violations: ['Menu has expired']
           }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -120,7 +120,7 @@ serve(async (req) => {
           access_granted: false,
           violations: ['Incorrect access code']
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -258,7 +258,7 @@ serve(async (req) => {
           access_granted: false,
           violations
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
