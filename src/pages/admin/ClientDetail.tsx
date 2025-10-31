@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2 } from "lucide-react";
+import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
@@ -278,6 +279,9 @@ export default function ClientDetail() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Client Notes */}
+      <ClientNotesPanel clientId={id || ""} />
 
       {/* Actions */}
       <div className="flex gap-2">

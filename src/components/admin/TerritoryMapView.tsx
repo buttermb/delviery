@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { MapPin, AlertCircle } from "lucide-react";
 
-// Mapbox token - should be stored in env or Supabase secrets
-const MAPBOX_TOKEN = "pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbTZ4eXB4MHAwMmY1MmtzOHp1bGtnYTZrIn0.example";
+// Mapbox token
+const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
 
 export function TerritoryMapView() {
   const mapContainer = useRef<HTMLDivElement>(null);

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Package, TrendingUp, ArrowUpDown, Settings } from "lucide-react";
 import { useWholesaleInventory } from "@/hooks/useWholesaleData";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
+import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 
 export default function InventoryManagement() {
   const { data: inventory = [], isLoading } = useWholesaleInventory();
@@ -163,6 +164,9 @@ export default function InventoryManagement() {
           );
         })
       )}
+
+      {/* Movement Log */}
+      <InventoryMovementLog />
 
       {/* Dialogs */}
       {selectedProduct && (

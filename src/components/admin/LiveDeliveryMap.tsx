@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
 import { Navigation, Clock, Package, AlertCircle } from "lucide-react";
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbTZ4eXB4MHAwMmY1MmtzOHp1bGtnYTZrIn0.example";
+const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;

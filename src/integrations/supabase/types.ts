@@ -5151,6 +5151,44 @@ export type Database = {
           },
         ]
       }
+      wholesale_client_notes: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_internal: boolean | null
+          note: string
+          note_type: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_internal?: boolean | null
+          note: string
+          note_type?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_internal?: boolean | null
+          note?: string
+          note_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wholesale_clients: {
         Row: {
           address: string
@@ -5309,6 +5347,63 @@ export type Database = {
           warehouse_location?: string
         }
         Relationships: []
+      }
+      wholesale_inventory_movements: {
+        Row: {
+          created_at: string | null
+          from_location: string | null
+          id: string
+          inventory_id: string | null
+          movement_type: string
+          notes: string | null
+          order_id: string | null
+          performed_by: string | null
+          product_name: string
+          quantity_change: number
+          to_location: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          from_location?: string | null
+          id?: string
+          inventory_id?: string | null
+          movement_type: string
+          notes?: string | null
+          order_id?: string | null
+          performed_by?: string | null
+          product_name: string
+          quantity_change: number
+          to_location?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          from_location?: string | null
+          id?: string
+          inventory_id?: string | null
+          movement_type?: string
+          notes?: string | null
+          order_id?: string | null
+          performed_by?: string | null
+          product_name?: string
+          quantity_change?: number
+          to_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_inventory_movements_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_inventory_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_inventory_transfers: {
         Row: {
