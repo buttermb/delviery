@@ -2,6 +2,20 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function createSampleWholesaleData() {
   try {
+    // Clear existing sample data first (in reverse order of dependencies)
+    console.log("🧹 Clearing existing wholesale data...");
+    
+    await supabase.from("wholesale_deliveries").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_payments").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_inventory_movements").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_client_notes").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_orders").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_inventory").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_runners").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_clients").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    
+    console.log("✅ Cleared existing data");
+
     // Create sample clients with coordinates
     const clients = [
       {
