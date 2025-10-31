@@ -6043,48 +6043,75 @@ export type Database = {
         Row: {
           base_price: number | null
           category: string
+          cbd_percentage: number | null
           created_at: string
+          description: string | null
+          effects: Json | null
+          flavors: Json | null
+          grow_info: string | null
           id: string
           image_url: string | null
           images: string[] | null
           last_restock_date: string | null
+          lineage: string | null
           prices: Json | null
           product_name: string
           quantity_lbs: number
           quantity_units: number
           reorder_point: number
+          strain_type: string | null
+          terpenes: Json | null
+          thc_percentage: number | null
           updated_at: string
           warehouse_location: string
         }
         Insert: {
           base_price?: number | null
           category: string
+          cbd_percentage?: number | null
           created_at?: string
+          description?: string | null
+          effects?: Json | null
+          flavors?: Json | null
+          grow_info?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
           last_restock_date?: string | null
+          lineage?: string | null
           prices?: Json | null
           product_name: string
           quantity_lbs?: number
           quantity_units?: number
           reorder_point?: number
+          strain_type?: string | null
+          terpenes?: Json | null
+          thc_percentage?: number | null
           updated_at?: string
           warehouse_location?: string
         }
         Update: {
           base_price?: number | null
           category?: string
+          cbd_percentage?: number | null
           created_at?: string
+          description?: string | null
+          effects?: Json | null
+          flavors?: Json | null
+          grow_info?: string | null
           id?: string
           image_url?: string | null
           images?: string[] | null
           last_restock_date?: string | null
+          lineage?: string | null
           prices?: Json | null
           product_name?: string
           quantity_lbs?: number
           quantity_units?: number
           reorder_point?: number
+          strain_type?: string | null
+          terpenes?: Json | null
+          thc_percentage?: number | null
           updated_at?: string
           warehouse_location?: string
         }

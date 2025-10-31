@@ -487,60 +487,85 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
           {currentStep === 'legal' && (
             <div className="space-y-6">
               <h3 className="font-semibold text-lg">Legal Confirmations</h3>
+              
+              {/* Cannabis Warning Banner */}
+              <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                <p className="text-sm font-medium text-orange-700">
+                  ⚠️ Cannabis products may only be purchased by adults 21+ with valid identification. 
+                  Consumption is prohibited while pregnant or breastfeeding.
+                </p>
+              </div>
+
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <div className="flex items-start gap-3 p-4 border rounded-lg bg-card">
                   <Checkbox
                     id="ageVerified"
                     checked={confirmations.ageVerified}
                     onCheckedChange={(checked) =>
                       setConfirmations({ ...confirmations, ageVerified: !!checked })
                     }
+                    className="mt-1"
                   />
-                  <div className="space-y-1">
-                    <Label htmlFor="ageVerified" className="font-semibold cursor-pointer">
-                      Age Verification (Required)
+                  <div className="space-y-1 flex-1">
+                    <Label htmlFor="ageVerified" className="font-semibold cursor-pointer text-base">
+                      Age Verification (Required) *
                     </Label>
-                    <p className="text-sm text-muted-foreground">
-                      I confirm that I am 21 years of age or older
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      I confirm that I am 21 years of age or older and understand that I may be required to show valid government-issued photo ID upon delivery to verify my age.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <div className="flex items-start gap-3 p-4 border rounded-lg bg-card">
                   <Checkbox
                     id="termsAccepted"
                     checked={confirmations.termsAccepted}
                     onCheckedChange={(checked) =>
                       setConfirmations({ ...confirmations, termsAccepted: !!checked })
                     }
+                    className="mt-1"
                   />
-                  <div className="space-y-1">
-                    <Label htmlFor="termsAccepted" className="font-semibold cursor-pointer">
-                      Terms & Conditions (Required)
+                  <div className="space-y-1 flex-1">
+                    <Label htmlFor="termsAccepted" className="font-semibold cursor-pointer text-base">
+                      Cannabis Compliance & Terms (Required) *
                     </Label>
-                    <p className="text-sm text-muted-foreground">
-                      I agree to the terms and conditions of sale
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      I understand that cannabis products are for personal adult use only and may not be resold or shared with anyone under 21. I will not operate vehicles or heavy machinery while using these products. I accept all terms and conditions of sale.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <div className="flex items-start gap-3 p-4 border rounded-lg bg-card">
                   <Checkbox
                     id="privacyAccepted"
                     checked={confirmations.privacyAccepted}
                     onCheckedChange={(checked) =>
                       setConfirmations({ ...confirmations, privacyAccepted: !!checked })
                     }
+                    className="mt-1"
                   />
-                  <div className="space-y-1">
-                    <Label htmlFor="privacyAccepted" className="font-semibold cursor-pointer">
-                      Privacy Policy (Required)
+                  <div className="space-y-1 flex-1">
+                    <Label htmlFor="privacyAccepted" className="font-semibold cursor-pointer text-base">
+                      Privacy Policy (Required) *
                     </Label>
-                    <p className="text-sm text-muted-foreground">
-                      I acknowledge the privacy policy and data handling practices
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      I acknowledge the privacy policy and understand that my purchase information will be handled in compliance with state regulations for cannabis sales tracking and age verification.
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Additional Cannabis Disclaimers */}
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2 text-xs text-muted-foreground">
+                <p className="font-semibold text-foreground">Important Cannabis Safety Information:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Keep all cannabis products away from children and pets</li>
+                  <li>Do not use if pregnant, breastfeeding, or have certain medical conditions</li>
+                  <li>Start with low doses and wait for effects before consuming more</li>
+                  <li>Do not drive or operate machinery while using cannabis products</li>
+                  <li>Store products in original packaging in a cool, dry place</li>
+                  <li>Consult with a healthcare provider if you have questions about use</li>
+                </ul>
               </div>
             </div>
           )}

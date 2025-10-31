@@ -21,6 +21,13 @@ interface Product {
   images?: string[];
   quantity_lbs?: number;
   prices?: Record<string, number>;
+  strain_type?: string;
+  thc_percentage?: number;
+  cbd_percentage?: number;
+  terpenes?: Array<{ name: string; percentage: number }>;
+  effects?: string[];
+  flavors?: string[];
+  lineage?: string;
 }
 
 interface EnhancedMenuProductGridProps {
@@ -204,11 +211,53 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                 {/* Product Info */}
                 <div className="p-4 space-y-3">
                   <div>
-                    <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                      {product.strain_type && (
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            product.strain_type === 'Indica' ? 'border-purple-500 text-purple-500' :
+                            product.strain_type === 'Sativa' ? 'border-green-500 text-green-500' :
+                            product.strain_type === 'Hybrid' ? 'border-orange-500 text-orange-500' :
+                            'border-blue-500 text-blue-500'
+                          }`}
+                        >
+                          {product.strain_type}
+                        </Badge>
+                      )}
+                    </div>
                     {product.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                         {product.description}
                       </p>
+                    )}
+                    
+                    {/* THC/CBD Info */}
+                    {(product.thc_percentage || product.cbd_percentage) && (
+                      <div className="flex gap-2 mt-2">
+                        {product.thc_percentage && (
+                          <Badge variant="secondary" className="text-xs">
+                            THC {product.thc_percentage.toFixed(1)}%
+                          </Badge>
+                        )}
+                        {product.cbd_percentage && (
+                          <Badge variant="secondary" className="text-xs">
+                            CBD {product.cbd_percentage.toFixed(1)}%
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Effects */}
+                    {product.effects && product.effects.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {product.effects.slice(0, 3).map(effect => (
+                          <span key={effect} className="text-xs px-2 py-0.5 rounded-full bg-muted">
+                            {effect}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
 

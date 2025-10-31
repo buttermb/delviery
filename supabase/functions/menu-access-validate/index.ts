@@ -57,7 +57,7 @@ serve(async (req) => {
       );
     }
 
-    // Find menu by token
+    // Find menu by token with complete product data including cannabis info
     console.log('Looking up menu with token:', encrypted_url_token);
     const { data: menu, error: menuError } = await supabaseClient
       .from('disposable_menus')
@@ -68,9 +68,22 @@ serve(async (req) => {
           product:wholesale_inventory(
             id,
             product_name,
+            description,
             category,
             quantity_lbs,
-            warehouse_location
+            warehouse_location,
+            image_url,
+            images,
+            base_price,
+            prices,
+            strain_type,
+            thc_percentage,
+            cbd_percentage,
+            terpenes,
+            effects,
+            flavors,
+            lineage,
+            grow_info
           )
         )
       `)
@@ -274,20 +287,27 @@ serve(async (req) => {
     const access_granted = violations.length === 0;
 
     if (access_granted) {
-      // Transform products: flatten the nested structure
+      // Transform products: flatten the nested structure and include cannabis data
       const products = (menu.disposable_menu_products || []).map((mp: any) => {
         const product = mp.product || {};
         return {
           id: mp.product_id,
           name: product.product_name || 'Unknown Product',
-          description: `${product.category || ''} - ${product.warehouse_location || ''}`.trim(),
-          price: mp.custom_price || 0,
+          description: product.description || `${product.category || ''} - ${product.warehouse_location || ''}`.trim(),
+          price: mp.custom_price || product.base_price || 0,
           prices: mp.prices || product.prices || null,
           quantity_lbs: product.quantity_lbs || 0,
           category: product.category || '',
           display_order: mp.display_order,
           image_url: product.image_url || null,
-          images: product.images || []
+          images: product.images || [],
+          strain_type: product.strain_type,
+          thc_percentage: product.thc_percentage,
+          cbd_percentage: product.cbd_percentage,
+          terpenes: product.terpenes || [],
+          effects: product.effects || [],
+          flavors: product.flavors || [],
+          lineage: product.lineage,
         };
       });
 
