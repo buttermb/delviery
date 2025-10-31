@@ -27,70 +27,111 @@
   }
   
   :root {
-    /* Light Mode - NYM Brand Colors (Default) */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 173 80% 40%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 173 100% 50%;
-    --secondary: 222 47% 95%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 222 30% 96%;
-    --muted-foreground: 215 20% 40%;
-    --accent: 173 80% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 222 30% 88%;
-    --input: 222 30% 96%;
-    --ring: 173 80% 40%;
-    --radius: 0.75rem;
-    --chart-1: 173 80% 40%;
-    --chart-2: 173 60% 50%;
-    --chart-3: 222 47% 15%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* Light Mode - Modern CRM Colors (Emerald Green Brand) */
+    --background: 0 0% 100%;              /* #FFFFFF - White */
+    --foreground: 215 25% 27%;            /* #374151 - gray-700 - Body text */
+    
+    --card: 0 0% 100%;                    /* #FFFFFF - White */
+    --card-foreground: 215 25% 27%;       /* #374151 - gray-700 */
+    
+    --popover: 0 0% 100%;                 /* #FFFFFF */
+    --popover-foreground: 215 25% 27%;    /* #374151 */
+    
+    --primary: 160 84% 39%;               /* #10B981 - emerald-500 - Cannabis Green */
+    --primary-foreground: 0 0% 100%;      /* #FFFFFF - White text on green */
+    --primary-dark: 160 100% 33%;         /* #059669 - emerald-600 */
+    --primary-light: 158 64% 52%;         /* #34D399 - emerald-400 */
+    
+    --secondary: 220 13% 91%;             /* #E5E7EB - gray-200 - Subtle backgrounds */
+    --secondary-foreground: 215 25% 27%;  /* #374151 - gray-700 */
+    
+    --muted: 220 14% 96%;                 /* #F3F4F6 - gray-100 - Card backgrounds */
+    --muted-foreground: 215 20% 65%;      /* #9CA3AF - gray-400 - Secondary text */
+    
+    --accent: 160 84% 39%;                /* #10B981 - emerald-500 */
+    --accent-foreground: 0 0% 100%;       /* #FFFFFF */
+    
+    --destructive: 0 84% 60%;             /* #EF4444 - red-500 */
+    --destructive-foreground: 0 0% 100%;  /* #FFFFFF */
+    
+    --warning: 38 92% 50%;                /* #F59E0B - amber-500 */
+    --warning-foreground: 0 0% 100%;      /* #FFFFFF */
+    
+    --success: 160 84% 39%;               /* #10B981 - emerald-500 */
+    --success-foreground: 0 0% 100%;      /* #FFFFFF */
+    
+    --info: 217 91% 60%;                  /* #3B82F6 - blue-500 */
+    --info-foreground: 0 0% 100%;         /* #FFFFFF */
+    
+    --border: 220 13% 91%;                /* #E5E7EB - gray-200 */
+    --input: 220 14% 96%;                 /* #F3F4F6 - gray-100 */
+    --ring: 160 84% 39%;                  /* #10B981 - emerald-500 */
+    
+    --radius: 0.5rem;                     /* 8px - Standard border radius */
+    
+    /* Chart colors */
+    --chart-1: 160 84% 39%;               /* emerald-500 */
+    --chart-2: 158 64% 52%;               /* emerald-400 */
+    --chart-3: 38 92% 50%;                /* amber-500 */
+    --chart-4: 217 91% 60%;               /* blue-500 */
+    --chart-5: 271 91% 65%;               /* purple-500 */
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(173 80% 40%), hsl(173 100% 50%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(222 47% 98%));
-    --gradient-accent: linear-gradient(135deg, hsl(173 80% 40%), hsl(173 60% 30%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(222 47% 98%) 50%, hsl(173 80% 95%) 100%);
-
+    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(158 64% 52%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 96%));
+    
     /* Shadows */
-    --shadow-elegant: 0 20px 60px -10px hsl(173 80% 40% / 0.3);
-    --shadow-glow: 0 0 60px hsl(173 100% 50% / 0.5);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-elegant: 0 20px 60px -10px hsl(160 84% 39% / 0.3);
 
     /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Dark mode uses same colors */
-    --background: 222 47% 8%;
-    --foreground: 0 0% 100%;
-    --card: 222 40% 12%;
-    --card-foreground: 0 0% 100%;
-    --popover: 222 40% 12%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 173 80% 40%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 173 100% 50%;
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 222 30% 20%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 173 80% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 222 30% 25%;
-    --input: 222 30% 18%;
-    --ring: 173 80% 40%;
+    /* Dark Mode - CRM Colors */
+    --background: 222 47% 8%;             /* Dark background */
+    --foreground: 0 0% 100%;              /* White text */
+    
+    --card: 222 40% 12%;                  /* Dark card */
+    --card-foreground: 0 0% 100%;         /* White text */
+    
+    --popover: 222 40% 12%;               /* Dark popover */
+    --popover-foreground: 0 0% 100%;      /* White text */
+    
+    --primary: 160 84% 39%;               /* #10B981 - emerald-500 */
+    --primary-foreground: 0 0% 100%;      /* White */
+    --primary-dark: 160 100% 33%;         /* emerald-600 */
+    --primary-light: 158 64% 52%;         /* emerald-400 */
+    
+    --secondary: 222 47% 15%;             /* Dark secondary */
+    --secondary-foreground: 0 0% 100%;    /* White */
+    
+    --muted: 222 30% 20%;                 /* Dark muted */
+    --muted-foreground: 215 20% 65%;      /* Gray text */
+    
+    --accent: 160 84% 39%;                /* emerald-500 */
+    --accent-foreground: 0 0% 100%;       /* White */
+    
+    --destructive: 0 84% 60%;             /* red-500 */
+    --destructive-foreground: 0 0% 100%;  /* White */
+    
+    --warning: 38 92% 50%;                /* amber-500 */
+    --warning-foreground: 0 0% 100%;      /* White */
+    
+    --success: 160 84% 39%;               /* emerald-500 */
+    --success-foreground: 0 0% 100%;      /* White */
+    
+    --info: 217 91% 60%;                  /* blue-500 */
+    --info-foreground: 0 0% 100%;         /* White */
+    
+    --border: 222 30% 25%;                /* Dark border */
+    --input: 222 30% 18%;                 /* Dark input */
+    --ring: 160 84% 39%;                  /* emerald-500 */
   }
 }
 
