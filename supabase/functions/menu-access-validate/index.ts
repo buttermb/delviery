@@ -36,13 +36,27 @@ serve(async (req) => {
     }
 
     // Find menu by token
+    console.log('Looking up menu with token:', encrypted_url_token);
     const { data: menu, error: menuError } = await supabaseClient
       .from('disposable_menus')
       .select('*, disposable_menu_products(*, product:wholesale_inventory(*))')
       .eq('encrypted_url_token', encrypted_url_token)
-      .single();
+      .maybeSingle();
 
-    if (menuError || !menu) {
+    if (menuError) {
+      console.error('Menu lookup error:', menuError);
+      return new Response(
+        JSON.stringify({ 
+          access_granted: false,
+          violations: ['Database error'],
+          error: menuError.message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!menu) {
+      console.log('Menu not found for token:', encrypted_url_token);
       return new Response(
         JSON.stringify({ 
           access_granted: false,
@@ -51,6 +65,8 @@ serve(async (req) => {
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Menu found:', menu.name);
 
     // Check menu status
     if (menu.status !== 'active') {
@@ -247,9 +263,12 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Unhandled error in menu-access-validate:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
