@@ -2,15 +2,13 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, AlertTriangle, TrendingUp, ArrowUpDown, ArrowRightLeft, Settings } from "lucide-react";
+import { Package, TrendingUp, ArrowUpDown, Settings } from "lucide-react";
 import { useWholesaleInventory } from "@/hooks/useWholesaleData";
-import { InventoryTransferDialog } from "@/components/admin/InventoryTransferDialog";
-import { InventoryAdjustmentDialog } from "@/components/admin/InventoryAdjustmentDialog";
+import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 
 export default function InventoryManagement() {
   const { data: inventory = [], isLoading } = useWholesaleInventory();
   
-  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
@@ -147,18 +145,6 @@ export default function InventoryManagement() {
                                 className="h-7 px-2 text-xs"
                                 onClick={() => {
                                   setSelectedProduct(product);
-                                  setTransferDialogOpen(true);
-                                }}
-                              >
-                                <ArrowRightLeft className="h-3 w-3 mr-1" />
-                                Transfer
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-7 px-2 text-xs"
-                                onClick={() => {
-                                  setSelectedProduct(product);
                                   setAdjustmentDialogOpen(true);
                                 }}
                               >
@@ -180,24 +166,14 @@ export default function InventoryManagement() {
 
       {/* Dialogs */}
       {selectedProduct && (
-        <>
-          <InventoryTransferDialog
-            productId={selectedProduct.id}
-            productName={selectedProduct.product_name}
-            currentWarehouse={selectedProduct.warehouse_location || "Warehouse A"}
-            availableQuantity={Number(selectedProduct.quantity_lbs || 0)}
-            open={transferDialogOpen}
-            onOpenChange={setTransferDialogOpen}
-          />
-          <InventoryAdjustmentDialog
-            productId={selectedProduct.id}
-            productName={selectedProduct.product_name}
-            currentQuantity={Number(selectedProduct.quantity_lbs || 0)}
-            warehouse={selectedProduct.warehouse_location || "Warehouse A"}
-            open={adjustmentDialogOpen}
-            onOpenChange={setAdjustmentDialogOpen}
-          />
-        </>
+        <StockAdjustmentDialog
+          productId={selectedProduct.id}
+          productName={selectedProduct.product_name}
+          currentQuantity={Number(selectedProduct.quantity_lbs || 0)}
+          warehouse={selectedProduct.warehouse_location || "Warehouse A"}
+          open={adjustmentDialogOpen}
+          onOpenChange={setAdjustmentDialogOpen}
+        />
       )}
     </div>
   );

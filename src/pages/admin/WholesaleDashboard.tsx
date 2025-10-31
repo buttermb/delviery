@@ -12,6 +12,7 @@ import {
   Users,
   MapPin
 } from "lucide-react";
+import { QuickCollectionsWidget } from "@/components/admin/QuickCollectionsWidget";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickActionsMenu } from "@/components/admin/QuickActionsMenu";
 import { CollectionsDashboard } from "@/components/admin/CollectionsDashboard";
@@ -314,6 +315,8 @@ export default function WholesaleDashboard() {
       </div>
       {/* Key sections */}
       <QuickActionsMenu />
+      {/* Collections & Operations */}
+      <QuickCollectionsWidget />
       <CollectionsDashboard />
       <InventoryAlerts />
     </div>

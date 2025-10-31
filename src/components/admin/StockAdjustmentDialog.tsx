@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 
-interface InventoryAdjustmentDialogProps {
+interface StockAdjustmentDialogProps {
   productId: string;
   productName: string;
   currentQuantity: number;
@@ -18,14 +18,14 @@ interface InventoryAdjustmentDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function InventoryAdjustmentDialog({ 
+export function StockAdjustmentDialog({ 
   productId, 
   productName, 
   currentQuantity,
   warehouse,
   open, 
   onOpenChange 
-}: InventoryAdjustmentDialogProps) {
+}: StockAdjustmentDialogProps) {
   const [adjustmentType, setAdjustmentType] = useState<"add" | "subtract">("add");
   const [quantity, setQuantity] = useState("");
   const [reason, setReason] = useState("");
@@ -42,23 +42,7 @@ export function InventoryAdjustmentDialog({
         throw new Error("Cannot adjust below zero");
       }
 
-      // Log the adjustment
-      const { data: adjustmentData, error: logError } = await supabase
-        .from("inventory_adjustments")
-        .insert([{
-          product_id: data.product_id,
-          warehouse: data.warehouse,
-          adjustment_type: data.type,
-          quantity_lbs: parseFloat(data.quantity),
-          reason: data.reason,
-          notes: data.notes
-        }])
-        .select()
-        .single();
-
-      if (logError) throw logError;
-
-      // Update inventory
+      // Simple direct update for MVP
       const { error: updateError } = await supabase
         .from("wholesale_inventory")
         .update({ 
@@ -73,7 +57,7 @@ export function InventoryAdjustmentDialog({
     },
     onSuccess: (newQuantity) => {
       showSuccessToast(
-        "Inventory Adjusted", 
+        "Stock Adjusted", 
         `New quantity: ${newQuantity.toFixed(2)} lbs`
       );
       queryClient.invalidateQueries({ queryKey: ["wholesale-inventory"] });
@@ -107,7 +91,7 @@ export function InventoryAdjustmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>⚖️ Adjust Inventory</DialogTitle>
+          <DialogTitle>⚖️ Adjust Stock</DialogTitle>
           <DialogDescription>
             Adjust quantity for {productName} at {warehouse}
           </DialogDescription>
@@ -128,8 +112,8 @@ export function InventoryAdjustmentDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="add">➕ Add Inventory</SelectItem>
-                <SelectItem value="subtract">➖ Subtract Inventory</SelectItem>
+                <SelectItem value="add">➕ Add Stock</SelectItem>
+                <SelectItem value="subtract">➖ Reduce Stock</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -148,7 +132,7 @@ export function InventoryAdjustmentDialog({
             />
             {quantity && (
               <div className="mt-2 text-sm">
-                New quantity will be: <span className="font-mono font-bold">{newQuantity.toFixed(2)} lbs</span>
+                New quantity: <span className="font-mono font-bold">{newQuantity.toFixed(2)} lbs</span>
               </div>
             )}
           </div>
@@ -165,19 +149,19 @@ export function InventoryAdjustmentDialog({
                 <SelectItem value="theft">🚨 Theft</SelectItem>
                 <SelectItem value="quality">❌ Quality Issue</SelectItem>
                 <SelectItem value="count">🔢 Count Correction</SelectItem>
-                <SelectItem value="return">↩️ Return to Supplier</SelectItem>
+                <SelectItem value="sale">💰 Sale</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="notes">Additional Notes</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Provide details about this adjustment..."
+              placeholder="Additional details..."
               rows={3}
             />
           </div>
@@ -192,7 +176,7 @@ export function InventoryAdjustmentDialog({
               className="flex-1"
               variant={adjustmentType === "subtract" ? "destructive" : "default"}
             >
-              {adjustmentMutation.isPending ? "Adjusting..." : "Adjust Inventory"}
+              {adjustmentMutation.isPending ? "Adjusting..." : "Adjust Stock"}
             </Button>
           </div>
         </form>
