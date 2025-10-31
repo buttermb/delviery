@@ -128,6 +128,7 @@ const SecureMenuAccess = () => {
       const fingerprint = generateDeviceFingerprint();
       const deviceHash = btoa(JSON.stringify(fingerprint));
 
+      console.log('Validating access with token:', token);
       const { data, error: validateError } = await supabase.functions.invoke('menu-access-validate', {
         body: {
           encrypted_url_token: token,
@@ -140,17 +141,33 @@ const SecureMenuAccess = () => {
         }
       });
 
-      if (validateError) throw validateError;
+      console.log('Validation response:', { data, error: validateError });
 
-      if (data.access_granted) {
+      if (validateError) {
+        console.error('Validation error:', validateError);
+        throw validateError;
+      }
+
+      if (data?.access_granted) {
         sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
         setMenuData(data.menu_data);
+      } else if (data?.violations) {
+        setError(data.violations.join(', '));
+      } else if (data?.error) {
+        setError(data.error);
       } else {
-        setError(data.violations?.join(', ') || 'Access denied');
+        setError('Access denied');
       }
     } catch (err: any) {
       console.error('Access validation error:', err);
-      setError(err.message || 'Failed to validate access');
+      // Show more detailed error message
+      if (err?.message) {
+        setError(err.message);
+      } else if (typeof err === 'string') {
+        setError(err);
+      } else {
+        setError('Failed to validate access. Please check your code and try again.');
+      }
     } finally {
       setLoading(false);
     }
