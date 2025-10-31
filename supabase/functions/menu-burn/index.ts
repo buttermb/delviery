@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -112,6 +113,14 @@ serve(async (req) => {
 
       const newAccessCode = generateAccessCode();
       const newUrlToken = generateUrlToken();
+      
+      // Hash the new access code
+      const encoder = new TextEncoder();
+      const data = encoder.encode(newAccessCode);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const newAccessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
       const newExpiresAt = new Date();
       newExpiresAt.setHours(newExpiresAt.getHours() + 24);
 
@@ -119,7 +128,7 @@ serve(async (req) => {
         .from('disposable_menus')
         .insert({
           name: menu.name + ' (Regenerated)',
-          access_code: newAccessCode,
+          access_code_hash: newAccessCodeHash,
           encrypted_url_token: newUrlToken,
           expiration_date: newExpiresAt.toISOString(),
           status: 'active',

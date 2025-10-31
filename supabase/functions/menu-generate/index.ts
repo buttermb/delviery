@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 // Menu generation edge function v2.1
 const corsHeaders = {
@@ -40,23 +41,15 @@ serve(async (req) => {
       return token;
     };
 
-    let accessCode = generateAccessCode();
-    let urlToken = generateUrlToken();
-    let isUnique = false;
-
-    while (!isUnique) {
-      const { data: existing } = await supabase
-        .from('disposable_menus')
-        .select('id')
-        .eq('access_code', accessCode)
-        .single();
-      
-      if (!existing) {
-        isUnique = true;
-      } else {
-        accessCode = generateAccessCode();
-      }
-    }
+    const accessCode = generateAccessCode();
+    const urlToken = generateUrlToken();
+    
+    // Hash the access code using SHA-256
+    const encoder = new TextEncoder();
+    const data = encoder.encode(accessCode);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const accessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + (expires_in_hours || 24));
@@ -73,7 +66,7 @@ serve(async (req) => {
       .from('disposable_menus')
       .insert({
         name,
-        access_code: accessCode,
+        access_code_hash: accessCodeHash,
         encrypted_url_token: urlToken,
         expiration_date: expiresAt.toISOString(),
         status: 'active',
