@@ -17,6 +17,7 @@ import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickActionsMenu } from "@/components/admin/QuickActionsMenu";
 import { CollectionsDashboard } from "@/components/admin/CollectionsDashboard";
 import { InventoryAlerts } from "@/components/admin/InventoryAlerts";
+import { TerritoryMapView } from "@/components/admin/TerritoryMapView";
 
 export default function WholesaleDashboard() {
   // Fetch today's metrics
@@ -314,6 +315,8 @@ export default function WholesaleDashboard() {
         </Card>
       </div>
       {/* Key sections */}
+      <TerritoryMapView />
+      
       <QuickActionsMenu />
       {/* Collections & Operations */}
       <QuickCollectionsWidget />
