@@ -2,11 +2,11 @@
  * Product helper utilities
  */
 
-// Standard weight order for cannabis products
-const WEIGHT_ORDER = ['3.5g', '7g', '14g', '28g', 'unit'];
+// Standard weight order for wholesale cannabis products
+const WEIGHT_ORDER = ['QP', 'HP', 'LB', 'unit'];
 
 /**
- * Sort product weights in the standard order (3.5g -> 7g -> 14g -> 28g)
+ * Sort product weights in the standard order (QP -> HP -> LB)
  */
 export const sortProductWeights = (weights: string[]): string[] => {
   return weights.sort((a, b) => {
@@ -22,15 +22,15 @@ export const sortProductWeights = (weights: string[]): string[] => {
 };
 
 /**
- * Get the default weight for a product (always 3.5g if available)
+ * Get the default weight for a product (always QP if available)
  */
 export const getDefaultWeight = (prices: Record<string, number> | null | undefined): string => {
   if (!prices || typeof prices !== 'object') return 'unit';
   
   const weights = Object.keys(prices);
   
-  // Prefer 3.5g if available
-  if (weights.includes('3.5g')) return '3.5g';
+  // Prefer QP (Quarter Pound) if available - smallest wholesale unit
+  if (weights.includes('QP')) return 'QP';
   
   // Otherwise return first in sorted order
   const sorted = sortProductWeights(weights);
@@ -42,5 +42,8 @@ export const getDefaultWeight = (prices: Record<string, number> | null | undefin
  */
 export const formatWeight = (weight: string): string => {
   if (weight === 'unit') return 'Each';
+  if (weight === 'QP') return 'Quarter Pound';
+  if (weight === 'HP') return 'Half Pound';
+  if (weight === 'LB') return 'Pound';
   return weight.toUpperCase();
 };
