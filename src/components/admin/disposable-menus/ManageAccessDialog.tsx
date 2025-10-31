@@ -7,8 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMenuWhitelist, useManageWhitelist } from '@/hooks/useDisposableMenus';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Copy, RefreshCw, Ban, Send, Loader2 } from 'lucide-react';
+import { Copy, RefreshCw, Ban, Send, Loader2, Users, Eye } from 'lucide-react';
 import { showSuccessToast } from '@/utils/toastHelpers';
+import { ImportCustomersDialog } from './ImportCustomersDialog';
+import { CustomerActivityTimeline } from './CustomerActivityTimeline';
 
 interface ManageAccessDialogProps {
   menu: any;
@@ -20,8 +22,10 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
 
-  const { data: whitelist } = useMenuWhitelist(menu.id);
+  const { data: whitelist, refetch } = useMenuWhitelist(menu.id);
   const manageWhitelist = useManageWhitelist();
 
   const activeCustomers = whitelist?.filter(w => w.status === 'active') || [];
@@ -71,24 +75,51 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Manage Access - {menu.name}</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Manage Access - {menu.name}</DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Import from CRM
+              </Button>
+            </div>
+          </DialogHeader>
 
-        <Tabs defaultValue="whitelist" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="whitelist">
-              Whitelisted ({activeCustomers.length})
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending ({pendingCustomers.length})
-            </TabsTrigger>
-            <TabsTrigger value="blocked">
-              Blocked ({blockedCustomers.length})
-            </TabsTrigger>
-          </TabsList>
+          {selectedCustomer ? (
+            <div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setSelectedCustomer(null)}
+                className="mb-4"
+              >
+                ← Back to List
+              </Button>
+              <CustomerActivityTimeline
+                whitelistId={selectedCustomer.id}
+                customerName={selectedCustomer.customer_name}
+              />
+            </div>
+          ) : (
+            <Tabs defaultValue="whitelist" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="whitelist">
+                  Whitelisted ({activeCustomers.length})
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  Pending ({pendingCustomers.length})
+                </TabsTrigger>
+                <TabsTrigger value="blocked">
+                  Blocked ({blockedCustomers.length})
+                </TabsTrigger>
+              </TabsList>
 
           <TabsContent value="whitelist" className="space-y-4">
             {/* Add Customer Form */}
@@ -175,6 +206,14 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                     </div>
 
                     <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setSelectedCustomer(customer)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View Activity
+                      </Button>
                       <Button 
                         size="sm" 
                         variant="outline"
@@ -294,7 +333,19 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
             </div>
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ImportCustomersDialog
+        menuId={menu.id}
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImportComplete={() => {
+          refetch();
+          setImportDialogOpen(false);
+        }}
+      />
+    </>
   );
 };
