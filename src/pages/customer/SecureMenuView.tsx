@@ -12,6 +12,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
+import { toast } from 'sonner';
 
 interface Product {
   id: string;
@@ -138,7 +139,7 @@ const SecureMenuView = () => {
     // Get contact phone
     const contact_phone = prompt("Enter your contact phone number for order updates:");
     if (!contact_phone?.trim()) {
-      showErrorToast('Required', 'Phone number is required to place an order');
+      toast.error('Phone number is required to place an order');
       return;
     }
 

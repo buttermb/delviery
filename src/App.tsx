@@ -78,6 +78,10 @@ const BugScanner = lazy(() => import("./components/admin/BugScanner"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
+const Orders = lazy(() => import("./pages/admin/Orders"));
+const Couriers = lazy(() => import("./pages/admin/Couriers"));
+const LiveOrders = lazy(() => import("./pages/admin/LiveOrders"));
+const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
 const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
@@ -245,6 +249,10 @@ const App = () => {
                           <Route path="age-verification" element={<AdminErrorBoundary><AdminAgeVerification /></AdminErrorBoundary>} />
                           <Route path="notifications" element={<AdminErrorBoundary><AdminNotifications /></AdminErrorBoundary>} />
                           <Route path="search" element={<AdminErrorBoundary><GlobalSearch /></AdminErrorBoundary>} />
+                          <Route path="orders" element={<AdminErrorBoundary><Orders /></AdminErrorBoundary>} />
+                          <Route path="couriers" element={<AdminErrorBoundary><Couriers /></AdminErrorBoundary>} />
+                          <Route path="live-orders" element={<AdminErrorBoundary><LiveOrders /></AdminErrorBoundary>} />
+                          <Route path="live-map" element={<AdminErrorBoundary><LiveMap /></AdminErrorBoundary>} />
                           <Route path="settings" element={<AdminErrorBoundary><SystemSettings /></AdminErrorBoundary>} />
                           <Route path="button-tester" element={<AdminErrorBoundary><ButtonTester /></AdminErrorBoundary>} />
                           <Route path="bug-scanner" element={<AdminErrorBoundary><BugScanner /></AdminErrorBoundary>} />
