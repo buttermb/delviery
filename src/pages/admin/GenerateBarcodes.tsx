@@ -37,6 +37,7 @@ import {
   createPackageQRData,
   type QRCodeData
 } from '@/utils/barcodeService';
+import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 type BarcodeType = 'CODE128' | 'EAN13' | 'CODE39' | 'QR';
@@ -620,13 +621,13 @@ export default function GenerateBarcodes() {
                         </>
                       )}
                       
-                      {barcode.qrData && (
+                      {barcode.qrData && barcode.type !== 'QR' && (
                         <div className="pt-2 border-t">
-                          <BarcodeGenerator 
-                            value={barcode.value}
-                            format="CODE128"
-                            height={40}
-                            width={1.5}
+                          <p className="text-xs text-muted-foreground mb-1">Package QR Code</p>
+                          <QRCodeSVG 
+                            value={JSON.stringify(barcode.qrData)}
+                            size={100}
+                            level="M"
                           />
                         </div>
                       )}

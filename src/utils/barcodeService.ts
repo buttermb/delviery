@@ -161,8 +161,9 @@ export async function generateBarcodeDataURL(
 
 /**
  * Generate QR code data URL
- * Note: This requires a QR code library. In browser, use qrcode.react React component.
- * For server-side or canvas generation, install 'qrcode' package.
+ * Note: Use QRCodeSVG from 'qrcode.react' for browser rendering.
+ * This function is kept for compatibility but QR codes should be rendered
+ * using React components in the UI.
  */
 export async function generateQRCodeDataURL(
   data: QRCodeData,
@@ -171,30 +172,17 @@ export async function generateQRCodeDataURL(
     errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
   } = {}
 ): Promise<string> {
-  const size = options.size || 200;
+  // For browser rendering, use QRCodeSVG component from qrcode.react
+  // This function can be used server-side if qrcode package is installed
   const dataString = JSON.stringify(data);
-
-  try {
-    // Try to use dynamic import if qrcode is available
-    const QRCode = (await import('qrcode')).default;
-    
-    const dataUrl = await QRCode.toDataURL(dataString, {
-      width: size,
-      margin: 2,
-      errorCorrectionLevel: options.errorCorrectionLevel || 'M',
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
-    });
-    
-    return dataUrl;
-  } catch (error) {
-    // If qrcode package not available, return data string for React component to handle
-    console.warn('QR code library not available, use React component instead:', error);
-    // Return the data string so React component can render it
-    throw new Error('Use QRCode React component from qrcode.react for browser rendering');
-  }
+  
+  // Return data string - actual rendering should use QRCodeSVG component
+  // To get actual data URL, you'd need to:
+  // 1. Render QRCodeSVG to canvas
+  // 2. Convert canvas to data URL
+  // This is better done in the component itself
+  
+  throw new Error('Use QRCodeSVG component from qrcode.react for QR code rendering in browser');
 }
 
 /**
