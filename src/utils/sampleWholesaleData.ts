@@ -53,7 +53,16 @@ export async function createSampleWholesaleData() {
       .insert(clients)
       .select();
 
-    if (clientError) throw clientError;
+    if (clientError) {
+      console.error("Client creation error:", clientError);
+      throw new Error(`Failed to create clients: ${clientError.message}`);
+    }
+    
+    if (!clientData || clientData.length === 0) {
+      throw new Error("No client data returned");
+    }
+    
+    console.log("Created clients:", clientData);
 
     // Create sample runners
     const runners = [
@@ -91,7 +100,16 @@ export async function createSampleWholesaleData() {
       .insert(runners)
       .select();
 
-    if (runnerError) throw runnerError;
+    if (runnerError) {
+      console.error("Runner creation error:", runnerError);
+      throw new Error(`Failed to create runners: ${runnerError.message}`);
+    }
+    
+    if (!runnerData || runnerData.length === 0) {
+      throw new Error("No runner data returned");
+    }
+    
+    console.log("Created runners:", runnerData);
 
     // Create sample inventory
     const inventory = [
@@ -141,7 +159,10 @@ export async function createSampleWholesaleData() {
       .from("wholesale_inventory")
       .insert(inventory);
 
-    if (inventoryError) throw inventoryError;
+    if (inventoryError) {
+      console.error("Inventory creation error:", inventoryError);
+      throw new Error(`Failed to create inventory: ${inventoryError.message}`);
+    }
 
     console.log("✅ Sample wholesale data created successfully!");
     console.log(`- ${clientData.length} clients created`);

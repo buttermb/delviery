@@ -106,7 +106,7 @@ const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const WholesaleInventory = lazy(() => import("./pages/admin/WholesaleInventory"));
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
-const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
+const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const WholesaleSetup = lazy(() => import("./pages/admin/WholesaleSetup"));
 const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));

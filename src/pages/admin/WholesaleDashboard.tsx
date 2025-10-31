@@ -12,6 +12,10 @@ import {
   Users,
   MapPin
 } from "lucide-react";
+import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
+import { QuickActionsMenu } from "@/components/admin/QuickActionsMenu";
+import { CollectionsDashboard } from "@/components/admin/CollectionsDashboard";
+import { InventoryAlerts } from "@/components/admin/InventoryAlerts";
 
 export default function WholesaleDashboard() {
   // Fetch today's metrics
@@ -132,6 +136,9 @@ export default function WholesaleDashboard() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Data Setup Banner */}
+      <DataSetupBanner />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -305,6 +312,10 @@ export default function WholesaleDashboard() {
           </div>
         </Card>
       </div>
+      {/* Key sections */}
+      <QuickActionsMenu />
+      <CollectionsDashboard />
+      <InventoryAlerts />
     </div>
   );
 }

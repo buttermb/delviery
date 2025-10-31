@@ -14,7 +14,9 @@ export default function WholesaleSetup() {
   const handleSetup = async () => {
     setLoading(true);
     try {
-      await createSampleWholesaleData();
+      console.log("Starting sample data creation...");
+      const result = await createSampleWholesaleData();
+      console.log("Sample data created:", result);
       setCompleted(true);
       showSuccessToast("Setup Complete", "Sample wholesale data has been created");
       
@@ -22,6 +24,7 @@ export default function WholesaleSetup() {
         navigate("/admin/wholesale-dashboard");
       }, 2000);
     } catch (error) {
+      console.error("Setup error:", error);
       showErrorToast("Setup Failed", error instanceof Error ? error.message : "Failed to create sample data");
     } finally {
       setLoading(false);
