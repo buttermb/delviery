@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle } from 'lucide-react';
+import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { OptimizedProductImage } from '@/components/OptimizedProductImage';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const SecureMenuView = () => {
   const { token } = useParams();
@@ -17,6 +19,7 @@ const SecureMenuView = () => {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
 
   useEffect(() => {
     // Check session storage for validated menu access
@@ -162,10 +165,31 @@ const SecureMenuView = () => {
           ) : (
             menuData.products.map((product: any) => {
               const quantity = cart[product.id] || 0;
+              const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
+              const imageUrl = product.image_url || product.images?.[0];
 
               return (
                 <Card key={product.id} className="p-4">
                   <div className="space-y-3">
+                    {/* Product Image */}
+                    {shouldShowImage && imageUrl && (
+                      <div 
+                        className="relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer group"
+                        onClick={() => setZoomedImage({ url: imageUrl, name: product.name })}
+                      >
+                        <OptimizedProductImage
+                          src={imageUrl}
+                          alt={product.name}
+                          className="w-full h-full"
+                          priority={false}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <ZoomIn className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Product Info */}
                     <div>
                       <h3 className="font-bold">{product.name}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">
@@ -177,10 +201,12 @@ const SecureMenuView = () => {
                       <div className="text-lg font-bold text-primary">
                         ${(product.price || 0).toFixed(2)}
                       </div>
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Package className="h-3 w-3" />
-                        {product.quantity_lbs || 0} lbs
-                      </Badge>
+                      {menuData.appearance_settings?.show_availability !== false && (
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Package className="h-3 w-3" />
+                          {product.quantity_lbs || 0} lbs
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Quantity Controls */}
@@ -256,6 +282,28 @@ const SecureMenuView = () => {
           </div>
         )}
       </div>
+
+      {/* Image Zoom Dialog */}
+      <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
+        <DialogContent className="max-w-4xl p-0">
+          <DialogTitle className="sr-only">{zoomedImage?.name}</DialogTitle>
+          {zoomedImage && (
+            <div className="relative">
+              <div className="absolute top-4 left-4 z-10">
+                <Badge variant="secondary" className="text-lg px-4 py-2">
+                  {zoomedImage.name}
+                </Badge>
+              </div>
+              <OptimizedProductImage
+                src={zoomedImage.url}
+                alt={zoomedImage.name}
+                className="w-full h-auto"
+                priority={true}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

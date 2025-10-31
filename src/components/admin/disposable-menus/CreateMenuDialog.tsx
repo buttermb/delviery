@@ -219,24 +219,39 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               <h3 className="text-lg font-semibold">Select Products</h3>
               <div className="space-y-4">
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
-                  {inventory?.map(product => (
-                    <div 
-                      key={product.id} 
-                      className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleProduct(product.id)}
-                    >
-                      <Checkbox
-                        checked={selectedProducts.includes(product.id)}
-                        onCheckedChange={() => toggleProduct(product.id)}
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{product.product_name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {product.quantity_lbs} lbs • {product.quantity_units} units available
+                  {inventory?.map(product => {
+                    const imageUrl = product.image_url || product.images?.[0];
+                    return (
+                      <div 
+                        key={product.id} 
+                        className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer"
+                        onClick={() => toggleProduct(product.id)}
+                      >
+                        <Checkbox
+                          checked={selectedProducts.includes(product.id)}
+                          onCheckedChange={() => toggleProduct(product.id)}
+                        />
+                        {imageUrl && (
+                          <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                            <img 
+                              src={imageUrl} 
+                              alt={product.product_name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium">{product.product_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {product.quantity_lbs} lbs • {product.quantity_units} units available
+                          </div>
+                          {!imageUrl && (
+                            <Badge variant="outline" className="text-xs mt-1">No image</Badge>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {selectedProducts.length} product(s) selected

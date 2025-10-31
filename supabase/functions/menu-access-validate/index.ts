@@ -48,7 +48,9 @@ serve(async (req) => {
             product_name,
             category,
             quantity_lbs,
-            warehouse_location
+            warehouse_location,
+            image_url,
+            images
           )
         )
       `)
@@ -252,7 +254,7 @@ serve(async (req) => {
     const access_granted = violations.length === 0;
 
     if (access_granted) {
-      // Transform products: flatten the nested structure
+      // Transform products: flatten the nested structure and include images
       const products = (menu.disposable_menu_products || []).map((mp: any) => {
         const product = mp.product || {};
         return {
@@ -262,7 +264,9 @@ serve(async (req) => {
           price: mp.custom_price || 0,
           quantity_lbs: product.quantity_lbs || 0,
           category: product.category || '',
-          display_order: mp.display_order
+          display_order: mp.display_order,
+          image_url: product.image_url || null,
+          images: product.images || []
         };
       });
 
@@ -280,7 +284,10 @@ serve(async (req) => {
             menu_id: menu.id,
             min_order_quantity: menu.min_order_quantity,
             max_order_quantity: menu.max_order_quantity,
-            appearance_settings: menu.appearance_settings
+            appearance_settings: menu.appearance_settings || {
+              show_product_images: true,
+              show_availability: true
+            }
           },
           remaining_views: whitelist_entry 
             ? (security_settings.view_limits?.max_views_per_week || 999) - whitelist_entry.view_count 
