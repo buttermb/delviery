@@ -14,8 +14,11 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const requestBody = await req.json();
+    console.log('Received request body:', JSON.stringify(requestBody));
 
     const {
       encrypted_url_token,
@@ -25,12 +28,23 @@ serve(async (req) => {
       location,
       ip_address,
       user_agent
-    } = await req.json();
+    } = requestBody;
 
     // Validate input
     if (!encrypted_url_token || !access_code) {
+      console.error('Missing required fields:', { 
+        has_token: !!encrypted_url_token, 
+        has_access_code: !!access_code,
+        received_body: JSON.stringify(requestBody)
+      });
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ 
+          error: 'Missing required fields',
+          details: {
+            encrypted_url_token: !!encrypted_url_token,
+            access_code: !!access_code
+          }
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
