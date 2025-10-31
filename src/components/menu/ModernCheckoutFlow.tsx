@@ -278,45 +278,53 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
           {currentStep === 'review' && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Order Review</h3>
-              {items.map((item) => (
-                <Card key={item.productId} className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <p className="font-medium">{item.productName}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
+              {items.map((item) => {
+                const itemKey = `${item.productId}-${item.selectedWeight || 'default'}`;
+                return (
+                  <Card key={itemKey} className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="font-medium">{item.productName}</p>
+                        {item.selectedWeight && (
+                          <Badge variant="secondary" className="mr-2 mt-1">
+                            {item.selectedWeight}
+                          </Badge>
+                        )}
+                        <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1, item.selectedWeight)}
+                          >
+                            -
+                          </Button>
+                          <span className="w-8 text-center">{item.quantity}</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1, item.selectedWeight)}
+                          >
+                            +
+                          </Button>
+                        </div>
+                        <p className="font-semibold w-20 text-right">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          variant="ghost"
+                          onClick={() => removeItem(item.productId, item.selectedWeight)}
                         >
-                          -
-                        </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                        >
-                          +
+                          Remove
                         </Button>
                       </div>
-                      <p className="font-semibold w-20 text-right">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeItem(item.productId)}
-                      >
-                        Remove
-                      </Button>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
 

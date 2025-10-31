@@ -1979,6 +1979,7 @@ export type Database = {
           display_order: number
           id: string
           menu_id: string
+          prices: Json | null
           product_id: string
         }
         Insert: {
@@ -1988,6 +1989,7 @@ export type Database = {
           display_order?: number
           id?: string
           menu_id: string
+          prices?: Json | null
           product_id: string
         }
         Update: {
@@ -1997,6 +1999,7 @@ export type Database = {
           display_order?: number
           id?: string
           menu_id?: string
+          prices?: Json | null
           product_id?: string
         }
         Relationships: [
@@ -6038,12 +6041,14 @@ export type Database = {
       }
       wholesale_inventory: {
         Row: {
+          base_price: number | null
           category: string
           created_at: string
           id: string
           image_url: string | null
           images: string[] | null
           last_restock_date: string | null
+          prices: Json | null
           product_name: string
           quantity_lbs: number
           quantity_units: number
@@ -6052,12 +6057,14 @@ export type Database = {
           warehouse_location: string
         }
         Insert: {
+          base_price?: number | null
           category: string
           created_at?: string
           id?: string
           image_url?: string | null
           images?: string[] | null
           last_restock_date?: string | null
+          prices?: Json | null
           product_name: string
           quantity_lbs?: number
           quantity_units?: number
@@ -6066,12 +6073,14 @@ export type Database = {
           warehouse_location?: string
         }
         Update: {
+          base_price?: number | null
           category?: string
           created_at?: string
           id?: string
           image_url?: string | null
           images?: string[] | null
           last_restock_date?: string | null
+          prices?: Json | null
           product_name?: string
           quantity_lbs?: number
           quantity_units?: number

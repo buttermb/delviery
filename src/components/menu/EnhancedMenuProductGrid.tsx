@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMenuCart } from '@/contexts/MenuCartContext';
@@ -19,6 +20,7 @@ interface Product {
   image_url?: string | null;
   images?: string[];
   quantity_lbs?: number;
+  prices?: Record<string, number>;
 }
 
 interface EnhancedMenuProductGridProps {
@@ -34,6 +36,7 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
   const [sortBy, setSortBy] = useState<'name' | 'price'>('name');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
 
   // Get unique categories
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
@@ -51,16 +54,28 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
       return a.name.localeCompare(b.name);
     });
 
-  const getCartQuantity = (productId: string) => {
-    return items.find(item => item.productId === productId)?.quantity || 0;
+  const getCartQuantity = (productId: string, weight?: string) => {
+    return items.find(item => 
+      item.productId === productId && item.selectedWeight === weight
+    )?.quantity || 0;
   };
 
   const addToCart = (product: Product) => {
+    const prices = product.prices || {};
+    const availableWeights = Object.keys(prices);
+    
+    // Get selected weight or default to 3.5g
+    const selectedWeight = selectedWeights[product.id] || 
+      (availableWeights.includes('3.5g') ? '3.5g' : availableWeights[0]);
+    
+    const price = prices[selectedWeight] || product.price;
+
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: price,
       image_url: getProductImage(product),
+      selectedWeight: selectedWeight,
     });
 
     // Trigger confetti effect
@@ -72,8 +87,19 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
 
     toast({
       title: 'Added to cart',
-      description: `${product.name} has been added to your cart`,
+      description: `${product.name} (${selectedWeight}) has been added to your cart`,
     });
+  };
+
+  const getPriceDisplay = (product: Product) => {
+    if (product.prices && Object.keys(product.prices).length > 0) {
+      const prices = Object.values(product.prices);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      if (min === max) return `$${min.toFixed(2)}`;
+      return `$${min.toFixed(2)} - $${max.toFixed(2)}`;
+    }
+    return `$${(product.price || 0).toFixed(2)}`;
   };
 
   const getProductImage = (product: Product) => {
@@ -126,7 +152,8 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => {
-            const cartQuantity = getCartQuantity(product.id);
+            const selectedWeight = selectedWeights[product.id];
+            const cartQuantity = getCartQuantity(product.id, selectedWeight);
             const productImage = getProductImage(product);
 
             return (
@@ -185,16 +212,46 @@ export function EnhancedMenuProductGrid({ products }: EnhancedMenuProductGridPro
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    {product.quantity_lbs && (
-                      <span className="text-sm text-muted-foreground">
-                        {product.quantity_lbs} lbs
+                  {/* Weight Selector */}
+                  {product.prices && Object.keys(product.prices).length > 0 ? (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Select Size:</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {Object.entries(product.prices).map(([weight, price]) => {
+                          const isSelected = selectedWeights[product.id] === weight || 
+                            (!selectedWeights[product.id] && weight === '3.5g');
+                          return (
+                            <Button
+                              key={weight}
+                              size="sm"
+                              variant={isSelected ? "default" : "outline"}
+                              onClick={() => setSelectedWeights(prev => ({ ...prev, [product.id]: weight }))}
+                              className="flex flex-col h-auto py-2"
+                            >
+                              <span className="font-bold text-xs">{weight}</span>
+                              <span className="text-[10px] opacity-80">${price.toFixed(0)}</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <div className="text-center">
+                        <span className="text-xl font-bold text-primary">
+                          {getPriceDisplay(product)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-primary">
+                        ${product.price.toFixed(2)}
                       </span>
-                    )}
-                  </div>
+                      {product.quantity_lbs && (
+                        <span className="text-sm text-muted-foreground">
+                          {product.quantity_lbs} lbs
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex gap-2">

@@ -282,6 +282,7 @@ serve(async (req) => {
           name: product.product_name || 'Unknown Product',
           description: `${product.category || ''} - ${product.warehouse_location || ''}`.trim(),
           price: mp.custom_price || 0,
+          prices: mp.prices || product.prices || null,
           quantity_lbs: product.quantity_lbs || 0,
           category: product.category || '',
           display_order: mp.display_order,
