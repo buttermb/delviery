@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { 
   Package, 
   Warehouse, 
@@ -48,6 +49,7 @@ interface LocationInventory {
 }
 
 export default function InventoryDashboard() {
+  const navigate = useNavigate();
   const { account, loading: accountLoading } = useAccount();
 
   // Fetch inventory summary
@@ -193,12 +195,51 @@ export default function InventoryDashboard() {
     return Math.min(100, (current / capacity) * 100);
   };
 
-  if (accountLoading || !account) {
+  if (accountLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">
-          {accountLoading ? 'Loading account...' : 'No account found. Please set up your account first.'}
-        </p>
+        <p className="text-muted-foreground">Loading account...</p>
+      </div>
+    );
+  }
+
+  if (!account) {
+    return (
+      <div className="container mx-auto py-12 px-4">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl mb-2">Account Setup Required</CardTitle>
+            <CardDescription>
+              You need to set up your account before accessing the inventory system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-4">
+                To use the inventory management system, you need to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                <li>Create or join an account</li>
+                <li>Set up your company information</li>
+                <li>Configure your business settings</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => navigate('/signup')}>
+                Create Account
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/onboarding')}>
+                Complete Setup
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
+                Back to Dashboard
+              </Button>
+            </div>
+            <div className="text-center text-xs text-muted-foreground pt-4">
+              <p>Already have an account? Contact your administrator to be added to an existing account.</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

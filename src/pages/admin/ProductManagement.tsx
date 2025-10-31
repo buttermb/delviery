@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/contexts/AccountContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -215,8 +215,38 @@ export default function ProductManagement() {
 
   if (!account) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">No account found. Please set up your account first.</p>
+      <div className="container mx-auto py-12 px-4">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl mb-2">Account Setup Required</CardTitle>
+            <CardDescription>
+              You need to set up your account before accessing product management.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-4">
+                To manage products, you need to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                <li>Create or join an account</li>
+                <li>Set up your company information</li>
+                <li>Configure your business settings</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => navigate('/signup')}>
+                Create Account
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/onboarding')}>
+                Complete Setup
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
+                Back to Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
