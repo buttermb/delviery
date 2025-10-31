@@ -18,7 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { menu_id, burn_type, reason, regenerate } = await req.json();
+    const { menu_id, burn_type, reason, regenerate, auto_regenerate, migrate_customers } = await req.json();
 
     console.log('Burning menu:', { menu_id, burn_type, reason, regenerate });
 
@@ -90,7 +90,14 @@ serve(async (req) => {
 
     let response: any = { success: true, burn_type };
 
-    if (regenerate && menu.product_id) {
+    // Get whitelist entries for auto-reinvite
+    const { data: whitelistEntries } = await supabase
+      .from('menu_access_whitelist')
+      .select('*')
+      .eq('menu_id', menu_id)
+      .eq('status', 'active');
+
+    if (regenerate) {
       console.log('Regenerating menu');
       
       const generateAccessCode = () => {
@@ -141,11 +148,102 @@ serve(async (req) => {
       if (createError) {
         console.error('Regeneration error:', createError);
       } else {
-        const shareableUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/menu/${newUrlToken}`;
+        const shareableUrl = `${req.headers.get('origin') || Deno.env.get('SITE_URL') || 'https://your-domain.com'}/menu/${newUrlToken}`;
+        
+        // Copy products from old menu
+        const { data: oldProducts } = await supabase
+          .from('disposable_menu_products')
+          .select('product_id, custom_price, display_order, display_availability')
+          .eq('menu_id', menu_id);
+        
+        if (oldProducts && oldProducts.length > 0) {
+          const newProducts = oldProducts.map(p => ({
+            menu_id: newMenu.id,
+            product_id: p.product_id,
+            custom_price: p.custom_price,
+            display_order: p.display_order,
+            display_availability: p.display_availability,
+          }));
+          
+          await supabase
+            .from('disposable_menu_products')
+            .insert(newProducts);
+        }
+        
+        // Auto-reinvite customers if requested
+        const customersToNotify: any[] = [];
+        
+        if (auto_regenerate && migrate_customers && whitelistEntries && whitelistEntries.length > 0) {
+          console.log(`Auto-reinviting ${whitelistEntries.length} customers`);
+          
+          for (const entry of whitelistEntries) {
+            // Create new access token
+            const newToken = crypto.randomUUID();
+            
+            // Create new whitelist entry
+            const { data: newEntry } = await supabase
+              .from('menu_access_whitelist')
+              .insert({
+                menu_id: newMenu.id,
+                customer_id: entry.customer_id,
+                customer_name: entry.customer_name,
+                customer_phone: entry.customer_phone,
+                customer_email: entry.customer_email,
+                unique_access_token: newToken,
+                status: 'pending',
+              })
+              .select()
+              .single();
+            
+            if (newEntry) {
+              // Send SMS invite via send-menu-access-link function
+              const inviteUrl = `${req.headers.get('origin') || Deno.env.get('SITE_URL')}/menu/${newToken}`;
+              const smsMessage = `Menu updated for security.\n\nNew Link: ${inviteUrl}\nNew Code: ${newAccessCode}\n\nOld link no longer works.`;
+              
+              if (entry.customer_phone) {
+                // Invoke SMS function
+                try {
+                  await supabase.functions.invoke('send-sms', {
+                    body: {
+                      phone: entry.customer_phone,
+                      message: smsMessage,
+                    },
+                  });
+                  
+                  // Log invitation
+                  await supabase.from('invitations').insert({
+                    menu_id: newMenu.id,
+                    customer_id: entry.customer_id,
+                    phone: entry.customer_phone,
+                    method: 'sms',
+                    message: smsMessage,
+                    unique_link: inviteUrl,
+                    status: 'sent',
+                  });
+                  
+                  customersToNotify.push({
+                    name: entry.customer_name,
+                    phone: entry.customer_phone,
+                    status: 'sent',
+                  });
+                } catch (smsError) {
+                  console.error('SMS send error:', smsError);
+                  customersToNotify.push({
+                    name: entry.customer_name,
+                    phone: entry.customer_phone,
+                    status: 'failed',
+                  });
+                }
+              }
+            }
+          }
+        }
         
         response.regenerated_menu = newMenu;
+        response.regenerated_menu_id = newMenu.id;
         response.access_code = newAccessCode;
         response.shareable_url = shareableUrl;
+        response.customers_to_notify = customersToNotify;
         console.log('Menu regenerated:', newMenu.id);
       }
     }
