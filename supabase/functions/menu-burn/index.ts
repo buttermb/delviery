@@ -101,7 +101,17 @@ serve(async (req) => {
         return code;
       };
 
+      const generateUrlToken = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let token = '';
+        for (let i = 0; i < 32; i++) {
+          token += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return token;
+      };
+
       const newAccessCode = generateAccessCode();
+      const newUrlToken = generateUrlToken();
       const newExpiresAt = new Date();
       newExpiresAt.setHours(newExpiresAt.getHours() + 24);
 
@@ -110,6 +120,7 @@ serve(async (req) => {
         .insert({
           name: menu.name + ' (Regenerated)',
           access_code: newAccessCode,
+          encrypted_url_token: newUrlToken,
           expiration_date: newExpiresAt.toISOString(),
           status: 'active',
           created_by: user.id

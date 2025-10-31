@@ -31,7 +31,17 @@ serve(async (req) => {
       return code;
     };
 
+    const generateUrlToken = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let token = '';
+      for (let i = 0; i < 32; i++) {
+        token += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return token;
+    };
+
     let accessCode = generateAccessCode();
+    let urlToken = generateUrlToken();
     let isUnique = false;
 
     while (!isUnique) {
@@ -64,6 +74,7 @@ serve(async (req) => {
       .insert({
         name,
         access_code: accessCode,
+        encrypted_url_token: urlToken,
         expiration_date: expiresAt.toISOString(),
         status: 'active',
         created_by: user.id
