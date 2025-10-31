@@ -5074,6 +5074,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_id: string | null
           account_status: string | null
           age_verified: boolean | null
           average_order_value: number | null
@@ -5103,6 +5104,7 @@ export type Database = {
           referral_code: string | null
           reported_issues: number | null
           risk_score: number | null
+          role: string | null
           selfie_verified: boolean | null
           total_orders: number | null
           total_spent: number | null
@@ -5116,6 +5118,7 @@ export type Database = {
           weekly_limit: number | null
         }
         Insert: {
+          account_id?: string | null
           account_status?: string | null
           age_verified?: boolean | null
           average_order_value?: number | null
@@ -5145,6 +5148,7 @@ export type Database = {
           referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
+          role?: string | null
           selfie_verified?: boolean | null
           total_orders?: number | null
           total_spent?: number | null
@@ -5158,6 +5162,7 @@ export type Database = {
           weekly_limit?: number | null
         }
         Update: {
+          account_id?: string | null
           account_status?: string | null
           age_verified?: boolean | null
           average_order_value?: number | null
@@ -5187,6 +5192,7 @@ export type Database = {
           referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
+          role?: string | null
           selfie_verified?: boolean | null
           total_orders?: number | null
           total_spent?: number | null
@@ -5199,7 +5205,15 @@ export type Database = {
           verification_submitted_at?: string | null
           weekly_limit?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_limits: {
         Row: {
