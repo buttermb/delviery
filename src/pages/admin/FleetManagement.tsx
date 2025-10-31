@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
+import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryToRunnerDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 import { toast } from "@/hooks/use-toast";
@@ -18,6 +19,9 @@ export default function FleetManagement() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState("");
   const [selectedOrderNumber, setSelectedOrderNumber] = useState("");
   const [selectedDeliveryStatus, setSelectedDeliveryStatus] = useState("");
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedRunnerId, setSelectedRunnerId] = useState("");
+  const [selectedRunnerName, setSelectedRunnerName] = useState("");
 
   // Fetch active deliveries
   const { data: activeDeliveries } = useQuery({
@@ -305,10 +309,9 @@ export default function FleetManagement() {
                   variant="default" 
                   className="flex-1"
                   onClick={() => {
-                    toast({
-                      title: "Assign Delivery",
-                      description: "Select a delivery from Active Deliveries and assign to this runner.",
-                    });
+                    setSelectedRunnerId(runner.id);
+                    setSelectedRunnerName(runner.full_name);
+                    setAssignDialogOpen(true);
                   }}
                 >
                   Assign Delivery
@@ -325,6 +328,13 @@ export default function FleetManagement() {
         orderNumber={selectedOrderNumber}
         open={statusDialogOpen}
         onOpenChange={setStatusDialogOpen}
+      />
+
+      <AssignDeliveryToRunnerDialog
+        open={assignDialogOpen}
+        onOpenChange={setAssignDialogOpen}
+        runnerId={selectedRunnerId}
+        runnerName={selectedRunnerName}
       />
     </div>
   );
