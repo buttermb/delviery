@@ -130,6 +130,12 @@ const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"))
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const ComprehensiveAnalytics = lazy(() => import("./pages/admin/ComprehensiveAnalytics"));
+const BigPlugExecutiveDashboard = lazy(() => import("./pages/admin/BigPlugExecutiveDashboard").then(m => ({ default: m.BigPlugExecutiveDashboard })));
+const BigPlugClientManagement = lazy(() => import("./pages/admin/BigPlugClientManagement").then(m => ({ default: m.BigPlugClientManagement })));
+const BigPlugFinancialCenter = lazy(() => import("./pages/admin/BigPlugFinancialCenter").then(m => ({ default: m.BigPlugFinancialCenter })));
+const BigPlugInventory = lazy(() => import("./pages/admin/BigPlugInventory").then(m => ({ default: m.BigPlugInventory })));
+const BigPlugOrderWorkflow = lazy(() => import("./pages/admin/BigPlugOrderWorkflow").then(m => ({ default: m.BigPlugOrderWorkflow })));
+const BigPlugRunnerPortal = lazy(() => import("./pages/mobile/BigPlugRunnerPortal").then(m => ({ default: m.BigPlugRunnerPortal })));
 const DisposableMenusHelp = lazy(() => import("./pages/admin/DisposableMenusHelp"));
 
 const queryClient = new QueryClient({
@@ -281,6 +287,11 @@ const App = () => {
                           {/* Wholesale CRM Routes */}
                           <Route path="wholesale-setup" element={<AdminErrorBoundary><WholesaleSetup /></AdminErrorBoundary>} />
                           <Route path="wholesale-dashboard" element={<AdminErrorBoundary><WholesaleDashboard /></AdminErrorBoundary>} />
+                          <Route path="big-plug-dashboard" element={<AdminErrorBoundary><BigPlugExecutiveDashboard /></AdminErrorBoundary>} />
+                          <Route path="big-plug-clients" element={<AdminErrorBoundary><BigPlugClientManagement /></AdminErrorBoundary>} />
+                          <Route path="big-plug-inventory" element={<AdminErrorBoundary><BigPlugInventory /></AdminErrorBoundary>} />
+                          <Route path="big-plug-financial" element={<AdminErrorBoundary><BigPlugFinancialCenter /></AdminErrorBoundary>} />
+                          <Route path="big-plug-order" element={<AdminErrorBoundary><BigPlugOrderWorkflow /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients/:id" element={<AdminErrorBoundary><ClientDetail /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients/new-order" element={<AdminErrorBoundary><NewWholesaleOrder /></AdminErrorBoundary>} />
@@ -294,6 +305,9 @@ const App = () => {
                           <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
                           <Route path="analytics/comprehensive" element={<AdminErrorBoundary><ComprehensiveAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
+                          
+                          {/* Mobile Runner Portal */}
+                          <Route path="runner-portal" element={<BigPlugRunnerPortal />} />
                           
                           {/* Fronted Inventory Routes */}
                           <Route path="inventory" element={<AdminErrorBoundary><InventoryDashboard /></AdminErrorBoundary>} />

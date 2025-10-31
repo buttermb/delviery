@@ -97,11 +97,12 @@ const menuGroups = [
   {
     title: "Wholesale Operations",
     items: [
-      { title: "Wholesale Dashboard", url: "/admin/wholesale-dashboard", icon: LayoutDashboard },
-      { title: "Analytics", url: "/admin/analytics/comprehensive", icon: TrendingUp },
-      { title: "Inventory", url: "/admin/wholesale-inventory", icon: Package },
-      { title: "Financial Center", url: "/admin/financial-center", icon: Receipt },
+      { title: "Operations Dashboard", url: "/admin/big-plug-dashboard", icon: LayoutDashboard },
+      { title: "Clients (B2B)", url: "/admin/big-plug-clients", icon: Users },
+      { title: "Inventory", url: "/admin/big-plug-inventory", icon: Package },
+      { title: "Financial", url: "/admin/big-plug-financial", icon: DollarSign },
       { title: "Fleet Management", url: "/admin/fleet-management", icon: Truck },
+      { title: "Analytics", url: "/admin/analytics/comprehensive", icon: TrendingUp },
       { title: "Disposable Menus", url: "/admin/disposable-menus", icon: Lock },
     ]
   },
