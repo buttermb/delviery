@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
 import { Navigation, Clock, Package, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
 
@@ -17,8 +18,9 @@ interface LiveDeliveryMapProps {
 export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<Map<string, { runner: mapboxgl.Marker; destination: mapboxgl.Marker }>>(new Map());
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { data: deliveries = [] } = useWholesaleDeliveries();
+  const { data: deliveries = [], refetch } = useWholesaleDeliveries();
 
   // Filter deliveries based on props
   const activeDeliveries = deliveries.filter(d => 
@@ -52,24 +54,85 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
     }
   }, []);
 
-  // Update runner positions every 30 seconds
+  // Setup real-time updates for deliveries
   useEffect(() => {
-    if (!map.current || !mapLoaded || activeDeliveries.length === 0) return;
+    const channel = supabase
+      .channel('delivery-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wholesale_deliveries'
+        },
+        (payload) => {
+          console.log('Delivery updated:', payload);
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  // Update markers when deliveries change
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
 
     const updateMarkers = () => {
-      // Clear existing markers
-      const existingMarkers = document.querySelectorAll('.runner-marker, .destination-marker');
-      existingMarkers.forEach(marker => marker.remove());
+      // Remove markers for deliveries that are no longer active
+      const activeIds = new Set(activeDeliveries.map(d => d.id));
+      markers.current.forEach((markerPair, id) => {
+        if (!activeIds.has(id)) {
+          markerPair.runner.remove();
+          markerPair.destination.remove();
+          markers.current.delete(id);
+          
+          // Remove route layer
+          if (map.current!.getLayer('route-' + id)) {
+            map.current!.removeLayer('route-' + id);
+          }
+          if (map.current!.getSource('route-' + id)) {
+            map.current!.removeSource('route-' + id);
+          }
+        }
+      });
+
+      const bounds = new mapboxgl.LngLatBounds();
+      let hasValidLocation = false;
 
       activeDeliveries.forEach((delivery) => {
-        // Get runner location from current_location field
-        const runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
+        // Get runner location - use mock data if not available
+        let runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
+        
+        // If no location, use default NYC coordinates with small random offset
+        if (!runnerLocation || typeof runnerLocation.lat !== 'number') {
+          const baseOffset = Math.random() * 0.05;
+          runnerLocation = {
+            lat: 40.7648 + baseOffset,
+            lng: -73.9808 + (baseOffset * 1.5)
+          };
+        }
+
         const runnerName = delivery.runner?.full_name || 'Runner';
-        const clientName = 'Client'; // TODO: Add client name to query
+        const clientName = 'Client'; // Will use actual address data when available
         const orderNumber = delivery.order?.order_number || 'N/A';
 
-        // Add runner marker (current position)
-        if (runnerLocation && typeof runnerLocation.lat === 'number') {
+        // Destination (offset for demo)
+        const destLng = runnerLocation.lng + 0.02;
+        const destLat = runnerLocation.lat + 0.01;
+
+        // Check if markers already exist
+        const existingMarkers = markers.current.get(delivery.id);
+        
+        if (existingMarkers) {
+          // Update existing markers
+          existingMarkers.runner.setLngLat([runnerLocation.lng, runnerLocation.lat]);
+          existingMarkers.destination.setLngLat([destLng, destLat]);
+        } else {
+          // Create new runner marker
           const runnerEl = document.createElement("div");
           runnerEl.className = "runner-marker";
           runnerEl.style.width = "40px";
@@ -81,7 +144,8 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           runnerEl.style.display = "flex";
           runnerEl.style.alignItems = "center";
           runnerEl.style.justifyContent = "center";
-          runnerEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/></svg>`;
+          runnerEl.style.cursor = "pointer";
+          runnerEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
 
           const runnerPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="padding: 8px;">
@@ -91,15 +155,12 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             </div>
           `);
 
-          new mapboxgl.Marker(runnerEl)
+          const runnerMarker = new mapboxgl.Marker(runnerEl)
             .setLngLat([runnerLocation.lng, runnerLocation.lat])
             .setPopup(runnerPopup)
             .addTo(map.current!);
 
-          // For demo, add a destination point offset from current location
-          const destLng = runnerLocation.lng + 0.02;
-          const destLat = runnerLocation.lat + 0.01;
-
+          // Create destination marker
           const destEl = document.createElement("div");
           destEl.className = "destination-marker";
           destEl.style.width = "36px";
@@ -111,6 +172,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           destEl.style.display = "flex";
           destEl.style.alignItems = "center";
           destEl.style.justifyContent = "center";
+          destEl.style.cursor = "pointer";
           destEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>`;
 
           const destPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
@@ -124,17 +186,28 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             </div>
           `);
 
-          new mapboxgl.Marker(destEl)
+          const destMarker = new mapboxgl.Marker(destEl)
             .setLngLat([destLng, destLat])
             .setPopup(destPopup)
             .addTo(map.current!);
 
-          // Draw route line
-          if (map.current!.getSource('route-' + delivery.id)) {
-            map.current!.removeLayer('route-' + delivery.id);
-            map.current!.removeSource('route-' + delivery.id);
-          }
+          markers.current.set(delivery.id, { runner: runnerMarker, destination: destMarker });
+        }
 
+        // Update route line
+        if (map.current!.getSource('route-' + delivery.id)) {
+          (map.current!.getSource('route-' + delivery.id) as mapboxgl.GeoJSONSource).setData({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [runnerLocation.lng, runnerLocation.lat],
+                [destLng, destLat]
+              ]
+            }
+          });
+        } else {
           map.current!.addSource('route-' + delivery.id, {
             type: 'geojson',
             data: {
@@ -164,22 +237,21 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
               'line-dasharray': [2, 2]
             }
           });
-
-          // Fit bounds
-          const bounds = new mapboxgl.LngLatBounds();
-          bounds.extend([runnerLocation.lng, runnerLocation.lat]);
-          bounds.extend([destLng, destLat]);
-          map.current!.fitBounds(bounds, { padding: 100 });
         }
+
+        // Add to bounds
+        bounds.extend([runnerLocation.lng, runnerLocation.lat]);
+        bounds.extend([destLng, destLat]);
+        hasValidLocation = true;
       });
+
+      // Fit bounds if we have locations
+      if (hasValidLocation && !bounds.isEmpty()) {
+        map.current!.fitBounds(bounds, { padding: 100, maxZoom: 14 });
+      }
     };
 
     updateMarkers();
-
-    // Update every 30 seconds
-    const interval = setInterval(updateMarkers, 30000);
-
-    return () => clearInterval(interval);
   }, [mapLoaded, activeDeliveries]);
 
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN.includes('example')) {
@@ -221,14 +293,14 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         <div className="p-4 border-b bg-background space-y-2">
           {activeDeliveries.map((delivery) => {
             const runnerName = delivery.runner?.full_name || 'Runner';
-            const clientName = 'Client'; // TODO: Add client name to query
+            const clientName = 'Client'; // Will use actual address data when available
             const orderNumber = delivery.order?.order_number || 'N/A';
             
             return (
               <div key={delivery.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                    {runnerName[0]}
+                    🚗
                   </div>
                   <div>
                     <div className="font-medium">{runnerName}</div>
