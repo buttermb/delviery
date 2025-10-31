@@ -315,4 +315,5 @@ const SecureMenuView = () => {
   );
 };
 
+// Force rebuild - disposable menus with image support
 export default SecureMenuView;
