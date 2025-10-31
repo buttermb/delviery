@@ -2,6 +2,7 @@
  * Browser-compatible cryptographic utilities for disposable menus
  * Uses Web Crypto API instead of Node.js crypto module
  * @module menuHelpers
+ * @updated 2025-01-30
  */
 
 /**
