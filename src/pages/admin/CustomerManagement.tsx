@@ -175,14 +175,14 @@ export default function CustomerManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto p-6">
       <SEOHead 
         title="Customer Management | Admin"
         description="Manage your customers and CRM"
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Customer Management</h1>
           <p className="text-muted-foreground">Complete CRM for your customers</p>
