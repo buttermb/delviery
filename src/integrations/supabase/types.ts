@@ -5195,6 +5195,7 @@ export type Database = {
           business_name: string
           client_type: string
           contact_name: string
+          coordinates: Json | null
           created_at: string
           credit_limit: number
           email: string
@@ -5215,6 +5216,7 @@ export type Database = {
           business_name: string
           client_type: string
           contact_name: string
+          coordinates?: Json | null
           created_at?: string
           credit_limit?: number
           email: string
@@ -5235,6 +5237,7 @@ export type Database = {
           business_name?: string
           client_type?: string
           contact_name?: string
+          coordinates?: Json | null
           created_at?: string
           credit_limit?: number
           email?: string

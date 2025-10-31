@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Truck, MapPin, Phone, MessageSquare, Star, Clock, DollarSign, Navigation } from "lucide-react";
 import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
+import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 
 export default function FleetManagement() {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -93,6 +94,24 @@ export default function FleetManagement() {
 
       {/* Live GPS Tracking Map */}
       <LiveDeliveryMap showAll={true} />
+      
+      {/* Route Optimization Preview */}
+      {activeDeliveries && activeDeliveries.length > 0 && (
+        <RouteOptimizationPreview
+          runnerId={activeDeliveries[0]?.runner_id || ''}
+          runnerName={activeDeliveries[0]?.runners?.full_name || 'Runner'}
+          stops={activeDeliveries.slice(0, 5).map((d: any, i: number) => ({
+            id: d.id,
+            clientName: d.orders?.delivery_address?.split(',')[0] || `Stop ${i + 1}`,
+            address: d.delivery_address || 'Address pending',
+            orderValue: Number(d.orders?.total_amount || 0),
+            estimatedTime: `${(i + 1) * 15} mins`
+          }))}
+          totalDistance="24.5 mi"
+          totalTime="1h 45m"
+          fuelSavings="$12.50"
+        />
+      )}
 
       {/* Active Deliveries */}
       <div>

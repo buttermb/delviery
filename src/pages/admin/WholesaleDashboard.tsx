@@ -18,6 +18,7 @@ import { QuickActionsMenu } from "@/components/admin/QuickActionsMenu";
 import { CollectionsDashboard } from "@/components/admin/CollectionsDashboard";
 import { InventoryAlerts } from "@/components/admin/InventoryAlerts";
 import { TerritoryMapView } from "@/components/admin/TerritoryMapView";
+import { SmartAlertsDashboard } from "@/components/admin/SmartAlertsDashboard";
 
 export default function WholesaleDashboard() {
   // Fetch today's metrics
@@ -314,6 +315,39 @@ export default function WholesaleDashboard() {
           </div>
         </Card>
       </div>
+      {/* Smart Alerts Dashboard */}
+      <SmartAlertsDashboard 
+        alerts={[
+          {
+            id: '1',
+            type: 'payment',
+            severity: 'critical',
+            title: 'High Priority Collection',
+            message: `${alerts?.overdueClients?.[0]?.business_name || 'Client'} has $${Number(alerts?.overdueClients?.[0]?.outstanding_balance || 0).toLocaleString()} overdue`,
+            timestamp: new Date().toISOString(),
+            actionable: true
+          },
+          ...(alerts?.lowStock?.slice(0, 2).map((item: any, i: number) => ({
+            id: `stock-${i}`,
+            type: 'stock' as const,
+            severity: 'high' as const,
+            title: 'Low Stock Alert',
+            message: `${item.products?.name} at ${item.warehouses?.name} - Only ${Number(item.quantity_lbs).toFixed(1)} lbs remaining`,
+            timestamp: new Date().toISOString(),
+            actionable: true
+          })) || []),
+          ...(alerts?.activeDeliveries && alerts.activeDeliveries.length > 5 ? [{
+            id: 'delivery-alert',
+            type: 'delivery' as const,
+            severity: 'medium' as const,
+            title: 'High Delivery Volume',
+            message: `${alerts.activeDeliveries.length} active deliveries - Consider optimizing routes`,
+            timestamp: new Date().toISOString(),
+            actionable: true
+          }] : [])
+        ]}
+      />
+      
       {/* Key sections */}
       <TerritoryMapView />
       
