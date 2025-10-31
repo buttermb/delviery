@@ -309,7 +309,7 @@ export async function createSampleWholesaleData() {
       {
         client_id: clientData[1].id,
         amount: 85000,
-        payment_method: "bank_transfer",
+        payment_method: "wire_transfer",
         notes: "Payment for order WO-1002"
       }
     ];
