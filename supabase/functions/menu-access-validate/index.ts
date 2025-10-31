@@ -48,9 +48,7 @@ serve(async (req) => {
             product_name,
             category,
             quantity_lbs,
-            warehouse_location,
-            image_url,
-            images
+            warehouse_location
           )
         )
       `)
@@ -254,7 +252,7 @@ serve(async (req) => {
     const access_granted = violations.length === 0;
 
     if (access_granted) {
-      // Transform products: flatten the nested structure and include images
+      // Transform products: flatten the nested structure
       const products = (menu.disposable_menu_products || []).map((mp: any) => {
         const product = mp.product || {};
         return {
@@ -265,8 +263,8 @@ serve(async (req) => {
           quantity_lbs: product.quantity_lbs || 0,
           category: product.category || '',
           display_order: mp.display_order,
-          image_url: product.image_url || null,
-          images: product.images || []
+          image_url: null,
+          images: []
         };
       });
 
