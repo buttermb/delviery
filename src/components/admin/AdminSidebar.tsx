@@ -22,7 +22,8 @@ import {
   ChevronDown,
   Truck,
   ShoppingCart,
-  UserCircle
+  UserCircle,
+  PieChart
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +56,7 @@ const menuGroups = [
     title: "CRM & Customers",
     items: [
       { title: "Customer Management", url: "/admin/customer-management", icon: UserCircle },
+      { title: "Customer Reports", url: "/admin/customer-reports", icon: PieChart },
       { title: "Live Chat Support", url: "/admin/live-chat", icon: MessageCircle },
       { title: "Users", url: "/admin/users", icon: Users },
     ]

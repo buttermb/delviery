@@ -54,6 +54,8 @@ const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const CustomerManagement = lazy(() => import("./pages/admin/CustomerManagement"));
+const CustomerForm = lazy(() => import("./pages/admin/CustomerForm"));
+const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
 const DeliveryManagement = lazy(() => import("./pages/admin/DeliveryManagement"));
 const AccountSubscription = lazy(() => import("./pages/AccountSubscription"));
 
@@ -239,7 +241,10 @@ const App = () => {
                           <Route path="company-settings" element={<AdminErrorBoundary><CompanySettings /></AdminErrorBoundary>} />
                           <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
                           <Route path="customer-management" element={<AdminErrorBoundary><CustomerManagement /></AdminErrorBoundary>} />
-                          <Route path="customer/:id" element={<AdminErrorBoundary><CustomerDetails /></AdminErrorBoundary>} />
+                          <Route path="customers/:id" element={<AdminErrorBoundary><CustomerDetails /></AdminErrorBoundary>} />
+                          <Route path="customers/new" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
+                          <Route path="customer-management/:id/edit" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
+                          <Route path="customer-reports" element={<AdminErrorBoundary><CustomerReports /></AdminErrorBoundary>} />
                           <Route path="pos" element={<AdminErrorBoundary><PointOfSale /></AdminErrorBoundary>} />
                           <Route path="deliveries" element={<AdminErrorBoundary><DeliveryManagement /></AdminErrorBoundary>} />
                           

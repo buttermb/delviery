@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   ArrowLeft, User, Mail, Phone, MapPin, Calendar, 
   DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare 
@@ -36,7 +36,6 @@ interface Customer {
 export default function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -102,7 +101,7 @@ export default function CustomerDetails() {
       setNotes(notesData || []);
     } catch (error) {
       console.error('Error loading customer data:', error);
-      toast({ title: 'Error loading customer', variant: 'destructive' });
+      toast.error('Failed to load customer data');
     } finally {
       setLoading(false);
     }
@@ -121,12 +120,12 @@ export default function CustomerDetails() {
 
       if (error) throw error;
 
-      toast({ title: 'Note added successfully' });
+      toast.success('Note added successfully');
       setNewNote('');
       loadCustomerData();
     } catch (error) {
       console.error('Error adding note:', error);
-      toast({ title: 'Error adding note', variant: 'destructive' });
+      toast.error('Failed to add note');
     }
   };
 
@@ -190,7 +189,9 @@ export default function CustomerDetails() {
             </div>
           </div>
 
-          <Button>Edit Profile</Button>
+          <Button onClick={() => navigate(`/admin/customer-management/${id}/edit`)}>
+            Edit Profile
+          </Button>
         </div>
       </div>
 
@@ -345,8 +346,23 @@ export default function CustomerDetails() {
                         ))}
                       </div>
                       <div className="mt-3 flex gap-2">
-                        <Button size="sm" variant="outline">View Invoice</Button>
-                        <Button size="sm" variant="outline">Reorder</Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate(`/admin/invoices?order=${order.id}`)}
+                        >
+                          View Invoice
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            toast.success("Items added to cart");
+                            navigate(`/admin/pos?customer=${id}&reorder=${order.id}`);
+                          }}
+                        >
+                          Reorder
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -405,12 +421,27 @@ export default function CustomerDetails() {
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate(`/admin/inventory/fronted/record-payment?customer=${id}`)}
+                  >
                     <DollarSign className="w-4 h-4 mr-2" />
                     Record Payment
                   </Button>
-                  <Button variant="outline">Add Store Credit</Button>
-                  <Button variant="outline">Create Invoice</Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      toast.info("Store credit feature coming soon");
+                    }}
+                  >
+                    Add Store Credit
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate(`/admin/invoices/new?customer=${id}`)}
+                  >
+                    Create Invoice
+                  </Button>
                 </div>
               </div>
             </CardContent>
