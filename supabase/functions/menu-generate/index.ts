@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { name, product_id, expires_in_hours, max_uses, require_pin, custom_pin } = await req.json();
+    const { name, product_id, expires_in_hours, max_uses } = await req.json();
 
     console.log('Creating disposable menu:', { name, product_id, expires_in_hours, max_uses });
 
@@ -66,8 +66,6 @@ serve(async (req) => {
         access_code: accessCode,
         expires_at: expiresAt.toISOString(),
         max_uses: max_uses || null,
-        require_pin: require_pin || false,
-        access_pin: require_pin && custom_pin ? custom_pin : null,
         status: 'active',
         created_by: user.id
       })
