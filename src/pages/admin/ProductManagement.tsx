@@ -127,6 +127,27 @@ export default function ProductManagement() {
         if (error) throw error;
         toast.success("Product updated successfully");
       } else {
+        // Check tenant limits before creating
+        if (account?.tenant_id) {
+          const { data: tenant } = await supabase
+            .from('tenants')
+            .select('usage, limits')
+            .eq('id', account.tenant_id)
+            .single();
+
+          if (tenant) {
+            const currentProducts = tenant.usage?.products || 0;
+            const productLimit = tenant.limits?.products || 0;
+            
+            if (productLimit > 0 && currentProducts >= productLimit) {
+              toast.error('Product limit reached', {
+                description: `You've reached your product limit (${currentProducts}/${productLimit}). Please upgrade your plan.`,
+              });
+              return;
+            }
+          }
+        }
+
         const { error } = await supabase
           .from("products")
           .insert([productData]);
