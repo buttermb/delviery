@@ -107,6 +107,7 @@ const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const OnboardingWizard = lazy(() => import("./pages/saas/OnboardingWizard"));
 const BillingDashboard = lazy(() => import("./pages/saas/BillingDashboard"));
 const SuperAdminPlatform = lazy(() => import("./pages/saas/SuperAdminDashboard"));
+const SuperAdminEnhanced = lazy(() => import("./pages/saas/SuperAdminEnhanced"));
 const WhiteLabelSettings = lazy(() => import("./pages/saas/WhiteLabelSettings"));
 const MarketingLanding = lazy(() => import("./pages/saas/MarketingLanding"));
 const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
@@ -248,7 +249,8 @@ const App = () => {
                         <Route path="/saas/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />
                         <Route path="/saas/billing" element={<BillingDashboard />} />
-                        <Route path="/saas/admin" element={<SuperAdminPlatform />} />
+                        <Route path="/saas/admin" element={<SuperAdminEnhanced />} />
+                        <Route path="/saas/admin/legacy" element={<SuperAdminPlatform />} />
                         <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
                         
                         {/* Super Admin Routes */}
