@@ -300,6 +300,18 @@ export default function SuperAdminEnhanced() {
           <p className="text-muted-foreground">Complete control center for your SaaS platform</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/saas/admin/analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/saas/admin/support">
+              <Ticket className="h-4 w-4 mr-2" />
+              Support
+            </Link>
+          </Button>
           <Button variant="outline">
             <Bell className="h-4 w-4 mr-2" />
             3
@@ -599,6 +611,28 @@ export default function SuperAdminEnhanced() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Navigation Tabs */}
+      <Tabs defaultValue="dashboard" className="mt-6">
+        <TabsList>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="support">Support</TabsTrigger>
+        </TabsList>
+        <TabsContent value="dashboard">
+          {/* Current dashboard content */}
+        </TabsContent>
+        <TabsContent value="analytics">
+          <div className="mt-4">
+            <p className="text-muted-foreground">Redirecting to Analytics...</p>
+          </div>
+        </TabsContent>
+        <TabsContent value="support">
+          <div className="mt-4">
+            <p className="text-muted-foreground">Redirecting to Support...</p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
