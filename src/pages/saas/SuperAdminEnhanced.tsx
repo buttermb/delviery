@@ -328,10 +328,7 @@ export default function SuperAdminEnhanced() {
 
       {/* Quick Actions */}
       <div className="flex gap-2">
-        <Button variant="outline">
-          <Bell className="h-4 w-4 mr-2" />
-          Send Notification
-        </Button>
+        <NotificationDialog />
         <Button variant="outline">
           <Settings className="h-4 w-4 mr-2" />
           Settings
