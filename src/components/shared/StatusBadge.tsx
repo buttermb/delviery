@@ -40,13 +40,10 @@ const statusConfig: Record<string, { variant: StatusVariant; label: string }> = 
   'out_of_stock': { variant: 'error', label: 'Out of Stock' },
   'reserved': { variant: 'info', label: 'Reserved' },
   
-  // Client statuses
+  // Client/Menu statuses
   'active': { variant: 'success', label: 'Active' },
   'suspended': { variant: 'warning', label: 'Suspended' },
   'inactive': { variant: 'default', label: 'Inactive' },
-  
-  // Menu statuses
-  'active': { variant: 'success', label: 'Active' },
   'burned': { variant: 'error', label: 'Burned' },
   'expired': { variant: 'warning', label: 'Expired' },
 };

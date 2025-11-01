@@ -47,12 +47,12 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const About = lazy(() => import("./pages/About"));
 
-// Super Admin Pages
+// Super Admin Pages (Legacy)
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 const SuperAdminCustomers = lazy(() => import("./pages/SuperAdminCustomers"));
 const SuperAdminSubscriptions = lazy(() => import("./pages/SuperAdminSubscriptions"));
-const SuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
-const SuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
+const LegacySuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
+const LegacySuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const CustomerManagement = lazy(() => import("./pages/admin/CustomerManagement"));
@@ -266,8 +266,8 @@ const App = () => {
                         <Route path="/super-admin/customers" element={<SuperAdminCustomers />} />
                         <Route path="/super-admin/customers/:id" element={<SuperAdminCustomers />} />
                         <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
-                        <Route path="/super-admin/support" element={<SuperAdminSupport />} />
-                        <Route path="/super-admin/analytics" element={<SuperAdminAnalytics />} />
+                        <Route path="/super-admin/support" element={<LegacySuperAdminSupport />} />
+                        <Route path="/super-admin/analytics" element={<LegacySuperAdminAnalytics />} />
                         
                         {/* Account Management */}
                         <Route path="/account/subscription" element={<ProtectedRoute><AccountSubscription /></ProtectedRoute>} />
