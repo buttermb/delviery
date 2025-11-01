@@ -23,6 +23,10 @@ import { InventoryAlertsWidget } from './dashboard/InventoryAlertsWidget';
 import { SalesChartWidget } from './dashboard/SalesChartWidget';
 import { ActivityFeedWidget } from './dashboard/ActivityFeedWidget';
 import { QuickActionsBar } from './dashboard/QuickActionsBar';
+import { LocationMapWidget } from './dashboard/LocationMapWidget';
+import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
+import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
+import { TopProductsWidget } from './dashboard/TopProductsWidget';
 
 export function ModernDashboard() {
   const navigate = useNavigate();
@@ -164,6 +168,18 @@ export function ModernDashboard() {
           <InventoryAlertsWidget />
           <ActivityFeedWidget />
         </div>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LocationMapWidget />
+        <PendingTransfersWidget />
+      </div>
+
+      {/* Additional Widgets Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RevenueChartWidget />
+        <TopProductsWidget />
       </div>
     </div>
   );

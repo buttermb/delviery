@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Search, Package, Menu, Plus, Users, DollarSign, 
   Truck, FileText, Settings, BarChart3, Lock, Image,
-  ArrowRight, Sparkles
+  ArrowRight, Sparkles, Shield, Bell, Printer, Tag, Warehouse
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -117,6 +117,54 @@ export function CommandPalette() {
       category: 'Navigation',
     },
     {
+      id: 'nav-receiving',
+      label: 'Receiving & Packaging',
+      icon: <Warehouse className="h-4 w-4" />,
+      href: '/admin/operations/receiving',
+      keywords: ['receiving', 'packaging', 'warehouse'],
+      category: 'Navigation',
+    },
+    {
+      id: 'nav-catalog-images',
+      label: 'Product Images',
+      icon: <Image className="h-4 w-4" />,
+      href: '/admin/catalog/images',
+      keywords: ['images', 'media', 'photos', 'pictures'],
+      category: 'Navigation',
+    },
+    {
+      id: 'nav-catalog-batches',
+      label: 'Batches & Lots',
+      icon: <Tag className="h-4 w-4" />,
+      href: '/admin/catalog/batches',
+      keywords: ['batches', 'lots', 'inventory batches'],
+      category: 'Navigation',
+    },
+    {
+      id: 'nav-pricing',
+      label: 'Pricing & Deals',
+      icon: <DollarSign className="h-4 w-4" />,
+      href: '/admin/sales/pricing',
+      keywords: ['pricing', 'deals', 'discounts', 'bulk'],
+      category: 'Navigation',
+    },
+    {
+      id: 'nav-warehouses',
+      label: 'Warehouses',
+      icon: <Warehouse className="h-4 w-4" />,
+      href: '/admin/locations/warehouses',
+      keywords: ['warehouses', 'locations', 'storage'],
+      category: 'Navigation',
+    },
+    {
+      id: 'nav-runners',
+      label: 'Runners & Vehicles',
+      icon: <Truck className="h-4 w-4" />,
+      href: '/admin/locations/runners',
+      keywords: ['runners', 'drivers', 'vehicles', 'delivery'],
+      category: 'Navigation',
+    },
+    {
       id: 'nav-fleet',
       label: 'Fleet Management',
       icon: <Truck className="h-4 w-4" />,
@@ -176,6 +224,38 @@ export function CommandPalette() {
       icon: <Settings className="h-4 w-4" />,
       href: '/admin/settings',
       keywords: ['settings', 'config', 'preferences'],
+      category: 'Settings',
+    },
+    {
+      id: 'security',
+      label: 'Security Settings',
+      icon: <Shield className="h-4 w-4" />,
+      href: '/admin/settings?tab=security',
+      keywords: ['security', '2fa', 'password'],
+      category: 'Settings',
+    },
+    {
+      id: 'notifications',
+      label: 'Notification Settings',
+      icon: <Bell className="h-4 w-4" />,
+      href: '/admin/settings?tab=notifications',
+      keywords: ['notifications', 'alerts', 'emails'],
+      category: 'Settings',
+    },
+    {
+      id: 'printing',
+      label: 'Printing & Labels',
+      icon: <Printer className="h-4 w-4" />,
+      href: '/admin/settings?tab=printing',
+      keywords: ['printing', 'labels', 'barcode'],
+      category: 'Settings',
+    },
+    {
+      id: 'reports',
+      label: 'Reports',
+      icon: <BarChart3 className="h-4 w-4" />,
+      href: '/admin/reports',
+      keywords: ['reports', 'analytics', 'export'],
       category: 'Settings',
     },
   ];

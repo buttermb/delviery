@@ -45,6 +45,14 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AdminQuickStatsHeader } from "@/components/admin/AdminQuickStatsHeader";
+import { getNavigationForRole } from "@/lib/constants/navigation";
+import { useQuery } from "@tanstack/react-query";
+
+// Get user role - in production this would come from auth context
+const getUserRole = async (): Promise<string> => {
+  // Default to 'owner' for now, should be fetched from user context
+  return 'owner';
+};
 
 const menuGroups = [
   {

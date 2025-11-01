@@ -136,7 +136,17 @@ const BigPlugFinancialCenter = lazy(() => import("./pages/admin/BigPlugFinancial
 const BigPlugInventory = lazy(() => import("./pages/admin/BigPlugInventory").then(m => ({ default: m.BigPlugInventory })));
 const BigPlugOrderWorkflow = lazy(() => import("./pages/admin/BigPlugOrderWorkflow").then(m => ({ default: m.BigPlugOrderWorkflow })));
 const BigPlugRunnerPortal = lazy(() => import("./pages/mobile/BigPlugRunnerPortal").then(m => ({ default: m.BigPlugRunnerPortal })));
+const ModernDashboard = lazy(() => import("./components/admin/ModernDashboard").then(m => ({ default: m.ModernDashboard })));
+const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
+const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const DisposableMenusHelp = lazy(() => import("./pages/admin/DisposableMenusHelp"));
+const ProductImagesPage = lazy(() => import("./pages/admin/catalog/ProductImagesPage"));
+const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
+const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
+const ReceivingPage = lazy(() => import("./pages/admin/operations/ReceivingPage"));
+const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
+const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage"));
+const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -248,6 +258,7 @@ const App = () => {
                         <Route path="/admin" element={<AdminProtectedRoute><AdminErrorBoundary><AdminLayout /></AdminErrorBoundary></AdminProtectedRoute>}>
                           <Route index element={<Navigate to="/admin/dashboard" replace />} />
                           <Route path="dashboard" element={<AdminErrorBoundary><AdminDashboard /></AdminErrorBoundary>} />
+                          <Route path="modern-dashboard" element={<AdminErrorBoundary><ModernDashboard /></AdminErrorBoundary>} />
                           <Route path="users" element={<AdminErrorBoundary><AdminUsers /></AdminErrorBoundary>} />
                           <Route path="users/:id" element={<AdminErrorBoundary><AdminUserDetails /></AdminErrorBoundary>} />
                           <Route path="compliance" element={<AdminErrorBoundary><AdminCompliance /></AdminErrorBoundary>} />
@@ -261,7 +272,25 @@ const App = () => {
                           <Route path="couriers" element={<AdminErrorBoundary><Couriers /></AdminErrorBoundary>} />
                           <Route path="live-orders" element={<AdminErrorBoundary><LiveOrders /></AdminErrorBoundary>} />
                           <Route path="live-map" element={<AdminErrorBoundary><LiveMap /></AdminErrorBoundary>} />
-                          <Route path="settings" element={<AdminErrorBoundary><SystemSettings /></AdminErrorBoundary>} />
+                          <Route path="settings-old" element={<AdminErrorBoundary><SystemSettings /></AdminErrorBoundary>} />
+                          <Route path="settings" element={<AdminErrorBoundary><SettingsPage /></AdminErrorBoundary>} />
+                          <Route path="reports-new" element={<AdminErrorBoundary><ReportsPage /></AdminErrorBoundary>} />
+                          
+                          {/* Catalog Pages */}
+                          <Route path="catalog/images" element={<AdminErrorBoundary><ProductImagesPage /></AdminErrorBoundary>} />
+                          <Route path="catalog/batches" element={<AdminErrorBoundary><BatchesPage /></AdminErrorBoundary>} />
+                          <Route path="catalog/categories" element={<AdminErrorBoundary><CategoriesPage /></AdminErrorBoundary>} />
+                          
+                          {/* Operations Pages */}
+                          <Route path="operations/receiving" element={<AdminErrorBoundary><ReceivingPage /></AdminErrorBoundary>} />
+                          
+                          {/* Sales Pages */}
+                          <Route path="sales/pricing" element={<AdminErrorBoundary><AdminPricingPage /></AdminErrorBoundary>} />
+                          
+                          {/* Locations Pages */}
+                          <Route path="locations/warehouses" element={<AdminErrorBoundary><WarehousesPage /></AdminErrorBoundary>} />
+                          <Route path="locations/runners" element={<AdminErrorBoundary><RunnersPage /></AdminErrorBoundary>} />
+                          
                           <Route path="button-tester" element={<AdminErrorBoundary><ButtonTester /></AdminErrorBoundary>} />
                           <Route path="bug-scanner" element={<AdminErrorBoundary><BugScanner /></AdminErrorBoundary>} />
                           <Route path="live-chat" element={<AdminErrorBoundary><AdminLiveChat /></AdminErrorBoundary>} />
