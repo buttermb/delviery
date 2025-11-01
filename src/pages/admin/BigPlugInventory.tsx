@@ -311,7 +311,7 @@ export function BigPlugInventory() {
                 <div className="flex justify-between items-center">
                   <span>Active Deliveries: 4</span>
                   <Badge variant="outline">
-                    {inventoryOverview.onRunners.toFixed(1)} lbs
+                    {Number(inventoryOverview?.onRunners || 0).toFixed(1)} lbs
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
