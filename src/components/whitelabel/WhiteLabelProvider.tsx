@@ -67,14 +67,14 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     }
 
     // Update favicon
-    if (whiteLabel.favicon) {
+    if ((whiteLabel as any)?.favicon) {
       let favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
       if (!favicon) {
         favicon = document.createElement('link');
         favicon.rel = 'icon';
         document.head.appendChild(favicon);
       }
-      favicon.href = whiteLabel.favicon;
+      favicon.href = (whiteLabel as any).favicon;
     }
 
     // Update page title

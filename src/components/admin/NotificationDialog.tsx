@@ -74,14 +74,14 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
   const recipients = form.watch('recipients');
 
   // Fetch tenants for custom selection
-  const { data: tenants } = useQuery({
+  const { data: tenants } = useQuery<any[]>({
     queryKey: ['all-tenants-for-notification'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('tenants')
         .select('id, business_name, subscription_status')
         .order('business_name');
-      return data || [];
+      return (data as any[]) || [];
     },
     enabled: recipients === 'custom',
   });
@@ -92,18 +92,18 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
       let targetTenants: string[] = [];
 
       if (data.recipients === 'all') {
-        const { data: allTenants } = await supabase
+        const { data: allTenants } = await (supabase as any)
           .from('tenants')
           .select('id');
-        targetTenants = allTenants?.map((t) => t.id) || [];
+        targetTenants = (allTenants as any[])?.map((t: any) => t.id) || [];
       } else if (data.recipients === 'custom') {
         targetTenants = data.tenant_ids || [];
       } else {
-        const { data: filteredTenants } = await supabase
+        const { data: filteredTenants } = await (supabase as any)
           .from('tenants')
           .select('id')
           .eq('subscription_status', data.recipients);
-        targetTenants = filteredTenants?.map((t) => t.id) || [];
+        targetTenants = (filteredTenants as any[])?.map((t: any) => t.id) || [];
       }
 
       // In production, send notifications via email/SMS service

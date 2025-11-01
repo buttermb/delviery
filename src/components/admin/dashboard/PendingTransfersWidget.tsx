@@ -21,7 +21,7 @@ export function PendingTransfersWidget() {
     queryFn: async () => {
       if (!account?.id) return [];
 
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('wholesale_deliveries')
         .select(`
           id,

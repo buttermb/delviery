@@ -33,12 +33,12 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   });
 
   // Get tenant user
-  const { data: tenantUser, isLoading: loadingUser } = useQuery({
+  const { data: tenantUser, isLoading: loadingUser } = useQuery<any>({
     queryKey: ['tenant-user', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_users')
         .select('*')
         .eq('email', session.user.email)
@@ -58,7 +58,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   }, [tenantUser]);
 
   // Get tenant data
-  const { data: tenant, isLoading: loadingTenant, error } = useQuery({
+  const { data: tenant, isLoading: loadingTenant, error } = useQuery<any>({
     queryKey: ['tenant', currentTenantId],
     queryFn: async () => {
       if (!currentTenantId) return null;
@@ -82,7 +82,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   useEffect(() => {
     if (tenant?.id) {
       const interval = setInterval(() => {
-        supabase
+        (supabase as any)
           .from('tenants')
           .update({ last_activity_at: new Date().toISOString() })
           .eq('id', tenant.id)

@@ -180,7 +180,6 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
                 src={img.thumb || img.url}
                 alt={`${productName} thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
-                loading="lazy"
               />
             </button>
           ))}

@@ -33,7 +33,7 @@ export function ModernDashboard() {
   const { account } = useAccount();
 
   // Fetch dashboard data
-  const { data: dashboardData } = useQuery({
+  const { data: dashboardData } = useQuery<any>({
     queryKey: ['modern-dashboard', account?.id],
     queryFn: async () => {
       if (!account?.id) return null;
@@ -45,42 +45,42 @@ export function ModernDashboard() {
       const lastWeekStart = startOfWeek(subDays(today, 7));
 
       // Today's revenue
-      const { data: todayOrders } = await supabase
+      const { data: todayOrders } = await (supabase as any)
         .from('wholesale_orders')
         .select('total_amount')
         .eq('account_id', account.id)
         .gte('created_at', today.toISOString());
 
-      const todayRevenue = todayOrders?.reduce((sum, o) => 
+      const todayRevenue = (todayOrders as any[])?.reduce((sum: number, o: any) => 
         sum + Number(o.total_amount || 0), 0) || 0;
 
       // Last week for comparison
-      const { data: lastWeekOrders } = await supabase
+      const { data: lastWeekOrders } = await (supabase as any)
         .from('wholesale_orders')
         .select('total_amount')
         .eq('account_id', account.id)
         .gte('created_at', lastWeekStart.toISOString())
         .lt('created_at', weekStart.toISOString());
 
-      const lastWeekRevenue = lastWeekOrders?.reduce((sum, o) => 
+      const lastWeekRevenue = (lastWeekOrders as any[])?.reduce((sum: number, o: any) => 
         sum + Number(o.total_amount || 0), 0) || 0;
 
       // Active orders
-      const { data: activeOrders } = await supabase
+      const { data: activeOrders } = await (supabase as any)
         .from('wholesale_orders')
         .select('id')
         .eq('account_id', account.id)
         .in('status', ['pending', 'assigned', 'in_transit']);
 
       // Transfers
-      const { data: transfers } = await supabase
+      const { data: transfers } = await (supabase as any)
         .from('wholesale_deliveries')
         .select('id, status')
         .eq('account_id', account.id)
         .in('status', ['assigned', 'picked_up', 'in_transit']);
 
       // Alerts
-      const { data: lowStock } = await supabase
+      const { data: lowStock } = await (supabase as any)
         .from('wholesale_inventory')
         .select('id')
         .eq('account_id', account.id)

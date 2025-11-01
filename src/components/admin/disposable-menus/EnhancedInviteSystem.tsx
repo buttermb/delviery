@@ -93,13 +93,13 @@ export function EnhancedInviteSystem({
           if (error) throw error;
 
           // Log invitation
-          await supabase.from('invitations').insert(invitationData);
+          await (supabase as any).from('invitations').insert(invitationData);
         } else if (inviteMethod === 'email' && customer.email) {
           // Email sending would go here (via edge function)
-          await supabase.from('invitations').insert(invitationData);
+          await (supabase as any).from('invitations').insert(invitationData);
         } else if (inviteMethod === 'signal' || inviteMethod === 'telegram') {
           // Encrypted messaging integration would go here
-          await supabase.from('invitations').insert(invitationData);
+          await (supabase as any).from('invitations').insert(invitationData);
           toast.info(`${inviteMethod === 'signal' ? 'Signal' : 'Telegram'} integration coming soon`);
         }
 

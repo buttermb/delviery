@@ -98,6 +98,14 @@ export default function MarketingLanding() {
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="absolute top-4 right-4">
+          <Link 
+            to="/saas/login" 
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Platform Admin Login
+          </Link>
+        </div>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Menu className="h-6 w-6 text-emerald-600" />

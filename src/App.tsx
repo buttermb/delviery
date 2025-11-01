@@ -20,9 +20,13 @@ import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TenantProvider } from "./contexts/TenantContext";
 import { WhiteLabelProvider } from "./components/whitelabel/WhiteLabelProvider";
+import { SuperAdminAuthProvider } from "./contexts/SuperAdminAuthContext";
+import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
+import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { lazy, Suspense, useEffect } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
+import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
@@ -49,10 +53,29 @@ const About = lazy(() => import("./pages/About"));
 
 // Super Admin Pages (Legacy)
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const SuperAdminLogin = lazy(() => import("./pages/saas/SuperAdminLogin"));
 const SuperAdminCustomers = lazy(() => import("./pages/SuperAdminCustomers"));
 const SuperAdminSubscriptions = lazy(() => import("./pages/SuperAdminSubscriptions"));
 const LegacySuperAdminSupport = lazy(() => import("./pages/SuperAdminSupport"));
 const LegacySuperAdminAnalytics = lazy(() => import("./pages/SuperAdminAnalytics"));
+
+// Three-Tier Auth System Pages
+const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
+const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
+const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
+const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
+const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
+const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
+const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
+const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
+const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
+const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
+const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
+const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
+const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
+const CustomerMenuViewPage = lazy(() => import("./pages/customer/MenuViewPage"));
+const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
+const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const CustomerManagement = lazy(() => import("./pages/admin/CustomerManagement"));
@@ -103,6 +126,7 @@ const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 
 // SAAS Platform Pages
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
+const LegacySuperAdminProtectedRoute = lazy(() => import("./components/saas/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const OnboardingWizard = lazy(() => import("./pages/saas/OnboardingWizard"));
 const BillingDashboard = lazy(() => import("./pages/saas/BillingDashboard"));
@@ -221,10 +245,13 @@ const App = () => {
         <ThemeProvider>
           <AuthProvider>
             <AccountProvider>
-              <AdminAuthProvider>
-                <TenantProvider>
-                  <WhiteLabelProvider>
-                    <TooltipProvider>
+                <AdminAuthProvider>
+                  <SuperAdminAuthProvider>
+                    <TenantAdminAuthProvider>
+                      <CustomerAuthProvider>
+                        <TenantProvider>
+                          <WhiteLabelProvider>
+                            <TooltipProvider>
                     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
                     <OfflineBanner />
@@ -253,12 +280,14 @@ const App = () => {
                         <Route path="/saas/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />
                         <Route path="/saas/billing" element={<BillingDashboard />} />
-                        <Route path="/saas/admin" element={<SuperAdminEnhanced />} />
-                        <Route path="/saas/admin/support" element={<SuperAdminSupport />} />
-                        <Route path="/saas/admin/analytics" element={<SuperAdminAnalytics />} />
-                        <Route path="/saas/admin/automation" element={<SuperAdminAutomation />} />
-                        <Route path="/saas/admin/settings" element={<SuperAdminSettings />} />
-                        <Route path="/saas/admin/legacy" element={<SuperAdminPlatform />} />
+                        
+                        {/* Protected Super Admin Routes (Legacy) */}
+                        <Route path="/saas/admin" element={<LegacySuperAdminProtectedRoute><SuperAdminEnhanced /></LegacySuperAdminProtectedRoute>} />
+                        <Route path="/saas/admin/support" element={<LegacySuperAdminProtectedRoute><SuperAdminSupport /></LegacySuperAdminProtectedRoute>} />
+                        <Route path="/saas/admin/analytics" element={<LegacySuperAdminProtectedRoute><SuperAdminAnalytics /></LegacySuperAdminProtectedRoute>} />
+                        <Route path="/saas/admin/automation" element={<LegacySuperAdminProtectedRoute><SuperAdminAutomation /></LegacySuperAdminProtectedRoute>} />
+                        <Route path="/saas/admin/settings" element={<LegacySuperAdminProtectedRoute><SuperAdminSettings /></LegacySuperAdminProtectedRoute>} />
+                        <Route path="/saas/admin/legacy" element={<LegacySuperAdminProtectedRoute><SuperAdminPlatform /></LegacySuperAdminProtectedRoute>} />
                         <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
                         
                         {/* Super Admin Routes */}
@@ -285,6 +314,44 @@ const App = () => {
 
                         {/* Admin Login */}
                         <Route path="/admin/login" element={<AdminLogin />} />
+                        
+                        {/* Super Admin / Platform Login */}
+                        <Route path="/saas/login" element={<SuperAdminLogin />} />
+                        <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
+                        
+                        {/* Three-Tier Auth System Routes */}
+                        {/* Level 1: Super Admin Routes */}
+                        <Route path="/super-admin/dashboard" element={<SuperAdminProtectedRouteNew><SuperAdminDashboardPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/tenants/:tenantId" element={<SuperAdminProtectedRouteNew><SuperAdminTenantDetailPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/settings" element={<SuperAdminProtectedRouteNew><SuperAdminSettingsPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
+                        
+                        {/* Level 2: Tenant Admin Routes (Dynamic tenant slug) */}
+                        <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
+                        <Route path="/:tenantSlug/admin/dashboard" element={<TenantAdminProtectedRoute><TenantAdminDashboardPage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/billing" element={<TenantAdminProtectedRoute><TenantAdminBillingPage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/settings" element={<TenantAdminProtectedRoute><TenantAdminSettingsPage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
+                        
+                        {/* Tenant Admin can also access regular admin routes through their tenant context */}
+                        <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
+                          <Route index element={<Navigate to="dashboard" replace />} />
+                          {/* All existing admin routes can be accessed here */}
+                        </Route>
+                        
+                        {/* Level 3: Customer Portal Routes (Dynamic tenant slug) */}
+                        <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
+                        <Route path="/:tenantSlug/shop/dashboard" element={<CustomerProtectedRoute><CustomerDashboardPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
+                        
+                        {/* Customer Portal Routes */}
+                        <Route path="/:tenantSlug/shop/menus/:menuId" element={<CustomerProtectedRoute><CustomerMenuViewPage /></CustomerProtectedRoute>} />
+                        
+                        <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
+                          <Route index element={<Navigate to="dashboard" replace />} />
+                          {/* Additional customer routes can be added here */}
+                        </Route>
 
                         {/* Admin Routes */}
                         <Route path="/admin" element={<AdminProtectedRoute><AdminErrorBoundary><AdminLayout /></AdminErrorBoundary></AdminProtectedRoute>}>
@@ -397,10 +464,13 @@ const App = () => {
                       </Routes>
                     </Suspense>
                     </BrowserRouter>
-                  </TooltipProvider>
-                  </WhiteLabelProvider>
-                </TenantProvider>
-              </AdminAuthProvider>
+                            </TooltipProvider>
+                          </WhiteLabelProvider>
+                        </TenantProvider>
+                      </CustomerAuthProvider>
+                    </TenantAdminAuthProvider>
+                  </SuperAdminAuthProvider>
+                </AdminAuthProvider>
             </AccountProvider>
           </AuthProvider>
         </ThemeProvider>

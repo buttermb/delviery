@@ -139,7 +139,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           : null;
 
       // Create tenant
-      const { data: tenant, error } = await supabase
+      const { data: tenant, error } = await (supabase as any)
         .from('tenants')
         .insert({
           business_name: data.business_name,
@@ -180,7 +180,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         console.warn('Failed to create user:', userError);
       } else if (userData.user && tenant) {
         // Add user to tenant_users table
-        await supabase.from('tenant_users').insert({
+        await (supabase as any).from('tenant_users').insert({
           tenant_id: tenant.id,
           email: data.owner_email,
           name: data.owner_name,

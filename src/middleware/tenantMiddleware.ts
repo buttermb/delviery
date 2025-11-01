@@ -1,82 +1,95 @@
 /**
  * Tenant Middleware
- * Enforces usage limits and tracks usage events
+ * Extracts tenant slug from URL or subdomain and validates tenant context
  */
 
-import { trackUsage, checkLimit } from '@/lib/tenant';
-import { supabase } from '@/integrations/supabase/client';
-import type { Tenant } from '@/lib/tenant';
-
-interface UsageCheck {
-  resource: 'customers' | 'menus' | 'products' | 'locations' | 'users';
-  action: 'create' | 'update' | 'delete';
+export interface TenantContext {
+  tenantSlug: string;
+  tenantId: string;
+  tenant: any;
 }
 
 /**
- * Check if tenant can perform action (enforce limits)
+ * Extract tenant slug from URL path
+ * Examples:
+ * - /bigmike/admin/dashboard -> "bigmike"
+ * - /bigmike/shop/login -> "bigmike"
  */
-export async function checkTenantLimit(
-  tenant: Tenant,
-  resource: UsageCheck['resource'],
-  action: UsageCheck['action'] = 'create'
-): Promise<{ allowed: boolean; reason?: string }> {
-  if (action !== 'create') {
-    // Updates and deletes don't count against limits
-    return { allowed: true };
+export function extractTenantSlugFromPath(pathname: string): string | null {
+  // Match pattern: /{slug}/admin/* or /{slug}/shop/*
+  const match = pathname.match(/^\/([^/]+)\/(admin|shop)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract tenant slug from subdomain
+ * Examples:
+ * - bigmike.platform.com -> "bigmike"
+ * - joes-wholesale.platform.com -> "joes-wholesale"
+ */
+export function extractTenantSlugFromSubdomain(hostname: string): string | null {
+  // Remove port if present
+  const host = hostname.split(':')[0];
+  
+  // Check if it's a subdomain (at least 2 parts before .platform.com or similar)
+  const parts = host.split('.');
+  
+  // For localhost or IP addresses, return null
+  if (parts.length <= 1 || parts[0] === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return null;
   }
-
-  const limitCheck = checkLimit(tenant, resource);
-
-  if (!limitCheck.allowed) {
-    return {
-      allowed: false,
-      reason: `Limit reached: ${limitCheck.current}/${limitCheck.limit} ${resource}. Please upgrade your plan.`,
-    };
+  
+  // If we have subdomain.example.com, return the subdomain
+  if (parts.length >= 3) {
+    return parts[0];
   }
-
-  return { allowed: true };
+  
+  // For domain.com (no subdomain), check if first part is a tenant slug
+  // This would require checking against database, so return null for now
+  return null;
 }
 
 /**
- * Track usage event automatically
+ * Get tenant slug from current location
+ * Checks both URL path and subdomain
  */
-export async function trackResourceUsage(
-  tenantId: string,
-  resource: UsageCheck['resource'],
-  quantity: number = 1
-): Promise<void> {
-  await trackUsage(tenantId, `${resource}_created`, quantity);
+export function getTenantSlugFromLocation(): string | null {
+  if (typeof window === 'undefined') return null;
+  
+  // First, try to extract from path
+  const pathSlug = extractTenantSlugFromPath(window.location.pathname);
+  if (pathSlug) return pathSlug;
+  
+  // Then, try to extract from subdomain
+  const subdomainSlug = extractTenantSlugFromSubdomain(window.location.hostname);
+  if (subdomainSlug) return subdomainSlug;
+  
+  return null;
 }
 
 /**
- * Update tenant usage count
+ * Validate tenant exists and is active
+ * This should be called from an API endpoint or Edge Function
  */
-export async function updateTenantUsage(
-  tenantId: string,
-  resource: UsageCheck['resource'],
-  delta: number
-): Promise<void> {
-  const { data: tenant } = await supabase
-    .from('tenants')
-    .select('usage')
-    .eq('id', tenantId)
-    .single();
-
-  if (!tenant) return;
-
-  const currentUsage = tenant.usage || {};
-  const newCount = Math.max(0, (currentUsage[resource] || 0) + delta);
-
-  await supabase
-    .from('tenants')
-    .update({
-      usage: {
-        ...currentUsage,
-        [resource]: newCount,
+export async function validateTenant(tenantSlug: string): Promise<{ valid: boolean; tenant?: any; error?: string }> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/validate-tenant`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', tenantId);
+      body: JSON.stringify({ tenantSlug }),
+    });
+
+    if (!response.ok) {
+      return { valid: false, error: 'Tenant validation failed' };
+    }
+
+    const data = await response.json();
+    return { valid: data.valid, tenant: data.tenant };
+  } catch (error) {
+    console.error('Tenant validation error:', error);
+    return { valid: false, error: 'Failed to validate tenant' };
+  }
 }
-
-

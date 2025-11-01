@@ -5,7 +5,8 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,7 @@ import {
   Bell,
   Shield,
   Zap,
+  LogOut,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -84,6 +86,7 @@ interface TenantSummary {
 export default function SuperAdminEnhanced() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [planFilter, setPlanFilter] = useState<string>('all');
@@ -291,15 +294,46 @@ export default function SuperAdminEnhanced() {
 
   const platformStats = stats || defaultStats();
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/saas/login');
+    toast({
+      title: 'Logged out',
+      description: 'You have been signed out successfully',
+    });
+  };
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">🎛️ Platform Admin</h1>
-          <p className="text-muted-foreground">Complete control center for your SaaS platform</p>
+    <div className="min-h-screen bg-background">
+      {/* Header Bar */}
+      <header className="border-b bg-card sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">🎛️ Platform Admin</h1>
+            <p className="text-sm text-muted-foreground">Complete control center for your SaaS platform</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className="text-sm text-muted-foreground">
+                {user.email}
+              </div>
+            )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
+      </header>
+
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Quick Actions Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Platform Overview</h2>
+            <p className="text-sm text-muted-foreground">Manage all tenants and platform settings</p>
+          </div>
+          <div className="flex gap-2">
           <Button variant="outline" asChild>
             <Link to="/saas/admin/analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -351,12 +385,12 @@ export default function SuperAdminEnhanced() {
           <Download className="h-4 w-4 mr-2" />
           Export JSON
         </Button>
-        <Button variant="outline" asChild>
-          <Link to="/saas/admin/settings">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Link>
-        </Button>
+          <Button variant="outline" asChild>
+            <Link to="/saas/admin/settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Link>
+          </Button>
       </div>
 
       {/* Key Metrics */}
@@ -631,7 +665,7 @@ export default function SuperAdminEnhanced() {
           )}
         </DialogContent>
       </Dialog>
-
+      </div>
     </div>
   );
 }

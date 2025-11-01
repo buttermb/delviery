@@ -85,16 +85,20 @@ async function checkUsageLimits() {
     // Check each resource
     for (const [resource, limit] of Object.entries(limits)) {
       if (limit === -1) continue; // Unlimited
+      
+      // Ensure limit is a number
+      const limitValue = typeof limit === 'number' ? limit : Number(limit);
+      if (isNaN(limitValue) || limitValue <= 0) continue;
 
       const current = usage[resource] || 0;
-      const percentage = (current / limit) * 100;
+      const percentage = (current / limitValue) * 100;
 
       // 80% threshold - send warning
       if (percentage >= 80 && percentage < 100) {
         await logEnforcementEvent(tenant.id, 'usage_warning', {
           resource,
           current,
-          limit,
+          limit: limitValue,
           percentage,
         });
         // In production, send email notification
