@@ -4,12 +4,14 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { DataTable } from '@/components/shared/DataTable';
-import { Truck, Plus, MapPin, Package, Phone, Mail } from 'lucide-react';
+import { AddRunnerDialog } from '@/components/admin/AddRunnerDialog';
+import { Truck, MapPin, Phone, Mail } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
@@ -32,6 +34,7 @@ interface Runner {
 }
 
 export default function RunnersPage() {
+  const navigate = useNavigate();
   const { account } = useAccount();
 
   const { data: runners, isLoading } = useQuery({
@@ -42,7 +45,6 @@ export default function RunnersPage() {
       const { data, error } = await supabase
         .from('wholesale_runners')
         .select('id, full_name, phone, email, status, vehicle_info')
-        .eq('account_id', account.id)
         .order('full_name');
 
       if (error) throw error;
@@ -127,7 +129,7 @@ export default function RunnersPage() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              window.location.href = `/admin/fleet-management?runner=${row.original.id}`;
+              navigate(`/admin/fleet-management?runner=${row.original.id}`);
             }}
           >
             <MapPin className="h-4 w-4 mr-1" />
@@ -147,10 +149,7 @@ export default function RunnersPage() {
             Manage delivery runners, track active deliveries, and monitor fleet operations
           </p>
         </div>
-        <Button onClick={() => (window.location.href = '/admin/fleet-management')}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Runner
-        </Button>
+        <AddRunnerDialog />
       </div>
 
       <Card className="p-6">

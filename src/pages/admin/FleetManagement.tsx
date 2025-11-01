@@ -11,6 +11,7 @@ import { DeliveryStatusDialog } from "@/components/admin/DeliveryStatusDialog";
 import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryToRunnerDialog";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
+import { AddRunnerDialog } from "@/components/admin/AddRunnerDialog";
 import { toast } from "@/hooks/use-toast";
 
 export default function FleetManagement() {
@@ -101,9 +102,13 @@ export default function FleetManagement() {
           <h1 className="text-3xl font-bold text-foreground">🚗 Fleet Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Live tracking & runner operations</p>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
-          + Add Runner
-        </Button>
+        <AddRunnerDialog
+          trigger={
+            <Button className="bg-emerald-500 hover:bg-emerald-600">
+              + Add Runner
+            </Button>
+          }
+        />
       </div>
 
       {/* Live GPS Tracking Map */}
