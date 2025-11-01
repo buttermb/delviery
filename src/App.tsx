@@ -103,9 +103,12 @@ const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
 
 // SAAS Platform Pages
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
+const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const OnboardingWizard = lazy(() => import("./pages/saas/OnboardingWizard"));
 const BillingDashboard = lazy(() => import("./pages/saas/BillingDashboard"));
 const SuperAdminPlatform = lazy(() => import("./pages/saas/SuperAdminDashboard"));
+const WhiteLabelSettings = lazy(() => import("./pages/saas/WhiteLabelSettings"));
+const MarketingLanding = lazy(() => import("./pages/saas/MarketingLanding"));
 const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 
 // Fronted Inventory Pages
