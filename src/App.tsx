@@ -19,6 +19,7 @@ import { AccountProvider } from "./contexts/AccountContext";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TenantProvider } from "./contexts/TenantContext";
+import { WhiteLabelProvider } from "./components/whitelabel/WhiteLabelProvider";
 import { lazy, Suspense, useEffect } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
@@ -214,7 +215,8 @@ const App = () => {
             <AccountProvider>
               <AdminAuthProvider>
                 <TenantProvider>
-                  <TooltipProvider>
+                  <WhiteLabelProvider>
+                    <TooltipProvider>
                     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
                     <OfflineBanner />
@@ -242,6 +244,7 @@ const App = () => {
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />
                         <Route path="/saas/billing" element={<BillingDashboard />} />
                         <Route path="/saas/admin" element={<SuperAdminPlatform />} />
+                        <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
                         
                         {/* Super Admin Routes */}
                         <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
@@ -380,6 +383,7 @@ const App = () => {
                     </Suspense>
                     </BrowserRouter>
                   </TooltipProvider>
+                  </WhiteLabelProvider>
                 </TenantProvider>
               </AdminAuthProvider>
             </AccountProvider>
