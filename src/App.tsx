@@ -240,6 +240,8 @@ const App = () => {
                         <Route path="/about" element={<About />} />
                         
                         {/* SAAS Platform Routes */}
+                        <Route path="/" element={<MarketingLanding />} />
+                        <Route path="/saas" element={<MarketingLanding />} />
                         <Route path="/saas/signup" element={<SignUpPage />} />
                         <Route path="/saas/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />

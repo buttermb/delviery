@@ -111,11 +111,46 @@ export default function CustomerForm() {
         if (error) throw error;
         toast.success('Customer updated successfully');
       } else {
+        // Check tenant limits before creating
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('usage, limits')
+          .eq('id', account.tenant_id)
+          .single();
+
+        if (tenant) {
+          const currentCustomers = tenant.usage?.customers || 0;
+          const customerLimit = tenant.limits?.customers || 0;
+          
+          if (customerLimit > 0 && currentCustomers >= customerLimit) {
+            toast.error('Customer limit reached', {
+              description: `You've reached your customer limit (${currentCustomers}/${customerLimit}). Please upgrade your plan.`,
+            });
+            return;
+          }
+        }
+
         const { error } = await supabase
           .from('customers')
           .insert([customerData]);
 
         if (error) throw error;
+
+        // Update usage count
+        if (tenant?.id) {
+          const currentUsage = tenant.usage || {};
+          await supabase
+            .from('tenants')
+            .update({
+              usage: {
+                ...currentUsage,
+                customers: (currentUsage.customers || 0) + 1,
+              },
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', account.tenant_id);
+        }
+
         toast.success('Customer created successfully');
       }
 
