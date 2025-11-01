@@ -180,8 +180,8 @@ export function BigPlugInventory() {
             {Number(inventoryOverview?.totalLbs || 0).toFixed(1)} lbs
           </div>
           <div className="text-sm text-muted-foreground">
-            {inventoryOverview && inventoryOverview.totalLbs > 0
-              ? `${(inventoryOverview.totalLbs / 2.20462).toFixed(1)} kg`
+            {inventoryOverview && Number(inventoryOverview.totalLbs || 0) > 0
+              ? `${(Number(inventoryOverview.totalLbs || 0) / 2.20462).toFixed(1)} kg`
               : ''
             }
           </div>
