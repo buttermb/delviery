@@ -237,6 +237,12 @@ const App = () => {
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/about" element={<About />} />
                         
+                        {/* SAAS Platform Routes */}
+                        <Route path="/saas/signup" element={<SignUpPage />} />
+                        <Route path="/saas/onboarding" element={<OnboardingWizard />} />
+                        <Route path="/saas/billing" element={<BillingDashboard />} />
+                        <Route path="/saas/admin" element={<SuperAdminPlatform />} />
+                        
                         {/* Super Admin Routes */}
                         <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
                         <Route path="/super-admin/customers" element={<SuperAdminCustomers />} />
