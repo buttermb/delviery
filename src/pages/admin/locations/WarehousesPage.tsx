@@ -39,6 +39,7 @@ interface WarehouseLocation {
 }
 
 export default function WarehousesPage() {
+  const navigate = useNavigate();
   const { account } = useAccount();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
