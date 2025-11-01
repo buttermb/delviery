@@ -618,27 +618,6 @@ export default function SuperAdminEnhanced() {
         </DialogContent>
       </Dialog>
 
-      {/* Navigation Tabs */}
-      <Tabs defaultValue="dashboard" className="mt-6">
-        <TabsList>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="support">Support</TabsTrigger>
-        </TabsList>
-        <TabsContent value="dashboard">
-          {/* Current dashboard content */}
-        </TabsContent>
-        <TabsContent value="analytics">
-          <div className="mt-4">
-            <p className="text-muted-foreground">Redirecting to Analytics...</p>
-          </div>
-        </TabsContent>
-        <TabsContent value="support">
-          <div className="mt-4">
-            <p className="text-muted-foreground">Redirecting to Support...</p>
-          </div>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
