@@ -230,16 +230,8 @@ const App = () => {
                     <Suspense fallback={<LoadingFallback />}>
                       <Routes>
                         {/* SAAS Platform Routes - Marketing Landing */}
-                        <Route path="/" element={
-                          <Suspense fallback={<LoadingFallback />}>
-                            <MarketingLanding />
-                          </Suspense>
-                        } />
-                        <Route path="/saas" element={
-                          <Suspense fallback={<LoadingFallback />}>
-                            <MarketingLanding />
-                          </Suspense>
-                        } />
+                        <Route path="/" element={<MarketingLanding />} />
+                        <Route path="/saas" element={<MarketingLanding />} />
                         
                         {/* Marketing & Public Routes */}
                         <Route path="/marketing" element={<MarketingHome />} />
