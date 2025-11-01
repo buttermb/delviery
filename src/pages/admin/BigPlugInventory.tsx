@@ -177,7 +177,7 @@ export function BigPlugInventory() {
             <Badge variant="outline">Total Stock</Badge>
           </div>
           <div className="text-3xl font-bold">
-            {inventoryOverview?.totalLbs.toFixed(1) || '0'} lbs
+            {Number(inventoryOverview?.totalLbs || 0).toFixed(1)} lbs
           </div>
           <div className="text-sm text-muted-foreground">
             {inventoryOverview && inventoryOverview.totalLbs > 0
@@ -317,7 +317,7 @@ export function BigPlugInventory() {
                 <div className="flex justify-between items-center">
                   <span>Current:</span>
                   <span className="font-semibold">
-                    {inventoryOverview.onRunners.toFixed(1)} lbs
+                    {Number(inventoryOverview?.onRunners || 0).toFixed(1)} lbs
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
