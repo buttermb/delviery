@@ -31,7 +31,7 @@ const PERIODS: Record<string, AnalyticsPeriod> = {
   'all': { start: new Date(0), end: new Date(), label: 'All Time' },
 };
 
-export function ComprehensiveAnalytics() {
+export default function ComprehensiveAnalytics() {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('30d');
   const [accountId, setAccountId] = useState<string | null>(null);
 
