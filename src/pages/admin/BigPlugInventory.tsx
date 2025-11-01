@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Package, Truck, TrendingUp, AlertTriangle, 
-  Warehouse, MapPin, Plus, Move
+  Warehouse, MapPin, Plus, Move, DollarSign
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
