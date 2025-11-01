@@ -322,10 +322,7 @@ export default function SuperAdminEnhanced() {
             <Bell className="h-4 w-4 mr-2" />
             3
           </Button>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Tenant
-          </Button>
+          <CreateTenantDialog />
         </div>
       </div>
 
