@@ -193,7 +193,7 @@ export function BigPlugInventory() {
             <Badge variant="outline">Total Value</Badge>
           </div>
           <div className="text-3xl font-bold">
-            ${inventoryOverview?.totalValue.toLocaleString() || '0'}
+            ${Number(inventoryOverview?.totalValue || 0).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">
             at cost
@@ -206,7 +206,7 @@ export function BigPlugInventory() {
             <Badge variant="outline">Avg Cost/lb</Badge>
           </div>
           <div className="text-3xl font-bold">
-            ${inventoryOverview?.avgCostPerLb.toFixed(0) || '0'}
+            ${Number(inventoryOverview?.avgCostPerLb || 0).toFixed(0)}
           </div>
           <div className="text-sm text-muted-foreground">
             average
@@ -239,7 +239,7 @@ export function BigPlugInventory() {
                         <Badge className={`bg-${statusColor}-500`}>GOOD</Badge>
                       </div>
                       <div className="text-sm text-muted-foreground mb-2">
-                        Capacity: {capacity} lbs | Current: {stats.lbs.toFixed(1)} lbs ({capacityPercent.toFixed(0)}%) | Value: ${stats.value.toLocaleString()}
+                        Capacity: {capacity} lbs | Current: {stats.lbs.toFixed(1)} lbs ({capacityPercent.toFixed(0)}%) | Value: ${Number(stats.value || 0).toLocaleString()}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -276,8 +276,8 @@ export function BigPlugInventory() {
                             <TableRow key={index}>
                               <TableCell className="font-medium">{item.product_name}</TableCell>
                               <TableCell className="text-right">{lbs.toFixed(1)} lbs</TableCell>
-                              <TableCell className="text-right">${cost.toLocaleString()}</TableCell>
-                              <TableCell className="text-right">${value.toLocaleString()}</TableCell>
+                              <TableCell className="text-right">${Number(cost || 0).toLocaleString()}</TableCell>
+                              <TableCell className="text-right">${Number(value || 0).toLocaleString()}</TableCell>
                               <TableCell>
                                 {stockStatus === 'Very Low' ? (
                                   <Badge variant="destructive">🔴 Very Low</Badge>
@@ -323,7 +323,7 @@ export function BigPlugInventory() {
                 <div className="flex justify-between items-center">
                   <span>Value:</span>
                   <span className="font-semibold">
-                    ${(inventoryOverview.onRunners * inventoryOverview.avgCostPerLb).toLocaleString()}
+                    ${(Number(inventoryOverview.onRunners || 0) * Number(inventoryOverview.avgCostPerLb || 0)).toLocaleString()}
                   </span>
                 </div>
                 <div className="pt-4 border-t">
@@ -397,10 +397,10 @@ export function BigPlugInventory() {
                         {product.lbs.toFixed(1)} lbs
                       </TableCell>
                       <TableCell className="text-right">
-                        ${product.revenue.toLocaleString()}
+                        ${Number(product.revenue || 0).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right text-emerald-600">
-                        ${product.profit.toLocaleString()}
+                        ${Number(product.profit || 0).toLocaleString()}
                       </TableCell>
                     </TableRow>
                   ))}
