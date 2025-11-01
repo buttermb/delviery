@@ -312,16 +312,12 @@ export default function SuperAdminEnhanced() {
               Support
             </Link>
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/saas/admin/automation">
-              <Zap className="h-4 w-4 mr-2" />
-              Automation
-            </Link>
-          </Button>
-          <Button variant="outline">
-            <Bell className="h-4 w-4 mr-2" />
-            3
-          </Button>
+        <Button variant="outline" asChild>
+          <Link to="/saas/admin/automation">
+            <Zap className="h-4 w-4 mr-2" />
+            Automation
+          </Link>
+        </Button>
           <CreateTenantDialog />
         </div>
       </div>
@@ -333,9 +329,33 @@ export default function SuperAdminEnhanced() {
           <Settings className="h-4 w-4 mr-2" />
           Settings
         </Button>
-        <Button variant="outline">
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (tenants && tenants.length > 0) {
+              exportTenantsToCSV(tenants);
+            }
+          }}
+        >
           <Download className="h-4 w-4 mr-2" />
-          Export Data
+          Export CSV
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (tenants && tenants.length > 0) {
+              exportTenantsToJSON(tenants);
+            }
+          }}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export JSON
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/saas/admin/settings">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Link>
         </Button>
       </div>
 

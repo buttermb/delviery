@@ -111,6 +111,7 @@ const SuperAdminEnhanced = lazy(() => import("./pages/saas/SuperAdminEnhanced"))
 const SuperAdminSupport = lazy(() => import("./pages/saas/SuperAdminSupport"));
 const SuperAdminAnalytics = lazy(() => import("./pages/saas/SuperAdminAnalytics"));
 const SuperAdminAutomation = lazy(() => import("./pages/saas/SuperAdminAutomation"));
+const SuperAdminSettings = lazy(() => import("./pages/saas/SuperAdminSettings"));
 const WhiteLabelSettings = lazy(() => import("./pages/saas/WhiteLabelSettings"));
 const MarketingLanding = lazy(() => import("./pages/saas/MarketingLanding"));
 const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
@@ -256,6 +257,7 @@ const App = () => {
                         <Route path="/saas/admin/support" element={<SuperAdminSupport />} />
                         <Route path="/saas/admin/analytics" element={<SuperAdminAnalytics />} />
                         <Route path="/saas/admin/automation" element={<SuperAdminAutomation />} />
+                        <Route path="/saas/admin/settings" element={<SuperAdminSettings />} />
                         <Route path="/saas/admin/legacy" element={<SuperAdminPlatform />} />
                         <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
                         
