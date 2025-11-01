@@ -18,6 +18,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
 import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { TenantProvider } from "./contexts/TenantContext";
 import { lazy, Suspense, useEffect } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
@@ -98,6 +99,12 @@ const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const BillingPortal = lazy(() => import("./pages/BillingPortal"));
 const ServiceRequests = lazy(() => import("./pages/ServiceRequests"));
+
+// SAAS Platform Pages
+const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
+const OnboardingWizard = lazy(() => import("./pages/saas/OnboardingWizard"));
+const BillingDashboard = lazy(() => import("./pages/saas/BillingDashboard"));
+const SuperAdminPlatform = lazy(() => import("./pages/saas/SuperAdminDashboard"));
 const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 
 // Fronted Inventory Pages
@@ -206,8 +213,9 @@ const App = () => {
           <AuthProvider>
             <AccountProvider>
               <AdminAuthProvider>
-                <TooltipProvider>
-                  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <TenantProvider>
+                  <TooltipProvider>
+                    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
                     <OfflineBanner />
                     <InstallPWA />
@@ -364,8 +372,9 @@ const App = () => {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
-                  </BrowserRouter>
-                </TooltipProvider>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </TenantProvider>
               </AdminAuthProvider>
             </AccountProvider>
           </AuthProvider>
