@@ -241,6 +241,7 @@ const App = () => {
                         
                         {/* SAAS Platform Routes */}
                         <Route path="/saas/signup" element={<SignUpPage />} />
+                        <Route path="/saas/verify-email" element={<VerifyEmailPage />} />
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />
                         <Route path="/saas/billing" element={<BillingDashboard />} />
                         <Route path="/saas/admin" element={<SuperAdminPlatform />} />
