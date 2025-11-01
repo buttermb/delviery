@@ -312,6 +312,12 @@ export default function SuperAdminEnhanced() {
               Support
             </Link>
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/saas/admin/automation">
+              <Zap className="h-4 w-4 mr-2" />
+              Automation
+            </Link>
+          </Button>
           <Button variant="outline">
             <Bell className="h-4 w-4 mr-2" />
             3
