@@ -319,7 +319,7 @@ const App = () => {
                           {/* Sales Pages */}
                           <Route path="sales/pricing" element={<AdminErrorBoundary><AdminPricingPage /></AdminErrorBoundary>} />
                           
-                          {/* Locations Pages */}
+                          {/* Locations Pages - Specific routes first */}
                           <Route path="locations/warehouses" element={<AdminErrorBoundary><WarehousesPage /></AdminErrorBoundary>} />
                           <Route path="locations/runners" element={<AdminErrorBoundary><RunnersPage /></AdminErrorBoundary>} />
                           
