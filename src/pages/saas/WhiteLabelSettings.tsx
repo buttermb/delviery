@@ -32,6 +32,26 @@ export default function WhiteLabelSettings() {
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
+  // White label state
+  const [whiteLabelEnabled, setWhiteLabelEnabled] = useState(
+    tenant?.white_label?.enabled || false
+  );
+  const [customDomain, setCustomDomain] = useState(tenant?.white_label?.domain || '');
+  const [logo, setLogo] = useState(tenant?.white_label?.logo || '');
+  const [theme, setTheme] = useState(
+    tenant?.white_label?.theme || {
+      primaryColor: '#10b981',
+      secondaryColor: '#3b82f6',
+      backgroundColor: '#ffffff',
+      textColor: '#111827',
+      accentColor: '#f59e0b',
+      customCSS: '',
+    }
+  );
+  const [emailFrom, setEmailFrom] = useState(tenant?.white_label?.emailFrom || '');
+  const [emailLogo, setEmailLogo] = useState(tenant?.white_label?.emailLogo || '');
+  const [emailFooter, setEmailFooter] = useState(tenant?.white_label?.emailFooter || '');
+  const [smsFrom, setSmsFrom] = useState(tenant?.white_label?.smsFrom || '');
 
   if (!tenant) {
     return (
