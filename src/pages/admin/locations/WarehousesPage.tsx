@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -124,9 +125,9 @@ export default function WarehousesPage() {
             size="sm"
             onClick={() => {
               // Navigate to inventory filtered by warehouse
-              window.location.href = `/admin/big-plug-inventory?warehouse=${encodeURIComponent(
+              navigate(`/admin/big-plug-inventory?warehouse=${encodeURIComponent(
                 row.original.location
-              )}`;
+              )}`);
             }}
           >
             <Package className="h-4 w-4 mr-1" />
