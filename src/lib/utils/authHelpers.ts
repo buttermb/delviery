@@ -38,7 +38,7 @@ export function getDashboardUrl(userType: "super_admin" | "tenant_admin" | "cust
       if (!tenantSlug) {
         tenantSlug = getTenantSlugFromLocation() || "";
       }
-      return tenantSlug ? `/${tenantSlug}/admin/dashboard` : "/admin/dashboard";
+      return tenantSlug ? `/${tenantSlug}/admin/dashboard` : "/marketing";
     case "customer":
       if (!tenantSlug) {
         tenantSlug = getTenantSlugFromLocation() || "";
