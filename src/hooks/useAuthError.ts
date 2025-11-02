@@ -39,7 +39,7 @@ export function useAuthError() {
           // Try to get tenant slug from URL
           const pathMatch = window.location.pathname.match(/^\/([^/]+)\/admin/);
           const tenantSlug = pathMatch ? pathMatch[1] : null;
-          navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/admin/login", { replace: true });
+          navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/marketing", { replace: true });
         } else if (userType === "customer") {
           const pathMatch = window.location.pathname.match(/^\/([^/]+)\/shop/);
           const tenantSlug = pathMatch ? pathMatch[1] : null;

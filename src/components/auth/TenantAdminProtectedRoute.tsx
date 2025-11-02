@@ -8,7 +8,7 @@ interface TenantAdminProtectedRouteProps {
 }
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
-  const { admin, tenant, token, loading, refreshToken } = useTenantAdminAuth();
+  const { admin, tenant, token, accessToken, loading } = useTenantAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -31,7 +31,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
-          navigate("/admin/login", { replace: true });
+          navigate("/marketing", { replace: true });
         }
         return;
       }
@@ -45,10 +45,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       // Verify token is still valid
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const tokenToUse = accessToken || token;
+        
+        if (!tokenToUse) {
+          throw new Error("No access token available");
+        }
+        
         const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${tokenToUse}`,
             "Content-Type": "application/json",
           },
         });
@@ -59,9 +65,26 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
         const data = await response.json();
         
-        // Verify tenant is still active
-        if (data.tenant.status !== "active" && data.tenant.subscription_status !== "active" && data.tenant.subscription_status !== "trial") {
-          throw new Error("Tenant is not active");
+        // Check if trial has expired
+        if (tenant.subscription_status === "trial" && (tenant as any).trial_ends_at) {
+          const trialEnds = new Date((tenant as any).trial_ends_at);
+          const now = new Date();
+          
+          if (now > trialEnds) {
+            // Allow access to billing and trial-expired pages only
+            const currentPath = window.location.pathname;
+            if (!currentPath.includes('/billing') && !currentPath.includes('/trial-expired')) {
+              navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
+              return;
+            }
+          }
+        }
+        
+        // Verify tenant is still active or in trial
+        if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial" || data.tenant.subscription_status === "trialing")) {
+          setVerifying(false);
+        } else {
+          throw new Error("Tenant subscription is not active");
         }
 
         // Check if trial has expired
@@ -91,7 +114,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
-          navigate("/admin/login", { replace: true });
+          navigate("/marketing", { replace: true });
         }
       }
     };

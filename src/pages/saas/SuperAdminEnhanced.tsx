@@ -151,7 +151,7 @@ export default function SuperAdminEnhanced() {
     queryFn: async () => {
       let query = supabase
         .from('tenants')
-        .select('id, business_name, subscription_plan, subscription_status, mrr, created_at, last_activity_at')
+        .select('id, business_name, slug, subscription_plan, subscription_status, mrr, created_at, last_activity_at')
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
@@ -231,27 +231,29 @@ export default function SuperAdminEnhanced() {
 
       const handleLoginAsTenant = async (tenantId: string) => {
     try {
-      // Set tenant context via localStorage (RPC function doesn't exist)
-      // Backend middleware will handle tenant context
-      localStorage.setItem('current_tenant_id', tenantId);
-      
-      // Note: RPC call removed - set_config function doesn't exist
-      // await supabase.rpc('set_config', {
-      //   setting_name: 'app.current_tenant_id',
-      //   setting_value: tenantId,
-      // });
+      // Fetch tenant data to get slug
+      const { data: tenant, error } = await supabase
+        .from('tenants')
+        .select('slug, business_name')
+        .eq('id', tenantId)
+        .single();
 
-      // Store in localStorage for frontend
+      if (error || !tenant) {
+        throw new Error('Tenant not found');
+      }
+
+      // Set tenant context via localStorage
+      localStorage.setItem('current_tenant_id', tenantId);
       localStorage.setItem('super_admin_tenant_id', tenantId);
       localStorage.setItem('impersonating_tenant', 'true');
 
       toast({
         title: 'Logged in as tenant',
-        description: 'You are now viewing as this tenant',
+        description: `You are now viewing as ${tenant.business_name}`,
       });
 
-      // Navigate to tenant's dashboard
-      window.location.href = '/admin/dashboard';
+      // Navigate to tenant's admin dashboard using their slug
+      window.location.href = `/${tenant.slug}/admin/dashboard`;
     } catch (error: any) {
       toast({
         title: 'Failed to login',

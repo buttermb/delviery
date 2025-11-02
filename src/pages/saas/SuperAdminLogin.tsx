@@ -136,14 +136,8 @@ const SuperAdminLogin = () => {
           </form>
           
           <div className="mt-6 pt-6 border-t">
-            <div className="text-center text-sm text-muted-foreground space-y-2">
-              <p>Need to access your tenant account?</p>
-              <Link 
-                to="/admin/login" 
-                className="text-primary hover:underline font-medium"
-              >
-                Go to Regular Admin Login
-              </Link>
+            <div className="text-center text-sm text-muted-foreground">
+              <p>For tenant admin access, use your tenant-specific login URL</p>
             </div>
           </div>
           

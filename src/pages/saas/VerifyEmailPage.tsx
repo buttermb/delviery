@@ -50,6 +50,13 @@ export default function VerifyEmailPage() {
 
       if (error) throw error;
 
+      // Get tenant slug
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('slug')
+        .eq('id', tenantId)
+        .single();
+
       if (data.user) {
         // Update tenant user to active
         if (tenantId) {
@@ -69,7 +76,12 @@ export default function VerifyEmailPage() {
           description: 'Your account has been activated',
         });
 
-        navigate('/saas/onboarding');
+        // Redirect to welcome page with tenant slug
+        if (tenant?.slug) {
+          navigate(`/${tenant.slug}/admin/welcome`);
+        } else {
+          navigate('/signup');
+        }
       }
     } catch (error: any) {
       toast({

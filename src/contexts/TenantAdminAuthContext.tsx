@@ -20,40 +20,49 @@ interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
   token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   loading: boolean;
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
+  refreshAuthToken: () => Promise<void>;
 }
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "tenant_admin_token";
+const ACCESS_TOKEN_KEY = "tenant_admin_access_token";
+const REFRESH_TOKEN_KEY = "tenant_admin_refresh_token";
 const ADMIN_KEY = "tenant_admin_user";
 const TENANT_KEY = "tenant_data";
 
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null); // For backwards compatibility
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Initialize from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     const storedAdmin = localStorage.getItem(ADMIN_KEY);
     const storedTenant = localStorage.getItem(TENANT_KEY);
 
-    if (storedToken && storedAdmin && storedTenant) {
-      setToken(storedToken);
+    if (storedAccessToken && storedRefreshToken && storedAdmin && storedTenant) {
+      setAccessToken(storedAccessToken);
+      setRefreshToken(storedRefreshToken);
+      setToken(storedAccessToken); // Backwards compatibility
       try {
         setAdmin(JSON.parse(storedAdmin));
         setTenant(JSON.parse(storedTenant));
         // Verify token is still valid
-        verifyToken(storedToken);
+        verifyToken(storedAccessToken);
       } catch (e) {
         // Invalid stored data, clear it
-        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem(ADMIN_KEY);
         localStorage.removeItem(TENANT_KEY);
         setLoading(false);
@@ -79,17 +88,24 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       const data = await response.json();
-      setAdmin(data.admin);
-      setTenant(data.tenant);
-      localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
-      localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+      
+      if (data.admin && data.tenant) {
+        setAdmin(data.admin);
+        setTenant(data.tenant);
+        localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
+        localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Token verification error:", error);
-      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(ADMIN_KEY);
       localStorage.removeItem(TENANT_KEY);
       setToken(null);
+      setAccessToken(null);
+      setRefreshToken(null);
       setAdmin(null);
       setTenant(null);
       setLoading(false);
@@ -113,10 +129,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       const data = await response.json();
-      setToken(data.token);
+      
+      setAccessToken(data.access_token);
+      setRefreshToken(data.refresh_token);
+      setToken(data.access_token); // Backwards compatibility
       setAdmin(data.admin);
       setTenant(data.tenant);
-      localStorage.setItem(TOKEN_KEY, data.token);
+      
+      localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
       localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
     } catch (error) {
@@ -127,12 +148,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
   const logout = async () => {
     try {
-      if (token) {
+      if (accessToken) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         });
@@ -141,23 +162,51 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       console.error("Logout error:", error);
     } finally {
       setToken(null);
+      setAccessToken(null);
+      setRefreshToken(null);
       setAdmin(null);
       setTenant(null);
-      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(ADMIN_KEY);
       localStorage.removeItem(TENANT_KEY);
     }
   };
 
-  const refreshToken = async () => {
-    // For tenant admin, tokens last 7 days, so refresh might not be needed
-    // But we can verify the token is still valid
-    if (!token) return;
-    await verifyToken(token);
+  const refreshAuthToken = async () => {
+    if (!refreshToken) return;
+    
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Token refresh failed");
+      }
+
+      const data = await response.json();
+      
+      setAccessToken(data.access_token);
+      setRefreshToken(data.refresh_token);
+      setToken(data.access_token); // Backwards compatibility
+      
+      localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      // If refresh fails, clear everything
+      logout();
+    }
   };
 
   return (
-    <TenantAdminAuthContext.Provider value={{ admin, tenant, token, loading, login, logout, refreshToken }}>
+    <TenantAdminAuthContext.Provider value={{ admin, tenant, token, accessToken, refreshToken: refreshToken, loading, login, logout, refreshAuthToken }}>
       {children}
     </TenantAdminAuthContext.Provider>
   );

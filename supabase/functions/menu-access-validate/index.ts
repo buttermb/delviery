@@ -46,17 +46,6 @@ serve(async (req) => {
       );
     }
 
-    if (!access_code) {
-      console.error('Missing access_code');
-      return new Response(
-        JSON.stringify({ 
-          error: 'Missing access code',
-          field: 'access_code'
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Find menu by token with complete product data including cannabis info
     console.log('Looking up menu with token:', encrypted_url_token);
     const { data: menu, error: menuError } = await supabaseClient
@@ -147,34 +136,53 @@ serve(async (req) => {
       }
     }
 
-    // Validate access code
-    const hashAccessCode = async (code: string) => {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(code);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    };
+    // Validate access code if menu requires it
+    let access_code_correct = true;
+    if (menu.access_code_hash) {
+      // Menu requires access code
+      if (!access_code) {
+        console.error('Menu requires access code but none provided');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Access code required',
+            field: 'access_code',
+            access_granted: false,
+            violations: ['Access code required for this menu']
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    const codeHash = await hashAccessCode(access_code);
-    const access_code_correct = codeHash === menu.access_code_hash;
+      const hashAccessCode = async (code: string) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(code);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      };
 
-    if (!access_code_correct) {
-      // Log failed attempt
-      await supabaseClient.from('menu_security_events').insert({
-        menu_id: menu.id,
-        event_type: 'failed_access_code',
-        severity: 'medium',
-        event_data: { ip_address, device_fingerprint }
-      });
+      const codeHash = await hashAccessCode(access_code);
+      access_code_correct = codeHash === menu.access_code_hash;
 
-      return new Response(
-        JSON.stringify({ 
-          access_granted: false,
-          violations: ['Incorrect access code']
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (!access_code_correct) {
+        // Log failed attempt
+        await supabaseClient.from('menu_security_events').insert({
+          menu_id: menu.id,
+          event_type: 'failed_access_code',
+          severity: 'medium',
+          event_data: { ip_address, device_fingerprint }
+        });
+
+        return new Response(
+          JSON.stringify({ 
+            access_granted: false,
+            violations: ['Incorrect access code']
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.log('No access code required for this menu');
     }
 
     const violations = [];

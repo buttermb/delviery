@@ -373,6 +373,35 @@ export default function TenantAdminDashboardPage() {
           </Card>
         )}
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-[hsl(var(--tenant-text))] text-base">⚡ Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/inventory/products`}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Add Product
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/disposable-menus`}>
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Create Menu
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/big-plug-clients`}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Add Customer
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Usage Limit Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">

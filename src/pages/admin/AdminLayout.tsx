@@ -1,7 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { RoleBasedSidebar } from "@/components/admin/RoleBasedSidebar";
+import { TenantAdminSidebar } from "@/components/tenant-admin/TenantAdminSidebar";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
 import InstallPWA from "@/components/InstallPWA";
@@ -61,13 +60,10 @@ const AdminLayout = () => {
 
   const breadcrumbs = getBreadcrumbs();
 
-  // Use role-based sidebar for modern workflow-based navigation
-  const useModernSidebar = true;
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full overflow-hidden">
-        {useModernSidebar ? <RoleBasedSidebar /> : <AdminSidebar />}
+        <TenantAdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <AccountSwitcher />
           <header className="h-14 border-b border-border flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm">

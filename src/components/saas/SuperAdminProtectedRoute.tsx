@@ -91,7 +91,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
   }
 
   if (!isPlatformAdmin) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/marketing" replace />;
   }
 
   return <>{children}</>;

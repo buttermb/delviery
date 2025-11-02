@@ -135,7 +135,9 @@ export default function AccountSignup() {
         .from("tenants")
         .insert({
           business_name: businessName,
+          slug: urlSlug,
           owner_email: email,
+          owner_name: yourName,
           subscription_plan: selectedPlan,
           subscription_status: "trial",
           created_at: new Date().toISOString(),
@@ -319,7 +321,7 @@ export default function AccountSignup() {
 
                   <p className="text-center text-sm text-[hsl(var(--marketing-text))]">
                     Already have an account?{" "}
-                    <Link to="/admin/login" className="text-[hsl(var(--marketing-primary))] hover:underline">
+                    <Link to="/super-admin/login" className="text-[hsl(var(--marketing-primary))] hover:underline">
                       Sign in
                     </Link>
                   </p>

@@ -95,9 +95,19 @@ export default function TenantAdminBillingPage() {
                   {formatCurrency((tenant as any)?.mrr || 0)}/month
                 </Badge>
               </div>
-              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-4">
+              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
                 {plan?.description || "Your current subscription plan"}
               </p>
+              
+              {/* Platform Fee Notice */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-purple-900">
+                  💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant as any)?.mrr || 0) * 0.02)}/month (2% of subscription)
+                </p>
+                <p className="text-xs text-purple-700 mt-1">
+                  This fee covers platform hosting, maintenance, and support
+                </p>
+              </div>
 
               {plan?.features && Array.isArray(plan.features) && (
                 <div className="space-y-2 mb-4">

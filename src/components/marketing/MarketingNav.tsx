@@ -30,8 +30,8 @@ export function MarketingNav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link to="/admin/login" className="hidden md:block">
-            <Button variant="ghost" size="sm">Sign In</Button>
+          <Link to="/super-admin/login" className="hidden md:block">
+            <Button variant="ghost" size="sm">Platform Admin</Button>
           </Link>
           <Link to="/signup">
             <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
@@ -83,8 +83,8 @@ export function MarketingNav() {
               Contact
             </Link>
             <div className="pt-4 border-t border-[hsl(var(--marketing-border))] space-y-2">
-              <Link to="/admin/login" className="block">
-                <Button variant="ghost" size="sm" className="w-full">Sign In</Button>
+              <Link to="/super-admin/login" className="block">
+                <Button variant="ghost" size="sm" className="w-full">Platform Admin</Button>
               </Link>
               <Link to="/signup" className="block">
                 <Button size="sm" className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">

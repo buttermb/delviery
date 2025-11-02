@@ -150,8 +150,8 @@ export default function InventoryDashboard() {
               <Button variant="outline" onClick={() => navigate('/onboarding')}>
                 Complete Setup
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
-                Back to Dashboard
+              <Button variant="ghost" onClick={() => navigate('/marketing')}>
+                Back to Home
               </Button>
             </div>
             <div className="text-center text-xs text-muted-foreground pt-4">
