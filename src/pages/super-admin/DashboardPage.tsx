@@ -20,22 +20,29 @@ import {
   Download,
   MoreVertical,
   AlertCircle,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { calculateHealthScore } from "@/lib/tenant";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TenantCard } from "@/components/super-admin/TenantCard";
+import { Toggle } from "@/components/ui/toggle";
+import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 
 export default function SuperAdminDashboardPage() {
   const navigate = useNavigate();
   const { superAdmin, logout } = useSuperAdminAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -172,7 +179,13 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{formatCurrency(platformStats.mrr)}</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                <AnimatedNumber
+                  value={platformStats.mrr}
+                  formatter={(val) => formatCurrency(val)}
+                  duration={1200}
+                />
+              </div>
               <p className="text-xs text-green-400 flex items-center gap-1 mt-1">
                 <TrendingUp className="h-3 w-3" />
                 +15% ↑
@@ -188,9 +201,11 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{platformStats.activeTenants} Active</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                <AnimatedNumber value={platformStats.activeTenants} duration={1000} /> Active
+              </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">
-                {platformStats.totalTenants} total
+                <AnimatedNumber value={platformStats.totalTenants} duration={1000} /> total
               </p>
             </CardContent>
           </Card>
@@ -203,7 +218,9 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{platformStats.churnRate.toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                <AnimatedNumber value={platformStats.churnRate} decimals={1} suffix="%" duration={1000} />
+              </div>
               <p className="text-xs text-green-400 flex items-center gap-1 mt-1">
                 <TrendingDown className="h-3 w-3" />
                 -0.5% ↓
@@ -219,9 +236,11 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{platformStats.trialTenants} Active</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                <AnimatedNumber value={platformStats.trialTenants} duration={1000} /> Active
+              </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">
-                {platformStats.newSignups} new this month
+                <AnimatedNumber value={platformStats.newSignups} duration={1000} /> new this month
               </p>
             </CardContent>
           </Card>
@@ -234,7 +253,15 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{formatCurrency(platformStats.arr / 1000)}k ARR</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                <AnimatedNumber
+                  value={platformStats.arr / 1000}
+                  decimals={0}
+                  suffix="k ARR"
+                  formatter={(val) => formatCurrency(val)}
+                  duration={1200}
+                />
+              </div>
               <p className="text-xs text-green-400 mt-1">+18% YoY</p>
             </CardContent>
           </Card>
@@ -247,7 +274,9 @@ export default function SuperAdminDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">+{platformStats.newSignups}</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                +<AnimatedNumber value={platformStats.newSignups} duration={1000} />
+              </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">New this month</p>
             </CardContent>
           </Card>
@@ -257,8 +286,26 @@ export default function SuperAdminDashboardPage() {
         <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-[hsl(var(--super-admin-text))]">🏢 All Tenants</CardTitle>
+              <CardTitle className="text-[hsl(var(--super-admin-text))]">
+                🏢 All Tenants ({tenants?.length || 0})
+              </CardTitle>
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 border border-white/10 rounded-md overflow-hidden">
+                  <Toggle
+                    pressed={viewMode === "grid"}
+                    onPressedChange={() => setViewMode("grid")}
+                    className="data-[state=on]:bg-[hsl(var(--super-admin-primary))]/20 data-[state=on]:text-[hsl(var(--super-admin-primary))] border-0 rounded-none"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Toggle>
+                  <Toggle
+                    pressed={viewMode === "list"}
+                    onPressedChange={() => setViewMode("list")}
+                    className="data-[state=on]:bg-[hsl(var(--super-admin-primary))]/20 data-[state=on]:text-[hsl(var(--super-admin-primary))] border-0 rounded-none border-l border-white/10"
+                  >
+                    <List className="h-4 w-4" />
+                  </Toggle>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -281,7 +328,7 @@ export default function SuperAdminDashboardPage() {
           </CardHeader>
           <CardContent>
             {/* Filters */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[hsl(var(--super-admin-text))]/50" />
                 <Input
@@ -304,87 +351,138 @@ export default function SuperAdminDashboardPage() {
               </select>
             </div>
 
-            {/* Tenant Table */}
-            <div className="border border-white/10 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-white/5">
-                    <tr>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Business</th>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Plan</th>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Status</th>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">MRR</th>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Joined</th>
-                      <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tenantsLoading ? (
-                      <tr>
-                        <td colSpan={6} className="p-8 text-center text-[hsl(var(--super-admin-text))]/60">
-                          Loading tenants...
-                        </td>
-                      </tr>
-                    ) : tenants && tenants.length > 0 ? (
-                      tenants.map((tenant: any) => (
-                        <tr
-                          key={tenant.id}
-                          className="border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
-                          onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
-                        >
-                          <td className="p-3">
-                            <div className="font-medium text-[hsl(var(--super-admin-text))]">{tenant.business_name}</div>
-                            <div className="text-sm text-[hsl(var(--super-admin-text))]/60">{tenant.slug}</div>
-                          </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">
-                              {tenant.subscription_plan}
-                            </Badge>
-                          </td>
-                          <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
-                          <td className="p-3 text-[hsl(var(--super-admin-text))]">{formatCurrency(tenant.mrr || 0)}</td>
-                          <td className="p-3 text-sm text-[hsl(var(--super-admin-text))]/60">
-                            {formatSmartDate(tenant.created_at)}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/super-admin/tenants/${tenant.id}`, { replace: false });
-                                }}
-                                className="hover:bg-white/10 text-[hsl(var(--super-admin-text))]"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
-                                }}
-                                className="hover:bg-white/10 text-[hsl(var(--super-admin-text))]"
-                              >
-                                <LogIn className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className="p-8 text-center text-[hsl(var(--super-admin-text))]/60">
-                          No tenants found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+            {/* Tenant Grid/List View */}
+            {tenantsLoading ? (
+              <div className="text-center py-12">
+                <p className="text-[hsl(var(--super-admin-text))]/60">Loading tenants...</p>
               </div>
-            </div>
+            ) : tenants && tenants.length > 0 ? (
+              viewMode === "grid" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {tenants.map((tenant: any) => (
+                    <TenantCard
+                      key={tenant.id}
+                      tenant={tenant}
+                      onView={(id) => navigate(`/super-admin/tenants/${id}`)}
+                      onLoginAs={(id) => {
+                        const tenant = tenants.find((t: any) => t.id === id);
+                        if (tenant) {
+                          window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                        }
+                      }}
+                      onViewBilling={(id) => navigate(`/super-admin/tenants/${id}?tab=billing`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="border border-white/10 rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-white/5">
+                        <tr>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Business</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Plan</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Status</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Health</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">MRR</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Joined</th>
+                          <th className="text-left p-3 text-sm font-medium text-[hsl(var(--super-admin-text))]/90">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tenants.map((tenant: any) => (
+                          <tr
+                            key={tenant.id}
+                            className="border-t border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
+                            onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
+                          >
+                            <td className="p-3">
+                              <div className="font-medium text-[hsl(var(--super-admin-text))]">{tenant.business_name}</div>
+                              <div className="text-sm text-[hsl(var(--super-admin-text))]/60">{tenant.slug}</div>
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">
+                                {tenant.subscription_plan}
+                              </Badge>
+                            </td>
+                            <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                {(() => {
+                                  const health = calculateHealthScore(tenant);
+                                  const healthScore = health.score;
+                                  const healthColor = 
+                                    healthScore >= 80 ? "text-green-400" :
+                                    healthScore >= 60 ? "text-yellow-400" :
+                                    "text-red-400";
+                                  return (
+                                    <>
+                                      <span className={`text-sm font-semibold ${healthColor}`}>
+                                        {healthScore}
+                                      </span>
+                                      <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full ${
+                                            healthScore >= 80 ? "bg-green-400" :
+                                            healthScore >= 60 ? "bg-yellow-400" :
+                                            "bg-red-400"
+                                          }`}
+                                          style={{ width: `${healthScore}%` }}
+                                        />
+                                      </div>
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            </td>
+                            <td className="p-3 text-[hsl(var(--super-admin-text))]">{formatCurrency(tenant.mrr || 0)}</td>
+                            <td className="p-3 text-sm text-[hsl(var(--super-admin-text))]/60">
+                              {formatSmartDate(tenant.created_at)}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/super-admin/tenants/${tenant.id}`, { replace: false });
+                                  }}
+                                  className="hover:bg-white/10 text-[hsl(var(--super-admin-text))]"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                                  }}
+                                  className="hover:bg-white/10 text-[hsl(var(--super-admin-text))]"
+                                >
+                                  <LogIn className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="text-center py-12">
+                <Building2 className="h-16 w-16 mx-auto text-[hsl(var(--super-admin-text))]/30 mb-4" />
+                <p className="text-[hsl(var(--super-admin-text))]/60 mb-2">No tenants found</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text))]/40">
+                  {searchTerm || statusFilter !== "all" 
+                    ? "Try adjusting your filters" 
+                    : "Create your first tenant to get started"}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

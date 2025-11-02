@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ShoppingCart, Lock, Plus, Minus, Search, Filter } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Lock, Plus, Minus, Search, Filter, Package } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "@/hooks/use-toast";
@@ -205,38 +205,65 @@ export default function CustomerMenuViewPage() {
               const isInStock = (product.stock_quantity === null || product.stock_quantity > 0);
 
               return (
-                <Card key={item.id} className="bg-white border-[hsl(var(--customer-border))] hover:shadow-lg transition-shadow overflow-hidden">
-                  {product.image_url && (
+                <Card 
+                  key={item.id} 
+                  className="bg-white border-[hsl(var(--customer-border))] hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--customer-primary))]/30"
+                >
+                  {product.image_url ? (
                     <div className="relative aspect-square overflow-hidden bg-[hsl(var(--customer-surface))]">
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                       {product.category && (
-                        <Badge className="absolute top-2 right-2 bg-white/90 text-[hsl(var(--customer-primary))] border-0">
+                        <Badge className="absolute top-3 right-3 bg-white/95 text-[hsl(var(--customer-primary))] border-0 shadow-md backdrop-blur-sm">
                           {product.category}
                         </Badge>
                       )}
+                      {!isInStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Badge variant="outline" className="bg-red-500 text-white border-0 text-sm px-3 py-1">
+                            Out of Stock
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative aspect-square bg-gradient-to-br from-[hsl(var(--customer-surface))] to-[hsl(var(--customer-surface))]/50 flex items-center justify-center">
+                      <Package className="h-16 w-16 text-[hsl(var(--customer-text-light))]" />
+                      {!isInStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Badge variant="outline" className="bg-red-500 text-white border-0">
+                            Out of Stock
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   )}
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-lg mb-2 text-[hsl(var(--customer-text))]">{product.name}</h3>
-                    {product.description && (
-                      <p className="text-sm text-[hsl(var(--customer-text-light))] mb-3 line-clamp-2">
-                        {product.description}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between mb-3">
+                  <CardContent className="p-5">
+                    <div className="mb-3">
+                      <h3 className="font-bold text-xl mb-2 text-[hsl(var(--customer-text))] group-hover:text-[hsl(var(--customer-primary))] transition-colors">
+                        {product.name}
+                      </h3>
+                      {product.description && (
+                        <p className="text-sm text-[hsl(var(--customer-text-light))] mb-3 line-clamp-2 leading-relaxed">
+                          {product.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mb-4">
                       <div>
-                        <p className="text-2xl font-bold text-[hsl(var(--customer-primary))]">{formatCurrency(product.price || 0)}</p>
+                        <p className="text-3xl font-bold text-[hsl(var(--customer-primary))]">
+                          {formatCurrency(product.price || 0)}
+                        </p>
                         {product.unit && (
-                          <p className="text-xs text-[hsl(var(--customer-text-light))]">per {product.unit}</p>
+                          <p className="text-xs text-[hsl(var(--customer-text-light))] mt-1">per {product.unit}</p>
                         )}
                       </div>
-                      {!isInStock && (
-                        <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
-                          Out of Stock
+                      {isInStock && product.stock_quantity !== null && product.stock_quantity < 10 && (
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                          ⚠️ Low stock
                         </Badge>
                       )}
                     </div>
