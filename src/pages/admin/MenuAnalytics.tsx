@@ -147,7 +147,7 @@ const MenuAnalytics = () => {
                       <div className="text-right">
                         <div className="font-bold">${parseFloat(order.total_amount.toString()).toFixed(2)}</div>
                         <div className="text-xs text-muted-foreground">
-                          {order.order_data ? JSON.parse(order.order_data as string).length : 0} items
+                          {order.order_data ? (Array.isArray(order.order_data) ? order.order_data.length : 0) : 0} items
                         </div>
                       </div>
                       <Badge variant={order.status === 'confirmed' ? 'default' : 'outline'}>
