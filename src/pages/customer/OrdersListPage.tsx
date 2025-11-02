@@ -79,6 +79,7 @@ export default function OrdersListPage() {
     queryFn: async (): Promise<any[]> => {
       if (!tenantId || !customerId) return [];
 
+      // @ts-expect-error - Deep nesting causes TS2589, safe to ignore
       const { data, error } = await supabase
         .from("orders")
         .select("*")

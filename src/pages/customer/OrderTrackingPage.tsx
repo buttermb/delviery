@@ -80,6 +80,7 @@ export default function OrderTrackingPage() {
     queryFn: async () => {
       if (!orderId || !tenantId || !customerId) return null;
 
+      // @ts-expect-error - Deep nesting causes TS2589, safe to ignore
       const { data, error } = await supabase
         .from("orders")
         .select(`
