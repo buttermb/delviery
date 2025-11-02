@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
-import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
+// import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
 import { toast } from 'sonner';
@@ -97,18 +97,18 @@ const SecureMenuView = () => {
       setMenuData(parsed);
       setLoading(false);
 
-      // Enable screenshot protection if enabled in menu settings
-      if (parsed.security_settings?.screenshot_protection?.enabled) {
-        generateDeviceFingerprint().then((fingerprint) => {
-          cleanupScreenshotProtection.current = enableScreenshotProtection(
-            parsed.menu_id,
-            parsed.whitelist_id,
-            (event) => {
-              console.log('Security event detected:', event);
-            }
-          );
-        });
-      }
+      // Enable screenshot protection if enabled in menu settings (disabled - module removed)
+      // if (parsed.security_settings?.screenshot_protection?.enabled) {
+      //   generateDeviceFingerprint().then((fingerprint) => {
+      //     cleanupScreenshotProtection.current = enableScreenshotProtection(
+      //       parsed.menu_id,
+      //       parsed.whitelist_id,
+      //       (event) => {
+      //         console.log('Security event detected:', event);
+      //       }
+      //     );
+      //   });
+      // }
 
       return () => {
         if (cleanupScreenshotProtection.current) {

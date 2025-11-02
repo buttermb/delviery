@@ -67,13 +67,8 @@ const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPa
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
-const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
-const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
-const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
-const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
-const CustomerMenuViewPage = lazy(() => import("./pages/customer/MenuViewPage"));
 const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
@@ -146,7 +141,6 @@ const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
 
 // Wholesale CRM Pages
-const WholesaleDashboard = lazy(() => import("./pages/admin/WholesaleDashboard"));
 const WholesaleClients = lazy(() => import("./pages/admin/WholesaleClients"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const WholesaleInventory = lazy(() => import("./pages/admin/WholesaleInventory"));
@@ -170,21 +164,12 @@ const DriverPortal = lazy(() => import("./pages/mobile/DriverPortal"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
-const ComprehensiveAnalytics = lazy(() => import("./pages/admin/ComprehensiveAnalytics"));
-const BigPlugExecutiveDashboard = lazy(() => import("./pages/admin/BigPlugExecutiveDashboard").then(m => ({ default: m.BigPlugExecutiveDashboard })));
-const BigPlugClientManagement = lazy(() => import("./pages/admin/BigPlugClientManagement").then(m => ({ default: m.BigPlugClientManagement })));
-const BigPlugFinancialCenter = lazy(() => import("./pages/admin/BigPlugFinancialCenter").then(m => ({ default: m.BigPlugFinancialCenter })));
-const BigPlugInventory = lazy(() => import("./pages/admin/BigPlugInventory").then(m => ({ default: m.BigPlugInventory })));
-const BigPlugOrderWorkflow = lazy(() => import("./pages/admin/BigPlugOrderWorkflow").then(m => ({ default: m.BigPlugOrderWorkflow })));
 const BigPlugRunnerPortal = lazy(() => import("./pages/mobile/BigPlugRunnerPortal").then(m => ({ default: m.BigPlugRunnerPortal })));
 const ModernDashboard = lazy(() => import("./components/admin/ModernDashboard").then(m => ({ default: m.ModernDashboard })));
 const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const DisposableMenusHelp = lazy(() => import("./pages/admin/DisposableMenusHelp"));
-const ProductImagesPage = lazy(() => import("./pages/admin/catalog/ProductImagesPage"));
 const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
-const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
-const ReceivingPage = lazy(() => import("./pages/admin/operations/ReceivingPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage"));
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
@@ -331,9 +316,6 @@ const App = () => {
                         
                         {/* Level 2: Tenant Admin Routes (Dynamic tenant slug) */}
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
-                        <Route path="/:tenantSlug/admin/dashboard" element={<TenantAdminProtectedRoute><TenantAdminDashboardPage /></TenantAdminProtectedRoute>} />
-                        <Route path="/:tenantSlug/admin/billing" element={<TenantAdminProtectedRoute><TenantAdminBillingPage /></TenantAdminProtectedRoute>} />
-                        <Route path="/:tenantSlug/admin/settings" element={<TenantAdminProtectedRoute><TenantAdminSettingsPage /></TenantAdminProtectedRoute>} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
                         {/* Tenant Admin can also access regular admin routes through their tenant context */}
@@ -344,12 +326,8 @@ const App = () => {
                         
                         {/* Level 3: Customer Portal Routes (Dynamic tenant slug) */}
                         <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
-                        <Route path="/:tenantSlug/shop/dashboard" element={<CustomerProtectedRoute><CustomerDashboardPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
-                        
-                        {/* Customer Portal Routes */}
-                        <Route path="/:tenantSlug/shop/menus/:menuId" element={<CustomerProtectedRoute><CustomerMenuViewPage /></CustomerProtectedRoute>} />
                         
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
@@ -378,13 +356,7 @@ const App = () => {
                           <Route path="settings" element={<AdminErrorBoundary><SettingsPage /></AdminErrorBoundary>} />
                           <Route path="reports-new" element={<AdminErrorBoundary><ReportsPage /></AdminErrorBoundary>} />
                           
-                          {/* Catalog Pages */}
-                          <Route path="catalog/images" element={<AdminErrorBoundary><ProductImagesPage /></AdminErrorBoundary>} />
-                          <Route path="catalog/batches" element={<AdminErrorBoundary><BatchesPage /></AdminErrorBoundary>} />
-                          <Route path="catalog/categories" element={<AdminErrorBoundary><CategoriesPage /></AdminErrorBoundary>} />
-                          
                           {/* Operations Pages */}
-                          <Route path="operations/receiving" element={<AdminErrorBoundary><ReceivingPage /></AdminErrorBoundary>} />
                           
                           {/* Sales Pages */}
                           <Route path="sales/pricing" element={<AdminErrorBoundary><AdminPricingPage /></AdminErrorBoundary>} />
@@ -417,12 +389,6 @@ const App = () => {
                           
                           {/* Wholesale CRM Routes */}
                           <Route path="wholesale-setup" element={<AdminErrorBoundary><WholesaleSetup /></AdminErrorBoundary>} />
-                          <Route path="wholesale-dashboard" element={<AdminErrorBoundary><WholesaleDashboard /></AdminErrorBoundary>} />
-                          <Route path="big-plug-dashboard" element={<AdminErrorBoundary><BigPlugExecutiveDashboard /></AdminErrorBoundary>} />
-                          <Route path="big-plug-clients" element={<AdminErrorBoundary><BigPlugClientManagement /></AdminErrorBoundary>} />
-                          <Route path="big-plug-inventory" element={<AdminErrorBoundary><BigPlugInventory /></AdminErrorBoundary>} />
-                          <Route path="big-plug-financial" element={<AdminErrorBoundary><BigPlugFinancialCenter /></AdminErrorBoundary>} />
-                          <Route path="big-plug-order" element={<AdminErrorBoundary><BigPlugOrderWorkflow /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients/:id" element={<AdminErrorBoundary><ClientDetail /></AdminErrorBoundary>} />
                           <Route path="wholesale-clients/new-order" element={<AdminErrorBoundary><NewWholesaleOrder /></AdminErrorBoundary>} />
@@ -434,7 +400,6 @@ const App = () => {
                           <Route path="disposable-menus/orders" element={<AdminErrorBoundary><DisposableMenuOrders /></AdminErrorBoundary>} />
                           <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
                           <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
-                          <Route path="analytics/comprehensive" element={<AdminErrorBoundary><ComprehensiveAnalytics /></AdminErrorBoundary>} />
                           <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
                           
                           {/* Mobile Runner Portal */}
