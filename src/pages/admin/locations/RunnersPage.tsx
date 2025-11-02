@@ -74,28 +74,28 @@ export default function RunnersPage() {
     {
       accessorKey: 'full_name',
       header: 'Runner',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex items-center gap-2">
           <Truck className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.original.full_name}</span>
+          <span className="font-medium">{original.full_name}</span>
         </div>
       ),
     },
     {
       accessorKey: 'phone',
       header: 'Contact',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="space-y-1">
-          {row.original.phone && (
+          {original.phone && (
             <div className="flex items-center gap-1 text-sm">
               <Phone className="h-3 w-3" />
-              {row.original.phone}
+              {original.phone}
             </div>
           )}
-          {row.original.email && (
+          {original.email && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Mail className="h-3 w-3" />
-              {row.original.email}
+              {original.email}
             </div>
           )}
         </div>
@@ -104,32 +104,32 @@ export default function RunnersPage() {
     {
       accessorKey: 'vehicle_info',
       header: 'Vehicle',
-      cell: ({ row }) => row.original.vehicle_info || '—',
+      cell: ({ original }) => original.vehicle_info || '—',
     },
     {
       accessorKey: 'active_deliveries',
       header: 'Active Deliveries',
-      cell: ({ row }) => (
-        <Badge variant={row.original.active_deliveries ? 'default' : 'secondary'}>
-          {row.original.active_deliveries || 0}
+      cell: ({ original }) => (
+        <Badge variant={original.active_deliveries ? 'default' : 'secondary'}>
+          {original.active_deliveries || 0}
         </Badge>
       ),
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ original }) => <StatusBadge status={original.status} />,
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              navigate(`/admin/fleet-management?runner=${row.original.id}`);
+              navigate(`/admin/fleet-management?runner=${original.id}`);
             }}
           >
             <MapPin className="h-4 w-4 mr-1" />

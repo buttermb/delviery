@@ -83,57 +83,57 @@ export default function BatchesPage() {
     {
       accessorKey: 'batch_number',
       header: 'Batch Number',
-      cell: ({ row }) => (
-        <div className="font-mono font-medium">{row.original.batch_number}</div>
+      cell: ({ original }) => (
+        <div className="font-mono font-medium">{original.batch_number}</div>
       ),
     },
     {
       accessorKey: 'products.name',
       header: 'Product',
-      cell: ({ row }) => row.original.products?.name || 'N/A',
+      cell: ({ original }) => original.products?.name || 'N/A',
     },
     {
       accessorKey: 'quantity_lbs',
       header: 'Quantity',
-      cell: ({ row }) => `${Number(row.original.quantity_lbs).toFixed(2)} lbs`,
+      cell: ({ original }) => `${Number(original.quantity_lbs).toFixed(2)} lbs`,
     },
     {
       accessorKey: 'cost_per_lb',
       header: 'Cost/lb',
-      cell: ({ row }) => `$${Number(row.original.cost_per_lb).toFixed(2)}`,
+      cell: ({ original }) => `$${Number(original.cost_per_lb).toFixed(2)}`,
     },
     {
       accessorKey: 'warehouse_location',
       header: 'Location',
-      cell: ({ row }) => row.original.warehouse_location || 'Unknown',
+      cell: ({ original }) => original.warehouse_location || 'Unknown',
     },
     {
       accessorKey: 'received_date',
       header: 'Received',
-      cell: ({ row }) => format(new Date(row.original.received_date), 'MMM d, yyyy'),
+      cell: ({ original }) => format(new Date(original.received_date), 'MMM d, yyyy'),
     },
     {
       accessorKey: 'expiration_date',
       header: 'Expires',
-      cell: ({ row }) =>
-        row.original.expiration_date
-          ? format(new Date(row.original.expiration_date), 'MMM d, yyyy')
+      cell: ({ original }) =>
+        original.expiration_date
+          ? format(new Date(original.expiration_date), 'MMM d, yyyy')
           : 'N/A',
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ original }) => <StatusBadge status={original.status} />,
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/admin/inventory/products?batch=${row.original.id}`)}
+            onClick={() => navigate(`/admin/inventory/products?batch=${original.id}`)}
           >
             <Eye className="h-4 w-4" />
           </Button>

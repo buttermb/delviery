@@ -77,10 +77,10 @@ export default function ProductImagesPage() {
     {
       accessorKey: 'image_url',
       header: 'Image',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex items-center gap-3">
           <img
-            src={row.original.image_url}
+            src={original.image_url}
             alt="Product"
             className="h-12 w-12 rounded object-cover"
             onError={(e) => {
@@ -93,31 +93,31 @@ export default function ProductImagesPage() {
     {
       accessorKey: 'products.name',
       header: 'Product',
-      cell: ({ row }) => row.original.products?.name || 'N/A',
+      cell: ({ original }) => original.products?.name || 'N/A',
     },
     {
       accessorKey: 'display_order',
       header: 'Order',
-      cell: ({ row }) => row.original.display_order || 0,
+      cell: ({ original }) => original.display_order || 0,
     },
     {
       accessorKey: 'is_primary',
       header: 'Status',
-      cell: ({ row }) => (
-        <Badge variant={row.original.is_primary ? 'default' : 'secondary'}>
-          {row.original.is_primary ? 'Primary' : 'Secondary'}
+      cell: ({ original }) => (
+        <Badge variant={original.is_primary ? 'default' : 'secondary'}>
+          {original.is_primary ? 'Primary' : 'Secondary'}
         </Badge>
       ),
     },
     {
       accessorKey: 'created_at',
       header: 'Uploaded',
-      cell: ({ row }) => format(new Date(row.original.created_at), 'MMM d, yyyy'),
+      cell: ({ original }) => format(new Date(original.created_at), 'MMM d, yyyy'),
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button variant="ghost" size="sm">
             <Edit className="h-4 w-4" />

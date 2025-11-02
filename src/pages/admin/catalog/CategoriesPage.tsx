@@ -89,45 +89,45 @@ export default function CategoriesPage() {
     {
       accessorKey: 'name',
       header: 'Category',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex items-center gap-2">
           <Tag className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.original.name}</span>
+          <span className="font-medium">{original.name}</span>
         </div>
       ),
     },
     {
       accessorKey: 'slug',
       header: 'Slug',
-      cell: ({ row }) => (
-        <code className="text-xs bg-muted px-2 py-1 rounded">{row.original.slug}</code>
+      cell: ({ original }) => (
+        <code className="text-xs bg-muted px-2 py-1 rounded">{original.slug}</code>
       ),
     },
     {
       accessorKey: 'product_count',
       header: 'Products',
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.product_count || 0} products</Badge>
+      cell: ({ original }) => (
+        <Badge variant="secondary">{original.product_count || 0} products</Badge>
       ),
     },
     {
       accessorKey: 'description',
       header: 'Description',
-      cell: ({ row }) => row.original.description || '—',
+      cell: ({ original }) => original.description || '—',
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              setEditingCategory(row.original);
+              setEditingCategory(original);
               setFormData({
-                name: row.original.name,
-                description: row.original.description || '',
+                name: original.name,
+                description: original.description || '',
               });
               setIsDialogOpen(true);
             }}
