@@ -98,134 +98,125 @@ export default function TenantAdminSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--tenant-bg))] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-[hsl(var(--tenant-text))] mb-2">⚙️ Settings</h1>
-          <p className="text-[hsl(var(--tenant-text-light))]">Manage your account and business settings</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">⚙️ Settings</h1>
+          <p className="text-muted-foreground">Manage your account and business settings</p>
         </div>
 
         {/* Account Settings */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[hsl(var(--tenant-text))]">
-              <User className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
               Account Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-[hsl(var(--tenant-text))]">Email</Label>
+              <Label>Email</Label>
               <Input 
                 value={admin?.email || ""} 
                 disabled 
-                className="bg-gray-50 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text-light))]"
+                className="bg-muted"
               />
-              <p className="text-sm text-[hsl(var(--tenant-text-light))]">Email cannot be changed</p>
+              <p className="text-sm text-muted-foreground">Email cannot be changed</p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[hsl(var(--tenant-text))]">Name</Label>
+              <Label>Name</Label>
               <Input 
                 placeholder="Full Name" 
                 defaultValue={admin?.name || ""}
-                className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
               />
             </div>
 
-            <Button 
-              className="bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
-            >
+            <Button>
               Save Changes
             </Button>
           </CardContent>
         </Card>
 
         {/* Business Information */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[hsl(var(--tenant-text))]">
-              <Building2 className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
               Business Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-[hsl(var(--tenant-text))]">Business Name</Label>
+              <Label>Business Name</Label>
               <Input 
                 value={tenant?.business_name || ""} 
                 disabled 
-                className="bg-gray-50 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text-light))]"
+                className="bg-muted"
               />
-              <p className="text-sm text-[hsl(var(--tenant-text-light))]">Contact support to change business name</p>
+              <p className="text-sm text-muted-foreground">Contact support to change business name</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-[hsl(var(--tenant-text))]">Phone</Label>
+              <Label>Phone</Label>
               <Input 
                 placeholder="Phone Number" 
                 defaultValue={(tenant as any)?.phone || ""}
-                className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[hsl(var(--tenant-text))]">Address</Label>
+              <Label>Address</Label>
               <Input 
                 placeholder="Business Address" 
                 defaultValue={(tenant as any)?.address || ""}
-                className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Security */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[hsl(var(--tenant-text))]">
-              <Key className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-primary" />
               Security
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-[hsl(var(--tenant-text))]">Current Password</Label>
+                <Label>Current Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Current Password" 
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[hsl(var(--tenant-text))]">New Password</Label>
+                <Label>New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="New Password (min. 8 characters)" 
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[hsl(var(--tenant-text))]">Confirm New Password</Label>
+                <Label>Confirm New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Confirm New Password" 
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
                 />
               </div>
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
               >
                 <Key className="h-4 w-4 mr-2" />
                 {loading ? "Updating..." : "Update Password"}
@@ -235,53 +226,41 @@ export default function TenantAdminSettingsPage() {
         </Card>
 
         {/* Notifications */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[hsl(var(--tenant-text))]">
-              <Bell className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
               Notifications
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-[hsl(var(--tenant-text))]">Order Notifications</p>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))]">Receive alerts for new orders</p>
+                <p className="font-medium text-foreground">Order Notifications</p>
+                <p className="text-sm text-muted-foreground">Receive alerts for new orders</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--tenant-primary))]"
-              />
+              <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-[hsl(var(--tenant-text))]">Low Stock Alerts</p>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))]">Notify when inventory is low</p>
+                <p className="font-medium text-foreground">Low Stock Alerts</p>
+                <p className="text-sm text-muted-foreground">Notify when inventory is low</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--tenant-primary))]"
-              />
+              <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-[hsl(var(--tenant-text))]">Payment Reminders</p>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))]">Reminders for outstanding payments</p>
+                <p className="font-medium text-foreground">Payment Reminders</p>
+                <p className="text-sm text-muted-foreground">Reminders for outstanding payments</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--tenant-primary))]"
-              />
+              <Switch defaultChecked />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-[hsl(var(--tenant-text))]">Weekly Reports</p>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))]">Receive weekly performance summaries</p>
+                <p className="font-medium text-foreground">Weekly Reports</p>
+                <p className="text-sm text-muted-foreground">Receive weekly performance summaries</p>
               </div>
-              <Switch 
-                defaultChecked
-                className="data-[state=checked]:bg-[hsl(var(--tenant-primary))]"
-              />
+              <Switch defaultChecked />
             </div>
           </CardContent>
         </Card>
