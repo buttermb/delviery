@@ -135,7 +135,9 @@ export default function AccountSignup() {
         .from("tenants")
         .insert({
           business_name: businessName,
+          slug: urlSlug,
           owner_email: email,
+          owner_name: yourName,
           subscription_plan: selectedPlan,
           subscription_status: "trial",
           created_at: new Date().toISOString(),
