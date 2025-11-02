@@ -55,11 +55,26 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
         const data = await response.json();
         
-        // Verify tenant is still active
-        if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial")) {
+        // Check if trial has expired
+        if (tenant.subscription_status === "trial" && (tenant as any).trial_ends_at) {
+          const trialEnds = new Date((tenant as any).trial_ends_at);
+          const now = new Date();
+          
+          if (now > trialEnds) {
+            // Allow access to billing and trial-expired pages only
+            const currentPath = window.location.pathname;
+            if (!currentPath.includes('/billing') && !currentPath.includes('/trial-expired')) {
+              navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
+              return;
+            }
+          }
+        }
+        
+        // Verify tenant is still active or in trial
+        if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial" || data.tenant.subscription_status === "trialing")) {
           setVerifying(false);
         } else {
-          throw new Error("Tenant is not active");
+          throw new Error("Tenant subscription is not active");
         }
       } catch (error) {
         console.error("Auth verification error:", error);
