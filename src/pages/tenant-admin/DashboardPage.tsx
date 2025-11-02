@@ -106,6 +106,17 @@ export default function TenantAdminDashboardPage() {
 
   // Check if trial is ending soon
   const trialEndingSoon = (tenant as any)?.trial_ends_at && new Date((tenant as any).trial_ends_at) < new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+  
+  // Calculate setup progress
+  const setupProgress = {
+    hasProducts: false,
+    hasCustomers: false,
+    hasOrders: (recentOrders?.length || 0) > 0,
+    hasInventory: (todayMetrics?.lowStock?.length || 0) > 0,
+  };
+  const completedSteps = Object.values(setupProgress).filter(Boolean).length;
+  const totalSteps = Object.keys(setupProgress).length;
+  const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
 
   return (
     <div className="min-h-screen bg-[hsl(var(--tenant-bg))]">
@@ -136,6 +147,45 @@ export default function TenantAdminDashboardPage() {
       </header>
 
       <div className="container mx-auto p-6 space-y-6">
+        {/* Setup Progress */}
+        {progressPercentage < 100 && (
+          <Card className="border-[hsl(var(--tenant-primary))] bg-gradient-to-r from-[hsl(var(--tenant-primary))]/5 to-[hsl(var(--tenant-primary))]/10 border-2">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="font-semibold text-[hsl(var(--tenant-text))] text-lg">🚀 Get Started</p>
+                  <p className="text-sm text-[hsl(var(--tenant-text-light))]">
+                    Complete your setup to unlock all features
+                  </p>
+                </div>
+                <div className="text-2xl font-bold text-[hsl(var(--tenant-primary))]">
+                  {progressPercentage}%
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                <div 
+                  className="bg-[hsl(var(--tenant-primary))] h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className={`p-3 rounded-lg ${setupProgress.hasProducts ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} border`}>
+                  <p className="text-sm font-medium">{setupProgress.hasProducts ? '✅' : '📦'} Products</p>
+                </div>
+                <div className={`p-3 rounded-lg ${setupProgress.hasCustomers ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} border`}>
+                  <p className="text-sm font-medium">{setupProgress.hasCustomers ? '✅' : '👥'} Customers</p>
+                </div>
+                <div className={`p-3 rounded-lg ${setupProgress.hasOrders ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} border`}>
+                  <p className="text-sm font-medium">{setupProgress.hasOrders ? '✅' : '🛒'} Orders</p>
+                </div>
+                <div className={`p-3 rounded-lg ${setupProgress.hasInventory ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} border`}>
+                  <p className="text-sm font-medium">{setupProgress.hasInventory ? '✅' : '📊'} Inventory</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Trial Ending Alert */}
         {trialEndingSoon && tenant?.subscription_status === "trial" && (
           <Card className="border-yellow-400 bg-yellow-50 border-2">
@@ -160,27 +210,60 @@ export default function TenantAdminDashboardPage() {
           </Card>
         )}
 
-        {/* Current Plan Info */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))]">Current Plan</p>
-                <p className="text-xl font-semibold text-[hsl(var(--tenant-text))]">
-                  {tenant?.subscription_plan?.charAt(0).toUpperCase() + tenant?.subscription_plan?.slice(1)} - {formatCurrency((tenant as any)?.mrr || 0)}/month
-                </p>
-                <p className="text-sm text-[hsl(var(--tenant-text-light))] mt-1">
-                  Next billing: {(tenant as any)?.next_billing_date ? new Date((tenant as any).next_billing_date).toLocaleDateString() : "N/A"}
-                </p>
+        {/* Current Plan & Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Current Plan Info */}
+          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm lg:col-span-2">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[hsl(var(--tenant-text-light))]">Current Plan</p>
+                  <p className="text-xl font-semibold text-[hsl(var(--tenant-text))]">
+                    {tenant?.subscription_plan?.charAt(0).toUpperCase() + tenant?.subscription_plan?.slice(1)} - {formatCurrency((tenant as any)?.mrr || 0)}/month
+                  </p>
+                  <p className="text-sm text-[hsl(var(--tenant-text-light))] mt-1">
+                    Next billing: {(tenant as any)?.next_billing_date ? new Date((tenant as any).next_billing_date).toLocaleDateString() : "N/A"}
+                  </p>
+                  <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
+                    💎 Platform fee: {formatCurrency(((tenant as any)?.mrr || 0) * 0.02)}/month (2%)
+                  </p>
+                </div>
+                <Button variant="outline" asChild className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]">
+                  <Link to={`/${tenant?.slug}/admin/billing`}>
+                    Manage Plan →
+                  </Link>
+                </Button>
               </div>
-              <Button variant="outline" asChild className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]">
-                <Link to={`/${tenant?.slug}/admin/billing`}>
-                  View billing details →
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-[hsl(var(--tenant-text))] text-base">⚡ Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/products`}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Add Product
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/orders`}>
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  View Orders
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link to={`/${tenant?.slug}/admin/settings`}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Today's Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

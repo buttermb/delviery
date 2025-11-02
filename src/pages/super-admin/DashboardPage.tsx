@@ -70,6 +70,9 @@ export default function SuperAdminDashboardPage() {
       
       const mrr = tenants.reduce((sum, t) => sum + (Number(t.mrr) || 0), 0);
       const arr = mrr * 12;
+      
+      // Calculate 2% commission revenue
+      const commission = mrr * 0.02;
 
       // Calculate churn rate (last 30 days)
       const thirtyDaysAgo = new Date();
@@ -87,6 +90,7 @@ export default function SuperAdminDashboardPage() {
       return {
         mrr,
         arr,
+        commission,
         totalTenants: tenants.length,
         activeTenants: active.length,
         trialTenants: trials.length,
@@ -144,6 +148,7 @@ export default function SuperAdminDashboardPage() {
   const platformStats = stats || {
     mrr: 0,
     arr: 0,
+    commission: 0,
     totalTenants: 0,
     activeTenants: 0,
     trialTenants: 0,
@@ -283,22 +288,20 @@ export default function SuperAdminDashboardPage() {
 
           <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--super-admin-text))]/90">💳 Revenue</CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-[hsl(var(--super-admin-primary))]/20 flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-[hsl(var(--super-admin-primary))]" />
+              <CardTitle className="text-sm font-medium text-[hsl(var(--super-admin-text))]/90">💎 Commission</CardTitle>
+              <div className="h-8 w-8 rounded-lg bg-[hsl(var(--super-admin-secondary))]/20 flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-[hsl(var(--super-admin-secondary))]" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
                 <AnimatedNumber
-                  value={platformStats.arr / 1000}
-                  decimals={0}
-                  suffix="k ARR"
+                  value={platformStats.commission}
                   formatter={(val) => formatCurrency(val)}
                   duration={1200}
                 />
               </div>
-              <p className="text-xs text-[hsl(var(--super-admin-text-light))] mt-1">+18% YoY</p>
+              <p className="text-xs text-[hsl(var(--super-admin-text-light))] mt-1">2% platform fee</p>
             </CardContent>
           </Card>
 
