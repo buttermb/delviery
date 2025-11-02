@@ -344,24 +344,24 @@ export default function OrderTrackingPage() {
               <CardTitle className="text-[hsl(var(--customer-text))]">Need Help?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {tenant.phone && (
+              {(tenant as any).phone && (
                 <Button
                   variant="outline"
                   className="w-full justify-start border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
-                  onClick={() => window.open(`tel:${tenant.phone}`)}
+                  onClick={() => window.open(`tel:${(tenant as any).phone}`)}
                 >
                   <Phone className="h-4 w-4 mr-2" />
-                  Call: {tenant.phone}
+                  Call: {(tenant as any).phone}
                 </Button>
               )}
-              {tenant.owner_email && (
+              {(tenant as any).owner_email && (
                 <Button
                   variant="outline"
                   className="w-full justify-start border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
-                  onClick={() => window.open(`mailto:${tenant.owner_email}`)}
+                  onClick={() => window.open(`mailto:${(tenant as any).owner_email}`)}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Email: {tenant.owner_email}
+                  Email: {(tenant as any).owner_email}
                 </Button>
               )}
             </CardContent>

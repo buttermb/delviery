@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   ShoppingCart,
@@ -41,6 +42,14 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("delivery");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const [showAddAddressDialog, setShowAddAddressDialog] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    street: "",
+    city: "",
+    state: "NY",
+    zip: "",
+    borough: "",
+  });
 
   // Form state
   const [deliveryInfo, setDeliveryInfo] = useState({
@@ -467,7 +476,7 @@ export default function CheckoutPage() {
                                       street: newAddress.street,
                                       city: newAddress.city,
                                       state: newAddress.state,
-                                      zip: newAddress.zip,
+                                      zip_code: newAddress.zip,
                                       borough: newAddress.borough,
                                       is_default: savedAddresses.length === 0,
                                     });

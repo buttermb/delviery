@@ -15,13 +15,16 @@ import {
   ShoppingCart,
   CreditCard,
   MessageSquare,
-  ArrowRight
+  ArrowRight,
+  Package
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { toast } from "@/hooks/use-toast";
 import { validateRouteUUID } from "@/lib/utils/uuidValidation";
+import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
+import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 
 export default function ShoppingCartPage() {
   const navigate = useNavigate();

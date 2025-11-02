@@ -127,12 +127,12 @@ export default function CustomerMenuViewPage() {
 
   // Calculate cart total
   const calculateCartTotal = () => {
-    if (!products) return 0;
+    if (!products || !Array.isArray(products)) return 0;
     
     let total = 0;
     Object.entries(quantities).forEach(([productId, quantity]) => {
-      const menuProduct = products.find((mp: any) => mp.products?.id === productId);
-      if (menuProduct?.products) {
+      const menuProduct: any = products.find((mp: any) => mp.products?.id === productId);
+      if (menuProduct?.products?.price) {
         const price = Number(menuProduct.products.price) || 0;
         total += price * quantity;
       }
@@ -182,7 +182,6 @@ export default function CustomerMenuViewPage() {
           {/* Mobile Bottom Navigation */}
           <CustomerMobileBottomNav />
         </div>
-      </div>
     );
   }
 
