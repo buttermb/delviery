@@ -57,6 +57,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
+import { CreateTenantDialog } from '@/components/admin/CreateTenantDialog';
+import { NotificationDialog } from '@/components/admin/NotificationDialog';
 
 interface PlatformStats {
   mrr: number;

@@ -86,15 +86,19 @@ export type Permission = keyof typeof PERMISSIONS;
 export function hasPermission(role: Role | null | undefined, permission: Permission): boolean {
   if (!role) return false;
   const allowedRoles = PERMISSIONS[permission];
-  return allowedRoles ? allowedRoles.includes(role) : false;
+  if (!allowedRoles) return false;
+  // Type assertion needed due to Role union type
+  return (allowedRoles as readonly Role[]).includes(role as Role);
 }
 
 /**
  * Get all permissions for a role
  */
 export function getRolePermissions(role: Role): Permission[] {
-  return Object.keys(PERMISSIONS).filter(perm =>
-    PERMISSIONS[perm as Permission]?.includes(role)
-  ) as Permission[];
+  return Object.keys(PERMISSIONS).filter(perm => {
+    const allowedRoles = PERMISSIONS[perm as Permission];
+    if (!allowedRoles) return false;
+    return (allowedRoles as readonly Role[]).includes(role as Role);
+  }) as Permission[];
 }
 
