@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAccount } from "@/contexts/AccountContext";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ import {
 
 export default function ProductManagement() {
   const navigate = useNavigate();
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,33 +77,23 @@ export default function ProductManagement() {
   });
 
   useEffect(() => {
-    if (account && !accountLoading) {
+    if (tenant && !tenantLoading) {
       loadProducts();
-    } else if (!accountLoading && !account) {
+    } else if (!tenantLoading && !tenant) {
       setLoading(false);
     }
-  }, [account, accountLoading]);
+  }, [tenant, tenantLoading]);
 
   const loadProducts = async () => {
-    if (!account) return;
+    if (!tenant?.id) return;
     
     try {
       setLoading(true);
-      let query = supabase
+      // Load all products - tenant filtering will be added when products table has tenant_id column
+      const { data, error } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
-
-      // Filter by account if account_id column exists
-      // If your products table doesn't have account_id, this will work for all products
-      if (account.id) {
-        // Check if account_id column exists by trying to filter
-        // Most likely products are shared, so we might not filter
-        // Uncomment if products table has account_id:
-        // query = query.eq('account_id', account.id);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       setProducts(data || []);
@@ -146,16 +136,16 @@ export default function ProductManagement() {
         toast.success("Product updated successfully");
       } else {
         // Check tenant limits before creating
-        if ((account as any)?.tenant_id) {
-          const { data: tenant } = await supabase
+        if (tenant?.id) {
+          const { data: tenantData } = await supabase
             .from('tenants')
             .select('usage, limits')
-            .eq('id', (account as any).tenant_id)
+            .eq('id', tenant.id)
             .maybeSingle();
 
-          if (tenant) {
-            const currentProducts = (tenant.usage as any)?.products || 0;
-            const productLimit = (tenant.limits as any)?.products || 0;
+          if (tenantData) {
+            const currentProducts = (tenantData.usage as any)?.products || 0;
+            const productLimit = (tenantData.limits as any)?.products || 0;
             
             if (productLimit > 0 && currentProducts >= productLimit) {
               toast.error('Product limit reached', {
@@ -266,48 +256,10 @@ export default function ProductManagement() {
     new Set(products.map((p) => p.category).filter(Boolean))
   );
 
-  if (accountLoading) {
+  if (tenantLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Loading account...</p>
-      </div>
-    );
-  }
-
-  if (!account) {
-    return (
-      <div className="container mx-auto py-12 px-4">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl mb-2">Account Setup Required</CardTitle>
-            <CardDescription>
-              You need to set up your account before accessing product management.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-4">
-                To manage products, you need to:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                <li>Create or join an account</li>
-                <li>Set up your company information</li>
-                <li>Configure your business settings</li>
-              </ul>
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={() => navigate('/signup')}>
-                Create Account
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/onboarding')}>
-                Complete Setup
-              </Button>
-              <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
-                Back to Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -318,13 +270,12 @@ export default function ProductManagement() {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Product Management</h1>
-            {account && (account as any)?.tenant_id && (
+            {tenant?.id && (
               <TooltipGuide
                 title="💡 Product Management"
                 content="Upload CSV to add 100+ products instantly. Products can be organized by category and tracked by batch numbers."
                 placement="right"
-                tenantId={(account as any)?.tenant_id}
-                tenantCreatedAt={account?.created_at}
+                tenantId={tenant.id}
               />
             )}
           </div>
