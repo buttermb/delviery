@@ -247,27 +247,42 @@ const App = () => {
                     <Sonner />
                     <Suspense fallback={<LoadingFallback />}>
                       <Routes>
-                        {/* SAAS Platform Routes - Marketing Landing */}
+                        {/* ==================== PUBLIC ROUTES ==================== */}
+                        
+                        {/* Marketing & Landing Pages */}
                         <Route path="/" element={<MarketingLanding />} />
                         <Route path="/saas" element={<MarketingLanding />} />
-                        
-                        {/* Marketing & Public Routes */}
                         <Route path="/marketing" element={<MarketingHome />} />
                         <Route path="/pricing" element={<PricingPage />} />
-                        <Route path="/signup" element={<AccountSignup />} />
+                        <Route path="/about" element={<About />} />
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/support" element={<Support />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route path="/privacy" element={<Privacy />} />
-                        <Route path="/about" element={<About />} />
                         
-                        {/* SAAS Platform Routes */}
+                        {/* Public Authentication */}
+                        <Route path="/signup" element={<AccountSignup />} />
                         <Route path="/saas/signup" element={<SignUpPage />} />
                         <Route path="/saas/verify-email" element={<VerifyEmailPage />} />
-                        <Route path="/saas/onboarding" element={<OnboardingWizard />} />
-                        <Route path="/saas/billing" element={<BillingDashboard />} />
                         
-                        {/* Protected Super Admin Routes with Sidebar */}
+                        {/* Public Menu Access */}
+                        <Route path="/m/:token" element={<SecureMenuAccess />} />
+                        <Route path="/m/:token/view" element={<SecureMenuView />} />
+                        <Route path="/menu/:token" element={<MenuAccess />} />
+                        
+                        {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
+                        
+                        {/* Super Admin Authentication */}
+                        <Route path="/saas/login" element={<SuperAdminLogin />} />
+                        <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
+                        <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
+                        
+                        {/* New Super Admin Dashboard (Three-Tier System) */}
+                        <Route path="/super-admin/dashboard" element={<SuperAdminProtectedRouteNew><SuperAdminDashboardPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/tenants/:tenantId" element={<SuperAdminProtectedRouteNew><SuperAdminTenantDetailPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/settings" element={<SuperAdminProtectedRouteNew><SuperAdminSettingsPage /></SuperAdminProtectedRouteNew>} />
+                        
+                        {/* Legacy Super Admin (SaaS Platform) */}
                         <Route path="/saas/admin" element={<LegacySuperAdminProtectedRoute><SaasAdminLayout /></LegacySuperAdminProtectedRoute>}>
                           <Route index element={<SuperAdminEnhanced />} />
                           <Route path="support" element={<SuperAdminSupport />} />
@@ -277,135 +292,76 @@ const App = () => {
                         </Route>
                         <Route path="/saas/admin/legacy" element={<LegacySuperAdminProtectedRoute><SuperAdminPlatform /></LegacySuperAdminProtectedRoute>} />
                         <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
+                        <Route path="/saas/onboarding" element={<OnboardingWizard />} />
+                        <Route path="/saas/billing" element={<BillingDashboard />} />
                         
-                        {/* Super Admin Routes */}
-                        <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
-                        <Route path="/super-admin/customers" element={<SuperAdminCustomers />} />
-                        <Route path="/super-admin/customers/:id" element={<SuperAdminCustomers />} />
-                        <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
-                        <Route path="/super-admin/support" element={<LegacySuperAdminSupport />} />
-                        <Route path="/super-admin/analytics" element={<LegacySuperAdminAnalytics />} />
+                        {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                         
-                        {/* Account Management */}
-                        <Route path="/account/subscription" element={<ProtectedRoute><AccountSubscription /></ProtectedRoute>} />
-                        <Route path="/account" element={<ProtectedRoute><UserAccount /></ProtectedRoute>} />
-                        <Route path="/account/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
-                        <Route path="/settings/notifications" element={
-                          <ProtectedRoute><NotificationPreferences /></ProtectedRoute>
-                        } />
-
-                        {/* Customer Routes */}
-                        <Route path="/portal" element={<CustomerPortal />} />
-                        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                        <Route path="/billing" element={<ProtectedRoute><BillingPortal /></ProtectedRoute>} />
-                        <Route path="/service-requests" element={<ProtectedRoute><ServiceRequests /></ProtectedRoute>} />
-
-                        {/* Admin Login */}
-                        <Route path="/admin/login" element={<AdminLogin />} />
-                        
-                        {/* Super Admin / Platform Login */}
-                        <Route path="/saas/login" element={<SuperAdminLogin />} />
-                        <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
-                        
-                        {/* Three-Tier Auth System Routes */}
-                        {/* Level 1: Super Admin Routes */}
-                        <Route path="/super-admin/dashboard" element={<SuperAdminProtectedRouteNew><SuperAdminDashboardPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/tenants/:tenantId" element={<SuperAdminProtectedRouteNew><SuperAdminTenantDetailPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/settings" element={<SuperAdminProtectedRouteNew><SuperAdminSettingsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
-                        
-                        {/* Level 2: Tenant Admin Routes (Dynamic tenant slug) */}
+                        {/* Tenant Admin Authentication */}
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
-                        {/* Tenant Admin can also access regular admin routes through their tenant context */}
+                        {/* Tenant Admin Portal */}
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
-                          {/* All existing admin routes can be accessed here */}
                         </Route>
                         
-                        {/* Level 3: Customer Portal Routes (Dynamic tenant slug) */}
+                        {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
+                        
+                        {/* Customer Authentication */}
                         <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
-                        <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                         
+                        {/* Customer Portal */}
+                        <Route path="/portal" element={<CustomerPortal />} />
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
-                          {/* Additional customer routes can be added here */}
                         </Route>
-
-                        {/* Admin Routes */}
+                        <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+                        
+                        {/* ==================== LEGACY ADMIN ROUTES ==================== */}
+                        
+                        {/* Legacy Authentication */}
+                        <Route path="/admin/login" element={<AdminLogin />} />
+                        
+                        {/* Legacy Account Management */}
+                        <Route path="/account" element={<ProtectedRoute><UserAccount /></ProtectedRoute>} />
+                        <Route path="/account/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+                        <Route path="/account/subscription" element={<ProtectedRoute><AccountSubscription /></ProtectedRoute>} />
+                        <Route path="/settings/notifications" element={<ProtectedRoute><NotificationPreferences /></ProtectedRoute>} />
+                        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                        <Route path="/billing" element={<ProtectedRoute><BillingPortal /></ProtectedRoute>} />
+                        <Route path="/service-requests" element={<ProtectedRoute><ServiceRequests /></ProtectedRoute>} />
+                        
+                        {/* Legacy Admin Panel */}
                         <Route path="/admin" element={<AdminProtectedRoute><AdminErrorBoundary><AdminLayout /></AdminErrorBoundary></AdminProtectedRoute>}>
                           <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                          
+                          {/* Core Dashboard & Analytics */}
                           <Route path="dashboard" element={<AdminErrorBoundary><AdminDashboard /></AdminErrorBoundary>} />
                           <Route path="modern-dashboard" element={<AdminErrorBoundary><ModernDashboard /></AdminErrorBoundary>} />
+                          <Route path="analytics" element={<AdminErrorBoundary><AdminAnalytics /></AdminErrorBoundary>} />
+                          
+                          {/* User Management */}
                           <Route path="users" element={<AdminErrorBoundary><AdminUsers /></AdminErrorBoundary>} />
                           <Route path="users/:id" element={<AdminErrorBoundary><AdminUserDetails /></AdminErrorBoundary>} />
-                          <Route path="compliance" element={<AdminErrorBoundary><AdminCompliance /></AdminErrorBoundary>} />
-                          <Route path="risk-factors" element={<AdminErrorBoundary><RiskFactorManagement /></AdminErrorBoundary>} />
-                          <Route path="analytics" element={<AdminErrorBoundary><AdminAnalytics /></AdminErrorBoundary>} />
-                          <Route path="audit-logs" element={<AdminErrorBoundary><AdminAuditLogs /></AdminErrorBoundary>} />
-                          <Route path="age-verification" element={<AdminErrorBoundary><AdminAgeVerification /></AdminErrorBoundary>} />
-                          <Route path="notifications" element={<AdminErrorBoundary><AdminNotifications /></AdminErrorBoundary>} />
-                          <Route path="search" element={<AdminErrorBoundary><GlobalSearch /></AdminErrorBoundary>} />
-                          <Route path="orders" element={<AdminErrorBoundary><Orders /></AdminErrorBoundary>} />
-                          <Route path="couriers" element={<AdminErrorBoundary><Couriers /></AdminErrorBoundary>} />
-                          <Route path="live-orders" element={<AdminErrorBoundary><LiveOrders /></AdminErrorBoundary>} />
-                          <Route path="live-map" element={<AdminErrorBoundary><LiveMap /></AdminErrorBoundary>} />
-                          <Route path="settings-old" element={<AdminErrorBoundary><SystemSettings /></AdminErrorBoundary>} />
-                          <Route path="settings" element={<AdminErrorBoundary><SettingsPage /></AdminErrorBoundary>} />
-                          <Route path="reports-new" element={<AdminErrorBoundary><ReportsPage /></AdminErrorBoundary>} />
-                          
-                          {/* Operations Pages */}
-                          
-                          {/* Sales Pages */}
-                          <Route path="sales/pricing" element={<AdminErrorBoundary><AdminPricingPage /></AdminErrorBoundary>} />
-                          
-                          {/* Locations Pages - Specific routes first */}
-                          <Route path="locations/warehouses" element={<AdminErrorBoundary><WarehousesPage /></AdminErrorBoundary>} />
-                          <Route path="locations/runners" element={<AdminErrorBoundary><RunnersPage /></AdminErrorBoundary>} />
-                          
-                          <Route path="button-tester" element={<AdminErrorBoundary><ButtonTester /></AdminErrorBoundary>} />
-                          <Route path="bug-scanner" element={<AdminErrorBoundary><BugScanner /></AdminErrorBoundary>} />
-                          <Route path="live-chat" element={<AdminErrorBoundary><AdminLiveChat /></AdminErrorBoundary>} />
-                          <Route path="quick-export" element={<AdminErrorBoundary><AdminQuickExport /></AdminErrorBoundary>} />
-                          
-                          {/* Multi-Tenant SaaS Routes */}
-                          <Route path="locations" element={<AdminErrorBoundary><LocationsManagement /></AdminErrorBoundary>} />
-                          <Route path="vendors" element={<AdminErrorBoundary><VendorManagement /></AdminErrorBoundary>} />
                           <Route path="team" element={<AdminErrorBoundary><TeamManagement /></AdminErrorBoundary>} />
-                          <Route path="invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
-                          <Route path="reports" element={<AdminErrorBoundary><Reports /></AdminErrorBoundary>} />
-                          <Route path="company-settings" element={<AdminErrorBoundary><CompanySettings /></AdminErrorBoundary>} />
-                          <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
+                          
+                          {/* Customer Management */}
                           <Route path="customer-management" element={<AdminErrorBoundary><CustomerManagement /></AdminErrorBoundary>} />
                           <Route path="customers/:id" element={<AdminErrorBoundary><CustomerDetails /></AdminErrorBoundary>} />
                           <Route path="customers/:id/invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
                           <Route path="customers/new" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
                           <Route path="customer-management/:id/edit" element={<AdminErrorBoundary><CustomerForm /></AdminErrorBoundary>} />
                           <Route path="customer-reports" element={<AdminErrorBoundary><CustomerReports /></AdminErrorBoundary>} />
+                          
+                          {/* Order Management */}
+                          <Route path="orders" element={<AdminErrorBoundary><Orders /></AdminErrorBoundary>} />
+                          <Route path="order-management" element={<AdminErrorBoundary><OrderManagement /></AdminErrorBoundary>} />
+                          <Route path="live-orders" element={<AdminErrorBoundary><LiveOrders /></AdminErrorBoundary>} />
                           <Route path="pos" element={<AdminErrorBoundary><PointOfSale /></AdminErrorBoundary>} />
-                          <Route path="deliveries" element={<AdminErrorBoundary><DeliveryManagement /></AdminErrorBoundary>} />
                           
-                          {/* Wholesale CRM Routes */}
-                          <Route path="wholesale-setup" element={<AdminErrorBoundary><WholesaleSetup /></AdminErrorBoundary>} />
-                          <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
-                          <Route path="wholesale-clients/:id" element={<AdminErrorBoundary><ClientDetail /></AdminErrorBoundary>} />
-                          <Route path="wholesale-clients/new-order" element={<AdminErrorBoundary><NewWholesaleOrder /></AdminErrorBoundary>} />
-                          <Route path="wholesale-inventory" element={<AdminErrorBoundary><WholesaleInventory /></AdminErrorBoundary>} />
-                          <Route path="wholesale-inventory-manage" element={<AdminErrorBoundary><InventoryManagement /></AdminErrorBoundary>} />
-                          <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
-                          <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
-                          <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
-                          <Route path="disposable-menus/orders" element={<AdminErrorBoundary><DisposableMenuOrders /></AdminErrorBoundary>} />
-                          <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
-                          <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
-                          <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
-                          
-                          {/* Mobile Runner Portal */}
-                          <Route path="runner-portal" element={<BigPlugRunnerPortal />} />
-                          
-                          {/* Fronted Inventory Routes */}
+                          {/* Inventory Management */}
                           <Route path="inventory" element={<AdminErrorBoundary><InventoryDashboard /></AdminErrorBoundary>} />
                           <Route path="inventory/products" element={<AdminErrorBoundary><ProductManagement /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted" element={<AdminErrorBoundary><FrontedInventory /></AdminErrorBoundary>} />
@@ -416,18 +372,68 @@ const App = () => {
                           <Route path="inventory/fronted/:id/sale" element={<AdminErrorBoundary><RecordFrontedSale /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/payment" element={<AdminErrorBoundary><RecordFrontedPayment /></AdminErrorBoundary>} />
                           <Route path="inventory/fronted/:id/return" element={<AdminErrorBoundary><RecordFrontedReturn /></AdminErrorBoundary>} />
+                          
+                          {/* Delivery & Logistics */}
+                          <Route path="deliveries" element={<AdminErrorBoundary><DeliveryManagement /></AdminErrorBoundary>} />
+                          <Route path="delivery-tracking/:id" element={<AdminErrorBoundary><DeliveryTracking /></AdminErrorBoundary>} />
+                          <Route path="couriers" element={<AdminErrorBoundary><Couriers /></AdminErrorBoundary>} />
+                          <Route path="fleet-management" element={<AdminErrorBoundary><FleetManagement /></AdminErrorBoundary>} />
+                          <Route path="live-map" element={<AdminErrorBoundary><LiveMap /></AdminErrorBoundary>} />
+                          
+                          {/* Wholesale CRM */}
+                          <Route path="wholesale-setup" element={<AdminErrorBoundary><WholesaleSetup /></AdminErrorBoundary>} />
+                          <Route path="wholesale-clients" element={<AdminErrorBoundary><WholesaleClients /></AdminErrorBoundary>} />
+                          <Route path="wholesale-clients/:id" element={<AdminErrorBoundary><ClientDetail /></AdminErrorBoundary>} />
+                          <Route path="wholesale-clients/new-order" element={<AdminErrorBoundary><NewWholesaleOrder /></AdminErrorBoundary>} />
+                          <Route path="wholesale-inventory" element={<AdminErrorBoundary><WholesaleInventory /></AdminErrorBoundary>} />
+                          <Route path="wholesale-inventory-manage" element={<AdminErrorBoundary><InventoryManagement /></AdminErrorBoundary>} />
+                          <Route path="financial-center" element={<AdminErrorBoundary><FinancialCenter /></AdminErrorBoundary>} />
+                          
+                          {/* Disposable Menus */}
+                          <Route path="disposable-menus" element={<AdminErrorBoundary><DisposableMenus /></AdminErrorBoundary>} />
+                          <Route path="disposable-menus/orders" element={<AdminErrorBoundary><DisposableMenuOrders /></AdminErrorBoundary>} />
+                          <Route path="disposable-menus/help" element={<AdminErrorBoundary><DisposableMenusHelp /></AdminErrorBoundary>} />
+                          <Route path="menu-analytics/:menuId" element={<AdminErrorBoundary><MenuAnalytics /></AdminErrorBoundary>} />
+                          
+                          {/* Locations & Sales */}
+                          <Route path="locations" element={<AdminErrorBoundary><LocationsManagement /></AdminErrorBoundary>} />
+                          <Route path="locations/warehouses" element={<AdminErrorBoundary><WarehousesPage /></AdminErrorBoundary>} />
+                          <Route path="locations/runners" element={<AdminErrorBoundary><RunnersPage /></AdminErrorBoundary>} />
+                          <Route path="sales/pricing" element={<AdminErrorBoundary><AdminPricingPage /></AdminErrorBoundary>} />
+                          <Route path="vendors" element={<AdminErrorBoundary><VendorManagement /></AdminErrorBoundary>} />
+                          
+                          {/* Financial & Reporting */}
+                          <Route path="invoices" element={<AdminErrorBoundary><CustomerInvoices /></AdminErrorBoundary>} />
+                          <Route path="reports" element={<AdminErrorBoundary><Reports /></AdminErrorBoundary>} />
+                          <Route path="reports-new" element={<AdminErrorBoundary><ReportsPage /></AdminErrorBoundary>} />
+                          
+                          {/* Compliance & Security */}
+                          <Route path="compliance" element={<AdminErrorBoundary><AdminCompliance /></AdminErrorBoundary>} />
+                          <Route path="age-verification" element={<AdminErrorBoundary><AdminAgeVerification /></AdminErrorBoundary>} />
+                          <Route path="risk-factors" element={<AdminErrorBoundary><RiskFactorManagement /></AdminErrorBoundary>} />
+                          <Route path="audit-logs" element={<AdminErrorBoundary><AdminAuditLogs /></AdminErrorBoundary>} />
+                          
+                          {/* Settings & Configuration */}
+                          <Route path="settings" element={<AdminErrorBoundary><SettingsPage /></AdminErrorBoundary>} />
+                          <Route path="settings-old" element={<AdminErrorBoundary><SystemSettings /></AdminErrorBoundary>} />
+                          <Route path="company-settings" element={<AdminErrorBoundary><CompanySettings /></AdminErrorBoundary>} />
+                          <Route path="notifications" element={<AdminErrorBoundary><AdminNotifications /></AdminErrorBoundary>} />
+                          
+                          {/* Utility Pages */}
+                          <Route path="search" element={<AdminErrorBoundary><GlobalSearch /></AdminErrorBoundary>} />
+                          <Route path="live-chat" element={<AdminErrorBoundary><AdminLiveChat /></AdminErrorBoundary>} />
+                          <Route path="quick-export" element={<AdminErrorBoundary><AdminQuickExport /></AdminErrorBoundary>} />
+                          <Route path="button-tester" element={<AdminErrorBoundary><ButtonTester /></AdminErrorBoundary>} />
+                          <Route path="bug-scanner" element={<AdminErrorBoundary><BugScanner /></AdminErrorBoundary>} />
+                          
+                          {/* Mobile Portals */}
+                          <Route path="runner-portal" element={<BigPlugRunnerPortal />} />
                         </Route>
                         
-                        {/* Driver Portal */}
+                        {/* ==================== MOBILE/EXTERNAL PORTALS ==================== */}
                         <Route path="/driver" element={<DriverPortal />} />
-                        
-                        {/* Secure Menu Access (Public) */}
-                        <Route path="/m/:token" element={<SecureMenuAccess />} />
-                        <Route path="/m/:token/view" element={<SecureMenuView />} />
-                        
-                        {/* Public Disposable Menu Access */}
-                        <Route path="/menu/:token" element={<MenuAccess />} />
 
+                        {/* ==================== 404 NOT FOUND ==================== */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
