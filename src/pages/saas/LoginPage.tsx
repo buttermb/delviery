@@ -68,15 +68,21 @@ export default function LoginPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to login');
 
-      // Get tenant for this user
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .select('slug')
-        .eq('owner_email', data.email)
+      // Get tenant for this user using tenant_users join
+      const { data: tenantUser, error: tenantUserError } = await supabase
+        .from('tenant_users')
+        .select('tenant_id, tenants(slug)')
+        .eq('user_id', authData.user.id)
+        .eq('status', 'active')
         .single();
 
-      if (tenantError || !tenant) {
+      if (tenantUserError || !tenantUser) {
         throw new Error('No tenant found for this account');
+      }
+
+      const tenant = tenantUser.tenants as any;
+      if (!tenant?.slug) {
+        throw new Error('Invalid tenant configuration');
       }
 
       toast({
