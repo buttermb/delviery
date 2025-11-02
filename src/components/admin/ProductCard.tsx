@@ -1,142 +1,212 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Copy, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Edit, 
+  Trash2, 
+  Package,
+  DollarSign,
+  TrendingUp,
+  AlertTriangle,
+} from "lucide-react";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 
 interface ProductCardProps {
   product: any;
-  isSelected: boolean;
-  onToggleSelect: () => void;
-  onToggleStatus: () => void;
-  onDelete: () => void;
-  onEdit: () => void;
-  onDuplicate: () => void;
+  onEdit?: (productId: string) => void;
+  onDelete?: (productId: string) => void;
+  onAddToMenu?: (productId: string) => void;
 }
 
-export function ProductCard({
-  product,
-  isSelected,
-  onToggleSelect,
-  onToggleStatus,
+export function ProductCard({ 
+  product, 
+  onEdit, 
   onDelete,
-  onEdit,
-  onDuplicate,
+  onAddToMenu 
 }: ProductCardProps) {
-  const getPrice = () => {
-    if (product.prices && typeof product.prices === 'object') {
-      const prices = Object.values(product.prices);
-      return prices[0] || product.price || 0;
-    }
-    return product.price || 0;
+  const isInStock = (product.available_quantity || 0) > 0;
+  const isLowStock = isInStock && product.available_quantity < 10;
+  const stockQuantity = product.available_quantity || 0;
+
+  const profitMargin = (cost: number, price: number) => {
+    if (!cost || !price) return 0;
+    return (((price - cost) / price) * 100).toFixed(1);
   };
 
+  const margin = profitMargin(product.cost_per_unit, product.wholesale_price);
+
   return (
-    <Card className="overflow-hidden">
-      <div className="relative">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={onToggleSelect}
-          className="absolute left-2 top-2 z-10 h-5 w-5"
-          aria-label={`Select ${product.name}`}
-          title={`Select ${product.name}`}
-        />
-        <div className="h-48 w-full overflow-hidden bg-muted">
+    <Card 
+      className="bg-white border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
+    >
+      {/* Product Image */}
+      {product.image_url ? (
+        <div className="relative aspect-square overflow-hidden bg-[hsl(var(--tenant-surface))]">
           <img
-            src={product.image_url || undefined}
+            src={product.image_url}
             alt={product.name}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              // Silently handle missing images
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              if (target.parentElement) {
-                target.parentElement.innerHTML = `
-                  <div class="h-full w-full flex items-center justify-center bg-muted">
-                    <div class="text-center">
-                      <div class="w-12 h-12 mx-auto mb-2 bg-primary/10 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <p class="text-xs text-muted-foreground">No Image</p>
-                    </div>
-                  </div>
-                `;
-              }
-            }}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
+          {product.category && (
+            <Badge className="absolute top-3 right-3 bg-white/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm">
+              {product.category}
+            </Badge>
+          )}
+          {!isInStock && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <Badge variant="outline" className="bg-red-500 text-white border-0">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
         </div>
-        <Badge
-          className="absolute right-2 top-2"
-          variant={product.in_stock ? "default" : "secondary"}
-        >
-          {product.in_stock ? "Active" : "Inactive"}
-        </Badge>
-      </div>
-
-      <div className="space-y-3 p-4">
-        <div>
-          <h3 className="font-semibold line-clamp-1">{product.name}</h3>
-          <p className="text-sm text-muted-foreground capitalize">
-            {product.category || 'uncategorized'}
-          </p>
+      ) : (
+        <div className="relative aspect-square bg-gradient-to-br from-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-surface))]/50 flex items-center justify-center">
+          <Package className="h-16 w-16 text-[hsl(var(--tenant-text-light))]" />
+          {!isInStock && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <Badge variant="outline" className="bg-red-500 text-white border-0">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
         </div>
+      )}
 
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold">${getPrice()}</span>
-          <Badge variant="outline">
-            Stock: {product.in_stock ? "Available" : "Out"}
-          </Badge>
-        </div>
-
-        <div className="flex gap-2">
-          <Button onClick={onEdit} variant="outline" size="sm" className="flex-1">
-            <Edit className="mr-1 h-4 w-4" />
-            Edit
-          </Button>
-          
+      <CardContent className="p-5">
+        {/* Header with Actions */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-lg text-[hsl(var(--tenant-text))] group-hover:text-[hsl(var(--tenant-primary))] transition-colors mb-1">
+              {product.name}
+            </h3>
+            {product.strain_name && (
+              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
+                {product.strain_name}
+              </p>
+            )}
+            {product.sku && (
+              <code className="text-xs text-[hsl(var(--tenant-text-light))] bg-[hsl(var(--tenant-surface))] px-2 py-1 rounded">
+                {product.sku}
+              </code>
+            )}
+          </div>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onDuplicate}>
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onToggleStatus}>
-                {product.in_stock ? (
-                  <>
-                    <ToggleLeft className="mr-2 h-4 w-4" />
-                    Set Inactive
-                  </>
-                ) : (
-                  <>
-                    <ToggleRight className="mr-2 h-4 w-4" />
-                    Set Active
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(product.id)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+              )}
+              {onAddToMenu && (
+                <DropdownMenuItem onClick={() => onAddToMenu(product.id)}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Add to Menu
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <DropdownMenuItem 
+                  onClick={() => onDelete(product.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+
+        {/* Pricing */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[hsl(var(--tenant-text-light))]">Wholesale Price</span>
+            <span className="text-lg font-bold text-[hsl(var(--tenant-primary))]">
+              {formatCurrency(product.wholesale_price || 0)}
+            </span>
+          </div>
+          {product.cost_per_unit && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[hsl(var(--tenant-text-light))]">Cost</span>
+              <span className="text-[hsl(var(--tenant-text-light))]">
+                {formatCurrency(product.cost_per_unit)}
+              </span>
+            </div>
+          )}
+          {margin && Number(margin) > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[hsl(var(--tenant-text-light))]">Margin</span>
+              <span className="text-green-600 font-semibold flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                {margin}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Stock Status */}
+        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
+            <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
+              Stock: {stockQuantity} units
+            </span>
+          </div>
+          {isLowStock && (
+            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              Low Stock
+            </Badge>
+          )}
+          {!isInStock && (
+            <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
+              Out of Stock
+            </Badge>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(product.id)}
+              className="flex-1 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
+          {onAddToMenu && (
+            <Button
+              size="sm"
+              onClick={() => onAddToMenu(product.id)}
+              className="flex-1 bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Menu
+            </Button>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 }

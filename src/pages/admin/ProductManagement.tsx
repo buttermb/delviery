@@ -16,6 +16,10 @@ import {
   Trash2,
   Barcode,
   DollarSign,
+  LayoutGrid,
+  List,
+  Filter,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -33,6 +37,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductCard } from "@/components/admin/ProductCard";
+import { Toggle } from "@/components/ui/toggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ProductManagement() {
   const navigate = useNavigate();
@@ -42,6 +55,9 @@ export default function ProductManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -214,17 +230,39 @@ export default function ProductManagement() {
     setEditingProduct(null);
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products
+    .filter(
+      (p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter((p) => categoryFilter === "all" || p.category === categoryFilter)
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return (a.name || "").localeCompare(b.name || "");
+        case "price":
+          return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+        case "stock":
+          return (b.available_quantity || 0) - (a.available_quantity || 0);
+        case "margin":
+          const marginA = profitMargin(a.cost_per_unit, a.wholesale_price);
+          const marginB = profitMargin(b.cost_per_unit, b.wholesale_price);
+          return Number(marginB) - Number(marginA);
+        default:
+          return 0;
+      }
+    });
 
   const profitMargin = (cost: number, price: number) => {
     if (!cost || !price) return 0;
     return (((price - cost) / price) * 100).toFixed(1);
   };
+
+  const categories = Array.from(
+    new Set(products.map((p) => p.category).filter(Boolean))
+  );
 
   if (accountLoading) {
     return (
@@ -536,93 +574,165 @@ export default function ProductManagement() {
         </Card>
       </div>
 
-      {/* Search */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
+      {/* Search and Filters */}
+      <div className="flex gap-4 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search products by name, SKU, or category..."
+            placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
           />
         </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[180px]">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {cat}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name (A-Z)</SelectItem>
+            <SelectItem value="price">Price (High-Low)</SelectItem>
+            <SelectItem value="stock">Stock (High-Low)</SelectItem>
+            <SelectItem value="margin">Margin (High-Low)</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="flex items-center gap-1 border rounded-md overflow-hidden">
+          <Toggle
+            pressed={viewMode === "grid"}
+            onPressedChange={() => setViewMode("grid")}
+            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Toggle>
+          <Toggle
+            pressed={viewMode === "list"}
+            onPressedChange={() => setViewMode("list")}
+            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l"
+          >
+            <List className="h-4 w-4" />
+          </Toggle>
+        </div>
       </div>
 
-      {/* Products Table */}
+      {/* Products Display */}
       <Card>
         <CardHeader>
-          <CardTitle>Products</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Products ({filteredProducts.length})</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Cost</TableHead>
-                <TableHead>Wholesale</TableHead>
-                <TableHead>Margin</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      {product.strain_name && (
-                        <p className="text-xs text-muted-foreground">
-                          {product.strain_name}
-                        </p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-xs">{product.sku || "-"}</code>
-                  </TableCell>
-                  <TableCell>
-                    {product.category && <Badge variant="outline">{product.category}</Badge>}
-                  </TableCell>
-                  <TableCell>${product.cost_per_unit?.toFixed(2) || "0.00"}</TableCell>
-                  <TableCell>
-                    ${product.wholesale_price?.toFixed(2) || "0.00"}
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-green-600 font-medium">
-                      {profitMargin(product.cost_per_unit, product.wholesale_price)}%
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={product.available_quantity > 0 ? "default" : "destructive"}>
-                      {product.available_quantity || 0} units
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEdit(product)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Wholesale</TableHead>
+                    <TableHead>Margin</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.strain_name && (
+                            <p className="text-xs text-muted-foreground">
+                              {product.strain_name}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <code className="text-xs">{product.sku || "-"}</code>
+                      </TableCell>
+                      <TableCell>
+                        {product.category && <Badge variant="outline">{product.category}</Badge>}
+                      </TableCell>
+                      <TableCell>${product.cost_per_unit?.toFixed(2) || "0.00"}</TableCell>
+                      <TableCell>
+                        ${product.wholesale_price?.toFixed(2) || "0.00"}
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-green-600 font-medium">
+                          {profitMargin(product.cost_per_unit, product.wholesale_price)}%
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={product.available_quantity > 0 ? "default" : "destructive"}>
+                          {product.available_quantity || 0} units
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(product)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDelete(product.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )
+          ) : (
+            <div className="text-center py-12">
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <p className="text-lg font-medium mb-2">No products found</p>
+              <p className="text-sm text-muted-foreground">
+                {searchTerm || categoryFilter !== "all"
+                  ? "Try adjusting your filters"
+                  : "Create your first product to get started"}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
