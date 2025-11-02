@@ -53,7 +53,7 @@ export function RecentOrdersWidget() {
       case 'pending':
         return 'bg-yellow-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted';
     }
   };
 

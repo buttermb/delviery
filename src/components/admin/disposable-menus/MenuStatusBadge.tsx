@@ -26,7 +26,7 @@ export const MenuStatusBadge = ({ status, size = 'default' }: MenuStatusBadgePro
     expired: {
       label: 'Expired',
       icon: Clock,
-      className: 'bg-gray-500 hover:bg-gray-600'
+      className: 'bg-muted hover:bg-muted/80 text-muted-foreground'
     }
   };
 

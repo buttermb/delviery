@@ -37,7 +37,7 @@ export const MenuOrdersTab = ({ orders, isLoading }: MenuOrdersTabProps) => {
       case 'cancelled':
         return 'bg-red-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-muted';
     }
   };
 

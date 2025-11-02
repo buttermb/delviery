@@ -569,8 +569,8 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
           </Button>
         </div>
         <div className="flex gap-2 mt-3 flex-wrap">
-          <Badge variant="outline" className="bg-gray-500/10">
-            <span className="w-2 h-2 rounded-full bg-gray-500 mr-2"></span>
+          <Badge variant="outline" className="bg-muted">
+            <span className="w-2 h-2 rounded-full bg-muted-foreground mr-2"></span>
             Pending
           </Badge>
           <Badge variant="outline" className="bg-purple-500/10">

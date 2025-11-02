@@ -66,8 +66,8 @@ export default function SuperAdminCustomers() {
       case 'trial': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       case 'past_due': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
       case 'cancelled': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      case 'suspended': return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      case 'suspended': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 

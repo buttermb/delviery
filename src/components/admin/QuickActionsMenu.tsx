@@ -47,7 +47,7 @@ export function QuickActionsMenu() {
       label: "Setup",
       description: "Initialize data",
       path: "/admin/wholesale-setup",
-      color: "bg-gray-500"
+      color: "bg-muted"
     }
   ];
 

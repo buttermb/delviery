@@ -235,9 +235,9 @@ export default function SuperAdminDashboard() {
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Status: <span className={`font-medium ${
-                        account.status === 'active' ? 'text-green-600 dark:text-green-400' :
-                        account.status === 'trial' ? 'text-blue-600 dark:text-blue-400' :
-                        'text-gray-600 dark:text-gray-400'
+                        account.status === 'active' ? 'text-green-600' :
+                        account.status === 'trial' ? 'text-blue-600' :
+                        'text-muted-foreground'
                       }`}>{account.status}</span>
                     </p>
                   </div>

@@ -58,7 +58,7 @@ export default function SuperAdminSupport() {
       case 'high': return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
       case 'medium': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
       case 'low': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -67,8 +67,8 @@ export default function SuperAdminSupport() {
       case 'open': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       case 'pending': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
       case 'resolved': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'closed': return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      case 'closed': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 

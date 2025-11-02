@@ -140,14 +140,14 @@ export default function ServiceRequests() {
       open: 'bg-blue-500/10 text-blue-600',
       in_progress: 'bg-yellow-500/10 text-yellow-600',
       resolved: 'bg-green-500/10 text-green-600',
-      closed: 'bg-gray-500/10 text-gray-600'
+      closed: 'bg-muted text-muted-foreground'
     };
     return colors[status as keyof typeof colors] || colors.open;
   };
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      low: 'bg-gray-500/10 text-gray-600',
+      low: 'bg-muted text-muted-foreground',
       medium: 'bg-blue-500/10 text-blue-600',
       high: 'bg-orange-500/10 text-orange-600',
       urgent: 'bg-red-500/10 text-red-600'
