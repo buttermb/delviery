@@ -7,6 +7,7 @@ import { Settings, Key, User, Bell } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CustomerSettingsPage() {
   const { customer } = useCustomerAuth();
@@ -16,14 +17,42 @@ export default function CustomerSettingsPage() {
     e.preventDefault();
     setLoading(true);
     
-    // TODO: Implement password update via customer-auth Edge Function
-    setTimeout(() => {
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const currentPassword = formData.get('currentPassword') as string;
+      const newPassword = formData.get('newPassword') as string;
+      const confirmPassword = formData.get('confirmPassword') as string;
+
+      if (newPassword !== confirmPassword) {
+        toast({
+          title: "Error",
+          description: "New passwords don't match",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Password Updated",
         description: "Your password has been updated successfully",
       });
+      
+      (e.target as HTMLFormElement).reset();
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update password",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

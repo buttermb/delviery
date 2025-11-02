@@ -62,11 +62,34 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
 
       if (updateError) throw updateError;
 
-      // TODO: Create wholesale_order and deduct from inventory
-      // This would integrate with the existing wholesale system
+      // Create wholesale_order and deduct from inventory
+      const orderItemsData = orderItems.map((item: any) => ({
+        product_name: item.product_name,
+        quantity_lbs: item.quantity,
+        price_per_lb: item.price_per_unit
+      }));
 
-      toast.success('Order approved successfully');
+      const { data: wholesaleOrder, error: wholesaleError } = await supabase.functions.invoke('wholesale-order-create', {
+        body: {
+          client_data: {
+            business_name: order.contact_name || 'Menu Order Customer',
+            contact_name: order.contact_name,
+            contact_phone: order.contact_phone,
+            delivery_address: order.delivery_address || 'N/A'
+          },
+          order_items: orderItemsData,
+          delivery_method: order.delivery_method,
+          payment_method: order.payment_method,
+          notes: order.customer_notes || `Menu order #${order.id.slice(0, 8)}`
+        }
+      });
+
+      if (wholesaleError) throw wholesaleError;
+
+      toast.success('Order approved and created in wholesale system');
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
       onOpenChange(false);
     } catch (error: any) {
       toast.error('Failed to approve order', {

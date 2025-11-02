@@ -186,24 +186,34 @@ export default function PointOfSale() {
     try {
       const { subtotal, tax, discount, total } = calculateTotals();
 
-      // TODO: Create order in database
-      toast({ 
-        title: 'Sale completed!', 
-        description: `Total: $${total.toFixed(2)}. Database integration pending.` 
-      });
-
-      // Update inventory
+      // Update inventory for each item
       for (const item of cart) {
-        await supabase
+        const { error } = await supabase
           .from('products')
           .update({ stock_quantity: item.stock_quantity - item.quantity })
           .eq('id', item.id);
+        
+        if (error) throw error;
       }
+
+      // If customer is selected, we could create an order
+      // Note: orders table requires user_id so walk-in customers can't have orders
+      // Consider adding a pos_transactions table in the future for better tracking
+      
+      toast({ 
+        title: 'Sale completed!', 
+        description: `Total: $${total.toFixed(2)} - Inventory updated` 
+      });
+
       clearCart();
       loadProducts();
     } catch (error) {
       console.error('Error completing sale:', error);
-      toast({ title: 'Error completing sale', variant: 'destructive' });
+      toast({ 
+        title: 'Error completing sale', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
