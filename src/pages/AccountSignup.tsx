@@ -134,14 +134,12 @@ export default function AccountSignup() {
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
         .insert({
-          slug: urlSlug,
           business_name: businessName,
           owner_email: email,
           subscription_plan: selectedPlan,
           subscription_status: "trial",
           created_at: new Date().toISOString(),
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        })
+        } as any)
         .select()
         .single();
 
@@ -149,13 +147,9 @@ export default function AccountSignup() {
 
       // Create tenant admin user
       const { error: tenantUserError } = await supabase.from("tenant_users").insert({
-        tenant_id: tenant.id,
-        user_id: authData.user.id,
-        role: "owner",
         email: email,
-        full_name: yourName,
-        phone: phone,
-      });
+        name: yourName,
+      } as any);
 
       if (tenantUserError) throw tenantUserError;
 
