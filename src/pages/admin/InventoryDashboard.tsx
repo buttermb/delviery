@@ -19,7 +19,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -50,13 +50,14 @@ interface LocationInventory {
 
 export default function InventoryDashboard() {
   const navigate = useNavigate();
-  const { account, loading: accountLoading } = useAccount();
+  const { admin, tenant, loading: authLoading } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
 
   // Fetch inventory summary
-  const { data: summary, isLoading: summaryLoading } = useQuery<InventorySummary>({
-    queryKey: ['inventory-summary', account?.id],
-    queryFn: async () => {
-      if (!account?.id) return null;
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ['inventory-summary', tenantId],
+    queryFn: async (): Promise<InventorySummary | null> => {
+      if (!tenantId) return null;
 
       // Temporarily disabled - inventory_packages table not yet created
       const packages: any[] = [];
@@ -66,11 +67,8 @@ export default function InventoryDashboard() {
       const atRisk = 0;
       const totalValue = 0;
 
-      // Get location count
-      const { count: locationCount } = await supabase
-        .from('inventory_locations')
-        .select('*', { count: 'exact', head: true })
-        .eq('account_id', account.id);
+      // Get location count - temporarily disabled
+      const locationCount = 0;
 
       // Temporarily disabled - table not yet created
       const packageCount = 0;
@@ -87,7 +85,7 @@ export default function InventoryDashboard() {
         batch_count: batchCount || 0,
       };
     },
-    enabled: !!account?.id && !accountLoading,
+    enabled: !!tenantId && !authLoading,
   });
 
   // Temporarily disabled - inventory_packages table not yet created
@@ -114,49 +112,28 @@ export default function InventoryDashboard() {
     return Math.min(100, (current / capacity) * 100);
   };
 
-  if (accountLoading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Loading account...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
 
-  if (!account) {
+  if (!tenant) {
     return (
       <div className="container mx-auto py-12 px-4">
         <Card className="max-w-2xl mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl mb-2">Account Setup Required</CardTitle>
+            <CardTitle className="text-2xl mb-2">Access Denied</CardTitle>
             <CardDescription>
-              You need to set up your account before accessing the inventory system.
+              You need to be logged in as a tenant admin to access this page.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-4">
-                To use the inventory management system, you need to:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                <li>Create or join an account</li>
-                <li>Set up your company information</li>
-                <li>Configure your business settings</li>
-              </ul>
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={() => navigate('/signup')}>
-                Create Account
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/onboarding')}>
-                Complete Setup
-              </Button>
-              <Button variant="ghost" onClick={() => navigate('/marketing')}>
-                Back to Home
-              </Button>
-            </div>
-            <div className="text-center text-xs text-muted-foreground pt-4">
-              <p>Already have an account? Contact your administrator to be added to an existing account.</p>
-            </div>
+          <CardContent className="flex justify-center">
+            <Button onClick={() => navigate('/willysbo/login')}>
+              Go to Login
+            </Button>
           </CardContent>
         </Card>
       </div>
