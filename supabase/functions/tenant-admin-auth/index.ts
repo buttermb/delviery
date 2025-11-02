@@ -302,6 +302,94 @@ serve(async (req) => {
       );
     }
 
+    if (action === "update-password") {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Authorization required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { currentPassword, newPassword } = await req.json();
+
+      if (!currentPassword || !newPassword) {
+        return new Response(
+          JSON.stringify({ error: "Current password and new password are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (newPassword.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "New password must be at least 8 characters long" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const payload = verifyJWT(token);
+
+      if (!payload) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get tenant admin user
+      const { data: adminUser, error: adminError } = await supabase
+        .from("tenant_users")
+        .select("*")
+        .eq("id", payload.tenant_admin_id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (adminError || !adminUser) {
+        return new Response(
+          JSON.stringify({ error: "User not found or inactive" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify current password
+      if (!adminUser.password_hash) {
+        return new Response(
+          JSON.stringify({ error: "Password not set. Please contact your administrator." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const validPassword = await comparePassword(currentPassword, adminUser.password_hash);
+      if (!validPassword) {
+        return new Response(
+          JSON.stringify({ error: "Current password is incorrect" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+
+      // Update password
+      const { error: updateError } = await supabase
+        .from("tenant_users")
+        .update({ password_hash: newPasswordHash })
+        .eq("id", adminUser.id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: "Failed to update password" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Password updated successfully" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ error: "Invalid action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

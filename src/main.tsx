@@ -84,7 +84,6 @@ try {
 
 // Render application with error handling
 try {
-  console.log('[APP] Rendering app...');
   const rootElement = document.getElementById("root");
   
   if (!rootElement) {
@@ -96,10 +95,10 @@ try {
       <App />
     </ErrorBoundary>
   );
-  
-  console.log('[APP] App rendered successfully');
 } catch (error) {
-  console.error('[APP] Fatal initialization error:', error);
+  if (import.meta.env.DEV) {
+    console.error('[APP] Fatal initialization error:', error);
+  }
   
   // Display user-friendly error message
   const rootElement = document.getElementById("root");

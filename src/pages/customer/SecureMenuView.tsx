@@ -89,11 +89,8 @@ const SecureMenuView = () => {
   useEffect(() => {
     // Check session storage for validated menu access
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
-    console.log('Checking for menu data:', token, storedMenu ? 'found' : 'not found');
     if (storedMenu) {
       const parsed = JSON.parse(storedMenu);
-      console.log('Menu data loaded:', parsed);
-      console.log('Products count:', parsed.products?.length || 0);
       setMenuData(parsed);
       setLoading(false);
 

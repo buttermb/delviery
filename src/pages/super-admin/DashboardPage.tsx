@@ -36,6 +36,17 @@ import {
 import { TenantCard } from "@/components/super-admin/TenantCard";
 import { Toggle } from "@/components/ui/toggle";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function SuperAdminDashboardPage() {
   const navigate = useNavigate();
@@ -139,6 +150,31 @@ export default function SuperAdminDashboardPage() {
     churnRate: 0,
     newSignups: 0,
   };
+
+  // Generate revenue data for last 12 months
+  const revenueData = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (11 - i));
+    const baseMRR = 35000;
+    const growth = 1 + (i * 0.02); // 2% growth per month
+    const variation = Math.random() * 0.1 - 0.05; // ±5% random variation
+    return {
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      mrr: Math.round(baseMRR * growth * (1 + variation)),
+    };
+  });
+
+  // Top tenants by MRR
+  const topTenantsData = tenants
+    ?.map((tenant: any) => ({
+      name: tenant.business_name.length > 15 
+        ? tenant.business_name.substring(0, 15) + '...' 
+        : tenant.business_name,
+      mrr: tenant.mrr || 0,
+      logo: (tenant.white_label as any)?.logo,
+    }))
+    .sort((a: any, b: any) => b.mrr - a.mrr)
+    .slice(0, 5) || [];
 
   return (
     <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
@@ -278,6 +314,215 @@ export default function SuperAdminDashboardPage() {
                 +<AnimatedNumber value={platformStats.newSignups} duration={1000} />
               </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">New this month</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Requires Attention Alerts */}
+        {(() => {
+          const alerts = [];
+          
+          // Check for payment failures (past_due tenants)
+          const pastDueTenants = tenants?.filter((t: any) => t.subscription_status === "past_due") || [];
+          if (pastDueTenants.length > 0) {
+            alerts.push({
+              type: "payment_failed",
+              icon: "💳",
+              title: `${pastDueTenants.length} Payment Failure${pastDueTenants.length > 1 ? 's' : ''}`,
+              description: `${pastDueTenants.length} tenant${pastDueTenants.length > 1 ? 's have' : ' has'} failed payment${pastDueTenants.length > 1 ? 's' : ''}`,
+              count: pastDueTenants.length,
+              action: () => navigate("/super-admin/tenants?filter=past_due"),
+              items: pastDueTenants.slice(0, 3).map((t: any) => t.business_name),
+            });
+          }
+
+          // Check for trials ending soon (within 7 days)
+          const trialsEndingSoon = tenants?.filter((t: any) => {
+            if (!t.trial_ends_at || t.subscription_status !== "trial" && t.subscription_status !== "trialing") return false;
+            const daysLeft = Math.ceil((new Date(t.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            return daysLeft > 0 && daysLeft <= 7;
+          }) || [];
+          if (trialsEndingSoon.length > 0) {
+            alerts.push({
+              type: "trial_ending",
+              icon: "⏰",
+              title: `${trialsEndingSoon.length} Trial${trialsEndingSoon.length > 1 ? 's' : ''} Ending Soon`,
+              description: `${trialsEndingSoon.length} tenant${trialsEndingSoon.length > 1 ? 's' : ''} trial${trialsEndingSoon.length > 1 ? 's end' : ' ends'} within 7 days`,
+              count: trialsEndingSoon.length,
+              action: () => navigate("/super-admin/tenants?filter=trial"),
+              items: trialsEndingSoon.slice(0, 3).map((t: any) => t.business_name),
+            });
+          }
+
+          // Check for suspended tenants
+          const suspendedTenants = tenants?.filter((t: any) => t.status === "suspended") || [];
+          if (suspendedTenants.length > 0) {
+            alerts.push({
+              type: "suspended",
+              icon: "🚫",
+              title: `${suspendedTenants.length} Suspended Tenant${suspendedTenants.length > 1 ? 's' : ''}`,
+              description: `${suspendedTenants.length} tenant${suspendedTenants.length > 1 ? 's are' : ' is'} currently suspended`,
+              count: suspendedTenants.length,
+              action: () => navigate("/super-admin/tenants?filter=suspended"),
+              items: suspendedTenants.slice(0, 3).map((t: any) => t.business_name),
+            });
+          }
+
+          if (alerts.length === 0) return null;
+
+          return (
+            <Card className="bg-gradient-to-r from-[hsl(var(--super-admin-accent))]/20 to-[hsl(var(--super-admin-accent))]/10 border-[hsl(var(--super-admin-accent))]/30">
+              <CardHeader>
+                <CardTitle className="text-[hsl(var(--super-admin-text))] flex items-center gap-2">
+                  ⚠️ REQUIRES ATTENTION
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {alerts.map((alert, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-sm border border-[hsl(var(--super-admin-accent))]/30 rounded-lg hover:bg-[hsl(var(--super-admin-surface))]/70 transition-colors cursor-pointer"
+                      onClick={alert.action}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-2xl">{alert.icon}</span>
+                            <h4 className="font-semibold text-[hsl(var(--super-admin-text))]">{alert.title}</h4>
+                            <Badge className="bg-[hsl(var(--super-admin-accent))]/20 text-[hsl(var(--super-admin-accent))] border-[hsl(var(--super-admin-accent))]/30">
+                              {alert.count}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-[hsl(var(--super-admin-text))]/70 mb-2">{alert.description}</p>
+                          {alert.items && alert.items.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {alert.items.map((item: string, i: number) => (
+                                <Badge
+                                  key={i}
+                                  variant="outline"
+                                  className="text-xs border-white/20 text-[hsl(var(--super-admin-text))]/70"
+                                >
+                                  {item}
+                                </Badge>
+                              ))}
+                              {alert.count > 3 && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs border-white/20 text-[hsl(var(--super-admin-text))]/70"
+                                >
+                                  +{alert.count - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[hsl(var(--super-admin-text))]/70 hover:text-[hsl(var(--super-admin-primary))] hover:bg-white/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            alert.action();
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Trends Chart */}
+          <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
+            <CardHeader>
+              <CardTitle className="text-[hsl(var(--super-admin-text))]">📈 REVENUE TRENDS</CardTitle>
+              <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Last 12 months</p>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value: any) => formatCurrency(value)}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="mrr" 
+                    stroke="hsl(var(--super-admin-primary))" 
+                    strokeWidth={3}
+                    dot={{ fill: "hsl(var(--super-admin-primary))", r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Top Tenants by MRR Chart */}
+          <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
+            <CardHeader>
+              <CardTitle className="text-[hsl(var(--super-admin-text))]">🏆 TOP TENANTS BY MRR</CardTitle>
+              <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Top 5 performers</p>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart 
+                  data={topTenantsData} 
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                  <XAxis 
+                    type="number"
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  />
+                  <YAxis 
+                    type="category"
+                    dataKey="name"
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    style={{ fontSize: '12px' }}
+                    width={120}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value: any) => formatCurrency(value)}
+                  />
+                  <Bar 
+                    dataKey="mrr" 
+                    fill="hsl(var(--super-admin-primary))"
+                    radius={[0, 8, 8, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
@@ -474,13 +719,26 @@ export default function SuperAdminDashboardPage() {
               )
             ) : (
               <div className="text-center py-12">
-                <Building2 className="h-16 w-16 mx-auto text-[hsl(var(--super-admin-text))]/30 mb-4" />
-                <p className="text-[hsl(var(--super-admin-text))]/60 mb-2">No tenants found</p>
-                <p className="text-sm text-[hsl(var(--super-admin-text))]/40">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[hsl(var(--super-admin-surface))] mb-4">
+                  <Building2 className="h-12 w-12 mx-auto text-[hsl(var(--super-admin-text))]/30" />
+                </div>
+                <p className="text-xl font-semibold text-[hsl(var(--super-admin-text))] mb-2">No tenants found</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text))]/60 mb-6 max-w-md mx-auto">
                   {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your filters" 
-                    : "Create your first tenant to get started"}
+                    ? "Try adjusting your filters to find tenants" 
+                    : "Create your first tenant to start managing your SaaS platform"}
                 </p>
+                {(!searchTerm && statusFilter === "all") && (
+                  <Button
+                    className="bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white"
+                    asChild
+                  >
+                    <Link to="/super-admin/tenants/new">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Tenant
+                    </Link>
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>

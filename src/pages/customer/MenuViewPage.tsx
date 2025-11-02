@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "@/hooks/use-toast";
 import { validateRouteUUID } from "@/lib/utils/uuidValidation";
+import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
+import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
+import { useGuestCart } from "@/hooks/useGuestCart";
 
 export default function CustomerMenuViewPage() {
   const { menuId: menuIdParam } = useParams<{ menuId: string }>();
@@ -21,7 +24,16 @@ export default function CustomerMenuViewPage() {
   const customerId = customer?.customer_id || customer?.id;
   const [searchTerm, setSearchTerm] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [cart, setCart] = useState<Record<string, { product: any; quantity: number }>>({});
+  const { addToGuestCart } = useGuestCart();
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState<any>(null);
+
+  // Get current user session
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
 
   // Fetch menu details
   const { data: menu, isLoading: menuLoading } = useQuery({
@@ -113,6 +125,22 @@ export default function CustomerMenuViewPage() {
     return Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
   };
 
+  // Calculate cart total
+  const calculateCartTotal = () => {
+    if (!products) return 0;
+    
+    let total = 0;
+    Object.entries(quantities).forEach(([productId, quantity]) => {
+      const menuProduct = products.find((mp: any) => mp.products?.id === productId);
+      if (menuProduct?.products) {
+        const price = Number(menuProduct.products.price) || 0;
+        total += price * quantity;
+      }
+    });
+    
+    return total;
+  };
+
   const filteredProducts = products?.filter((item: any) => {
     const product = item.products;
     if (!product) return false;
@@ -130,12 +158,15 @@ export default function CustomerMenuViewPage() {
   }
 
   if (!menu) {
-    return (
-      <div className="min-h-screen bg-[hsl(var(--customer-bg))]">
-        <div className="container mx-auto p-6">
-          <Card className="bg-white border-[hsl(var(--customer-border))]">
-            <CardContent className="pt-6">
-              <p className="text-center text-[hsl(var(--customer-text-light))] mb-4">Menu not found or access denied</p>
+      return (
+        <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+          {/* Mobile Top Navigation */}
+          <CustomerMobileNav />
+          
+          <div className="container mx-auto p-6">
+            <Card className="bg-white border-[hsl(var(--customer-border))]">
+              <CardContent className="pt-6">
+                <p className="text-center text-[hsl(var(--customer-text-light))] mb-4">Menu not found or access denied</p>
               <Button
                 variant="outline"
                 className="w-full border-[hsl(var(--customer-border))] text-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-surface))]"
@@ -146,6 +177,10 @@ export default function CustomerMenuViewPage() {
               </Button>
             </CardContent>
           </Card>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <CustomerMobileBottomNav />
         </div>
       </div>
     );
@@ -154,9 +189,12 @@ export default function CustomerMenuViewPage() {
   const requiresAccessCode = !!menu.access_code;
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))]">
-      {/* Header */}
-      <header className="border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+      {/* Mobile Top Navigation */}
+      <CustomerMobileNav />
+      
+      {/* Desktop Header */}
+      <header className="hidden lg:block border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <Button
@@ -291,15 +329,49 @@ export default function CustomerMenuViewPage() {
                             </div>
                             <Button
                               size="sm"
-                              onClick={() => {
-                                setCart({
-                                  ...cart,
-                                  [product.id]: { product, quantity }
-                                });
-                                toast({
-                                  title: `${quantity}x ${product.name} added to cart`,
-                                  description: `Total items in cart: ${Object.keys({ ...cart, [product.id]: { product, quantity } }).length}`,
-                                });
+                              onClick={async () => {
+                                try {
+                                  const selectedWeight = "unit"; // Default weight, can be enhanced later
+                                  
+                                  if (user) {
+                                    // Add to database cart for authenticated users
+                                    const { error } = await supabase
+                                      .from("cart_items")
+                                      .upsert({
+                                        user_id: user.id,
+                                        product_id: product.id,
+                                        quantity: quantity,
+                                        selected_weight: selectedWeight,
+                                      }, {
+                                        onConflict: "user_id,product_id,selected_weight"
+                                      });
+                                    
+                                    if (error) throw error;
+                                    
+                                    // Refresh cart query
+                                    queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+                                  } else {
+                                    // Add to guest cart
+                                    addToGuestCart(product.id, quantity, selectedWeight);
+                                  }
+                                  
+                                  toast({
+                                    title: "Added to cart",
+                                    description: `${quantity}x ${product.name} added to your cart`,
+                                  });
+                                  
+                                  // Clear quantity for this product
+                                  setQuantities(prev => {
+                                    const { [product.id]: _, ...rest } = prev;
+                                    return rest;
+                                  });
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: error.message || "Failed to add item to cart",
+                                    variant: "destructive",
+                                  });
+                                }
                               }}
                               className="flex-1 bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                             >
@@ -310,7 +382,41 @@ export default function CustomerMenuViewPage() {
                         ) : (
                           <Button
                             size="sm"
-                            onClick={() => updateQuantity(product.id, 1)}
+                            onClick={async () => {
+                              try {
+                                const selectedWeight = "unit";
+                                const quantity = 1;
+                                
+                                if (user) {
+                                  const { error } = await supabase
+                                    .from("cart_items")
+                                    .upsert({
+                                      user_id: user.id,
+                                      product_id: product.id,
+                                      quantity: quantity,
+                                      selected_weight: selectedWeight,
+                                    }, {
+                                      onConflict: "user_id,product_id,selected_weight"
+                                    });
+                                  
+                                  if (error) throw error;
+                                  queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+                                } else {
+                                  addToGuestCart(product.id, quantity, selectedWeight);
+                                }
+                                
+                                toast({
+                                  title: "Added to cart",
+                                  description: `${product.name} added to your cart`,
+                                });
+                              } catch (error: any) {
+                                toast({
+                                  title: "Error",
+                                  description: error.message || "Failed to add item to cart",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
                             className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
@@ -352,32 +458,13 @@ export default function CustomerMenuViewPage() {
                 <div>
                   <p className="text-sm text-[hsl(var(--customer-text-light))]">{getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''} in cart</p>
                   <p className="text-lg font-bold text-[hsl(var(--customer-text))]">
-                    {formatCurrency(
-                      Object.values(cart).reduce((total, item) => {
-                        const price = item.product.price || item.product.custom_price || 0;
-                        return total + (price * item.quantity);
-                      }, 0)
-                    )}
+                    {formatCurrency(calculateCartTotal())}
                   </p>
                 </div>
               </div>
               <Button
                 size="lg"
-                onClick={() => {
-                  const cartItems = Object.values(cart);
-                  if (cartItems.length === 0) {
-                    toast({
-                      title: "Cart is empty",
-                      description: "Add some items before checking out",
-                      variant: "destructive"
-                    });
-                    return;
-                  }
-                  
-                  // Navigate to checkout with cart data
-                  const cartData = encodeURIComponent(JSON.stringify(cart));
-                  navigate(`/customer/menu/${menuId}/checkout?cart=${cartData}`);
-                }}
+                onClick={() => navigate(`/${tenant?.slug}/shop/cart`)}
                 className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white px-8"
               >
                 View Cart & Checkout
@@ -387,6 +474,9 @@ export default function CustomerMenuViewPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <CustomerMobileBottomNav />
     </div>
   );
 }

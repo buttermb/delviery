@@ -15,6 +15,8 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link, useNavigate } from "react-router-dom";
 import { MenuList } from "@/components/customer/MenuList";
+import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
+import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 
 export default function CustomerDashboardPage() {
   const navigate = useNavigate();
@@ -64,9 +66,12 @@ export default function CustomerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))]">
-      {/* Header */}
-      <header className="border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+      {/* Mobile Top Navigation */}
+      <CustomerMobileNav />
+      
+      {/* Desktop Header */}
+      <header className="hidden lg:block border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[hsl(var(--customer-text))]">{tenant?.business_name || "Customer Portal"}</h1>
@@ -172,7 +177,7 @@ export default function CustomerDashboardPage() {
                 {recentOrders.map((order: any) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-4 border border-[hsl(var(--customer-border))] rounded-lg hover:bg-[hsl(var(--customer-surface))] cursor-pointer transition-colors"
+                    className="flex items-center justify-between p-4 border border-[hsl(var(--customer-border))] rounded-lg hover:bg-[hsl(var(--customer-surface))] hover:shadow-md cursor-pointer transition-all card-lift"
                     onClick={() => navigate(`/${tenant?.slug}/shop/orders/${order.id}`)}
                   >
                     <div>
@@ -205,6 +210,9 @@ export default function CustomerDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <CustomerMobileBottomNav />
     </div>
   );
 }

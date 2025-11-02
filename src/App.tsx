@@ -75,6 +75,10 @@ const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdm
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
 const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
+const ShoppingCartPage = lazy(() => import("./pages/customer/ShoppingCartPage"));
+const CheckoutPage = lazy(() => import("./pages/customer/CheckoutPage"));
+const OrderTrackingPage = lazy(() => import("./pages/customer/OrderTrackingPage"));
+const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
@@ -326,6 +330,10 @@ const App = () => {
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
                         </Route>
+                        <Route path="/:tenantSlug/shop/cart" element={<CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/checkout" element={<CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><OrdersListPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/orders/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
                         
                         {/* ==================== LEGACY ADMIN ROUTES ==================== */}

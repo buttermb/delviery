@@ -39,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import {
   Select,
   SelectContent,
@@ -723,15 +724,28 @@ export default function ProductManagement() {
               </Table>
             )
           ) : (
-            <div className="text-center py-12">
-              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <p className="text-lg font-medium mb-2">No products found</p>
-              <p className="text-sm text-muted-foreground">
-                {searchTerm || categoryFilter !== "all"
-                  ? "Try adjusting your filters"
-                  : "Create your first product to get started"}
-              </p>
-            </div>
+            <EnhancedEmptyState
+              type="no_products"
+              title={searchTerm || categoryFilter !== "all" ? "No products found" : undefined}
+              description={
+                searchTerm || categoryFilter !== "all"
+                  ? "Try adjusting your filters to find products"
+                  : undefined
+              }
+              primaryAction={
+                !searchTerm && categoryFilter === "all"
+                  ? {
+                      label: "Add Product",
+                      onClick: () => {
+                        resetForm();
+                        setIsDialogOpen(true);
+                      },
+                      icon: <Plus className="h-4 w-4" />,
+                    }
+                  : undefined
+              }
+              designSystem="tenant-admin"
+            />
           )}
         </CardContent>
       </Card>

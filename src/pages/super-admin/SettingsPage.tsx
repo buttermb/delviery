@@ -12,43 +12,85 @@ import { supabase } from "@/integrations/supabase/client";
 export default function SuperAdminSettingsPage() {
   const { superAdmin } = useSuperAdminAuth();
   const [loading, setLoading] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const formData = new FormData(e.target as HTMLFormElement);
-      const currentPassword = formData.get('currentPassword') as string;
-      const newPassword = formData.get('newPassword') as string;
-      const confirmPassword = formData.get('confirmPassword') as string;
-
-      if (newPassword !== confirmPassword) {
+      // Validate inputs
+      if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
         toast({
-          title: "Error",
-          description: "New passwords don't match",
-          variant: "destructive"
+          title: "Missing Fields",
+          description: "Please fill in all password fields",
+          variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        toast({
+          title: "Passwords Don't Match",
+          description: "New password and confirmation must match",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (passwordData.newPassword.length < 8) {
+        toast({
+          title: "Password Too Short",
+          description: "Password must be at least 8 characters long",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Call Edge Function to update password
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("super_admin_token")}`,
+        },
+        body: JSON.stringify({
+          action: "update-password",
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
       });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update password");
+      }
 
       toast({
         title: "Password Updated",
         description: "Your password has been updated successfully",
       });
-      
-      (e.target as HTMLFormElement).reset();
+
+      // Clear form
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error: any) {
       toast({
-        title: "Update Failed",
+        title: "Error",
         description: error.message || "Failed to update password",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -118,27 +160,35 @@ export default function SuperAdminSettingsPage() {
           <CardContent className="space-y-4">
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-[hsl(var(--super-admin-text))]">Change Password</Label>
+                <Label className="text-[hsl(var(--super-admin-text))]">Current Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Current Password" 
                   required
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                   className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-[hsl(var(--super-admin-text))]">New Password</Label>
                 <Input 
                   type="password" 
-                  placeholder="New Password" 
+                  placeholder="New Password (min. 8 characters)" 
                   required
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-[hsl(var(--super-admin-text))]">Confirm New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Confirm New Password" 
                   required
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>

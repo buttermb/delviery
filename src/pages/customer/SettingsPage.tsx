@@ -7,48 +7,91 @@ import { Settings, Key, User, Bell } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
+import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 
 export default function CustomerSettingsPage() {
-  const { customer } = useCustomerAuth();
+  const { customer, tenant } = useCustomerAuth();
   const [loading, setLoading] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const formData = new FormData(e.target as HTMLFormElement);
-      const currentPassword = formData.get('currentPassword') as string;
-      const newPassword = formData.get('newPassword') as string;
-      const confirmPassword = formData.get('confirmPassword') as string;
-
-      if (newPassword !== confirmPassword) {
+      // Validate inputs
+      if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
         toast({
-          title: "Error",
-          description: "New passwords don't match",
-          variant: "destructive"
+          title: "Missing Fields",
+          description: "Please fill in all password fields",
+          variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        toast({
+          title: "Passwords Don't Match",
+          description: "New password and confirmation must match",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (passwordData.newPassword.length < 8) {
+        toast({
+          title: "Password Too Short",
+          description: "Password must be at least 8 characters long",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Call Edge Function to update password
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("customer_token")}`,
+        },
+        body: JSON.stringify({
+          action: "update-password",
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
       });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update password");
+      }
 
       toast({
         title: "Password Updated",
         description: "Your password has been updated successfully",
       });
-      
-      (e.target as HTMLFormElement).reset();
+
+      // Clear form
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error: any) {
       toast({
-        title: "Update Failed",
+        title: "Error",
         description: error.message || "Failed to update password",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -56,8 +99,12 @@ export default function CustomerSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--customer-bg))] p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">
+      {/* Mobile Top Navigation */}
+      <CustomerMobileNav />
+      
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">⚙️ Account Settings</h1>
@@ -130,27 +177,35 @@ export default function CustomerSettingsPage() {
           <CardContent className="space-y-4">
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-[hsl(var(--customer-text))]">Change Password</Label>
+                <Label className="text-[hsl(var(--customer-text))]">Current Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Current Password" 
                   required
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-[hsl(var(--customer-text))]">New Password</Label>
                 <Input 
                   type="password" 
-                  placeholder="New Password" 
+                  placeholder="New Password (min. 8 characters)" 
                   required
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-[hsl(var(--customer-text))]">Confirm New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Confirm New Password" 
                   required
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
@@ -217,7 +272,11 @@ export default function CustomerSettingsPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <CustomerMobileBottomNav />
     </div>
   );
 }

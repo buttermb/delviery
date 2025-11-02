@@ -276,6 +276,87 @@ serve(async (req) => {
       );
     }
 
+    if (action === "update-password") {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Authorization required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { currentPassword, newPassword } = body;
+
+      if (!currentPassword || !newPassword) {
+        return new Response(
+          JSON.stringify({ error: "Current password and new password are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (newPassword.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "New password must be at least 8 characters long" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const payload = verifyJWT(token);
+
+      if (!payload) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get super admin user
+      const { data: superAdminUser, error: adminError } = await supabase
+        .from("super_admin_users")
+        .select("*")
+        .eq("id", payload.super_admin_id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (adminError || !superAdminUser) {
+        return new Response(
+          JSON.stringify({ error: "User not found or inactive" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify current password
+      const validPassword = await comparePassword(currentPassword, superAdminUser.password_hash);
+      if (!validPassword) {
+        return new Response(
+          JSON.stringify({ error: "Current password is incorrect" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+
+      // Update password
+      const { error: updateError } = await supabase
+        .from("super_admin_users")
+        .update({ password_hash: newPasswordHash })
+        .eq("id", superAdminUser.id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: "Failed to update password" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Password updated successfully" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "logout") {
       const authHeader = req.headers.get("Authorization");
       if (authHeader && authHeader.startsWith("Bearer ")) {

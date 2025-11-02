@@ -13,6 +13,8 @@ import {
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { SuccessState } from "@/components/shared/SuccessState";
 
 export default function TenantAdminBillingPage() {
   const { tenant, admin } = useTenantAdminAuth();

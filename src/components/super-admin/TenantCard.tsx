@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { memo } from "react";
 
 interface TenantCardProps {
   tenant: any;
@@ -28,7 +29,7 @@ interface TenantCardProps {
   onViewBilling?: (tenantId: string) => void;
 }
 
-export function TenantCard({ 
+export const TenantCard = memo(function TenantCard({ 
   tenant, 
   onView, 
   onLoginAs,
@@ -256,5 +257,5 @@ export function TenantCard({
       </CardContent>
     </Card>
   );
-}
+});
 

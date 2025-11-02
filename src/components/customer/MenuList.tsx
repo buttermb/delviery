@@ -81,13 +81,15 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
 
   if (!menus || menus.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--customer-surface))] mb-4">
-          <ShoppingBag className="h-8 w-8 text-[hsl(var(--customer-text-light))]" />
+      <div className="text-center py-12">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[hsl(var(--customer-primary))]/10 to-[hsl(var(--customer-secondary))]/5 mb-4">
+          <div className="text-4xl animate-bounce" style={{ animationDuration: "2s" }}>
+            📋
+          </div>
         </div>
-        <p className="text-[hsl(var(--customer-text))] font-medium mb-2">No menus available</p>
-        <p className="text-sm text-[hsl(var(--customer-text-light))]">
-          Contact your supplier to get access to menus
+        <h3 className="text-lg font-semibold text-[hsl(var(--customer-text))] mb-2">No menus available</h3>
+        <p className="text-sm text-[hsl(var(--customer-text-light))] max-w-sm mx-auto mb-4">
+          Contact your supplier to get access to menus. They'll send you a menu link when ready!
         </p>
       </div>
     );
