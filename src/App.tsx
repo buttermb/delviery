@@ -86,6 +86,33 @@ const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal")
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 
+// 10 Built-but-not-routed pages
+const LiveOrders = lazy(() => import("./pages/admin/LiveOrders"));
+const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
+const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
+const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
+const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
+const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
+const DeliveryManagement = lazy(() => import("./pages/admin/DeliveryManagement"));
+const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
+const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
+const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
+
+// 13 Hidden gem pages
+const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const Couriers = lazy(() => import("./pages/admin/Couriers"));
+const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
+const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
+const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
+const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
+const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
+const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
+const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
+const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
+const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
+
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
@@ -232,6 +259,33 @@ const App = () => {
                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                           <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
                           <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
+                          
+                          {/* 10 Built-but-not-routed pages */}
+                          <Route path="live-orders" element={<FeatureProtectedRoute featureId="live-orders"><LiveOrders /></FeatureProtectedRoute>} />
+                          <Route path="team-members" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
+                          <Route path="advanced-inventory" element={<FeatureProtectedRoute featureId="advanced-inventory"><InventoryManagement /></FeatureProtectedRoute>} />
+                          <Route path="fronted-inventory" element={<FeatureProtectedRoute featureId="fronted-inventory"><FrontedInventory /></FeatureProtectedRoute>} />
+                          <Route path="invoice-management" element={<FeatureProtectedRoute featureId="invoice-management"><CustomerInvoices /></FeatureProtectedRoute>} />
+                          <Route path="fleet-management" element={<FeatureProtectedRoute featureId="fleet-management"><FleetManagement /></FeatureProtectedRoute>} />
+                          <Route path="delivery-management" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryManagement /></FeatureProtectedRoute>} />
+                          <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
+                          <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><PointOfSale /></FeatureProtectedRoute>} />
+                          <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
+                          
+                          {/* 13 Hidden gem pages */}
+                          <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat"><AdminLiveChat /></FeatureProtectedRoute>} />
+                          <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
+                          <Route path="couriers" element={<FeatureProtectedRoute featureId="couriers"><Couriers /></FeatureProtectedRoute>} />
+                          <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
+                          <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
+                          <Route path="delivery-tracking" element={<FeatureProtectedRoute featureId="delivery-tracking"><DeliveryTracking /></FeatureProtectedRoute>} />
+                          <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
+                          <Route path="financial-center" element={<FeatureProtectedRoute featureId="financial-center"><FinancialCenter /></FeatureProtectedRoute>} />
+                          <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
+                          <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
+                          <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
+                          <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}

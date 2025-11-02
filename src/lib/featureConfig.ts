@@ -281,6 +281,56 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Tools',
     route: '/admin/notifications',
   },
+  'expense-tracking': {
+    id: 'expense-tracking',
+    name: 'Expense Tracking',
+    description: 'Track business expenses',
+    tier: 'professional',
+    category: 'Financial',
+    route: '/admin/expense-tracking',
+  },
+  
+  // Additional Professional features (Hidden Gems)
+  'live-chat': {
+    id: 'live-chat',
+    name: 'Live Chat',
+    description: 'Real-time customer support chat',
+    tier: 'professional',
+    category: 'Customers',
+    route: '/admin/live-chat',
+  },
+  'customer-details': {
+    id: 'customer-details',
+    name: 'Customer Details',
+    description: 'Detailed customer profiles',
+    tier: 'professional',
+    category: 'Customers',
+    route: '/admin/customer-details',
+  },
+  'customer-reports': {
+    id: 'customer-reports',
+    name: 'Customer Reports',
+    description: 'Generate customer-specific reports',
+    tier: 'professional',
+    category: 'Reports',
+    route: '/admin/customer-reports',
+  },
+  'fronted-inventory-analytics': {
+    id: 'fronted-inventory-analytics',
+    name: 'Fronted Inventory Analytics',
+    description: 'Analyze fronted product performance',
+    tier: 'professional',
+    category: 'Analytics',
+    route: '/admin/fronted-inventory-analytics',
+  },
+  'global-search': {
+    id: 'global-search',
+    name: 'Global Search',
+    description: 'Search across all data',
+    tier: 'professional',
+    category: 'Tools',
+    route: '/admin/global-search',
+  },
 
   // ===== ENTERPRISE TIER (25 additional features = 56 total) =====
   'fleet-management': {
@@ -482,6 +532,64 @@ export const FEATURES: Record<FeatureId, Feature> = {
     tier: 'enterprise',
     category: 'Support',
     route: '/admin/priority-support',
+  },
+  
+  // Additional Enterprise features (Hidden Gems)
+  'couriers': {
+    id: 'couriers',
+    name: 'Courier Management',
+    description: 'Manage delivery couriers',
+    tier: 'enterprise',
+    category: 'Delivery',
+    route: '/admin/couriers',
+  },
+  'delivery-tracking': {
+    id: 'delivery-tracking',
+    name: 'Delivery Tracking',
+    description: 'Track individual deliveries',
+    tier: 'enterprise',
+    category: 'Delivery',
+    route: '/admin/delivery-tracking',
+  },
+  'dispatch-inventory': {
+    id: 'dispatch-inventory',
+    name: 'Dispatch Inventory',
+    description: 'Manage outbound inventory',
+    tier: 'enterprise',
+    category: 'Inventory',
+    route: '/admin/dispatch-inventory',
+  },
+  'financial-center': {
+    id: 'financial-center',
+    name: 'Financial Center',
+    description: 'Comprehensive financial management',
+    tier: 'enterprise',
+    category: 'Financial',
+    route: '/admin/financial-center',
+  },
+  'risk-management': {
+    id: 'risk-management',
+    name: 'Risk Management',
+    description: 'Identify and manage business risks',
+    tier: 'enterprise',
+    category: 'Security',
+    route: '/admin/risk-management',
+  },
+  'system-settings': {
+    id: 'system-settings',
+    name: 'System Settings',
+    description: 'Advanced system configuration',
+    tier: 'enterprise',
+    category: 'Settings',
+    route: '/admin/system-settings',
+  },
+  'vendor-management': {
+    id: 'vendor-management',
+    name: 'Vendor Management',
+    description: 'Manage supplier relationships',
+    tier: 'enterprise',
+    category: 'Inventory',
+    route: '/admin/vendor-management',
   },
 };
 
