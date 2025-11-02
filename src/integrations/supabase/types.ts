@@ -4025,7 +4025,7 @@ export type Database = {
       }
       menu_orders: {
         Row: {
-          access_whitelist_id: string
+          access_whitelist_id: string | null
           contact_phone: string
           created_at: string
           customer_notes: string | null
@@ -4042,7 +4042,7 @@ export type Database = {
           total_amount: number
         }
         Insert: {
-          access_whitelist_id: string
+          access_whitelist_id?: string | null
           contact_phone: string
           created_at?: string
           customer_notes?: string | null
@@ -4059,7 +4059,7 @@ export type Database = {
           total_amount: number
         }
         Update: {
-          access_whitelist_id?: string
+          access_whitelist_id?: string | null
           contact_phone?: string
           created_at?: string
           customer_notes?: string | null
