@@ -55,39 +55,29 @@ export function OnboardingProgress({
       setHasShownConfetti(true);
 
       // Update database to mark onboarding as complete (safely handle missing columns)
-      try {
-        const updateData: any = {
-          onboarding_completed: true,
-        };
-        
-        // Try to add onboarding_completed_at if column exists
+      // Move async code into IIFE to avoid await in useEffect
+      (async () => {
         try {
-          const { error: checkError } = await supabase
-            .from("tenants")
-            .select("onboarding_completed_at")
-            .limit(0);
+          const updateData: any = {
+            onboarding_completed: true,
+            onboarding_completed_at: new Date().toISOString(),
+          };
           
-          if (!checkError || checkError.code !== "42703") {
-            updateData.onboarding_completed_at = new Date().toISOString();
+          const { error: updateError } = await supabase
+            .from("tenants")
+            .update(updateData)
+            .eq("id", effectiveTenantId);
+          
+          if (updateError && updateError.code !== "42703") {
+            console.warn("Error updating onboarding completion:", updateError);
+          } else {
+            queryClient.invalidateQueries({ queryKey: ["tenant", effectiveTenantId] });
           }
-        } catch {
-          // Column doesn't exist, skip it
+        } catch (error) {
+          console.warn("Error marking onboarding as complete:", error);
+          // Don't throw - confetti can still show
         }
-        
-        const { error: updateError } = await supabase
-          .from("tenants")
-          .update(updateData)
-          .eq("id", effectiveTenantId);
-        
-        if (updateError && updateError.code !== "42703") {
-          console.warn("Error updating onboarding completion:", updateError);
-        } else {
-          queryClient.invalidateQueries({ queryKey: ["tenant", effectiveTenantId] });
-        }
-      } catch (error) {
-        console.warn("Error marking onboarding as complete:", error);
-        // Don't throw - confetti can still show
-      }
+      })();
     }
   }, [isComplete, hasShownConfetti, isDismissed, effectiveTenantId, queryClient]);
 

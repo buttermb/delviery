@@ -37,9 +37,10 @@ export default function WelcomeOnboarding() {
       if (!effectiveTenantId) return null;
       try {
         // Try to select onboarding columns, but handle gracefully if they don't exist
+        // Query only existing columns first, then add defaults for missing ones
         const { data, error } = await supabase
           .from("tenants")
-          .select("usage, limits, demo_data_generated, onboarding_completed")
+          .select("usage, limits, onboarding_completed")
           .eq("id", effectiveTenantId)
           .single();
         
@@ -53,15 +54,19 @@ export default function WelcomeOnboarding() {
             .single();
           return {
             ...basicData,
-            usage: {},
-            limits: {},
+            usage: basicData?.usage || {},
+            limits: basicData?.limits || {},
             demo_data_generated: false,
             onboarding_completed: false,
           };
         }
         
         if (error) throw error;
-        return data;
+        // Ensure demo_data_generated is always present (defaults to false if column doesn't exist)
+        return {
+          ...data,
+          demo_data_generated: data?.demo_data_generated ?? false,
+        };
       } catch (error: any) {
         // If query fails, return defaults
         console.warn("Error fetching tenant data:", error);

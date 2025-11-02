@@ -16,7 +16,7 @@ export async function columnExists(
   try {
     // Try to select the column - if it doesn't exist, Supabase will return an error
     const { error } = await supabase
-      .from(table)
+      .from(table as any)
       .select(column)
       .limit(0);
     
@@ -43,7 +43,7 @@ export async function columnExists(
  */
 export async function tableExists(table: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from(table).select("*").limit(0);
+    const { error } = await supabase.from(table as any).select("*").limit(0);
     // If we can query it, it exists (even if error is something else)
     return error === null || error.code !== "42P01"; // 42P01 = table does not exist
   } catch {
@@ -71,7 +71,7 @@ export async function safeSelect<T>(
       return null;
     }
     
-    let query = supabase.from(table).select(validColumns.join(", "));
+    let query = supabase.from(table as any).select(validColumns.join(", "));
     
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -122,7 +122,7 @@ export async function safeUpdate(
     }
     
     const { error } = await supabase
-      .from(table)
+      .from(table as any)
       .update(validUpdates)
       .eq("id", id);
     

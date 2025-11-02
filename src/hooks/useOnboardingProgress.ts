@@ -16,6 +16,8 @@ export interface UseOnboardingProgressResult {
   steps: OnboardingStep[];
   progress: number;
   isComplete: boolean;
+  completedCount: number;
+  totalSteps: number;
 }
 
 export function useOnboardingProgress(tenantId: string | undefined): UseOnboardingProgressResult {
