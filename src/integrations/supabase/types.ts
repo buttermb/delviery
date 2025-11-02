@@ -115,6 +115,7 @@ export type Database = {
           status: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          tenant_id: string | null
           trial_ends_at: string | null
           updated_at: string | null
         }
@@ -129,6 +130,7 @@ export type Database = {
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tenant_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -143,6 +145,7 @@ export type Database = {
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          tenant_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -5701,6 +5704,50 @@ export type Database = {
           },
         ]
       }
+      supplier_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          reference_number: string | null
+          supplier_id: string | null
+          transaction_date: string | null
+          transaction_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reference_number?: string | null
+          supplier_id?: string | null
+          transaction_date?: string | null
+          transaction_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reference_number?: string | null
+          supplier_id?: string | null
+          transaction_date?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_transactions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           account_id: string
@@ -6159,6 +6206,8 @@ export type Database = {
       wholesale_deliveries: {
         Row: {
           assigned_at: string
+          client_id: string | null
+          collection_amount: number | null
           created_at: string
           current_location: Json | null
           delivered_at: string | null
@@ -6169,9 +6218,13 @@ export type Database = {
           picked_up_at: string | null
           runner_id: string
           status: string
+          total_value: number | null
+          total_weight: number | null
         }
         Insert: {
           assigned_at?: string
+          client_id?: string | null
+          collection_amount?: number | null
           created_at?: string
           current_location?: Json | null
           delivered_at?: string | null
@@ -6182,9 +6235,13 @@ export type Database = {
           picked_up_at?: string | null
           runner_id: string
           status?: string
+          total_value?: number | null
+          total_weight?: number | null
         }
         Update: {
           assigned_at?: string
+          client_id?: string | null
+          collection_amount?: number | null
           created_at?: string
           current_location?: Json | null
           delivered_at?: string | null
@@ -6195,8 +6252,17 @@ export type Database = {
           picked_up_at?: string | null
           runner_id?: string
           status?: string
+          total_value?: number | null
+          total_weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "wholesale_deliveries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wholesale_deliveries_order_id_fkey"
             columns: ["order_id"]
@@ -6218,6 +6284,7 @@ export type Database = {
           base_price: number | null
           category: string
           cbd_percentage: number | null
+          cost_per_lb: number | null
           created_at: string
           description: string | null
           effects: Json | null
@@ -6243,6 +6310,7 @@ export type Database = {
           base_price?: number | null
           category: string
           cbd_percentage?: number | null
+          cost_per_lb?: number | null
           created_at?: string
           description?: string | null
           effects?: Json | null
@@ -6268,6 +6336,7 @@ export type Database = {
           base_price?: number | null
           category?: string
           cbd_percentage?: number | null
+          cost_per_lb?: number | null
           created_at?: string
           description?: string | null
           effects?: Json | null
@@ -6451,6 +6520,7 @@ export type Database = {
           delivery_notes: string | null
           id: string
           order_number: string
+          payment_due_date: string | null
           payment_status: string
           runner_id: string | null
           status: string
@@ -6466,6 +6536,7 @@ export type Database = {
           delivery_notes?: string | null
           id?: string
           order_number: string
+          payment_due_date?: string | null
           payment_status?: string
           runner_id?: string | null
           status?: string
@@ -6481,6 +6552,7 @@ export type Database = {
           delivery_notes?: string | null
           id?: string
           order_number?: string
+          payment_due_date?: string | null
           payment_status?: string
           runner_id?: string | null
           status?: string
@@ -6510,6 +6582,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          payment_date: string | null
           payment_method: string
           reference_number: string | null
           status: string
@@ -6520,6 +6593,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_date?: string | null
           payment_method?: string
           reference_number?: string | null
           status?: string
@@ -6530,6 +6604,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          payment_date?: string | null
           payment_method?: string
           reference_number?: string | null
           status?: string
@@ -6589,6 +6664,42 @@ export type Database = {
           updated_at?: string
           vehicle_plate?: string | null
           vehicle_type?: string
+        }
+        Relationships: []
+      }
+      wholesale_suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          payment_terms: string | null
+          phone: string | null
+          supplier_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          payment_terms?: string | null
+          phone?: string | null
+          supplier_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          payment_terms?: string | null
+          phone?: string | null
+          supplier_name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

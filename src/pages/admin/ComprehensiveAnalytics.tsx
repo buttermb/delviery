@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { 
   Eye, Users, ShoppingCart, DollarSign, TrendingUp, 
   Image as ImageIcon, Shield, Clock, BarChart3,
-  Download, Calendar, Filter
+  Download, Calendar, Filter, ZoomIn
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';

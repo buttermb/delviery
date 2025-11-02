@@ -91,10 +91,10 @@ export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
     .from('tenants' as any)
     .select('*')
     .eq('slug', slug)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
-  return data as Tenant;
+  return data as unknown as Tenant;
 }
 
 /**
@@ -105,10 +105,10 @@ export async function getTenantById(tenantId: string): Promise<Tenant | null> {
     .from('tenants' as any)
     .select('*')
     .eq('id', tenantId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
-  return data as Tenant;
+  return data as unknown as Tenant;
 }
 
 /**
