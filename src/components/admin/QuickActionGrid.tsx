@@ -8,14 +8,14 @@ export function QuickActionGrid() {
   const navigate = useNavigate();
 
   const actions = [
-    { icon: Package, label: "Products", path: "/admin/products", color: "text-blue-600" },
-    { icon: Users, label: "Users", path: "/admin/users", color: "text-green-600" },
-    { icon: Truck, label: "Live Deliveries", path: "/admin/live-orders", color: "text-purple-600" },
-    { icon: TrendingUp, label: "Analytics", path: "/admin/analytics", color: "text-orange-600" },
-    { icon: Bell, label: "Notifications", path: "/admin/notifications", color: "text-red-600" },
-    { icon: FileText, label: "Orders", path: "/admin/orders", color: "text-indigo-600" },
-    { icon: Shield, label: "Compliance", path: "/admin/compliance", color: "text-yellow-600" },
-    { icon: Settings, label: "Settings", path: "/admin/settings", color: "text-gray-600" },
+    { icon: Package, label: "Products", path: "/admin/products", color: "text-info" },
+    { icon: Users, label: "Users", path: "/admin/users", color: "text-success" },
+    { icon: Truck, label: "Live Deliveries", path: "/admin/live-orders", color: "text-primary" },
+    { icon: TrendingUp, label: "Analytics", path: "/admin/analytics", color: "text-primary" },
+    { icon: Bell, label: "Notifications", path: "/admin/notifications", color: "text-destructive" },
+    { icon: FileText, label: "Orders", path: "/admin/orders", color: "text-info" },
+    { icon: Shield, label: "Compliance", path: "/admin/compliance", color: "text-warning" },
+    { icon: Settings, label: "Settings", path: "/admin/settings", color: "text-muted-foreground" },
   ];
 
   return (

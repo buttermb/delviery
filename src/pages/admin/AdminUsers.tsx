@@ -199,12 +199,12 @@ export default function AdminUsers() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-green-600" />
+              <UserCheck className="h-4 w-4 text-success" />
               Verified Users
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{metrics.verified}</div>
+            <div className="text-2xl font-bold text-success">{metrics.verified}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {((metrics.verified / metrics.total) * 100).toFixed(1)}% of total
             </p>
@@ -214,24 +214,24 @@ export default function AdminUsers() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Shield className="h-4 w-4 text-blue-600" />
+              <Shield className="h-4 w-4 text-info" />
               VIP Users
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{metrics.vip}</div>
+            <div className="text-2xl font-bold text-info">{metrics.vip}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               Total Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-primary">
               ${metrics.totalRevenue.toFixed(2)}
             </div>
           </CardContent>
