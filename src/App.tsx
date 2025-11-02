@@ -29,6 +29,7 @@ import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
+import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "./hooks/use-toast";
@@ -218,19 +219,19 @@ const App = () => {
                         {/* Tenant Admin Portal */}
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
-                          <Route path="dashboard" element={<TenantAdminDashboardPage />} />
-                          <Route path="disposable-menus" element={<DisposableMenus />} />
-                          <Route path="disposable-menu-orders" element={<DisposableMenuOrders />} />
-                          <Route path="disposable-menu-analytics" element={<DisposableMenuAnalytics />} />
-                          <Route path="menu-analytics" element={<MenuAnalytics />} />
-                          <Route path="inventory/products" element={<ProductManagement />} />
-                          <Route path="big-plug-clients" element={<BigPlugClients />} />
-                          <Route path="generate-barcodes" element={<GenerateBarcodes />} />
-                          <Route path="wholesale-orders" element={<WholesaleOrders />} />
-                          <Route path="inventory-dashboard" element={<InventoryDashboard />} />
-                          <Route path="reports" element={<ReportsPage />} />
-                          <Route path="billing" element={<TenantAdminBillingPage />} />
-                          <Route path="settings" element={<TenantAdminSettingsPage />} />
+                          <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
+                          <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
+                          <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="disposable-menu-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
+                          <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="inventory/products" element={<FeatureProtectedRoute featureId="products"><ProductManagement /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
+                          <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="barcode-generation"><GenerateBarcodes /></FeatureProtectedRoute>} />
+                          <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="orders"><WholesaleOrders /></FeatureProtectedRoute>} />
+                          <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory"><InventoryDashboard /></FeatureProtectedRoute>} />
+                          <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
+                          <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
+                          <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
