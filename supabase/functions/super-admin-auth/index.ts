@@ -90,10 +90,15 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const url = new URL(req.url);
-    const action = url.searchParams.get("action") || (await req.json()).action;
+    const action = url.searchParams.get("action");
+    
+    let body: any = {};
+    if (req.method === "POST") {
+      body = await req.json();
+    }
 
     if (action === "login") {
-      const { email, password } = await req.json();
+      const { email, password } = body;
 
       if (!email || !password) {
         return new Response(
@@ -236,7 +241,7 @@ serve(async (req) => {
     }
 
     if (action === "refresh") {
-      const { token } = await req.json();
+      const { token } = body;
 
       const payload = verifyJWT(token);
       if (!payload || payload.type !== "super_admin") {
