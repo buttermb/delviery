@@ -21,7 +21,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
-          navigate("/admin/login", { replace: true });
+          navigate("/marketing", { replace: true });
         }
         return;
       }
@@ -60,7 +60,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
-          navigate("/admin/login", { replace: true });
+          navigate("/marketing", { replace: true });
         }
       }
     };

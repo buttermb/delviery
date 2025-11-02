@@ -152,7 +152,7 @@ export function AdminSidebar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({ title: "Signed out successfully" });
-    navigate("/admin/login");
+    navigate("/marketing");
   };
   const location = useLocation();
   const isCollapsed = state === "collapsed";

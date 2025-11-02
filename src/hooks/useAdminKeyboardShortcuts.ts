@@ -27,42 +27,20 @@ export const useAdminKeyboardShortcuts = () => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
         e.preventDefault();
         
+        // Note: Most admin routes are tenant-specific (/:tenantSlug/admin/...)
+        // These shortcuts are disabled until routes are properly configured
         switch(e.key.toLowerCase()) {
           case 'd':
-            navigate('/admin/dashboard');
-            toast({ title: 'Dashboard' });
+            // Navigate to current tenant's dashboard
+            const currentPath = window.location.pathname;
+            const tenantMatch = currentPath.match(/^\/([^/]+)\/admin/);
+            if (tenantMatch) {
+              navigate(`/${tenantMatch[1]}/admin/dashboard`);
+              toast({ title: 'Dashboard' });
+            }
             break;
-          case 'o':
-            navigate('/admin/orders');
-            toast({ title: 'Orders' });
-            break;
-          case 'p':
-            navigate('/admin/products');
-            toast({ title: 'Products' });
-            break;
-          case 'u':
-            navigate('/admin/users');
-            toast({ title: 'Users' });
-            break;
-          case 'c':
-            navigate('/admin/couriers');
-            toast({ title: 'Couriers' });
-            break;
-          case 'm':
-            navigate('/admin/live-map');
-            toast({ title: 'Live Map' });
-            break;
-          case 'l':
-            navigate('/admin/live-orders');
-            toast({ title: 'Live Orders' });
-            break;
-          case 'a':
-            navigate('/admin/analytics');
-            toast({ title: 'Analytics' });
-            break;
-          case 's':
-            navigate('/admin/settings');
-            toast({ title: 'Settings' });
+          // Other shortcuts disabled - routes not configured
+          default:
             break;
         }
       }

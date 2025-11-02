@@ -85,7 +85,7 @@ export function RoleBasedSidebar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({ title: 'Signed out successfully' });
-    navigate('/admin/login');
+    navigate('/marketing');
   };
 
   // Helper to render icon - extract component first

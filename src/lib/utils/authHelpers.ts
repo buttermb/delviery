@@ -16,7 +16,7 @@ export function getLoginUrl(userType: "super_admin" | "tenant_admin" | "customer
       if (!tenantSlug) {
         tenantSlug = getTenantSlugFromLocation() || "";
       }
-      return tenantSlug ? `/${tenantSlug}/admin/login` : "/admin/login";
+      return tenantSlug ? `/${tenantSlug}/admin/login` : "/marketing";
     case "customer":
       if (!tenantSlug) {
         tenantSlug = getTenantSlugFromLocation() || "";

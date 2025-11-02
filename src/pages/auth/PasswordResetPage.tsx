@@ -111,7 +111,7 @@ export default function PasswordResetPage() {
           } else if (userType === "tenant_admin") {
             const pathMatch = window.location.pathname.match(/^\/([^/]+)\/admin\/reset/);
             const tenantSlug = pathMatch ? pathMatch[1] : null;
-            navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/admin/login");
+            navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/marketing");
           } else {
             const pathMatch = window.location.pathname.match(/^\/([^/]+)\/shop\/reset/);
             const tenantSlug = pathMatch ? pathMatch[1] : null;
@@ -212,7 +212,7 @@ export default function PasswordResetPage() {
                 } else if (userType === "tenant_admin") {
                   const pathMatch = window.location.pathname.match(/^\/([^/]+)\/admin\/reset/);
                   const tenantSlug = pathMatch ? pathMatch[1] : null;
-                  navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/admin/login");
+                  navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/marketing");
                 } else {
                   const pathMatch = window.location.pathname.match(/^\/([^/]+)\/shop\/reset/);
                   const tenantSlug = pathMatch ? pathMatch[1] : null;

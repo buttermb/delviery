@@ -319,7 +319,7 @@ export default function AccountSignup() {
 
                   <p className="text-center text-sm text-[hsl(var(--marketing-text))]">
                     Already have an account?{" "}
-                    <Link to="/admin/login" className="text-[hsl(var(--marketing-primary))] hover:underline">
+                    <Link to="/super-admin/login" className="text-[hsl(var(--marketing-primary))] hover:underline">
                       Sign in
                     </Link>
                   </p>
