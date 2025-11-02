@@ -58,6 +58,8 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         const platformAdminEmails = [
           'admin@platform.com',
           'superadmin@platform.com',
+          'sake121211@gmail.com',
+          'sake2605@icloud.com',
         ];
 
         if (platformAdminEmails.includes(user.email?.toLowerCase() || '')) {

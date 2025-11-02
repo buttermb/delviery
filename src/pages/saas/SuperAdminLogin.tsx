@@ -50,7 +50,8 @@ const SuperAdminLogin = () => {
       const platformAdminEmails = [
         'admin@platform.com',
         'superadmin@platform.com',
-        // Add your platform admin emails here
+        'sake121211@gmail.com',
+        'sake2605@icloud.com',
       ];
 
       const isEmailPlatformAdmin = platformAdminEmails.includes(email.toLowerCase());
