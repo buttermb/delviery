@@ -28,8 +28,8 @@ export default function CustomerDashboardPage() {
     queryFn: async (): Promise<any[]> => {
       if (!tenantId || !customerId) return [];
 
-      const { data } = await supabase
-        .from("orders")
+      const { data } = await (supabase
+        .from("orders") as any)
         .select("id, order_number, total_amount, status, created_at")
         .eq("tenant_id", tenantId)
         .eq("customer_id", customerId)

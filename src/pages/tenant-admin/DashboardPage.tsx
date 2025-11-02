@@ -36,8 +36,8 @@ export default function TenantAdminDashboardPage() {
       today.setHours(0, 0, 0, 0);
 
       // Get today's orders
-      const { data: orders } = await supabase
-        .from("wholesale_orders")
+      const { data: orders } = await (supabase
+        .from("wholesale_orders") as any)
         .select("total_amount, status")
         .eq("tenant_id", tenantId)
         .gte("created_at", today.toISOString());
@@ -46,8 +46,8 @@ export default function TenantAdminDashboardPage() {
       const orderCount = orders?.length || 0;
 
       // Get low stock items
-      const { data: inventory } = await supabase
-        .from("wholesale_inventory")
+      const { data: inventory } = await (supabase
+        .from("wholesale_inventory") as any)
         .select("strain, weight_lbs, low_stock_threshold")
         .eq("tenant_id", tenantId);
 
@@ -70,8 +70,8 @@ export default function TenantAdminDashboardPage() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data } = await supabase
-        .from("wholesale_orders")
+      const { data } = await (supabase
+        .from("wholesale_orders") as any)
         .select("id, order_number, total_amount, status, created_at, client_name")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
