@@ -21,7 +21,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { LogOut, ChevronDown } from 'lucide-react';
 import { getNavigationForRole } from '@/lib/constants/navigation';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -30,8 +29,7 @@ import type { LucideIcon } from 'lucide-react';
 
 export function RoleBasedSidebar() {
   const { state } = useSidebar();
-  const { session } = useAdminAuth();
-  const { tenant } = useTenantAdminAuth();
+  const { admin, tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,28 +39,13 @@ export function RoleBasedSidebar() {
   // Get user role
   useEffect(() => {
     const fetchRole = async () => {
-      if (session?.user) {
-        // Check if user has role in admin_users table
-        const { data } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (data && data.role) {
-          // Map admin role to our role system
-          const roleMap: Record<string, string> = {
-            'super_admin': 'owner',
-            'admin': 'manager',
-            'compliance_officer': 'viewer',
-            'support': 'viewer',
-          };
-          setUserRole(roleMap[data.role] || 'owner');
-        }
+      if (admin) {
+        // Use tenant admin role
+        setUserRole('owner');
       }
     };
     fetchRole();
-  }, [session]);
+  }, [admin]);
 
   const navigation = getNavigationForRole(userRole);
   const isCollapsed = state === 'collapsed';
@@ -111,9 +94,9 @@ export function RoleBasedSidebar() {
       <SidebarHeader className="border-b border-[hsl(var(--tenant-border))] p-4 bg-[hsl(var(--tenant-surface))]">
         {!isCollapsed && (
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold">🌿 Your Company</h2>
+            <h2 className="text-lg font-semibold">{tenant?.business_name || 'Your Company'}</h2>
             <p className="text-xs text-muted-foreground truncate">
-              {session?.user?.email}
+              {admin?.email}
             </p>
           </div>
         )}

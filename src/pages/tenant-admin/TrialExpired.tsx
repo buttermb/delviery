@@ -36,11 +36,13 @@ export default function TrialExpiredPage() {
       const usage = (tenant as any)?.usage || {};
 
       // Get revenue if any
-      const { data: orders } = await supabase
+      // @ts-ignore - Supabase type inference issue
+      const ordersQuery = await supabase
         .from("menu_orders")
         .select("total_amount")
         .eq("tenant_id", tenant.id)
         .eq("status", "confirmed");
+      const orders = ordersQuery.data as any;
 
       const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
 

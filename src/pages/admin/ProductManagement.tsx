@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
   Dialog,
   DialogContent,

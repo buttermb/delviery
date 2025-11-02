@@ -71,7 +71,6 @@ const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/Dashboa
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const HelpPage = lazy(() => import("./pages/Help"));
-const WelcomeOnboarding = lazy(() => import("./pages/WelcomeOnboarding"));
 
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
@@ -192,9 +191,6 @@ const App = () => {
                         {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
-                        
-                        {/* Welcome Onboarding Page (must be before AdminLayout for proper protection) */}
-                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><WelcomeOnboarding /></TenantAdminProtectedRoute>} />
                         
                         {/* Trial Expired Page (must be before AdminLayout) */}
                         <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />

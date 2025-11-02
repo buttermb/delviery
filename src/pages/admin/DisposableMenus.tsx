@@ -23,6 +23,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 const DisposableMenus = () => {
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
   const [selectedMenuIds, setSelectedMenuIds] = useState<string[]>([]);
