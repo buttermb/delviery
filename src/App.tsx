@@ -58,6 +58,7 @@ const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/Tenant
 const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
+const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpiredPage"));
@@ -174,6 +175,7 @@ const App = () => {
                         
                         {/* Public Authentication */}
                         <Route path="/signup" element={<SignUpPage />} />
+                        <Route path="/saas/login" element={<SaasLoginPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         
                         {/* Public Menu Access */}
