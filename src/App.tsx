@@ -16,7 +16,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
-import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TenantProvider } from "./contexts/TenantContext";
 import { WhiteLabelProvider } from "./components/whitelabel/WhiteLabelProvider";
@@ -53,7 +52,6 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const About = lazy(() => import("./pages/About"));
 
 // Three-Tier Auth System Pages
-const AdminLoginPage = lazy(() => import("./pages/admin/LoginPage"));
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
 const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
 const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
@@ -142,7 +140,6 @@ const App = () => {
         <ThemeProvider>
           <AuthProvider>
             <AccountProvider>
-                <AdminAuthProvider>
                   <SuperAdminAuthProvider>
                     <TenantAdminAuthProvider>
                       <CustomerAuthProvider>
@@ -178,9 +175,6 @@ const App = () => {
                         <Route path="/m/:token" element={<SecureMenuAccess />} />
                         <Route path="/m/:token/view" element={<SecureMenuView />} />
                         <Route path="/menu/:token" element={<MenuAccess />} />
-                        
-                        {/* ==================== REGULAR ADMIN (Legacy System) ==================== */}
-                        <Route path="/admin/login" element={<AdminLoginPage />} />
                         
                         {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                         <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
@@ -221,7 +215,6 @@ const App = () => {
                       </CustomerAuthProvider>
                     </TenantAdminAuthProvider>
                   </SuperAdminAuthProvider>
-                </AdminAuthProvider>
             </AccountProvider>
           </AuthProvider>
         </ThemeProvider>
