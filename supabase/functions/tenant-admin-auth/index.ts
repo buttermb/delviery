@@ -30,7 +30,17 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
-    const requestBody = await req.json();
+    
+    // Only parse JSON body for actions that need it
+    let requestBody: any = {};
+    if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
+      try {
+        requestBody = await req.json();
+      } catch (e) {
+        console.error('Failed to parse JSON body:', e);
+        requestBody = {};
+      }
+    }
 
     if (action === 'login') {
       const { email, password, tenantSlug } = requestBody;
