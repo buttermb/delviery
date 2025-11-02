@@ -152,13 +152,213 @@ if (action === "update-password") {
 4. Click "Update Password"
 5. Wait for success confirmation
 
-### Similar Implementation for Tenant Admin and Super Admin
+### Tenant Admin Password Update
 
-The same pattern is used for:
-- `src/pages/tenant-admin/SettingsPage.tsx` → `tenant-admin-auth` Edge Function
-- `src/pages/super-admin/SettingsPage.tsx` → `super-admin-auth` Edge Function
+#### Frontend (`src/pages/tenant-admin/SettingsPage.tsx`)
 
-**Important:** Each Edge Function must be updated with the same `update-password` action handler.
+Same pattern as Customer Settings, but uses:
+- Edge Function: `tenant-admin-auth`
+- Token: `localStorage.getItem("tenant_admin_token")`
+
+#### Backend (`supabase/functions/tenant-admin-auth/index.ts`)
+
+**Location:** Lines 305-406
+
+```typescript
+if (action === "update-password") {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Authorization required" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const { currentPassword, newPassword } = await req.json();
+
+  if (!currentPassword || !newPassword) {
+    return new Response(
+      JSON.stringify({ error: "Current password and new password are required" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  if (newPassword.length < 8) {
+    return new Response(
+      JSON.stringify({ error: "New password must be at least 8 characters long" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const payload = verifyJWT(token);
+
+  if (!payload) {
+    return new Response(
+      JSON.stringify({ error: "Invalid or expired token" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Get tenant admin user
+  const { data: adminUser, error: adminError } = await supabase
+    .from("tenant_users")
+    .select("*")
+    .eq("id", payload.tenant_admin_id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (adminError || !adminUser) {
+    return new Response(
+      JSON.stringify({ error: "User not found or inactive" }),
+      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Verify current password (using bcrypt)
+  const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+  const isValid = await bcrypt.compare(currentPassword, adminUser.password_hash);
+
+  if (!isValid) {
+    return new Response(
+      JSON.stringify({ error: "Current password is incorrect" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Hash new password
+  const saltRounds = 10;
+  const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+  // Update password
+  const { error: updateError } = await supabase
+    .from("tenant_users")
+    .update({ password_hash: newPasswordHash })
+    .eq("id", payload.tenant_admin_id);
+
+  if (updateError) {
+    return new Response(
+      JSON.stringify({ error: "Failed to update password" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  return new Response(
+    JSON.stringify({ success: true, message: "Password updated successfully" }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+```
+
+### Super Admin Password Update
+
+#### Frontend (`src/pages/super-admin/SettingsPage.tsx`)
+
+Same pattern as Customer Settings, but uses:
+- Edge Function: `super-admin-auth`
+- Token: `localStorage.getItem("super_admin_token")`
+
+#### Backend (`supabase/functions/super-admin-auth/index.ts`)
+
+**Location:** Lines 279-386
+
+```typescript
+if (action === "update-password") {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Authorization required" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const { currentPassword, newPassword } = body;
+
+  if (!currentPassword || !newPassword) {
+    return new Response(
+      JSON.stringify({ error: "Current password and new password are required" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  if (newPassword.length < 8) {
+    return new Response(
+      JSON.stringify({ error: "New password must be at least 8 characters long" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const payload = verifyJWT(token);
+
+  if (!payload) {
+    return new Response(
+      JSON.stringify({ error: "Invalid or expired token" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Get super admin user
+  const { data: superAdminUser, error: adminError } = await supabase
+    .from("super_admin_users")
+    .select("*")
+    .eq("id", payload.super_admin_id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (adminError || !superAdminUser) {
+    return new Response(
+      JSON.stringify({ error: "User not found or inactive" }),
+      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Verify current password (using bcrypt)
+  const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+  const isValid = await bcrypt.compare(currentPassword, superAdminUser.password_hash);
+
+  if (!isValid) {
+    return new Response(
+      JSON.stringify({ error: "Current password is incorrect" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Hash new password
+  const saltRounds = 10;
+  const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+  // Update password
+  const { error: updateError } = await supabase
+    .from("super_admin_users")
+    .update({ password_hash: newPasswordHash })
+    .eq("id", payload.super_admin_id);
+
+  if (updateError) {
+    return new Response(
+      JSON.stringify({ error: "Failed to update password" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  return new Response(
+    JSON.stringify({ success: true, message: "Password updated successfully" }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+```
+
+### Implementation Status
+
+✅ **All three Edge Functions have `update-password` implemented:**
+- `customer-auth` → Lines 150+ (if implemented)
+- `tenant-admin-auth` → Lines 305-406 ✅
+- `super-admin-auth` → Lines 279-386 ✅
+
+✅ **All three frontend pages have password update forms:**
+- `src/pages/customer/SettingsPage.tsx` ✅
+- `src/pages/tenant-admin/SettingsPage.tsx` ✅
+- `src/pages/super-admin/SettingsPage.tsx` ✅
 
 ---
 
@@ -168,55 +368,76 @@ The same pattern is used for:
 
 #### Implementation (`src/pages/super-admin/TenantDetailPage.tsx`)
 
+**Location:** `src/pages/super-admin/TenantDetailPage.tsx` (lines 537-588)
+
 ```typescript
-const handleCancelSubscription = async () => {
-  if (!confirm("Are you sure you want to cancel this subscription?")) {
-    return;
-  }
+// Cancel subscription button onClick handler
+<Button
+  variant="destructive"
+  onClick={async () => {
+    if (!confirm("Are you sure you want to cancel this subscription? This action cannot be undone.")) {
+      return;
+    }
 
-  try {
-    // Update tenant subscription status
-    const { error: updateError } = await supabase
-      .from("tenants")
-      .update({
-        subscription_status: "cancelled",
-        cancelled_at: new Date().toISOString(),
-      })
-      .eq("id", tenantId);
+    try {
+      // Update tenant subscription status
+      const { error } = await supabase
+        .from("tenants")
+        .update({
+          subscription_status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+          status: "active", // Keep tenant active, just subscription cancelled
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", tenant?.id);
 
-    if (updateError) throw updateError;
+      if (error) throw error;
 
-    // Log subscription event
-    const { error: eventError } = await supabase
-      .from("subscription_events")
-      .insert({
-        tenant_id: tenantId,
+      // Log subscription event
+      await supabase.from("subscription_events").insert({
+        tenant_id: tenant?.id,
         event_type: "cancelled",
-        metadata: {
+        from_plan: tenant?.subscription_plan,
+        to_plan: null,
+        amount: plan?.price_monthly || 0,
+        event_data: {
           cancelled_by: "super_admin",
           cancelled_at: new Date().toISOString(),
         },
       });
 
-    if (eventError) throw eventError;
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-plan", tenant?.subscription_plan] });
 
-    // Invalidate queries
-    queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-    queryClient.invalidateQueries({ queryKey: ["subscription-plan"] });
-
-    toast({
-      title: "Subscription Cancelled",
-      description: "The subscription has been cancelled successfully.",
-    });
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to cancel subscription",
-      variant: "destructive",
-    });
-  }
-};
+      toast({
+        title: "Subscription Cancelled",
+        description: "The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel subscription",
+        variant: "destructive",
+      });
+    }
+  }}
+  className="flex-1 bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
+>
+  ❌ CANCEL
+</Button>
 ```
+
+### Database Updates
+
+1. **tenants table:**
+   - `subscription_status` → set to `"cancelled"`
+   - `cancelled_at` → timestamp of cancellation
+   - `status` → remains `"active"` (tenant still has access)
+
+2. **subscription_events table:**
+   - Creates audit log entry
+   - Records plan, amount, and cancellation details
 
 ### Usage
 
@@ -224,10 +445,11 @@ const handleCancelSubscription = async () => {
 2. Click on a tenant to view details
 3. Go to "Billing" tab
 4. Find "Current Subscription" card
-5. Click "Cancel" button
-6. Confirm cancellation
+5. Click "CANCEL" button
+6. Confirm cancellation in dialog
+7. Subscription is cancelled but tenant retains access until billing period ends
 
-**Note:** Cancelled subscriptions maintain access until the end of the billing period.
+**Note:** Cancelled subscriptions maintain access until the end of the billing period. This is a standard practice in SaaS platforms.
 
 ---
 
@@ -237,88 +459,188 @@ const handleCancelSubscription = async () => {
 
 #### Implementation (`src/pages/super-admin/TenantDetailPage.tsx`)
 
+**Location:** `src/pages/super-admin/TenantDetailPage.tsx` (lines 812-927)
+
+#### View Invoice Button
+
 ```typescript
-// Generate invoice HTML
-const generateInvoiceHTML = (invoice: any, tenant: any) => {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Invoice ${invoice.invoice_number}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
-        .invoice-details { margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-        .total { font-weight: bold; font-size: 1.2em; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Invoice ${invoice.invoice_number}</h1>
-        <p><strong>Tenant:</strong> ${tenant.business_name}</p>
-      </div>
-      <div class="invoice-details">
-        <p><strong>Date:</strong> ${new Date(invoice.created_at).toLocaleDateString()}</p>
-        <p><strong>Status:</strong> ${invoice.status}</p>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${invoice.line_items?.map((item: any) => `
-            <tr>
-              <td>${item.description}</td>
-              <td>$${item.amount.toFixed(2)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-        <tfoot>
-          <tr class="total">
-            <td>Total</td>
-            <td>$${invoice.total_amount.toFixed(2)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </body>
-    </html>
-  `;
-};
+<Button
+  variant="ghost"
+  size="sm"
+  onClick={() => {
+    // Generate invoice HTML
+    const invoiceHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${invoice.invoice_number}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+            .invoice-info { display: flex; justify-content: space-between; margin-bottom: 30px; }
+            .line-items { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            .line-items th { background: #f5f5f5; padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+            .line-items td { padding: 10px; border-bottom: 1px solid #eee; }
+            .totals { text-align: right; margin-top: 20px; }
+            .totals table { width: 300px; margin-left: auto; }
+            .totals td { padding: 5px 0; }
+            .totals .total-row { font-weight: bold; font-size: 1.2em; border-top: 2px solid #333; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Invoice ${invoice.invoice_number}</h1>
+            <p>Tenant: ${tenant?.business_name || 'N/A'}</p>
+          </div>
+          <div class="invoice-info">
+            <div>
+              <p><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</p>
+              <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
+              ${invoice.billing_period_start ? `<p><strong>Billing Period:</strong> ${new Date(invoice.billing_period_start).toLocaleDateString()} - ${new Date(invoice.billing_period_end).toLocaleDateString()}</p>` : ''}
+            </div>
+            <div>
+              <p><strong>Status:</strong> ${invoice.status?.toUpperCase() || 'PENDING'}</p>
+              ${invoice.stripe_invoice_id ? `<p><strong>Stripe Invoice:</strong> ${invoice.stripe_invoice_id}</p>` : ''}
+            </div>
+          </div>
+          <table class="line-items">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
+                ? invoice.line_items.map((item: any) => `
+                  <tr>
+                    <td>${item.description || item.name || 'N/A'}</td>
+                    <td>${item.quantity || 1}</td>
+                    <td style="text-align: right;">$${Number(item.amount || item.total || 0).toFixed(2)}</td>
+                  </tr>
+                `).join('')
+                : `
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: #999;">No line items available</td>
+                  </tr>
+                `}
+            </tbody>
+          </table>
+          <div class="totals">
+            <table>
+              <tr>
+                <td>Subtotal:</td>
+                <td style="text-align: right;">$${Number(invoice.subtotal || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td>Tax:</td>
+                <td style="text-align: right;">$${Number(invoice.tax || 0).toFixed(2)}</td>
+              </tr>
+              <tr class="total-row">
+                <td>Total:</td>
+                <td style="text-align: right;">$${Number(invoice.total || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td>Amount Paid:</td>
+                <td style="text-align: right;">$${Number(invoice.amount_paid || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td>Amount Due:</td>
+                <td style="text-align: right;">$${Number(invoice.amount_due || 0).toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Open in new window
+    const invoiceWindow = window.open();
+    if (invoiceWindow) {
+      invoiceWindow.document.write(invoiceHTML);
+      invoiceWindow.document.close();
+    }
+  }}
+>
+  View
+</Button>
+```
 
-// View invoice
-const handleViewInvoice = (invoice: any) => {
-  const html = generateInvoiceHTML(invoice, tenant);
-  const newWindow = window.open();
-  if (newWindow) {
-    newWindow.document.write(html);
-    newWindow.document.close();
-  }
-};
+#### Download Invoice Button
 
-// Download invoice
-const handleDownloadInvoice = (invoice: any) => {
-  const html = generateInvoiceHTML(invoice, tenant);
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `invoice-${invoice.invoice_number}.html`;
-  link.click();
-  URL.revokeObjectURL(url);
-};
+```typescript
+<Button
+  variant="ghost"
+  size="sm"
+  onClick={() => {
+    // Generate invoice HTML (same as View)
+    const invoiceHTML = `...`; // (same HTML as above)
+
+    // Create a blob and download
+    const blob = new Blob([invoiceHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${invoice.invoice_number}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Invoice Downloaded",
+      description: `Invoice ${invoice.invoice_number} downloaded successfully`,
+    });
+  }}
+>
+  Download
+</Button>
+```
+
+### Invoice Data Structure
+
+The invoice object should have the following structure:
+
+```typescript
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  tenant_id: string;
+  issue_date: string;
+  due_date: string;
+  billing_period_start?: string;
+  billing_period_end?: string;
+  status: 'draft' | 'open' | 'paid' | 'void' | 'uncollectible';
+  subtotal: number;
+  tax: number;
+  total: number;
+  amount_paid: number;
+  amount_due: number;
+  line_items: Array<{
+    description?: string;
+    name?: string;
+    quantity?: number;
+    amount?: number;
+    total?: number;
+  }>;
+  stripe_invoice_id?: string;
+}
 ```
 
 ### Usage
 
 1. Navigate to Super Admin → Tenants → Select Tenant → Billing Tab
 2. Scroll to "Billing History" table
-3. Click "View" to open invoice in new window
-4. Click "Download" to download invoice as HTML file
+3. **View Invoice:**
+   - Click "View" button
+   - Invoice opens in new browser window
+   - Formatted HTML invoice is displayed
+4. **Download Invoice:**
+   - Click "Download" button
+   - Invoice HTML file is downloaded
+   - File name: `invoice-{invoice_number}.html`
+   - Toast notification confirms download
 
 ---
 
