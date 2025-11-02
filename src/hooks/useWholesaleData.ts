@@ -7,12 +7,11 @@ export const useWholesaleClients = () => {
     queryKey: ["wholesale-clients"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("wholesale_clients")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .from('wholesale_clients')
+        .select('*') as any;
       
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 };
