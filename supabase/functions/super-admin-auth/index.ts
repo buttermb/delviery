@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { hash, compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,19 +65,13 @@ function base64Decode(str: string): Uint8Array {
   return Uint8Array.from(atob(str).split("").map((c) => c.charCodeAt(0)));
 }
 
-// Password hashing (bcrypt-like, simplified for Edge Function)
-// In production, use proper bcrypt library
+// Password hashing using bcrypt
 async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + JWT_SECRET);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return await hash(password);
 }
 
-async function comparePassword(password: string, hash: string): Promise<boolean> {
-  const hashedPassword = await hashPassword(password);
-  return hashedPassword === hash;
+async function comparePassword(password: string, hashValue: string): Promise<boolean> {
+  return await compare(password, hashValue);
 }
 
 serve(async (req) => {

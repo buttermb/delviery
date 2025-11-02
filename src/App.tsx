@@ -194,6 +194,9 @@ const App = () => {
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
+                        {/* Welcome Page (must be before AdminLayout) */}
+                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
+                        
                         {/* Trial Expired Page (must be before AdminLayout) */}
                         <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
                         

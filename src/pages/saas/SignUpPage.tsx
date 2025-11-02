@@ -89,160 +89,60 @@ export default function SignUpPage() {
     },
   });
 
-  const generateSlug = (businessName: string): string => {
-    return businessName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
   const onSubmit = async (data: SignupFormData) => {
     setIsSubmitting(true);
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            name: data.owner_name,
-            business_name: data.business_name,
-          },
+      // Call tenant-signup Edge Function
+      const { data: result, error } = await supabase.functions.invoke('tenant-signup', {
+        body: {
+          email: data.email,
+          password: data.password,
+          business_name: data.business_name,
+          owner_name: data.owner_name,
+          phone: data.phone,
+          state: data.state,
+          industry: data.industry,
+          company_size: data.company_size,
         },
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to create user');
-
-      // Generate unique slug
-      let slug = generateSlug(data.business_name);
-      let slugExists = true;
-      let attempts = 0;
-      while (slugExists && attempts < 10) {
-        const { count } = await supabase
-          .from('tenants')
-          .select('id', { count: 'exact', head: true })
-          .eq('slug', slug);
-        
-        if (count === 0) {
-          slugExists = false;
-        } else {
-          slug = `${generateSlug(data.business_name)}-${Date.now()}`;
-          attempts++;
-        }
+      if (error) {
+        throw new Error(error.message || 'Failed to create account');
       }
 
-      // Create tenant
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({
-          business_name: data.business_name,
-          slug,
-          owner_email: data.email,
-          owner_name: data.owner_name,
-          phone: data.phone,
-          industry: data.industry,
-          company_size: data.company_size,
-          subscription_plan: 'starter',
-          subscription_status: 'trial',
-          trial_ends_at: trialEndsAt.toISOString(),
-          limits: {
-            customers: 50,
-            menus: 3,
-            products: 100,
-            locations: 2,
-            users: 3,
-          },
-          usage: {
-            customers: 0,
-            menus: 0,
-            products: 0,
-            locations: 0,
-            users: 1,
-          },
-          features: {
-            api_access: false,
-            custom_branding: false,
-            white_label: false,
-            advanced_analytics: false,
-            sms_enabled: false,
-          },
-          mrr: 99,
-        })
-        .select()
-        .single();
-
-      if (tenantError) throw tenantError;
-
-      // Create tenant user (owner)
-      const { error: userError } = await supabase
-        .from('tenant_users')
-        .insert({
-          tenant_id: tenant.id,
-          email: data.email,
-          name: data.owner_name,
-          role: 'owner',
-          status: 'pending', // Will be active after password setup
-          invited_at: new Date().toISOString(),
-        });
-
-      if (userError) throw userError;
-
-      // Setup password hash via Edge Function
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const passwordResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'setup-password',
-            email: data.email,
-            password: data.password,
-            tenantSlug: tenant.slug,
-          }),
-        });
-
-        if (!passwordResponse.ok) {
-          const errorData = await passwordResponse.json();
-          console.warn('Password setup warning:', errorData.error || 'Failed to setup password');
-          // Continue anyway - user can set password later or retry
-        }
-      } catch (passwordError) {
-        console.error('Password setup error:', passwordError);
-        // Continue anyway - user can set password later
+      if (!result || !result.success) {
+        throw new Error(result?.error || 'Failed to create account. Please try again.');
       }
 
-      // Log subscription event
-      await supabase.from('subscription_events').insert({
-        tenant_id: tenant.id,
-        event_type: 'trial_started',
-        to_plan: 'starter',
-        amount: 0,
-      });
+      const tenant = result.tenant;
 
       toast({
         title: 'Account Created!',
-        description: 'Redirecting to welcome page...',
+        description: 'Your account has been created successfully. Please sign in to continue.',
       });
 
-      // Redirect to tenant-specific welcome onboarding page
-      navigate(`/${tenant.slug}/admin/welcome`, { 
-        state: { 
-          tenantSlug: tenant.slug, 
-          tenantId: tenant.id,
-          name: data.owner_name 
-        } 
-      });
+      // Redirect to login page with success message
+      navigate(`/saas/login?signup=success&tenant=${tenant.slug}`);
     } catch (error: any) {
       console.error('Signup error:', error);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to create account. Please try again.';
+      if (error.message) {
+        if (error.message.includes('already exists')) {
+          errorMessage = 'An account with this email already exists. Please sign in instead.';
+        } else if (error.message.includes('slug')) {
+          errorMessage = 'This business name is already taken. Please try a different name.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
       toast({
         title: 'Sign Up Failed',
-        description: error.message || 'Failed to create account. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
