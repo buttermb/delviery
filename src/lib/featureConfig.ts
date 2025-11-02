@@ -156,7 +156,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
   'order-analytics': {
     id: 'order-analytics',
     name: 'Order Analytics',
-    description: 'Detailed order insights',
+    description: 'Deep insights into order performance, trends, and patterns',
     tier: 'professional',
     category: 'Analytics',
     route: '/admin/order-analytics',
@@ -172,7 +172,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
   'sales-dashboard': {
     id: 'sales-dashboard',
     name: 'Sales Dashboard',
-    description: 'Track sales performance',
+    description: 'Comprehensive sales metrics, revenue trends, and profit analysis',
     tier: 'professional',
     category: 'Sales',
     route: '/admin/sales-dashboard',
@@ -260,7 +260,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
   'customer-insights': {
     id: 'customer-insights',
     name: 'Customer Insights',
-    description: 'Deep customer analytics',
+    description: 'Understand customer behavior, segments, and lifetime value',
     tier: 'professional',
     category: 'Customers',
     route: '/admin/customer-insights',

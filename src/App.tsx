@@ -101,6 +101,9 @@ const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement
 // 13 Hidden gem pages
 const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
+const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
+const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage"));
 const Couriers = lazy(() => import("./pages/admin/Couriers"));
 const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
 const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
@@ -283,6 +286,12 @@ const App = () => {
                           <Route path="financial-center" element={<FeatureProtectedRoute featureId="financial-center"><FinancialCenter /></FeatureProtectedRoute>} />
                           <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                           <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
+                          
+                          {/* Professional Tier - Analytics */}
+                          <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
+                          <Route path="customer-insights" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerInsightsPage /></FeatureProtectedRoute>} />
+                          
                           <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                           <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
                           <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
