@@ -3318,6 +3318,80 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount_due: number
+          amount_paid: number | null
+          billing_period_end: string | null
+          billing_period_start: string | null
+          created_at: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          line_items: Json | null
+          paid_at: string | null
+          status: string | null
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          subtotal: number
+          tax: number | null
+          tenant_id: string
+          total: number
+          updated_at: string | null
+        }
+        Insert: {
+          amount_due: number
+          amount_paid?: number | null
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date: string
+          line_items?: Json | null
+          paid_at?: string | null
+          status?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subtotal: number
+          tax?: number | null
+          tenant_id: string
+          total: number
+          updated_at?: string | null
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number | null
+          billing_period_end?: string | null
+          billing_period_start?: string | null
+          created_at?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          line_items?: Json | null
+          paid_at?: string | null
+          status?: string | null
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subtotal?: number
+          tax?: number | null
+          tenant_id?: string
+          total?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       label_templates: {
         Row: {
           account_id: string
@@ -5834,27 +5908,36 @@ export type Database = {
       subscription_plans: {
         Row: {
           created_at: string | null
+          description: string | null
+          display_name: string | null
           features: Json | null
           id: string
           limits: Json | null
           name: string
           price: number
+          price_monthly: number | null
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
+          display_name?: string | null
           features?: Json | null
           id?: string
           limits?: Json | null
           name: string
           price: number
+          price_monthly?: number | null
         }
         Update: {
           created_at?: string | null
+          description?: string | null
+          display_name?: string | null
           features?: Json | null
           id?: string
           limits?: Json | null
           name?: string
           price?: number
+          price_monthly?: number | null
         }
         Relationships: []
       }
@@ -6094,6 +6177,7 @@ export type Database = {
           state: string | null
           state_licenses: Json | null
           status: string | null
+          stripe_customer_id: string | null
           subscription_plan: string
           subscription_status: string
           suspended_reason: string | null
@@ -6121,6 +6205,7 @@ export type Database = {
           state?: string | null
           state_licenses?: Json | null
           status?: string | null
+          stripe_customer_id?: string | null
           subscription_plan: string
           subscription_status: string
           suspended_reason?: string | null
@@ -6148,6 +6233,7 @@ export type Database = {
           state?: string | null
           state_licenses?: Json | null
           status?: string | null
+          stripe_customer_id?: string | null
           subscription_plan?: string
           subscription_status?: string
           suspended_reason?: string | null
@@ -7112,6 +7198,10 @@ export type Database = {
       is_age_verified: { Args: { _user_id: string }; Returns: boolean }
       is_device_blocked: { Args: { _fingerprint: string }; Returns: boolean }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
+      is_tenant_admin: {
+        Args: { tenant_id_param: string; user_id: string }
+        Returns: boolean
+      }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
