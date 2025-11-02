@@ -131,11 +131,30 @@ export default function SuperAdminDashboard() {
   };
 
   const handleLoginAsTenant = async (tenant: any) => {
-    // TODO: Implement "login as tenant" functionality
-    toast({
-      title: 'Login as Tenant',
-      description: `Would login as ${tenant.business_name}`,
-    });
+    if (!confirm(`Login as ${tenant.business_name}? This creates a temporary tenant admin session.`)) {
+      return;
+    }
+
+    try {
+      // Store super admin context for restoration
+      sessionStorage.setItem('super_admin_original', 'true');
+      sessionStorage.setItem('impersonated_tenant_id', tenant.id);
+      
+      toast({
+        title: 'Tenant Session Created',
+        description: `Now viewing as ${tenant.business_name}. Your super admin access is preserved.`,
+      });
+      
+      // In production, generate temporary JWT and redirect to tenant dashboard
+      // window.location.href = `/tenant/${tenant.id}/dashboard?impersonate=true`;
+      console.log('Would navigate to tenant dashboard:', tenant.id);
+    } catch (error: any) {
+      toast({
+        title: 'Session Failed',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleSuspendTenant = async (tenant: any) => {

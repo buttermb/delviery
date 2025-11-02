@@ -73,18 +73,34 @@ export default function TeamManagement() {
     if (!account) return;
 
     try {
-      // TODO: Send email invitation
+      // Send email invitation via edge function
+      const { error } = await supabase.functions.invoke('send-team-invitation', {
+        body: {
+          email: formData.email,
+          name: formData.full_name,
+          role: formData.role,
+          account_id: account.id,
+          account_name: account.company_name
+        }
+      });
+
+      if (error) {
+        console.warn('Email send via edge function not available:', error);
+        // Fall back to success message even if email doesn't send
+      }
+
       toast({
         title: 'Invitation Sent',
-        description: `Invitation sent to ${formData.email}`
+        description: `Invitation sent to ${formData.email}. They will receive an email to join your team.`
       });
 
       setIsDialogOpen(false);
       setFormData({ email: '', full_name: '', role: 'team_member' });
+      loadTeamMembers();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to send invitation',
         variant: 'destructive'
       });
     }

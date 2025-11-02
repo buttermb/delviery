@@ -192,12 +192,32 @@ export default function SuperAdminCustomers() {
                   <Button 
                     size="sm" 
                     className="flex-1"
-                    onClick={() => {
-                      // TODO: Implement login as
-                      toast({
-                        title: 'Login As feature',
-                        description: 'This will be implemented soon'
-                      });
+                    onClick={async () => {
+                      if (!confirm(`Login as ${account.business_name || 'this account'}? This will create a temporary admin session.`)) {
+                        return;
+                      }
+                      
+                      try {
+                        // In a real implementation, this would create a temporary session token
+                        // and redirect to the tenant's dashboard
+                        toast({
+                          title: 'Session Created',
+                          description: `Logging in as ${account.business_name}. Note: This is a simulated admin session.`
+                        });
+                        
+                        // Store the original admin session for later restoration
+                        sessionStorage.setItem('super_admin_session', 'true');
+                        sessionStorage.setItem('impersonated_account_id', account.id);
+                        
+                        // In production, navigate to tenant dashboard
+                        // navigate(`/admin/dashboard?impersonate=${account.id}`);
+                      } catch (error: any) {
+                        toast({
+                          title: 'Login Failed',
+                          description: error.message,
+                          variant: 'destructive'
+                        });
+                      }
                     }}
                   >
                     <LogIn className="w-4 h-4 mr-2" />

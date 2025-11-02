@@ -25,9 +25,70 @@ interface AdvancedReportsCardProps {
 }
 
 export const AdvancedReportsCard = ({ menuId, stats }: AdvancedReportsCardProps) => {
-  const generateReport = (reportType: string) => {
-    console.log(`Generating ${reportType} report for menu ${menuId}`);
-    // TODO: Implement report generation
+  const generateReport = async (reportType: string) => {
+    try {
+      console.log(`Generating ${reportType} report for menu ${menuId}`);
+      
+      // Generate report data based on type
+      let reportData: any = {
+        menuId,
+        generatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+        stats,
+        reportType
+      };
+
+      // Add specific data based on report type
+      switch (reportType) {
+        case 'access':
+          reportData.title = 'Access Activity Report';
+          reportData.description = `Detailed access logs and activity for menu ${menuId}`;
+          break;
+        case 'security':
+          reportData.title = 'Security Incidents Report';
+          reportData.description = `Security events and incidents for menu ${menuId}`;
+          break;
+        case 'conversion':
+          reportData.title = 'Conversion Analysis Report';
+          reportData.description = `View-to-order conversion metrics for menu ${menuId}`;
+          break;
+        case 'compliance':
+          reportData.title = 'Compliance Audit Report';
+          reportData.description = `Audit trail and compliance data for menu ${menuId}`;
+          break;
+      }
+
+      // Generate CSV format
+      const csvContent = [
+        ['Report Type', reportData.title],
+        ['Generated', reportData.generatedAt],
+        ['Menu ID', menuId],
+        ['', ''],
+        ['Metric', 'Value'],
+        ['Total Views', stats.totalViews],
+        ['Unique Visitors', stats.uniqueVisitors],
+        ['Conversion Rate', `${stats.conversionRate}%`],
+        ['Security Incidents', stats.securityIncidents],
+        ['Avg Session Duration', `${Math.round(stats.avgSessionDuration / 60)} minutes`],
+        ['Peak Access Time', stats.peakAccessTime],
+      ]
+        .map(row => row.join(','))
+        .join('\n');
+
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportType}-report-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      console.log('Report generated successfully');
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+    }
   };
 
   return (

@@ -352,18 +352,31 @@ export default function CustomerMenuViewPage() {
                 <div>
                   <p className="text-sm text-[hsl(var(--customer-text-light))]">{getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''} in cart</p>
                   <p className="text-lg font-bold text-[hsl(var(--customer-text))]">
-                    {/* TODO: Calculate total */}
-                    {formatCurrency(0)}
+                    {formatCurrency(
+                      Object.values(cart).reduce((total, item) => {
+                        const price = item.product.price || item.product.custom_price || 0;
+                        return total + (price * item.quantity);
+                      }, 0)
+                    )}
                   </p>
                 </div>
               </div>
               <Button
                 size="lg"
                 onClick={() => {
-                  toast({
-                    title: "Cart functionality coming soon",
-                  });
-                  // TODO: Navigate to checkout
+                  const cartItems = Object.values(cart);
+                  if (cartItems.length === 0) {
+                    toast({
+                      title: "Cart is empty",
+                      description: "Add some items before checking out",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  // Navigate to checkout with cart data
+                  const cartData = encodeURIComponent(JSON.stringify(cart));
+                  navigate(`/customer/menu/${menuId}/checkout?cart=${cartData}`);
                 }}
                 className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white px-8"
               >

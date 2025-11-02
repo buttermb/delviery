@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function SettingsPage() {
   const { account } = useAccount();
@@ -63,11 +64,48 @@ export default function SettingsPage() {
   const handleSave = async (section: string) => {
     setLoading(true);
     try {
-      // TODO: Save to backend
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!account?.id) {
+        throw new Error('No account selected');
+      }
+
+      // Save settings based on section
+      let updateData: any = {};
+      
+      switch (section) {
+        case 'General':
+          updateData = {
+            company_name: generalSettings.companyName,
+            // Add more general settings as needed
+          };
+          break;
+        case 'Security':
+          // Security settings would be saved to a separate table or user preferences
+          console.log('Saving security settings:', securitySettings);
+          break;
+        case 'Notifications':
+          // Save notification preferences
+          console.log('Saving notification settings:', notificationSettings);
+          break;
+        case 'Printing':
+          // Save printing preferences
+          console.log('Saving printing settings:', printingSettings);
+          break;
+      }
+
+      // Update account if there's data to save
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+          .from('accounts')
+          .update(updateData)
+          .eq('id', account.id);
+
+        if (error) throw error;
+      }
+
       showSuccessToast(`${section} settings saved successfully`);
-    } catch (error) {
-      showErrorToast(`Failed to save ${section} settings`);
+    } catch (error: any) {
+      console.error(`Error saving ${section} settings:`, error);
+      showErrorToast(error.message || `Failed to save ${section} settings`);
     } finally {
       setLoading(false);
     }

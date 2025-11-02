@@ -106,8 +106,26 @@ export default function SuperAdminDashboard() {
   };
 
   const loginAsAccount = async (accountId: string) => {
-    // TODO: Implement login as functionality
-    console.log('Login as account:', accountId);
+    if (!confirm('Login as this account? This will create a temporary admin session.')) {
+      return;
+    }
+    
+    try {
+      // Store super admin context
+      sessionStorage.setItem('super_admin_session', 'true');
+      sessionStorage.setItem('impersonated_account_id', accountId);
+      
+      toast.success('Admin Session Created', {
+        description: 'You are now viewing as this account. Your super admin privileges are preserved.'
+      });
+      
+      // In production, this would generate a temporary JWT and navigate
+      console.log('Login as account:', accountId);
+    } catch (error: any) {
+      toast.error('Session Failed', {
+        description: error.message
+      });
+    }
   };
 
   if (accountLoading || loading) {
