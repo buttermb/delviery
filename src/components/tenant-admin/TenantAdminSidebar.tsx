@@ -16,6 +16,16 @@ import {
   LayoutDashboard,
   Settings,
   LogOut,
+  Menu,
+  Package,
+  Users,
+  BarChart3,
+  FileText,
+  Barcode,
+  ShoppingCart,
+  CreditCard,
+  Warehouse,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -25,6 +35,56 @@ const menuItems = [
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Disposable Menus",
+    url: "/admin/disposable-menus",
+    icon: Menu,
+  },
+  {
+    title: "Menu Orders",
+    url: "/admin/disposable-menu-orders",
+    icon: ShoppingCart,
+  },
+  {
+    title: "Menu Analytics",
+    url: "/admin/menu-analytics",
+    icon: TrendingUp,
+  },
+  {
+    title: "Products",
+    url: "/admin/inventory/products",
+    icon: Package,
+  },
+  {
+    title: "Customers",
+    url: "/admin/big-plug-clients",
+    icon: Users,
+  },
+  {
+    title: "Generate Barcodes",
+    url: "/admin/generate-barcodes",
+    icon: Barcode,
+  },
+  {
+    title: "Wholesale Orders",
+    url: "/admin/wholesale-orders",
+    icon: FileText,
+  },
+  {
+    title: "Inventory",
+    url: "/admin/inventory-dashboard",
+    icon: Warehouse,
+  },
+  {
+    title: "Reports",
+    url: "/admin/reports",
+    icon: BarChart3,
+  },
+  {
+    title: "Billing",
+    url: "/admin/billing",
+    icon: CreditCard,
   },
   {
     title: "Settings",

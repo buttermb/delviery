@@ -73,6 +73,18 @@ const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/Settings
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/Help"));
 
+// Tenant Admin Feature Pages
+const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
+const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
+const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
+const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
+const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
+const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
+const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
+const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
+const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
+const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
+
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
@@ -207,6 +219,16 @@ const App = () => {
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
                           <Route path="dashboard" element={<TenantAdminDashboardPage />} />
+                          <Route path="disposable-menus" element={<DisposableMenus />} />
+                          <Route path="disposable-menu-orders" element={<DisposableMenuOrders />} />
+                          <Route path="disposable-menu-analytics" element={<DisposableMenuAnalytics />} />
+                          <Route path="menu-analytics" element={<MenuAnalytics />} />
+                          <Route path="inventory/products" element={<ProductManagement />} />
+                          <Route path="big-plug-clients" element={<BigPlugClients />} />
+                          <Route path="generate-barcodes" element={<GenerateBarcodes />} />
+                          <Route path="wholesale-orders" element={<WholesaleOrders />} />
+                          <Route path="inventory-dashboard" element={<InventoryDashboard />} />
+                          <Route path="reports" element={<ReportsPage />} />
                           <Route path="billing" element={<TenantAdminBillingPage />} />
                           <Route path="settings" element={<TenantAdminSettingsPage />} />
                         </Route>
