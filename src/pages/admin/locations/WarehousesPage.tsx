@@ -88,38 +88,38 @@ export default function WarehousesPage() {
     {
       accessorKey: 'location',
       header: 'Warehouse',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex items-center gap-2">
           <Warehouse className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.original.location}</span>
+          <span className="font-medium">{original.location}</span>
         </div>
       ),
     },
     {
       accessorKey: 'product_count',
       header: 'Products',
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.product_count} items</Badge>
+      cell: ({ original }) => (
+        <Badge variant="secondary">{original.product_count} items</Badge>
       ),
     },
     {
       accessorKey: 'total_quantity',
       header: 'Total Quantity',
-      cell: ({ row }) => `${Number(row.original.total_quantity).toFixed(1)} lbs`,
+      cell: ({ original }) => `${Number(original.total_quantity).toFixed(1)} lbs`,
     },
     {
       accessorKey: 'total_value',
       header: 'Total Value',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="font-medium">
-          ${Number(row.original.total_value).toFixed(2)}
+          ${Number(original.total_value).toFixed(2)}
         </div>
       ),
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
@@ -127,7 +127,7 @@ export default function WarehousesPage() {
             onClick={() => {
               // Navigate to inventory filtered by warehouse
               navigate(`/admin/big-plug-inventory?warehouse=${encodeURIComponent(
-                row.original.location
+                original.location
               )}`);
             }}
           >

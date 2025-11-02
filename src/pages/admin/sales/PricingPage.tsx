@@ -110,27 +110,27 @@ export default function PricingPage() {
     {
       accessorKey: 'products.name',
       header: 'Product',
-      cell: ({ row }) => row.original.products?.name || 'N/A',
+      cell: ({ original }) => original.products?.name || 'N/A',
     },
     {
       accessorKey: 'min_quantity',
       header: 'Min Quantity',
-      cell: ({ row }) => `${row.original.min_quantity} lbs`,
+      cell: ({ original }) => `${original.min_quantity} lbs`,
     },
     {
       accessorKey: 'price_per_lb',
       header: 'Price/lb',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="font-medium">
-          ${Number(row.original.price_per_lb).toFixed(2)}
+          ${Number(original.price_per_lb).toFixed(2)}
         </div>
       ),
     },
     {
       accessorKey: 'bulk_discount_percent',
       header: 'Discount',
-      cell: ({ row }) => {
-        const discount = row.original.bulk_discount_percent || 0;
+      cell: ({ original }) => {
+        const discount = original.bulk_discount_percent || 0;
         return discount > 0 ? (
           <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
             <TrendingDown className="h-3 w-3 mr-1" />
@@ -144,18 +144,18 @@ export default function PricingPage() {
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
+      cell: ({ original }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              setEditingTier(row.original);
+              setEditingTier(original);
               setFormData({
-                product_id: row.original.product_id,
-                min_quantity: String(row.original.min_quantity),
-                price_per_lb: String(row.original.price_per_lb),
-                bulk_discount_percent: String(row.original.bulk_discount_percent || 0),
+                product_id: original.product_id,
+                min_quantity: String(original.min_quantity),
+                price_per_lb: String(original.price_per_lb),
+                bulk_discount_percent: String(original.bulk_discount_percent || 0),
               });
               setIsDialogOpen(true);
             }}

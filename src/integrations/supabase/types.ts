@@ -3560,6 +3560,33 @@ export type Database = {
           },
         ]
       }
+      menu_access: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          customer_id: string | null
+          expires_at: string | null
+          id: string
+          menu_id: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          menu_id?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          menu_id?: string | null
+        }
+        Relationships: []
+      }
       menu_access_code_history: {
         Row: {
           id: string
@@ -3986,6 +4013,35 @@ export type Database = {
         }
         Relationships: []
       }
+      menu_products: {
+        Row: {
+          created_at: string | null
+          id: string
+          menu_id: string | null
+          product_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          menu_id?: string | null
+          product_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          menu_id?: string | null
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_products_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_screenshot_attempts: {
         Row: {
           action_taken: string | null
@@ -4136,6 +4192,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      menus: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          tenant_id?: string | null
+        }
+        Relationships: []
       }
       merchants: {
         Row: {
@@ -6004,6 +6087,33 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          quantity: number | null
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          quantity?: number | null
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          quantity?: number | null
+          tenant_id?: string | null
+        }
+        Relationships: []
+      }
       user_ip_addresses: {
         Row: {
           blocked_at: string | null
@@ -6286,6 +6396,7 @@ export type Database = {
           order_id: string
           picked_up_at: string | null
           runner_id: string
+          scheduled_pickup_time: string | null
           status: string
           total_value: number | null
           total_weight: number | null
@@ -6303,6 +6414,7 @@ export type Database = {
           order_id: string
           picked_up_at?: string | null
           runner_id: string
+          scheduled_pickup_time?: string | null
           status?: string
           total_value?: number | null
           total_weight?: number | null
@@ -6320,6 +6432,7 @@ export type Database = {
           order_id?: string
           picked_up_at?: string | null
           runner_id?: string
+          scheduled_pickup_time?: string | null
           status?: string
           total_value?: number | null
           total_weight?: number | null
