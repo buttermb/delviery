@@ -2169,6 +2169,41 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          flag_name: string
+          id: string
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          flag_name: string
+          id?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          flag_name?: string
+          id?: string
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fraud_flags: {
         Row: {
           auto_resolved: boolean | null
@@ -5796,6 +5831,33 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          features: Json | null
+          id: string
+          limits: Json | null
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          limits?: Json | null
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          limits?: Json | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           account_id: string
@@ -6015,6 +6077,7 @@ export type Database = {
       tenants: {
         Row: {
           business_name: string
+          cancelled_at: string | null
           compliance_verified: boolean | null
           created_at: string | null
           features: Json | null
@@ -6030,15 +6093,18 @@ export type Database = {
           slug: string
           state: string | null
           state_licenses: Json | null
+          status: string | null
           subscription_plan: string
           subscription_status: string
           suspended_reason: string | null
           trial_ends_at: string | null
           updated_at: string | null
           usage: Json | null
+          white_label: Json | null
         }
         Insert: {
           business_name: string
+          cancelled_at?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
           features?: Json | null
@@ -6054,15 +6120,18 @@ export type Database = {
           slug: string
           state?: string | null
           state_licenses?: Json | null
+          status?: string | null
           subscription_plan: string
           subscription_status: string
           suspended_reason?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
           usage?: Json | null
+          white_label?: Json | null
         }
         Update: {
           business_name?: string
+          cancelled_at?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
           features?: Json | null
@@ -6078,12 +6147,14 @@ export type Database = {
           slug?: string
           state?: string | null
           state_licenses?: Json | null
+          status?: string | null
           subscription_plan?: string
           subscription_status?: string
           suspended_reason?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
           usage?: Json | null
+          white_label?: Json | null
         }
         Relationships: []
       }
