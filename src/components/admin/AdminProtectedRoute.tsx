@@ -18,8 +18,7 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
   }
 
   if (!isAdmin) {
-    // Redirect to marketing home instead of non-existent /admin/login
-    return <Navigate to="/marketing" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <>{children}</>;

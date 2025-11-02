@@ -53,6 +53,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const About = lazy(() => import("./pages/About"));
 
 // Three-Tier Auth System Pages
+const AdminLoginPage = lazy(() => import("./pages/admin/LoginPage"));
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
 const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
 const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
@@ -177,6 +178,9 @@ const App = () => {
                         <Route path="/m/:token" element={<SecureMenuAccess />} />
                         <Route path="/m/:token/view" element={<SecureMenuView />} />
                         <Route path="/menu/:token" element={<MenuAccess />} />
+                        
+                        {/* ==================== REGULAR ADMIN (Legacy System) ==================== */}
+                        <Route path="/admin/login" element={<AdminLoginPage />} />
                         
                         {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                         <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />

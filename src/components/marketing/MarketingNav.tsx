@@ -30,7 +30,7 @@ export function MarketingNav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link to="/super-admin/login" className="hidden md:block">
+          <Link to="/admin/login" className="hidden md:block">
             <Button variant="ghost" size="sm">Admin</Button>
           </Link>
           <Link to="/signup">
@@ -83,7 +83,7 @@ export function MarketingNav() {
               Contact
             </Link>
             <div className="pt-4 border-t border-[hsl(var(--marketing-border))] space-y-2">
-              <Link to="/super-admin/login" className="block">
+              <Link to="/admin/login" className="block">
                 <Button variant="ghost" size="sm" className="w-full">Admin Login</Button>
               </Link>
               <Link to="/signup" className="block">
