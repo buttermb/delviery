@@ -66,45 +66,42 @@ export default function TenantAdminBillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--tenant-bg))] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-[hsl(var(--tenant-text))] mb-2">💳 Billing & Subscription</h1>
-          <p className="text-[hsl(var(--tenant-text-light))]">Manage your subscription and view billing history</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">💳 Billing & Subscription</h1>
+          <p className="text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
 
         {/* Current Plan */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-[hsl(var(--tenant-text))] flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
               Current Plan
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold text-[hsl(var(--tenant-text))]">
+                <span className="text-2xl font-bold">
                   {plan?.display_name || (tenant?.subscription_plan as string)?.toUpperCase() || "No Plan"}
                 </span>
-                <Badge 
-                  variant="outline" 
-                  className="border-[hsl(var(--tenant-primary))] text-[hsl(var(--tenant-primary))] bg-[hsl(var(--tenant-primary))]/5"
-                >
+                <Badge variant="outline">
                   {formatCurrency((tenant as any)?.mrr || 0)}/month
                 </Badge>
               </div>
-              <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
+              <p className="text-sm text-muted-foreground mb-2">
                 {plan?.description || "Your current subscription plan"}
               </p>
               
               {/* Platform Fee Notice */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-purple-900">
+              <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-4">
+                <p className="text-sm text-purple-900 dark:text-purple-100">
                   💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant as any)?.mrr || 0) * 0.02)}/month (2% of subscription)
                 </p>
-                <p className="text-xs text-purple-700 mt-1">
+                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
                   This fee covers platform hosting, maintenance, and support
                 </p>
               </div>
@@ -112,7 +109,7 @@ export default function TenantAdminBillingPage() {
               {plan?.features && Array.isArray(plan.features) && (
                 <div className="space-y-2 mb-4">
                   {plan.features.map((feature: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2 text-sm text-[hsl(var(--tenant-text))]">
+                    <div key={index} className="flex items-center gap-2 text-sm">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                       <span>{feature.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
                     </div>
@@ -120,17 +117,11 @@ export default function TenantAdminBillingPage() {
                 </div>
               )}
 
-              <div className="flex gap-2 pt-4 border-t border-[hsl(var(--tenant-border))]">
-                <Button 
-                  variant="outline"
-                  className="border-[hsl(var(--tenant-primary))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/10"
-                >
+              <div className="flex gap-2 pt-4 border-t">
+                <Button variant="outline">
                   ⬆️ Upgrade Plan
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
-                >
+                <Button variant="outline">
                   Change Plan
                 </Button>
               </div>
@@ -139,9 +130,9 @@ export default function TenantAdminBillingPage() {
         </Card>
 
         {/* Usage This Month */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-[hsl(var(--tenant-text))]">📊 Usage This Month</CardTitle>
+            <CardTitle>📊 Usage This Month</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {Object.keys(limits).length > 0 ? (
@@ -155,21 +146,21 @@ export default function TenantAdminBillingPage() {
                 return (
                   <div key={resource} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="capitalize text-[hsl(var(--tenant-text))]">{resource.replace(/_/g, " ")}</span>
-                      <span className={isOverLimit ? "text-red-600 font-semibold" : "text-[hsl(var(--tenant-text-light))]"}>
+                      <span className="capitalize">{resource.replace(/_/g, " ")}</span>
+                      <span className={isOverLimit ? "text-red-600 font-semibold" : "text-muted-foreground"}>
                         {current.toLocaleString()} / {isUnlimited ? "Unlimited" : limit.toLocaleString()}
                         {!isUnlimited && ` (${percentage.toFixed(0)}%)`}
                       </span>
                     </div>
                     {!isUnlimited && (
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div
                           className={`h-2 rounded-full transition-all ${
                             isOverLimit 
                               ? "bg-red-500" 
                               : percentage > 80 
                                 ? "bg-yellow-500" 
-                                : "bg-[hsl(var(--tenant-primary))]"
+                                : "bg-primary"
                           }`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
@@ -185,17 +176,17 @@ export default function TenantAdminBillingPage() {
                 );
               })
             ) : (
-              <p className="text-[hsl(var(--tenant-text-light))] text-center py-4">No usage limits configured</p>
+              <p className="text-muted-foreground text-center py-4">No usage limits configured</p>
             )}
 
             {usage?.customers && limits?.customers && usage.customers > limits.customers && (
-              <Card className="bg-yellow-50 border-yellow-500 border-2">
+              <Card className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500 border-2">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle className="h-4 w-4 text-yellow-600" />
-                    <p className="text-sm font-medium text-yellow-900">Overage Charges</p>
+                    <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">Overage Charges</p>
                   </div>
-                  <p className="text-sm text-yellow-800">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     <strong>{formatCurrency(
                       ((usage.customers - limits.customers) * 0.50)
                     )}</strong> for exceeding customer limit
@@ -207,10 +198,10 @@ export default function TenantAdminBillingPage() {
         </Card>
 
         {/* Payment Method */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-[hsl(var(--tenant-text))] flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
               Payment Method
             </CardTitle>
           </CardHeader>
@@ -218,30 +209,25 @@ export default function TenantAdminBillingPage() {
             {(tenant as any)?.payment_method_added ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[hsl(var(--tenant-surface))]">
-                    <CreditCard className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+                  <div className="p-2 rounded-lg bg-muted">
+                    <CreditCard className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-[hsl(var(--tenant-text))]">Payment method on file</p>
-                    <p className="text-sm text-[hsl(var(--tenant-text-light))]">Visa ending in 4242</p>
+                    <p className="font-medium">Payment method on file</p>
+                    <p className="text-sm text-muted-foreground">Visa ending in 4242</p>
                   </div>
                 </div>
-                <Button 
-                  variant="outline"
-                  className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
-                >
+                <Button variant="outline">
                   Update Payment Method
                 </Button>
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--tenant-surface))] mb-4">
-                  <CreditCard className="h-8 w-8 text-[hsl(var(--tenant-text-light))]" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                  <CreditCard className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-[hsl(var(--tenant-text-light))] mb-4">No payment method added</p>
-                <Button 
-                  className="bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
-                >
+                <p className="text-muted-foreground mb-4">No payment method added</p>
+                <Button>
                   Add Payment Method
                 </Button>
               </div>
@@ -250,9 +236,9 @@ export default function TenantAdminBillingPage() {
         </Card>
 
         {/* Billing History */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-[hsl(var(--tenant-text))]">📄 Billing History</CardTitle>
+            <CardTitle>📄 Billing History</CardTitle>
           </CardHeader>
           <CardContent>
             {invoices && invoices.length > 0 ? (
@@ -260,23 +246,18 @@ export default function TenantAdminBillingPage() {
                 {invoices.map((invoice: any) => (
                   <div
                     key={invoice.id}
-                    className="flex items-center justify-between p-4 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"
                   >
                     <div>
-                      <p className="font-medium text-[hsl(var(--tenant-text))]">{invoice.invoice_number || `Invoice #${invoice.id.slice(0, 8)}`}</p>
-                      <p className="text-sm text-[hsl(var(--tenant-text-light))]">
+                      <p className="font-medium">{invoice.invoice_number || `Invoice #${invoice.id.slice(0, 8)}`}</p>
+                      <p className="text-sm text-muted-foreground">
                         {formatSmartDate(invoice.issue_date)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-[hsl(var(--tenant-text))]">{formatCurrency(invoice.total || 0)}</p>
+                      <p className="font-medium">{formatCurrency(invoice.total || 0)}</p>
                       <Badge 
                         variant={invoice.status === "paid" ? "default" : "outline"}
-                        className={
-                          invoice.status === "paid" 
-                            ? "bg-green-100 text-green-800 border-green-200"
-                            : "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))]"
-                        }
                       >
                         {invoice.status?.toUpperCase() || "PENDING"}
                       </Badge>
@@ -284,7 +265,6 @@ export default function TenantAdminBillingPage() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="hover:bg-[hsl(var(--tenant-surface))] text-[hsl(var(--tenant-text))]"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
@@ -293,20 +273,22 @@ export default function TenantAdminBillingPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--tenant-surface))] mb-4">
-                  <CreditCard className="h-8 w-8 text-[hsl(var(--tenant-text-light))]" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                  <CreditCard className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <p className="text-[hsl(var(--tenant-text-light))]">No invoices yet</p>
+                <p className="text-muted-foreground">No invoices yet</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Footer Note */}
-        <div className="text-center text-sm text-[hsl(var(--tenant-text-light))] bg-white p-4 rounded-lg border border-[hsl(var(--tenant-border))]">
-          <p className="mb-1">Billing is managed by the platform administrator.</p>
-          <p>For changes to your subscription, please contact support.</p>
-        </div>
+        <Card>
+          <CardContent className="text-center text-sm text-muted-foreground p-4">
+            <p className="mb-1">Billing is managed by the platform administrator.</p>
+            <p>For changes to your subscription, please contact support.</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
