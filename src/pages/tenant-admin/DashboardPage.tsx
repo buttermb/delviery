@@ -216,19 +216,19 @@ export default function TenantAdminDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--tenant-bg))]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-[hsl(var(--tenant-border))] bg-white sticky top-0 z-50 shadow-sm safe-area-top">
+      <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm safe-area-top">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-2xl font-bold text-[hsl(var(--tenant-text))] truncate">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
               🎛️ {tenant?.business_name || "Dashboard"}
             </h1>
-            <p className="text-xs sm:text-sm text-[hsl(var(--tenant-text-light))] hidden sm:block">Admin Panel</p>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Admin Panel</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {admin && (
-              <div className="text-xs sm:text-sm text-[hsl(var(--tenant-text-light))] hidden sm:block truncate max-w-[120px]">
+              <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block truncate max-w-[120px]">
                 {admin.email}
               </div>
             )}
@@ -236,7 +236,7 @@ export default function TenantAdminDashboardPage() {
               variant="ghost" 
               size="sm"
               asChild 
-              className="text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))] min-h-[44px] px-2 sm:px-3"
+              className="min-h-[44px] px-2 sm:px-3"
             >
               <Link to={`/${tenant?.slug}/admin/settings`}>
                 <Settings className="h-4 w-4 sm:mr-2" />
@@ -247,7 +247,7 @@ export default function TenantAdminDashboardPage() {
               variant="outline" 
               size="sm"
               onClick={handleLogout} 
-              className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))] min-h-[44px] px-2 sm:px-3"
+              className="min-h-[44px] px-2 sm:px-3"
             >
               <span className="hidden sm:inline">Logout</span>
               <span className="sm:hidden">Out</span>
@@ -291,8 +291,8 @@ export default function TenantAdminDashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Button 
-                  className="bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white whitespace-nowrap min-h-[44px] px-3 sm:px-4 text-sm sm:text-base touch-manipulation" 
+                  <Button 
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap min-h-[44px] px-3 sm:px-4 text-sm sm:text-base touch-manipulation"
                   asChild
                 >
                   <Link to={`/${tenant?.slug}/admin/billing`}>
@@ -375,9 +375,9 @@ export default function TenantAdminDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-[hsl(var(--tenant-text))] text-base">⚡ Quick Actions</CardTitle>
+              <CardTitle className="text-base">⚡ Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button variant="outline" className="w-full justify-start" asChild>
@@ -404,15 +404,15 @@ export default function TenantAdminDashboardPage() {
 
         {/* Usage Limit Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text))]">📦 Products</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-[hsl(var(--tenant-primary))]/10 flex items-center justify-center">
-                <Package className="h-5 w-5 text-[hsl(var(--tenant-primary))]" />
+              <CardTitle className="text-sm font-medium">📦 Products</CardTitle>
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Package className="h-5 w-5 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
+              <div className="text-3xl font-bold">
                 {usage.products || 0}/{limits.products || 100}
               </div>
               <Progress 
@@ -427,15 +427,15 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text))]">👥 Customers</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-purple-500" />
+              <CardTitle className="text-sm font-medium">👥 Customers</CardTitle>
+              <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-secondary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
+              <div className="text-3xl font-bold">
                 {usage.customers || 0}/{limits.customers || 50}
               </div>
               <Progress 
@@ -450,11 +450,11 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text))]">📱 Menus</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-[hsl(var(--tenant-secondary))]/10 flex items-center justify-center">
-                <Smartphone className="h-5 w-5 text-[hsl(var(--tenant-secondary))]" />
+              <CardTitle className="text-sm font-medium">📱 Menus</CardTitle>
+              <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Smartphone className="h-5 w-5 text-accent" />
               </div>
             </CardHeader>
             <CardContent>
@@ -473,11 +473,11 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text))]">💰 Revenue</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-green-500" />
+              <CardTitle className="text-sm font-medium">💰 Revenue</CardTitle>
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
@@ -492,9 +492,9 @@ export default function TenantAdminDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-[hsl(var(--tenant-text))]">🚀 Quick Actions</CardTitle>
+            <CardTitle>🚀 Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -533,10 +533,10 @@ export default function TenantAdminDashboardPage() {
         </Card>
 
         {/* Recent Activity Feed */}
-        <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+        <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-[hsl(var(--tenant-text))]">📋 Recent Activity</CardTitle>
+              <CardTitle>📋 Recent Activity</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -569,9 +569,9 @@ export default function TenantAdminDashboardPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Activity className="h-12 w-12 mx-auto text-[hsl(var(--tenant-text-light))] mb-4" />
-                <p className="text-[hsl(var(--tenant-text-light))]">No recent activity</p>
-                <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
+                <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No recent activity</p>
+                <p className="text-xs text-muted-foreground mt-2">
                   Activity will appear here as you use the platform
                 </p>
               </div>
@@ -581,9 +581,9 @@ export default function TenantAdminDashboardPage() {
 
         {/* Low Stock Alerts */}
         {todayMetrics?.lowStock && todayMetrics.lowStock.length > 0 && (
-          <Card className="bg-white border-yellow-300 border-2 shadow-sm">
+          <Card className="border-yellow-300 border-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-[hsl(var(--tenant-text))]">
+              <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
                 Low Stock Alerts
               </CardTitle>
@@ -602,7 +602,7 @@ export default function TenantAdminDashboardPage() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]" asChild>
+              <Button variant="outline" className="w-full mt-4" asChild>
                 <Link to={`/${tenant?.slug}/admin/inventory`}>
                   Manage Inventory <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
