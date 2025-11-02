@@ -21,7 +21,8 @@ export default function CustomerPortal() {
 
   useEffect(() => {
     if (!accountLoading && userProfile?.role !== 'customer') {
-      navigate('/admin/dashboard');
+      // Legacy customers - don't redirect
+      return;
     }
   }, [userProfile, accountLoading, navigate]);
 

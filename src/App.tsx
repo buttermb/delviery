@@ -66,11 +66,13 @@ const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
 const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
+const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
 const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
 const ShoppingCartPage = lazy(() => import("./pages/customer/ShoppingCartPage"));
 const CheckoutPage = lazy(() => import("./pages/customer/CheckoutPage"));
@@ -188,6 +190,7 @@ const App = () => {
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
+                          <Route path="dashboard" element={<TenantAdminDashboardPage />} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
@@ -195,6 +198,7 @@ const App = () => {
                         <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
+                          <Route path="dashboard" element={<CustomerDashboardPage />} />
                         </Route>
                         <Route path="/:tenantSlug/shop/cart" element={<CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/checkout" element={<CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute>} />

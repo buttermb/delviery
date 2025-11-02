@@ -16,8 +16,8 @@ export function NotificationTest() {
       // Test notification
       new Notification('Test Notification', {
         body: 'Notifications are working! You\'ll receive order alerts.',
-        icon: '/nym-logo.svg',
-        badge: '/nym-logo.svg',
+        icon: '/placeholder.svg',
+        badge: '/placeholder.svg',
         tag: 'test-notification'
       });
       
