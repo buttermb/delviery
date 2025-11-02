@@ -114,7 +114,7 @@ export default function DeliveryNotificationModal() {
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
             className="w-full max-w-md"
           >
-            <Card className="bg-white shadow-2xl border-2 border-primary">
+            <Card className="bg-card shadow-2xl border-2 border-primary">
               <CardContent className="p-6">
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">

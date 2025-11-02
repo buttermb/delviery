@@ -10,7 +10,7 @@ interface TestimonialCardProps {
 
 export function TestimonialCard({ quote, author, role, rating = 5, photo }: TestimonialCardProps) {
   return (
-    <div className="p-6 rounded-2xl bg-white border border-[hsl(var(--marketing-border))] hover:shadow-lg transition-shadow">
+    <div className="p-6 rounded-2xl bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))] hover:shadow-lg transition-shadow">
       <div className="flex gap-1 mb-4">
         {[...Array(rating)].map((_, i) => (
           <Star key={i} className="h-4 w-4 fill-[hsl(var(--marketing-accent))] text-[hsl(var(--marketing-accent))]" />

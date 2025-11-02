@@ -100,10 +100,10 @@ export default function LuxuryHero() {
                   navigate('/#products')
                 }
               }}
-              className="group relative px-10 py-4 bg-white text-black text-sm font-light tracking-wide rounded-full hover:bg-emerald-50 transition-all duration-300 overflow-hidden"
+              className="group relative px-10 py-4 bg-background text-foreground text-sm font-light tracking-wide rounded-full hover:bg-accent transition-all duration-300 overflow-hidden"
             >
               <span className="relative z-10">Explore Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 opacity-0 group-hover:opacity-10 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-10 transition-opacity" />
             </button>
             
             <button 

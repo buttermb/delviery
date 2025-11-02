@@ -43,7 +43,7 @@ export function OrderQRCode({ orderId, orderNumber }: OrderQRCodeProps) {
         </p>
       </div>
       
-      <div className="flex justify-center bg-white p-4 rounded-lg">
+      <div className="flex justify-center bg-background p-4 rounded-lg">
         <QRCodeSVG
           id="order-qr-code"
           value={qrValue}

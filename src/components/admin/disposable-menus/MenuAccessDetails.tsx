@@ -83,7 +83,7 @@ export const MenuAccessDetails = ({
 
           {/* QR Code */}
           {showQR ? (
-            <div className="flex justify-center p-4 bg-white rounded-lg">
+            <div className="flex justify-center p-4 bg-background rounded-lg">
               <QRCodeSVG value={shareableUrl} size={200} />
             </div>
           ) : (

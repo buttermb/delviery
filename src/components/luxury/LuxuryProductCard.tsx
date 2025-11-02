@@ -94,7 +94,7 @@ export default function LuxuryProductCard({
               <div className="text-white/30 text-[10px] font-light tracking-wider uppercase mb-1">From</div>
               <div className="text-white text-2xl font-light">${price}</div>
             </div>
-            <button className="px-6 py-2.5 bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 hover:border-white rounded-full text-sm font-light tracking-wide transition-all duration-300">
+            <button className="px-6 py-2.5 bg-background/5 hover:bg-background text-foreground hover:text-background border border-border hover:border-foreground rounded-full text-sm font-light tracking-wide transition-all duration-300">
               Select
             </button>
           </div>

@@ -112,7 +112,7 @@ const FirstVisitorPopup = () => {
         <DialogDescription className="sr-only">Join our community and get 10% off plus free delivery on your first order</DialogDescription>
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:rotate-90"
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-background/90 hover:bg-background flex items-center justify-center transition-all hover:rotate-90"
         >
           <X className="w-4 h-4" />
         </button>

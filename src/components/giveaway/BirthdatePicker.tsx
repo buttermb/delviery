@@ -135,8 +135,8 @@ export default function BirthdatePicker({ value, onChange, error }: BirthdatePic
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
-                  <Dialog.Title className="text-lg font-bold text-gray-900 mb-4">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-card p-6 shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-bold text-foreground mb-4">
                     Select Your Date of Birth
                   </Dialog.Title>
 

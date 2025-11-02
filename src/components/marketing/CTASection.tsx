@@ -46,7 +46,7 @@ export function CTASection({
               size="lg"
               className={`h-14 px-10 text-lg ${
                 variant === "gradient"
-                  ? "bg-white text-[hsl(var(--marketing-primary))] hover:bg-white/90"
+                  ? "bg-background text-[hsl(var(--marketing-primary))] hover:bg-background/90"
                   : "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
               }`}
             >

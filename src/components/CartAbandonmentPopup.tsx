@@ -70,17 +70,17 @@ const CartAbandonmentPopup = ({ cartItems, onCheckout }: CartAbandonmentPopupPro
         <DialogDescription className="sr-only">Complete your order now with an exclusive 5% discount</DialogDescription>
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all hover:rotate-90"
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-background/90 hover:bg-background flex items-center justify-center transition-all hover:rotate-90"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="bg-gradient-to-br from-primary via-primary/90 to-accent p-8 text-center text-white">
+        <div className="bg-gradient-to-br from-primary via-primary/90 to-accent p-8 text-center text-primary-foreground">
           <div className="animate-bounce mb-4">
             <ShoppingCart className="w-12 h-12 mx-auto" />
           </div>
           <h2 className="text-3xl font-bold mb-2">Wait! Don't Leave Yet!</h2>
-          <div className="inline-block bg-white text-primary px-6 py-3 rounded-full text-2xl font-black my-4 shadow-elegant">
+          <div className="inline-block bg-background text-primary px-6 py-3 rounded-full text-2xl font-black my-4 shadow-elegant">
             EXTRA 5% OFF
           </div>
           <p className="text-white/90">Complete your order now and save!</p>

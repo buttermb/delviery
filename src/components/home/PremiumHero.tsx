@@ -150,7 +150,7 @@ export function PremiumHero() {
           >
             <Button
               onClick={() => scrollToProducts('premium')}
-              className="group relative px-10 py-4 bg-white text-black text-sm font-light tracking-wide rounded-full hover:bg-emerald-50 transition-all duration-300 shadow-lg hover:shadow-emerald-500/20 hover:scale-105 h-auto"
+              className="group relative px-10 py-4 bg-background text-foreground text-sm font-light tracking-wide rounded-full hover:bg-accent transition-all duration-300 shadow-lg hover:shadow-primary/20 hover:scale-105 h-auto"
             >
               <span className="relative z-10">Explore Collection</span>
             </Button>

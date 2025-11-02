@@ -259,7 +259,7 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
                 <DialogTitle className="text-center">Share QR Code</DialogTitle>
               </DialogHeader>
               <div className="flex flex-col items-center gap-4 py-4">
-                <div className="p-6 bg-white rounded-2xl shadow-xl">
+                <div className="p-6 bg-card rounded-2xl shadow-xl">
                   <QRCodeSVG
                     value={entry.referralLink}
                     size={200}

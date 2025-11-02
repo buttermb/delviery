@@ -85,8 +85,8 @@ export function ImageGallerySwipe({ images, alt }: ImageGallerySwipeProps) {
                 }}
                 className={`w-2 h-2 rounded-full transition-all ${
                   i === currentIndex
-                    ? 'bg-white w-6'
-                    : 'bg-white/40 hover:bg-white/60'
+                    ? 'bg-foreground w-6'
+                    : 'bg-foreground/40 hover:bg-foreground/60'
                 }`}
                 aria-label={`Go to image ${i + 1}`}
               />

@@ -12,8 +12,8 @@ export default function LuxuryFooter() {
             {/* Logo + tagline */}
             <div className="mb-8 md:mb-0">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">P</span>
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">P</span>
                 </div>
                 <div className="flex flex-col -space-y-1">
                   <span className="text-white font-light text-base tracking-wider">Premium</span>
@@ -35,7 +35,7 @@ export default function LuxuryFooter() {
                   placeholder="your@email.com"
                   className="flex-1 px-4 py-3 bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-full text-white text-sm font-light placeholder:text-white/30 focus:outline-none focus:border-white/20 transition-colors"
                 />
-                <button className="px-6 py-3 bg-white text-black text-sm font-light rounded-full hover:bg-emerald-50 transition-colors whitespace-nowrap">
+                <button className="px-6 py-3 bg-background text-foreground text-sm font-light rounded-full hover:bg-accent transition-colors whitespace-nowrap">
                   Subscribe
                 </button>
               </div>

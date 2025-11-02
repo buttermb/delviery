@@ -58,7 +58,7 @@ export default function CustomDatePicker({ value, onChange }: CustomDatePickerPr
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute z-50 mt-2 bg-white rounded-xl shadow-2xl p-4 border border-gray-200">
+          <div className="absolute z-50 mt-2 bg-card rounded-xl shadow-2xl p-4 border border-border">
             <DayPicker
               mode="single"
               selected={value || undefined}
