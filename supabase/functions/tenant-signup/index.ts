@@ -44,6 +44,21 @@ serve(async (req) => {
       );
     }
 
+    // Check if email already exists in Supabase Auth
+    const { data: existingAuthUser } = await supabase.auth.admin.listUsers();
+    const authUserExists = existingAuthUser?.users.some(
+      (user) => user.email?.toLowerCase() === email.toLowerCase()
+    );
+
+    if (authUserExists) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'An account with this email already exists. Please try logging in or use a different email address.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check if email already exists in tenant_users
     const { data: existingUser } = await supabase
       .from('tenant_users')
