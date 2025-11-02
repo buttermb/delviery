@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { hash } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -159,10 +158,8 @@ serve(async (req) => {
       );
     }
 
-    // Hash password for tenant_users table
-    const passwordHash = await hash(password);
-
     // Create tenant user (owner)
+    // Note: Password is handled by Supabase Auth, no need to store hash separately
     const { data: tenantUser, error: userError } = await supabase
       .from('tenant_users')
       .insert({
@@ -171,8 +168,7 @@ serve(async (req) => {
         email: email.toLowerCase(),
         name: owner_name,
         role: 'owner',
-        status: 'active', // Set to active since password is provided
-        password_hash: passwordHash,
+        status: 'active',
         invited_at: new Date().toISOString(),
         accepted_at: new Date().toISOString(),
       })
