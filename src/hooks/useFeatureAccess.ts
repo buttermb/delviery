@@ -33,19 +33,8 @@ export function useFeatureAccess() {
   
   const currentTier = getTierFromPlan(tenant?.subscription_plan);
   
-  // Debug logging
-  console.log('🔍 Feature Access Debug:', {
-    tenant_id: tenant?.id,
-    subscription_plan: tenant?.subscription_plan,
-    currentTier
-  });
-  
   const canAccess = (featureId: FeatureId): boolean => {
-    const hasAccess = checkFeatureAccess(currentTier, featureId);
-    if (!hasAccess) {
-      console.log('🔐 Access Denied:', { featureId, currentTier });
-    }
-    return hasAccess;
+    return checkFeatureAccess(currentTier, featureId);
   };
   
   const getFeatureTier = (featureId: FeatureId): SubscriptionTier | null => {

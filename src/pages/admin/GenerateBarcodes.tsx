@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,7 +54,7 @@ interface GeneratedBarcode {
 
 export default function GenerateBarcodes() {
   const navigate = useNavigate();
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   
   // Generation mode
@@ -83,16 +83,16 @@ export default function GenerateBarcodes() {
 
   // Fetch products
   const { data: products } = useQuery({
-    queryKey: ['products-for-barcode', account?.id],
+    queryKey: ['products-for-barcode', tenant?.id],
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenant?.id) return [];
       const { data } = await supabase
         .from('products')
         .select('id, name, sku, wholesale_price')
         .order('name');
       return data || [];
     },
-    enabled: !!account?.id && !accountLoading && mode === 'product',
+    enabled: !!tenant?.id && !tenantLoading && mode === 'product',
   });
 
   // Fetch batches
@@ -101,10 +101,10 @@ export default function GenerateBarcodes() {
 
   // Generate barcodes based on mode
   const handleGenerate = async () => {
-    if (!account) {
+    if (!tenant) {
       toast({
         title: 'Error',
-        description: 'Account not found',
+        description: 'Tenant not found',
         variant: 'destructive'
       });
       return;
@@ -269,7 +269,7 @@ export default function GenerateBarcodes() {
     });
   };
 
-  if (accountLoading) {
+  if (tenantLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-muted-foreground">Loading...</p>
@@ -277,10 +277,10 @@ export default function GenerateBarcodes() {
     );
   }
 
-  if (!account) {
+  if (!tenant) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">No account found</p>
+        <p className="text-muted-foreground">No tenant found</p>
       </div>
     );
   }
