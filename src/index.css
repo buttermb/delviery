@@ -85,9 +85,9 @@
     --marketing-border: 220 13% 91%;        /* #e5e7eb - Gray 200 */
 
     /* Super Admin Colors - Dark Theme */
-    --super-admin-primary: 239 84% 58%;     /* #4f46e5 - Indigo 600 (muted) */
-    --super-admin-secondary: 271 81% 56%;   /* #7c3aed - Purple 600 (muted) */
-    --super-admin-accent: 38 92% 45%;       /* #d97706 - Amber 600 (muted) */
+    --super-admin-primary: 239 84% 45%;     /* Indigo - Muted for dark theme */
+    --super-admin-secondary: 271 81% 48%;   /* Purple - Muted for dark theme */
+    --super-admin-accent: 38 92% 42%;        /* Amber - Muted for dark theme */
     --super-admin-bg: 222 47% 11%;          /* #0f172a - Slate 900 */
     --super-admin-surface: 215 28% 17%;      /* #1e293b - Slate 800 */
     --super-admin-border: 217 33% 25%;       /* #334155 - Slate 700 */

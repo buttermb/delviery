@@ -197,7 +197,9 @@ export function RoleBasedSidebar() {
                     to={item.href || '#'}
                     className={({ isActive }) =>
                       cn(
-                        isActive && 'bg-primary/10 text-primary font-medium'
+                        isActive 
+                          ? 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))] font-medium'
+                          : 'text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]'
                       )
                     }
                   >
