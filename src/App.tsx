@@ -59,6 +59,7 @@ const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPa
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
+const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 
 // Tenant Admin Pages
@@ -185,6 +186,7 @@ const App = () => {
                         
                         {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
+                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminWelcomePage />} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
