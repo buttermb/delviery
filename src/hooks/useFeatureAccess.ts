@@ -37,13 +37,14 @@ export function useFeatureAccess() {
   console.log('🔍 Feature Access Debug:', {
     tenant_id: tenant?.id,
     subscription_plan: tenant?.subscription_plan,
-    currentTier,
-    tenant_full: tenant
+    currentTier
   });
   
   const canAccess = (featureId: FeatureId): boolean => {
     const hasAccess = checkFeatureAccess(currentTier, featureId);
-    console.log('🔐 Check Access:', { featureId, currentTier, hasAccess });
+    if (!hasAccess) {
+      console.log('🔐 Access Denied:', { featureId, currentTier });
+    }
     return hasAccess;
   };
   

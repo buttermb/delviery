@@ -251,14 +251,14 @@ const App = () => {
                           <Route index element={<Navigate to="dashboard" replace />} />
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
-                          <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="disposable-menu-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
+                          <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                           <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
                           <Route path="inventory/products" element={<FeatureProtectedRoute featureId="products"><ProductManagement /></FeatureProtectedRoute>} />
                           <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
-                          <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="barcode-generation"><GenerateBarcodes /></FeatureProtectedRoute>} />
-                          <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="orders"><WholesaleOrders /></FeatureProtectedRoute>} />
-                          <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory"><InventoryDashboard /></FeatureProtectedRoute>} />
+                          <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
+                          <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrders /></FeatureProtectedRoute>} />
+                          <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                           <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
                           <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
