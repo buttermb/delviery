@@ -30,7 +30,7 @@ export default function DemoConfirmation() {
     : "2:00 PM PST";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Demo Scheduled - DevPanel"
         description="Your demo has been scheduled. We look forward to showing you DevPanel."

@@ -49,7 +49,7 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="About Us - DevPanel | Our Mission, Story & Values"
         description="DevPanel was built by distributors, for distributors. Learn about our mission to modernize wholesale distribution and our team."

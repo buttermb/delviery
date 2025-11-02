@@ -180,7 +180,7 @@ export default function AccountSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Start Your 14-Day Free Trial - DevPanel"
         description="Sign up for DevPanel. No credit card required. Get started in minutes."
@@ -293,7 +293,7 @@ export default function AccountSignup() {
                       <span className="w-full border-t border-[hsl(var(--marketing-border))]" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-[hsl(var(--marketing-text-light))]">or</span>
+                      <span className="bg-[hsl(var(--marketing-bg))] px-2 text-[hsl(var(--marketing-text-light))]">or</span>
                     </div>
                   </div>
 

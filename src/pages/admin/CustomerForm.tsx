@@ -203,9 +203,9 @@ export default function CustomerForm() {
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Basic Information */}
-            <Card className="bg-white border-gray-200 shadow-sm">
+            <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
+                <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Basic Information</CardTitle>
               </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -292,9 +292,9 @@ export default function CustomerForm() {
           </Card>
 
             {/* Customer Type */}
-            <Card className="bg-white border-gray-200 shadow-sm">
+            <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Customer Type</CardTitle>
+                <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Customer Type</CardTitle>
               </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

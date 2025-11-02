@@ -44,7 +44,7 @@ export default function DemoRequest() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Schedule Your Free Demo - DevPanel"
         description="See DevPanel in action with a personalized demo. No commitment required. 30-minute demo with product expert."

@@ -98,7 +98,7 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
       {menus.map((menu: any) => (
         <Card
           key={menu.id}
-          className="p-4 hover:shadow-md transition-shadow cursor-pointer border-[hsl(var(--customer-border))] bg-white"
+          className="p-4 hover:shadow-md transition-shadow cursor-pointer border-[hsl(var(--customer-border))] bg-[hsl(var(--customer-bg))]"
           onClick={() => navigate(`/${tenant?.slug}/shop/menus/${menu.id}`)}
         >
           <div className="flex items-start justify-between">

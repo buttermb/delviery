@@ -157,15 +157,15 @@ export default function CustomerReports() {
 
         {/* Key Metrics */}
         <div className="grid md:grid-cols-4 gap-6">
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Total Customers</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Total Customers</CardTitle>
               <div className="p-2 bg-emerald-100 rounded-lg">
                 <Users className="h-5 w-5 text-emerald-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">{stats.totalCustomers}</div>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{stats.totalCustomers}</div>
               <p className="text-xs text-emerald-600 flex items-center gap-1 mt-2">
                 <TrendingUp className="w-3 h-3" />
                 +{stats.newThisMonth} this month
@@ -173,44 +173,44 @@ export default function CustomerReports() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Active Customers</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Active Customers</CardTitle>
               <div className="p-2 bg-blue-100 rounded-lg">
                 <ShoppingBag className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">{stats.activeCustomers}</div>
-              <p className="text-xs text-gray-500 mt-2">
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{stats.activeCustomers}</div>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
                 {((stats.activeCustomers / stats.totalCustomers) * 100).toFixed(1)}% of total
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">At Risk</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">At Risk</CardTitle>
               <div className="p-2 bg-amber-100 rounded-lg">
                 <Calendar className="h-5 w-5 text-amber-600" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold font-mono text-red-600">{stats.atRiskCustomers}</div>
-              <p className="text-xs text-gray-500 mt-2">60+ days since order</p>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">60+ days since order</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Medical Patients</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Medical Patients</CardTitle>
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Award className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">{stats.medicalPatients}</div>
-              <p className="text-xs text-gray-500 mt-2">
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{stats.medicalPatients}</div>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
                 {((stats.medicalPatients / stats.totalCustomers) * 100).toFixed(1)}% of total
               </p>
             </CardContent>
@@ -219,50 +219,50 @@ export default function CustomerReports() {
 
         {/* Revenue Metrics */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Total Revenue</CardTitle>
               <div className="p-2 bg-emerald-100 rounded-lg">
                 <DollarSign className="h-5 w-5 text-emerald-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">${stats.totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-gray-500 mt-2">Lifetime value</p>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Lifetime value</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Avg Order Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Avg Order Value</CardTitle>
               <div className="p-2 bg-blue-100 rounded-lg">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">${stats.avgOrderValue.toFixed(2)}</div>
-              <p className="text-xs text-gray-500 mt-2">Per transaction</p>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.avgOrderValue.toFixed(2)}</div>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Per transaction</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Avg Lifetime Value</CardTitle>
+              <CardTitle className="text-sm font-medium text-[hsl(var(--tenant-text-light))]">Avg Lifetime Value</CardTitle>
               <div className="p-2 bg-purple-100 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-mono text-gray-900">${stats.avgLifetimeValue.toFixed(2)}</div>
-              <p className="text-xs text-gray-500 mt-2">Per customer</p>
+              <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">${stats.avgLifetimeValue.toFixed(2)}</div>
+              <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">Per customer</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Top Customers */}
-        <Card className="bg-white border-gray-200 shadow-sm">
+        <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">Top 10 Customers by Spend</CardTitle>
+            <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Top 10 Customers by Spend</CardTitle>
           </CardHeader>
         <CardContent>
           <div className="space-y-3">

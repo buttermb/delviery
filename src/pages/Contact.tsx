@@ -46,7 +46,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Contact Us - DevPanel | Get in Touch"
         description="Contact DevPanel support, sales, or schedule a demo. We're here to help with your wholesale distribution needs."

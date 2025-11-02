@@ -75,7 +75,7 @@ export default function Features() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Features - DevPanel | Everything You Need in One Platform"
         description="Comprehensive features for wholesale distributors: disposable menus, inventory tracking, order management, customer portal, and analytics."
@@ -123,8 +123,8 @@ export default function Features() {
                 </div>
                 <div className={index % 2 === 1 ? "md:order-1" : ""}>
                   <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] rounded-2xl flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
+                    <div className="text-center text-[hsl(var(--marketing-bg))]">
+                      <div className="w-20 h-20 rounded-full bg-[hsl(var(--marketing-bg))]/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
                         <feature.icon className="h-10 w-10" />
                       </div>
                       <p className="text-sm">Screenshot</p>

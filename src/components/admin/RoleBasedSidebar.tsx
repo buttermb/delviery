@@ -96,7 +96,7 @@ export function RoleBasedSidebar() {
   };
 
   return (
-    <Sidebar className={`${isCollapsed ? 'w-14' : 'w-64'} collapsible="icon" border-r border-[hsl(var(--tenant-border))] bg-white`}>
+    <Sidebar className={`${isCollapsed ? 'w-14' : 'w-64'} collapsible="icon" border-r border-[hsl(var(--tenant-border))] bg-[hsl(var(--tenant-bg))]`}>
       <SidebarHeader className="border-b border-[hsl(var(--tenant-border))] p-4 bg-[hsl(var(--tenant-surface))]">
         {!isCollapsed && (
           <div className="space-y-2">

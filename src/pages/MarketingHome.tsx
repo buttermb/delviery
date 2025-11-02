@@ -148,13 +148,13 @@ export default function MarketingHome() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link to="/signup">
-                <Button size="lg" className="bg-white text-[hsl(var(--marketing-primary))] hover:bg-white/90 h-14 px-8 text-lg font-semibold">
+                <Button size="lg" className="bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-bg))]/90 h-14 px-8 text-lg font-semibold">
                   Start Free Trial
                   <span className="ml-2">No credit card ↗</span>
                 </Button>
               </Link>
               <Link to="/demo">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 h-14 px-8 text-lg">
+                <Button size="lg" variant="outline" className="border-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-bg))] hover:bg-[hsl(var(--marketing-bg))]/10 h-14 px-8 text-lg">
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo Video
                   <span className="ml-2 text-sm">2 min overview</span>
@@ -167,10 +167,10 @@ export default function MarketingHome() {
             </p>
 
             {/* Product Screenshot Placeholder */}
-            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-              <div className="aspect-video bg-white/10 backdrop-blur-sm flex items-center justify-center">
+            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-[hsl(var(--marketing-bg))]/20">
+              <div className="aspect-video bg-[hsl(var(--marketing-bg))]/10 backdrop-blur-sm flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-[hsl(var(--marketing-bg))]/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
                     <Play className="h-12 w-12 text-white" />
                   </div>
                   <p className="text-white/80">Product Screenshot</p>

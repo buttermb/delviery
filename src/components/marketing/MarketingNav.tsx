@@ -7,7 +7,7 @@ export function MarketingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="border-b border-[hsl(var(--marketing-border))] backdrop-blur-sm sticky top-0 z-50 bg-white/80">
+    <nav className="border-b border-[hsl(var(--marketing-border))] backdrop-blur-sm sticky top-0 z-50 bg-[hsl(var(--marketing-bg))]/80">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-[hsl(var(--marketing-text))]">
           Dev<span className="text-[hsl(var(--marketing-primary))]">Panel</span>
@@ -52,7 +52,7 @@ export function MarketingNav() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-white">
+        <div className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
           <div className="container mx-auto px-4 py-4 space-y-4">
             <Link
               to="/features"

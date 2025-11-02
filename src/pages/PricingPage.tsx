@@ -130,7 +130,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
         title="Pricing - DevPanel | Simple, Transparent Pricing"
         description="Simple, transparent pricing for wholesale distributors. Plans from $99/month. Start free, upgrade as you grow. 14-day free trial."
@@ -186,7 +186,7 @@ export default function PricingPage() {
               className={`relative rounded-2xl border p-8 ${
                 plan.popular
                   ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl scale-105"
-                  : "border-[hsl(var(--marketing-border))] bg-white"
+                  : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]"
               }`}
             >
               {plan.popular && (

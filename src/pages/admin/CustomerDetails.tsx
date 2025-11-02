@@ -208,12 +208,12 @@ export default function CustomerDetails() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Total Spent</p>
-                  <p className="text-3xl font-bold font-mono text-gray-900">
+                  <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Spent</p>
+                  <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
                     ${customer.total_spent?.toFixed(2) || '0.00'}
                   </p>
                 </div>
@@ -224,12 +224,12 @@ export default function CustomerDetails() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Total Orders</p>
-                  <p className="text-3xl font-bold font-mono text-gray-900">{orders.length}</p>
+                  <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Total Orders</p>
+                  <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{orders.length}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-lg">
                   <ShoppingBag className="w-6 h-6 text-blue-600" />
@@ -238,12 +238,12 @@ export default function CustomerDetails() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Loyalty Points</p>
-                  <p className="text-3xl font-bold font-mono text-gray-900">{customer.loyalty_points || 0}</p>
+                  <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Loyalty Points</p>
+                  <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{customer.loyalty_points || 0}</p>
                 </div>
                 <div className="p-3 bg-emerald-100 rounded-lg">
                   <Gift className="w-6 h-6 text-emerald-600" />
@@ -252,12 +252,12 @@ export default function CustomerDetails() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-500 mb-1">Average Order</p>
-                  <p className="text-3xl font-bold font-mono text-gray-900">
+                  <p className="text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">Average Order</p>
+                  <p className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">
                     ${orders.length > 0 ? ((customer.total_spent || 0) / orders.length).toFixed(2) : '0.00'}
                   </p>
                 </div>
@@ -271,7 +271,7 @@ export default function CustomerDetails() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-white border border-gray-200">
+          <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="orders">Purchase History</TabsTrigger>
             <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
@@ -282,9 +282,9 @@ export default function CustomerDetails() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white border-gray-200 shadow-sm">
+              <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Contact Information</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Contact Information</CardTitle>
                 </CardHeader>
               <CardContent className="space-y-3">
                 <div>
@@ -306,9 +306,9 @@ export default function CustomerDetails() {
               </CardContent>
             </Card>
 
-              <Card className="bg-white border-gray-200 shadow-sm">
+              <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Account Activity</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Account Activity</CardTitle>
                 </CardHeader>
               <CardContent className="space-y-3">
                 <div>
@@ -334,9 +334,9 @@ export default function CustomerDetails() {
 
           {/* Orders Tab */}
           <TabsContent value="orders">
-            <Card className="bg-white border-gray-200 shadow-sm">
+            <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Purchase History</CardTitle>
+                <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Purchase History</CardTitle>
               </CardHeader>
             <CardContent>
               <div className="space-y-4">

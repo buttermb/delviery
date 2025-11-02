@@ -44,7 +44,7 @@ export function ProductCard({
 
   return (
     <Card 
-      className="bg-white border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
+      className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
     >
       {/* Product Image */}
       {product.image_url ? (
@@ -55,7 +55,7 @@ export function ProductCard({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           {product.category && (
-            <Badge className="absolute top-3 right-3 bg-white/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm">
+            <Badge className="absolute top-3 right-3 bg-[hsl(var(--tenant-bg))]/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm">
               {product.category}
             </Badge>
           )}
