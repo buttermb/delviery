@@ -78,6 +78,7 @@ serve(async (req) => {
           .from('tenant_users')
           .select('*')
           .eq('email', email.toLowerCase())
+          .eq('tenant_id', tenant.id)
           .maybeSingle();
 
         if (userCheckError) {
@@ -94,6 +95,21 @@ serve(async (req) => {
         }
       }
 
+      // Build admin object
+      const admin = tenantUser ? {
+        id: tenantUser.id,
+        email: tenantUser.email,
+        name: tenantUser.name,
+        role: tenantUser.role,
+        tenant_id: tenantUser.tenant_id,
+      } : {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: tenant.owner_name,
+        role: 'owner',
+        tenant_id: tenant.id,
+      };
+
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
 
       // Return user data with tenant context
@@ -101,6 +117,7 @@ serve(async (req) => {
         JSON.stringify({
           user: authData.user,
           session: authData.session,
+          admin,
           tenant: {
             id: tenant.id,
             business_name: tenant.business_name,
@@ -169,8 +186,38 @@ serve(async (req) => {
         );
       }
 
+      // Get tenant_users record to find tenant
+      const { data: tenantUser, error: tenantUserError } = await supabase
+        .from('tenant_users')
+        .select('*, tenants(*)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (tenantUserError || !tenantUser) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant access not found' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const admin = {
+        id: tenantUser.id,
+        email: tenantUser.email,
+        name: tenantUser.name,
+        role: tenantUser.role,
+        tenant_id: tenantUser.tenant_id,
+      };
+
+      const tenant = {
+        id: tenantUser.tenants.id,
+        business_name: tenantUser.tenants.business_name,
+        slug: tenantUser.tenants.slug,
+        subscription_plan: tenantUser.tenants.subscription_plan,
+        subscription_status: tenantUser.tenants.subscription_status,
+      };
+
       return new Response(
-        JSON.stringify({ user }),
+        JSON.stringify({ user, admin, tenant }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

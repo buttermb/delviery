@@ -8,7 +8,7 @@ interface TenantAdminProtectedRouteProps {
 }
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
-  const { admin, tenant, token, loading, refreshToken } = useTenantAdminAuth();
+  const { admin, tenant, token, accessToken, loading } = useTenantAdminAuth();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
@@ -35,10 +35,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       // Verify token is still valid
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const tokenToUse = accessToken || token;
+        
+        if (!tokenToUse) {
+          throw new Error("No access token available");
+        }
+        
         const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${tokenToUse}`,
             "Content-Type": "application/json",
           },
         });
@@ -50,11 +56,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         const data = await response.json();
         
         // Verify tenant is still active
-        if (data.tenant.status !== "active" && data.tenant.subscription_status !== "active" && data.tenant.subscription_status !== "trial") {
+        if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial")) {
+          setVerifying(false);
+        } else {
           throw new Error("Tenant is not active");
         }
-
-        setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
         if (tenantSlug) {
@@ -66,7 +72,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     };
 
     verifyAuth();
-  }, [token, admin, tenant, tenantSlug, loading, navigate]);
+  }, [token, accessToken, admin, tenant, tenantSlug, loading, navigate]);
 
   if (loading || verifying) {
     return (
