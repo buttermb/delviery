@@ -17,3 +17,9 @@ verify_jwt = true
 
 [functions.generate-product-images]
 verify_jwt = true
+
+[functions.super-admin-auth]
+verify_jwt = false
+
+[functions.admin-auth]
+verify_jwt = false
