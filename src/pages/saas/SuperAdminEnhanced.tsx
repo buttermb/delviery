@@ -130,7 +130,7 @@ export default function SuperAdminEnhanced() {
       const conversions = tenants.filter(
         (t) =>
           (t.subscription_status === 'active' || t.subscription_status === 'past_due') &&
-          trials.some((tr) => tr.id === t.id)
+          trials.some((tr: any) => tr.id === t.id)
       ).length;
 
       return {
@@ -233,13 +233,17 @@ export default function SuperAdminEnhanced() {
     openTickets: 0,
   });
 
-  const handleLoginAsTenant = async (tenantId: string) => {
+      const handleLoginAsTenant = async (tenantId: string) => {
     try {
-      // Set tenant context
-      await supabase.rpc('set_config', {
-        setting_name: 'app.current_tenant_id',
-        setting_value: tenantId,
-      });
+      // Set tenant context via localStorage (RPC function doesn't exist)
+      // Backend middleware will handle tenant context
+      localStorage.setItem('current_tenant_id', tenantId);
+      
+      // Note: RPC call removed - set_config function doesn't exist
+      // await supabase.rpc('set_config', {
+      //   setting_name: 'app.current_tenant_id',
+      //   setting_value: tenantId,
+      // });
 
       // Store in localStorage for frontend
       localStorage.setItem('super_admin_tenant_id', tenantId);
@@ -733,7 +737,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {tenant.usage?.customers || 0} / {tenant.limits?.customers === -1 ? '∞' : tenant.limits?.customers || 0}
+                {((tenant.usage as any)?.customers || 0)} / {((tenant.limits as any)?.customers === -1 ? '∞' : (tenant.limits as any)?.customers || 0)}
               </div>
               <p className="text-xs text-muted-foreground">Usage</p>
             </CardContent>
@@ -849,8 +853,8 @@ function FeatureManagement({ tenant }: { tenant: any }) {
         <h3 className="text-lg font-semibold mb-4">Advanced Features</h3>
         <div className="space-y-2">
           {advancedFeatures.map((feature) => {
-            const isPlanEligible = tenant.subscription_plan === feature.plan || 
-                                   tenant.subscription_plan === 'enterprise';
+            const plan = tenant.subscription_plan as 'starter' | 'professional' | 'enterprise';
+            const isPlanEligible = plan === feature.plan || plan === 'enterprise';
             const isEnabled = features[feature.key];
 
             return (
@@ -918,7 +922,7 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
     { key: 'users', label: 'Team Members', icon: Users },
   ];
 
-  const getUsagePercentage = (key: string) => {
+  const getUsagePercentage = (key: string, usage: Record<string, any>, limits: Record<string, any>) => {
     const current = usage[key] || 0;
     const limit = limits[key];
     if (limit === -1) return null;
@@ -928,10 +932,10 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
   return (
     <div className="space-y-4">
       {resources.map((resource) => {
-        const current = usage[resource.key] || 0;
-        const limit = limits[resource.key];
+        const current = usageData[resource.key] || 0;
+        const limit = limitsData[resource.key];
         const unlimited = limit === -1;
-        const percentage = getUsagePercentage(resource.key);
+        const percentage = getUsagePercentage(resource.key, usageData, limitsData);
         const Icon = resource.icon;
 
         return (
@@ -983,7 +987,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
     { id: 'enterprise', name: 'Enterprise', price: 799 },
   ];
 
-  const handleChangePlan = async (newPlan: string) => {
+  const handleChangePlan = async (newPlan: 'starter' | 'professional' | 'enterprise') => {
     try {
       const { error } = await supabase
         .from('tenants')
@@ -1040,7 +1044,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
                 className={`p-4 border rounded-lg cursor-pointer ${
                   tenant?.subscription_plan === plan.id ? 'border-primary bg-primary/5' : ''
                 }`}
-                onClick={() => handleChangePlan(plan.id)}
+                onClick={() => handleChangePlan(plan.id as 'starter' | 'professional' | 'enterprise')}
               >
                 <div className="flex items-center justify-between">
                   <div>

@@ -8,9 +8,11 @@ import { ArrowLeft, ShoppingCart, Lock } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "@/hooks/use-toast";
+import { validateRouteUUID } from "@/lib/utils/uuidValidation";
 
 export default function CustomerMenuViewPage() {
-  const { menuId } = useParams<{ menuId: string }>();
+  const { menuId: menuIdParam } = useParams<{ menuId: string }>();
+  const menuId = validateRouteUUID(menuIdParam);
   const navigate = useNavigate();
   const { customer, tenant } = useCustomerAuth();
   const tenantId = tenant?.id;
@@ -26,7 +28,7 @@ export default function CustomerMenuViewPage() {
       const { data: access } = await supabase
         .from("menu_access")
         .select("*")
-        .eq("menu_id", menuId)
+        .eq("menu_id", menuId as string)
         .eq("customer_id", customerId)
         .eq("tenant_id", tenantId)
         .maybeSingle();
@@ -44,7 +46,7 @@ export default function CustomerMenuViewPage() {
       const { data, error } = await supabase
         .from("menus")
         .select("*")
-        .eq("id", menuId)
+        .eq("id", menuId as string)
         .eq("tenant_id", tenantId)
         .eq("is_active", true)
         .maybeSingle();
@@ -81,7 +83,7 @@ export default function CustomerMenuViewPage() {
             category
           )
         `)
-        .eq("menu_id", menuId);
+        .eq("menu_id", menuId as string);
 
       if (error) throw error;
       return data || [];
