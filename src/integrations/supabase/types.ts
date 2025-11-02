@@ -7322,10 +7322,6 @@ export type Database = {
       is_age_verified: { Args: { _user_id: string }; Returns: boolean }
       is_device_blocked: { Args: { _fingerprint: string }; Returns: boolean }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
-      is_tenant_admin: {
-        Args: { tenant_id_param: string; user_id: string }
-        Returns: boolean
-      }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
