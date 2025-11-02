@@ -26,7 +26,7 @@ export default function SettingsPage() {
 
   // General Settings
   const [generalSettings, setGeneralSettings] = useState({
-    companyName: account?.name || '',
+    companyName: account?.company_name || '',
     email: '',
     phone: '',
     address: '',

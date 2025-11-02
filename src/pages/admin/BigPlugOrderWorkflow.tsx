@@ -430,7 +430,7 @@ export function BigPlugOrderWorkflow() {
                             product_id: product.id,
                             product_name: product.product_name,
                             quantity_lbs: updated[index].quantity_lbs,
-                            unit_price: Number(product.price_per_lb || 3000),
+                            unit_price: Number((product as any).price_per_lb || (product as any).wholesale_price || (product as any).base_price || 3000),
                             available_lbs: Number(product.quantity_lbs || 0),
                           };
                           setOrderItems(updated);

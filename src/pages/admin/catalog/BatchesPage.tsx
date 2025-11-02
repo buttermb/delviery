@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DataTable } from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -73,7 +74,7 @@ export default function BatchesPage() {
       const { data, error } = await query.order('received_date', { ascending: false });
 
       if (error) throw error;
-      return data as Batch[];
+      return (data || []) as unknown as Batch[];
     },
     enabled: !!account?.id,
   });

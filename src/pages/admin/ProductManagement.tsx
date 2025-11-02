@@ -128,16 +128,16 @@ export default function ProductManagement() {
         toast.success("Product updated successfully");
       } else {
         // Check tenant limits before creating
-        if (account?.tenant_id) {
+        if ((account as any)?.tenant_id) {
           const { data: tenant } = await supabase
             .from('tenants')
             .select('usage, limits')
-            .eq('id', account.tenant_id)
-            .single();
+            .eq('id', (account as any).tenant_id)
+            .maybeSingle();
 
           if (tenant) {
-            const currentProducts = tenant.usage?.products || 0;
-            const productLimit = tenant.limits?.products || 0;
+            const currentProducts = (tenant.usage as any)?.products || 0;
+            const productLimit = (tenant.limits as any)?.products || 0;
             
             if (productLimit > 0 && currentProducts >= productLimit) {
               toast.error('Product limit reached', {

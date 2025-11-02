@@ -104,7 +104,7 @@ export function BigPlugExecutiveDashboard() {
       // Overdue clients
       const { data: overdueClients } = await supabase
         .from('wholesale_clients')
-        .select('business_name, outstanding_balance, last_payment_date')
+        .select('id, business_name, outstanding_balance, last_payment_date')
         .eq('account_id', account.id)
         .eq('status', 'active')
         .gt('outstanding_balance', 10000);

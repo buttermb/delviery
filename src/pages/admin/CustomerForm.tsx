@@ -114,13 +114,13 @@ export default function CustomerForm() {
         // Check tenant limits before creating
         const { data: tenant } = await supabase
           .from('tenants')
-          .select('usage, limits')
-          .eq('id', account.tenant_id)
-          .single();
+          .select('id, usage, limits')
+          .eq('id', (account as any).tenant_id)
+          .maybeSingle();
 
         if (tenant) {
-          const currentCustomers = tenant.usage?.customers || 0;
-          const customerLimit = tenant.limits?.customers || 0;
+          const currentCustomers = (tenant.usage as any)?.customers || 0;
+          const customerLimit = (tenant.limits as any)?.customers || 0;
           
           if (customerLimit > 0 && currentCustomers >= customerLimit) {
             toast.error('Customer limit reached', {
@@ -138,17 +138,17 @@ export default function CustomerForm() {
 
         // Update usage count
         if (tenant?.id) {
-          const currentUsage = tenant.usage || {};
+          const currentUsage = (tenant.usage as any) || {};
           await supabase
             .from('tenants')
             .update({
               usage: {
                 ...currentUsage,
-                customers: (currentUsage.customers || 0) + 1,
+                customers: ((currentUsage as any).customers || 0) + 1,
               },
               updated_at: new Date().toISOString(),
             })
-            .eq('id', account.tenant_id);
+            .eq('id', (account as any).tenant_id);
         }
 
         toast.success('Customer created successfully');

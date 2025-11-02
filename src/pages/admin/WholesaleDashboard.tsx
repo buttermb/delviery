@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAccount } from "@/contexts/AccountContext";
-import { 
+import {
   DollarSign, 
   TrendingUp, 
   TrendingDown,
@@ -36,7 +36,6 @@ import { InventoryAlerts } from "@/components/admin/InventoryAlerts";
 import { TerritoryMapView } from "@/components/admin/TerritoryMapView";
 import { SmartAlertsDashboard } from "@/components/admin/SmartAlertsDashboard";
 import { Progress } from "@/components/ui/progress";
-import { useAccount } from "@/contexts/AccountContext";
 
 export default function WholesaleDashboard() {
   const navigate = useNavigate();

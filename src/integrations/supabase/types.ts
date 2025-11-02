@@ -3097,6 +3097,69 @@ export type Database = {
           },
         ]
       }
+      inventory_batches: {
+        Row: {
+          account_id: string | null
+          batch_number: string
+          cost_per_lb: number | null
+          created_at: string | null
+          expiration_date: string | null
+          id: string
+          product_id: string | null
+          quantity_lbs: number | null
+          received_date: string | null
+          status: string | null
+          supplier_id: string | null
+          updated_at: string | null
+          warehouse_location: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          batch_number: string
+          cost_per_lb?: number | null
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          product_id?: string | null
+          quantity_lbs?: number | null
+          received_date?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          warehouse_location?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          batch_number?: string
+          cost_per_lb?: number | null
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          product_id?: string | null
+          quantity_lbs?: number | null
+          received_date?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          warehouse_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_batches_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_batches_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_locations: {
         Row: {
           account_id: string
@@ -3833,6 +3896,7 @@ export type Database = {
           delivery_address: string | null
           delivery_method: string | null
           id: string
+          items: Json | null
           menu_id: string
           order_data: Json
           payment_method: string | null
@@ -3849,6 +3913,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_method?: string | null
           id?: string
+          items?: Json | null
           menu_id: string
           order_data: Json
           payment_method?: string | null
@@ -3865,6 +3930,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_method?: string | null
           id?: string
+          items?: Json | null
           menu_id?: string
           order_data?: Json
           payment_method?: string | null
@@ -4940,6 +5006,7 @@ export type Database = {
           merchant_id: string | null
           name: string
           price: number
+          price_per_lb: number | null
           prices: Json | null
           retail_price: number | null
           review_count: number | null
@@ -4992,6 +5059,7 @@ export type Database = {
           merchant_id?: string | null
           name: string
           price: number
+          price_per_lb?: number | null
           prices?: Json | null
           retail_price?: number | null
           review_count?: number | null
@@ -5044,6 +5112,7 @@ export type Database = {
           merchant_id?: string | null
           name?: string
           price?: number
+          price_per_lb?: number | null
           prices?: Json | null
           retail_price?: number | null
           review_count?: number | null
