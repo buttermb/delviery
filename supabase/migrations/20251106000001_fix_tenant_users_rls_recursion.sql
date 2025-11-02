@@ -1,14 +1,17 @@
 -- ============================================================================
--- FIX INFINITE RECURSION IN tenant_users RLS POLICY
+-- FIX INFINITE RECURSION IN tenant_users RLS POLICY (FIXED VERSION)
 -- ============================================================================
 -- Issue: Policy queries tenant_users table, causing infinite recursion
 -- Fix: Create security definer function to break recursion loop
+-- Note: Removed super_admin_users reference (table doesn't exist)
 -- ============================================================================
 
--- Drop existing recursive policy
+-- Drop existing recursive policies
 DROP POLICY IF EXISTS "Tenant owners can manage their users" ON public.tenant_users;
 DROP POLICY IF EXISTS "Tenant admins manage users" ON public.tenant_users;
 DROP POLICY IF EXISTS "tenant_isolation_tenant_users" ON public.tenant_users;
+DROP POLICY IF EXISTS "Tenant admins can manage their users" ON public.tenant_users;
+DROP POLICY IF EXISTS "Users can view own tenant membership" ON public.tenant_users;
 
 -- Create security definer function to check tenant admin role
 -- This breaks the recursion by using SECURITY DEFINER which bypasses RLS
@@ -46,18 +49,12 @@ CREATE POLICY "Tenant admins can manage their users"
         -- Tenant admins can manage users in their tenant
         is_tenant_admin(auth.uid(), tenant_id)
         OR
-        -- Super admins can manage all tenant users
+        -- Super admins can manage all tenant users (using admin_users table)
         EXISTS (
             SELECT 1 FROM public.admin_users
             WHERE admin_users.user_id = auth.uid()
             AND admin_users.role = 'super_admin'
             AND admin_users.is_active = true
-        )
-        OR
-        EXISTS (
-            SELECT 1 FROM public.super_admin_users
-            WHERE super_admin_users.id = auth.uid()::uuid
-            AND super_admin_users.status = 'active'
         )
     )
     WITH CHECK (
@@ -72,12 +69,6 @@ CREATE POLICY "Tenant admins can manage their users"
             AND admin_users.role = 'super_admin'
             AND admin_users.is_active = true
         )
-        OR
-        EXISTS (
-            SELECT 1 FROM public.super_admin_users
-            WHERE super_admin_users.id = auth.uid()::uuid
-            AND super_admin_users.status = 'active'
-        )
     );
 
 -- Users can always view their own tenant membership
@@ -90,4 +81,3 @@ CREATE POLICY "Users can view own tenant membership"
 -- Comment on function
 COMMENT ON FUNCTION public.is_tenant_admin(uuid, uuid) IS 
 'Security definer function to check if a user is a tenant admin/owner. Breaks RLS recursion by bypassing policies.';
-
