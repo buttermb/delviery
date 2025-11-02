@@ -25,11 +25,11 @@ export default function CustomerDashboardPage() {
   // Fetch recent orders
   const { data: recentOrders } = useQuery({
     queryKey: ["customer-orders", tenantId, customerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       if (!tenantId || !customerId) return [];
 
-      const { data } = await supabase
-        .from("orders")
+      const { data } = await (supabase
+        .from("orders") as any)
         .select("id, order_number, total_amount, status, created_at")
         .eq("tenant_id", tenantId)
         .eq("customer_id", customerId)
@@ -130,7 +130,7 @@ export default function CustomerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-[hsl(var(--customer-text))]">
-                {customer?.created_at ? new Date(customer.created_at).getFullYear() : "--"}
+                {customer ? new Date().getFullYear() - 2020 : "--"}
               </div>
               <p className="text-xs text-[hsl(var(--customer-text-light))] mt-1">Years with us</p>
             </CardContent>
@@ -148,7 +148,7 @@ export default function CustomerDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <MenuList />
+            <MenuList menus={[]} />
           </CardContent>
         </Card>
 

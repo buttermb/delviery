@@ -5,25 +5,8 @@
 /* NYM Design System - Dark Slate & Teal Premium Brand */
 
 @layer base {
-  /* Force explicit colors for both modes */
   html, body {
     min-height: 100vh;
-  }
-  
-  html.light, html.light body {
-    background: #ffffff !important;
-    color: #1a1f2e !important;
-  }
-  
-  html.dark, html.dark body {
-    background: #0f1419 !important;
-    color: #e2e8f0 !important;
-  }
-  
-  /* Fallback when no theme class */
-  html:not(.light):not(.dark) {
-    background: #ffffff;
-    color: #1a1f2e;
   }
   
   :root {

@@ -149,4 +149,3 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
     </div>
   );
 }
-

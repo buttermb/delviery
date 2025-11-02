@@ -93,7 +93,7 @@ export default function MarketingHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <SEOHead 
         title="DevPanel - Modern CRM for Wholesale Distributors"
         description="Manage customers, products, orders, and inventory in one powerful platform. Disposable menus, real-time tracking, customer portal. Start free trial."
@@ -182,19 +182,19 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 2: SOCIAL PROOF */}
-      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-8 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-3xl font-bold mb-8 text-foreground">
               Trusted by Leading Wholesalers
             </h2>
             
             {/* Customer Logos Placeholder */}
             <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60 grayscale">
-              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">BigMike</div>
-              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Joe's</div>
-              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Valley</div>
-              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Green</div>
+              <div className="text-2xl font-bold text-muted-foreground">BigMike</div>
+              <div className="text-2xl font-bold text-muted-foreground">Joe's</div>
+              <div className="text-2xl font-bold text-muted-foreground">Valley</div>
+              <div className="text-2xl font-bold text-muted-foreground">Green</div>
             </div>
 
             {/* Rotating Testimonials */}
@@ -207,8 +207,8 @@ export default function MarketingHome() {
                     onClick={() => setCurrentTestimonial(index)}
                     className={`h-2 rounded-full transition-all ${
                       index === currentTestimonial
-                        ? "w-8 bg-[hsl(var(--marketing-primary))]"
-                        : "w-2 bg-[hsl(var(--marketing-border))]"
+                        ? "w-8 bg-primary"
+                        : "w-2 bg-border"
                     }`}
                     aria-label={`View testimonial ${index + 1}`}
                   />
@@ -223,7 +223,7 @@ export default function MarketingHome() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               Everything You Need to Run Your Wholesale Business
             </h2>
           </div>
@@ -246,13 +246,13 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 4: HOW IT WORKS */}
-      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               How DevPanel Works
             </h2>
-            <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-12">
+            <p className="text-xl text-muted-foreground mb-12">
               Get started in minutes, not months
             </p>
 
@@ -261,8 +261,8 @@ export default function MarketingHome() {
                 <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">✏️</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 1<br />Sign Up</h3>
-                <p className="text-[hsl(var(--marketing-text-light))]">
+                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 1<br />Sign Up</h3>
+                <p className="text-muted-foreground">
                   Create your free account in 60 seconds
                 </p>
               </div>
@@ -270,8 +270,8 @@ export default function MarketingHome() {
                 <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">📥</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 2<br />Import Data</h3>
-                <p className="text-[hsl(var(--marketing-text-light))]">
+                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 2<br />Import Data</h3>
+                <p className="text-muted-foreground">
                   Import your products & customers (or add them manually)
                 </p>
               </div>
@@ -279,18 +279,18 @@ export default function MarketingHome() {
                 <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">🚀</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 3<br />Go Live</h3>
-                <p className="text-[hsl(var(--marketing-text-light))]">
+                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 3<br />Go Live</h3>
+                <p className="text-muted-foreground">
                   Start taking orders and managing your business
                 </p>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-xl border border-[hsl(var(--marketing-border))] mb-8">
-              <p className="text-[hsl(var(--marketing-text))] italic">
+            <div className="bg-card p-6 rounded-xl border border-border mb-8">
+              <p className="text-foreground italic">
                 "Setup took 10 minutes. We were fully operational the same day."
               </p>
-              <p className="mt-2 font-medium text-[hsl(var(--marketing-text))]">
+              <p className="mt-2 font-medium text-foreground">
                 - Sarah Chen, Valley Distribution
               </p>
             </div>
@@ -309,10 +309,10 @@ export default function MarketingHome() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
+            <p className="text-xl text-muted-foreground">
               Start free, upgrade as you grow
             </p>
           </div>
@@ -340,25 +340,25 @@ export default function MarketingHome() {
                 key={index}
                 className={`p-6 rounded-2xl border ${
                   plan.popular
-                    ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl scale-105"
-                    : "border-[hsl(var(--marketing-border))] bg-white"
+                    ? "border-primary bg-primary/5 shadow-xl scale-105"
+                    : "border-border bg-card"
                 }`}
               >
                 {plan.popular && (
                   <div className="text-center mb-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold">
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                       ⭐ POPULAR
                     </span>
                   </div>
                 )}
-                <h3 className="text-xl font-bold mb-2 text-center text-[hsl(var(--marketing-text))]">{plan.name}</h3>
+                <h3 className="text-xl font-bold mb-2 text-center text-foreground">{plan.name}</h3>
                 <div className="text-center mb-4">
-                  <span className="text-4xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--marketing-text-light))]">
-                      <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))] flex-shrink-0" />
+                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
@@ -367,7 +367,7 @@ export default function MarketingHome() {
                   <Button
                     className={`w-full ${
                       plan.popular
-                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
+                        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                         : ""
                     }`}
                     variant={plan.popular ? "default" : "outline"}
@@ -380,21 +380,21 @@ export default function MarketingHome() {
           </div>
 
           <div className="text-center mt-8">
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-[hsl(var(--marketing-text-light))] mb-4">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-4">
               <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 14-day free trial
               </span>
               <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 No credit card required
               </span>
               <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 Cancel anytime
               </span>
               <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 Money-back guarantee
               </span>
             </div>
@@ -409,14 +409,14 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE */}
-      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               See DevPanel in Action
             </h2>
 
-            <div className="rounded-2xl overflow-hidden shadow-2xl border border-[hsl(var(--marketing-border))] mb-8">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border mb-8">
               <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center">
                 <button className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
                   <Play className="h-10 w-10 text-white ml-1" />
@@ -426,25 +426,25 @@ export default function MarketingHome() {
 
             <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
               <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
-                <span className="text-[hsl(var(--marketing-text))]">Create disposable menu in 2 clicks</span>
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-foreground">Create disposable menu in 2 clicks</span>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
-                <span className="text-[hsl(var(--marketing-text))]">Track inventory in real-time</span>
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-foreground">Track inventory in real-time</span>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
-                <span className="text-[hsl(var(--marketing-text))]">Manage orders from one dashboard</span>
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-foreground">Manage orders from one dashboard</span>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
-                <span className="text-[hsl(var(--marketing-text))]">Customer portal for self-service</span>
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-foreground">Customer portal for self-service</span>
               </div>
             </div>
 
             <Link to="/demo">
-              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8">
                 Request Live Demo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -457,7 +457,7 @@ export default function MarketingHome() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               DevPanel by the Numbers
             </h2>
           </div>

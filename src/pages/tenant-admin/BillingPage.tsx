@@ -53,8 +53,8 @@ export default function TenantAdminBillingPage() {
     enabled: !!tenant?.subscription_plan,
   });
 
-  const limits = (tenant?.limits as any) || {};
-  const usage = (tenant?.usage as any) || {};
+  const limits = (tenant as any)?.limits || {};
+  const usage = (tenant as any)?.usage || {};
 
   const getUsagePercentage = (resource: string) => {
     const limit = limits[resource] === -1 ? Infinity : (limits[resource] || 0);
@@ -90,7 +90,7 @@ export default function TenantAdminBillingPage() {
                   variant="outline" 
                   className="border-[hsl(var(--tenant-primary))] text-[hsl(var(--tenant-primary))] bg-[hsl(var(--tenant-primary))]/5"
                 >
-                  {formatCurrency(tenant?.mrr || 0)}/month
+                  {formatCurrency((tenant as any)?.mrr || 0)}/month
                 </Badge>
               </div>
               <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-4">
@@ -203,7 +203,7 @@ export default function TenantAdminBillingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {tenant?.payment_method_added ? (
+            {(tenant as any)?.payment_method_added ? (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-[hsl(var(--tenant-surface))]">

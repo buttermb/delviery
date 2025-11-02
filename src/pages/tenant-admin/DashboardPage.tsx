@@ -29,15 +29,15 @@ export default function TenantAdminDashboardPage() {
   // Fetch today's metrics
   const { data: todayMetrics } = useQuery({
     queryKey: ["tenant-dashboard-today", tenantId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any> => {
       if (!tenantId) return null;
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       // Get today's orders
-      const { data: orders } = await supabase
-        .from("wholesale_orders")
+      const { data: orders } = await (supabase
+        .from("wholesale_orders") as any)
         .select("total_amount, status")
         .eq("tenant_id", tenantId)
         .gte("created_at", today.toISOString());
@@ -46,13 +46,13 @@ export default function TenantAdminDashboardPage() {
       const orderCount = orders?.length || 0;
 
       // Get low stock items
-      const { data: inventory } = await supabase
-        .from("wholesale_inventory")
+      const { data: inventory } = await (supabase
+        .from("wholesale_inventory") as any)
         .select("strain, weight_lbs, low_stock_threshold")
         .eq("tenant_id", tenantId);
 
       const lowStock = inventory?.filter(
-        (item) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
+        (item: any) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
       ) || [];
 
       return {
@@ -70,8 +70,8 @@ export default function TenantAdminDashboardPage() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data } = await supabase
-        .from("wholesale_orders")
+      const { data } = await (supabase
+        .from("wholesale_orders") as any)
         .select("id, order_number, total_amount, status, created_at, client_name")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
@@ -105,7 +105,7 @@ export default function TenantAdminDashboardPage() {
   };
 
   // Check if trial is ending soon
-  const trialEndingSoon = tenant?.trial_ends_at && new Date(tenant.trial_ends_at) < new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+  const trialEndingSoon = (tenant as any)?.trial_ends_at && new Date((tenant as any).trial_ends_at) < new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="min-h-screen bg-[hsl(var(--tenant-bg))]">
@@ -146,7 +146,7 @@ export default function TenantAdminDashboardPage() {
                   <div>
                     <p className="font-semibold text-yellow-900">⚠️ Trial Ending Soon</p>
                     <p className="text-sm text-yellow-700">
-                      Your trial ends in {Math.ceil((new Date(tenant.trial_ends_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days.
+                      Your trial ends in {Math.ceil((new Date((tenant as any).trial_ends_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days.
                     </p>
                   </div>
                 </div>
@@ -167,10 +167,10 @@ export default function TenantAdminDashboardPage() {
               <div>
                 <p className="text-sm text-[hsl(var(--tenant-text-light))]">Current Plan</p>
                 <p className="text-xl font-semibold text-[hsl(var(--tenant-text))]">
-                  {tenant?.subscription_plan?.charAt(0).toUpperCase() + tenant?.subscription_plan?.slice(1)} - {formatCurrency(tenant?.mrr || 0)}/month
+                  {tenant?.subscription_plan?.charAt(0).toUpperCase() + tenant?.subscription_plan?.slice(1)} - {formatCurrency((tenant as any)?.mrr || 0)}/month
                 </p>
                 <p className="text-sm text-[hsl(var(--tenant-text-light))] mt-1">
-                  Next billing: {tenant?.next_billing_date ? new Date(tenant.next_billing_date).toLocaleDateString() : "N/A"}
+                  Next billing: {(tenant as any)?.next_billing_date ? new Date((tenant as any).next_billing_date).toLocaleDateString() : "N/A"}
                 </p>
               </div>
               <Button variant="outline" asChild className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]">

@@ -25,12 +25,12 @@ export default function CustomerMenuViewPage() {
   // Fetch menu details
   const { data: menu, isLoading: menuLoading } = useQuery({
     queryKey: ["customer-menu", menuId, tenantId, customerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any> => {
       if (!menuId || !tenantId || !customerId) return null;
 
       // Verify customer has access
-      const { data: access } = await supabase
-        .from("menu_access")
+      const { data: access } = await (supabase
+        .from("menu_access") as any)
         .select("*")
         .eq("menu_id", menuId as string)
         .eq("customer_id", customerId)

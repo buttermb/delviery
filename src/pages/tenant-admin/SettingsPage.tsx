@@ -93,7 +93,7 @@ export default function TenantAdminSettingsPage() {
               <Label className="text-[hsl(var(--tenant-text))]">Phone</Label>
               <Input 
                 placeholder="Phone Number" 
-                defaultValue={tenant?.phone || ""}
+                defaultValue={(tenant as any)?.phone || ""}
                 className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
               />
             </div>
@@ -101,7 +101,7 @@ export default function TenantAdminSettingsPage() {
               <Label className="text-[hsl(var(--tenant-text))]">Address</Label>
               <Input 
                 placeholder="Business Address" 
-                defaultValue={tenant?.address || ""}
+                defaultValue={(tenant as any)?.address || ""}
                 className="border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20"
               />
             </div>
