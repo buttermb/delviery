@@ -6342,11 +6342,13 @@ export type Database = {
         Row: {
           business_name: string
           cancelled_at: string | null
+          company_size: string | null
           compliance_verified: boolean | null
           created_at: string | null
           demo_data_generated: boolean | null
           features: Json | null
           id: string
+          industry: string | null
           last_activity_at: string | null
           limits: Json | null
           mrr: number | null
@@ -6373,11 +6375,13 @@ export type Database = {
         Insert: {
           business_name: string
           cancelled_at?: string | null
+          company_size?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
           demo_data_generated?: boolean | null
           features?: Json | null
           id?: string
+          industry?: string | null
           last_activity_at?: string | null
           limits?: Json | null
           mrr?: number | null
@@ -6404,11 +6408,13 @@ export type Database = {
         Update: {
           business_name?: string
           cancelled_at?: string | null
+          company_size?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
           demo_data_generated?: boolean | null
           features?: Json | null
           id?: string
+          industry?: string | null
           last_activity_at?: string | null
           limits?: Json | null
           mrr?: number | null
