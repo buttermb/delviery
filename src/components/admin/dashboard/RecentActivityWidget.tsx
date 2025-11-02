@@ -33,13 +33,13 @@ export function RecentActivityWidget() {
       // Get recent orders, transfers, and inventory updates
       const [ordersResult, transfersResult] = await Promise.all([
         supabase
-          .from('wholesale_orders')
+          .from('wholesale_orders' as any)
           .select('id, order_number, status, created_at, account_id')
           .eq('account_id', account.id)
           .order('created_at', { ascending: false })
           .limit(5),
         supabase
-          .from('wholesale_deliveries')
+          .from('wholesale_deliveries' as any)
           .select('id, status, created_at, account_id')
           .eq('account_id', account.id)
           .order('created_at', { ascending: false })

@@ -48,10 +48,10 @@ export default function WhiteLabelSettings() {
       customCSS: '',
     }
   );
-  const [emailFrom, setEmailFrom] = useState(tenant?.white_label?.emailFrom || '');
-  const [emailLogo, setEmailLogo] = useState(tenant?.white_label?.emailLogo || '');
-  const [emailFooter, setEmailFooter] = useState(tenant?.white_label?.emailFooter || '');
-  const [smsFrom, setSmsFrom] = useState(tenant?.white_label?.smsFrom || '');
+  const [emailFrom, setEmailFrom] = useState((tenant?.white_label as any)?.emailFrom || '');
+  const [emailLogo, setEmailLogo] = useState((tenant?.white_label as any)?.emailLogo || '');
+  const [emailFooter, setEmailFooter] = useState((tenant?.white_label as any)?.emailFooter || '');
+  const [smsFrom, setSmsFrom] = useState((tenant?.white_label as any)?.smsFrom || '');
 
   if (!tenant) {
     return (

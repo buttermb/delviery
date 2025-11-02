@@ -112,7 +112,7 @@ export function MenuList({ tenantId, customerId }: MenuListProps) {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{menu.title || "Untitled Menu"}</CardTitle>
+                  <CardTitle className="text-lg">{menu.name || "Untitled Menu"}</CardTitle>
                   {menu.description && (
                     <CardDescription className="mt-1 line-clamp-2">
                       {menu.description}

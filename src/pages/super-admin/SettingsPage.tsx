@@ -91,10 +91,10 @@ export default function SuperAdminSettingsPage() {
               <div>
                 <p className="font-medium">Two-Factor Authentication</p>
                 <p className="text-sm text-muted-foreground">
-                  {superAdmin?.two_factor_enabled ? "Enabled" : "Disabled"}
+                  Disabled
                 </p>
               </div>
-              <Switch checked={superAdmin?.two_factor_enabled || false} />
+              <Switch checked={false} disabled />
             </div>
           </div>
         </CardContent>

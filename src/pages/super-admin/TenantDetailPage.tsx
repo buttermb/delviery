@@ -112,12 +112,13 @@ export default function TenantDetailPage() {
 
       if (error) throw error;
 
-      // Log action
+      // Log action (super_admin_audit_logs table)
       if (superAdmin) {
-        await supabase.from("super_admin_actions").insert({
+        await supabase.from("super_admin_audit_logs").insert({
           super_admin_id: superAdmin.id,
-          action_type: suspend ? "tenant_suspended" : "tenant_activated",
-          target_tenant_id: tenantId,
+          action: suspend ? "TENANT_SUSPENDED" : "TENANT_ACTIVATED",
+          entity_type: "tenant",
+          entity_id: tenantId,
           action_data: { suspended: suspend },
           reason: suspend ? "Manual suspension by super admin" : "Manual activation by super admin",
         });
@@ -149,14 +150,14 @@ export default function TenantDetailPage() {
 
       if (error) throw error;
 
-      // Log action
+      // Log action (super_admin_audit_logs table)
       if (superAdmin) {
-        await supabase.from("super_admin_actions").insert({
+        await supabase.from("super_admin_audit_logs").insert({
           super_admin_id: superAdmin.id,
-          action_type: "plan_changed",
-          target_tenant_id: tenantId,
-          action_data: { from: tenant?.subscription_plan, to: newPlan },
-          reason: "Plan changed by super admin",
+          action: "PLAN_CHANGED",
+          entity_type: "tenant",
+          entity_id: tenantId,
+          details: { from: tenant?.subscription_plan, to: newPlan, reason: "Plan changed by super admin" },
         });
       }
     },
@@ -408,7 +409,7 @@ export default function TenantDetailPage() {
           </TabsContent>
 
           <TabsContent value="features">
-            {tenantId && <FeatureList tenantId={tenantId} readOnly={false} />}
+            {tenantId && <FeatureList tenantId={tenantId} readOnly={false} features={{}} />}
           </TabsContent>
 
           <TabsContent value="billing" className="space-y-4">
