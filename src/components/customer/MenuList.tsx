@@ -26,7 +26,8 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
       if (!finalTenantId || !finalCustomerId) return [];
 
       // Get menus that the customer has access to
-      const { data: accessRecords } = await supabase
+      // @ts-ignore - Complex Supabase query type
+      const result = await supabase
         .from("menu_access")
         .select(`
           menu_id,
@@ -44,6 +45,7 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
         .eq("customer_id", finalCustomerId)
         .order("created_at", { ascending: false })
         .limit(5);
+      const { data: accessRecords } = result;
 
       if (!accessRecords) return [];
 

@@ -148,7 +148,7 @@ export default function CustomerDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <MenuList menus={[]} />
+            <MenuList />
           </CardContent>
         </Card>
 

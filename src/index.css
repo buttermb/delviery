@@ -74,40 +74,40 @@
     --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Marketing Site Colors */
-    --marketing-primary: 217 91% 55%;        /* #2563eb - Blue 600 (muted) */
-    --marketing-secondary: 271 81% 56%;     /* #7c3aed - Purple 600 (muted) */
-    --marketing-accent: 160 84% 35%;        /* #059669 - Green 600 (muted) */
+    /* Marketing Site Colors - Light Theme */
+    --marketing-primary: 217 91% 55%;        /* #2563eb - Blue 600 */
+    --marketing-secondary: 271 81% 56%;     /* #7c3aed - Purple 600 */
+    --marketing-accent: 160 84% 35%;        /* #059669 - Green 600 */
     --marketing-text: 222 47% 11%;         /* #111827 - Gray 900 */
     --marketing-text-light: 215 20% 65%;    /* #6b7280 - Gray 500 */
     --marketing-bg: 0 0% 100%;             /* #ffffff - White */
     --marketing-bg-subtle: 220 14% 96%;     /* #f9fafb - Gray 50 */
     --marketing-border: 220 13% 91%;        /* #e5e7eb - Gray 200 */
 
-    /* Super Admin Colors - Dark Theme */
-    --super-admin-primary: 239 84% 45%;     /* Indigo - Muted for dark theme */
-    --super-admin-secondary: 271 81% 48%;   /* Purple - Muted for dark theme */
-    --super-admin-accent: 38 92% 42%;        /* Amber - Muted for dark theme */
-    --super-admin-bg: 222 47% 11%;          /* #0f172a - Slate 900 */
-    --super-admin-surface: 215 28% 17%;      /* #1e293b - Slate 800 */
-    --super-admin-border: 217 33% 25%;       /* #334155 - Slate 700 */
-    --super-admin-text: 210 40% 98%;         /* #f1f5f9 - Slate 100 */
-    --super-admin-text-light: 215 28% 64%;   /* #94a3b8 - Slate 400 */
+    /* Super Admin Colors - Light Theme */
+    --super-admin-primary: 239 84% 60%;     /* Indigo - Bright for light theme */
+    --super-admin-secondary: 271 81% 60%;   /* Purple - Bright for light theme */
+    --super-admin-accent: 38 92% 50%;       /* Amber - Bright for light theme */
+    --super-admin-bg: 0 0% 100%;            /* #ffffff - White */
+    --super-admin-surface: 220 14% 96%;     /* #f8fafc - Slate 50 */
+    --super-admin-border: 220 13% 91%;      /* #e2e8f0 - Slate 200 */
+    --super-admin-text: 222 47% 11%;        /* #111827 - Gray 900 */
+    --super-admin-text-light: 215 20% 65%;  /* #6b7280 - Gray 500 */
 
     /* Tenant Admin Colors - Light Theme */
-    --tenant-primary: 217 91% 55%;         /* #2563eb - Blue 600 (muted) */
-    --tenant-secondary: 160 84% 35%;        /* #059669 - Green 600 (muted) */
-    --tenant-accent: 38 92% 45%;            /* #d97706 - Amber 600 (muted) */
+    --tenant-primary: 217 91% 55%;         /* #2563eb - Blue 600 */
+    --tenant-secondary: 160 84% 35%;        /* #059669 - Green 600 */
+    --tenant-accent: 38 92% 45%;            /* #d97706 - Amber 600 */
     --tenant-bg: 0 0% 100%;                 /* #ffffff - White */
     --tenant-surface: 220 14% 96%;          /* #f8fafc - Slate 50 */
     --tenant-border: 220 13% 91%;           /* #e2e8f0 - Slate 200 */
     --tenant-text: 222 47% 11%;             /* #1e293b - Slate 800 */
     --tenant-text-light: 215 20% 65%;       /* #64748b - Slate 500 */
 
-    /* Customer Portal Colors - Ecommerce Theme */
-    --customer-primary: 160 84% 35%;         /* #059669 - Emerald 600 (muted) */
-    --customer-secondary: 199 89% 45%;      /* #0284c7 - Sky 600 (muted) */
-    --customer-accent: 0 84% 55%;           /* #dc2626 - Red 600 (muted) */
+    /* Customer Portal Colors - Light Theme */
+    --customer-primary: 160 84% 35%;         /* #059669 - Emerald 600 */
+    --customer-secondary: 199 89% 45%;      /* #0284c7 - Sky 600 */
+    --customer-accent: 0 84% 55%;           /* #dc2626 - Red 600 */
     --customer-bg: 0 0% 100%;                /* #ffffff - White */
     --customer-surface: 220 14% 96%;         /* #f9fafb - Gray 50 */
     --customer-border: 220 13% 91%;          /* #e5e7eb - Gray 200 */
@@ -155,12 +155,53 @@
     --border: 222 30% 25%;                /* Dark border */
     --input: 222 30% 18%;                 /* Dark input */
     --ring: 160 84% 39%;                  /* emerald-500 */
+
+    /* Marketing Site Colors - Dark Theme */
+    --marketing-primary: 217 91% 65%;        /* Blue - Brighter for dark */
+    --marketing-secondary: 271 81% 65%;     /* Purple - Brighter for dark */
+    --marketing-accent: 160 84% 45%;        /* Green - Brighter for dark */
+    --marketing-text: 0 0% 100%;           /* White */
+    --marketing-text-light: 215 20% 75%;    /* Light gray */
+    --marketing-bg: 222 47% 8%;            /* Dark background */
+    --marketing-bg-subtle: 222 40% 12%;     /* Dark subtle */
+    --marketing-border: 222 30% 25%;        /* Dark border */
+
+    /* Super Admin Colors - Dark Theme */
+    --super-admin-primary: 239 84% 45%;     /* Indigo - Muted for dark theme */
+    --super-admin-secondary: 271 81% 48%;   /* Purple - Muted for dark theme */
+    --super-admin-accent: 38 92% 42%;       /* Amber - Muted for dark theme */
+    --super-admin-bg: 222 47% 11%;          /* #0f172a - Slate 900 */
+    --super-admin-surface: 215 28% 17%;     /* #1e293b - Slate 800 */
+    --super-admin-border: 217 33% 25%;      /* #334155 - Slate 700 */
+    --super-admin-text: 210 40% 98%;        /* #f1f5f9 - Slate 100 */
+    --super-admin-text-light: 215 28% 64%;  /* #94a3b8 - Slate 400 */
+
+    /* Tenant Admin Colors - Dark Theme */
+    --tenant-primary: 217 91% 65%;         /* Blue - Brighter for dark */
+    --tenant-secondary: 160 84% 45%;        /* Green - Brighter for dark */
+    --tenant-accent: 38 92% 55%;            /* Amber - Brighter for dark */
+    --tenant-bg: 222 47% 8%;                /* Dark background */
+    --tenant-surface: 222 40% 12%;          /* Dark surface */
+    --tenant-border: 222 30% 25%;           /* Dark border */
+    --tenant-text: 0 0% 100%;               /* White */
+    --tenant-text-light: 215 20% 75%;       /* Light gray */
+
+    /* Customer Portal Colors - Dark Theme */
+    --customer-primary: 160 84% 45%;         /* Emerald - Brighter for dark */
+    --customer-secondary: 199 89% 55%;      /* Sky - Brighter for dark */
+    --customer-accent: 0 84% 65%;           /* Red - Brighter for dark */
+    --customer-bg: 222 47% 8%;               /* Dark background */
+    --customer-surface: 222 40% 12%;         /* Dark surface */
+    --customer-border: 222 30% 25%;          /* Dark border */
+    --customer-text: 0 0% 100%;              /* White */
+    --customer-text-light: 215 20% 75%;      /* Light gray */
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
   
   /* Mobile-first improvements */
@@ -237,6 +278,7 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   /* Safe area for mobile devices with notches */
