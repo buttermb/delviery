@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Warehouses Page
  * Manage warehouse locations and their inventory

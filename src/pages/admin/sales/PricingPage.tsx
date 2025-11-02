@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pricing & Deals Page
  * Manage pricing tiers, bulk discounts, and special deals

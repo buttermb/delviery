@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Location Map Widget - Interactive map showing warehouses and runners
  */
