@@ -56,13 +56,13 @@ export function useOnboardingProgress(tenantId: string | undefined): UseOnboardi
     enabled: !!tenantId,
   });
 
-  const usage = tenant?.usage || {};
+  const usage = (tenant?.usage as any) || {};
 
   const steps: OnboardingStep[] = [
     { id: "account", label: "Account Created", completed: true },
-    { id: "products", label: "Products Added", completed: (usage.products || 0) > 0 },
-    { id: "customers", label: "Customers Added", completed: (usage.customers || 0) > 0 },
-    { id: "menu", label: "Menu Created", completed: (usage.menus || 0) > 0 },
+    { id: "products", label: "Products Added", completed: ((usage as any).products || 0) > 0 },
+    { id: "customers", label: "Customers Added", completed: ((usage as any).customers || 0) > 0 },
+    { id: "menu", label: "Menu Created", completed: ((usage as any).menus || 0) > 0 },
   ];
 
   const completedCount = steps.filter((s) => s.completed).length;

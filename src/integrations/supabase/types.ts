@@ -822,6 +822,63 @@ export type Database = {
           },
         ]
       }
+      commission_transactions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number | null
+          created_at: string | null
+          customer_payment_amount: number
+          id: string
+          order_id: string | null
+          paid_at: string | null
+          processed_at: string | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string | null
+          customer_payment_amount?: number
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string | null
+          customer_payment_amount?: number
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupon_codes: {
         Row: {
           auto_apply: boolean | null
@@ -6287,12 +6344,15 @@ export type Database = {
           cancelled_at: string | null
           compliance_verified: boolean | null
           created_at: string | null
+          demo_data_generated: boolean | null
           features: Json | null
           id: string
           last_activity_at: string | null
           limits: Json | null
           mrr: number | null
           onboarded: boolean | null
+          onboarding_completed: boolean | null
+          onboarding_completed_at: string | null
           owner_email: string
           owner_name: string
           payment_method_added: boolean | null
@@ -6315,12 +6375,15 @@ export type Database = {
           cancelled_at?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
+          demo_data_generated?: boolean | null
           features?: Json | null
           id?: string
           last_activity_at?: string | null
           limits?: Json | null
           mrr?: number | null
           onboarded?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           owner_email: string
           owner_name: string
           payment_method_added?: boolean | null
@@ -6343,12 +6406,15 @@ export type Database = {
           cancelled_at?: string | null
           compliance_verified?: boolean | null
           created_at?: string | null
+          demo_data_generated?: boolean | null
           features?: Json | null
           id?: string
           last_activity_at?: string | null
           limits?: Json | null
           mrr?: number | null
           onboarded?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_completed_at?: string | null
           owner_email?: string
           owner_name?: string
           payment_method_added?: boolean | null

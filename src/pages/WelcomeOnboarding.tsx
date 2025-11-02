@@ -65,7 +65,7 @@ export default function WelcomeOnboarding() {
         // Ensure demo_data_generated is always present (defaults to false if column doesn't exist)
         return {
           ...data,
-          demo_data_generated: data?.demo_data_generated ?? false,
+          demo_data_generated: (data as any)?.demo_data_generated ?? false,
         };
       } catch (error: any) {
         // If query fails, return defaults
@@ -101,8 +101,8 @@ export default function WelcomeOnboarding() {
     }
   }, [effectiveTenantId]);
 
-  const usage = tenantInfo?.usage || {};
-  const limits = tenantInfo?.limits || {};
+  const usage = (tenantInfo?.usage as any) || {};
+  const limits = (tenantInfo?.limits as any) || {};
 
   const onboardingSteps = [
     {
