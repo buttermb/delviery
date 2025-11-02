@@ -188,9 +188,27 @@ export default function TenantAdminDashboardPage() {
 
       const total = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
 
-      // TODO: Add commission_transactions table
-      // For now, estimate commission as 2% of total
-      const commission = total * 0.02;
+      // Get actual commission transactions (more accurate than calculating)
+      // Handle gracefully if table doesn't exist yet
+      let commission = 0;
+      try {
+        const { data: commissions, error: commissionError } = await supabase
+          .from("commission_transactions")
+          .select("commission_amount, customer_payment_amount")
+          .eq("tenant_id", tenantId)
+          .in("status", ["pending", "processed", "paid"]);
+
+        // If table doesn't exist (error code 42P01), use fallback calculation
+        if (commissionError && commissionError.code === "42P01") {
+          // Table doesn't exist - calculate 2% commission manually as fallback
+          commission = total * 0.02;
+        } else if (commissions) {
+          commission = commissions.reduce((sum, c) => sum + (Number(c.commission_amount) || 0), 0);
+        }
+      } catch (error) {
+        // Table doesn't exist - calculate 2% commission manually as fallback
+        commission = total * 0.02;
+      }
 
       return { total, commission };
     },

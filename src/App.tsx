@@ -61,7 +61,6 @@ const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
-const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpiredPage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 
 // Tenant Admin Pages

@@ -257,22 +257,57 @@ export async function generateDemoData(tenantId: string): Promise<void> {
       }
     }
 
-    // 4. Update tenant usage counters
-    const { error: updateError } = await supabase
-      .from('tenants')
-      .update({
-        usage: {
-          products: insertedProducts?.length || 0,
-          customers: insertedCustomers?.length || 0,
-          menus: 1,
-        },
-        demo_data_generated: true,
-      })
-      .eq('id', tenantId);
+    // 4. Update tenant usage counters (safely handle missing columns)
+    try {
+      const updateData: any = {};
+      
+      // Try to update usage if column exists
+      try {
+        const { error: usageCheck } = await supabase
+          .from('tenants')
+          .select('usage')
+          .limit(0);
+        
+        if (!usageCheck || usageCheck.code !== '42703') {
+          updateData.usage = {
+            products: insertedProducts?.length || 0,
+            customers: insertedCustomers?.length || 0,
+            menus: 1,
+          };
+        }
+      } catch {
+        // Usage column doesn't exist, skip it
+      }
+      
+      // Try to update demo_data_generated if column exists
+      try {
+        const { error: demoCheck } = await supabase
+          .from('tenants')
+          .select('demo_data_generated')
+          .limit(0);
+        
+        if (!demoCheck || demoCheck.code !== '42703') {
+          updateData.demo_data_generated = true;
+        }
+      } catch {
+        // demo_data_generated column doesn't exist, skip it
+      }
+      
+      // Only update if we have something to update
+      if (Object.keys(updateData).length > 0) {
+        const { error: updateError } = await supabase
+          .from('tenants')
+          .update(updateData)
+          .eq('id', tenantId);
 
-    if (updateError) {
-      console.error('Error updating tenant usage:', updateError);
-      throw updateError;
+        if (updateError && updateError.code !== '42703') {
+          console.warn('Error updating tenant data (non-critical):', updateError);
+          // Don't throw - this is not critical for demo data generation
+        }
+      }
+    } catch (error) {
+      console.warn('Error updating tenant usage (non-critical):', error);
+      // Don't throw - demo data was created successfully
     }
   } catch (error) {
     console.error('Error generating demo data:', error);
