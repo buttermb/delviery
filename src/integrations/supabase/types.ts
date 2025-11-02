@@ -5728,6 +5728,125 @@ export type Database = {
           },
         ]
       }
+      tenant_users: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          email: string
+          email_verified: boolean | null
+          id: string
+          invited_at: string | null
+          name: string
+          role: string
+          status: string
+          tenant_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email: string
+          email_verified?: boolean | null
+          id?: string
+          invited_at?: string | null
+          name: string
+          role: string
+          status?: string
+          tenant_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email?: string
+          email_verified?: boolean | null
+          id?: string
+          invited_at?: string | null
+          name?: string
+          role?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          business_name: string
+          compliance_verified: boolean | null
+          created_at: string | null
+          features: Json | null
+          id: string
+          last_activity_at: string | null
+          limits: Json | null
+          mrr: number | null
+          onboarded: boolean | null
+          owner_email: string
+          owner_name: string
+          phone: string | null
+          slug: string
+          state: string | null
+          subscription_plan: string
+          subscription_status: string
+          trial_ends_at: string | null
+          updated_at: string | null
+          usage: Json | null
+        }
+        Insert: {
+          business_name: string
+          compliance_verified?: boolean | null
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          last_activity_at?: string | null
+          limits?: Json | null
+          mrr?: number | null
+          onboarded?: boolean | null
+          owner_email: string
+          owner_name: string
+          phone?: string | null
+          slug: string
+          state?: string | null
+          subscription_plan: string
+          subscription_status: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          usage?: Json | null
+        }
+        Update: {
+          business_name?: string
+          compliance_verified?: boolean | null
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          last_activity_at?: string | null
+          limits?: Json | null
+          mrr?: number | null
+          onboarded?: boolean | null
+          owner_email?: string
+          owner_name?: string
+          phone?: string | null
+          slug?: string
+          state?: string | null
+          subscription_plan?: string
+          subscription_status?: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          usage?: Json | null
+        }
+        Relationships: []
+      }
       user_ip_addresses: {
         Row: {
           blocked_at: string | null
