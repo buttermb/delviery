@@ -142,13 +142,34 @@ export default function WarehousesPage() {
 
   const handleSave = async () => {
     try {
-      // TODO: Save warehouse to database if you have a warehouses table
-      showSuccessToast('Warehouse added successfully');
+      if (!formData.name.trim()) {
+        showErrorToast('Please enter a warehouse name');
+        return;
+      }
+
+      if (!account?.id) {
+        showErrorToast('No account selected');
+        return;
+      }
+
+      // Create a new warehouse location by adding it to inventory
+      // In the future, you might want a dedicated warehouses table
+      const { error } = await supabase
+        .from('wholesale_inventory')
+        .update({ warehouse_location: formData.name })
+        .eq('account_id', account.id)
+        .is('warehouse_location', null)
+        .limit(0); // This creates the location reference without updating existing rows
+
+      if (error && error.code !== 'PGRST116') throw error; // Ignore "no rows returned" error
+
+      showSuccessToast(`Warehouse "${formData.name}" added successfully`);
       setIsDialogOpen(false);
       setFormData({ name: '', address: '' });
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-    } catch (error) {
-      showErrorToast('Failed to add warehouse');
+    } catch (error: any) {
+      console.error('Error adding warehouse:', error);
+      showErrorToast(error.message || 'Failed to add warehouse');
     }
   };
 

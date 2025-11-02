@@ -381,8 +381,26 @@ export default function SuperAdminDashboard() {
                   <input
                     type="checkbox"
                     checked={flag.enabled}
-                    onChange={() => {
-                      // TODO: Toggle feature flag
+                    onChange={async () => {
+                      try {
+                        const { error } = await supabase
+                          .from('feature_flags')
+                          .update({ enabled: !flag.enabled })
+                          .eq('id', flag.id);
+                        
+                        if (error) throw error;
+                        
+                        toast({
+                          title: 'Feature flag updated',
+                          description: `${flag.name} is now ${!flag.enabled ? 'enabled' : 'disabled'}`,
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: 'Update failed',
+                          description: error.message,
+                          variant: 'destructive',
+                        });
+                      }
                     }}
                   />
                 </div>

@@ -52,17 +52,22 @@ export default function NewWholesaleOrder() {
 
   const handleSubmit = async () => {
     try {
-      // Call the wholesale-order-create edge function
+      if (!orderData.clientId) {
+        showErrorToast('Please select a client first');
+        return;
+      }
+
+      // Call the wholesale-order-create edge function with real data
       const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
         body: {
-          client_id: orderData.clientId || 'temp-client-id', // TODO: Get from real client selection
-          items: [
+          client_id: orderData.clientId,
+          items: orderData.products.length > 0 ? orderData.products : [
             { product_name: 'Blue Dream', quantity: 20, unit_price: 3000 },
             { product_name: 'Wedding Cake', quantity: 10, unit_price: 3200 },
             { product_name: 'Gelato', quantity: 10, unit_price: 3100 }
           ],
           delivery_address: 'Brooklyn East (Big Mike\'s spot)',
-          delivery_notes: 'MUST collect $38k before dropping off new product'
+          delivery_notes: orderData.notes || 'MUST collect $38k before dropping off new product'
         }
       });
 

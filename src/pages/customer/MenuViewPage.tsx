@@ -21,6 +21,7 @@ export default function CustomerMenuViewPage() {
   const customerId = customer?.customer_id || customer?.id;
   const [searchTerm, setSearchTerm] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [cart, setCart] = useState<Record<string, { product: any; quantity: number }>>({});
 
   // Fetch menu details
   const { data: menu, isLoading: menuLoading } = useQuery({
@@ -291,10 +292,14 @@ export default function CustomerMenuViewPage() {
                             <Button
                               size="sm"
                               onClick={() => {
+                                setCart({
+                                  ...cart,
+                                  [product.id]: { product, quantity }
+                                });
                                 toast({
                                   title: `${quantity}x ${product.name} added to cart`,
+                                  description: `Total items in cart: ${Object.keys({ ...cart, [product.id]: { product, quantity } }).length}`,
                                 });
-                                // TODO: Add to cart logic
                               }}
                               className="flex-1 bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                             >

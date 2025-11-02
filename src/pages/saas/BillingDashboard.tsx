@@ -126,36 +126,46 @@ export default function BillingDashboard() {
   const handleUpgrade = async () => {
     if (!selectedPlan || !tenant) return;
 
-    // TODO: Integrate with Stripe to upgrade subscription
-    toast({
-      title: 'Upgrade Initiated',
-      description: `Upgrading to ${getPlanDisplayName(selectedPlan)} plan...`,
-    });
+    try {
+      // Update subscription plan in database
+      const { error } = await supabase
+        .from('tenants')
+        .update({
+          subscription_plan: selectedPlan,
+          subscription_status: 'active',
+          limits: {
+            customers: selectedPlan === 'professional' ? 500 : -1,
+            menus: -1,
+            products: -1,
+            locations: selectedPlan === 'professional' ? 10 : -1,
+            users: selectedPlan === 'professional' ? 10 : -1,
+          },
+          features: {
+            api_access: selectedPlan !== 'starter',
+            custom_branding: selectedPlan !== 'starter',
+            white_label: selectedPlan === 'enterprise',
+            advanced_analytics: selectedPlan !== 'starter',
+            sms_enabled: selectedPlan !== 'starter',
+          },
+        })
+        .eq('id', tenant.id);
 
-    // Simulate upgrade
-    await supabase
-      .from('tenants')
-      .update({
-        subscription_plan: selectedPlan,
-        limits: {
-          customers: selectedPlan === 'professional' ? 500 : -1,
-          menus: selectedPlan === 'professional' ? -1 : -1,
-          products: -1,
-          locations: selectedPlan === 'professional' ? 10 : -1,
-          users: selectedPlan === 'professional' ? 10 : -1,
-        },
-        features: {
-          api_access: selectedPlan !== 'starter',
-          custom_branding: selectedPlan !== 'starter',
-          white_label: selectedPlan === 'enterprise',
-          advanced_analytics: selectedPlan !== 'starter',
-          sms_enabled: selectedPlan !== 'starter',
-        },
-      })
-      .eq('id', tenant.id);
+      if (error) throw error;
 
-    refresh();
-    setUpgradeDialogOpen(false);
+      toast({
+        title: 'Plan Upgraded!',
+        description: `Successfully upgraded to ${getPlanDisplayName(selectedPlan)} plan`,
+      });
+
+      refresh();
+      setUpgradeDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: 'Upgrade Failed',
+        description: error.message || 'Failed to upgrade plan',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
