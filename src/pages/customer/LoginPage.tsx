@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
@@ -80,28 +79,27 @@ export default function CustomerLoginPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))]">
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--customer-primary))]" />
       </div>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Tenant Not Found</CardTitle>
-            <CardDescription>
-              The tenant "{tenantSlug}" could not be found or is inactive.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/">Go to Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--customer-bg))] p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--customer-border))] p-8">
+          <div className="text-center mb-6">
+            <ShoppingBag className="h-12 w-12 text-[hsl(var(--customer-text-light))] mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-[hsl(var(--customer-text))] mb-2">Store Not Found</h1>
+            <p className="text-[hsl(var(--customer-text-light))]">
+              The store "{tenantSlug}" could not be found or is inactive.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/">Go to Home</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -110,27 +108,46 @@ export default function CustomerLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            {logo ? (
-              <img src={logo} alt={businessName} className="h-12 object-contain" />
-            ) : (
-              <div className="rounded-full bg-green-600 p-3">
-                <ShoppingBag className="h-8 w-8 text-white" />
-              </div>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--customer-bg))] via-[hsl(var(--customer-surface))] to-[hsl(var(--customer-bg))] p-4 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden opacity-20">
+        <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-[hsl(var(--customer-primary))] blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-[hsl(var(--customer-secondary))] blur-3xl" />
+      </div>
+
+      {/* White Card */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-2xl border border-[hsl(var(--customer-border))] p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              {logo ? (
+                <img src={logo} alt={businessName} className="h-16 object-contain" />
+              ) : (
+                <div className="relative">
+                  <div className="rounded-full bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] p-4 shadow-lg">
+                    <ShoppingBag className="h-8 w-8 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1">
+                    <Sparkles className="h-5 w-5 text-[hsl(var(--customer-accent))] animate-pulse" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">
+              Welcome Back!
+            </h1>
+            <p className="text-[hsl(var(--customer-text-light))]">
+              {businessName} - Customer Portal
+            </p>
           </div>
-          <CardTitle className="text-2xl font-bold">{businessName}</CardTitle>
-          <CardDescription>
-            Customer Portal - Sign in to browse products and place orders
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-[hsl(var(--customer-text))]">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -139,10 +156,14 @@ export default function CustomerLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="h-12 border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 transition-all"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-[hsl(var(--customer-text))]">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -151,26 +172,34 @@ export default function CustomerLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="h-12 border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 transition-all"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white h-12 font-semibold shadow-lg"
+            >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Signing in...
                 </>
               ) : (
-                "Sign In"
+                "Sign In to Shop"
               )}
             </Button>
           </form>
-          <div className="mt-4 space-y-2 text-center text-sm">
+
+          {/* Links */}
+          <div className="mt-6 space-y-3 text-center text-sm">
             <div className="flex items-center justify-center gap-2">
               <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug} />
-              <span className="text-muted-foreground">•</span>
+              <span className="text-[hsl(var(--customer-text-light))]">•</span>
               <Link 
                 to="#" 
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[hsl(var(--customer-primary))] hover:underline font-medium"
                 onClick={(e) => {
                   e.preventDefault();
                   toast({ title: "Contact your supplier to create an account" });
@@ -179,18 +208,17 @@ export default function CustomerLoginPage() {
                 Create account
               </Link>
             </div>
-            <div className="pt-2 border-t">
+            <div className="pt-3 border-t border-[hsl(var(--customer-border))]">
               <Link 
                 to={`/${tenantSlug}/admin/login`} 
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-primary))] transition-colors"
               >
                 Business owner? Admin Login →
               </Link>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
-

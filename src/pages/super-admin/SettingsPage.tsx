@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Key, Bell, Shield } from "lucide-react";
+import { Settings, Key, Bell, Shield, User } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -27,112 +27,171 @@ export default function SuperAdminSettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">⚙️ Platform Settings</h1>
-        <p className="text-muted-foreground">Manage platform-wide configurations</p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))] p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-[hsl(var(--super-admin-text))] mb-2">⚙️ Platform Settings</h1>
+          <p className="text-[hsl(var(--super-admin-text-light))]">Manage platform-wide configurations and security</p>
+        </div>
 
-      {/* Account Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Account Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={superAdmin?.email || ""} disabled />
-            <p className="text-sm text-muted-foreground">Email cannot be changed</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="First Name" defaultValue={superAdmin?.first_name || ""} />
-              <Input placeholder="Last Name" defaultValue={superAdmin?.last_name || ""} />
-            </div>
-          </div>
-
-          <Button>Save Changes</Button>
-        </CardContent>
-      </Card>
-
-      {/* Security */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Security
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleUpdatePassword} className="space-y-4">
+        {/* Account Settings */}
+        <Card className="bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-sm border-[hsl(var(--super-admin-border))] shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--super-admin-text))]">
+              <User className="h-5 w-5 text-[hsl(var(--super-admin-primary))]" />
+              Account Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Change Password</Label>
-              <Input type="password" placeholder="Current Password" required />
+              <Label className="text-[hsl(var(--super-admin-text))]">Email</Label>
+              <Input 
+                value={superAdmin?.email || ""} 
+                disabled 
+                className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text-light))]"
+              />
+              <p className="text-sm text-[hsl(var(--super-admin-text-light))]">Email cannot be changed</p>
             </div>
+
             <div className="space-y-2">
-              <Input type="password" placeholder="New Password" required />
+              <Label className="text-[hsl(var(--super-admin-text))]">Name</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                  placeholder="First Name" 
+                  defaultValue={superAdmin?.first_name || ""}
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                />
+                <Input 
+                  placeholder="Last Name" 
+                  defaultValue={superAdmin?.last_name || ""}
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Input type="password" placeholder="Confirm New Password" required />
-            </div>
-            <Button type="submit" disabled={loading}>
-              <Key className="h-4 w-4 mr-2" />
-              Update Password
+
+            <Button 
+              className="bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white"
+            >
+              Save Changes
             </Button>
-          </form>
+          </CardContent>
+        </Card>
 
-          <div className="pt-4 border-t space-y-4">
+        {/* Security */}
+        <Card className="bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-sm border-[hsl(var(--super-admin-border))] shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--super-admin-text))]">
+              <Shield className="h-5 w-5 text-[hsl(var(--super-admin-primary))]" />
+              Security
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--super-admin-text))]">Change Password</Label>
+                <Input 
+                  type="password" 
+                  placeholder="Current Password" 
+                  required
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Input 
+                  type="password" 
+                  placeholder="New Password" 
+                  required
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Input 
+                  type="password" 
+                  placeholder="Confirm New Password" 
+                  required
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white"
+              >
+                <Key className="h-4 w-4 mr-2" />
+                {loading ? "Updating..." : "Update Password"}
+              </Button>
+            </form>
+
+            <div className="pt-4 border-t border-[hsl(var(--super-admin-border))] space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-[hsl(var(--super-admin-text))]">Two-Factor Authentication</p>
+                  <p className="text-sm text-[hsl(var(--super-admin-text-light))]">
+                    {superAdmin?.two_factor_enabled ? "Enabled - Additional security layer active" : "Disabled - Enable for enhanced security"}
+                  </p>
+                </div>
+                <Switch 
+                  checked={superAdmin?.two_factor_enabled || false}
+                  className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card className="bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-sm border-[hsl(var(--super-admin-border))] shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--super-admin-text))]">
+              <Bell className="h-5 w-5 text-[hsl(var(--super-admin-primary))]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Two-Factor Authentication</p>
-                <p className="text-sm text-muted-foreground">
-                  Disabled
-                </p>
+                <p className="font-medium text-[hsl(var(--super-admin-text))]">Email Notifications</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text-light))]">Receive email alerts for platform events</p>
               </div>
-              <Switch checked={false} disabled />
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
+              />
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Email Notifications</p>
-              <p className="text-sm text-muted-foreground">Receive email alerts for platform events</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--super-admin-text))]">New Tenant Alerts</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text-light))]">Notify when new tenants sign up</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">New Tenant Alerts</p>
-              <p className="text-sm text-muted-foreground">Notify when new tenants sign up</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--super-admin-text))]">Payment Failures</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text-light))]">Alert on payment processing issues</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Payment Failures</p>
-              <p className="text-sm text-muted-foreground">Alert on payment processing issues</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--super-admin-text))]">System Alerts</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text-light))]">Critical platform notifications</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
-

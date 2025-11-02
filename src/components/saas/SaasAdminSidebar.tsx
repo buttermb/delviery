@@ -1,5 +1,5 @@
 /**
- * SaaS Admin Sidebar Component
+ * SaaS Admin Sidebar Component - Dark Theme
  * Provides navigation for the super admin platform
  */
 
@@ -11,8 +11,8 @@ import {
   Ticket,
   Zap,
   LayoutDashboard,
-  ChevronLeft,
-  ChevronRight,
+  Users,
+  Shield,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -25,13 +25,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 
 const menuItems = [
   {
     title: 'Dashboard',
-    url: '/saas/admin',
+    url: '/super-admin/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Tenants',
+    url: '/super-admin/tenants',
+    icon: Building2,
   },
   {
     title: 'Analytics',
@@ -50,7 +54,7 @@ const menuItems = [
   },
   {
     title: 'Settings',
-    url: '/saas/admin/settings',
+    url: '/super-admin/settings',
     icon: Settings,
   },
 ];
@@ -62,34 +66,35 @@ export function SaasAdminSidebar() {
   const collapsed = state === 'collapsed';
 
   const isActive = (path: string) => {
-    if (path === '/saas/admin') {
-      return currentPath === path;
+    if (path === '/super-admin/dashboard') {
+      return currentPath === path || currentPath.startsWith('/super-admin/tenants');
     }
     return currentPath.startsWith(path);
   };
 
-  const getNavCls = (active: boolean) =>
-    active
-      ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary'
-      : 'hover:bg-muted/50';
-
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar 
+      collapsible="icon" 
+      className="border-r border-white/10 bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl"
+    >
       <SidebarContent>
         <SidebarGroup>
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            {!collapsed && (
+          <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+            {!collapsed ? (
               <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Platform Admin</span>
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-semibold text-[hsl(var(--super-admin-text))]">Platform Admin</span>
               </div>
-            )}
-            {collapsed && (
-              <Building2 className="h-5 w-5 text-primary mx-auto" />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] flex items-center justify-center mx-auto">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
             )}
           </div>
 
-          <SidebarGroupLabel className={collapsed ? 'sr-only' : ''}>
+          <SidebarGroupLabel className={`${collapsed ? 'sr-only' : ''} text-[hsl(var(--super-admin-text))]/70 px-4`}>
             Navigation
           </SidebarGroupLabel>
 
@@ -102,8 +107,14 @@ export function SaasAdminSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
-                        end={item.url === '/saas/admin'}
-                        className={getNavCls(active)}
+                        end={item.url === '/super-admin/dashboard'}
+                        className={`
+                          ${active 
+                            ? 'bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))] border-l-2 border-[hsl(var(--super-admin-primary))]' 
+                            : 'hover:bg-white/5 text-[hsl(var(--super-admin-text))]/80'
+                          }
+                          transition-colors
+                        `}
                       >
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span>{item.title}</span>}

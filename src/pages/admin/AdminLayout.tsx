@@ -70,7 +70,7 @@ const AdminLayout = () => {
         {useModernSidebar ? <RoleBasedSidebar /> : <AdminSidebar />}
         <div className="flex-1 flex flex-col min-w-0">
           <AccountSwitcher />
-          <header className="h-14 border-b flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe">
+          <header className="h-14 border-b border-[hsl(var(--tenant-border))] flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 flex-shrink-0 pt-safe shadow-sm">
             <SidebarTrigger className="h-10 w-10 touch-manipulation active:scale-95 transition-transform" />
             
             {/* Breadcrumbs */}
@@ -79,11 +79,11 @@ const AdminLayout = () => {
                 <div key={crumb.url} className="flex items-center gap-2 flex-shrink-0">
                   {index > 0 && <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />}
                   {index === breadcrumbs.length - 1 ? (
-                    <span className="font-medium text-foreground whitespace-nowrap">{crumb.label}</span>
+                    <span className="font-medium text-[hsl(var(--tenant-text))] whitespace-nowrap">{crumb.label}</span>
                   ) : (
                     <Link 
                       to={crumb.url}
-                      className="hover:text-foreground transition-colors whitespace-nowrap"
+                      className="hover:text-[hsl(var(--tenant-text))] text-[hsl(var(--tenant-text-light))] transition-colors whitespace-nowrap"
                     >
                       {crumb.label}
                     </Link>

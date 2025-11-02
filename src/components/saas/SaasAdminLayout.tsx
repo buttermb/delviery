@@ -1,5 +1,5 @@
 /**
- * SaaS Admin Layout Component
+ * SaaS Admin Layout Component - Dark Theme
  * Wraps admin pages with sidebar and header
  */
 
@@ -9,21 +9,22 @@ import { SaasAdminSidebar } from './SaasAdminSidebar';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export function SaasAdminLayout() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { superAdmin, logout } = useSuperAdminAuth();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout();
       toast({
         title: 'Signed out',
         description: 'You have been signed out successfully',
       });
-      navigate('/saas/login');
+      navigate('/super-admin/login');
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
@@ -36,25 +37,26 @@ export function SaasAdminLayout() {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-[hsl(var(--super-admin-bg))]">
         <SaasAdminSidebar />
 
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b bg-background flex items-center justify-between px-4 sticky top-0 z-10">
+          <header className="h-14 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-10">
             <div className="flex items-center gap-2">
-              <SidebarTrigger />
+              <SidebarTrigger className="text-[hsl(var(--super-admin-text))] hover:bg-white/10" />
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="text-sm text-muted-foreground hidden sm:block">
-                {user?.email}
+              <div className="text-sm text-[hsl(var(--super-admin-text))]/70 hidden sm:block">
+                {superAdmin?.email || 'Super Admin'}
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleSignOut}
                 title="Sign Out"
+                className="text-[hsl(var(--super-admin-text))]/80 hover:bg-white/10 hover:text-[hsl(var(--super-admin-text))]"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -62,7 +64,7 @@ export function SaasAdminLayout() {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))]">
             <Outlet />
           </main>
         </div>

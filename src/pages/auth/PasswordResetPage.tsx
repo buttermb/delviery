@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 
@@ -29,18 +29,21 @@ export default function PasswordResetPage() {
       }
 
       // Try to detect user type from URL or token structure
-      // In production, this would be encoded in the token
       const path = window.location.pathname;
+      let detectedType: "super_admin" | "tenant_admin" | "customer" = "tenant_admin";
+      
       if (path.includes("/super-admin/reset")) {
-        setUserType("super_admin");
+        detectedType = "super_admin";
       } else if (path.includes("/shop/reset")) {
-        setUserType("customer");
+        detectedType = "customer";
       } else {
-        setUserType("tenant_admin");
+        detectedType = "tenant_admin";
       }
+      
+      setUserType(detectedType);
 
       try {
-        const result = await verifyResetToken(token, userType);
+        const result = await verifyResetToken(token, detectedType);
         if (result.valid && result.email) {
           setValid(true);
           setEmail(result.email);
@@ -65,7 +68,7 @@ export default function PasswordResetPage() {
     };
 
     verifyToken();
-  }, [token, userType]);
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +109,6 @@ export default function PasswordResetPage() {
           if (userType === "super_admin") {
             navigate("/super-admin/login");
           } else if (userType === "tenant_admin") {
-            // Try to extract tenant slug from URL
             const pathMatch = window.location.pathname.match(/^\/([^/]+)\/admin\/reset/);
             const tenantSlug = pathMatch ? pathMatch[1] : null;
             navigate(tenantSlug ? `/${tenantSlug}/admin/login` : "/admin/login");
@@ -134,13 +136,53 @@ export default function PasswordResetPage() {
     }
   };
 
+  // Get theme classes based on user type
+  const getThemeClasses = () => {
+    if (userType === "super_admin") {
+      return {
+        bg: "bg-[hsl(var(--super-admin-bg))]",
+        card: "bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-sm border-[hsl(var(--super-admin-border))]",
+        text: "text-[hsl(var(--super-admin-text))]",
+        textLight: "text-[hsl(var(--super-admin-text-light))]",
+        border: "border-[hsl(var(--super-admin-border))]",
+        input: "bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]",
+        button: "bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white",
+        buttonOutline: "border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-surface))]",
+      };
+    } else if (userType === "tenant_admin") {
+      return {
+        bg: "bg-[hsl(var(--tenant-bg))]",
+        card: "bg-white border-[hsl(var(--tenant-border))]",
+        text: "text-[hsl(var(--tenant-text))]",
+        textLight: "text-[hsl(var(--tenant-text-light))]",
+        border: "border-[hsl(var(--tenant-border))]",
+        input: "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20",
+        button: "bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white",
+        buttonOutline: "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]",
+      };
+    } else {
+      return {
+        bg: "bg-[hsl(var(--customer-bg))]",
+        card: "bg-white border-[hsl(var(--customer-border))]",
+        text: "text-[hsl(var(--customer-text))]",
+        textLight: "text-[hsl(var(--customer-text-light))]",
+        border: "border-[hsl(var(--customer-border))]",
+        input: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20",
+        button: "bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white",
+        buttonOutline: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]",
+      };
+    }
+  };
+
+  const theme = getThemeClasses();
+
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md w-full">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+        <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardContent className="pt-6 text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Verifying reset token...</p>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[hsl(var(--super-admin-primary))]" />
+            <p className={theme.textLight}>Verifying reset token...</p>
           </CardContent>
         </Card>
       </div>
@@ -149,21 +191,21 @@ export default function PasswordResetPage() {
 
   if (!valid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+        <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" />
+            <CardTitle className={`flex items-center gap-2 ${theme.text}`}>
+              <XCircle className="h-5 w-5 text-red-600" />
               Invalid Reset Link
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={theme.textLight}>
               This password reset link is invalid or has expired.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button
               variant="outline"
-              className="w-full"
+              className={`w-full ${theme.buttonOutline}`}
               onClick={() => {
                 if (userType === "super_admin") {
                   navigate("/super-admin/login");
@@ -188,15 +230,17 @@ export default function PasswordResetPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
+      <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+        <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
           <CardContent className="pt-6 text-center">
-            <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Password Reset Successful!</h2>
-            <p className="text-muted-foreground mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+              <CheckCircle2 className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className={`text-2xl font-bold mb-2 ${theme.text}`}>Password Reset Successful!</h2>
+            <p className={`${theme.textLight} mb-4`}>
               Your password has been updated. Redirecting to login...
             </p>
-            <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+            <Loader2 className="h-6 w-6 animate-spin mx-auto text-green-600" />
           </CardContent>
         </Card>
       </div>
@@ -204,18 +248,21 @@ export default function PasswordResetPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="max-w-md w-full">
+    <div className={`min-h-screen flex items-center justify-center ${theme.bg} p-4`}>
+      <Card className={`max-w-md w-full ${theme.card} shadow-xl`}>
         <CardHeader>
-          <CardTitle>Reset Password</CardTitle>
-          <CardDescription>
+          <CardTitle className={`flex items-center gap-2 ${theme.text}`}>
+            <Key className="h-5 w-5 text-[hsl(var(--super-admin-primary))]" />
+            Reset Password
+          </CardTitle>
+          <CardDescription className={theme.textLight}>
             Enter your new password for {email}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password" className={theme.text}>New Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -225,13 +272,14 @@ export default function PasswordResetPage() {
                 required
                 disabled={loading}
                 minLength={8}
+                className={theme.input}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className={`text-xs ${theme.textLight}`}>
                 Must be at least 8 characters
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className={theme.text}>Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -241,16 +289,20 @@ export default function PasswordResetPage() {
                 required
                 disabled={loading}
                 minLength={8}
+                className={theme.input}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className={`w-full ${theme.button}`} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Resetting...
                 </>
               ) : (
-                "Reset Password"
+                <>
+                  <Key className="mr-2 h-4 w-4" />
+                  Reset Password
+                </>
               )}
             </Button>
           </form>
@@ -259,4 +311,3 @@ export default function PasswordResetPage() {
     </div>
   );
 }
-

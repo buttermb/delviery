@@ -27,108 +27,168 @@ export default function CustomerSettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">⚙️ Account Settings</h1>
-        <p className="text-muted-foreground">Manage your account preferences</p>
-      </div>
+    <div className="min-h-screen bg-[hsl(var(--customer-bg))] p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">⚙️ Account Settings</h1>
+          <p className="text-[hsl(var(--customer-text-light))]">Manage your account preferences and notifications</p>
+        </div>
 
-      {/* Profile Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={customer?.email || ""} disabled />
-            <p className="text-sm text-muted-foreground">Email cannot be changed</p>
-          </div>
+        {/* Profile Settings */}
+        <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--customer-text))]">
+              <User className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
+              Profile
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[hsl(var(--customer-text))]">Email</Label>
+              <Input 
+                value={customer?.email || ""} 
+                disabled 
+                className="bg-gray-50 border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text-light))]"
+              />
+              <p className="text-sm text-[hsl(var(--customer-text-light))]">Email cannot be changed</p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>First Name</Label>
-              <Input placeholder="First Name" defaultValue={customer?.first_name || ""} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--customer-text))]">First Name</Label>
+                <Input 
+                  placeholder="First Name" 
+                  defaultValue={customer?.first_name || ""}
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--customer-text))]">Last Name</Label>
+                <Input 
+                  placeholder="Last Name" 
+                  defaultValue={customer?.last_name || ""}
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Last Name</Label>
-              <Input placeholder="Last Name" defaultValue={customer?.last_name || ""} />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Phone</Label>
-            <Input placeholder="Phone Number" type="tel" />
-          </div>
+            <div className="space-y-2">
+              <Label className="text-[hsl(var(--customer-text))]">Phone</Label>
+              <Input 
+                placeholder="Phone Number" 
+                type="tel"
+                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+              />
+            </div>
 
-          <Button>Save Changes</Button>
-        </CardContent>
-      </Card>
-
-      {/* Security */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
-            Security
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleUpdatePassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Change Password</Label>
-              <Input type="password" placeholder="Current Password" required />
-            </div>
-            <div className="space-y-2">
-              <Input type="password" placeholder="New Password" required />
-            </div>
-            <div className="space-y-2">
-              <Input type="password" placeholder="Confirm New Password" required />
-            </div>
-            <Button type="submit" disabled={loading}>
-              <Key className="h-4 w-4 mr-2" />
-              Update Password
+            <Button 
+              className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
+            >
+              Save Changes
             </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Order Updates</p>
-              <p className="text-sm text-muted-foreground">Receive notifications about your orders</p>
+        {/* Security */}
+        <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--customer-text))]">
+              <Key className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
+              Security
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--customer-text))]">Change Password</Label>
+                <Input 
+                  type="password" 
+                  placeholder="Current Password" 
+                  required
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Input 
+                  type="password" 
+                  placeholder="New Password" 
+                  required
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Input 
+                  type="password" 
+                  placeholder="Confirm New Password" 
+                  required
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
+              >
+                <Key className="h-4 w-4 mr-2" />
+                {loading ? "Updating..." : "Update Password"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--customer-text))]">
+              <Bell className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--customer-text))]">Order Updates</p>
+                <p className="text-sm text-[hsl(var(--customer-text-light))]">Receive notifications about your orders</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">New Menu Alerts</p>
-              <p className="text-sm text-muted-foreground">Notify when new menus are available</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--customer-text))]">New Menu Alerts</p>
+                <p className="text-sm text-[hsl(var(--customer-text-light))]">Notify when new menus are available</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Email Notifications</p>
-              <p className="text-sm text-muted-foreground">Receive updates via email</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--customer-text))]">Email Notifications</p>
+                <p className="text-sm text-[hsl(var(--customer-text-light))]">Receive updates via email</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
+              />
             </div>
-            <Switch defaultChecked />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-[hsl(var(--customer-text))]">Special Offers</p>
+                <p className="text-sm text-[hsl(var(--customer-text-light))]">Get notified about promotions and discounts</p>
+              </div>
+              <Switch 
+                defaultChecked
+                className="data-[state=checked]:bg-[hsl(var(--customer-primary))]"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
-

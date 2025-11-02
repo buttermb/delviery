@@ -45,6 +45,11 @@ import NotFound from "./pages/NotFound";
 const MarketingHome = lazy(() => import("./pages/MarketingHome"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const AccountSignup = lazy(() => import("./pages/AccountSignup"));
+const WelcomeOnboarding = lazy(() => import("./pages/WelcomeOnboarding"));
+const DemoRequest = lazy(() => import("./pages/DemoRequest"));
+const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Features = lazy(() => import("./pages/Features"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Support = lazy(() => import("./pages/Support"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -247,14 +252,18 @@ const App = () => {
                     <Sonner />
                     <Suspense fallback={<LoadingFallback />}>
                       <Routes>
-                        {/* ==================== PUBLIC ROUTES ==================== */}
-                        
-                        {/* Marketing & Landing Pages */}
-                        <Route path="/" element={<MarketingLanding />} />
-                        <Route path="/saas" element={<MarketingLanding />} />
+                        {/* Marketing & Public Routes */}
+                        <Route path="/" element={<MarketingHome />} />
                         <Route path="/marketing" element={<MarketingHome />} />
+                        <Route path="/saas" element={<MarketingLanding />} />
+                        <Route path="/features" element={<Features />} />
                         <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/about" element={<About />} />
+                        <Route path="/signup" element={<AccountSignup />} />
+                        <Route path="/signup/welcome" element={<WelcomeOnboarding />} />
+                        <Route path="/demo" element={<DemoRequest />} />
+                        <Route path="/demo/confirm" element={<DemoConfirmation />} />
+                        <Route path="/contact" element={<Contact />} />
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/support" element={<Support />} />
                         <Route path="/terms" element={<Terms />} />

@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -80,28 +79,27 @@ export default function TenantAdminLoginPage() {
 
   if (tenantLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))]">
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--tenant-primary))]" />
       </div>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Tenant Not Found</CardTitle>
-            <CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
+          <div className="text-center mb-6">
+            <Building2 className="h-12 w-12 text-[hsl(var(--tenant-text-light))] mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-[hsl(var(--tenant-text))] mb-2">Tenant Not Found</h1>
+            <p className="text-[hsl(var(--tenant-text-light))]">
               The tenant "{tenantSlug}" could not be found or is inactive.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/">Go to Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/">Go to Home</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -110,27 +108,43 @@ export default function TenantAdminLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            {logo ? (
-              <img src={logo} alt={businessName} className="h-12 object-contain" />
-            ) : (
-              <div className="rounded-full bg-blue-600 p-3">
-                <Building2 className="h-8 w-8 text-white" />
-              </div>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--tenant-bg))] via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--tenant-primary)) 1px, transparent 0)`,
+          backgroundSize: "40px 40px",
+        }} />
+      </div>
+
+      {/* White Card */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-xl border border-[hsl(var(--tenant-border))] p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              {logo ? (
+                <img src={logo} alt={businessName} className="h-16 object-contain" />
+              ) : (
+                <div className="rounded-full bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] p-4 shadow-lg">
+                  <Building2 className="h-8 w-8 text-white" />
+                </div>
+              )}
+            </div>
+            <h1 className="text-3xl font-bold text-[hsl(var(--tenant-text))] mb-2">
+              {businessName}
+            </h1>
+            <p className="text-[hsl(var(--tenant-text-light))]">
+              Admin Panel
+            </p>
           </div>
-          <CardTitle className="text-2xl font-bold">{businessName}</CardTitle>
-          <CardDescription>
-            Admin Panel - Sign in to manage your business
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-[hsl(var(--tenant-text))]">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -139,10 +153,14 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="h-12 border-[hsl(var(--tenant-border))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20 transition-all"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-[hsl(var(--tenant-text))]">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -151,12 +169,18 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="h-12 border-[hsl(var(--tenant-border))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20 transition-all"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:opacity-90 text-white h-12 font-semibold shadow-lg"
+            >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -164,20 +188,21 @@ export default function TenantAdminLoginPage() {
               )}
             </Button>
           </form>
-          <div className="mt-4 space-y-2 text-center text-sm">
+
+          {/* Links */}
+          <div className="mt-6 space-y-3 text-center text-sm">
             <ForgotPasswordDialog userType="tenant_admin" tenantSlug={tenantSlug} />
-            <div className="pt-2 border-t">
+            <div className="pt-3 border-t border-[hsl(var(--tenant-border))]">
               <Link 
                 to={`/${tenantSlug}/shop/login`} 
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[hsl(var(--tenant-primary))] hover:underline font-medium"
               >
                 Customer? Go to Customer Portal →
               </Link>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
-

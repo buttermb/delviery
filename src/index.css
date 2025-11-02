@@ -90,6 +90,40 @@
     /* Transitions */
     --transition-fast: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Marketing Site Colors */
+    --marketing-primary: 217 91% 60%;        /* #3b82f6 - Blue */
+    --marketing-secondary: 271 91% 65%;     /* #8b5cf6 - Purple */
+    --marketing-accent: 160 84% 39%;        /* #10b981 - Green */
+    --marketing-text: 222 47% 11%;         /* #111827 - Gray 900 */
+    --marketing-text-light: 215 20% 65%;    /* #6b7280 - Gray 500 */
+    --marketing-bg: 0 0% 100%;             /* #ffffff - White */
+    --marketing-bg-subtle: 220 14% 96%;     /* #f9fafb - Gray 50 */
+    --marketing-border: 220 13% 91%;        /* #e5e7eb - Gray 200 */
+
+    /* Super Admin Colors - Dark Theme */
+    --super-admin-primary: 239 84% 67%;     /* #6366f1 - Indigo */
+    --super-admin-secondary: 271 91% 65%;   /* #8b5cf6 - Purple */
+    --super-admin-accent: 38 92% 50%;       /* #f59e0b - Amber */
+    --super-admin-bg: 222 47% 11%;          /* #0f172a - Slate 900 */
+    --super-admin-surface: 215 28% 17%;      /* #1e293b - Slate 800 */
+    --super-admin-text: 210 40% 98%;         /* #f1f5f9 - Slate 100 */
+
+    /* Tenant Admin Colors - Light Theme */
+    --tenant-primary: 217 91% 60%;         /* #3b82f6 - Blue */
+    --tenant-secondary: 160 84% 39%;        /* #10b981 - Green */
+    --tenant-accent: 38 92% 50%;            /* #f59e0b - Amber */
+    --tenant-bg: 0 0% 100%;                 /* #ffffff - White */
+    --tenant-surface: 220 14% 96%;          /* #f8fafc - Slate 50 */
+    --tenant-text: 222 47% 11%;             /* #0f172a - Slate 900 */
+
+    /* Customer Portal Colors - Ecommerce Theme */
+    --customer-primary: 160 100% 33%;       /* #059669 - Emerald */
+    --customer-secondary: 199 89% 48%;       /* #0284c7 - Sky */
+    --customer-accent: 0 84% 60%;            /* #dc2626 - Red */
+    --customer-bg: 0 0% 100%;                /* #ffffff - White */
+    --customer-surface: 220 14% 96%;         /* #f9fafb - Gray 50 */
+    --customer-text: 222 47% 11%;            /* #111827 - Gray 900 */
   }
 
   .dark {
@@ -446,4 +480,101 @@
   .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
   .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
   .stagger-children > *:nth-child(n+6) { animation-delay: 0.3s; }
+
+  /* Marketing Site Gradients */
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 91% 65%) 100%);
+  }
+
+  .cta-gradient {
+    background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 100% 33%) 100%);
+  }
+
+  /* Marketing Animations */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease-out;
+  }
+
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @keyframes countUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+  }
+
+  .pulse-cta {
+    animation: pulse 2s infinite;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Success animations */
+  @keyframes scale-in {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .success-checkmark {
+    animation: scale-in 0.5s ease-out;
+  }
+
+  /* Page transitions */
+  .page-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease-out;
+  }
+
+  /* Skeleton loading */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .skeleton {
+    animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }

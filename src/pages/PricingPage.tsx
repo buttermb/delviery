@@ -1,134 +1,178 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, X, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { Card } from "@/components/ui/card";
+import { CTASection } from "@/components/marketing/CTASection";
 
 const plans = [
   {
-    name: "Starter",
-    price: 149,
-    yearlyPrice: 1490,
-    description: "Perfect for small businesses getting started",
+    name: "STARTER",
+    monthlyPrice: 99,
+    yearlyPrice: 950,
+    description: "Perfect for small teams",
     features: [
-      "1 Location",
-      "Up to 5 Team Members",
-      "Basic CRM & Customer Portal",
-      "Order & Inventory Management",
-      "Email Support",
-      "Basic Analytics",
-      "Mobile App Access",
-      "14-day free trial"
+      "50 customers",
+      "3 menus max",
+      "100 products",
+      "2 locations",
+      "3 team members",
+      "Email support",
+      "Basic inventory",
     ],
-    limitations: [
-      "No API Access",
-      "No Custom Integrations",
-      "No White-Label",
-      "Limited Reporting"
-    ]
   },
   {
-    name: "Professional",
-    price: 299,
-    yearlyPrice: 2990,
-    description: "Most popular for growing businesses",
+    name: "PROFESSIONAL",
+    monthlyPrice: 299,
+    yearlyPrice: 2870,
+    description: "Perfect for growing teams",
     popular: true,
     features: [
-      "Up to 5 Locations",
-      "Up to 25 Team Members",
-      "Advanced CRM & Automation",
-      "Multi-Location Management",
-      "Priority Support",
-      "Advanced Analytics & Reporting",
-      "API Access",
-      "Custom Workflows",
-      "Integrations Hub",
-      "Role-Based Permissions",
-      "Everything in Starter"
+      "500 customers",
+      "Unlimited menus",
+      "Unlimited products",
+      "10 locations",
+      "10 team members",
+      "Disposable menus",
+      "Custom branding",
+      "Analytics",
+      "API access",
+      "Priority support",
     ],
-    limitations: [
-      "No White-Label",
-      "Limited Custom Development"
-    ]
   },
   {
-    name: "Enterprise",
-    price: 699,
-    yearlyPrice: 6990,
-    description: "Unlimited scale for large operations",
+    name: "ENTERPRISE",
+    monthlyPrice: 799,
+    yearlyPrice: 7670,
+    description: "Perfect for large teams",
     features: [
-      "Unlimited Locations",
-      "Unlimited Team Members",
-      "Everything in Professional",
-      "White-Label Options",
-      "Custom Domain & Branding",
-      "Dedicated Account Manager",
-      "24/7 Priority Support",
-      "Custom Integrations",
-      "Advanced Security & Compliance",
-      "SLA Guarantees",
-      "Custom Development Hours",
-      "On-Premise Options Available"
+      "Unlimited customers",
+      "Unlimited everything",
+      "White-label",
+      "SSO/SAML",
+      "Dedicated support",
+      "Custom development",
+      "API access",
+      "Advanced security",
+      "Multi-region",
+      "Audit logs",
+      "SLA",
     ],
-    limitations: []
-  }
+  },
 ];
 
 const addons = [
   {
-    name: "AI-Powered Analytics",
-    price: 99,
-    description: "Advanced forecasting, insights, and predictive analytics powered by AI"
+    name: "SMS Notifications",
+    price: "0.02",
+    unit: "per message",
+    icon: "💬",
   },
   {
-    name: "White-Label Solution",
-    price: 299,
-    description: "Custom branded platform with your logo, colors, and domain"
+    name: "Email Credits",
+    price: "0.001",
+    unit: "per email",
+    icon: "📧",
   },
   {
-    name: "Additional Location",
-    price: 50,
-    description: "Add extra locations beyond your plan limit"
+    name: "Label Printing",
+    price: "0.015",
+    unit: "per label",
+    icon: "🏷️",
   },
   {
-    name: "Custom Integration",
-    price: 199,
-    description: "Connect to your existing tools and systems with custom integrations"
-  }
+    name: "Extra Storage",
+    price: "10",
+    unit: "per 50GB",
+    icon: "💾",
+  },
+];
+
+const faqs = [
+  {
+    q: "Can I change plans later?",
+    a: "Yes! Upgrade or downgrade anytime. Changes take effect immediately with prorated billing.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "We accept all major credit cards, ACH, and wire transfer for Enterprise plans.",
+  },
+  {
+    q: "Is there a setup fee?",
+    a: "No setup fees. Ever.",
+  },
+  {
+    q: "What happens after the trial?",
+    a: "You can choose a plan or your account will revert to free (limited features). No charges without your approval.",
+  },
+  {
+    q: "Can I get a refund?",
+    a: "Yes, 30-day money-back guarantee, no questions asked.",
+  },
 ];
 
 export default function PricingPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
-      <SEOHead 
-        title="Pricing Plans | Business Management Platform"
-        description="Simple, transparent pricing for your business operations. Start with our 14-day free trial. Plans from $149/month."
-      />
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
-      {/* Navigation */}
-      <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/marketing" className="text-2xl font-bold">
-            Business <span className="text-primary">Platform</span>
-          </Link>
-          
-          <Link to="/signup">
-            <Button size="sm" className="bg-primary hover:bg-primary/90">
-              Start Free Trial
-            </Button>
-          </Link>
-        </div>
-      </nav>
+  const getPrice = (plan: typeof plans[0]) => {
+    return billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+  };
+
+  const getSavings = (plan: typeof plans[0]) => {
+    if (billingCycle === "yearly") {
+      const monthlyTotal = plan.monthlyPrice * 12;
+      return monthlyTotal - plan.yearlyPrice;
+    }
+    return 0;
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <SEOHead 
+        title="Pricing - DevPanel | Simple, Transparent Pricing"
+        description="Simple, transparent pricing for wholesale distributors. Plans from $99/month. Start free, upgrade as you grow. 14-day free trial."
+      />
+      
+      <MarketingNav />
 
       {/* Hero */}
       <section className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-4">
+        <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
           Simple, Transparent Pricing
         </h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          Choose the plan that fits your business. All plans include 14-day free trial.
+        <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-8">
+          No hidden fees. Cancel anytime.
         </p>
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-sm">
-          <CheckCircle className="h-4 w-4 text-primary" />
+
+        {/* Billing Toggle */}
+        <div className="inline-flex items-center gap-4 mb-8">
+          <button
+            onClick={() => setBillingCycle("monthly")}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${
+              billingCycle === "monthly"
+                ? "bg-[hsl(var(--marketing-primary))] text-white"
+                : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBillingCycle("yearly")}
+            className={`px-6 py-2 rounded-lg font-medium transition-all ${
+              billingCycle === "yearly"
+                ? "bg-[hsl(var(--marketing-primary))] text-white"
+                : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+            }`}
+          >
+            Yearly (Save 20%)
+          </button>
+        </div>
+
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[hsl(var(--marketing-accent))]/10 text-sm text-[hsl(var(--marketing-text))]">
+          <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
           No credit card required • Cancel anytime
         </div>
       </section>
@@ -137,86 +181,117 @@ export default function PricingPage() {
       <section className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
-            <div 
+            <div
               key={index}
               className={`relative rounded-2xl border p-8 ${
                 plan.popular
-                  ? 'border-primary bg-primary/5 shadow-xl scale-105'
-                  : 'border-border bg-card'
+                  ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl scale-105"
+                  : "border-[hsl(var(--marketing-border))] bg-white"
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                  MOST POPULAR
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-sm font-bold">
+                  ⭐ MOST POPULAR
                 </div>
               )}
 
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                <h3 className="text-2xl font-bold mb-2 text-[hsl(var(--marketing-text))]">{plan.name}</h3>
+                <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-4">{plan.description}</p>
                 <div className="mb-2">
-                  <span className="text-5xl font-bold">${plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-5xl font-bold text-[hsl(var(--marketing-text))]">
+                    ${getPrice(plan)}
+                  </span>
+                  <span className="text-[hsl(var(--marketing-text-light))]">/{billingCycle === "monthly" ? "month" : "year"}</span>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  ${plan.yearlyPrice}/year (save ${(plan.price * 12) - plan.yearlyPrice})
-                </div>
+                {billingCycle === "yearly" && (
+                  <div className="text-sm text-[hsl(var(--marketing-accent))]">
+                    Save ${getSavings(plan)}
+                  </div>
+                )}
               </div>
 
               <Link to="/signup">
-                <Button className="w-full mb-6" variant={plan.popular ? "default" : "outline"}>
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button
+                  className="w-full mb-6"
+                  variant={plan.popular ? "default" : "outline"}
+                >
+                  {plan.name === "ENTERPRISE" ? "Contact Sales" : "Start Free"}
                 </Button>
               </Link>
 
               <div className="space-y-3">
-                <div className="text-sm font-semibold mb-2">What's included:</div>
                 {plan.features.map((feature, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
+                    <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))] flex-shrink-0 mt-0.5" />
+                    <span className="text-[hsl(var(--marketing-text))]">{feature}</span>
                   </div>
                 ))}
-                
-                {plan.limitations.length > 0 && (
-                  <>
-                    <div className="text-sm font-semibold mt-4 mb-2 text-muted-foreground">Not included:</div>
-                    {plan.limitations.map((limitation, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <X className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                        <span>{limitation}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
               </div>
+
+              {plan.name === "PROFESSIONAL" && (
+                <div className="mt-6 pt-6 border-t border-[hsl(var(--marketing-border))]">
+                  <p className="text-sm text-center text-[hsl(var(--marketing-text-light))]">
+                    14-day trial
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
       </section>
 
       {/* Add-ons */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16 bg-[hsl(var(--marketing-bg-subtle))] rounded-3xl">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Powerful Add-Ons
+          <h2 className="text-3xl font-bold text-center mb-4 text-[hsl(var(--marketing-text))]">
+            ADD-ONS (Optional)
           </h2>
-          <p className="text-center text-muted-foreground mb-12">
-            Enhance your plan with premium features
-          </p>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4 mt-8">
             {addons.map((addon, index) => (
-              <div key={index} className="p-6 rounded-xl border border-border bg-card">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold">{addon.name}</h3>
+              <Card key={index} className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">{addon.icon}</span>
+                    <div>
+                      <h3 className="font-bold text-[hsl(var(--marketing-text))]">{addon.name}</h3>
+                      <p className="text-sm text-[hsl(var(--marketing-text-light))]">{addon.unit}</p>
+                    </div>
+                  </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">${addon.price}</div>
-                    <div className="text-xs text-muted-foreground">/month</div>
+                    <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))]">
+                      ${addon.price}
+                    </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{addon.description}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* All Plans Include */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8 text-[hsl(var(--marketing-text))]">
+            ALL PLANS INCLUDE:
+          </h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              "14-day free trial",
+              "No credit card required",
+              "Cancel anytime",
+              "30-day money-back guarantee",
+              "Free data migration",
+              "Free training & onboarding",
+              "99.9% uptime SLA",
+              "Bank-level security",
+              "GDPR & CCPA compliant",
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))] flex-shrink-0" />
+                <span className="text-sm text-[hsl(var(--marketing-text))]">{item}</span>
               </div>
             ))}
           </div>
@@ -224,72 +299,46 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="container mx-auto px-4 py-16 bg-muted/30 rounded-3xl">
+      <section className="container mx-auto px-4 py-16 bg-[hsl(var(--marketing-bg-subtle))] rounded-3xl">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Frequently Asked Questions
+          <h2 className="text-3xl font-bold text-center mb-12 text-[hsl(var(--marketing-text))]">
+            FREQUENTLY ASKED QUESTIONS
           </h2>
 
           <div className="space-y-6">
-            {[
-              {
-                q: "Can I change plans anytime?",
-                a: "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the difference."
-              },
-              {
-                q: "What happens after the free trial?",
-                a: "Your trial converts to a paid subscription automatically. You'll be charged only after your 14-day trial ends. Cancel anytime before that with no charges."
-              },
-              {
-                q: "Do you offer discounts for annual billing?",
-                a: "Yes! Save 2 months when you pay annually. For example, the Professional plan is $2,990/year instead of $3,588."
-              },
-              {
-                q: "What payment methods do you accept?",
-                a: "We accept all major credit cards (Visa, Mastercard, Amex, Discover) and ACH bank transfers for annual plans."
-              },
-              {
-                q: "Can I get a custom plan?",
-                a: "Absolutely! Contact us for custom Enterprise plans with specific features, custom integrations, or unique requirements."
-              },
-              {
-                q: "Is there a setup fee?",
-                a: "No setup fees. Ever. We'll help you get started at no extra cost."
-              }
-            ].map((faq, index) => (
-              <div key={index} className="p-6 rounded-xl bg-card border border-border">
-                <h3 className="font-bold mb-2">{faq.q}</h3>
-                <p className="text-sm text-muted-foreground">{faq.a}</p>
-              </div>
+            {faqs.map((faq, index) => (
+              <Card key={index} className="p-6">
+                <h3 className="font-bold mb-2 text-[hsl(var(--marketing-text))]">{faq.q}</h3>
+                <p className="text-sm text-[hsl(var(--marketing-text-light))]">{faq.a}</p>
+              </Card>
             ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Link to="/faq">
+              <Button variant="ghost">
+                View All FAQs
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center p-12 rounded-3xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20">
-          <h2 className="text-4xl font-bold mb-4">
-            Still Have Questions?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Schedule a personalized demo with our team
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/demo">
-              <Button size="lg" variant="outline" className="h-12 px-8">
-                Schedule Demo
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 h-12 px-8">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <CTASection
+        title="Ready to get started?"
+        description="Start your 14-day free trial today. No credit card required."
+        primaryCta={{
+          text: "Start Your 14-Day Free Trial →",
+          link: "/signup",
+        }}
+        secondaryCta={{
+          text: "Schedule a Demo",
+          link: "/demo",
+        }}
+      />
+
+      <MarketingFooter />
     </div>
   );
 }

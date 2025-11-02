@@ -1,339 +1,495 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  Package, 
+  Smartphone, 
   Shield, 
-  TrendingUp, 
-  Users, 
+  Package, 
   Zap, 
+  Users, 
+  BarChart3,
   CheckCircle,
   ArrowRight,
-  Star
+  Star,
+  Play,
+  TrendingUp
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { FeatureCard } from "@/components/marketing/FeatureCard";
+import { StatCard } from "@/components/marketing/StatCard";
+import { TestimonialCard } from "@/components/marketing/TestimonialCard";
+import { CTASection } from "@/components/marketing/CTASection";
+import { useEffect, useState } from "react";
 
 export default function MarketingHome() {
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+  const testimonials = [
+    {
+      quote: "DevPanel transformed our wholesale operations. Orders are up 40%, and our team saves 15 hours per week.",
+      author: "Mike Johnson",
+      role: "BigMike Wholesale",
+      rating: 5,
+    },
+    {
+      quote: "Setup took 10 minutes. We were fully operational the same day. Best decision we made for our business.",
+      author: "Sarah Chen",
+      role: "Valley Distribution",
+      rating: 5,
+    },
+    {
+      quote: "The disposable menus feature is a game-changer. Our customers love the secure, modern experience.",
+      author: "David Rodriguez",
+      role: "Green Valley Supplies",
+      rating: 5,
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
+  const features = [
+    {
+      icon: Smartphone,
+      title: "DISPOSABLE MENUS",
+      description: "Create encrypted product catalogs that burn after viewing or expire. Set expiration times for maximum security.",
+      link: "/features",
+    },
+    {
+      icon: Shield,
+      title: "ENCRYPTED & SECURE",
+      description: "Bank-level encryption for your sensitive business data. GDPR compliant with regular security audits.",
+      link: "/features",
+    },
+    {
+      icon: Package,
+      title: "INVENTORY TRACKING",
+      description: "Real-time stock levels, barcode scanning, multi-location support. Low stock alerts and automated reordering.",
+      link: "/features",
+    },
+    {
+      icon: Zap,
+      title: "AUTOMATION",
+      description: "Automate orders, alerts, reports, and workflows to save time. Focus on growing your business.",
+      link: "/features",
+    },
+    {
+      icon: Users,
+      title: "CUSTOMER PORTAL",
+      description: "White-label portal for customers to browse & order 24/7 without calling you. Self-service ordering.",
+      link: "/features",
+    },
+    {
+      icon: BarChart3,
+      title: "ANALYTICS",
+      description: "Real-time insights into sales, orders, inventory, and customer behavior. Beautiful, actionable dashboards.",
+      link: "/features",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background">
+    <div className="min-h-screen bg-white">
       <SEOHead 
-        title="Business Management Platform | Complete Operations Solution"
-        description="Transform your business with our all-in-one operations platform. Inventory, CRM, team management, and more in one powerful system."
+        title="DevPanel - Modern CRM for Wholesale Distributors"
+        description="Manage customers, products, orders, and inventory in one powerful platform. Disposable menus, real-time tracking, customer portal. Start free trial."
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "DevPanel",
+          "applicationCategory": "BusinessApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "99",
+            "priceCurrency": "USD"
+          }
+        }}
       />
       
-      {/* Navigation */}
-      <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/marketing" className="text-2xl font-bold">
-            Business <span className="text-primary">Platform</span>
-          </Link>
-          
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="#features" className="text-sm hover:text-primary transition-colors">Features</Link>
-            <Link to="#pricing" className="text-sm hover:text-primary transition-colors">Pricing</Link>
-            <Link to="#testimonials" className="text-sm hover:text-primary transition-colors">Reviews</Link>
-            <Link to="/about" className="text-sm hover:text-primary transition-colors">About</Link>
+      <MarketingNav />
+
+      {/* SECTION 1: HERO */}
+      <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              The Modern CRM for<br />
+              Wholesale Distributors
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
+              Manage customers, products, orders, and inventory in one powerful platform
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm md:text-base">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Disposable Encrypted Menus</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Real-time Inventory Tracking</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Order Management & Automation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Customer Portal Included</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Link to="/signup">
+                <Button size="lg" className="bg-white text-[hsl(var(--marketing-primary))] hover:bg-white/90 h-14 px-8 text-lg font-semibold">
+                  Start Free Trial
+                  <span className="ml-2">No credit card ↗</span>
+                </Button>
+              </Link>
+              <Link to="/demo">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 h-14 px-8 text-lg">
+                  <Play className="mr-2 h-5 w-5" />
+                  Watch Demo Video
+                  <span className="ml-2 text-sm">2 min overview</span>
+                </Button>
+              </Link>
+            </div>
+
+            <p className="text-sm text-white/80">
+              Trusted by 400+ distributors • $1.4M orders/month
+            </p>
+
+            {/* Product Screenshot Placeholder */}
+            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+              <div className="aspect-video bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
+                    <Play className="h-12 w-12 text-white" />
+                  </div>
+                  <p className="text-white/80">Product Screenshot</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 2: SOCIAL PROOF */}
+      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-8 text-[hsl(var(--marketing-text))]">
+              Trusted by Leading Wholesalers
+            </h2>
+            
+            {/* Customer Logos Placeholder */}
+            <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60 grayscale">
+              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">BigMike</div>
+              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Joe's</div>
+              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Valley</div>
+              <div className="text-2xl font-bold text-[hsl(var(--marketing-text-light))]">Green</div>
+            </div>
+
+            {/* Rotating Testimonials */}
+            <div className="max-w-3xl mx-auto">
+              <TestimonialCard {...testimonials[currentTestimonial]} />
+              <div className="flex justify-center gap-2 mt-6">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentTestimonial(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentTestimonial
+                        ? "w-8 bg-[hsl(var(--marketing-primary))]"
+                        : "w-2 bg-[hsl(var(--marketing-border))]"
+                    }`}
+                    aria-label={`View testimonial ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: KEY FEATURES */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              Everything You Need to Run Your Wholesale Business
+            </h2>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link to="/admin/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="bg-primary hover:bg-primary/90">
-                Start Free Trial
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {features.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link to="/features">
+              <Button variant="outline" size="lg">
+                See All Features
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
         </div>
-      </nav>
+      </section>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 md:py-32">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            🚀 The Complete Business Operations Platform
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-            Run Your Entire Business From One Platform
-          </h1>
-          
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Inventory management, customer relationships, team collaboration, and business intelligence—all in one powerful system built for modern businesses.
-          </p>
+      {/* SECTION 4: HOW IT WORKS */}
+      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              How DevPanel Works
+            </h2>
+            <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-12">
+              Get started in minutes, not months
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">✏️</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 1<br />Sign Up</h3>
+                <p className="text-[hsl(var(--marketing-text-light))]">
+                  Create your free account in 60 seconds
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📥</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 2<br />Import Data</h3>
+                <p className="text-[hsl(var(--marketing-text-light))]">
+                  Import your products & customers (or add them manually)
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🚀</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">STEP 3<br />Go Live</h3>
+                <p className="text-[hsl(var(--marketing-text-light))]">
+                  Start taking orders and managing your business
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-[hsl(var(--marketing-border))] mb-8">
+              <p className="text-[hsl(var(--marketing-text))] italic">
+                "Setup took 10 minutes. We were fully operational the same day."
+              </p>
+              <p className="mt-2 font-medium text-[hsl(var(--marketing-text))]">
+                - Sarah Chen, Valley Distribution
+              </p>
+            </div>
+
             <Link to="/signup">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 h-12 px-8">
-                Start 14-Day Free Trial
+              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
+                Start Your Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/demo">
-              <Button size="lg" variant="outline" className="h-12 px-8">
-                Schedule Demo
-              </Button>
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              No credit card required
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              Cancel anytime
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              Setup in 5 minutes
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20 bg-muted/30 rounded-3xl">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything You Need to Scale
+      {/* SECTION 5: PRICING PREVIEW */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              Simple, Transparent Pricing
             </h2>
-            <p className="text-xl text-muted-foreground">
-              Built by operators, for operators. 120+ features designed for growing businesses.
+            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
+              Start free, upgrade as you grow
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
               {
-                icon: Package,
-                title: "Inventory Management",
-                description: "Real-time stock tracking, batch management, and automated reorder points. Multi-location support."
+                name: "STARTER",
+                price: "$99/mo",
+                features: ["50 customers", "3 menus", "Basic feat."],
               },
               {
-                icon: Shield,
-                title: "Security & Compliance",
-                description: "Enterprise-grade security, role-based access control, and compliance tracking. Stay audit-ready."
-              },
-              {
-                icon: TrendingUp,
-                title: "Advanced Analytics",
-                description: "Sales forecasting, product performance, customer insights, and profitability analysis."
-              },
-              {
-                icon: Users,
-                title: "Complete CRM",
-                description: "Customer profiles, purchase history, loyalty programs, and targeted marketing campaigns."
-              },
-              {
-                icon: Zap,
-                title: "Automation & Workflows",
-                description: "Automated processes, smart notifications, and workflow optimization to save time."
-              },
-              {
-                icon: CheckCircle,
-                title: "Team Management",
-                description: "Role-based permissions, activity logs, and performance tracking for your entire team."
-              }
-            ].map((feature, index) => (
-              <div key={index} className="p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Teaser */}
-      <section id="pricing" className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="text-xl text-muted-foreground mb-12">
-            Choose the plan that fits your business. All plans include 14-day free trial.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Starter",
-                price: "$149",
-                features: ["1 Location", "1,000 Products", "5 Team Members", "Basic Features"]
-              },
-              {
-                name: "Professional",
-                price: "$299",
+                name: "PROFESSIONAL",
+                price: "$299/mo",
                 popular: true,
-                features: ["3 Locations", "5,000 Products", "15 Team Members", "All Features + API"]
+                features: ["500 customers", "Unlimited", "All features", "API access"],
               },
               {
-                name: "Enterprise",
-                price: "$699",
-                features: ["Unlimited Everything", "White-Label", "Priority Support", "Custom Integrations"]
-              }
+                name: "ENTERPRISE",
+                price: "$799/mo",
+                features: ["Unlimited", "Everything", "White-label", "Dedicated"],
+              },
             ].map((plan, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`p-6 rounded-2xl border ${
-                  plan.popular 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-border bg-card'
+                  plan.popular
+                    ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5 shadow-xl scale-105"
+                    : "border-[hsl(var(--marketing-border))] bg-white"
                 }`}
               >
                 {plan.popular && (
-                  <div className="inline-block px-3 py-1 mb-4 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                    MOST POPULAR
+                  <div className="text-center mb-4">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold">
+                      ⭐ POPULAR
+                    </span>
                   </div>
                 )}
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                <h3 className="text-xl font-bold mb-2 text-center text-[hsl(var(--marketing-text))]">{plan.name}</h3>
+                <div className="text-center mb-4">
+                  <span className="text-4xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
                 </div>
-                <ul className="space-y-2 mb-6 text-left">
+                <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                    <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--marketing-text-light))]">
+                      <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))] flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Link to="/signup">
-                  <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                    Start Free Trial
+                  <Button
+                    className={`w-full ${
+                      plan.popular
+                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
+                        : ""
+                    }`}
+                    variant={plan.popular ? "default" : "outline"}
+                  >
+                    {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
                   </Button>
                 </Link>
               </div>
             ))}
           </div>
 
-          <Link to="/pricing" className="inline-block mt-8">
-            <Button variant="ghost">
-              View Full Pricing Details
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="text-center mt-8">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-[hsl(var(--marketing-text-light))] mb-4">
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                14-day free trial
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                No credit card required
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                Cancel anytime
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-accent))]" />
+                Money-back guarantee
+              </span>
+            </div>
+            <Link to="/pricing">
+              <Button variant="ghost">
+                See Full Pricing Details
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section id="testimonials" className="container mx-auto px-4 py-20 bg-muted/30 rounded-3xl">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Trusted by Growing Businesses
+      {/* SECTION 6: PRODUCT SHOWCASE */}
+      <section className="py-20 bg-[hsl(var(--marketing-bg-subtle))]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              See DevPanel in Action
             </h2>
-            <div className="flex items-center justify-center gap-2">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-6 w-6 fill-primary text-primary" />
-              ))}
-              <span className="ml-2 text-lg font-medium">4.9/5 from 200+ companies</span>
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "Cut our operational costs by 40% in the first quarter. The automation features save us hours every day.",
-                author: "Sarah M.",
-                role: "Owner, Growing Retail Company"
-              },
-              {
-                quote: "Customer satisfaction improved dramatically with better tracking and communication. Game changer for our business!",
-                author: "Mike R.",
-                role: "Operations Manager"
-              },
-              {
-                quote: "Finally, a platform that understands small business operations. Switched from 5 different tools to just one.",
-                author: "Jessica L.",
-                role: "CEO, Service Company"
-              }
-            ].map((testimonial, index) => (
-              <div key={index} className="p-6 rounded-2xl bg-card border border-border">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4">"{testimonial.quote}"</p>
-                <div className="font-medium">{testimonial.author}</div>
-                <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-[hsl(var(--marketing-border))] mb-8">
+              <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center">
+                <button className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+                  <Play className="h-10 w-10 text-white ml-1" />
+                </button>
               </div>
-            ))}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
+                <span className="text-[hsl(var(--marketing-text))]">Create disposable menu in 2 clicks</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
+                <span className="text-[hsl(var(--marketing-text))]">Track inventory in real-time</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
+                <span className="text-[hsl(var(--marketing-text))]">Manage orders from one dashboard</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-[hsl(var(--marketing-accent))] flex-shrink-0 mt-1" />
+                <span className="text-[hsl(var(--marketing-text))]">Customer portal for self-service</span>
+              </div>
+            </div>
+
+            <Link to="/demo">
+              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
+                Request Live Demo
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center p-12 rounded-3xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Ready to Transform Your Operations?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Join 200+ businesses already running on our platform.
-          </p>
-          <Link to="/signup">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 h-14 px-10 text-lg">
-              Start Your Free 14-Day Trial
-              <ArrowRight className="ml-2 h-6 w-6" />
-            </Button>
-          </Link>
-          <p className="text-sm text-muted-foreground mt-4">
-            No credit card required • Cancel anytime • Setup in 5 minutes
-          </p>
+      {/* SECTION 7: STATS & NUMBERS */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              DevPanel by the Numbers
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <StatCard value="400+" label="Distributors" />
+            <StatCard value="$1.4M" label="Orders/Month" />
+            <StatCard value="15hrs" label="Saved/Week" />
+            <StatCard value="99.9%" label="Uptime" />
+            <StatCard value="4.8" label="Rating" />
+            <StatCard value="24/7" label="Support" />
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 mt-20">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="font-bold mb-4">Product</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/features">Features</Link></li>
-                <li><Link to="/pricing">Pricing</Link></li>
-                <li><Link to="/integrations">Integrations</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/about">About</Link></li>
-                <li><Link to="/blog">Blog</Link></li>
-                <li><Link to="/contact">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Resources</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/docs">Documentation</Link></li>
-                <li><Link to="/support">Support</Link></li>
-                <li><Link to="/faq">FAQ</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Legal</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/terms">Terms</Link></li>
-                <li><Link to="/privacy">Privacy</Link></li>
-                <li><Link to="/security">Security</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
-            <p>© 2025 Business Platform. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      {/* SECTION 8: FINAL CTA */}
+      <CTASection
+        title="Ready to Transform Your Wholesale Business?"
+        description="Start your 14-day free trial today. No credit card required."
+        primaryCta={{
+          text: "Start Free Trial →",
+          link: "/signup",
+        }}
+        secondaryCta={{
+          text: "Schedule a Demo",
+          link: "/demo",
+        }}
+        variant="gradient"
+      />
+
+      {/* SECTION 9: FOOTER */}
+      <MarketingFooter />
     </div>
   );
 }

@@ -96,8 +96,8 @@ export function RoleBasedSidebar() {
   };
 
   return (
-    <Sidebar className={isCollapsed ? 'w-14' : 'w-64'} collapsible="icon">
-      <SidebarHeader className="border-b p-4">
+    <Sidebar className={`${isCollapsed ? 'w-14' : 'w-64'} collapsible="icon" border-r border-[hsl(var(--tenant-border))] bg-white`}>
+      <SidebarHeader className="border-b border-[hsl(var(--tenant-border))] p-4 bg-[hsl(var(--tenant-surface))]">
         {!isCollapsed && (
           <div className="space-y-2">
             <h2 className="text-lg font-semibold">🌿 Your Company</h2>
@@ -133,14 +133,14 @@ export function RoleBasedSidebar() {
                       className={cn(
                         'w-full flex items-center justify-between px-3 py-2 rounded-lg',
                         'text-sm font-medium transition-colors',
-                        'hover:bg-muted',
-                        hasActiveChild && 'bg-primary/10 text-primary'
+                        'hover:bg-[hsl(var(--tenant-surface))]',
+                        hasActiveChild && 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))]'
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <span className={cn(
                           'flex-shrink-0',
-                          hasActiveChild ? 'text-primary' : 'text-muted-foreground'
+                          hasActiveChild ? 'text-[hsl(var(--tenant-primary))]' : 'text-[hsl(var(--tenant-text-light))]'
                         )}>
                           {renderIcon(item.icon, item.iconSize || 'h-5 w-5')}
                         </span>
@@ -168,8 +168,8 @@ export function RoleBasedSidebar() {
                                   cn(
                                     'flex items-center gap-3',
                                     isActive
-                                      ? 'bg-primary/10 text-primary font-medium'
-                                      : ''
+                                      ? 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))] font-medium'
+                                      : 'text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]'
                                   )
                                 }
                               >
@@ -213,10 +213,10 @@ export function RoleBasedSidebar() {
         })}
       </SidebarContent>
 
-      <div className="mt-auto p-4 border-t">
+      <div className="mt-auto p-4 border-t border-[hsl(var(--tenant-border))]">
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
           onClick={handleSignOut}
         >
           <LogOut className="h-4 w-4" />
