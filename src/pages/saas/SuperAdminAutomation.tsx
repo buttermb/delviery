@@ -36,6 +36,7 @@ interface AutomationRule {
 
 export default function SuperAdminAutomation() {
   const { toast } = useToast();
+  const [runningRules, setRunningRules] = useState<Set<string>>(new Set());
   const [rules, setRules] = useState<AutomationRule[]>([
     {
       id: 'usage-limits',
@@ -91,17 +92,20 @@ export default function SuperAdminAutomation() {
   };
 
   const handleRunNow = async (ruleId: string) => {
+    setRunningRules(prev => new Set(prev).add(ruleId));
+    
     try {
-      // In production, trigger the edge function
-      const { error } = await supabase.functions.invoke('enforce-tenant-limits', {
+      const { data, error } = await supabase.functions.invoke('enforce-tenant-limits', {
         body: { rule_id: ruleId },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || 'Failed to execute rule');
+      }
 
       toast({
         title: 'Rule executed',
-        description: 'Automation rule has been run successfully',
+        description: data?.message || 'Automation rule completed successfully',
       });
 
       // Update last run time
@@ -113,10 +117,22 @@ export default function SuperAdminAutomation() {
         )
       );
     } catch (error: any) {
+      console.error('Rule execution error:', error);
+      
+      const errorMessage = error.message?.includes('fetch')
+        ? 'Network error - please check your connection and try again'
+        : error.message || 'An unexpected error occurred';
+
       toast({
         title: 'Failed to run rule',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
+      });
+    } finally {
+      setRunningRules(prev => {
+        const next = new Set(prev);
+        next.delete(ruleId);
+        return next;
       });
     }
   };
@@ -195,9 +211,13 @@ export default function SuperAdminAutomation() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRunNow(rule.id)}
-                  disabled={!rule.enabled}
+                  disabled={!rule.enabled || runningRules.has(rule.id)}
                 >
-                  <Play className="h-4 w-4" />
+                  {runningRules.has(rule.id) ? (
+                    <span className="h-4 w-4 animate-spin">⏳</span>
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>

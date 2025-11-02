@@ -5609,6 +5609,38 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           account_id: string
@@ -5794,11 +5826,14 @@ export type Database = {
           onboarded: boolean | null
           owner_email: string
           owner_name: string
+          payment_method_added: boolean | null
           phone: string | null
           slug: string
           state: string | null
+          state_licenses: Json | null
           subscription_plan: string
           subscription_status: string
+          suspended_reason: string | null
           trial_ends_at: string | null
           updated_at: string | null
           usage: Json | null
@@ -5815,11 +5850,14 @@ export type Database = {
           onboarded?: boolean | null
           owner_email: string
           owner_name: string
+          payment_method_added?: boolean | null
           phone?: string | null
           slug: string
           state?: string | null
+          state_licenses?: Json | null
           subscription_plan: string
           subscription_status: string
+          suspended_reason?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
           usage?: Json | null
@@ -5836,11 +5874,14 @@ export type Database = {
           onboarded?: boolean | null
           owner_email?: string
           owner_name?: string
+          payment_method_added?: boolean | null
           phone?: string | null
           slug?: string
           state?: string | null
+          state_licenses?: Json | null
           subscription_plan?: string
           subscription_status?: string
+          suspended_reason?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
           usage?: Json | null
