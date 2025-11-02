@@ -70,7 +70,6 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
-const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/Help"));
 const WelcomeOnboarding = lazy(() => import("./pages/WelcomeOnboarding"));
 
