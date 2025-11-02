@@ -23,9 +23,9 @@ export function useAuthRedirect() {
     if (superAdmin) {
       navigate("/super-admin/dashboard", { replace: true });
     } else if (admin && tenant) {
-      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+      navigate(`/${tenant.slug}/admin`, { replace: true });
     } else if (customer && customerTenant) {
-      navigate(`/${customerTenant.slug}/shop/dashboard`, { replace: true });
+      navigate(`/${customerTenant.slug}/shop`, { replace: true });
     }
   }, [superAdmin, admin, tenant, customer, customerTenant, superAdminLoading, tenantAdminLoading, customerLoading, navigate]);
 }
