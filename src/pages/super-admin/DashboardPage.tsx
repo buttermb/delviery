@@ -113,12 +113,12 @@ export default function SuperAdminDashboardPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
-      active: { label: "Active", variant: "default", className: "bg-green-500/20 text-green-400 border-green-500/30" },
+      active: { label: "Active", variant: "default", className: "bg-[hsl(var(--super-admin-secondary))]/20 text-[hsl(var(--super-admin-secondary))] border-[hsl(var(--super-admin-secondary))]/30" },
       trial: { label: "Trial", variant: "secondary", className: "bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))] border-[hsl(var(--super-admin-primary))]/30" },
       trialing: { label: "Trialing", variant: "secondary", className: "bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))] border-[hsl(var(--super-admin-primary))]/30" },
-      past_due: { label: "Past Due", variant: "destructive", className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-      cancelled: { label: "Cancelled", variant: "outline", className: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
-      suspended: { label: "Suspended", variant: "destructive", className: "bg-red-500/20 text-red-400 border-red-500/30" },
+      past_due: { label: "Past Due", variant: "destructive", className: "bg-[hsl(var(--super-admin-accent))]/20 text-[hsl(var(--super-admin-accent))] border-[hsl(var(--super-admin-accent))]/30" },
+      cancelled: { label: "Cancelled", variant: "outline", className: "bg-[hsl(var(--super-admin-text-light))]/20 text-[hsl(var(--super-admin-text-light))] border-[hsl(var(--super-admin-text-light))]/30" },
+      suspended: { label: "Suspended", variant: "destructive", className: "bg-red-600/20 text-red-400 border-red-600/30" },
     };
 
     const config = statusConfig[status] || { label: status.toUpperCase(), variant: "outline", className: "" };
