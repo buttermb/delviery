@@ -191,10 +191,11 @@ export default function OnboardingWizard() {
       const invites = teamMembers.map((member) => ({
         tenant_id: tenant.id,
         email: member.email,
+        name: member.name || member.email.split('@')[0],
         role: member.role,
         status: 'pending',
         invited_at: new Date().toISOString(),
-      }));
+      } as any));
 
       const { error } = await supabase.from('tenant_users').insert(invites);
 

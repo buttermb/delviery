@@ -52,6 +52,7 @@ import {
   Zap,
   LogOut,
 } from 'lucide-react';
+import { exportTenantsToCSV, exportTenantsToJSON } from '@/utils/tenantExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

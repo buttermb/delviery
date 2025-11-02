@@ -144,8 +144,7 @@ export default function ReceivingPage() {
 
       if (error) throw error;
 
-      // Update inventory - simplified approach
-      if (invError) console.error('Inventory update skipped');
+      // Inventory update handled via batch creation
     },
     onSuccess: () => {
       showSuccessToast('Inventory received successfully');
