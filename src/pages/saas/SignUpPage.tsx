@@ -38,6 +38,8 @@ const signupSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   state: z.string().min(1, 'Please select a state'),
+  industry: z.string().min(1, 'Please select an industry'),
+  company_size: z.string().min(1, 'Please select company size'),
   terms_accepted: z.boolean().refine((val) => val === true, {
     message: 'You must accept the Terms of Service',
   }),
@@ -51,6 +53,20 @@ const US_STATES = [
   'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
   'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+];
+
+const INDUSTRIES = [
+  { value: 'wholesale', label: 'Wholesale' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'distribution', label: 'Distribution' },
+  { value: 'other', label: 'Other' },
+];
+
+const COMPANY_SIZES = [
+  { value: '1-10', label: '1-10 employees' },
+  { value: '11-50', label: '11-50 employees' },
+  { value: '51-200', label: '51-200 employees' },
+  { value: '200+', label: '200+ employees' },
 ];
 
 export default function SignUpPage() {
@@ -67,6 +83,8 @@ export default function SignUpPage() {
       password: '',
       phone: '',
       state: '',
+      industry: '',
+      company_size: '',
       terms_accepted: false,
     },
   });
@@ -126,6 +144,8 @@ export default function SignUpPage() {
           owner_email: data.email,
           owner_name: data.owner_name,
           phone: data.phone,
+          industry: data.industry,
+          company_size: data.company_size,
           subscription_plan: 'starter',
           subscription_status: 'trial',
           trial_ends_at: trialEndsAt.toISOString(),
@@ -165,11 +185,37 @@ export default function SignUpPage() {
           email: data.email,
           name: data.owner_name,
           role: 'owner',
-          status: 'pending', // Will be active after email verification
+          status: 'pending', // Will be active after password setup
           invited_at: new Date().toISOString(),
         });
 
       if (userError) throw userError;
+
+      // Setup password hash via Edge Function
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const passwordResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'setup-password',
+            email: data.email,
+            password: data.password,
+            tenantSlug: tenant.slug,
+          }),
+        });
+
+        if (!passwordResponse.ok) {
+          const errorData = await passwordResponse.json();
+          console.warn('Password setup warning:', errorData.error || 'Failed to setup password');
+          // Continue anyway - user can set password later or retry
+        }
+      } catch (passwordError) {
+        console.error('Password setup error:', passwordError);
+        // Continue anyway - user can set password later
+      }
 
       // Log subscription event
       await supabase.from('subscription_events').insert({
@@ -181,10 +227,17 @@ export default function SignUpPage() {
 
       toast({
         title: 'Account Created!',
-        description: 'Please check your email to verify your account.',
+        description: 'Redirecting to welcome page...',
       });
 
-      navigate('/saas/verify-email', { state: { email: data.email, tenantId: tenant.id } });
+      // Redirect to tenant-specific welcome onboarding page
+      navigate(`/${tenant.slug}/admin/welcome`, { 
+        state: { 
+          tenantSlug: tenant.slug, 
+          tenantId: tenant.id,
+          name: data.owner_name 
+        } 
+      });
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({
@@ -293,6 +346,56 @@ export default function SignUpPage() {
                       {US_STATES.map((state) => (
                         <SelectItem key={state} value={state}>
                           {state}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="industry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Industry *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {INDUSTRIES.map((industry) => (
+                        <SelectItem key={industry.value} value={industry.value}>
+                          {industry.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="company_size"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Size *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select company size" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {COMPANY_SIZES.map((size) => (
+                        <SelectItem key={size.value} value={size.value}>
+                          {size.label}
                         </SelectItem>
                       ))}
                     </SelectContent>

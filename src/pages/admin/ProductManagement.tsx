@@ -313,14 +313,25 @@ export default function ProductManagement() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Product Management</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Product Management</h1>
+            {account && (account as any)?.tenant_id && (
+              <TooltipGuide
+                title="💡 Product Management"
+                content="Upload CSV to add 100+ products instantly. Products can be organized by category and tracked by batch numbers."
+                placement="right"
+                tenantId={(account as any)?.tenant_id}
+                tenantCreatedAt={account?.created_at}
+              />
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Manage products, batches, and inventory packages
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           <Button onClick={() => navigate("/admin/inventory/barcodes")}>
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes

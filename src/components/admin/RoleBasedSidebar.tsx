@@ -22,14 +22,17 @@ import { Button } from '@/components/ui/button';
 import { LogOut, ChevronDown } from 'lucide-react';
 import { getNavigationForRole } from '@/lib/constants/navigation';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import type { LucideIcon } from 'lucide-react';
 
 export function RoleBasedSidebar() {
   const { state } = useSidebar();
   const { session } = useAdminAuth();
+  const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>('owner');
@@ -85,7 +88,15 @@ export function RoleBasedSidebar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({ title: 'Signed out successfully' });
-    navigate('/admin/login');
+    
+    // Navigate to appropriate login page based on context
+    if (tenantSlug) {
+      navigate(`/${tenantSlug}/admin/login`);
+    } else if (tenant) {
+      navigate(`/${tenant.slug}/admin/login`);
+    } else {
+      navigate('/admin/login');
+    }
   };
 
   // Helper to render icon - extract component first
@@ -159,28 +170,37 @@ export function RoleBasedSidebar() {
                   <CollapsibleContent>
                     <SidebarGroupContent>
                       <SidebarMenu>
-                        {item.children.map((child) => (
-                          <SidebarMenuItem key={child.href}>
-                            <SidebarMenuButton asChild>
-                              <NavLink
-                                to={child.href || '#'}
-                                className={({ isActive }) =>
-                                  cn(
-                                    'flex items-center gap-3',
-                                    isActive
-                                      ? 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))] font-medium'
-                                      : 'text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]'
-                                  )
-                                }
-                              >
-                                <span className="flex-shrink-0">
-                                  {renderIcon(child.icon, child.iconSize || 'h-4 w-4')}
-                                </span>
-                                {!isCollapsed && <span>{child.name}</span>}
-                              </NavLink>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
+                        {item.children.map((child) => {
+                          // Handle tenant-aware routes
+                          const href = child.href 
+                            ? (tenantSlug && child.href.startsWith('/admin') 
+                                ? `/${tenantSlug}${child.href}` 
+                                : child.href)
+                            : '#';
+                          
+                          return (
+                            <SidebarMenuItem key={href}>
+                              <SidebarMenuButton asChild>
+                                <NavLink
+                                  to={href}
+                                  className={({ isActive }) =>
+                                    cn(
+                                      'flex items-center gap-3',
+                                      isActive
+                                        ? 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))] font-medium'
+                                        : 'text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]'
+                                    )
+                                  }
+                                >
+                                  <span className="flex-shrink-0">
+                                    {renderIcon(child.icon, child.iconSize || 'h-4 w-4')}
+                                  </span>
+                                  {!isCollapsed && <span>{child.name}</span>}
+                                </NavLink>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </CollapsibleContent>
@@ -189,12 +209,19 @@ export function RoleBasedSidebar() {
             );
           }
 
+          // Handle tenant-aware routes for top-level items
+          const href = item.href 
+            ? (tenantSlug && item.href.startsWith('/admin') 
+                ? `/${tenantSlug}${item.href}` 
+                : item.href)
+            : '#';
+          
           return (
             <SidebarGroup key={item.name}>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <NavLink
-                    to={item.href || '#'}
+                    to={href}
                     className={({ isActive }) =>
                       cn(
                         isActive 

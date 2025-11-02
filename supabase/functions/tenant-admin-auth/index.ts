@@ -302,6 +302,86 @@ serve(async (req) => {
       );
     }
 
+    if (action === "setup-password") {
+      // Setup password for newly created tenant user (during signup)
+      const { email, password, tenantSlug } = await req.json();
+
+      if (!email || !password || !tenantSlug) {
+        return new Response(
+          JSON.stringify({ error: "Email, password, and tenant slug are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (password.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "Password must be at least 8 characters long" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Find tenant by slug
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("slug", tenantSlug.toLowerCase())
+        .maybeSingle();
+
+      if (tenantError || !tenant) {
+        return new Response(
+          JSON.stringify({ error: "Tenant not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Find tenant admin user (can be pending status)
+      const { data: adminUser, error: adminError } = await supabase
+        .from("tenant_users")
+        .select("*")
+        .eq("email", email.toLowerCase())
+        .eq("tenant_id", tenant.id)
+        .maybeSingle();
+
+      if (adminError || !adminUser) {
+        return new Response(
+          JSON.stringify({ error: "User not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if password already set
+      if (adminUser.password_hash) {
+        return new Response(
+          JSON.stringify({ error: "Password already set. Use login instead." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+
+      // Update password_hash and activate user
+      const { error: updateError } = await supabase
+        .from("tenant_users")
+        .update({ 
+          password_hash: passwordHash,
+          status: 'active' // Activate user when password is set
+        })
+        .eq("id", adminUser.id);
+
+      if (updateError) {
+        return new Response(
+          JSON.stringify({ error: "Failed to setup password" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Password setup successful" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "update-password") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) {

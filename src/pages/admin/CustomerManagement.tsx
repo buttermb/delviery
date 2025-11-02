@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
+import { TooltipGuide } from "@/components/shared/TooltipGuide";
 
 interface Customer {
   id: string;
@@ -182,14 +183,29 @@ export default function CustomerManagement() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Customer Management</h1>
-          <p className="text-muted-foreground">Complete CRM for your customers</p>
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Customer Management</h1>
+            {account && (account as any)?.tenant_id && (
+              <TooltipGuide
+                title="💡 Customer Management"
+                content="Import customers from your existing spreadsheet. Add contact info, preferences, and track purchase history."
+                placement="right"
+                tenantId={(account as any)?.tenant_id}
+                tenantCreatedAt={account?.created_at}
+              />
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        <Button onClick={() => navigate("/admin/customers/new")}>
+        <Button 
+          onClick={() => navigate("/admin/customers/new")}
+          className="min-h-[44px] touch-manipulation flex-shrink-0"
+        >
           <Plus className="w-4 h-4 mr-2" />
-          Add Customer
+          <span className="hidden sm:inline">Add Customer</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 

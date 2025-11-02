@@ -1,45 +1,39 @@
 /**
- * Empty State Component
- * Consistent empty state displays
+ * Reusable Empty State Component
+ * Shows helpful empty states with CTAs
  */
 
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon: React.ReactNode;
+  icon: LucideIcon;
   title: string;
-  description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-  className?: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  actionVariant?: "default" | "outline" | "ghost";
 }
 
 export function EmptyState({
-  icon,
+  icon: Icon,
   title,
   description,
-  action,
-  className,
+  actionLabel,
+  onAction,
+  actionVariant = "default",
 }: EmptyStateProps) {
   return (
-    <Card className={cn('p-12 text-center', className)}>
-      <div className="flex flex-col items-center justify-center">
-        <div className="mb-4 text-muted-foreground opacity-50">{icon}</div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        {description && (
-          <p className="text-sm text-muted-foreground mb-4 max-w-md">
-            {description}
-          </p>
-        )}
-        {action && (
-          <Button onClick={action.onClick}>{action.label}</Button>
-        )}
-      </div>
-    </Card>
+    <div className="text-center py-12 px-4">
+      <Icon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+      <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
+      <p className="text-gray-600 mb-6 max-w-md mx-auto">{description}</p>
+      {actionLabel && onAction && (
+        <Button onClick={onAction} variant={actionVariant}>
+          {actionLabel}
+        </Button>
+      )}
+    </div>
   );
 }
-

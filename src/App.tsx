@@ -72,6 +72,11 @@ const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPa
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
+const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
+const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
+const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
+const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
+const HelpPage = lazy(() => import("./pages/Help"));
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
 const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
@@ -314,9 +319,21 @@ const App = () => {
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
+                        {/* Welcome Onboarding Page (must be before AdminLayout for proper protection) */}
+                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><WelcomeOnboarding /></TenantAdminProtectedRoute>} />
+                        
+                        {/* Trial Expired Page (must be before AdminLayout) */}
+                        <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
+                        
+                        {/* Help Page */}
+                        <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
+                        
                         {/* Tenant Admin Portal */}
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
+                          <Route path="dashboard" element={<TenantAdminDashboardPage />} />
+                          <Route path="billing" element={<TenantAdminBillingPage />} />
+                          <Route path="settings" element={<TenantAdminSettingsPage />} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}

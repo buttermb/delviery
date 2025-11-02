@@ -7,7 +7,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Package, FileText, Truck, Warehouse,
   Menu, Users, DollarSign, BarChart3, Image, Tag,
-  Settings, Shield, Bell, Printer, Plug
+  Settings, Shield, Bell, Printer, Plug, HelpCircle
 } from 'lucide-react';
 
 export interface NavItem {
@@ -21,7 +21,7 @@ export interface NavItem {
 export const navigation: NavItem[] = [
   {
     name: 'Dashboard',
-    href: '/admin/big-plug-dashboard',
+    href: '/admin/dashboard',
     icon: <LayoutDashboard className="h-5 w-5" />,
     roles: ['all'],
   },
@@ -264,6 +264,12 @@ export const navigation: NavItem[] = [
         href: '/admin/settings', 
         icon: <Plug className="h-4 w-4" />,
         roles: ['owner'],
+      },
+      { 
+        name: 'Help & Resources', 
+        href: '/admin/help', 
+        icon: <HelpCircle className="h-4 w-4" />,
+        roles: ['owner', 'manager', 'viewer'],
       },
     ],
   },

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Loader2 } from "lucide-react";
 
@@ -10,6 +10,7 @@ interface TenantAdminProtectedRouteProps {
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
   const { admin, tenant, token, loading, refreshToken } = useTenantAdminAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
 
@@ -17,7 +18,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     const verifyAuth = async () => {
       if (loading) return;
 
+      // Allow access to welcome page even without full auth (for post-signup flow)
+      const isWelcomePage = location.pathname.includes('/welcome');
+      
       if (!token || !admin || !tenant) {
+        // Allow welcome page for new signups (they may not be logged in yet)
+        if (isWelcomePage && tenantSlug) {
+          setVerifying(false);
+          return;
+        }
+        
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -54,6 +64,27 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("Tenant is not active");
         }
 
+        // Check if trial has expired
+        const trialEndsAt = data.tenant.trial_ends_at;
+        const subscriptionStatus = data.tenant.subscription_status;
+        const isTrialExpired = 
+          subscriptionStatus === "trial" && 
+          trialEndsAt && 
+          new Date(trialEndsAt).getTime() < Date.now();
+
+        // Check if current route is billing, trial-expired, or welcome (allow access)
+        const currentPath = location.pathname;
+        const isAllowedRoute = 
+          currentPath.includes("/billing") || 
+          currentPath.includes("/trial-expired") ||
+          currentPath.includes("/welcome");
+
+        // If trial expired and not on allowed route, redirect to trial-expired
+        if (isTrialExpired && !isAllowedRoute && tenantSlug) {
+          navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
+          return;
+        }
+
         setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
@@ -66,7 +97,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     };
 
     verifyAuth();
-  }, [token, admin, tenant, tenantSlug, loading, navigate]);
+  }, [token, admin, tenant, tenantSlug, loading, navigate, location.pathname]);
 
   if (loading || verifying) {
     return (
@@ -79,7 +110,9 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     );
   }
 
-  if (!token || !admin || !tenant) {
+  // Allow welcome page without full auth (for post-signup flow)
+  const isWelcomePage = location.pathname.includes('/welcome');
+  if ((!token || !admin || !tenant) && !isWelcomePage) {
     return null; // Will redirect
   }
 

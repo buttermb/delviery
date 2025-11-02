@@ -18,6 +18,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { TooltipGuide } from '@/components/shared/TooltipGuide';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 const DisposableMenus = () => {
   const navigate = useNavigate();
@@ -73,10 +75,21 @@ const DisposableMenus = () => {
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Disposable Encrypted Menus</h1>
-            <p className="text-muted-foreground">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">Disposable Encrypted Menus</h1>
+              {tenant && (
+                <TooltipGuide
+                  title="💡 What are disposable menus?"
+                  content="Share product lists with customers via unique links. Customers can browse and order without creating accounts. Select products to share with specific customers."
+                  placement="right"
+                  tenantId={tenant.id}
+                  tenantCreatedAt={(tenant as any)?.created_at}
+                />
+              )}
+            </div>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Create secure, self-destructing catalogs with advanced access control
             </p>
           </div>
