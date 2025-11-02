@@ -138,6 +138,7 @@ const SuperAdminAutomation = lazy(() => import("./pages/saas/SuperAdminAutomatio
 const SuperAdminSettings = lazy(() => import("./pages/saas/SuperAdminSettings"));
 const WhiteLabelSettings = lazy(() => import("./pages/saas/WhiteLabelSettings"));
 const MarketingLanding = lazy(() => import("./pages/saas/MarketingLanding"));
+const SaasAdminLayout = lazy(() => import("./components/saas/SaasAdminLayout").then(m => ({ default: m.SaasAdminLayout })));
 const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 
 // Fronted Inventory Pages
@@ -281,12 +282,14 @@ const App = () => {
                         <Route path="/saas/onboarding" element={<OnboardingWizard />} />
                         <Route path="/saas/billing" element={<BillingDashboard />} />
                         
-                        {/* Protected Super Admin Routes (Legacy) */}
-                        <Route path="/saas/admin" element={<LegacySuperAdminProtectedRoute><SuperAdminEnhanced /></LegacySuperAdminProtectedRoute>} />
-                        <Route path="/saas/admin/support" element={<LegacySuperAdminProtectedRoute><SuperAdminSupport /></LegacySuperAdminProtectedRoute>} />
-                        <Route path="/saas/admin/analytics" element={<LegacySuperAdminProtectedRoute><SuperAdminAnalytics /></LegacySuperAdminProtectedRoute>} />
-                        <Route path="/saas/admin/automation" element={<LegacySuperAdminProtectedRoute><SuperAdminAutomation /></LegacySuperAdminProtectedRoute>} />
-                        <Route path="/saas/admin/settings" element={<LegacySuperAdminProtectedRoute><SuperAdminSettings /></LegacySuperAdminProtectedRoute>} />
+                        {/* Protected Super Admin Routes with Sidebar */}
+                        <Route path="/saas/admin" element={<LegacySuperAdminProtectedRoute><SaasAdminLayout /></LegacySuperAdminProtectedRoute>}>
+                          <Route index element={<SuperAdminEnhanced />} />
+                          <Route path="support" element={<SuperAdminSupport />} />
+                          <Route path="analytics" element={<SuperAdminAnalytics />} />
+                          <Route path="automation" element={<SuperAdminAutomation />} />
+                          <Route path="settings" element={<SuperAdminSettings />} />
+                        </Route>
                         <Route path="/saas/admin/legacy" element={<LegacySuperAdminProtectedRoute><SuperAdminPlatform /></LegacySuperAdminProtectedRoute>} />
                         <Route path="/saas/whitelabel" element={<WhiteLabelSettings />} />
                         
