@@ -79,10 +79,106 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const url = new URL(req.url);
-    const action = url.searchParams.get("action") || (await req.json()).action;
+    const action = url.searchParams.get("action");
+    
+    let requestBody: any = {};
+    if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
+      try {
+        requestBody = await req.json();
+      } catch (e) {
+        console.error('Failed to parse JSON body:', e);
+        requestBody = {};
+      }
+    }
+
+    if (action === "signup") {
+      const { email, password, firstName, lastName, phone, tenantSlug } = requestBody;
+
+      console.log('Customer signup attempt:', { email, tenantSlug });
+
+      if (!email || !password || !tenantSlug) {
+        return new Response(
+          JSON.stringify({ error: "Email, password, and tenant slug are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (password.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "Password must be at least 8 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Find tenant by slug
+      const { data: tenant, error: tenantError } = await supabase
+        .from("tenants")
+        .select("*")
+        .eq("slug", tenantSlug.toLowerCase())
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (tenantError || !tenant) {
+        return new Response(
+          JSON.stringify({ error: "Store not found or inactive" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if customer user already exists
+      const { data: existingUser } = await supabase
+        .from("customer_users")
+        .select("id")
+        .eq("email", email.toLowerCase())
+        .eq("tenant_id", tenant.id)
+        .maybeSingle();
+
+      if (existingUser) {
+        return new Response(
+          JSON.stringify({ error: "An account with this email already exists" }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+
+      // Create customer user
+      const { data: customerUser, error: createError } = await supabase
+        .from("customer_users")
+        .insert({
+          email: email.toLowerCase(),
+          password_hash: passwordHash,
+          first_name: firstName || null,
+          last_name: lastName || null,
+          phone: phone || null,
+          tenant_id: tenant.id,
+          status: 'active',
+        })
+        .select()
+        .single();
+
+      if (createError || !customerUser) {
+        console.error('Failed to create customer user:', createError);
+        return new Response(
+          JSON.stringify({ error: "Failed to create account" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log('Customer signup successful:', email);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Account created successfully",
+        }),
+        { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (action === "login") {
-      const { email, password, tenantSlug } = await req.json();
+      const { email, password, tenantSlug } = requestBody;
 
       if (!email || !password || !tenantSlug) {
         return new Response(
