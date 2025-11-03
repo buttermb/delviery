@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.customer-auth]
 verify_jwt = false
+
+[functions.update-subscription]
+verify_jwt = true

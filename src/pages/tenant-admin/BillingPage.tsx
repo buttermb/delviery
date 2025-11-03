@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -575,8 +576,8 @@ export default function TenantAdminBillingPage() {
                         <div className="font-medium text-sm text-muted-foreground text-center">Professional</div>
                         <div className="font-medium text-sm text-muted-foreground text-center">Enterprise</div>
                         
-                        {features.map((feature) => (
-                          <>
+                        {features.map((feature, idx) => (
+                          <React.Fragment key={`${feature.name}-${idx}`}>
                             <div className="text-sm py-2">{feature.name}</div>
                             <div className="text-center py-2">
                               {feature.tier === 'starter' || feature.tier === 'professional' || feature.tier === 'enterprise' ? (
@@ -597,7 +598,7 @@ export default function TenantAdminBillingPage() {
                             <div className="text-center py-2">
                               <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
                             </div>
-                          </>
+                          </React.Fragment>
                         ))}
                       </div>
                     </div>
