@@ -438,6 +438,45 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key: string
+          last_used_at: string | null
+          name: string
+          permissions: Json | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key: string
+          last_used_at?: string | null
+          name: string
+          permissions?: Json | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       application_logs: {
         Row: {
           created_at: string | null
@@ -561,6 +600,90 @@ export type Database = {
           id?: string
           ip_address?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      audit_trail: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          tenant_id: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          tenant_id: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          tenant_id?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      automation_rules: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          tenant_id: string
+          trigger_event: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          tenant_id: string
+          trigger_event: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          tenant_id?: string
+          trigger_event?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1514,6 +1637,78 @@ export type Database = {
           vehicle_model?: string | null
           vehicle_plate?: string | null
           vehicle_type?: string
+        }
+        Relationships: []
+      }
+      custom_integrations: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          id: string
+          name: string
+          status: string | null
+          tenant_id: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          tenant_id: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          tenant_id?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      custom_reports: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          format: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          query: string
+          schedule: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          format?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          query: string
+          schedule?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          format?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          query?: string
+          schedule?: string | null
+          tenant_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -6708,6 +6903,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhooks: {
+        Row: {
+          created_at: string | null
+          events: Json | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          secret: string | null
+          tenant_id: string
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          secret?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          secret?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
       }
       wholesale_client_notes: {
         Row: {
