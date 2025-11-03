@@ -117,48 +117,9 @@ const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManageme
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
 
-// Phase 2: Professional Tier Features
-const OrderAnalytics = lazy(() => import("./pages/admin/OrderAnalytics"));
-const CustomerAnalytics = lazy(() => import("./pages/admin/CustomerAnalytics"));
-const SalesDashboard = lazy(() => import("./pages/admin/SalesDashboard"));
-const CommissionTracking = lazy(() => import("./pages/admin/CommissionTracking"));
-const ActivityLogs = lazy(() => import("./pages/admin/ActivityLogs"));
-const StockAlerts = lazy(() => import("./pages/admin/StockAlerts"));
-const RevenueReports = lazy(() => import("./pages/admin/RevenueReports"));
-const ExpenseTracking = lazy(() => import("./pages/admin/ExpenseTracking"));
-
-// Phase 3: Mid-Priority Professional Features
-const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
-const InventoryTransfers = lazy(() => import("./pages/admin/InventoryTransfers"));
-const CustomerInsights = lazy(() => import("./pages/admin/CustomerInsights"));
-const BulkOperations = lazy(() => import("./pages/admin/BulkOperations"));
-const Notifications = lazy(() => import("./pages/admin/Notifications"));
-
-// Phase 4: High-Priority Enterprise Features
-const RouteOptimization = lazy(() => import("./pages/admin/RouteOptimization"));
-const DeliveryAnalytics = lazy(() => import("./pages/admin/DeliveryAnalytics"));
-const CashRegister = lazy(() => import("./pages/admin/CashRegister"));
-const ApiAccess = lazy(() => import("./pages/admin/ApiAccess"));
-const Webhooks = lazy(() => import("./pages/admin/Webhooks"));
-const AdvancedAnalytics = lazy(() => import("./pages/admin/AdvancedAnalytics"));
-const RealtimeDashboard = lazy(() => import("./pages/admin/RealtimeDashboard"));
-
-// Phase 5: Medium-Priority Enterprise Features
-const CustomReports = lazy(() => import("./pages/admin/CustomReports"));
-const DataExport = lazy(() => import("./pages/admin/DataExport"));
-const LocationAnalytics = lazy(() => import("./pages/admin/LocationAnalytics"));
-const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
-const Permissions = lazy(() => import("./pages/admin/Permissions"));
-
-// Phase 6: Final Enterprise Features
-const Automation = lazy(() => import("./pages/admin/Automation"));
-const WhiteLabel = lazy(() => import("./pages/admin/WhiteLabel"));
-const CustomDomain = lazy(() => import("./pages/admin/CustomDomain"));
-const PosAnalytics = lazy(() => import("./pages/admin/PosAnalytics"));
-const CustomIntegrations = lazy(() => import("./pages/admin/CustomIntegrations"));
-const AuditTrail = lazy(() => import("./pages/admin/AuditTrail"));
-const Compliance = lazy(() => import("./pages/admin/Compliance"));
-const PrioritySupport = lazy(() => import("./pages/admin/PrioritySupport"));
+// Phase 2-6: Professional & Enterprise Features (Removed - Not implemented yet)
+// These pages were deleted as they referenced non-existent database tables
+// Will be re-added when proper database migrations are created
 
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
@@ -341,46 +302,7 @@ const App = () => {
                           <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
                           <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
                           
-                          {/* Phase 2: Professional Tier Features */}
-                          <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalytics /></FeatureProtectedRoute>} />
-                          <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTracking /></FeatureProtectedRoute>} />
-                          <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogs /></FeatureProtectedRoute>} />
-                          <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlerts /></FeatureProtectedRoute>} />
-                          <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReports /></FeatureProtectedRoute>} />
-                          <Route path="expense-tracking" element={<FeatureProtectedRoute featureId="expense-tracking"><ExpenseTracking /></FeatureProtectedRoute>} />
-                          
-                          {/* Phase 3: Mid-Priority Professional Features */}
-                          <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute>} />
-                          <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfers /></FeatureProtectedRoute>} />
-                          <Route path="customer-insights/:id" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerInsights /></FeatureProtectedRoute>} />
-                          <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperations /></FeatureProtectedRoute>} />
-                          <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><Notifications /></FeatureProtectedRoute>} />
-                          
-                          {/* Phase 4: High-Priority Enterprise Features */}
-                          <Route path="route-optimization" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimization /></FeatureProtectedRoute>} />
-                          <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalytics /></FeatureProtectedRoute>} />
-                          <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegister /></FeatureProtectedRoute>} />
-                          <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><ApiAccess /></FeatureProtectedRoute>} />
-                          <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><Webhooks /></FeatureProtectedRoute>} />
-                          <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalytics /></FeatureProtectedRoute>} />
-                          <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboard /></FeatureProtectedRoute>} />
-                          
-                          {/* Phase 5: Medium-Priority Enterprise Features */}
-                          <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReports /></FeatureProtectedRoute>} />
-                          <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExport /></FeatureProtectedRoute>} />
-                          <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalytics /></FeatureProtectedRoute>} />
-                          <Route path="user-management" element={<FeatureProtectedRoute featureId="user-management"><UserManagement /></FeatureProtectedRoute>} />
-                          <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><Permissions /></FeatureProtectedRoute>} />
-                          
-                          {/* Phase 6: Final Enterprise Features */}
-                          <Route path="automation" element={<FeatureProtectedRoute featureId="automation"><Automation /></FeatureProtectedRoute>} />
-                          <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabel /></FeatureProtectedRoute>} />
-                          <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomain /></FeatureProtectedRoute>} />
-                          <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><PosAnalytics /></FeatureProtectedRoute>} />
-                          <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrations /></FeatureProtectedRoute>} />
-                          <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrail /></FeatureProtectedRoute>} />
-                          <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><Compliance /></FeatureProtectedRoute>} />
-                          <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupport /></FeatureProtectedRoute>} />
+                          {/* Phase 2-6: Professional & Enterprise Features - Removed (Not implemented yet) */}
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}

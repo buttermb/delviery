@@ -686,28 +686,17 @@ export default function TenantAdminBillingPage() {
                       <>
                         New monthly price: <strong>{formatCurrency(TIER_PRICES[selectedPlan])}</strong>
                         <br />
-                        {tenant?.subscription_current_period_end && new Date(tenant.subscription_current_period_end) > new Date() && (
-                          <>
-                            <span className="text-xs text-muted-foreground">
-                              Prorated charges may apply for the remaining billing period.
-                            </span>
-                            <br />
-                          </>
-                        )}
-                        Your subscription will be updated immediately.
+                        <span className="text-xs text-muted-foreground">
+                          Your subscription will be updated immediately.
+                        </span>
                       </>
                     ) : (
                       <>
                         Your plan will be changed to <strong>{TIER_NAMES[selectedPlan]}</strong>.
                         <br />
-                        {tenant?.subscription_current_period_end && new Date(tenant.subscription_current_period_end) > new Date() && (
-                          <>
-                            <span className="text-xs text-muted-foreground">
-                              A credit will be applied for the unused portion of your current plan.
-                            </span>
-                            <br />
-                          </>
-                        )}
+                        <span className="text-xs text-muted-foreground">
+                          Changes will be effective immediately.
+                        </span>
                         Some features may become unavailable after downgrade.
                       </>
                     )}
