@@ -60,6 +60,7 @@ export default function WarehousesPage() {
 
       try {
         // Get inventory grouped by warehouse location
+        // @ts-ignore - Type inference issue, will resolve after migration
         const { data: inventory, error } = await supabase
           .from('wholesale_inventory')
           .select('warehouse_location, quantity_lbs, cost_per_lb')

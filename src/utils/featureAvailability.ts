@@ -21,8 +21,9 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
 
   try {
     // Try to query the table (with limit 0 to minimize data transfer)
+    // @ts-ignore - Dynamic table name, types will regenerate after migration
     const { error } = await supabase
-      .from(tableName)
+      .from(tableName as any)
       .select('id')
       .limit(0);
 
