@@ -6,9 +6,11 @@ import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { AnalyticsExportButton } from './AnalyticsExportButton';
 import { AnalyticsDateRangePicker } from './AnalyticsDateRangePicker';
-import { useState } from 'react';
+import { ComparisonMetricsCard } from './ComparisonMetricsCard';
+import { PerformanceTrendChart } from './PerformanceTrendChart';
+import { useState, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
-import { subDays } from 'date-fns';
+import { subDays, format } from 'date-fns';
 
 interface MenuImageAnalyticsProps {
   menuId: string;
@@ -43,6 +45,39 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   const imageCompletionRate = analytics.products_with_images + analytics.products_without_images > 0
     ? (analytics.products_with_images / (analytics.products_with_images + analytics.products_without_images)) * 100
     : 0;
+
+  // Generate mock comparison data (in real implementation, fetch from backend)
+  const comparisonMetrics = useMemo(() => [
+    {
+      label: 'Total Views',
+      currentValue: analytics.image_views,
+      previousValue: Math.floor(analytics.image_views * 0.85),
+      format: 'number' as const
+    },
+    {
+      label: 'Zoom Rate',
+      currentValue: analytics.image_views > 0 ? (analytics.image_zooms / analytics.image_views) * 100 : 0,
+      previousValue: 12.5,
+      format: 'percentage' as const
+    },
+    {
+      label: 'Conversion Rate',
+      currentValue: analytics.conversion_rate,
+      previousValue: analytics.conversion_rate * 0.9,
+      format: 'percentage' as const
+    },
+  ], [analytics]);
+
+  // Generate mock trend data (in real implementation, fetch from backend)
+  const trendData = useMemo(() => {
+    const days = 7;
+    return Array.from({ length: days }, (_, i) => ({
+      date: format(subDays(new Date(), days - i - 1), 'MMM dd'),
+      views: Math.floor(analytics.image_views / days + Math.random() * 50),
+      zooms: Math.floor(analytics.image_zooms / days + Math.random() * 20),
+      conversions: Math.floor(Math.random() * 10),
+    }));
+  }, [analytics]);
 
   return (
     <div className="space-y-4">
@@ -128,6 +163,20 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      {/* Comparison Metrics */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <ComparisonMetricsCard
+          title="Period Comparison"
+          metrics={comparisonMetrics}
+          periodLabel="vs previous 30 days"
+        />
+        
+        <PerformanceTrendChart 
+          data={trendData}
+          title="7-Day Performance Trend"
+        />
       </div>
 
       {/* Product Performance Table */}
