@@ -5,6 +5,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Activity, ShoppingCart, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { BetterEmptyState } from '@/components/BetterEmptyState';
 
 export default function RealtimeDashboard() {
   const { tenant } = useTenantAdminAuth();
@@ -85,8 +87,8 @@ export default function RealtimeDashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading dashboard...</div>
+      <div className="p-6 space-y-6">
+        <EnhancedLoadingState variant="card" count={4} />
       </div>
     );
   }
@@ -179,9 +181,11 @@ export default function RealtimeDashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No live orders. New orders will appear here in real-time.
-            </div>
+            <BetterEmptyState
+              icon={ShoppingCart}
+              title="No Live Orders"
+              description="New orders will appear here in real-time as they're placed."
+            />
           )}
         </CardContent>
       </Card>
