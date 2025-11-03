@@ -4,10 +4,16 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, ShoppingCart, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useRealtimeShifts, useRealtimeTransactions } from '@/hooks/useRealtimePOS';
 
 export default function PosAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+
+  // Enable real-time updates
+  useRealtimeShifts(tenantId);
+  useRealtimeTransactions(tenantId);
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['pos-analytics', tenantId],
@@ -26,6 +32,7 @@ export default function PosAnalytics() {
       return data || [];
     },
     enabled: !!tenantId,
+    refetchInterval: 30000, // Backup polling every 30s
   });
 
   // Get shift summary
@@ -84,9 +91,15 @@ export default function PosAnalytics() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">POS Analytics</h1>
-        <p className="text-muted-foreground">Point of sale performance metrics</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">POS Analytics</h1>
+          <p className="text-muted-foreground">Point of sale performance metrics</p>
+        </div>
+        <Badge variant="outline" className="gap-2">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          Live Updates
+        </Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

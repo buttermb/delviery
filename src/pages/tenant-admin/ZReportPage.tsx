@@ -6,11 +6,15 @@ import { ZReport } from '@/components/pos/ZReport';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useRealtimeShifts } from '@/hooks/useRealtimePOS';
 
 export default function ZReportPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const [selectedShiftId, setSelectedShiftId] = useState<string>('');
+
+  // Enable real-time updates for shifts
+  useRealtimeShifts(tenantId);
 
   const { data: shifts, isLoading } = useQuery({
     queryKey: ['closed-shifts', tenantId],
@@ -29,6 +33,7 @@ export default function ZReportPage() {
       return data;
     },
     enabled: !!tenantId,
+    refetchInterval: 30000, // Backup polling
   });
 
   if (isLoading) {

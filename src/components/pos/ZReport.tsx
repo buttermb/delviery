@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { FileText, Printer, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeTransactions } from '@/hooks/useRealtimePOS';
 
 interface ZReportProps {
   shiftId: string;
@@ -15,6 +16,9 @@ export function ZReport({ shiftId }: ZReportProps) {
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const tenantId = tenant?.id;
+
+  // Enable real-time updates for this shift's transactions
+  useRealtimeTransactions(tenantId, shiftId);
 
   const { data: shift, isLoading } = useQuery({
     queryKey: ['shift-details', shiftId],
@@ -29,6 +33,7 @@ export function ZReport({ shiftId }: ZReportProps) {
       return data;
     },
     enabled: !!shiftId,
+    refetchInterval: 30000, // Backup polling
   });
 
   const { data: transactions } = useQuery({
@@ -44,6 +49,7 @@ export function ZReport({ shiftId }: ZReportProps) {
       return data;
     },
     enabled: !!shiftId,
+    refetchInterval: 30000, // Backup polling
   });
 
   const handlePrint = () => {

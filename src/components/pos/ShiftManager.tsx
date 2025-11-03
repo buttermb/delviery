@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Clock, Users, TrendingUp } from 'lucide-react';
+import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 
 interface Shift {
   id: string;
@@ -40,6 +41,9 @@ export function ShiftManager() {
   const [cashierName, setCashierName] = useState('');
   const [terminalId, setTerminalId] = useState('Terminal-1');
 
+  // Enable real-time updates for shifts and transactions
+  useRealtimeShifts(tenantId);
+
   // Get active shift
   const { data: activeShift, isLoading } = useQuery({
     queryKey: ['active-shift', tenantId],
@@ -59,7 +63,12 @@ export function ShiftManager() {
       return data as Shift | null;
     },
     enabled: !!tenantId,
+    refetchInterval: 30000, // Backup polling every 30s
   });
+
+  // Enable real-time updates for active shift transactions and cash drawer
+  useRealtimeTransactions(tenantId, activeShift?.id);
+  useRealtimeCashDrawer(activeShift?.id);
 
   // Get recent closed shifts
   const { data: recentShifts } = useQuery({
@@ -162,11 +171,17 @@ export function ShiftManager() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Active Shift: {activeShift.shift_number}</CardTitle>
-                <CardDescription>
-                  Started {new Date(activeShift.started_at).toLocaleString()}
-                </CardDescription>
+              <div className="flex items-center gap-3">
+                <div>
+                  <CardTitle>Active Shift: {activeShift.shift_number}</CardTitle>
+                  <CardDescription>
+                    Started {new Date(activeShift.started_at).toLocaleString()}
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="gap-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  Live
+                </Badge>
               </div>
               <Button onClick={() => setIsCloseShiftOpen(true)} variant="destructive">
                 Close Shift
