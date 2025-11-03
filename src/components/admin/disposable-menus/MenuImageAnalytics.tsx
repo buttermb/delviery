@@ -4,12 +4,22 @@ import { useMenuAnalytics, useProductImageAnalytics } from '@/hooks/useMenuAnaly
 import { Image, Eye, ZoomIn, ShoppingCart, TrendingUp, AlertCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
+import { AnalyticsExportButton } from './AnalyticsExportButton';
+import { AnalyticsDateRangePicker } from './AnalyticsDateRangePicker';
+import { useState } from 'react';
+import { DateRange } from 'react-day-picker';
+import { subDays } from 'date-fns';
 
 interface MenuImageAnalyticsProps {
   menuId: string;
 }
 
 export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
+  
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 
@@ -36,6 +46,18 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Filters and Export */}
+      <div className="flex flex-wrap items-center gap-4">
+        <AnalyticsDateRangePicker 
+          dateRange={dateRange} 
+          onDateRangeChange={setDateRange} 
+        />
+        <AnalyticsExportButton 
+          data={analytics} 
+          filename={`menu-analytics-${menuId}`} 
+        />
+      </div>
+
       {/* Overview Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
