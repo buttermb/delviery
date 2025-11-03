@@ -242,6 +242,20 @@ export const navigation: NavItem[] = [
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],
       },
+      { 
+        name: 'POS Shifts', 
+        href: '/admin/pos-shifts', 
+        icon: Clock,
+        iconSize: 'h-4 w-4',
+        roles: ['owner', 'manager'],
+      },
+      { 
+        name: 'Z-Reports', 
+        href: '/admin/z-reports', 
+        icon: FileText,
+        iconSize: 'h-4 w-4',
+        roles: ['owner', 'manager'],
+      },
     ],
   },
   {
