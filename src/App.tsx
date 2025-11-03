@@ -293,7 +293,6 @@ const App = () => {
                         {/* Tenant Admin Portal */}
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
-<<<<<<< HEAD
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
@@ -336,81 +335,42 @@ const App = () => {
                           <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
                           <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
                           <Route path="customer-insights" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerInsightsPage /></FeatureProtectedRoute>} />
-                          
-                          <Route path="dashboard" element={<TenantAdminDashboardPage />} />
-                          <Route path="billing" element={<TenantAdminBillingPage />} />
-                          <Route path="settings" element={<TenantAdminSettingsPage />} />
-                          
-                          {/* Built pages that were showing "Feature Locked" */}
-                          <Route path="live-orders" element={<LiveOrders />} />
-                          <Route path="team-members" element={<TeamManagement />} />
-                          <Route path="advanced-inventory" element={<InventoryManagement />} />
-                          <Route path="fronted-inventory" element={<FrontedInventory />} />
-                          <Route path="invoice-management" element={<CustomerInvoices />} />
-                          <Route path="fleet-management" element={<FleetManagement />} />
-                          <Route path="delivery-management" element={<DeliveryManagement />} />
-                          <Route path="live-map" element={<LiveMap />} />
-                          <Route path="pos-system" element={<PointOfSale />} />
-                          <Route path="locations" element={<LocationsManagement />} />
-                          
-                          {/* Hidden gems - existing pages not in config */}
-                          <Route path="live-chat" element={<AdminLiveChat />} />
-                          <Route path="admin-notifications" element={<AdminNotifications />} />
-                          <Route path="couriers" element={<Couriers />} />
-                          <Route path="customer-details/:id" element={<CustomerDetails />} />
-                          <Route path="customer-reports" element={<CustomerReports />} />
-                          <Route path="delivery-tracking" element={<DeliveryTracking />} />
-                          <Route path="dispatch-inventory" element={<DispatchInventory />} />
-                          <Route path="financial-center" element={<FinancialCenter />} />
-                          <Route path="fronted-inventory-analytics" element={<FrontedInventoryAnalytics />} />
-                          <Route path="global-search" element={<GlobalSearch />} />
-                          <Route path="risk-factors" element={<RiskFactorManagement />} />
                           <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                           <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
-                          <Route path="vendors" element={<VendorManagement />} />
                           <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
                           
-                          {/* Phase 2: Professional Tier Features */}
-                          <Route path="customer-analytics" element={<CustomerAnalytics />} />
-                          <Route path="commission-tracking" element={<CommissionTracking />} />
-                          <Route path="activity-logs" element={<ActivityLogs />} />
-                          <Route path="stock-alerts" element={<StockAlerts />} />
-                          <Route path="revenue-reports" element={<RevenueReports />} />
-                          <Route path="expense-tracking" element={<ExpenseTracking />} />
+                          {/* Professional Tier Features */}
+                          <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalytics /></FeatureProtectedRoute>} />
+                          {/* <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTracking /></FeatureProtectedRoute>} /> */}
+                          {/* <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogs /></FeatureProtectedRoute>} /> */}
+                          <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlerts /></FeatureProtectedRoute>} />
+                          <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReports /></FeatureProtectedRoute>} />
+                          <Route path="expense-tracking" element={<FeatureProtectedRoute featureId="expense-tracking"><ExpenseTracking /></FeatureProtectedRoute>} />
+                          <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagement /></FeatureProtectedRoute>} />
+                          <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfers /></FeatureProtectedRoute>} />
+                          {/* <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperations /></FeatureProtectedRoute>} /> */}
                           
-                          {/* Phase 3: Mid-Priority Professional Features */}
-                          <Route path="role-management" element={<RoleManagement />} />
-                          <Route path="inventory-transfers" element={<InventoryTransfers />} />
-                          <Route path="customer-insights/:id" element={<CustomerInsights />} />
-                          <Route path="bulk-operations" element={<BulkOperations />} />
-                          <Route path="notifications" element={<Notifications />} />
-                          
-                          {/* Phase 4: High-Priority Enterprise Features */}
-                          <Route path="route-optimization" element={<RouteOptimization />} />
-                          <Route path="delivery-analytics" element={<DeliveryAnalytics />} />
-                          <Route path="cash-register" element={<CashRegister />} />
-                          <Route path="api-access" element={<ApiAccess />} />
-                          <Route path="webhooks" element={<Webhooks />} />
-                          <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
-                          <Route path="realtime-dashboard" element={<RealtimeDashboard />} />
-                          
-                          {/* Phase 5: Medium-Priority Enterprise Features */}
-                          <Route path="custom-reports" element={<CustomReports />} />
-                          <Route path="data-export" element={<DataExport />} />
-                          <Route path="location-analytics" element={<LocationAnalytics />} />
-                          <Route path="user-management" element={<UserManagement />} />
-                          <Route path="permissions" element={<Permissions />} />
-                          
-                          {/* Phase 6: Final Enterprise Features */}
-                          <Route path="automation" element={<Automation />} />
-                          <Route path="white-label" element={<WhiteLabel />} />
-                          <Route path="custom-domain" element={<CustomDomain />} />
-                          <Route path="pos-analytics" element={<PosAnalytics />} />
-                          <Route path="custom-integrations" element={<CustomIntegrations />} />
-                          <Route path="audit-trail" element={<AuditTrail />} />
-                          <Route path="compliance" element={<Compliance />} />
-                          <Route path="priority-support" element={<PrioritySupport />} />
->>>>>>> a22140a (Fix missing update functionality in 5 admin pages)
+                          {/* Enterprise Features */}
+                          <Route path="route-optimization" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimization /></FeatureProtectedRoute>} />
+                          <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalytics /></FeatureProtectedRoute>} />
+                          {/* <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegister /></FeatureProtectedRoute>} /> */}
+                          {/* <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><ApiAccess /></FeatureProtectedRoute>} /> */}
+                          <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><Webhooks /></FeatureProtectedRoute>} />
+                          <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboard /></FeatureProtectedRoute>} />
+                          <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReports /></FeatureProtectedRoute>} />
+                          <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExport /></FeatureProtectedRoute>} />
+                          <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="user-management" element={<FeatureProtectedRoute featureId="user-management"><UserManagement /></FeatureProtectedRoute>} />
+                          <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><Permissions /></FeatureProtectedRoute>} />
+                          {/* <Route path="automation" element={<FeatureProtectedRoute featureId="automation"><Automation /></FeatureProtectedRoute>} /> */}
+                          <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabel /></FeatureProtectedRoute>} />
+                          <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomain /></FeatureProtectedRoute>} />
+                          <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><PosAnalytics /></FeatureProtectedRoute>} />
+                          <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrations /></FeatureProtectedRoute>} />
+                          {/* <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrail /></FeatureProtectedRoute>} /> */}
+                          {/* <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><Compliance /></FeatureProtectedRoute>} /> */}
+                          <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupport /></FeatureProtectedRoute>} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
