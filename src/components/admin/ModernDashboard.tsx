@@ -28,6 +28,7 @@ import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
 import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from './ActionableInsights';
+import { FrontedInventoryWidget } from './FrontedInventoryWidget';
 
 export function ModernDashboard() {
   const navigate = useNavigate();
@@ -174,6 +175,7 @@ export function ModernDashboard() {
 
         {/* Right Column - 1/3 */}
         <div className="space-y-6">
+          <FrontedInventoryWidget />
           <InventoryAlertsWidget />
           <ActivityFeedWidget />
         </div>

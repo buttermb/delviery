@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2 } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
+import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -101,6 +102,10 @@ export default function ClientDetail() {
             <h1 className="text-3xl font-bold text-foreground">{displayClient.business_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
+              <CustomerRiskBadge 
+                score={client.risk_score} 
+                showLabel={true}
+              />
               <span className="text-sm text-muted-foreground">{displayClient.address}</span>
               <span className="text-sm text-muted-foreground">Since: {displayClient.since}</span>
             </div>

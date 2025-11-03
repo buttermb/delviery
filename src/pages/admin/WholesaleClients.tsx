@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
+import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 
 export default function WholesaleClients() {
   const navigate = useNavigate();
@@ -225,21 +226,10 @@ export default function WholesaleClients() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.floor(client.reliability_score / 20)
-                              ? "fill-yellow-500 text-yellow-500"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        {client.reliability_score}%
-                      </span>
-                    </div>
+                    <CustomerRiskBadge 
+                      score={client.risk_score ?? client.reliability_score} 
+                      showLabel={true}
+                    />
                   </TableCell>
                   <TableCell>
                     <div>
