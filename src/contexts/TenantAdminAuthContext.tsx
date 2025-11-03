@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TenantAdmin {
   id: string;
@@ -43,6 +44,29 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync with Supabase auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.access_token) {
+          // Update tokens when Supabase refreshes them
+          const currentAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+          if (currentAccessToken !== session.access_token) {
+            setAccessToken(session.access_token);
+            setToken(session.access_token);
+            localStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
+            if (session.refresh_token) {
+              setRefreshToken(session.refresh_token);
+              localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+            }
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Initialize from localStorage
   useEffect(() => {
     const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -53,14 +77,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     if (storedAccessToken && storedRefreshToken && storedAdmin && storedTenant) {
       setAccessToken(storedAccessToken);
       setRefreshToken(storedRefreshToken);
-      setToken(storedAccessToken); // Backwards compatibility
+      setToken(storedAccessToken);
       try {
         setAdmin(JSON.parse(storedAdmin));
         setTenant(JSON.parse(storedTenant));
-        // Verify token is still valid
         verifyToken(storedAccessToken);
       } catch (e) {
-        // Invalid stored data, clear it
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem(ADMIN_KEY);

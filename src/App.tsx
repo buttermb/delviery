@@ -74,7 +74,6 @@ const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/Settings
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/Help"));
 
-<<<<<<< HEAD
 // Tenant Admin Feature Pages
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
@@ -160,6 +159,7 @@ const CustomIntegrations = lazy(() => import("./pages/admin/CustomIntegrations")
 const AuditTrail = lazy(() => import("./pages/admin/AuditTrail"));
 const Compliance = lazy(() => import("./pages/admin/Compliance"));
 const PrioritySupport = lazy(() => import("./pages/admin/PrioritySupport"));
+
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
