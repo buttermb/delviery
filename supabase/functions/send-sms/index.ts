@@ -105,7 +105,7 @@ serve(async (req) => {
 
     // Log message to database (if message_history table exists)
     try {
-      await supabase.from('message_history').insert({
+      const { error: logError } = await supabase.from('message_history').insert({
         tenant_id: accountId,
         customer_id: customerId,
         phone_number: formattedPhone,
@@ -115,12 +115,12 @@ serve(async (req) => {
         status: 'sent',
         external_id: twilioData.sid,
         created_at: new Date().toISOString(),
-      }).catch((err) => {
-        // Table might not exist, ignore error
-        if (err.code !== '42P01') {
-          console.error('Error logging message:', err);
-        }
       });
+      
+      // Table might not exist or other error, just log it
+      if (logError && logError.code !== '42P01') {
+        console.error('Error logging message:', logError);
+      }
     } catch (err) {
       // Ignore logging errors
       console.warn('Could not log message:', err);
