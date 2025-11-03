@@ -84,6 +84,40 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       });
 
       if (!response.ok) {
+        // If token verification fails with 401, try to refresh
+        if (response.status === 401) {
+          const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+          if (storedRefreshToken) {
+            try {
+              const refreshResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ refresh_token: storedRefreshToken }),
+              });
+
+              if (!refreshResponse.ok) {
+                throw new Error("Token refresh failed");
+              }
+
+              const refreshData = await refreshResponse.json();
+              
+              setAccessToken(refreshData.access_token);
+              setRefreshToken(refreshData.refresh_token);
+              setToken(refreshData.access_token);
+              
+              localStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
+              localStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
+              
+              setLoading(false);
+              return; // Successfully refreshed
+            } catch (refreshError) {
+              // If refresh also fails, clear everything
+              throw new Error("Token expired and refresh failed");
+            }
+          }
+        }
         throw new Error("Token verification failed");
       }
 
@@ -99,6 +133,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
     } catch (error) {
       console.error("Token verification error:", error);
+      // Clear all auth data
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(ADMIN_KEY);
