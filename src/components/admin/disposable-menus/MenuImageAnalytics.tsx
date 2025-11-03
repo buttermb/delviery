@@ -10,6 +10,8 @@ import { ComparisonMetricsCard } from './ComparisonMetricsCard';
 import { PerformanceTrendChart } from './PerformanceTrendChart';
 import { TopProductsRanking } from './TopProductsRanking';
 import { EngagementInsights } from './EngagementInsights';
+import { ViewingPatternHeatmap } from './ViewingPatternHeatmap';
+import { AdvancedAnalyticsFilters } from './AdvancedAnalyticsFilters';
 import { useState, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 import { subDays, format } from 'date-fns';
@@ -23,6 +25,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
+  const [filters, setFilters] = useState({});
   
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
@@ -141,15 +144,19 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   return (
     <div className="space-y-4">
       {/* Filters and Export */}
-      <div className="flex flex-wrap items-center gap-4">
-        <AnalyticsDateRangePicker 
-          dateRange={dateRange} 
-          onDateRangeChange={setDateRange} 
-        />
-        <AnalyticsExportButton 
-          data={analytics} 
-          filename={`menu-analytics-${menuId}`} 
-        />
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <AnalyticsDateRangePicker 
+            dateRange={dateRange} 
+            onDateRangeChange={setDateRange} 
+          />
+          <AnalyticsExportButton 
+            data={analytics} 
+            filename={`menu-analytics-${menuId}`} 
+          />
+        </div>
+        
+        <AdvancedAnalyticsFilters onFilterChange={setFilters} />
       </div>
 
       {/* Overview Cards */}
@@ -251,6 +258,9 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           <EngagementInsights insights={insights} />
         )}
       </div>
+
+      {/* Viewing Pattern Heatmap */}
+      <ViewingPatternHeatmap />
 
       {/* Product Performance Table */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
