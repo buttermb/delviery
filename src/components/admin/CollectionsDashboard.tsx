@@ -6,7 +6,7 @@ import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleDat
 import { format, differenceInDays } from "date-fns";
 import { useState } from "react";
 import { PaymentDialog } from "./PaymentDialog";
-import { SendSMS } from "@/components/admin/SendSMS";
+// SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showInfoToast } from "@/utils/toastHelpers";
 
@@ -212,15 +212,10 @@ export function CollectionsDashboard() {
             <DialogHeader>
               <DialogTitle>Send SMS to {smsClient.business_name || smsClient.contact_name}</DialogTitle>
             </DialogHeader>
-            <SendSMS
-              customerId={smsClient.id}
-              customerPhone={smsClient.phone}
-              customerName={smsClient.business_name || smsClient.contact_name}
-              onSent={() => {
-                setSmsDialogOpen(false);
-                setSmsClient(null);
-              }}
-            />
+            {/* SendSMS removed per plan - can be re-added if needed */}
+            <div className="p-4 text-center text-muted-foreground">
+              SMS functionality temporarily unavailable
+            </div>
           </DialogContent>
         </Dialog>
       )}

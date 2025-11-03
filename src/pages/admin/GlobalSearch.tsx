@@ -202,7 +202,7 @@ const GlobalSearch = () => {
                           </p>
                           <div className="flex gap-4 text-xs text-muted-foreground">
                             <span>${product.price}</span>
-                            <span>Stock: {product.stock || 0}</span>
+                            <span>Stock: {product.stock_quantity || 0}</span>
                             {product.average_rating && <span>⭐ {product.average_rating.toFixed(1)}</span>}
                           </div>
                         </div>

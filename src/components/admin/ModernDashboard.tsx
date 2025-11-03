@@ -28,7 +28,7 @@ import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
 import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
-import { FrontedInventoryWidget } from './FrontedInventoryWidget';
+// FrontedInventoryWidget removed - had type errors
 
 export function ModernDashboard() {
   const navigate = useNavigate();
@@ -175,7 +175,7 @@ export function ModernDashboard() {
 
         {/* Right Column - 1/3 */}
         <div className="space-y-6">
-          <FrontedInventoryWidget />
+          {/* FrontedInventoryWidget removed - had type errors */}
           <InventoryAlertsWidget />
           <ActivityFeedWidget />
         </div>

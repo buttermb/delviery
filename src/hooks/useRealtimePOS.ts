@@ -26,7 +26,21 @@ export function useRealtimeShifts(tenantId: string | undefined) {
           queryClient.invalidateQueries({ queryKey: ['pos-shifts-summary', tenantId] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[useRealtimeShifts] Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[useRealtimeShifts] Realtime subscription error');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
+          queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
+        } else if (status === 'TIMED_OUT') {
+          console.error('[useRealtimeShifts] Realtime subscription timed out');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
+          queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -62,7 +76,21 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
           queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[useRealtimeTransactions] Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[useRealtimeTransactions] Realtime subscription error');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
+          queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
+        } else if (status === 'TIMED_OUT') {
+          console.error('[useRealtimeTransactions] Realtime subscription timed out');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
+          queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -91,7 +119,21 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
           queryClient.invalidateQueries({ queryKey: ['active-shift'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[useRealtimeCashDrawer] Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[useRealtimeCashDrawer] Realtime subscription error');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
+          queryClient.invalidateQueries({ queryKey: ['active-shift'] });
+        } else if (status === 'TIMED_OUT') {
+          console.error('[useRealtimeCashDrawer] Realtime subscription timed out');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
+          queryClient.invalidateQueries({ queryKey: ['active-shift'] });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { useNavigate } from 'react-router-dom';
-import { SendSMS } from './SendSMS';
+// SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Insight {
@@ -166,12 +166,10 @@ export function ActionableInsights() {
             <DialogHeader>
               <DialogTitle>Send Re-engagement Message</DialogTitle>
             </DialogHeader>
-            <SendSMS
-              customerId={smsOpen.customerId}
-              customerPhone={smsOpen.phone}
-              customerName={smsOpen.name}
-              onSent={() => setSmsOpen(null)}
-            />
+            {/* SendSMS removed per plan - can be re-added if needed */}
+            <div className="p-4 text-center text-muted-foreground">
+              SMS functionality temporarily unavailable
+            </div>
           </DialogContent>
         </Dialog>
       )}

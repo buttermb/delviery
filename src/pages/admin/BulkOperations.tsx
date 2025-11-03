@@ -111,7 +111,7 @@ export default function BulkOperations() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, price, stock, status, tags')
+          .select('id, name, price, stock_quantity, status, tags')
           .eq('tenant_id', tenantId)
           .order('name');
         
@@ -150,7 +150,7 @@ export default function BulkOperations() {
           }
           break;
         case 'update-stock':
-          updates.stock = params.stockChange;
+          updates.stock_quantity = params.stockChange;
           break;
         case 'apply-tags':
           if (params.tagAction === 'add') {
@@ -411,7 +411,7 @@ export default function BulkOperations() {
                     <p className="font-medium">{product.name}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>Price: ${product.price || 0}</span>
-                      <span>Stock: {product.stock || 0}</span>
+                      <span>Stock: {product.stock_quantity || 0}</span>
                       <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
                         {product.status || 'active'}
                       </Badge>

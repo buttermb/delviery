@@ -9,7 +9,7 @@ import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
-import { SendSMS } from "@/components/admin/SendSMS";
+// SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
@@ -388,12 +388,10 @@ export default function ClientDetail() {
           <DialogHeader>
             <DialogTitle>Send SMS to {displayClient.business_name}</DialogTitle>
           </DialogHeader>
-          <SendSMS
-            customerId={client?.id}
-            customerPhone={displayClient.phone}
-            customerName={displayClient.business_name}
-            onSent={() => setSmsDialogOpen(false)}
-          />
+          {/* SendSMS removed per plan - can be re-added if needed */}
+          <div className="p-4 text-center text-muted-foreground">
+            SMS functionality temporarily unavailable
+          </div>
         </DialogContent>
       </Dialog>
     </div>

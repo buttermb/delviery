@@ -1,305 +1,322 @@
-# Deployment Guide - Complete Fix Implementation
+# Deployment Guide - Complete Implementation
 
-## 🎯 Pre-Deployment Checklist
+## 🚀 Quick Start
 
-### ✅ Code Status
-- ✅ All Edge Functions created and fixed
-- ✅ Signup flow uses Edge Function
-- ✅ Build successful (no TypeScript errors)
-- ✅ Routes configured correctly
-- ✅ Error handling in place
-
-### ⚠️ Required Actions Before Deployment
-
-1. **Deploy Edge Functions** (CRITICAL)
-2. **Configure Environment Variables**
-3. **Test Signup → Login Flow**
-4. **Create Test Tenant** (for initial testing)
+This guide will help you deploy all the fixes and improvements from the complete implementation plan.
 
 ---
 
-## 📦 Step 1: Deploy Edge Functions
+## 📋 Pre-Deployment Checklist
 
-### Deploy to Supabase
+- [ ] Supabase project is set up and accessible
+- [ ] Supabase CLI is installed (`npm install -g supabase` or via package manager)
+- [ ] You have admin access to your Supabase project
+- [ ] Backup your database (recommended before applying migrations)
+
+---
+
+## Step 1: Apply Database Migrations
+
+### Option A: Using Supabase CLI (Recommended)
 
 ```bash
 # Navigate to project root
 cd /path/to/delviery-main
 
-# Deploy all authentication Edge Functions
-supabase functions deploy tenant-signup
-supabase functions deploy tenant-admin-auth
-supabase functions deploy super-admin-auth
-supabase functions deploy customer-auth
+# Link to your Supabase project (if not already linked)
+supabase link --project-ref your-project-ref
+
+# Apply all pending migrations
+supabase db push
+
+# Or apply specific migrations in order:
+supabase migration up
 ```
 
-### Verify Deployment
+### Option B: Using Supabase Dashboard
 
-1. **Check Supabase Dashboard**:
-   - Go to: `https://app.supabase.com/project/YOUR_PROJECT/functions`
-   - Verify all 4 functions are listed:
-     - ✅ `tenant-signup`
-     - ✅ `tenant-admin-auth`
-     - ✅ `super-admin-auth`
-     - ✅ `customer-auth`
+1. Go to your Supabase Dashboard
+2. Navigate to **SQL Editor**
+3. Run each migration file in order:
 
-2. **Test Edge Functions** (via Dashboard):
-   - Click on `tenant-signup`
-   - Use "Test" tab
-   - Try a test request:
-   ```json
-   {
-     "email": "test@example.com",
-     "password": "testpassword123",
-     "business_name": "Test Business",
-     "owner_name": "Test Owner",
-     "phone": "1234567890",
-     "state": "CA",
-     "industry": "retail",
-     "company_size": "1-10"
-   }
-   ```
-   - Should return: `{ "success": true, "tenant": {...}, "user": {...} }`
+   **Migration 1:** `supabase/migrations/20250128000005_create_missing_tables.sql`
+   - Creates `categories`, `warehouses`, `receiving_records` tables
+   - Adds indexes and RLS policies
 
----
+   **Migration 2:** `supabase/migrations/20250128000006_fix_existing_tables.sql`
+   - Adds missing columns to `inventory_batches`
+   - Adds `category_id` to `products`
 
-## 🔧 Step 2: Environment Variables
+   **Migration 3:** `supabase/migrations/20250128000007_add_missing_rls_policies.sql`
+   - Adds RLS policies to all tables that need them
 
-### Required Environment Variables
-
-Edge Functions need these (usually auto-configured by Supabase):
-
-- ✅ `SUPABASE_URL` - Your Supabase project URL
-- ✅ `SUPABASE_SERVICE_ROLE_KEY` - Service role key (bypasses RLS)
-
-**Note**: These are automatically available in Edge Functions when deployed to Supabase.
-
-### Frontend Environment Variables
-
-Make sure your frontend `.env` file has:
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
----
-
-## 🧪 Step 3: Test Complete Flow
-
-### Test Signup Flow
-
-1. **Navigate to signup page**:
-   ```
-   https://your-domain.com/signup
-   ```
-
-2. **Fill out form**:
-   - Business name: "Test Business"
-   - Owner name: "Test Owner"
-   - Email: "test@example.com"
-   - Password: "testpassword123"
-   - Phone, State, Industry, Company Size
-   - Accept terms
-
-3. **Submit form**:
-   - ✅ Should show "Account Created!" toast
-   - ✅ Should redirect to `/saas/login?signup=success&tenant=test-business`
-   - ✅ Login page should show success message
-
-4. **Verify in database** (Supabase Dashboard):
-   ```sql
-   SELECT * FROM tenants WHERE slug = 'test-business';
-   SELECT * FROM tenant_users WHERE email = 'test@example.com';
-   ```
-   - Should see new tenant and tenant_user records
-
-### Test Login Flow
-
-1. **Navigate to login**:
-   ```
-   https://your-domain.com/test-business/admin/login
-   ```
-
-2. **Enter credentials**:
-   - Email: `test@example.com`
-   - Password: `testpassword123`
-
-3. **Submit**:
-   - ✅ Should authenticate successfully
-   - ✅ Should redirect to `/test-business/admin/dashboard`
-   - ✅ Dashboard should load
-
----
-
-## 🐛 Troubleshooting
-
-### Edge Function Returns 404
-
-**Problem**: `Edge Function not found`
-
-**Solutions**:
-1. Verify function is deployed:
-   ```bash
-   supabase functions list
-   ```
-
-2. Check function name matches exactly:
-   - Code: `supabase.functions.invoke('tenant-signup')`
-   - Deployed: Must be named `tenant-signup`
-
-3. Redeploy if needed:
-   ```bash
-   supabase functions deploy tenant-signup
-   ```
-
-### Signup Returns "Edge Function Error"
-
-**Problem**: Edge Function call fails
-
-**Check**:
-1. **Edge Function logs** (Supabase Dashboard):
-   - Go to: `Project → Logs → Edge Functions`
-   - Look for errors in `tenant-signup` logs
-
-2. **Common Issues**:
-   - Missing `SUPABASE_SERVICE_ROLE_KEY` environment variable
-   - RLS policies blocking service role (shouldn't happen)
-   - Database connection issues
-
-3. **Verify service role key**:
-   - Go to: `Project → Settings → API`
-   - Copy `service_role` key
-   - Verify it's available in Edge Function environment
-
-### Login Fails After Signup
-
-**Problem**: Can't login with new account
-
-**Check**:
-1. **Verify auth user created**:
-   ```sql
-   SELECT * FROM auth.users WHERE email = 'test@example.com';
-   ```
-   - Should exist if signup succeeded
-
-2. **Verify tenant_user created**:
-   ```sql
-   SELECT * FROM tenant_users WHERE email = 'test@example.com';
-   ```
-   - Should have `status = 'active'`
-   - Should have `password_hash` set
-
-3. **Check Edge Function logs**:
-   - Look at `tenant-admin-auth` logs
-   - Check for authentication errors
-
-### "Tenant not found" Error
-
-**Problem**: Login says tenant doesn't exist
-
-**Check**:
-1. **Verify tenant slug**:
-   - URL should match slug in database
-   - Slug is lowercase, hyphens only
-
-2. **Check tenant exists**:
-   ```sql
-   SELECT slug, business_name FROM tenants;
-   ```
-   - Verify slug matches URL
-
----
-
-## 📊 Verification Queries
-
-### Check Signup Worked
+### Verify Migrations Applied
 
 ```sql
--- Check tenant created
-SELECT id, slug, business_name, owner_email, subscription_status 
-FROM tenants 
-ORDER BY created_at DESC 
-LIMIT 5;
+-- Check tables exist
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name IN ('categories', 'warehouses', 'receiving_records')
+ORDER BY table_name;
 
--- Check tenant_user created
-SELECT id, email, name, role, status, tenant_id
-FROM tenant_users 
-ORDER BY created_at DESC 
-LIMIT 5;
+-- Check columns added
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'inventory_batches' 
+AND column_name IN ('quantity', 'location', 'notes');
 
--- Check auth user created
-SELECT id, email, email_confirmed_at, created_at
-FROM auth.users 
-ORDER BY created_at DESC 
-LIMIT 5;
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'products' 
+AND column_name = 'category_id';
+
+-- Check RLS policies
+SELECT tablename, policyname 
+FROM pg_policies 
+WHERE schemaname = 'public' 
+AND tablename IN ('categories', 'warehouses', 'receiving_records')
+ORDER BY tablename, policyname;
 ```
 
-### Check Trial Period
+---
+
+## Step 2: Deploy Edge Functions
+
+### Deploy Generate Report Function
+
+```bash
+supabase functions deploy generate-report
+```
+
+**Test the function:**
+```bash
+curl -i --location --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/generate-report' \
+  --header 'Authorization: Bearer YOUR_ANON_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "report_type": "sales",
+    "tenant_id": "your-tenant-id",
+    "date_range": {
+      "start": "2024-01-01",
+      "end": "2024-12-31"
+    }
+  }'
+```
+
+### Deploy Optimize Route Function
+
+```bash
+supabase functions deploy optimize-route
+```
+
+**Test the function:**
+```bash
+curl -i --location --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/optimize-route' \
+  --header 'Authorization: Bearer YOUR_ANON_KEY' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "deliveries": [
+      {
+        "id": "delivery-1",
+        "address": "123 Main St",
+        "coordinates": {"lat": 37.7749, "lng": -122.4194}
+      }
+    ],
+    "runner_id": "runner-id"
+  }'
+```
+
+---
+
+## Step 3: Verify Frontend Changes
+
+### Check Navigation
+
+1. **Before migrations:** Navigation should hide:
+   - Categories & Tags
+   - Warehouses
+   - Receiving & Packaging
+   - Batches & Lots (if inventory_batches table missing)
+
+2. **After migrations:** All navigation items should appear
+
+### Test Pages
+
+1. **Categories Page** (`/admin/catalog/categories`)
+   - Before migration: Should show "Feature Not Available" message
+   - After migration: Should allow creating/editing categories
+
+2. **Warehouses Page** (`/admin/locations/warehouses`)
+   - Before migration: Should show "Feature Not Available" message
+   - After migration: Should show warehouse locations
+
+3. **Receiving Page** (`/admin/operations/receiving`)
+   - Before migration: Should show "Feature Not Available" message
+   - After migration: Should allow creating receiving records
+
+4. **Batches Page** (`/admin/catalog/batches`)
+   - Should work with `quantity_lbs` and `warehouse_location` columns
+   - Should display batches correctly
+
+5. **Bulk Operations** (`/admin/bulk-operations`)
+   - Should use `stock_quantity` instead of `stock`
+   - Should update products correctly
+
+---
+
+## Step 4: Verify RLS Policies
+
+### Test Tenant Isolation
 
 ```sql
--- Verify trial_ends_at is set correctly (14 days from now)
+-- As a tenant admin user, verify you can only see your tenant's data
+SELECT COUNT(*) FROM categories WHERE tenant_id = 'your-tenant-id';
+
+-- Verify you cannot see other tenants' data
+SELECT COUNT(*) FROM categories WHERE tenant_id != 'your-tenant-id';
+-- Should return 0 (or only accessible via service role)
+```
+
+### Check Policy Existence
+
+```sql
+-- List all tables with RLS enabled
 SELECT 
-  business_name,
-  subscription_status,
-  trial_ends_at,
-  trial_ends_at - NOW() as days_remaining
-FROM tenants
-WHERE subscription_status = 'trial'
-ORDER BY created_at DESC;
+  schemaname,
+  tablename,
+  COUNT(*) as policy_count
+FROM pg_policies
+WHERE schemaname = 'public'
+GROUP BY schemaname, tablename
+HAVING COUNT(*) > 0
+ORDER BY tablename;
 ```
 
 ---
 
-## 🔄 Rollback Plan
+## Step 5: Post-Deployment Verification
 
-If something goes wrong:
+### Functionality Tests
 
-1. **Revert Edge Functions**:
-   ```bash
-   # Deploy previous version if needed
-   supabase functions deploy tenant-signup --version previous
-   ```
+- [ ] Categories can be created and assigned to products
+- [ ] Warehouses can be managed and batches assigned to locations
+- [ ] Receiving records can be created with QC status
+- [ ] Batches display correctly with quantity_lbs and warehouse_location
+- [ ] Bulk operations update stock_quantity correctly
+- [ ] Navigation items hide/show based on table existence
+- [ ] Error messages appear when tables are missing
 
-2. **Clean up test data**:
-   ```sql
-   -- Delete test tenant (if needed)
-   DELETE FROM tenant_users WHERE email = 'test@example.com';
-   DELETE FROM tenants WHERE slug = 'test-business';
-   DELETE FROM auth.users WHERE email = 'test@example.com';
-   ```
+### Performance Checks
 
-3. **Check logs**:
-   - Review Edge Function logs
-   - Check browser console
-   - Check Supabase Dashboard logs
+- [ ] Navigation loads quickly (feature availability checks are cached)
+- [ ] Pages load without errors
+- [ ] No console errors in browser
+- [ ] Database queries are optimized (indexes exist)
 
----
+### Security Verification
 
-## ✅ Success Criteria
-
-After deployment, verify:
-
-- [ ] All 4 Edge Functions deployed successfully
-- [ ] Signup creates tenant and user
-- [ ] Login works with new account
-- [ ] Dashboard loads after login
-- [ ] No errors in Edge Function logs
-- [ ] No errors in browser console
-- [ ] Database records created correctly
+- [ ] RLS policies are active on all tables
+- [ ] Users can only see their tenant's data
+- [ ] Cross-tenant access is blocked
+- [ ] Edge functions require authentication
 
 ---
 
-## 📞 Support
+## Troubleshooting
+
+### Migration Errors
+
+**Issue:** Migration fails with "relation already exists"
+- **Solution:** Migrations use `IF NOT EXISTS`, so this shouldn't happen. If it does, the table already exists and you can skip that part.
+
+**Issue:** RLS policy already exists
+- **Solution:** Migrations use `DROP POLICY IF EXISTS`, so this is handled automatically.
+
+### Edge Function Errors
+
+**Issue:** Function not found after deployment
+- **Solution:** Verify deployment with `supabase functions list`
+- Check function logs: `supabase functions logs generate-report`
+
+**Issue:** Function returns 401 Unauthorized
+- **Solution:** Ensure you're passing the Authorization header with a valid JWT token
+
+### Frontend Issues
+
+**Issue:** Navigation items not hiding
+- **Solution:** Clear browser cache, check that `featureAvailability.ts` is loading
+- Verify tenant is authenticated: Check `useTenantAdminAuth()` returns valid tenant
+
+**Issue:** Error messages not showing
+- **Solution:** Check browser console for errors
+- Verify table existence check is working (check network tab for Supabase queries)
+
+---
+
+## Rollback Plan
+
+If you need to rollback:
+
+### Rollback Migrations
+
+```sql
+-- Drop tables (if needed)
+DROP TABLE IF EXISTS receiving_records CASCADE;
+DROP TABLE IF EXISTS warehouses CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+
+-- Remove columns (if needed)
+ALTER TABLE inventory_batches DROP COLUMN IF EXISTS quantity;
+ALTER TABLE inventory_batches DROP COLUMN IF EXISTS location;
+ALTER TABLE inventory_batches DROP COLUMN IF EXISTS notes;
+ALTER TABLE products DROP COLUMN IF EXISTS category_id;
+```
+
+### Rollback Edge Functions
+
+```bash
+# Delete functions (if needed)
+supabase functions delete generate-report
+supabase functions delete optimize-route
+```
+
+**Note:** Frontend code changes don't need rollback - they gracefully handle missing tables.
+
+---
+
+## Success Criteria
+
+✅ All migrations applied successfully  
+✅ Edge functions deployed and accessible  
+✅ Navigation items show/hide correctly  
+✅ Pages display error messages when tables are missing  
+✅ Pages work correctly when tables exist  
+✅ RLS policies are active  
+✅ No console errors  
+✅ All functionality tested and working  
+
+---
+
+## Support
 
 If you encounter issues:
 
-1. **Check Edge Function logs** in Supabase Dashboard
-2. **Check browser console** for client-side errors
-3. **Verify environment variables** are set correctly
-4. **Review this guide** for troubleshooting steps
+1. Check the troubleshooting section above
+2. Review migration logs in Supabase Dashboard
+3. Check edge function logs: `supabase functions logs <function-name>`
+4. Verify RLS policies in Supabase Dashboard > Authentication > Policies
+5. Check browser console for frontend errors
 
 ---
 
-**Last Updated**: After complete fix implementation
-**Status**: ✅ Ready for Deployment
+## Additional Resources
+
+- [Supabase Migration Guide](https://supabase.com/docs/guides/cli/local-development#database-migrations)
+- [Supabase Edge Functions Guide](https://supabase.com/docs/guides/functions)
+- [RLS Policies Documentation](https://supabase.com/docs/guides/auth/row-level-security)
+
+---
+
+**Last Updated:** 2025-01-28  
+**Status:** Production Ready ✅

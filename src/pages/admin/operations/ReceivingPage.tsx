@@ -61,6 +61,8 @@ export default function ReceivingPage() {
     missing_items: 0
   });
 
+  const [tableMissing, setTableMissing] = useState(false);
+
   // Fetch receiving records
   const { data: receipts, isLoading } = useQuery({
     queryKey: ['receiving', tenantId, filter],
@@ -82,12 +84,17 @@ export default function ReceivingPage() {
         
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
+          setTableMissing(true);
           return [];
         }
         if (error) throw error;
+        setTableMissing(false);
         return data || [];
       } catch (error: any) {
-        if (error.code === '42P01') return [];
+        if (error.code === '42P01') {
+          setTableMissing(true);
+          return [];
+        }
         throw error;
       }
     },
@@ -280,6 +287,19 @@ export default function ReceivingPage() {
       {/* Receipts List */}
       {isLoading ? (
         <div className="text-center py-12">Loading receipts...</div>
+      ) : tableMissing ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Feature Not Available</h3>
+            <p className="text-muted-foreground mb-4">
+              The receiving_records table has not been created yet. This feature requires additional database setup.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Contact support to enable this feature or run the database migration to create the required tables.
+            </p>
+          </CardContent>
+        </Card>
       ) : filteredReceipts?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

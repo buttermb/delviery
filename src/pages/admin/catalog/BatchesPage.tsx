@@ -45,12 +45,14 @@ export default function BatchesPage() {
   const [newBatch, setNewBatch] = useState({
     batch_number: '',
     product_id: '',
-    quantity: 0,
+    quantity_lbs: 0,
     received_date: new Date().toISOString().split('T')[0],
     expiration_date: '',
-    location: '',
+    warehouse_location: '',
     notes: ''
   });
+
+  const [tableMissing, setTableMissing] = useState(false);
 
   // Fetch batches
   const { data: batches, isLoading } = useQuery({
@@ -70,12 +72,17 @@ export default function BatchesPage() {
         
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
+          setTableMissing(true);
           return [];
         }
         if (error) throw error;
+        setTableMissing(false);
         return data || [];
       } catch (error: any) {
-        if (error.code === '42P01') return [];
+        if (error.code === '42P01') {
+          setTableMissing(true);
+          return [];
+        }
         throw error;
       }
     },
@@ -129,10 +136,10 @@ export default function BatchesPage() {
       setNewBatch({
         batch_number: '',
         product_id: '',
-        quantity: 0,
+        quantity_lbs: 0,
         received_date: new Date().toISOString().split('T')[0],
         expiration_date: '',
-        location: '',
+        warehouse_location: '',
         notes: ''
       });
     },
@@ -193,7 +200,7 @@ export default function BatchesPage() {
   const totalBatches = batches?.length || 0;
   const expiringBatches = batches?.filter(b => isExpiringSoon(b.expiration_date) && !isExpired(b.expiration_date)).length || 0;
   const expiredBatches = batches?.filter(b => isExpired(b.expiration_date)).length || 0;
-  const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity || 0), 0) || 0;
+  const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity_lbs || 0), 0) || 0;
 
   return (
     <div className="space-y-6 p-6">
@@ -257,6 +264,19 @@ export default function BatchesPage() {
       {/* Batches Table */}
       {isLoading ? (
         <div className="text-center py-12">Loading batches...</div>
+      ) : tableMissing ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Feature Not Available</h3>
+            <p className="text-muted-foreground mb-4">
+              The inventory_batches table has not been created yet. This feature requires additional database setup.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Contact support to enable this feature or run the database migration to create the required tables.
+            </p>
+          </CardContent>
+        </Card>
       ) : filteredBatches?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
@@ -306,7 +326,7 @@ export default function BatchesPage() {
                           <Package className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-muted-foreground">Quantity</p>
-                            <p className="font-medium">{batch.quantity} lbs</p>
+                            <p className="font-medium">{batch.quantity_lbs || 0} lbs</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -331,7 +351,7 @@ export default function BatchesPage() {
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-muted-foreground">Location</p>
-                            <p className="font-medium">{batch.location || 'N/A'}</p>
+                            <p className="font-medium">{batch.warehouse_location || 'N/A'}</p>
                           </div>
                         </div>
                       </div>
@@ -390,8 +410,8 @@ export default function BatchesPage() {
                 id="quantity"
                 type="number"
                 placeholder="10"
-                value={newBatch.quantity || ''}
-                onChange={(e) => setNewBatch({ ...newBatch, quantity: parseInt(e.target.value) || 0 })}
+                value={newBatch.quantity_lbs || ''}
+                onChange={(e) => setNewBatch({ ...newBatch, quantity_lbs: parseInt(e.target.value) || 0 })}
               />
             </div>
 
@@ -421,8 +441,8 @@ export default function BatchesPage() {
               <Input
                 id="location"
                 placeholder="Warehouse A, Shelf 3"
-                value={newBatch.location}
-                onChange={(e) => setNewBatch({ ...newBatch, location: e.target.value })}
+                value={newBatch.warehouse_location}
+                onChange={(e) => setNewBatch({ ...newBatch, warehouse_location: e.target.value })}
               />
             </div>
 
@@ -445,7 +465,7 @@ export default function BatchesPage() {
             </Button>
             <Button
               onClick={() => createBatch.mutate(newBatch)}
-              disabled={!newBatch.batch_number || !newBatch.product_id || !newBatch.quantity || createBatch.isPending}
+              disabled={!newBatch.batch_number || !newBatch.product_id || !newBatch.quantity_lbs || createBatch.isPending}
             >
               Create Batch
             </Button>

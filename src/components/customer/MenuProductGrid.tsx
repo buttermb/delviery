@@ -13,7 +13,8 @@ interface Product {
   price: number;
   image_url?: string;
   available: boolean;
-  stock: number;
+  stock?: number; // Legacy field, prefer stock_quantity
+  stock_quantity?: number;
   min_quantity: number;
   type?: string;
   thc_content?: string;
@@ -72,7 +73,7 @@ export const MenuProductGrid = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => {
           const qty = quantities[product.id] || product.min_quantity;
-          const isValidQty = qty >= product.min_quantity && qty <= product.stock;
+          const isValidQty = qty >= product.min_quantity && qty <= (product.stock_quantity || 0);
 
           return (
             <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -112,11 +113,11 @@ export const MenuProductGrid = ({
                     <span className="text-muted-foreground ml-1">/lb</span>
                   </div>
                   {showAvailability && (
-                    <Badge variant={product.available && product.stock > 10 ? 'default' : 'secondary'}>
+                    <Badge variant={product.available && (product.stock_quantity || 0) > 10 ? 'default' : 'secondary'}>
                       {product.available ? (
                         <>
                           <Package className="h-3 w-3 mr-1" />
-                          {product.stock} lbs
+                          {product.stock_quantity || 0} lbs
                         </>
                       ) : (
                         'Out of Stock'
@@ -139,7 +140,7 @@ export const MenuProductGrid = ({
                     <Input
                       type="number"
                       min={product.min_quantity}
-                      max={product.stock}
+                      max={product.stock_quantity || product.stock || 0}
                       value={qty}
                       onChange={(e) => handleQuantityChange(product.id, e.target.value)}
                       disabled={!product.available}

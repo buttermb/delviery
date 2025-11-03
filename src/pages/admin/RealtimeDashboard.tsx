@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { BetterEmptyState } from '@/components/BetterEmptyState';
 export default function RealtimeDashboard() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
   const [liveOrders, setLiveOrders] = useState<any[]>([]);
 
   const { data: stats, isLoading } = useQuery({
@@ -78,12 +79,24 @@ export default function RealtimeDashboard() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[RealtimeDashboard] Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[RealtimeDashboard] Realtime subscription error');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
+        } else if (status === 'TIMED_OUT') {
+          console.error('[RealtimeDashboard] Realtime subscription timed out');
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tenantId]);
+  }, [tenantId, queryClient]);
 
   if (isLoading) {
     return (

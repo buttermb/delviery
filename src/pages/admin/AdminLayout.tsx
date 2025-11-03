@@ -13,9 +13,7 @@ import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCen
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
-import { CommandPalette } from "@/components/admin/CommandPalette";
 import { MobileNav } from "@/components/admin/MobileNav";
-import { PanicButton } from "@/components/admin/PanicButton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,9 +90,6 @@ const AdminLayout = () => {
               </nav>
               
               <div className="flex items-center gap-4">
-                <div className="flex-1 max-w-md">
-                  <CommandPalette />
-                </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -149,11 +144,6 @@ const AdminLayout = () => {
                 ))}
               </nav>
               
-              {/* Command Palette */}
-              <div className="hidden md:flex flex-1 max-w-md ml-auto">
-                <CommandPalette />
-              </div>
-              
               {/* Header Actions */}
               <div className="flex items-center gap-2 ml-auto md:ml-0">
                 <TooltipProvider>
@@ -185,9 +175,6 @@ const AdminLayout = () => {
 
       {/* Mobile bottom navigation */}
       <MobileBottomNav />
-      
-      {/* Panic button */}
-      <PanicButton />
       
       {/* PWA install */}
       <InstallPWA />

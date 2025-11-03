@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Warehouse, MapPin, Package, DollarSign } from 'lucide-react';
+import { Plus, Warehouse, MapPin, Package, DollarSign, AlertTriangle } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -51,6 +51,8 @@ export default function WarehousesPage() {
     address: '',
   });
 
+  const [tableMissing, setTableMissing] = useState(false);
+
   const { data: warehouses, isLoading } = useQuery({
     queryKey: ['warehouses', tenantId],
     queryFn: async () => {
@@ -65,9 +67,11 @@ export default function WarehousesPage() {
 
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
+          setTableMissing(true);
           return [];
         }
         if (error) throw error;
+        setTableMissing(false);
 
         const warehouseMap = new Map<string, WarehouseLocation>();
 
@@ -91,7 +95,10 @@ export default function WarehousesPage() {
           a.location.localeCompare(b.location)
         );
       } catch (error: any) {
-        if (error.code === '42P01') return [];
+        if (error.code === '42P01') {
+          setTableMissing(true);
+          return [];
+        }
         throw error;
       }
     },
@@ -255,14 +262,29 @@ export default function WarehousesPage() {
         </Dialog>
       </div>
 
-      <Card className="p-6">
-        <DataTable
-          columns={columns}
-          data={warehouses || []}
-          loading={isLoading}
-          emptyMessage="No warehouses found. Add your first warehouse location!"
-        />
-      </Card>
+      {tableMissing ? (
+        <Card className="p-6">
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Feature Not Available</h3>
+            <p className="text-muted-foreground mb-4">
+              The warehouses table has not been created yet. This feature requires additional database setup.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Contact support to enable this feature or run the database migration to create the required tables.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="p-6">
+          <DataTable
+            columns={columns}
+            data={warehouses || []}
+            loading={isLoading}
+            emptyMessage="No warehouses found. Add your first warehouse location!"
+          />
+        </Card>
+      )}
 
       {/* Warehouse Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

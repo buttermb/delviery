@@ -130,7 +130,17 @@ export default function LiveMap() {
           loadCourierLocations();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[LiveMap] Realtime subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[LiveMap] Realtime subscription error, retrying...');
+          setTimeout(() => loadCourierLocations(), 5000);
+        } else if (status === 'TIMED_OUT') {
+          console.error('[LiveMap] Realtime subscription timed out');
+          loadCourierLocations();
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
