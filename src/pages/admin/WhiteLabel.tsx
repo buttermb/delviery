@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -29,48 +29,64 @@ export default function WhiteLabel() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      try {
-        const { data, error } = await supabase
-          .from('white_label_settings' as any)
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .single();
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('white_label')
+        .eq('id', tenantId)
+        .single();
 
-        if (error && error.code === '42P01') return null;
-        if (error && error.code === 'PGRST116') return null; // Not found
-        if (error) throw error;
-        return data;
-      } catch (error: any) {
-        if (error.code === '42P01' || error.code === 'PGRST116') return null;
-        throw error;
-      }
+      if (error) throw error;
+      
+      // Extract and return the white_label JSONB data
+      return data?.white_label || null;
     },
     enabled: !!tenantId,
   });
+
+  // Initialize form data when branding data loads
+  useEffect(() => {
+    if (branding && typeof branding === 'object' && !Array.isArray(branding)) {
+      const data = branding as any;
+      setFormData({
+        brand_name: data.brand_name || '',
+        logo_url: data.logo || data.logo_url || '',
+        primary_color: data.theme?.primaryColor || data.primary_color || '#000000',
+        secondary_color: data.theme?.secondaryColor || data.secondary_color || '#ffffff',
+        custom_css: data.theme?.customCSS || data.custom_css || '',
+        enabled: data.enabled || false,
+      });
+    }
+  }, [branding]);
 
   const updateBrandingMutation = useMutation({
     mutationFn: async (brandingData: any) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
+      // Structure the JSONB data according to the schema
+      const whiteLabelData = {
+        enabled: brandingData.enabled,
+        brand_name: brandingData.brand_name,
+        logo: brandingData.logo_url,
+        theme: {
+          primaryColor: brandingData.primary_color,
+          secondaryColor: brandingData.secondary_color,
+          customCSS: brandingData.custom_css,
+        },
+      };
+
       const { data, error } = await supabase
-        .from('white_label_settings' as any)
-        .upsert({
-          tenant_id: tenantId,
-          ...brandingData,
-        })
-        .select()
+        .from('tenants')
+        .update({ white_label: whiteLabelData })
+        .eq('id', tenantId)
+        .select('white_label')
         .single();
 
-      if (error) {
-        if (error.code === '42P01') {
-          throw new Error('White label settings table does not exist. Please run database migrations.');
-        }
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['white-label', tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
       toast({ title: 'Branding updated', description: 'White label settings have been saved.' });
     },
     onError: (error: any) => {
