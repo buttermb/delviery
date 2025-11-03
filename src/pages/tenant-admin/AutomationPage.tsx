@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import Automation from "@/pages/admin/Automation";
 
 export default function AutomationPage() {
-  return (
-    <ComingSoon 
-      featureName="Automation"
-      description="Automate repetitive tasks and workflows. Set triggers, conditions, and actions."
-    />
-  );
+  return <Automation />;
 }

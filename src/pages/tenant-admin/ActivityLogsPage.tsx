@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import ActivityLogs from "@/pages/admin/ActivityLogs";
 
 export default function ActivityLogsPage() {
-  return (
-    <ComingSoon 
-      featureName="Activity Logs"
-      description="Complete audit trail of all user actions and system events. Full transparency and compliance."
-    />
-  );
+  return <ActivityLogs />;
 }

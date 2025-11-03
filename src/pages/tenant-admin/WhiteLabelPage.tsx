@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import WhiteLabel from "@/pages/admin/WhiteLabel";
 
 export default function WhiteLabelPage() {
-  return (
-    <ComingSoon 
-      featureName="White Label"
-      description="Completely rebrand the platform with your own logo, colors, and domain. Make it yours."
-    />
-  );
+  return <WhiteLabel />;
 }

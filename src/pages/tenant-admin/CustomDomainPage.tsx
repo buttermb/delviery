@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import CustomDomain from "@/pages/admin/CustomDomain";
 
 export default function CustomDomainPage() {
-  return (
-    <ComingSoon 
-      featureName="Custom Domain"
-      description="Use your own domain name for your admin panel and customer portal. Full SSL included."
-    />
-  );
+  return <CustomDomain />;
 }

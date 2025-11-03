@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import InventoryTransfers from "@/pages/admin/InventoryTransfers";
 
 export default function InventoryTransfersPage() {
-  return (
-    <ComingSoon 
-      featureName="Inventory Transfers"
-      description="Transfer inventory between locations with full tracking and audit trails. Manage stock movements efficiently."
-    />
-  );
+  return <InventoryTransfers />;
 }

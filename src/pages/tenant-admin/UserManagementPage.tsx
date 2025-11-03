@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import UserManagement from "@/pages/admin/UserManagement";
 
 export default function UserManagementPage() {
-  return (
-    <ComingSoon 
-      featureName="User Management"
-      description="Manage all user accounts, permissions, and access levels from a centralized dashboard."
-    />
-  );
+  return <UserManagement />;
 }

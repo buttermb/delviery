@@ -1,10 +1,5 @@
-import { ComingSoon } from "@/components/tenant-admin/ComingSoon";
+import ApiAccess from "@/pages/admin/ApiAccess";
 
 export default function APIAccessPage() {
-  return (
-    <ComingSoon 
-      featureName="API Access"
-      description="REST API access with authentication keys. Integrate with your own systems and tools."
-    />
-  );
+  return <ApiAccess />;
 }
