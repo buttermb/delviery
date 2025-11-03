@@ -74,6 +74,7 @@ const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/Settings
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/Help"));
 
+<<<<<<< HEAD
 // Tenant Admin Feature Pages
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
@@ -86,7 +87,7 @@ const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal")
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 
-// 10 Built-but-not-routed pages
+// Built pages missing routes (currently locked in sidebar)
 const LiveOrders = lazy(() => import("./pages/admin/LiveOrders"));
 const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
 const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement"));
@@ -98,9 +99,10 @@ const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
 const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
 
-// 13 Hidden gem pages
+// Hidden gems - pages that exist but aren't in config
 const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+// Tenant-admin versions (if they exist)
 const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
 const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
 const CustomerInsightsPage = lazy(() => import("./pages/tenant-admin/CustomerInsightsPage"));
@@ -116,6 +118,48 @@ const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManageme
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
 
+// Phase 2: Professional Tier Features
+const OrderAnalytics = lazy(() => import("./pages/admin/OrderAnalytics"));
+const CustomerAnalytics = lazy(() => import("./pages/admin/CustomerAnalytics"));
+const SalesDashboard = lazy(() => import("./pages/admin/SalesDashboard"));
+const CommissionTracking = lazy(() => import("./pages/admin/CommissionTracking"));
+const ActivityLogs = lazy(() => import("./pages/admin/ActivityLogs"));
+const StockAlerts = lazy(() => import("./pages/admin/StockAlerts"));
+const RevenueReports = lazy(() => import("./pages/admin/RevenueReports"));
+const ExpenseTracking = lazy(() => import("./pages/admin/ExpenseTracking"));
+
+// Phase 3: Mid-Priority Professional Features
+const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
+const InventoryTransfers = lazy(() => import("./pages/admin/InventoryTransfers"));
+const CustomerInsights = lazy(() => import("./pages/admin/CustomerInsights"));
+const BulkOperations = lazy(() => import("./pages/admin/BulkOperations"));
+const Notifications = lazy(() => import("./pages/admin/Notifications"));
+
+// Phase 4: High-Priority Enterprise Features
+const RouteOptimization = lazy(() => import("./pages/admin/RouteOptimization"));
+const DeliveryAnalytics = lazy(() => import("./pages/admin/DeliveryAnalytics"));
+const CashRegister = lazy(() => import("./pages/admin/CashRegister"));
+const ApiAccess = lazy(() => import("./pages/admin/ApiAccess"));
+const Webhooks = lazy(() => import("./pages/admin/Webhooks"));
+const AdvancedAnalytics = lazy(() => import("./pages/admin/AdvancedAnalytics"));
+const RealtimeDashboard = lazy(() => import("./pages/admin/RealtimeDashboard"));
+
+// Phase 5: Medium-Priority Enterprise Features
+const CustomReports = lazy(() => import("./pages/admin/CustomReports"));
+const DataExport = lazy(() => import("./pages/admin/DataExport"));
+const LocationAnalytics = lazy(() => import("./pages/admin/LocationAnalytics"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const Permissions = lazy(() => import("./pages/admin/Permissions"));
+
+// Phase 6: Final Enterprise Features
+const Automation = lazy(() => import("./pages/admin/Automation"));
+const WhiteLabel = lazy(() => import("./pages/admin/WhiteLabel"));
+const CustomDomain = lazy(() => import("./pages/admin/CustomDomain"));
+const PosAnalytics = lazy(() => import("./pages/admin/PosAnalytics"));
+const CustomIntegrations = lazy(() => import("./pages/admin/CustomIntegrations"));
+const AuditTrail = lazy(() => import("./pages/admin/AuditTrail"));
+const Compliance = lazy(() => import("./pages/admin/Compliance"));
+const PrioritySupport = lazy(() => import("./pages/admin/PrioritySupport"));
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
@@ -249,6 +293,7 @@ const App = () => {
                         {/* Tenant Admin Portal */}
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
+<<<<<<< HEAD
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
@@ -292,9 +337,80 @@ const App = () => {
                           <Route path="sales-dashboard" element={<FeatureProtectedRoute featureId="sales-dashboard"><SalesDashboardPage /></FeatureProtectedRoute>} />
                           <Route path="customer-insights" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerInsightsPage /></FeatureProtectedRoute>} />
                           
+                          <Route path="dashboard" element={<TenantAdminDashboardPage />} />
+                          <Route path="billing" element={<TenantAdminBillingPage />} />
+                          <Route path="settings" element={<TenantAdminSettingsPage />} />
+                          
+                          {/* Built pages that were showing "Feature Locked" */}
+                          <Route path="live-orders" element={<LiveOrders />} />
+                          <Route path="team-members" element={<TeamManagement />} />
+                          <Route path="advanced-inventory" element={<InventoryManagement />} />
+                          <Route path="fronted-inventory" element={<FrontedInventory />} />
+                          <Route path="invoice-management" element={<CustomerInvoices />} />
+                          <Route path="fleet-management" element={<FleetManagement />} />
+                          <Route path="delivery-management" element={<DeliveryManagement />} />
+                          <Route path="live-map" element={<LiveMap />} />
+                          <Route path="pos-system" element={<PointOfSale />} />
+                          <Route path="locations" element={<LocationsManagement />} />
+                          
+                          {/* Hidden gems - existing pages not in config */}
+                          <Route path="live-chat" element={<AdminLiveChat />} />
+                          <Route path="admin-notifications" element={<AdminNotifications />} />
+                          <Route path="couriers" element={<Couriers />} />
+                          <Route path="customer-details/:id" element={<CustomerDetails />} />
+                          <Route path="customer-reports" element={<CustomerReports />} />
+                          <Route path="delivery-tracking" element={<DeliveryTracking />} />
+                          <Route path="dispatch-inventory" element={<DispatchInventory />} />
+                          <Route path="financial-center" element={<FinancialCenter />} />
+                          <Route path="fronted-inventory-analytics" element={<FrontedInventoryAnalytics />} />
+                          <Route path="global-search" element={<GlobalSearch />} />
+                          <Route path="risk-factors" element={<RiskFactorManagement />} />
                           <Route path="risk-management" element={<FeatureProtectedRoute featureId="risk-management"><RiskFactorManagement /></FeatureProtectedRoute>} />
                           <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
+                          <Route path="vendors" element={<VendorManagement />} />
                           <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
+                          
+                          {/* Phase 2: Professional Tier Features */}
+                          <Route path="customer-analytics" element={<CustomerAnalytics />} />
+                          <Route path="commission-tracking" element={<CommissionTracking />} />
+                          <Route path="activity-logs" element={<ActivityLogs />} />
+                          <Route path="stock-alerts" element={<StockAlerts />} />
+                          <Route path="revenue-reports" element={<RevenueReports />} />
+                          <Route path="expense-tracking" element={<ExpenseTracking />} />
+                          
+                          {/* Phase 3: Mid-Priority Professional Features */}
+                          <Route path="role-management" element={<RoleManagement />} />
+                          <Route path="inventory-transfers" element={<InventoryTransfers />} />
+                          <Route path="customer-insights/:id" element={<CustomerInsights />} />
+                          <Route path="bulk-operations" element={<BulkOperations />} />
+                          <Route path="notifications" element={<Notifications />} />
+                          
+                          {/* Phase 4: High-Priority Enterprise Features */}
+                          <Route path="route-optimization" element={<RouteOptimization />} />
+                          <Route path="delivery-analytics" element={<DeliveryAnalytics />} />
+                          <Route path="cash-register" element={<CashRegister />} />
+                          <Route path="api-access" element={<ApiAccess />} />
+                          <Route path="webhooks" element={<Webhooks />} />
+                          <Route path="advanced-analytics" element={<AdvancedAnalytics />} />
+                          <Route path="realtime-dashboard" element={<RealtimeDashboard />} />
+                          
+                          {/* Phase 5: Medium-Priority Enterprise Features */}
+                          <Route path="custom-reports" element={<CustomReports />} />
+                          <Route path="data-export" element={<DataExport />} />
+                          <Route path="location-analytics" element={<LocationAnalytics />} />
+                          <Route path="user-management" element={<UserManagement />} />
+                          <Route path="permissions" element={<Permissions />} />
+                          
+                          {/* Phase 6: Final Enterprise Features */}
+                          <Route path="automation" element={<Automation />} />
+                          <Route path="white-label" element={<WhiteLabel />} />
+                          <Route path="custom-domain" element={<CustomDomain />} />
+                          <Route path="pos-analytics" element={<PosAnalytics />} />
+                          <Route path="custom-integrations" element={<CustomIntegrations />} />
+                          <Route path="audit-trail" element={<AuditTrail />} />
+                          <Route path="compliance" element={<Compliance />} />
+                          <Route path="priority-support" element={<PrioritySupport />} />
+>>>>>>> a22140a (Fix missing update functionality in 5 admin pages)
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
