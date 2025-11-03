@@ -1,74 +1,71 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { LoadingFallback } from "./LoadingFallback";
+import { getCurrentUserType } from "@/lib/utils/authHelpers";
 
 export function SmartRootRedirect() {
   const [checking, setChecking] = useState(true);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuthAndRedirect = async () => {
+    const checkAuthAndRedirect = () => {
       try {
-        // Check if user is authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          // No session - send to marketing
+        const userType = getCurrentUserType();
+
+        if (!userType) {
+          // Not authenticated, go to marketing page
           setRedirectPath("/marketing");
+          setChecking(false);
           return;
         }
 
-        // User is authenticated - check their role/type
-        const userId = session.user.id;
-        
-        // Check if super admin
-        const { data: superAdminCheck } = await supabase
-          .from('admin_users')
-          .select('role, is_active')
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .single();
-
-        if (superAdminCheck) {
+        // Check super admin
+        if (userType === "super_admin") {
           setRedirectPath("/super-admin/dashboard");
+          setChecking(false);
           return;
         }
 
-        // Check if tenant admin
-        const { data: profileCheck } = await supabase
-          .from('profiles')
-          .select('account_id, accounts(tenant_id, tenants(slug))')
-          .eq('user_id', userId)
-          .single();
-
-        if (profileCheck?.account_id) {
-          const tenantSlug = (profileCheck.accounts as any)?.tenants?.slug;
-          if (tenantSlug) {
-            setRedirectPath(`/${tenantSlug}/admin/dashboard`);
-            return;
+        // Check tenant admin
+        if (userType === "tenant_admin") {
+          const tenantData = localStorage.getItem("tenant_data");
+          if (tenantData) {
+            try {
+              const tenant = JSON.parse(tenantData);
+              setRedirectPath(`/${tenant.slug}/admin/dashboard`);
+            } catch {
+              setRedirectPath("/marketing");
+            }
+          } else {
+            setRedirectPath("/marketing");
           }
-        }
-
-        // Check if customer
-        const { data: customerCheck } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', userId)
-          .single();
-
-        if (customerCheck) {
-          setRedirectPath("/customer/dashboard");
+          setChecking(false);
           return;
         }
 
-        // Fallback to marketing if role unclear
+        // Check customer
+        if (userType === "customer") {
+          const tenantData = localStorage.getItem("customer_tenant_data");
+          if (tenantData) {
+            try {
+              const tenant = JSON.parse(tenantData);
+              setRedirectPath(`/${tenant.slug}/shop`);
+            } catch {
+              setRedirectPath("/shop");
+            }
+          } else {
+            setRedirectPath("/shop");
+          }
+          setChecking(false);
+          return;
+        }
+
+        // Fallback
         setRedirectPath("/marketing");
+        setChecking(false);
       } catch (error) {
         console.error("Error checking auth:", error);
-        // On error, default to marketing
         setRedirectPath("/marketing");
-      } finally {
         setChecking(false);
       }
     };
