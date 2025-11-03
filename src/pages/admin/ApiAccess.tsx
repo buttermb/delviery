@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { listAdminRecords, createAdminRecord, deleteAdminRecord } from '@/utils/adminApiClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,20 +27,14 @@ export default function ApiAccess() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      try {
-        const { data, error } = await supabase
-          .from('api_keys' as any)
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false });
-
-        if (error && error.code === '42P01') return [];
-        if (error) throw error;
-        return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
-        throw error;
+      const { data, error } = await listAdminRecords('api_keys');
+      
+      if (error) {
+        console.error('Error fetching API keys:', error);
+        return [];
       }
+      
+      return data || [];
     },
     enabled: !!tenantId,
   });
@@ -49,23 +43,13 @@ export default function ApiAccess() {
     mutationFn: async (keyData: any) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error} = await supabase
-        .from('api_keys' as any)
-        .insert({
-          tenant_id: tenantId,
-          name: keyData.name,
-          key: `sk_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`,
-          permissions: keyData.permissions || [],
-        })
-        .select()
-        .single();
+      const { data, error } = await createAdminRecord('api_keys', {
+        name: keyData.name,
+        key: `sk_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`,
+        permissions: keyData.permissions || [],
+      });
 
-      if (error) {
-        if (error.code === '42P01') {
-          throw new Error('API keys table does not exist. Please run database migrations.');
-        }
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {

@@ -1,5 +1,8 @@
 project_id = "aejugtmhwwknrowfyzie"
 
+[functions.admin-api-operations]
+verify_jwt = false
+
 [functions.enforce-tenant-limits]
 verify_jwt = false
 
