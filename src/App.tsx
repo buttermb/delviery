@@ -172,6 +172,7 @@ const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupp
 
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
+const CustomerSignUpPage = lazy(() => import("./pages/customer/SignUpPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
 const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
@@ -403,6 +404,8 @@ const App = () => {
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
+                        <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
+                        <Route path="/:tenantSlug/customer/signup" element={<CustomerSignUpPage />} />
                         <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
                         <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>

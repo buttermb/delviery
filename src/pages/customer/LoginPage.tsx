@@ -198,12 +198,8 @@ export default function CustomerLoginPage() {
               <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug} />
               <span className="text-[hsl(var(--customer-text-light))]">•</span>
               <Link 
-                to="#" 
+                to={`/${tenantSlug}/customer/signup`}
                 className="text-[hsl(var(--customer-primary))] hover:underline font-medium"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toast({ title: "Contact your supplier to create an account" });
-                }}
               >
                 Create account
               </Link>
