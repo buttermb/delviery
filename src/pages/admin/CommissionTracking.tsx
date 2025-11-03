@@ -4,6 +4,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Users, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { BetterEmptyState } from '@/components/BetterEmptyState';
 
 export default function CommissionTracking() {
   const { tenant } = useTenantAdminAuth();
@@ -53,7 +55,7 @@ export default function CommissionTracking() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center">Loading commissions...</div>
+        <EnhancedLoadingState variant="card" count={3} />
       </div>
     );
   }
@@ -127,7 +129,11 @@ export default function CommissionTracking() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">No commission data available</div>
+            <BetterEmptyState
+              icon={DollarSign}
+              title="No Commissions Yet"
+              description="Commission data will appear here once orders are processed."
+            />
           )}
         </CardContent>
       </Card>
