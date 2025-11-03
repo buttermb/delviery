@@ -65,25 +65,89 @@ const AdminLayout = () => {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full overflow-hidden">
-        <TenantAdminSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <AccountSwitcher />
-          <header className="h-14 border-b border-border flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm">
-            <SidebarTrigger className="h-10 w-10 touch-manipulation active:scale-95 transition-transform" />
-            
-            {/* Breadcrumbs */}
-            <nav className="hidden md:flex items-center gap-2 text-xs md:text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
+    <div className="min-h-screen bg-background">
+      {/* New Sidebar for desktop - comprehensive 68+ features */}
+      <div className="hidden lg:block">
+        <NewSidebar />
+      </div>
+      
+      {/* Legacy Sidebar for mobile/tablet compatibility */}
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full overflow-hidden lg:hidden">
+          <TenantAdminSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <AccountSwitcher />
+            <header className="h-14 border-b border-border flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm">
+              <SidebarTrigger className="h-10 w-10 touch-manipulation active:scale-95 transition-transform" />
+              
+              {/* Breadcrumbs */}
+              <nav className="hidden md:flex items-center gap-2 text-xs md:text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
+                {breadcrumbs.map((crumb, index) => (
+                  <div key={crumb.url} className="flex items-center gap-2 flex-shrink-0">
+                    {index > 0 && <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />}
+                    {index === breadcrumbs.length - 1 ? (
+                      <span className="font-medium text-foreground whitespace-nowrap">{crumb.label}</span>
+                    ) : (
+                      <Link 
+                        to={crumb.url}
+                        className="hover:text-foreground text-muted-foreground transition-colors whitespace-nowrap"
+                      >
+                        {crumb.label}
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </nav>
+              
+              {/* Command Palette */}
+              <div className="hidden md:flex flex-1 max-w-md ml-auto">
+                <CommandPalette />
+              </div>
+              
+              {/* Header Actions */}
+              <div className="flex items-center gap-2 ml-auto md:ml-0">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AdminKeyboardShortcutsDialog 
+                        open={shortcutsVisible} 
+                        onOpenChange={setShortcutsVisible} 
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>Keyboard Shortcuts (? or click)</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <AdminNotificationCenter />
+                <ThemeToggle />
+              </div>
+            </header>
+            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-safe">
+              <AdminErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Outlet />
+                </Suspense>
+              </AdminErrorBoundary>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+
+      {/* Desktop main content with new sidebar */}
+      <main className="hidden lg:block lg:pl-64 min-h-screen">
+        <div className="container mx-auto p-4 lg:p-6">
+          {/* Desktop header bar */}
+          <div className="flex items-center justify-between mb-6 border-b pb-4">
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
               {breadcrumbs.map((crumb, index) => (
-                <div key={crumb.url} className="flex items-center gap-2 flex-shrink-0">
-                  {index > 0 && <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />}
+                <div key={crumb.url} className="flex items-center gap-2">
+                  {index > 0 && <ChevronRight className="h-4 w-4" />}
                   {index === breadcrumbs.length - 1 ? (
-                    <span className="font-medium text-foreground whitespace-nowrap">{crumb.label}</span>
+                    <span className="font-medium text-foreground">{crumb.label}</span>
                   ) : (
                     <Link 
                       to={crumb.url}
-                      className="hover:text-foreground text-muted-foreground transition-colors whitespace-nowrap"
+                      className="hover:text-foreground transition-colors"
                     >
                       {crumb.label}
                     </Link>
@@ -92,13 +156,10 @@ const AdminLayout = () => {
               ))}
             </nav>
             
-            {/* Command Palette */}
-            <div className="hidden md:flex flex-1 max-w-md ml-auto">
-              <CommandPalette />
-            </div>
-            
-            {/* Header Actions */}
-            <div className="flex items-center gap-2 ml-auto md:ml-0">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 max-w-md">
+                <CommandPalette />
+              </div>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -107,27 +168,32 @@ const AdminLayout = () => {
                       onOpenChange={setShortcutsVisible} 
                     />
                   </TooltipTrigger>
-                  <TooltipContent>Keyboard Shortcuts (? or click)</TooltipContent>
+                  <TooltipContent>Keyboard Shortcuts</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              
               <AdminNotificationCenter />
               <ThemeToggle />
             </div>
-          </header>
-          <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-safe">
-            <AdminErrorBoundary>
-              <Suspense fallback={<LoadingFallback />}>
-                <Outlet />
-              </Suspense>
-            </AdminErrorBoundary>
-          </main>
+          </div>
+
+          {/* Main content */}
+          <AdminErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+              <Outlet />
+            </Suspense>
+          </AdminErrorBoundary>
         </div>
-      </div>
-      <MobileNav />
+      </main>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
+      
+      {/* Panic button */}
       <PanicButton />
+      
+      {/* PWA install */}
       <InstallPWA />
-    </SidebarProvider>
+    </div>
   );
 };
 
