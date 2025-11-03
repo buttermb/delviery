@@ -11,7 +11,8 @@ import {
   ArrowRight,
   Star,
   Play,
-  TrendingUp
+  TrendingUp,
+  Lock as LockIcon
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -31,18 +32,21 @@ export default function MarketingHome() {
       author: "Mike Johnson",
       role: "BigMike Wholesale",
       rating: 5,
+      photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces",
     },
     {
       quote: "Setup took 10 minutes. We were fully operational the same day. Best decision we made for our business.",
       author: "Sarah Chen",
       role: "Valley Distribution",
       rating: 5,
+      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces",
     },
     {
       quote: "The disposable menus feature is a game-changer. Our customers love the secure, modern experience.",
       author: "David Rodriguez",
       role: "Green Valley Supplies",
       rating: 5,
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces",
     },
   ];
 
@@ -150,30 +154,87 @@ export default function MarketingHome() {
               <Link to="/signup">
                 <Button size="lg" className="bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-bg))]/90 h-14 px-8 text-lg font-semibold">
                   Start Free Trial
-                  <span className="ml-2">No credit card ↗</span>
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/demo">
                 <Button size="lg" variant="outline" className="border-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-bg))] hover:bg-[hsl(var(--marketing-bg))]/10 h-14 px-8 text-lg">
                   <Play className="mr-2 h-5 w-5" />
-                  Watch Demo Video
-                  <span className="ml-2 text-sm">2 min overview</span>
+                  Schedule Demo
                 </Button>
               </Link>
             </div>
 
-            <p className="text-sm text-white/80">
+            <p className="text-sm text-white/80 mb-8">
               Trusted by 400+ distributors • $1.4M orders/month
             </p>
 
-            {/* Product Screenshot Placeholder */}
-            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-[hsl(var(--marketing-bg))]/20">
-              <div className="aspect-video bg-[hsl(var(--marketing-bg))]/10 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-[hsl(var(--marketing-bg))]/20 backdrop-blur-sm mx-auto mb-4 flex items-center justify-center">
-                    <Play className="h-12 w-12 text-white" />
+            {/* Trust Badges */}
+            <div className="flex flex-wrap justify-center gap-6 mb-12">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                <Shield className="h-5 w-5 text-white" />
+                <span className="text-sm text-white font-medium">Bank-Level Security</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                <CheckCircle className="h-5 w-5 text-white" />
+                <span className="text-sm text-white font-medium">GDPR Compliant</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
+                <LockIcon className="h-5 w-5 text-white" />
+                <span className="text-sm text-white font-medium">256-bit SSL</span>
+              </div>
+            </div>
+
+            {/* Dashboard Preview */}
+            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-[hsl(var(--marketing-bg))]/20 bg-gradient-to-br from-white to-gray-100">
+              <div className="p-8">
+                <div className="space-y-4">
+                  {/* Mock Dashboard Header */}
+                  <div className="flex items-center justify-between pb-4 border-b">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500" />
+                      <div>
+                        <div className="h-3 w-32 bg-gray-300 rounded mb-2" />
+                        <div className="h-2 w-24 bg-gray-200 rounded" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-8 w-20 bg-emerald-500 rounded" />
+                      <div className="h-8 w-20 bg-gray-200 rounded" />
+                    </div>
                   </div>
-                  <p className="text-white/80">Product Screenshot</p>
+                  {/* Mock Stats Cards */}
+                  <div className="grid grid-cols-4 gap-4 py-4">
+                    <div className="p-4 bg-white rounded-lg shadow">
+                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
+                      <div className="h-6 w-20 bg-emerald-500/20 rounded" />
+                    </div>
+                    <div className="p-4 bg-white rounded-lg shadow">
+                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
+                      <div className="h-6 w-20 bg-blue-500/20 rounded" />
+                    </div>
+                    <div className="p-4 bg-white rounded-lg shadow">
+                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
+                      <div className="h-6 w-20 bg-purple-500/20 rounded" />
+                    </div>
+                    <div className="p-4 bg-white rounded-lg shadow">
+                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
+                      <div className="h-6 w-20 bg-orange-500/20 rounded" />
+                    </div>
+                  </div>
+                  {/* Mock Chart */}
+                  <div className="p-6 bg-white rounded-lg shadow">
+                    <div className="h-3 w-32 bg-gray-300 rounded mb-4" />
+                    <div className="flex items-end gap-2 h-32">
+                      {[40, 70, 50, 80, 60, 90, 75, 85].map((height, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-t"
+                          style={{ height: `${height}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
