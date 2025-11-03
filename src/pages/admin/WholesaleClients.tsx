@@ -231,7 +231,7 @@ export default function WholesaleClients() {
                   </TableCell>
                   <TableCell>
                     <CustomerRiskBadge 
-                      score={client.risk_score ?? client.reliability_score} 
+                      score={(client as any).risk_score ?? client.reliability_score ?? null} 
                       showLabel={true}
                     />
                   </TableCell>

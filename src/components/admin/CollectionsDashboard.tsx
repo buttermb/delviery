@@ -6,7 +6,7 @@ import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleDat
 import { format, differenceInDays } from "date-fns";
 import { useState } from "react";
 import { PaymentDialog } from "./PaymentDialog";
-import { SendSMS } from "./SendSMS";
+import { SendSMS } from "@/components/admin/SendSMS";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showInfoToast } from "@/utils/toastHelpers";
 

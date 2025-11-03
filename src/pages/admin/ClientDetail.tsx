@@ -106,7 +106,7 @@ export default function ClientDetail() {
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
               <CustomerRiskBadge 
-                score={client.risk_score} 
+                score={(client as any).risk_score ?? null} 
                 showLabel={true}
               />
               <span className="text-sm text-muted-foreground">{displayClient.address}</span>

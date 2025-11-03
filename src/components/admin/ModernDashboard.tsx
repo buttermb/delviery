@@ -27,7 +27,7 @@ import { LocationMapWidget } from './dashboard/LocationMapWidget';
 import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
 import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
-import { ActionableInsights } from './ActionableInsights';
+import { ActionableInsights } from '@/components/admin/ActionableInsights';
 import { FrontedInventoryWidget } from './FrontedInventoryWidget';
 
 export function ModernDashboard() {
