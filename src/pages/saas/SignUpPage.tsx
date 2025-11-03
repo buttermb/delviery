@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,17 +29,18 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 
 const signupSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
   owner_name: z.string().min(2, 'Your name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  state: z.string().min(1, 'Please select a state'),
-  industry: z.string().min(1, 'Please select an industry'),
-  company_size: z.string().min(1, 'Please select company size'),
+  phone: z.string().optional(),
+  state: z.string().optional(),
+  industry: z.string().optional(),
+  company_size: z.string().optional(),
   terms_accepted: z.boolean().refine((val) => val === true, {
     message: 'You must accept the Terms of Service',
   }),
@@ -73,6 +74,7 @@ export default function SignUpPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -153,9 +155,18 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 p-4">
       <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">Start Your 14-Day Free Trial</h1>
           <p className="text-muted-foreground">No credit card required</p>
+        </div>
+
+        <div className="mb-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/saas/login" className="text-primary font-medium hover:underline">
+              Sign in
+            </Link>
+          </p>
         </div>
 
         <Form {...form}>
@@ -209,8 +220,26 @@ export default function SignUpPage() {
                 <FormItem>
                   <FormLabel>Password *</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••" 
+                        {...field} 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
+                  <PasswordStrengthIndicator password={field.value} />
                   <FormMessage />
                 </FormItem>
               )}
@@ -221,7 +250,7 @@ export default function SignUpPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone *</FormLabel>
+                  <FormLabel>Phone (optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="555-123-4567" {...field} />
                   </FormControl>
@@ -235,7 +264,7 @@ export default function SignUpPage() {
               name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>State *</FormLabel>
+                  <FormLabel>State (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -260,7 +289,7 @@ export default function SignUpPage() {
               name="industry"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Industry *</FormLabel>
+                  <FormLabel>Industry (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -285,7 +314,7 @@ export default function SignUpPage() {
               name="company_size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Size *</FormLabel>
+                  <FormLabel>Company Size (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -372,15 +401,6 @@ export default function SignUpPage() {
               <span>Mobile app access</span>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 text-center text-sm">
-          <p className="text-muted-foreground">
-            Already have an account?{' '}
-            <a href="/saas/login" className="text-primary underline">
-              Sign in
-            </a>
-          </p>
         </div>
       </Card>
     </div>
