@@ -111,7 +111,7 @@ export default function BulkOperations() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, price, stock_quantity, status, tags')
+          .select('id, name, price, stock_quantity')
           .eq('tenant_id', tenantId)
           .order('name');
         
@@ -412,9 +412,6 @@ export default function BulkOperations() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>Price: ${product.price || 0}</span>
                       <span>Stock: {product.stock_quantity || 0}</span>
-                      <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
-                        {product.status || 'active'}
-                      </Badge>
                     </div>
                   </div>
                 </div>

@@ -869,6 +869,51 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string | null
@@ -3461,6 +3506,7 @@ export type Database = {
           created_at: string | null
           expiration_date: string | null
           id: string
+          notes: string | null
           product_id: string | null
           quantity_lbs: number | null
           received_date: string | null
@@ -3476,6 +3522,7 @@ export type Database = {
           created_at?: string | null
           expiration_date?: string | null
           id?: string
+          notes?: string | null
           product_id?: string | null
           quantity_lbs?: number | null
           received_date?: string | null
@@ -3491,6 +3538,7 @@ export type Database = {
           created_at?: string | null
           expiration_date?: string | null
           id?: string
+          notes?: string | null
           product_id?: string | null
           quantity_lbs?: number | null
           received_date?: string | null
@@ -5724,6 +5772,7 @@ export type Database = {
           barcode: string | null
           batch_number: string | null
           category: string
+          category_id: string | null
           cbd_content: number | null
           cbd_percent: number | null
           coa_pdf_url: string | null
@@ -5778,6 +5827,7 @@ export type Database = {
           barcode?: string | null
           batch_number?: string | null
           category: string
+          category_id?: string | null
           cbd_content?: number | null
           cbd_percent?: number | null
           coa_pdf_url?: string | null
@@ -5832,6 +5882,7 @@ export type Database = {
           barcode?: string | null
           batch_number?: string | null
           category?: string
+          category_id?: string | null
           cbd_content?: number | null
           cbd_percent?: number | null
           coa_pdf_url?: string | null
@@ -5881,6 +5932,13 @@ export type Database = {
           wholesale_price?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_merchant_id_fkey"
             columns: ["merchant_id"]
@@ -6192,6 +6250,65 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receiving_records: {
+        Row: {
+          created_at: string | null
+          damaged_items: number | null
+          expected_items: number | null
+          id: string
+          missing_items: number | null
+          notes: string | null
+          qc_status: string | null
+          received_date: string | null
+          received_items: number | null
+          shipment_number: string
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+          vendor: string
+        }
+        Insert: {
+          created_at?: string | null
+          damaged_items?: number | null
+          expected_items?: number | null
+          id?: string
+          missing_items?: number | null
+          notes?: string | null
+          qc_status?: string | null
+          received_date?: string | null
+          received_items?: number | null
+          shipment_number: string
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          vendor: string
+        }
+        Update: {
+          created_at?: string | null
+          damaged_items?: number | null
+          expected_items?: number | null
+          id?: string
+          missing_items?: number | null
+          notes?: string | null
+          qc_status?: string | null
+          received_date?: string | null
+          received_items?: number | null
+          shipment_number?: string
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          vendor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receiving_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -7201,6 +7318,53 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      warehouses: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          id: string
+          manager_id: string | null
+          name: string
+          state: string | null
+          tenant_id: string
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          manager_id?: string | null
+          name: string
+          state?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          manager_id?: string | null
+          name?: string
+          state?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
