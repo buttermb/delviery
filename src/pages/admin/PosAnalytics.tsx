@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, ShoppingCart, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts, useRealtimeTransactions } from '@/hooks/useRealtimePOS';
+import { POSCharts } from '@/components/analytics/POSCharts';
+import { ChartExport } from '@/components/analytics/ChartExport';
 
 export default function PosAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -62,6 +63,7 @@ export default function PosAnalytics() {
     );
   }
 
+  // Process daily sales data
   const dailySales = (transactions || []).reduce((acc: any, transaction: any) => {
     const date = new Date(transaction.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find((item: any) => item.date === date);
@@ -75,16 +77,34 @@ export default function PosAnalytics() {
     return acc;
   }, []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+  // Process hourly data
+  const hourlyData = (transactions || []).reduce((acc: any, transaction: any) => {
+    const hour = new Date(transaction.created_at).getHours();
+    const hourLabel = `${hour}:00`;
+    const existing = acc.find((item: any) => item.hour === hourLabel);
+    const revenue = parseFloat(transaction.total_amount || 0);
+    
+    if (existing) {
+      existing.transactions += 1;
+      existing.revenue += revenue;
+    } else {
+      acc.push({ hour: hourLabel, transactions: 1, revenue });
+    }
+    return acc;
+  }, []).sort((a: any, b: any) => parseInt(a.hour) - parseInt(b.hour));
+
   const totalRevenue = transactions?.reduce((sum: number, t: any) => sum + parseFloat(t.total_amount || 0), 0) || 0;
   const totalTransactions = transactions?.length || 0;
   const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
   
-  // Calculate payment method breakdown
-  const paymentMethodBreakdown = (transactions || []).reduce((acc: any, t: any) => {
-    const method = t.payment_method || 'other';
-    acc[method] = (acc[method] || 0) + parseFloat(t.total_amount || 0);
-    return acc;
-  }, {});
+  // Calculate payment method breakdown for pie chart
+  const paymentMethodData = Object.entries(
+    (transactions || []).reduce((acc: any, t: any) => {
+      const method = (t.payment_method || 'other').charAt(0).toUpperCase() + (t.payment_method || 'other').slice(1);
+      acc[method] = (acc[method] || 0) + parseFloat(t.total_amount || 0);
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({ name, value: value as number }));
 
   const totalShifts = shifts?.length || 0;
   const openShifts = shifts?.filter((s: any) => s.status === 'open').length || 0;
@@ -96,10 +116,17 @@ export default function PosAnalytics() {
           <h1 className="text-3xl font-bold">POS Analytics</h1>
           <p className="text-muted-foreground">Point of sale performance metrics</p>
         </div>
-        <Badge variant="outline" className="gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          Live Updates
-        </Badge>
+        <div className="flex items-center gap-3">
+          <ChartExport 
+            data={transactions || []} 
+            filename="pos-analytics" 
+            title="POS Analytics Report"
+          />
+          <Badge variant="outline" className="gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            Live Updates
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -145,74 +172,12 @@ export default function PosAnalytics() {
         </Card>
       </div>
 
-      {/* Payment Method Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>Revenue by payment type</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Object.entries(paymentMethodBreakdown).map(([method, amount]: [string, any]) => (
-              <div key={method} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-primary" />
-                  <span className="capitalize font-medium">{method}</span>
-                </div>
-                <span className="font-bold">${parseFloat(amount).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily Sales Trend</CardTitle>
-          <CardDescription>POS revenue over time</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {dailySales.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dailySales}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No POS transaction data available. Analytics will appear here once POS transactions are recorded.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaction Volume</CardTitle>
-          <CardDescription>Number of transactions per day</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {dailySales.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dailySales}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="count" fill="hsl(var(--chart-2))" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">No transaction volume data available</div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Comprehensive Charts */}
+      <POSCharts 
+        dailySales={dailySales}
+        paymentMethods={paymentMethodData}
+        hourlyData={hourlyData}
+      />
     </div>
   );
 }
