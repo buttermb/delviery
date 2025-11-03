@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,18 +12,28 @@ import {
   Star,
   Diamond,
   Zap,
+  Loader2,
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory } from "@/lib/featureConfig";
+import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
 
 export default function TenantAdminBillingPage() {
   const { tenant, admin } = useTenantAdminAuth();
   const { currentTier, currentTierName } = useFeatureAccess();
   const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   // Fetch invoices
   const { data: invoices } = useQuery({
@@ -68,6 +78,151 @@ export default function TenantAdminBillingPage() {
     const current = usage[resource] || 0;
     if (limit === Infinity) return 0;
     return Math.min((current / limit) * 100, 100);
+  };
+
+  // Subscription update mutation
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: async ({ plan, useStripe = false }: { plan: SubscriptionTier; useStripe?: boolean }) => {
+      if (!tenantId) throw new Error('Tenant ID required');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('update-subscription', {
+        body: {
+          tenant_id: tenantId,
+          new_plan: plan,
+          use_stripe: useStripe,
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to update subscription');
+      }
+
+      // Response.data might be a Response object, need to parse it
+      let result;
+      if (response.data instanceof Response) {
+        result = await response.data.json();
+      } else if (typeof response.data === 'string') {
+        result = JSON.parse(response.data);
+      } else {
+        result = response.data;
+      }
+
+      if (!result || !result.success) {
+        throw new Error(result?.error || 'Failed to update subscription');
+      }
+
+      return result;
+    },
+    onSuccess: async (result) => {
+      if (result.checkout_url) {
+        // Redirect to Stripe checkout
+        window.location.href = result.checkout_url;
+        return;
+      }
+
+      // Direct update successful
+      toast({
+        title: 'Subscription Updated',
+        description: result.message || `Successfully updated to ${selectedPlan} plan`,
+      });
+
+      // Refresh tenant data - reload from context
+      window.location.reload(); // Simple approach - reload page to get fresh data
+      // Alternative: could invalidate queries and manually refetch, but reload is simpler
+      
+      setUpgradeDialogOpen(false);
+      setSelectedPlan(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update subscription. Please try again.',
+        variant: 'destructive',
+      });
+      setUpgradeLoading(false);
+    },
+  });
+
+  const handlePlanChange = async (targetPlan: SubscriptionTier, useStripe = false) => {
+    if (!tenantId) return;
+
+    const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
+    const currentIndex = tierHierarchy.indexOf(currentTier);
+    const targetIndex = tierHierarchy.indexOf(targetPlan);
+
+    if (currentIndex === targetIndex) {
+      toast({
+        title: 'Already on this plan',
+        description: `You're already on the ${TIER_NAMES[targetPlan]} plan.`,
+      });
+      return;
+    }
+
+    const isUpgrade = targetIndex > currentIndex;
+    const action = isUpgrade ? 'upgrade' : 'downgrade';
+
+    // Show confirmation dialog
+    setSelectedPlan(targetPlan);
+    setUpgradeDialogOpen(true);
+  };
+
+  const confirmPlanChange = async () => {
+    if (!selectedPlan) return;
+    setUpgradeLoading(true);
+    updateSubscriptionMutation.mutate({ plan: selectedPlan, useStripe: false });
+  };
+
+  const handlePaymentMethod = async () => {
+    if (!tenantId) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: 'Not Authenticated',
+          description: 'Please log in to manage payment methods.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setUpgradeLoading(true);
+
+      const response = await supabase.functions.invoke('stripe-customer-portal', {
+        body: {
+          tenant_id: tenantId,
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to open Customer Portal');
+      }
+
+      const result = await response.data;
+      
+      if (!result || !result.success || !result.url) {
+        throw new Error(result?.error || 'Failed to create Customer Portal session');
+      }
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = result.url;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to open payment method management. Please ensure Stripe is configured.',
+        variant: 'destructive',
+      });
+      setUpgradeLoading(false);
+    }
   };
 
   return (
@@ -228,7 +383,8 @@ export default function TenantAdminBillingPage() {
                         <p className="text-sm text-muted-foreground">Visa ending in 4242</p>
                       </div>
                     </div>
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={handlePaymentMethod} disabled={upgradeLoading}>
+                      {upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                       Update Payment Method
                     </Button>
                   </div>
@@ -238,7 +394,8 @@ export default function TenantAdminBillingPage() {
                       <CreditCard className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground mb-4">No payment method added</p>
-                    <Button>
+                    <Button onClick={handlePaymentMethod} disabled={upgradeLoading}>
+                      {upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                       Add Payment Method
                     </Button>
                   </div>
@@ -283,7 +440,13 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button variant={currentTier === 'starter' ? 'outline' : 'default'} className="w-full" disabled={currentTier === 'starter'}>
+                  <Button 
+                    variant={currentTier === 'starter' ? 'outline' : 'default'} 
+                    className="w-full" 
+                    disabled={currentTier === 'starter' || upgradeLoading}
+                    onClick={() => currentTier !== 'starter' && handlePlanChange('starter')}
+                  >
+                    {currentTier === 'starter' ? 'Current Plan' : upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     {currentTier === 'starter' ? 'Current Plan' : 'Downgrade'}
                   </Button>
                 </CardContent>
@@ -330,7 +493,13 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button variant={currentTier === 'professional' ? 'outline' : 'default'} className="w-full" disabled={currentTier === 'professional'}>
+                  <Button 
+                    variant={currentTier === 'professional' ? 'outline' : 'default'} 
+                    className="w-full" 
+                    disabled={currentTier === 'professional' || upgradeLoading}
+                    onClick={() => currentTier !== 'professional' && handlePlanChange('professional')}
+                  >
+                    {upgradeLoading && selectedPlan === 'professional' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     {currentTier === 'professional' ? 'Current Plan' : currentTier === 'starter' ? 'Upgrade' : 'Downgrade'}
                   </Button>
                 </CardContent>
@@ -377,7 +546,13 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button variant={currentTier === 'enterprise' ? 'outline' : 'default'} className="w-full" disabled={currentTier === 'enterprise'}>
+                  <Button 
+                    variant={currentTier === 'enterprise' ? 'outline' : 'default'} 
+                    className="w-full" 
+                    disabled={currentTier === 'enterprise' || upgradeLoading}
+                    onClick={() => currentTier !== 'enterprise' && handlePlanChange('enterprise')}
+                  >
+                    {upgradeLoading && selectedPlan === 'enterprise' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     {currentTier === 'enterprise' ? 'Current Plan' : 'Upgrade'}
                   </Button>
                 </CardContent>
@@ -489,6 +664,78 @@ export default function TenantAdminBillingPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Upgrade/Downgrade Confirmation Dialog */}
+        <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {selectedPlan && currentTier && 
+                  (['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > ['starter', 'professional', 'enterprise'].indexOf(currentTier) 
+                    ? 'Confirm Upgrade' 
+                    : 'Confirm Downgrade')
+                }
+              </DialogTitle>
+              <DialogDescription>
+                {selectedPlan && currentTier && (
+                  <>
+                    You are about to {['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > ['starter', 'professional', 'enterprise'].indexOf(currentTier) ? 'upgrade' : 'downgrade'} from{' '}
+                    <strong>{TIER_NAMES[currentTier]}</strong> to <strong>{TIER_NAMES[selectedPlan]}</strong> plan.
+                    <br /><br />
+                    {['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > ['starter', 'professional', 'enterprise'].indexOf(currentTier) ? (
+                      <>
+                        New monthly price: <strong>{formatCurrency(TIER_PRICES[selectedPlan])}</strong>
+                        <br />
+                        {tenant?.subscription_current_period_end && new Date(tenant.subscription_current_period_end) > new Date() && (
+                          <>
+                            <span className="text-xs text-muted-foreground">
+                              Prorated charges may apply for the remaining billing period.
+                            </span>
+                            <br />
+                          </>
+                        )}
+                        Your subscription will be updated immediately.
+                      </>
+                    ) : (
+                      <>
+                        Your plan will be changed to <strong>{TIER_NAMES[selectedPlan]}</strong>.
+                        <br />
+                        {tenant?.subscription_current_period_end && new Date(tenant.subscription_current_period_end) > new Date() && (
+                          <>
+                            <span className="text-xs text-muted-foreground">
+                              A credit will be applied for the unused portion of your current plan.
+                            </span>
+                            <br />
+                          </>
+                        )}
+                        Some features may become unavailable after downgrade.
+                      </>
+                    )}
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setUpgradeDialogOpen(false);
+                setSelectedPlan(null);
+                setUpgradeLoading(false);
+              }} disabled={upgradeLoading}>
+                Cancel
+              </Button>
+              <Button onClick={confirmPlanChange} disabled={upgradeLoading || !selectedPlan}>
+                {upgradeLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
