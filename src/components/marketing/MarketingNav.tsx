@@ -29,10 +29,23 @@ export function MarketingNav() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
+          <Link to="/login">
+            <Button variant="ghost" size="sm" className="text-sm">
+              Login
+            </Button>
+          </Link>
           <Link to="/signup">
             <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
               Start Free →
+            </Button>
+          </Link>
+        </div>
+
+        <div className="flex md:hidden items-center gap-3">
+          <Link to="/login">
+            <Button variant="ghost" size="sm" className="text-sm">
+              Login
             </Button>
           </Link>
           
@@ -80,7 +93,12 @@ export function MarketingNav() {
               Contact
             </Link>
             <div className="pt-4 border-t border-[hsl(var(--marketing-border))] space-y-2">
-              <Link to="/signup" className="block">
+              <Link to="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" size="sm" className="w-full">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/signup" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button size="sm" className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
                   Start Free Trial
                 </Button>

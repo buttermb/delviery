@@ -28,6 +28,7 @@ import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
 import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
+import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
@@ -61,6 +62,7 @@ const Press = lazy(() => import("./pages/Press"));
 const Blog = lazy(() => import("./pages/Blog"));
 const Security = lazy(() => import("./pages/Security"));
 const Cookie = lazy(() => import("./pages/Cookie"));
+const LoginDirectory = lazy(() => import("./pages/LoginDirectory"));
 
 // Three-Tier Auth System Pages
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
@@ -257,7 +259,7 @@ const App = () => {
                     <Suspense fallback={<LoadingFallback />}>
                       <Routes>
                         {/* Marketing & Public Routes */}
-                        <Route path="/" element={<Navigate to="/marketing" replace />} />
+                        <Route path="/" element={<SmartRootRedirect />} />
                         <Route path="/marketing" element={<MarketingHome />} />
                         <Route path="/features" element={<Features />} />
                         <Route path="/pricing" element={<PricingPage />} />
@@ -277,6 +279,7 @@ const App = () => {
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/security" element={<Security />} />
                         <Route path="/cookie" element={<Cookie />} />
+                        <Route path="/login" element={<LoginDirectory />} />
                         
                         {/* Public Authentication */}
                         <Route path="/signup" element={<SignUpPage />} />

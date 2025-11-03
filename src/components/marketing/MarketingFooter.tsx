@@ -4,7 +4,7 @@ export function MarketingFooter() {
   return (
     <footer className="border-t border-[hsl(var(--marketing-border))] mt-20 bg-[hsl(var(--marketing-bg-subtle))]">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <div className="grid md:grid-cols-5 gap-8 mb-8">
           {/* Product */}
           <div>
             <h3 className="font-bold mb-4 text-[hsl(var(--marketing-text))]">PRODUCT</h3>
@@ -69,7 +69,7 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <Link to="/help" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                <Link to="/support" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
                   Help Center
                 </Link>
               </li>
@@ -108,6 +108,33 @@ export function MarketingFooter() {
               <li>
                 <Link to="/cookie" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
                   Cookie
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Login */}
+          <div>
+            <h3 className="font-bold mb-4 text-[hsl(var(--marketing-text))]">LOGIN</h3>
+            <ul className="space-y-2 text-sm text-[hsl(var(--marketing-text-light))]">
+              <li>
+                <Link to="/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                  All Portals
+                </Link>
+              </li>
+              <li>
+                <Link to="/customer/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                  Customer Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/willysbo/admin/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                  Business Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/super-admin/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                  Admin Login
                 </Link>
               </li>
             </ul>
