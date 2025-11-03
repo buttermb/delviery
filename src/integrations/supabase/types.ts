@@ -5415,6 +5415,209 @@ export type Database = {
           },
         ]
       }
+      pos_cash_drawer_events: {
+        Row: {
+          amount: number
+          created_at: string
+          event_type: string
+          id: string
+          performed_by: string
+          performed_by_name: string
+          reason: string | null
+          shift_id: string
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          event_type: string
+          id?: string
+          performed_by: string
+          performed_by_name: string
+          reason?: string | null
+          shift_id: string
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          performed_by?: string
+          performed_by_name?: string
+          reason?: string | null
+          shift_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_cash_drawer_events_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_shifts: {
+        Row: {
+          card_sales: number | null
+          cash_difference: number | null
+          cash_sales: number | null
+          cashier_id: string
+          cashier_name: string
+          closing_cash: number | null
+          created_at: string
+          ended_at: string | null
+          expected_cash: number | null
+          id: string
+          notes: string | null
+          opening_cash: number
+          other_sales: number | null
+          refunds_amount: number | null
+          shift_number: string
+          started_at: string
+          status: string
+          tenant_id: string
+          terminal_id: string
+          total_sales: number | null
+          total_transactions: number | null
+          updated_at: string
+          z_report: Json | null
+        }
+        Insert: {
+          card_sales?: number | null
+          cash_difference?: number | null
+          cash_sales?: number | null
+          cashier_id: string
+          cashier_name: string
+          closing_cash?: number | null
+          created_at?: string
+          ended_at?: string | null
+          expected_cash?: number | null
+          id?: string
+          notes?: string | null
+          opening_cash?: number
+          other_sales?: number | null
+          refunds_amount?: number | null
+          shift_number: string
+          started_at?: string
+          status?: string
+          tenant_id: string
+          terminal_id: string
+          total_sales?: number | null
+          total_transactions?: number | null
+          updated_at?: string
+          z_report?: Json | null
+        }
+        Update: {
+          card_sales?: number | null
+          cash_difference?: number | null
+          cash_sales?: number | null
+          cashier_id?: string
+          cashier_name?: string
+          closing_cash?: number | null
+          created_at?: string
+          ended_at?: string | null
+          expected_cash?: number | null
+          id?: string
+          notes?: string | null
+          opening_cash?: number
+          other_sales?: number | null
+          refunds_amount?: number | null
+          shift_number?: string
+          started_at?: string
+          status?: string
+          tenant_id?: string
+          terminal_id?: string
+          total_sales?: number | null
+          total_transactions?: number | null
+          updated_at?: string
+          z_report?: Json | null
+        }
+        Relationships: []
+      }
+      pos_transactions: {
+        Row: {
+          cashier_id: string | null
+          cashier_name: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          discount_amount: number | null
+          id: string
+          items: Json
+          notes: string | null
+          payment_method: string
+          payment_status: string
+          receipt_number: string | null
+          shift_id: string | null
+          subtotal: number
+          tax_amount: number | null
+          tenant_id: string
+          terminal_id: string | null
+          total_amount: number
+          transaction_number: string
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          cashier_id?: string | null
+          cashier_name?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_amount?: number | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          payment_method: string
+          payment_status?: string
+          receipt_number?: string | null
+          shift_id?: string | null
+          subtotal: number
+          tax_amount?: number | null
+          tenant_id: string
+          terminal_id?: string | null
+          total_amount: number
+          transaction_number: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          cashier_id?: string | null
+          cashier_name?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_amount?: number | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          payment_method?: string
+          payment_status?: string
+          receipt_number?: string | null
+          shift_id?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          tenant_id?: string
+          terminal_id?: string | null
+          total_amount?: number
+          transaction_number?: string
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: []
+      }
       product_sales: {
         Row: {
           account_id: string
@@ -7617,6 +7820,8 @@ export type Database = {
       generate_invoice_number: { Args: never; Returns: string }
       generate_otp: { Args: never; Returns: string }
       generate_po_number: { Args: never; Returns: string }
+      generate_pos_transaction_number: { Args: never; Returns: string }
+      generate_shift_number: { Args: never; Returns: string }
       generate_ticket_number: { Args: never; Returns: string }
       generate_tracking_code: { Args: never; Returns: string }
       generate_transfer_number: { Args: never; Returns: string }

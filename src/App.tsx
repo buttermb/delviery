@@ -130,6 +130,8 @@ const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptim
 const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
 const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPage"));
 const POSAnalyticsPage = lazy(() => import("./pages/tenant-admin/POSAnalyticsPage"));
+const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
+const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
 const RoleManagementPage = lazy(() => import("./pages/tenant-admin/RoleManagementPage"));
 const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
 const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
@@ -343,6 +345,8 @@ const App = () => {
                           <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
                           <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegisterPage /></FeatureProtectedRoute>} />
                           <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="pos-shifts" element={<FeatureProtectedRoute featureId="pos-shifts"><POSShiftsPage /></FeatureProtectedRoute>} />
+                          <Route path="z-reports" element={<FeatureProtectedRoute featureId="z-reports"><ZReportPage /></FeatureProtectedRoute>} />
                           <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagementPage /></FeatureProtectedRoute>} />
                           <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute>} />
                           <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalyticsPage /></FeatureProtectedRoute>} />

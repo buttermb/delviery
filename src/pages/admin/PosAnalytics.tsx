@@ -14,21 +14,35 @@ export default function PosAnalytics() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      try {
-        const { data, error } = await supabase
-          .from('pos_transactions' as any)
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(1000);
+      const { data, error } = await supabase
+        .from('pos_transactions')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('payment_status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
-        if (error && error.code === '42P01') return [];
-        if (error) throw error;
-        return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
-        throw error;
-      }
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tenantId,
+  });
+
+  // Get shift summary
+  const { data: shifts } = useQuery({
+    queryKey: ['pos-shifts-summary', tenantId],
+    queryFn: async () => {
+      if (!tenantId) return [];
+
+      const { data, error } = await supabase
+        .from('pos_shifts')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('started_at', { ascending: false })
+        .limit(30);
+
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!tenantId,
   });
@@ -44,7 +58,7 @@ export default function PosAnalytics() {
   const dailySales = (transactions || []).reduce((acc: any, transaction: any) => {
     const date = new Date(transaction.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find((item: any) => item.date === date);
-    const revenue = parseFloat(transaction.total || 0);
+    const revenue = parseFloat(transaction.total_amount || 0);
     if (existing) {
       existing.revenue += revenue;
       existing.count += 1;
@@ -54,9 +68,19 @@ export default function PosAnalytics() {
     return acc;
   }, []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const totalRevenue = transactions?.reduce((sum: number, t: any) => sum + parseFloat(t.total || 0), 0) || 0;
+  const totalRevenue = transactions?.reduce((sum: number, t: any) => sum + parseFloat(t.total_amount || 0), 0) || 0;
   const totalTransactions = transactions?.length || 0;
   const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+  
+  // Calculate payment method breakdown
+  const paymentMethodBreakdown = (transactions || []).reduce((acc: any, t: any) => {
+    const method = t.payment_method || 'other';
+    acc[method] = (acc[method] || 0) + parseFloat(t.total_amount || 0);
+    return acc;
+  }, {});
+
+  const totalShifts = shifts?.length || 0;
+  const openShifts = shifts?.filter((s: any) => s.status === 'open').length || 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -65,7 +89,7 @@ export default function PosAnalytics() {
         <p className="text-muted-foreground">Point of sale performance metrics</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -95,7 +119,39 @@ export default function PosAnalytics() {
             <div className="text-2xl font-bold">${avgTransactionValue.toFixed(2)}</div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Shifts</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{openShifts}</div>
+            <p className="text-xs text-muted-foreground">{totalShifts} total shifts</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Payment Method Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Methods</CardTitle>
+          <CardDescription>Revenue by payment type</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(paymentMethodBreakdown).map(([method, amount]: [string, any]) => (
+              <div key={method} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  <span className="capitalize font-medium">{method}</span>
+                </div>
+                <span className="font-bold">${parseFloat(amount).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
