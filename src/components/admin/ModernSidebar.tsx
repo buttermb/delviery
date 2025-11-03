@@ -45,7 +45,7 @@ const navigation: NavItem[] = [
       { name: 'Orders', href: '/admin/big-plug-order', icon: <FileText className="h-4 w-4" /> },
       { name: 'Transfers & Delivery', href: '/admin/inventory/dispatch', icon: <Truck className="h-4 w-4" /> },
       { name: 'Inventory', href: '/admin/big-plug-inventory', icon: <Package className="h-4 w-4" /> },
-      { name: 'Receiving & Packaging', href: '/admin/inventory/products', icon: <Warehouse className="h-4 w-4" /> },
+      { name: 'Receiving & Packaging', href: '/admin/operations/receiving', icon: <Warehouse className="h-4 w-4" /> },
     ],
   },
   {
@@ -54,7 +54,7 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Disposable Menus', href: '/admin/disposable-menus', icon: <Menu className="h-4 w-4" /> },
       { name: 'Customers', href: '/admin/big-plug-clients', icon: <Users className="h-4 w-4" /> },
-      { name: 'Pricing & Deals', href: '/admin/wholesale-clients', icon: <DollarSign className="h-4 w-4" /> },
+      { name: 'Pricing & Deals', href: '/admin/sales/pricing', icon: <DollarSign className="h-4 w-4" /> },
       { name: 'Sales Analytics', href: '/admin/analytics/comprehensive', icon: <BarChart3 className="h-4 w-4" /> },
     ],
   },
@@ -63,17 +63,17 @@ const navigation: NavItem[] = [
     icon: <Tag className="h-5 w-5" />,
     children: [
       { name: 'Products', href: '/admin/inventory/products', icon: <Package className="h-4 w-4" /> },
-      { name: 'Images & Media', href: '/admin/inventory/products', icon: <Image className="h-4 w-4" /> },
-      { name: 'Batches & Lots', href: '/admin/inventory/products', icon: <Tag className="h-4 w-4" /> },
-      { name: 'Categories & Tags', href: '/admin/inventory/products', icon: <Tag className="h-4 w-4" /> },
+      { name: 'Images & Media', href: '/admin/catalog/images', icon: <Image className="h-4 w-4" /> },
+      { name: 'Batches & Lots', href: '/admin/catalog/batches', icon: <Tag className="h-4 w-4" /> },
+      { name: 'Categories & Tags', href: '/admin/catalog/categories', icon: <Tag className="h-4 w-4" /> },
     ],
   },
   {
     name: 'Locations',
     icon: <Warehouse className="h-5 w-5" />,
     children: [
-      { name: 'Warehouses', href: '/admin/big-plug-inventory', icon: <Warehouse className="h-4 w-4" /> },
-      { name: 'Runners & Vehicles', href: '/admin/fleet-management', icon: <Truck className="h-4 w-4" /> },
+      { name: 'Warehouses', href: '/admin/locations/warehouses', icon: <Warehouse className="h-4 w-4" /> },
+      { name: 'Runners & Vehicles', href: '/admin/locations/runners', icon: <Truck className="h-4 w-4" /> },
       { name: 'Location Analytics', href: '/admin/analytics/comprehensive', icon: <BarChart3 className="h-4 w-4" /> },
     ],
   },

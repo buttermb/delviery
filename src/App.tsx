@@ -116,6 +116,13 @@ const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
+const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
+const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
+const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
+const ReceivingPage = lazy(() => import("./pages/admin/operations/ReceivingPage"));
+const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage"));
+const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
+const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 
 // Coming Soon Pages - Professional & Enterprise Features
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
@@ -290,6 +297,9 @@ const App = () => {
                           <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                           <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
                           <Route path="inventory/products" element={<FeatureProtectedRoute featureId="products"><ProductManagement /></FeatureProtectedRoute>} />
+                          <Route path="catalog/images" element={<FeatureProtectedRoute featureId="products"><ImagesPage /></FeatureProtectedRoute>} />
+                          <Route path="catalog/batches" element={<FeatureProtectedRoute featureId="products"><BatchesPage /></FeatureProtectedRoute>} />
+                          <Route path="catalog/categories" element={<FeatureProtectedRoute featureId="products"><CategoriesPage /></FeatureProtectedRoute>} />
                           <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
                           <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
                           <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrders /></FeatureProtectedRoute>} />
@@ -309,6 +319,9 @@ const App = () => {
                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
                           <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><PointOfSale /></FeatureProtectedRoute>} />
                           <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
+                          <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
+                          <Route path="locations/runners" element={<FeatureProtectedRoute featureId="locations"><RunnersPage /></FeatureProtectedRoute>} />
+                          <Route path="sales/pricing" element={<FeatureProtectedRoute featureId="sales"><AdminPricingPage /></FeatureProtectedRoute>} />
                           
                           {/* 13 Hidden gem pages */}
                           <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat"><AdminLiveChat /></FeatureProtectedRoute>} />
@@ -353,6 +366,7 @@ const App = () => {
                           <Route path="user-management" element={<FeatureProtectedRoute featureId="user-management"><UserManagementPage /></FeatureProtectedRoute>} />
                           <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><PermissionsPage /></FeatureProtectedRoute>} />
                           <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
+                          <Route path="operations/receiving" element={<FeatureProtectedRoute featureId="operations"><ReceivingPage /></FeatureProtectedRoute>} />
                           <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
                           <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
                           <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />

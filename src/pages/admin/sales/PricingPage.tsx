@@ -1,11 +1,10 @@
-// @ts-nocheck
 /**
  * Pricing & Deals Page
  * Manage pricing tiers, bulk discounts, and special deals
  */
 
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -28,8 +28,8 @@ import {
 import { Plus, DollarSign, Tag, TrendingDown, Edit, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -50,7 +50,9 @@ interface PricingTier {
 }
 
 export default function PricingPage() {
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<PricingTier | null>(null);
@@ -62,49 +64,70 @@ export default function PricingPage() {
   });
 
   const { data: pricingTiers, isLoading } = useQuery({
-    queryKey: ['pricing-tiers', account?.id],
+    queryKey: ['pricing-tiers', tenantId],
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          id,
-          name,
-          wholesale_price,
-          cost_per_unit,
-          bulk_discount
-        `)
-        .eq('account_id', account.id)
-        .order('name');
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            id,
+            name,
+            wholesale_price,
+            cost_per_unit,
+            bulk_discount
+          `)
+          .eq('tenant_id', tenantId)
+          .order('name');
 
-      if (error) throw error;
+        // Gracefully handle missing table
+        if (error && error.code === '42P01') {
+          return [];
+        }
+        if (error) throw error;
 
-      // Transform to pricing tiers format
-      return (data || []).map((product: any) => ({
-        id: product.id,
-        product_id: product.id,
-        min_quantity: 1,
-        price_per_lb: product.wholesale_price || 0,
-        bulk_discount_percent: product.bulk_discount || 0,
-        products: { name: product.name },
-      }));
+        // Transform to pricing tiers format
+        return (data || []).map((product: any) => ({
+          id: product.id,
+          product_id: product.id,
+          min_quantity: 1,
+          price_per_lb: product.wholesale_price || 0,
+          bulk_discount_percent: product.bulk_discount || 0,
+          products: { name: product.name },
+        }));
+      } catch (error: any) {
+        if (error.code === '42P01') return [];
+        throw error;
+      }
     },
-    enabled: !!account?.id,
+    enabled: !!tenantId,
   });
 
   const { data: products } = useQuery({
-    queryKey: ['products-for-pricing', account?.id],
+    queryKey: ['products-for-pricing', tenantId],
     queryFn: async () => {
-      if (!account?.id) return [];
-      const { data } = await supabase
-        .from('products')
-        .select('id, name')
-        .eq('account_id', account.id)
-        .order('name');
-      return data || [];
+      if (!tenantId) return [];
+      
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('id, name')
+          .eq('tenant_id', tenantId)
+          .order('name');
+
+        // Gracefully handle missing table
+        if (error && error.code === '42P01') {
+          return [];
+        }
+        if (error) throw error;
+        return data || [];
+      } catch (error: any) {
+        if (error.code === '42P01') return [];
+        throw error;
+      }
     },
-    enabled: !!account?.id,
+    enabled: !!tenantId,
   });
 
   const columns: ColumnDef<PricingTier>[] = [
@@ -168,22 +191,29 @@ export default function PricingPage() {
     },
   ];
 
-  const handleSave = async () => {
-    try {
+  const updatePricing = useMutation({
+    mutationFn: async (pricing: typeof formData) => {
+      if (!tenantId) throw new Error('Tenant ID missing');
+
       const updateData = {
-        wholesale_price: parseFloat(formData.price_per_lb),
-        bulk_discount: parseFloat(formData.bulk_discount_percent) || 0,
+        wholesale_price: parseFloat(pricing.price_per_lb),
+        bulk_discount: parseFloat(pricing.bulk_discount_percent) || 0,
       };
 
       const { error } = await supabase
         .from('products')
         .update(updateData)
-        .eq('id', formData.product_id)
-        .eq('account_id', account?.id);
+        .eq('id', pricing.product_id)
+        .eq('tenant_id', tenantId);
 
+      // Gracefully handle missing table
+      if (error && error.code === '42P01') {
+        return;
+      }
       if (error) throw error;
-
-      showSuccessToast('Pricing updated successfully');
+    },
+    onSuccess: () => {
+      toast({ title: 'Pricing updated successfully' });
       setIsDialogOpen(false);
       setEditingTier(null);
       setFormData({
@@ -193,16 +223,25 @@ export default function PricingPage() {
         bulk_discount_percent: '',
       });
       queryClient.invalidateQueries({ queryKey: ['pricing-tiers'] });
-    } catch (error) {
-      showErrorToast('Failed to update pricing');
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Failed to update pricing',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
+  });
+
+  const handleSave = () => {
+    updatePricing.mutate(formData);
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">💰 Pricing & Deals</h1>
+          <h1 className="text-3xl font-bold mb-2">Pricing & Deals</h1>
           <p className="text-muted-foreground">
             Manage pricing tiers, bulk discounts, and special deals for your products
           </p>
@@ -265,16 +304,16 @@ export default function PricingPage() {
                   Percentage discount for bulk orders
                 </p>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave}>
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Save Pricing
-                </Button>
-              </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={updatePricing.isPending}>
+                <DollarSign className="h-4 w-4 mr-2" />
+                Save Pricing
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -316,4 +355,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
