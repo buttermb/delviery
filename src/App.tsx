@@ -117,7 +117,35 @@ const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManageme
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
 const VendorManagement = lazy(() => import("./pages/admin/VendorManagement"));
 
-// Phase 2-6: Professional & Enterprise Features (Removed - Not implemented yet)
+// Coming Soon Pages - Professional & Enterprise Features
+const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
+const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
+const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
+const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
+const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
+const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
+const CommissionTrackingPage = lazy(() => import("./pages/tenant-admin/CommissionTrackingPage"));
+const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
+const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
+const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
+const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPage"));
+const POSAnalyticsPage = lazy(() => import("./pages/tenant-admin/POSAnalyticsPage"));
+const RoleManagementPage = lazy(() => import("./pages/tenant-admin/RoleManagementPage"));
+const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage"));
+const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
+const UserManagementPage = lazy(() => import("./pages/tenant-admin/UserManagementPage"));
+const PermissionsPage = lazy(() => import("./pages/tenant-admin/PermissionsPage"));
+const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperationsPage"));
+const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
+const WebhooksPage = lazy(() => import("./pages/tenant-admin/WebhooksPage"));
+const CustomIntegrationsPage = lazy(() => import("./pages/tenant-admin/CustomIntegrationsPage"));
+const AutomationPage = lazy(() => import("./pages/tenant-admin/AutomationPage"));
+const DataExportPage = lazy(() => import("./pages/tenant-admin/DataExportPage"));
+const AuditTrailPage = lazy(() => import("./pages/tenant-admin/AuditTrailPage"));
+const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"));
+const WhiteLabelPage = lazy(() => import("./pages/tenant-admin/WhiteLabelPage"));
+const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPage"));
+const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
 // These pages were deleted as they referenced non-existent database tables
 // Will be re-added when proper database migrations are created
 
@@ -302,7 +330,35 @@ const App = () => {
                           <Route path="system-settings" element={<FeatureProtectedRoute featureId="system-settings"><SystemSettings /></FeatureProtectedRoute>} />
                           <Route path="vendor-management" element={<FeatureProtectedRoute featureId="vendor-management"><VendorManagement /></FeatureProtectedRoute>} />
                           
-                          {/* Phase 2-6: Professional & Enterprise Features - Removed (Not implemented yet) */}
+                          {/* Coming Soon Pages - Professional & Enterprise Features */}
+                          <Route path="stock-alerts" element={<FeatureProtectedRoute featureId="stock-alerts"><StockAlertsPage /></FeatureProtectedRoute>} />
+                          <Route path="inventory-transfers" element={<FeatureProtectedRoute featureId="inventory-transfers"><InventoryTransfersPage /></FeatureProtectedRoute>} />
+                          <Route path="customer-analytics" element={<FeatureProtectedRoute featureId="customer-analytics"><CustomerAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="advanced-analytics" element={<FeatureProtectedRoute featureId="advanced-analytics"><AdvancedAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="realtime-dashboard" element={<FeatureProtectedRoute featureId="realtime-dashboard"><RealtimeDashboardPage /></FeatureProtectedRoute>} />
+                          <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReportsPage /></FeatureProtectedRoute>} />
+                          <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
+                          <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
+                          <Route path="route-optimization" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPage /></FeatureProtectedRoute>} />
+                          <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegisterPage /></FeatureProtectedRoute>} />
+                          <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagementPage /></FeatureProtectedRoute>} />
+                          <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute>} />
+                          <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="user-management" element={<FeatureProtectedRoute featureId="user-management"><UserManagementPage /></FeatureProtectedRoute>} />
+                          <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><PermissionsPage /></FeatureProtectedRoute>} />
+                          <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
+                          <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
+                          <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
+                          <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />
+                          <Route path="automation" element={<FeatureProtectedRoute featureId="automation"><AutomationPage /></FeatureProtectedRoute>} />
+                          <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExportPage /></FeatureProtectedRoute>} />
+                          <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute>} />
+                          <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
+                          <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabelPage /></FeatureProtectedRoute>} />
+                          <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
+                          <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                         </Route>
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
