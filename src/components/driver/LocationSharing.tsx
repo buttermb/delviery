@@ -66,8 +66,8 @@ export function DriverLocationSharing({ driverId, className }: LocationSharingPr
           const { error: updateError } = await supabase
             .from('wholesale_runners')
             .update({
-              current_latitude: latitude,
-              current_longitude: longitude,
+              current_lat: latitude,
+              current_lng: longitude,
               last_location_update: new Date().toISOString(),
             })
             .eq('id', currentDriverId)
