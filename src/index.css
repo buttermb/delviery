@@ -2,6 +2,46 @@
 @tailwind utilities;
 @tailwind components;
 
+/* Mobile bottom navigation spacing */
+@media (max-width: 1024px) {
+  main {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Smooth scrolling for mobile */
+@supports (-webkit-touch-callout: none) {
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Hide scrollbar on mobile sidebar */
+@media (max-width: 1024px) {
+  .sidebar-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .sidebar-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Panic button pulse animation */
+@keyframes panic-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+}
+
+.panic-button-active {
+  animation: panic-pulse 1s infinite;
+}
+
 /* NYM Design System - Dark Slate & Teal Premium Brand */
 
 @layer base {

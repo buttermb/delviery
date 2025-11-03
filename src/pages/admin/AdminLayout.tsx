@@ -1,6 +1,8 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantAdminSidebar } from "@/components/tenant-admin/TenantAdminSidebar";
+import { Sidebar as NewSidebar } from "@/components/admin/Sidebar";
+import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
 import InstallPWA from "@/components/InstallPWA";
