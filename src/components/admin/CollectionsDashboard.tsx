@@ -6,11 +6,15 @@ import { useWholesaleClients, useWholesaleOrders } from "@/hooks/useWholesaleDat
 import { format, differenceInDays } from "date-fns";
 import { useState } from "react";
 import { PaymentDialog } from "./PaymentDialog";
+import { SendSMS } from "./SendSMS";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showInfoToast } from "@/utils/toastHelpers";
 
 export function CollectionsDashboard() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
+  const [smsClient, setSmsClient] = useState<any>(null);
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
 
@@ -130,7 +134,8 @@ export function CollectionsDashboard() {
                           size="sm" 
                           variant="outline"
                           onClick={() => {
-                            showInfoToast("SMS Feature", `Would send SMS to ${client.contact_name}`);
+                            setSmsClient(client);
+                            setSmsDialogOpen(true);
                           }}
                         >
                           <MessageSquare className="h-3 w-3" />
@@ -198,6 +203,26 @@ export function CollectionsDashboard() {
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
         />
+      )}
+
+      {/* SMS Dialog */}
+      {smsClient && (
+        <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Send SMS to {smsClient.business_name || smsClient.contact_name}</DialogTitle>
+            </DialogHeader>
+            <SendSMS
+              customerId={smsClient.id}
+              customerPhone={smsClient.phone}
+              customerName={smsClient.business_name || smsClient.contact_name}
+              onSent={() => {
+                setSmsDialogOpen(false);
+                setSmsClient(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

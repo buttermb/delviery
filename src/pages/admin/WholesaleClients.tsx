@@ -26,12 +26,16 @@ import {
 import { useNavigate } from "react-router-dom";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
+import { SendSMS } from "@/components/admin/SendSMS";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function WholesaleClients() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: any }>({ open: false });
+  const [smsDialogOpen, setSmsDialogOpen] = useState(false);
+  const [smsClient, setSmsClient] = useState<any>(null);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ["wholesale-clients", filter],
@@ -243,7 +247,15 @@ export default function WholesaleClients() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button size="sm" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSmsClient(client);
+                          setSmsDialogOpen(true);
+                        }}
+                      >
                         <MessageSquare className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="ghost" onClick={(e) => e.stopPropagation()}>
@@ -295,6 +307,26 @@ export default function WholesaleClients() {
           open={paymentDialog.open}
           onOpenChange={(open) => setPaymentDialog({ open, client: open ? paymentDialog.client : undefined })}
         />
+      )}
+
+      {/* SMS Dialog */}
+      {smsClient && (
+        <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Send SMS to {smsClient.business_name || smsClient.contact_name}</DialogTitle>
+            </DialogHeader>
+            <SendSMS
+              customerId={smsClient.id}
+              customerPhone={smsClient.phone}
+              customerName={smsClient.business_name || smsClient.contact_name}
+              onSent={() => {
+                setSmsDialogOpen(false);
+                setSmsClient(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
