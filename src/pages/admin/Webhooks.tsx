@@ -55,7 +55,7 @@ export default function Webhooks() {
 
       try {
         const { data, error } = await supabase
-          .from('webhooks')
+          .from('webhooks' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -76,7 +76,7 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('webhooks')
+        .from('webhooks' as any)
         .insert({
           tenant_id: tenantId,
           name: webhook.name,
@@ -115,7 +115,7 @@ export default function Webhooks() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('webhooks')
+        .from('webhooks' as any)
         .update({
           name: webhook.name,
           url: webhook.url,

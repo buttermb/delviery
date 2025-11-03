@@ -51,7 +51,7 @@ export default function CustomIntegrations() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_integrations')
+          .from('custom_integrations' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -72,7 +72,7 @@ export default function CustomIntegrations() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_integrations')
+        .from('custom_integrations' as any)
         .insert({
           tenant_id: tenantId,
           name: integration.name,

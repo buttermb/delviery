@@ -16,7 +16,7 @@ export default function PosAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('pos_transactions')
+          .from('pos_transactions' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

@@ -19,7 +19,7 @@ export default function AuditTrail() {
 
       try {
         const { data, error } = await supabase
-          .from('audit_trail')
+          .from('audit_trail' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

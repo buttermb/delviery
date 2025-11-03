@@ -17,7 +17,7 @@ export default function CommissionTracking() {
       try {
         // Try to get from commission_transactions table first
         const { data, error } = await supabase
-          .from('commission_transactions')
+          .from('commission_transactions' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });

@@ -49,7 +49,7 @@ export default function Automation() {
 
       try {
         const { data, error } = await supabase
-          .from('automation_rules')
+          .from('automation_rules' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -70,7 +70,7 @@ export default function Automation() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('automation_rules')
+        .from('automation_rules' as any)
         .insert({
           tenant_id: tenantId,
           name: rule.name,
@@ -111,7 +111,7 @@ export default function Automation() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('automation_rules')
+        .from('automation_rules' as any)
         .update({
           name: rule.name,
           description: rule.description || null,

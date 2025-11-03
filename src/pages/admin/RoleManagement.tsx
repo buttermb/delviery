@@ -47,7 +47,7 @@ export default function RoleManagement() {
 
       try {
         const { data, error } = await supabase
-          .from('roles')
+          .from('roles' as any)
           .select('*, role_permissions(permission_key)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -72,7 +72,7 @@ export default function RoleManagement() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data: roleData, error: roleError } = await supabase
-        .from('roles')
+        .from('roles' as any)
         .insert({
           tenant_id: tenantId,
           name: role.name,
@@ -122,7 +122,7 @@ export default function RoleManagement() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data: roleData, error: roleError } = await supabase
-        .from('roles')
+        .from('roles' as any)
         .update({
           name: role.name,
           description: role.description || null,

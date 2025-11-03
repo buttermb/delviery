@@ -24,7 +24,7 @@ export default function CustomDomain() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_domains')
+          .from('custom_domains' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -45,7 +45,7 @@ export default function CustomDomain() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_domains')
+        .from('custom_domains' as any)
         .insert({
           tenant_id: tenantId,
           domain: domainName,

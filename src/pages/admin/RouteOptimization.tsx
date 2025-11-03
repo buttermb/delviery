@@ -18,7 +18,7 @@ export default function RouteOptimization() {
       try {
         // Try to get optimized routes from a routes table
         const { data, error } = await supabase
-          .from('routes')
+          .from('routes' as any)
           .select('*, deliveries(*, orders(*))')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

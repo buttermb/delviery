@@ -31,7 +31,7 @@ export default function WhiteLabel() {
 
       try {
         const { data, error } = await supabase
-          .from('white_label_settings')
+          .from('white_label_settings' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .single();
@@ -53,7 +53,7 @@ export default function WhiteLabel() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('white_label_settings')
+        .from('white_label_settings' as any)
         .upsert({
           tenant_id: tenantId,
           ...brandingData,

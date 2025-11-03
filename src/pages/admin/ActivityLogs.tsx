@@ -16,7 +16,7 @@ export default function ActivityLogs() {
 
       try {
         const { data, error } = await supabase
-          .from('activity_logs')
+          .from('activity_logs' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

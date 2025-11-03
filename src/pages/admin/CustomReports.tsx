@@ -46,7 +46,7 @@ export default function CustomReports() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_reports')
+          .from('custom_reports' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -67,7 +67,7 @@ export default function CustomReports() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_reports')
+        .from('custom_reports' as any)
         .insert({
           tenant_id: tenantId,
           name: report.name,
@@ -107,7 +107,7 @@ export default function CustomReports() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_reports')
+        .from('custom_reports' as any)
         .update({
           name: report.name,
           description: report.description || null,

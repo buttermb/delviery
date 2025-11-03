@@ -43,7 +43,7 @@ export default function Permissions() {
 
       try {
         const { data, error } = await supabase
-          .from('roles')
+          .from('roles' as any)
           .select('*, role_permissions(permission_key)')
           .eq('tenant_id', tenantId);
 

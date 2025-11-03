@@ -23,7 +23,7 @@ export default function DataExport() {
 
       try {
         const { data, error } = await supabase
-          .from('data_exports')
+          .from('data_exports' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

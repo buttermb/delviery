@@ -21,7 +21,7 @@ export default function Compliance() {
 
       try {
         const { data, error } = await supabase
-          .from('compliance_settings')
+          .from('compliance_settings' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .single();
