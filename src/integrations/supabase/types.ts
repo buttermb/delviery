@@ -1676,41 +1676,79 @@ export type Database = {
       custom_reports: {
         Row: {
           created_at: string | null
+          created_by: string
+          custom_end_date: string | null
+          custom_start_date: string | null
+          date_range: string | null
           description: string | null
-          format: string | null
+          email_recipients: string[] | null
+          filters: Json | null
           id: string
+          is_active: boolean | null
           last_run_at: string | null
           name: string
-          query: string
+          report_type: string
           schedule: string | null
+          schedule_day_of_month: number | null
+          schedule_day_of_week: number | null
+          schedule_time: string | null
+          selected_fields: Json
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          created_by: string
+          custom_end_date?: string | null
+          custom_start_date?: string | null
+          date_range?: string | null
           description?: string | null
-          format?: string | null
+          email_recipients?: string[] | null
+          filters?: Json | null
           id?: string
+          is_active?: boolean | null
           last_run_at?: string | null
           name: string
-          query: string
+          report_type: string
           schedule?: string | null
+          schedule_day_of_month?: number | null
+          schedule_day_of_week?: number | null
+          schedule_time?: string | null
+          selected_fields?: Json
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          created_by?: string
+          custom_end_date?: string | null
+          custom_start_date?: string | null
+          date_range?: string | null
           description?: string | null
-          format?: string | null
+          email_recipients?: string[] | null
+          filters?: Json | null
           id?: string
+          is_active?: boolean | null
           last_run_at?: string | null
           name?: string
-          query?: string
+          report_type?: string
           schedule?: string | null
+          schedule_day_of_month?: number | null
+          schedule_day_of_week?: number | null
+          schedule_time?: string | null
+          selected_fields?: Json
           tenant_id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_balances: {
         Row: {
@@ -6222,6 +6260,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      report_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          executed_by: string | null
+          execution_type: string
+          id: string
+          report_id: string
+          result_count: number | null
+          result_data: Json | null
+          started_at: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          executed_by?: string | null
+          execution_type?: string
+          id?: string
+          report_id: string
+          result_count?: number | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          executed_by?: string | null
+          execution_type?: string
+          id?: string
+          report_id?: string
+          result_count?: number | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_executions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "custom_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_executions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
