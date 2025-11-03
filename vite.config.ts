@@ -56,13 +56,13 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'placeholder.svg'],
       manifest: {
-        name: 'New York Minute NYC - Premium Flower Delivery',
-        short_name: 'NYM NYC',
-        description: 'Premium flower delivery in NYC with fast, discreet service.',
-        theme_color: '#2dd4bf',
-        background_color: '#0f1419',
+        name: 'Delivery Platform - Wholesale Management',
+        short_name: 'Delivery Platform',
+        description: 'Comprehensive wholesale and delivery management platform for your business.',
+        theme_color: '#000000',
+        background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         scope: '/',
         start_url: '/',
         icons: [
@@ -77,6 +77,23 @@ export default defineConfig(({ mode }) => ({
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any maskable'
+          }
+        ],
+        categories: ['business', 'productivity'],
+        shortcuts: [
+          {
+            name: 'Dashboard',
+            short_name: 'Dashboard',
+            description: 'Open dashboard',
+            url: '/admin/dashboard',
+            icons: [{ src: '/placeholder.svg', sizes: '192x192' }]
+          },
+          {
+            name: 'Orders',
+            short_name: 'Orders',
+            description: 'View orders',
+            url: '/admin/orders',
+            icons: [{ src: '/placeholder.svg', sizes: '192x192' }]
           }
         ]
       },

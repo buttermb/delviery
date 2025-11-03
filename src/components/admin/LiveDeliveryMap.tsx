@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
-import { Navigation, Clock, Package, AlertCircle } from "lucide-react";
+import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateETA } from "@/lib/utils/eta-calculation";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
 
@@ -15,12 +16,36 @@ interface LiveDeliveryMapProps {
   showAll?: boolean;
 }
 
+// Global function for calling drivers (accessed from popup buttons)
+declare global {
+  interface Window {
+    callDriver?: (driverId: string) => void;
+  }
+}
+
 export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, { runner: mapboxgl.Marker; destination: mapboxgl.Marker }>>(new Map());
   const [mapLoaded, setMapLoaded] = useState(false);
   const { data: deliveries = [], refetch } = useWholesaleDeliveries();
+  const etasRef = useRef<Map<string, { formatted: string; eta: Date }>>(new Map());
+  
+  // Set up global call driver function
+  useEffect(() => {
+    window.callDriver = (driverId: string) => {
+      const delivery = deliveries.find(d => d.runner_id === driverId);
+      if (delivery?.runner?.phone) {
+        window.location.href = `tel:${delivery.runner.phone}`;
+      } else {
+        alert('Driver phone number not available');
+      }
+    };
+    
+    return () => {
+      delete window.callDriver;
+    };
+  }, [deliveries]);
 
   // Filter deliveries based on props - include all active statuses
   const activeDeliveries = deliveries.filter(d => 
@@ -155,10 +180,50 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           runnerEl.style.cursor = "pointer";
           runnerEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
 
+          // Calculate ETA for this delivery
+          let etaDisplay = 'Calculating...';
+          let etaResult = null;
+          
+          if (runnerLocation && typeof runnerLocation.lat === 'number') {
+            calculateETA(
+              [runnerLocation.lng, runnerLocation.lat],
+              [destLng, destLat]
+            ).then(result => {
+              if (result) {
+                etaResult = result;
+                // Update popup with real ETA
+                const updatedPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                  <div style="padding: 8px;">
+                    <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Order #${orderNumber}</p>
+                    ${etaResult ? `
+                      <div style="font-size: 12px; margin-bottom: 4px;">
+                        <span style="color: #666;">ETA:</span>
+                        <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${etaResult.formatted}</span>
+                      </div>
+                    ` : ''}
+                    <div style="font-size: 12px; color: #3b82f6; font-weight: 500;">In Transit</div>
+                    <button 
+                      onclick="window.callDriver && window.callDriver('${delivery.runner_id || ''}')" 
+                      style="margin-top: 6px; padding: 4px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; width: 100%;"
+                    >
+                      📞 Call Driver
+                    </button>
+                  </div>
+                `);
+                runnerMarker.setPopup(updatedPopup);
+              }
+            });
+          }
+
           const runnerPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="padding: 8px;">
               <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
               <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Order #${orderNumber}</p>
+              <div style="font-size: 12px; margin-bottom: 4px;">
+                <span style="color: #666;">ETA:</span>
+                <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${etaDisplay}</span>
+              </div>
               <div style="font-size: 12px; color: #3b82f6; font-weight: 500;">In Transit</div>
             </div>
           `);
@@ -183,14 +248,22 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           destEl.style.cursor = "pointer";
           destEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>`;
 
+          // Use calculated ETA if available, otherwise show calculating
+          const destETADisplay = etaResult ? etaResult.formatted : 'Calculating...';
+          
           const destPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="padding: 8px;">
               <h3 style="font-weight: 600; margin-bottom: 4px;">📍 Destination</h3>
               <p style="font-size: 12px; color: #666; margin-bottom: 4px;">${clientName}</p>
               <div style="font-size: 12px;">
                 <span style="color: #666;">ETA:</span>
-                <span style="font-weight: 500; margin-left: 4px;">~15 mins</span>
+                <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${destETADisplay}</span>
               </div>
+              ${etaResult ? `
+                <div style="font-size: 11px; color: #999; margin-top: 4px;">
+                  Arriving at ${etaResult.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              ` : ''}
             </div>
           `);
 

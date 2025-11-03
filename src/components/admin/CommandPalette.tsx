@@ -5,8 +5,18 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAccount } from '@/contexts/AccountContext';
+import { 
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+} from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { 
   Search, Package, Menu, Plus, Users, DollarSign, 
@@ -14,6 +24,7 @@ import {
   ArrowRight, Sparkles, Shield, Bell, Printer, Tag, Warehouse
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface CommandItem {
   id: string;
@@ -28,10 +39,53 @@ interface CommandItem {
 
 export function CommandPalette() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { account } = useAccount();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Search actual data (customers, orders, products) when search term is 2+ chars
+  const { data: searchResults } = useQuery({
+    queryKey: ['command-search', search, account?.id],
+    queryFn: async () => {
+      if (!search || search.length < 2 || !account?.id) return null;
+
+      const searchLower = search.toLowerCase();
+
+      // Search customers, orders, and products in parallel
+      const [customersResult, ordersResult, productsResult] = await Promise.all([
+        supabase
+          .from('wholesale_clients')
+          .select('id, business_name, contact_name, phone, email')
+          .or(`business_name.ilike.%${searchLower}%,contact_name.ilike.%${searchLower}%,phone.ilike.%${searchLower}%,email.ilike.%${searchLower}%`)
+          .eq('account_id', account.id)
+          .limit(5)
+          .catch(() => ({ data: null, error: null })),
+        
+        supabase
+          .from('wholesale_orders')
+          .select('id, order_number, total_amount, status, created_at')
+          .or(`order_number.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
+          .eq('account_id', account.id)
+          .limit(5)
+          .catch(() => ({ data: null, error: null })),
+        
+        supabase
+          .from('wholesale_inventory')
+          .select('id, strain, category, weight_lbs, price_per_lb')
+          .or(`strain.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
+          .eq('account_id', account.id)
+          .limit(5)
+          .catch(() => ({ data: null, error: null })),
+      ]);
+
+      return {
+        customers: customersResult.data || [],
+        orders: ordersResult.data || [],
+        products: productsResult.data || [],
+      };
+    },
+    enabled: search.length >= 2 && !!account?.id,
+  });
 
   // Command items organized by category
   const commands: CommandItem[] = [
@@ -260,8 +314,8 @@ export function CommandPalette() {
     },
   ];
 
-  // Filter commands based on search
-  const filteredCommands = search
+  // Filter navigation commands based on search
+  const filteredCommands = search && search.length < 2
     ? commands.filter(cmd => {
         const searchLower = search.toLowerCase();
         return (
@@ -270,7 +324,9 @@ export function CommandPalette() {
           cmd.category.toLowerCase().includes(searchLower)
         );
       })
-    : commands;
+    : search && search.length >= 2
+    ? [] // Hide navigation commands when searching data
+    : commands; // Show all when no search
 
   // Group by category
   const groupedCommands = filteredCommands.reduce((acc, cmd) => {
@@ -281,42 +337,18 @@ export function CommandPalette() {
     return acc;
   }, {} as Record<string, CommandItem[]>);
 
-  // Keyboard shortcuts
+  // Keyboard shortcut to open (Cmd+K / Ctrl+K)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen(open => !open);
       }
-
-      if (open) {
-        if (e.key === 'Escape') {
-          setOpen(false);
-          setSearch('');
-        }
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setSelectedIndex(i => Math.min(i + 1, filteredCommands.length - 1));
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setSelectedIndex(i => Math.max(i - 1, 0));
-        }
-        if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
-          e.preventDefault();
-          handleSelect(filteredCommands[selectedIndex]);
-        }
-      }
     };
 
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, [open, selectedIndex, filteredCommands]);
-
-  // Reset selected index when search changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [search]);
+  }, []);
 
   const handleSelect = (cmd: CommandItem) => {
     if (cmd.href) {
@@ -328,6 +360,13 @@ export function CommandPalette() {
     setOpen(false);
     setSearch('');
   };
+
+  // Combine navigation commands and search results for display
+  const hasSearchResults = searchResults && (
+    searchResults.customers.length > 0 ||
+    searchResults.orders.length > 0 ||
+    searchResults.products.length > 0
+  );
 
   return (
     <>
@@ -343,82 +382,110 @@ export function CommandPalette() {
         </kbd>
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <div className="flex items-center border-b px-4 py-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <Input
-              placeholder="Type a command or search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              autoFocus
-            />
-            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </div>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Search customers, orders, products, or type a command..." 
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
 
-          <div className="max-h-[400px] overflow-y-auto">
-            {Object.keys(groupedCommands).length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                No results found.
-              </div>
-            ) : (
-              Object.entries(groupedCommands).map(([category, items]) => (
-                <div key={category} className="px-2 py-2">
-                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
-                    {category}
-                  </div>
-                  <div className="space-y-1">
-                    {items.map((cmd, index) => {
-                      const globalIndex = filteredCommands.findIndex(c => c.id === cmd.id);
-                      const isSelected = globalIndex === selectedIndex;
-                      
-                      return (
-                        <button
-                          key={cmd.id}
-                          onClick={() => handleSelect(cmd)}
-                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm',
-                            'hover:bg-muted transition-colors',
-                            isSelected && 'bg-muted'
-                          )}
-                        >
-                          <div className={cn(
-                            'flex-shrink-0',
-                            isSelected ? 'text-primary' : 'text-muted-foreground'
-                          )}>
-                            {cmd.icon}
-                          </div>
-                          <span className="flex-1 text-left">{cmd.label}</span>
-                          {cmd.shortcut && (
-                            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                              {cmd.shortcut}
-                            </kbd>
-                          )}
-                          <ArrowRight className={cn(
-                            'h-4 w-4 transition-opacity',
-                            isSelected ? 'opacity-100' : 'opacity-0'
-                          )} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          {/* Search Results (customers, orders, products) */}
+          {hasSearchResults && (
+            <>
+              {searchResults.customers.length > 0 && (
+                <CommandGroup heading="Customers">
+                  {searchResults.customers.map((customer: any) => (
+                    <CommandItem
+                      key={`customer-${customer.id}`}
+                      onSelect={() => {
+                        navigate(`/admin/wholesale-clients/${customer.id}`);
+                        setOpen(false);
+                        setSearch('');
+                      }}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      <div className="flex-1">
+                        <div className="font-medium">{customer.business_name || customer.contact_name}</div>
+                        {customer.phone && (
+                          <div className="text-xs text-muted-foreground">{customer.phone}</div>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
 
-          <div className="border-t px-4 py-2 text-xs text-muted-foreground">
-            <div className="flex items-center justify-between">
-              <span>Navigate with ↑↓ and press Enter to select</span>
-              <span>Esc to close</span>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+              {searchResults.orders.length > 0 && (
+                <CommandGroup heading="Orders">
+                  {searchResults.orders.map((order: any) => (
+                    <CommandItem
+                      key={`order-${order.id}`}
+                      onSelect={() => {
+                        navigate(`/admin/wholesale-orders/${order.id}`);
+                        setOpen(false);
+                        setSearch('');
+                      }}
+                    >
+                      <Package className="mr-2 h-4 w-4" />
+                      <div className="flex-1">
+                        <div className="font-medium">#{order.order_number}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatCurrency(Number(order.total_amount || 0))} • {order.status}
+                        </div>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {searchResults.products.length > 0 && (
+                <CommandGroup heading="Products">
+                  {searchResults.products.map((product: any) => (
+                    <CommandItem
+                      key={`product-${product.id}`}
+                      onSelect={() => {
+                        navigate(`/admin/wholesale-inventory-manage?id=${product.id}`);
+                        setOpen(false);
+                        setSearch('');
+                      }}
+                    >
+                      <Package className="mr-2 h-4 w-4" />
+                      <div className="flex-1">
+                        <div className="font-medium">{product.strain || 'Product'}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {product.category} • {product.weight_lbs} lbs
+                        </div>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </>
+          )}
+
+          {/* Navigation Commands (when not searching data or search < 2 chars) */}
+          {filteredCommands.length > 0 && Object.keys(groupedCommands).length > 0 && (
+            Object.entries(groupedCommands).map(([category, items]) => (
+              <CommandGroup key={category} heading={category}>
+                {items.map((cmd) => (
+                  <CommandItem
+                    key={cmd.id}
+                    onSelect={() => handleSelect(cmd)}
+                  >
+                    <div className="mr-2">{cmd.icon}</div>
+                    <span>{cmd.label}</span>
+                    {cmd.shortcut && (
+                      <CommandShortcut>{cmd.shortcut}</CommandShortcut>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))
+          )}
+        </CommandList>
+      </CommandDialog>
     </>
   );
 }

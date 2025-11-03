@@ -12,6 +12,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { MobileNav } from "@/components/admin/MobileNav";
+import { PanicButton } from "@/components/admin/PanicButton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -111,7 +113,7 @@ const AdminLayout = () => {
               <ThemeToggle />
             </div>
           </header>
-          <main className="flex-1 overflow-auto bg-muted/30 pb-safe">
+          <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-safe">
             <AdminErrorBoundary>
               <Suspense fallback={<LoadingFallback />}>
                 <Outlet />
@@ -120,6 +122,8 @@ const AdminLayout = () => {
           </main>
         </div>
       </div>
+      <MobileNav />
+      <PanicButton />
       <InstallPWA />
     </SidebarProvider>
   );
