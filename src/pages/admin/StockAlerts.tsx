@@ -25,7 +25,7 @@ export default function StockAlerts() {
         if (error && error.code === '42P01') {
           // Table doesn't exist, try to calculate from wholesale_inventory
           const { data: inventory, error: invError } = await supabase
-            .from('wholesale_inventory')
+            .from('wholesale_inventory' as any)
             .select('*, products(*)')
             .eq('tenant_id', tenantId);
 

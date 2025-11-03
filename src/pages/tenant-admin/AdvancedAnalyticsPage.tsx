@@ -14,7 +14,7 @@ export default function AdvancedAnalyticsPage() {
       if (!tenant?.id) return [];
       
       const { data, error } = await supabase
-        .from('orders')
+        .from('orders' as any)
         .select('*, order_items(*)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
@@ -27,7 +27,7 @@ export default function AdvancedAnalyticsPage() {
   });
 
   // Revenue trends
-  const revenueByMonth = orders.reduce((acc: any, order) => {
+  const revenueByMonth = (orders as any[]).reduce((acc: any, order: any) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     if (!acc[month]) acc[month] = { month, revenue: 0, orders: 0 };
     acc[month].revenue += order.total_amount || 0;
@@ -38,7 +38,7 @@ export default function AdvancedAnalyticsPage() {
   const revenueData = Object.values(revenueByMonth).slice(-12);
 
   // Product performance
-  const productPerformance = orders.flatMap(order => order.order_items || [])
+  const productPerformance = (orders as any[]).flatMap((order: any) => order.order_items || [])
     .reduce((acc: any, item: any) => {
       const name = item.product_name || 'Unknown';
       if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
@@ -121,13 +121,13 @@ export default function AdvancedAnalyticsPage() {
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Avg Order Value</p>
                 <p className="text-2xl font-bold">
-                  ${orders.length > 0 ? (orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length).toFixed(2) : '0.00'}
+                  ${orders.length > 0 ? ((orders as any[]).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) / orders.length).toFixed(2) : '0.00'}
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${orders.reduce((sum, o) => sum + (o.total_amount || 0), 0).toFixed(2)}
+                  ${(orders as any[]).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0).toFixed(2)}
                 </p>
               </div>
             </div>

@@ -19,7 +19,7 @@ export default function AdvancedAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('orders')
+          .from('orders' as any)
           .select('*, order_items(*), customers(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -43,7 +43,7 @@ export default function AdvancedAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('customers')
+          .from('customers' as any)
           .select('*')
           .eq('tenant_id', tenantId);
 

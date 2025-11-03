@@ -25,7 +25,7 @@ export default function CommissionTracking() {
         if (error && error.code === '42P01') {
           // Table doesn't exist, calculate from orders
           const { data: orders, error: orderError } = await supabase
-            .from('orders')
+            .from('orders' as any)
             .select('*')
             .eq('tenant_id', tenantId);
 

@@ -27,7 +27,7 @@ export default function RouteOptimization() {
         if (error && error.code === '42P01') {
           // Fallback: try to get deliveries
           const { data: deliveries, error: delError } = await supabase
-            .from('deliveries')
+            .from('deliveries' as any)
             .select('*')
             .eq('tenant_id', tenantId);
 

@@ -41,27 +41,27 @@ export default function Compliance() {
   const complianceChecks = [
     {
       name: 'Data Encryption',
-      status: compliance?.data_encryption === true ? 'compliant' : 'pending',
+      status: (compliance as any)?.data_encryption === true ? 'compliant' : 'pending',
       description: 'Ensure all data is encrypted at rest and in transit',
     },
     {
       name: 'GDPR Compliance',
-      status: compliance?.gdpr_compliant === true ? 'compliant' : 'pending',
+      status: (compliance as any)?.gdpr_compliant === true ? 'compliant' : 'pending',
       description: 'Meet GDPR data protection requirements',
     },
     {
       name: 'PCI DSS',
-      status: compliance?.pci_compliant === true ? 'compliant' : 'pending',
+      status: (compliance as any)?.pci_compliant === true ? 'compliant' : 'pending',
       description: 'Payment Card Industry Data Security Standards',
     },
     {
       name: 'Access Controls',
-      status: compliance?.access_controls_enabled === true ? 'compliant' : 'pending',
+      status: (compliance as any)?.access_controls_enabled === true ? 'compliant' : 'pending',
       description: 'Role-based access control implemented',
     },
     {
       name: 'Audit Logging',
-      status: compliance?.audit_logging_enabled === true ? 'compliant' : 'pending',
+      status: (compliance as any)?.audit_logging_enabled === true ? 'compliant' : 'pending',
       description: 'Comprehensive audit trail maintained',
     },
   ];

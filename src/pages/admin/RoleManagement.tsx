@@ -89,11 +89,11 @@ export default function RoleManagement() {
       }
 
       if (role.permissions && role.permissions.length > 0) {
-        const { error: permError } = await supabase.from('role_permissions').insert(
+        const { error: permError } = await supabase.from('role_permissions' as any).insert(
           role.permissions.map((perm) => ({
-            role_id: roleData.id,
+            role_id: (roleData as any).id,
             permission_key: perm,
-          }))
+          })) as any
         );
 
         if (permError && permError.code !== '42P01') {
@@ -139,14 +139,14 @@ export default function RoleManagement() {
         throw roleError;
       }
 
-      await supabase.from('role_permissions').delete().eq('role_id', id);
+      await supabase.from('role_permissions' as any).delete().eq('role_id', id);
 
       if (role.permissions.length > 0) {
-        const { error: permError } = await supabase.from('role_permissions').insert(
+        const { error: permError } = await supabase.from('role_permissions' as any).insert(
           role.permissions.map((perm) => ({
             role_id: id,
             permission_key: perm,
-          }))
+          })) as any
         );
 
         if (permError && permError.code !== '42P01') {

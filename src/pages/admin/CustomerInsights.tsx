@@ -19,7 +19,7 @@ export default function CustomerInsights() {
 
       try {
         const { data, error } = await supabase
-          .from('customers')
+          .from('customers' as any)
           .select('*')
           .eq('id', id)
           .eq('tenant_id', tenantId)
@@ -43,7 +43,7 @@ export default function CustomerInsights() {
 
       try {
         const { data, error } = await supabase
-          .from('orders')
+          .from('orders' as any)
           .select('*, order_items(*)')
           .eq('customer_id', id)
           .eq('tenant_id', tenantId)
@@ -91,7 +91,7 @@ export default function CustomerInsights() {
       <div>
         <h1 className="text-3xl font-bold">Customer Insights</h1>
         <p className="text-muted-foreground">
-          Detailed analytics for {customer.first_name} {customer.last_name}
+          Detailed analytics for {(customer as any).first_name} {(customer as any).last_name}
         </p>
       </div>
 
@@ -104,20 +104,20 @@ export default function CustomerInsights() {
             <div>
               <div className="text-sm font-medium">Name</div>
               <div className="text-lg">
-                {customer.first_name} {customer.last_name}
+                {(customer as any).first_name} {(customer as any).last_name}
               </div>
             </div>
             <div>
               <div className="text-sm font-medium">Email</div>
-              <div className="text-sm text-muted-foreground">{customer.email || 'N/A'}</div>
+              <div className="text-sm text-muted-foreground">{(customer as any).email || 'N/A'}</div>
             </div>
             <div>
               <div className="text-sm font-medium">Phone</div>
-              <div className="text-sm text-muted-foreground">{customer.phone || 'N/A'}</div>
+              <div className="text-sm text-muted-foreground">{(customer as any).phone || 'N/A'}</div>
             </div>
             <div>
               <div className="text-sm font-medium">Type</div>
-              <Badge>{customer.customer_type || 'regular'}</Badge>
+              <Badge>{(customer as any).customer_type || 'regular'}</Badge>
             </div>
           </div>
         </CardContent>
@@ -160,7 +160,7 @@ export default function CustomerInsights() {
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{customer.loyalty_points || 0}</div>
+            <div className="text-2xl font-bold">{(customer as any).loyalty_points || 0}</div>
           </CardContent>
         </Card>
       </div>

@@ -31,7 +31,7 @@ export default function PrioritySupport() {
 
       try {
         const { data, error } = await supabase
-          .from('support_tickets')
+          .from('support_tickets' as any)
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -53,9 +53,8 @@ export default function PrioritySupport() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('support_tickets')
+        .from('support_tickets' as any)
         .insert({
-          tenant_id: tenantId,
           subject: ticket.subject,
           description: ticket.description,
           priority: ticket.priority || 'high',

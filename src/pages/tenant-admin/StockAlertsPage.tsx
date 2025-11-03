@@ -16,7 +16,7 @@ export default function StockAlertsPage() {
       
       // Try stock_alerts table first
       const { data: alertData, error: alertError } = await supabase
-        .from('stock_alerts')
+        .from('stock_alerts' as any)
         .select('*')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
@@ -24,7 +24,7 @@ export default function StockAlertsPage() {
       if (alertError && alertError.code === '42P01') {
         // Fallback: Calculate from wholesale_inventory
         const { data: inventory, error: invError } = await supabase
-          .from('wholesale_inventory')
+          .from('wholesale_inventory' as any)
           .select('*')
           .eq('tenant_id', tenant.id);
 
@@ -32,8 +32,8 @@ export default function StockAlertsPage() {
         if (invError) throw invError;
 
         return (inventory || [])
-          .filter(item => item.quantity_lbs < 50)
-          .map(item => ({
+          .filter((item: any) => item.quantity_lbs < 50)
+          .map((item: any) => ({
             id: item.id,
             product_name: item.product_name,
             current_stock: item.quantity_lbs,
@@ -57,8 +57,8 @@ export default function StockAlertsPage() {
     );
   }
 
-  const criticalCount = alerts.filter(a => a.severity === 'critical').length;
-  const warningCount = alerts.filter(a => a.severity === 'warning').length;
+  const criticalCount = alerts.filter((a: any) => a.severity === 'critical').length;
+  const warningCount = alerts.filter((a: any) => a.severity === 'warning').length;
 
   return (
     <div className="container mx-auto p-6 space-y-6">

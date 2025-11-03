@@ -32,7 +32,7 @@ export default function InventoryTransfers() {
 
       try {
         const { data, error } = await supabase
-          .from('inventory_transfers')
+          .from('inventory_transfers' as any)
           .select('*, product:wholesale_inventory(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -54,13 +54,12 @@ export default function InventoryTransfers() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('inventory_transfers')
+        .from('inventory_transfers' as any)
         .insert({
-          tenant_id: tenantId,
           product_id: transfer.product_id,
-          from_warehouse: transfer.from_warehouse,
-          to_warehouse: transfer.to_warehouse,
-          quantity_lbs: parseFloat(transfer.quantity_lbs),
+          from_location_id: transfer.from_warehouse,
+          to_location_id: transfer.to_warehouse,
+          quantity: parseFloat(transfer.quantity_lbs),
           notes: transfer.notes || null,
           status: 'pending',
         })

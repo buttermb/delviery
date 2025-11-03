@@ -19,13 +19,13 @@ export default function RealtimeDashboard() {
       try {
         const [ordersResult, customersResult] = await Promise.all([
           supabase
-            .from('orders')
+            .from('orders' as any)
             .select('*')
             .eq('tenant_id', tenantId)
             .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
             .limit(50),
           supabase
-            .from('customers')
+            .from('customers' as any)
             .select('*')
             .eq('tenant_id', tenantId)
             .limit(1),
@@ -64,13 +64,14 @@ export default function RealtimeDashboard() {
           filter: `tenant_id=eq.${tenantId}`,
         },
         (payload) => {
-          if (payload.new) {
+          if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
             setLiveOrders((prev) => {
-              const exists = prev.find((o) => o.id === payload.new.id);
+              const newOrder = payload.new as any;
+              const exists = prev.find((o) => o.id === newOrder.id);
               if (exists) {
-                return prev.map((o) => (o.id === payload.new.id ? payload.new : o));
+                return prev.map((o) => (o.id === newOrder.id ? newOrder : o));
               }
-              return [...prev, payload.new].slice(0, 10);
+              return [...prev, newOrder].slice(0, 10);
             });
           }
         }

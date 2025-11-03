@@ -18,7 +18,7 @@ export default function CustomerAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('customers')
+          .from('customers' as any)
           .select('*')
           .eq('tenant_id', tenantId);
 
@@ -40,7 +40,7 @@ export default function CustomerAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('orders')
+          .from('orders' as any)
           .select('*, customer_id')
           .eq('tenant_id', tenantId);
 

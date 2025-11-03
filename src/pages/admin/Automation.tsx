@@ -196,8 +196,8 @@ export default function Automation() {
     );
   }
 
-  const enabledCount = rules?.filter((r) => r.enabled).length || 0;
-  const totalRuns = rules?.reduce((sum, r) => sum + (r.last_run_at ? 1 : 0), 0) || 0;
+  const enabledCount = (rules as any[] || []).filter((r: any) => r.enabled).length;
+  const totalRuns = (rules as any[] || []).reduce((sum: number, r: any) => sum + (r.last_run_at ? 1 : 0), 0);
 
   return (
     <div className="p-6 space-y-6">
