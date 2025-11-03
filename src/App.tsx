@@ -56,6 +56,11 @@ const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
 const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
 const DocsPage = lazy(() => import("./pages/DocsPage"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
+const Careers = lazy(() => import("./pages/Careers"));
+const Press = lazy(() => import("./pages/Press"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Security = lazy(() => import("./pages/Security"));
+const Cookie = lazy(() => import("./pages/Cookie"));
 
 // Three-Tier Auth System Pages
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
@@ -267,6 +272,11 @@ const App = () => {
                         <Route path="/support" element={<Support />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/careers" element={<Careers />} />
+                        <Route path="/press" element={<Press />} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/security" element={<Security />} />
+                        <Route path="/cookie" element={<Cookie />} />
                         
                         {/* Public Authentication */}
                         <Route path="/signup" element={<SignUpPage />} />
