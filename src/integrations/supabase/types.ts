@@ -877,6 +877,13 @@ export type Database = {
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_commission_order"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
         ]
       }
       coupon_codes: {
@@ -1133,6 +1140,20 @@ export type Database = {
           },
           {
             foreignKeyName: "courier_earnings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_courier_earnings_courier"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_courier_earnings_order"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
@@ -1805,6 +1826,7 @@ export type Database = {
           sms_opt_in: boolean | null
           state: string | null
           status: string | null
+          tenant_id: string | null
           thc_preference: string | null
           total_spent: number | null
           updated_at: string | null
@@ -1846,6 +1868,7 @@ export type Database = {
           sms_opt_in?: boolean | null
           state?: string | null
           status?: string | null
+          tenant_id?: string | null
           thc_preference?: string | null
           total_spent?: number | null
           updated_at?: string | null
@@ -1887,6 +1910,7 @@ export type Database = {
           sms_opt_in?: boolean | null
           state?: string | null
           status?: string | null
+          tenant_id?: string | null
           thc_preference?: string | null
           total_spent?: number | null
           updated_at?: string | null
@@ -1898,6 +1922,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -4688,6 +4719,7 @@ export type Database = {
           delivery_borough: string
           delivery_fee: number
           delivery_notes: string | null
+          delivery_scheduled_at: string | null
           discount_amount: number | null
           discount_reason: string | null
           distance_miles: number | null
@@ -4722,6 +4754,7 @@ export type Database = {
           special_instructions: string | null
           status: string
           subtotal: number
+          tenant_id: string | null
           tip_amount: number | null
           total_amount: number
           tracking_code: string | null
@@ -4753,6 +4786,7 @@ export type Database = {
           delivery_borough: string
           delivery_fee: number
           delivery_notes?: string | null
+          delivery_scheduled_at?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
           distance_miles?: number | null
@@ -4787,6 +4821,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           subtotal: number
+          tenant_id?: string | null
           tip_amount?: number | null
           total_amount: number
           tracking_code?: string | null
@@ -4818,6 +4853,7 @@ export type Database = {
           delivery_borough?: string
           delivery_fee?: number
           delivery_notes?: string | null
+          delivery_scheduled_at?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
           distance_miles?: number | null
@@ -4852,6 +4888,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           subtotal?: number
+          tenant_id?: string | null
           tip_amount?: number | null
           total_amount?: number
           tracking_code?: string | null
@@ -4859,6 +4896,20 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_orders_courier"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_orders_customer"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_account_id_fkey"
             columns: ["account_id"]
@@ -4885,6 +4936,13 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -5266,6 +5324,7 @@ export type Database = {
           strain_lineage: string | null
           strain_name: string | null
           strain_type: string | null
+          tenant_id: string | null
           terpenes: Json | null
           test_date: string | null
           thc_content: number | null
@@ -5319,6 +5378,7 @@ export type Database = {
           strain_lineage?: string | null
           strain_name?: string | null
           strain_type?: string | null
+          tenant_id?: string | null
           terpenes?: Json | null
           test_date?: string | null
           thc_content?: number | null
@@ -5372,6 +5432,7 @@ export type Database = {
           strain_lineage?: string | null
           strain_name?: string | null
           strain_type?: string | null
+          tenant_id?: string | null
           terpenes?: Json | null
           test_date?: string | null
           thc_content?: number | null
@@ -5389,6 +5450,13 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -6239,6 +6307,7 @@ export type Database = {
           resolved_at: string | null
           status: string | null
           subject: string
+          tenant_id: string | null
           ticket_number: string
           updated_at: string | null
           user_id: string | null
@@ -6255,6 +6324,7 @@ export type Database = {
           resolved_at?: string | null
           status?: string | null
           subject: string
+          tenant_id?: string | null
           ticket_number: string
           updated_at?: string | null
           user_id?: string | null
@@ -6271,6 +6341,7 @@ export type Database = {
           resolved_at?: string | null
           status?: string | null
           subject?: string
+          tenant_id?: string | null
           ticket_number?: string
           updated_at?: string | null
           user_id?: string | null
@@ -6281,6 +6352,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
