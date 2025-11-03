@@ -8,6 +8,8 @@ import { AnalyticsExportButton } from './AnalyticsExportButton';
 import { AnalyticsDateRangePicker } from './AnalyticsDateRangePicker';
 import { ComparisonMetricsCard } from './ComparisonMetricsCard';
 import { PerformanceTrendChart } from './PerformanceTrendChart';
+import { TopProductsRanking } from './TopProductsRanking';
+import { EngagementInsights } from './EngagementInsights';
 import { useState, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 import { subDays, format } from 'date-fns';
@@ -78,6 +80,63 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
       conversions: Math.floor(Math.random() * 10),
     }));
   }, [analytics]);
+
+  // Generate top products ranking
+  const topProducts = useMemo(() => {
+    if (!productAnalytics) return [];
+    return productAnalytics
+      .sort((a, b) => b.view_count - a.view_count)
+      .slice(0, 5)
+      .map((product, index) => ({
+        rank: index + 1,
+        product_name: product.product_name,
+        view_count: product.view_count,
+        conversion_rate: product.conversion_rate,
+      }));
+  }, [productAnalytics]);
+
+  // Generate engagement insights
+  const insights = useMemo(() => {
+    const result = [];
+    
+    if (analytics.conversion_rate > 5) {
+      result.push({
+        type: 'success' as const,
+        title: 'Strong Conversion Performance',
+        description: 'Your menu is converting above industry average. Products with images are driving purchases effectively.',
+        metric: `${analytics.conversion_rate.toFixed(1)}% conversion rate`
+      });
+    }
+
+    if (analytics.image_zooms / analytics.image_views > 0.15) {
+      result.push({
+        type: 'success' as const,
+        title: 'High Image Engagement',
+        description: 'Customers are actively zooming into product images, showing strong interest in visual details.',
+        metric: `${((analytics.image_zooms / analytics.image_views) * 100).toFixed(1)}% zoom rate`
+      });
+    }
+
+    if (analytics.products_without_images > 0) {
+      result.push({
+        type: 'warning' as const,
+        title: 'Add More Product Images',
+        description: `${analytics.products_without_images} products are missing images. Adding images can increase conversions by 2-3x.`,
+        metric: `${imageCompletionRate.toFixed(0)}% image coverage`
+      });
+    }
+
+    if (topProducts.length > 0) {
+      result.push({
+        type: 'tip' as const,
+        title: 'Optimize Top Performers',
+        description: `"${topProducts[0].product_name}" is your best performer. Consider featuring it more prominently in your menu.`,
+        metric: `${topProducts[0].view_count} views, ${topProducts[0].conversion_rate.toFixed(1)}% conversion`
+      });
+    }
+
+    return result;
+  }, [analytics, imageCompletionRate, topProducts]);
 
   return (
     <div className="space-y-4">
@@ -177,6 +236,20 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           data={trendData}
           title="7-Day Performance Trend"
         />
+      </div>
+
+      {/* Top Products & Insights */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {topProducts.length > 0 && (
+          <TopProductsRanking 
+            products={topProducts}
+            metric="views"
+          />
+        )}
+        
+        {insights.length > 0 && (
+          <EngagementInsights insights={insights} />
+        )}
       </div>
 
       {/* Product Performance Table */}
