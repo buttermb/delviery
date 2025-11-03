@@ -1,14 +1,18 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { getTokenExpiration } from "@/lib/auth/jwt";
 import { Loader2 } from "lucide-react";
+
+// Refresh token if it expires within 10 minutes
+const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
 }
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
-  const { admin, tenant, token, accessToken, loading } = useTenantAdminAuth();
+  const { admin, tenant, token, accessToken, loading, refreshAuthToken } = useTenantAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -17,6 +21,19 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   useEffect(() => {
     const verifyAuth = async () => {
       if (loading) return;
+
+      // Silent token refresh if expiring soon
+      const currentToken = accessToken || token;
+      if (currentToken) {
+        const expiration = getTokenExpiration(currentToken);
+        if (expiration) {
+          const timeUntilExpiry = expiration.getTime() - Date.now();
+          if (timeUntilExpiry > 0 && timeUntilExpiry < SILENT_REFRESH_THRESHOLD_MS) {
+            console.log(`Token expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes, silently refreshing`);
+            await refreshAuthToken();
+          }
+        }
+      }
 
       // Allow access to welcome page even without full auth (for post-signup flow)
       const isWelcomePage = location.pathname.includes('/welcome');
