@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function TeamManagement() {
-  const { account, userProfile, loading: accountLoading } = useAccount();
+  const { tenant, loading: authLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,24 +38,32 @@ export default function TeamManagement() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (tenant) {
       loadTeamMembers();
     }
-  }, [account]);
+  }, [tenant]);
 
   const loadTeamMembers = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      // @ts-ignore - Avoid deep type instantiation
-      const result = await supabase
-        .from('profiles')
+      const { data: tenantUsers, error: tenantUsersError } = await supabase
+        .from('tenant_users')
         .select('*')
-        .eq('account_id', account.id)
+        .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
-      if (result.error) throw result.error;
-      setTeamMembers(result.data || []);
+      if (tenantUsersError) throw tenantUsersError;
+
+      // Also get the tenant owner
+      const ownerData = {
+        user_id: 'owner',
+        email: tenant.slug, // You might want to get actual owner email
+        full_name: 'Owner',
+        role: 'owner'
+      };
+
+      setTeamMembers([ownerData, ...(tenantUsers || [])]);
     } catch (error) {
       console.error('Error loading team members:', error);
       toast({
@@ -70,28 +78,23 @@ export default function TeamManagement() {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      // Send email invitation via edge function
-      const { error } = await supabase.functions.invoke('send-team-invitation', {
+      const { data, error } = await supabase.functions.invoke('tenant-invite', {
         body: {
+          action: 'send_invitation',
+          tenantId: tenant.id,
           email: formData.email,
-          name: formData.full_name,
           role: formData.role,
-          account_id: account.id,
-          account_name: account.company_name
         }
       });
 
-      if (error) {
-        console.warn('Email send via edge function not available:', error);
-        // Fall back to success message even if email doesn't send
-      }
+      if (error) throw error;
 
       toast({
         title: 'Invitation Sent',
-        description: `Invitation sent to ${formData.email}. They will receive an email to join your team.`
+        description: `Invitation sent to ${formData.email}. They can accept it to join your team.`
       });
 
       setIsDialogOpen(false);
@@ -108,10 +111,9 @@ export default function TeamManagement() {
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     try {
-      // Use raw update to avoid type issues
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole } as any)
+        .from('tenant_users')
+        .update({ role: newRole })
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -136,7 +138,7 @@ export default function TeamManagement() {
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('tenant_users')
         .delete()
         .eq('user_id', userId);
 
@@ -159,10 +161,9 @@ export default function TeamManagement() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'account_owner': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-      case 'account_admin': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'team_member': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'courier': return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
+      case 'owner': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
+      case 'admin': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+      case 'member': return 'bg-green-500/10 text-green-600 border-green-500/20';
       default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
     }
   };
@@ -173,7 +174,7 @@ export default function TeamManagement() {
     ).join(' ');
   };
 
-  if (accountLoading || loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -181,7 +182,7 @@ export default function TeamManagement() {
     );
   }
 
-  const canManageTeam = userProfile?.role === 'account_owner' || userProfile?.role === 'account_admin';
+  const canManageTeam = true; // Tenant admins can always manage team
 
   return (
     <div className="space-y-6">
@@ -242,9 +243,8 @@ export default function TeamManagement() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="account_admin">Account Admin</SelectItem>
-                      <SelectItem value="team_member">Team Member</SelectItem>
-                      <SelectItem value="courier">Courier</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -289,7 +289,7 @@ export default function TeamManagement() {
                   </div>
                 </div>
 
-                {canManageTeam && member.user_id !== userProfile?.user_id && (
+                {canManageTeam && member.user_id !== 'owner' && (
                   <div className="flex gap-2">
                     <Select
                       value={member.role}
@@ -299,9 +299,8 @@ export default function TeamManagement() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="account_admin">Account Admin</SelectItem>
-                        <SelectItem value="team_member">Team Member</SelectItem>
-                        <SelectItem value="courier">Courier</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="member">Member</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button

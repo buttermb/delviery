@@ -208,12 +208,12 @@ export default function TenantAdminLoginPage() {
             <ForgotPasswordDialog userType="tenant_admin" tenantSlug={tenantSlug} />
             <div className="pt-4 border-t border-border">
               <p className="text-muted-foreground mb-2">Not an admin?</p>
-              <Link 
-                to={`/${tenantSlug}/shop/login`} 
-                className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
-              >
-                Go to Customer Portal →
-              </Link>
+            <Link 
+              to={`/${tenantSlug}/shop`} 
+              className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
+            >
+              Go to Customer Portal →
+            </Link>
             </div>
           </div>
         </div>
