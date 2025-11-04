@@ -83,7 +83,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("No access token available");
         }
         
-        const response = await window.fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+        const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${tokenToUse}`,

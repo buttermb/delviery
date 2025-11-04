@@ -56,7 +56,7 @@ export default function SuperAdminSettingsPage() {
 
       // Call Edge Function to update password
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await window.fetch(`${supabaseUrl}/functions/v1/super-admin-auth`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

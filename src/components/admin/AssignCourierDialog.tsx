@@ -95,7 +95,7 @@ export const AssignCourierDialog = ({
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await window.fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -141,7 +141,7 @@ export const AssignCourierDialog = ({
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await window.fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
