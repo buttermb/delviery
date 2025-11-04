@@ -62,7 +62,7 @@ export default function CourierDashboardPage() {
       loadAvailableOrders();
       loadStats();
 
-      // Subscribe to new orders
+      // Subscribe to new orders - RLS will automatically filter by tenant
       const channel = supabase
         .channel('available-orders')
         .on(
@@ -71,14 +71,16 @@ export default function CourierDashboardPage() {
             event: 'INSERT',
             schema: 'public',
             table: 'orders',
-            filter: 'status=eq.pending',
           },
-          () => {
-            loadAvailableOrders();
-            toast({
-              title: '🚀 New Order Available!',
-              description: 'A new delivery order is waiting for you',
-            });
+          (payload) => {
+            // Only show notification if order is actually available (RLS filtered)
+            if (payload.new.status === 'pending' && !payload.new.courier_id) {
+              loadAvailableOrders();
+              toast({
+                title: '🚀 New Order Available!',
+                description: 'A new delivery order is waiting for you',
+              });
+            }
           }
         )
         .subscribe();
@@ -91,6 +93,7 @@ export default function CourierDashboardPage() {
 
   const loadAvailableOrders = async () => {
     try {
+      // RLS policies will automatically filter orders by courier's tenant_id
       const { data, error } = await supabase
         .from('orders')
         .select('*')

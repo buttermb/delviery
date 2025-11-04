@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Users, TrendingUp, DollarSign, Star, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
 
 interface Courier {
   id: string;
@@ -92,6 +93,8 @@ export default function Couriers() {
             );
           })}
         </div>
+
+        <CourierLoginInfo />
 
         <Card className="p-4">
           <div className="flex gap-4 mb-4">

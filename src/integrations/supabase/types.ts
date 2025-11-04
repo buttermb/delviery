@@ -1611,6 +1611,7 @@ export type Database = {
           pin_set_at: string | null
           profile_photo_url: string | null
           rating: number | null
+          tenant_id: string | null
           total_deliveries: number | null
           updated_at: string | null
           user_id: string
@@ -1643,6 +1644,7 @@ export type Database = {
           pin_set_at?: string | null
           profile_photo_url?: string | null
           rating?: number | null
+          tenant_id?: string | null
           total_deliveries?: number | null
           updated_at?: string | null
           user_id: string
@@ -1675,6 +1677,7 @@ export type Database = {
           pin_set_at?: string | null
           profile_photo_url?: string | null
           rating?: number | null
+          tenant_id?: string | null
           total_deliveries?: number | null
           updated_at?: string | null
           user_id?: string
@@ -1683,7 +1686,15 @@ export type Database = {
           vehicle_plate?: string | null
           vehicle_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "couriers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_integrations: {
         Row: {
