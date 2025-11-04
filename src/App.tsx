@@ -411,7 +411,6 @@ const App = () => {
                           <Route path="custom-reports" element={<FeatureProtectedRoute featureId="custom-reports"><CustomReportsPage /></FeatureProtectedRoute>} />
                           <Route path="commission-tracking" element={<FeatureProtectedRoute featureId="commission-tracking"><CommissionTrackingPage /></FeatureProtectedRoute>} />
                           <Route path="revenue-reports" element={<FeatureProtectedRoute featureId="revenue-reports"><RevenueReportsPage /></FeatureProtectedRoute>} />
-                          <Route path="route-optimization" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPage /></FeatureProtectedRoute>} />
                           <Route path="delivery-analytics" element={<FeatureProtectedRoute featureId="delivery-analytics"><DeliveryAnalyticsPage /></FeatureProtectedRoute>} />
                           <Route path="cash-register" element={<FeatureProtectedRoute featureId="cash-register"><CashRegisterPage /></FeatureProtectedRoute>} />
                           <Route path="pos-analytics" element={<FeatureProtectedRoute featureId="pos-analytics"><POSAnalyticsPage /></FeatureProtectedRoute>} />
@@ -434,7 +433,6 @@ const App = () => {
                           <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
                           <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
                           <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />
-                          <Route path="automation" element={<FeatureProtectedRoute featureId="automation"><AutomationPage /></FeatureProtectedRoute>} />
                           <Route path="data-export" element={<FeatureProtectedRoute featureId="data-export"><DataExportPage /></FeatureProtectedRoute>} />
                           <Route path="audit-trail" element={<FeatureProtectedRoute featureId="audit-trail"><AuditTrailPage /></FeatureProtectedRoute>} />
                           <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
