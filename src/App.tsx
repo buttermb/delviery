@@ -56,6 +56,10 @@ const DemoRequest = lazy(() => import("./pages/DemoRequest"));
 const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
 const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
 const DocsPage = lazy(() => import("./pages/DocsPage"));
+const GettingStartedPage = lazy(() => import("./pages/docs/GettingStartedPage"));
+const ApiReferencePage = lazy(() => import("./pages/docs/ApiReferencePage"));
+const AuthenticationPage = lazy(() => import("./pages/docs/AuthenticationPage"));
+const SecurityDocsPage = lazy(() => import("./pages/docs/SecurityPage"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
 const Careers = lazy(() => import("./pages/Careers"));
 const Press = lazy(() => import("./pages/Press"));
@@ -270,6 +274,10 @@ const App = () => {
                         <Route path="/demo/confirm" element={<DemoConfirmation />} />
                         <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/docs" element={<DocsPage />} />
+                        <Route path="/docs/getting-started" element={<GettingStartedPage />} />
+                        <Route path="/docs/api-reference" element={<ApiReferencePage />} />
+                        <Route path="/docs/authentication" element={<AuthenticationPage />} />
+                        <Route path="/docs/security" element={<SecurityDocsPage />} />
                         <Route path="/status" element={<StatusPage />} />
                         <Route path="/faq" element={<FAQPage />} />
                         <Route path="/support" element={<SupportPage />} />
