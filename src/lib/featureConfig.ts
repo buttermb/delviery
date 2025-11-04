@@ -437,13 +437,21 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Integrations',
     route: '/admin/custom-integrations',
   },
+  'ai': {
+    id: 'ai',
+    name: 'Local AI',
+    description: 'On-premise AI processing and machine learning capabilities',
+    tier: 'enterprise',
+    category: 'Integrations',
+    route: '/admin/local-ai',
+  },
   'automation': {
     id: 'automation',
-    name: 'Automation',
+    name: 'Workflow Automation',
     description: 'Automate workflows and processes',
     tier: 'enterprise',
     category: 'Integrations',
-    route: '/admin/automation',
+    route: '/admin/workflow-automation',
   },
   'white-label': {
     id: 'white-label',
@@ -460,6 +468,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     tier: 'enterprise',
     category: 'Branding',
     route: '/admin/custom-domain',
+  },
+  'analytics': {
+    id: 'analytics',
+    name: 'Analytics Dashboard',
+    description: 'Self-hosted analytics with privacy-first tracking',
+    tier: 'enterprise',
+    category: 'Analytics',
+    route: '/admin/analytics-dashboard',
   },
   'advanced-analytics': {
     id: 'advanced-analytics',
