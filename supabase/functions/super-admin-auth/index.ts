@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
-import { hash, compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,13 +64,80 @@ function base64Decode(str: string): Uint8Array {
   return Uint8Array.from(atob(str).split("").map((c) => c.charCodeAt(0)));
 }
 
-// Password hashing using bcrypt
+// Password hashing using Web Crypto API (PBKDF2)
 async function hashPassword(password: string): Promise<string> {
-  return await hash(password);
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const passwordData = encoder.encode(password);
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    passwordData,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+  
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    key,
+    256
+  );
+  
+  const hashArray = new Uint8Array(hashBuffer);
+  const combined = new Uint8Array(salt.length + hashArray.length);
+  combined.set(salt);
+  combined.set(hashArray, salt.length);
+  
+  return base64Encode(combined.buffer);
 }
 
 async function comparePassword(password: string, hashValue: string): Promise<boolean> {
-  return await compare(password, hashValue);
+  try {
+    const encoder = new TextEncoder();
+    const combined = Uint8Array.from(atob(hashValue), c => c.charCodeAt(0));
+    
+    const salt = combined.slice(0, 16);
+    const storedHash = combined.slice(16);
+    
+    const passwordData = encoder.encode(password);
+    const key = await crypto.subtle.importKey(
+      "raw",
+      passwordData,
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits"]
+    );
+    
+    const hashBuffer = await crypto.subtle.deriveBits(
+      {
+        name: "PBKDF2",
+        salt: salt,
+        iterations: 100000,
+        hash: "SHA-256"
+      },
+      key,
+      256
+    );
+    
+    const hashArray = new Uint8Array(hashBuffer);
+    
+    if (hashArray.length !== storedHash.length) return false;
+    
+    for (let i = 0; i < hashArray.length; i++) {
+      if (hashArray[i] !== storedHash[i]) return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
 }
 
 serve(async (req) => {
