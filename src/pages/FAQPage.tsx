@@ -2,108 +2,35 @@ import { useState } from 'react';
 import { ModernPage } from '@/templates/ModernPageTemplate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Search, HelpCircle } from 'lucide-react';
+import { Search, TrendingUp, Sparkles } from 'lucide-react';
+import { faqCategories, searchFAQs, getPopularFAQs, FAQ } from '@/lib/faq-data';
+import { FAQRating } from '@/components/faq/FAQRating';
+import { FAQRelated } from '@/components/faq/FAQRelated';
+import { FAQCategoryCard } from '@/components/faq/FAQCategoryCard';
+import * as Icons from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
 
-  const faqs = [
-    {
-      category: 'General',
-      questions: [
-        {
-          question: 'How do I create my first order?',
-          answer: 'Go to Orders → New Order, select a customer, add products, and confirm. The order will be processed and you can track it in real-time.'
-        },
-        {
-          question: 'What payment methods do you accept?',
-          answer: 'We accept credit cards, ACH transfers, and Bitcoin (coming soon). Payment terms can be customized per customer.'
-        },
-        {
-          question: 'How do I add team members?',
-          answer: 'Go to Team → User Management, click "Add User", and assign their role. You can set permissions for each team member.'
-        },
-        {
-          question: 'Can I export my data?',
-          answer: 'Yes! Go to Reports → Data Export to download your data in CSV or PDF format. You can export orders, customers, inventory, and financial reports.'
-        }
-      ]
-    },
-    {
-      category: 'Inventory',
-      questions: [
-        {
-          question: 'How do I track fronted inventory?',
-          answer: 'Navigate to Fronted Inventory to see all outstanding products and payments. You can filter by customer, date, or status.'
-        },
-        {
-          question: 'How do I manage inventory batches?',
-          answer: 'Go to Inventory → Batches to create, track, and manage inventory batches. Each batch can have its own expiration date and location.'
-        },
-        {
-          question: 'Can I set up low stock alerts?',
-          answer: 'Yes! Go to Settings → Notifications to enable low stock alerts. You can set thresholds for each product.'
-        }
-      ]
-    },
-    {
-      category: 'Orders & Customers',
-      questions: [
-        {
-          question: 'How do I process a return?',
-          answer: 'Go to the order details, click "Return" and select the items to return. The system will update inventory and create a credit memo.'
-        },
-        {
-          question: 'Can I create custom pricing for customers?',
-          answer: 'Yes! In customer settings, you can set custom pricing tiers, discounts, and payment terms for each customer.'
-        },
-        {
-          question: 'How do I track delivery status?',
-          answer: 'Use the Live Map feature to see real-time delivery tracking. You can also view delivery status in the order details.'
-        }
-      ]
-    },
-    {
-      category: 'Reports & Analytics',
-      questions: [
-        {
-          question: 'What reports are available?',
-          answer: 'We offer sales reports, inventory reports, customer reports, financial reports, and custom reports. All can be exported to CSV or PDF.'
-        },
-        {
-          question: 'Can I schedule automated reports?',
-          answer: 'Yes! In Reports → Scheduled Reports, you can set up daily, weekly, or monthly automated reports sent to your email.'
-        }
-      ]
-    },
-    {
-      category: 'Billing & Subscription',
-      questions: [
-        {
-          question: 'How does billing work?',
-          answer: 'Billing is monthly or annual based on your plan. You can upgrade, downgrade, or cancel anytime. Changes take effect at the next billing cycle.'
-        },
-        {
-          question: 'What happens if I cancel?',
-          answer: 'Your account remains active until the end of your billing period. After cancellation, your data is retained for 90 days, then permanently deleted.'
-        }
-      ]
-    }
-  ];
+  const filteredFAQs = searchFAQs(searchQuery, selectedCategory || undefined);
+  const popularFAQs = getPopularFAQs(6);
 
-  const filteredFaqs = faqs.map(category => ({
+  const groupedFAQs = faqCategories.map(category => ({
     ...category,
-    questions: category.questions.filter(q =>
-      q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      q.answer.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    questions: filteredFAQs.filter(faq => faq.category === category.id)
   })).filter(category => category.questions.length > 0);
+
+  const totalQuestions = filteredFAQs.length;
 
   return (
     <ModernPage
@@ -112,71 +39,222 @@ export default function FAQPage() {
       backButton
     >
       <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">500+</div>
+                <div className="text-sm text-muted-foreground mt-1">Questions Answered</div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">{faqCategories.length}</div>
+                <div className="text-sm text-muted-foreground mt-1">Categories</div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">&lt;2 min</div>
+                <div className="text-sm text-muted-foreground mt-1">Avg. Support Response</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Search */}
         <Card>
           <CardContent className="pt-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Search FAQs..."
+                placeholder="Search 60+ questions across all categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-12 text-base"
               />
             </div>
+            {searchQuery && (
+              <div className="mt-2 text-sm text-muted-foreground">
+                Found {totalQuestions} result{totalQuestions !== 1 ? 's' : ''}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* FAQs by Category */}
-        {filteredFaqs.length > 0 ? (
-          <div className="space-y-6">
-            {filteredFaqs.map((category, categoryIndex) => (
-              <Card key={categoryIndex}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <HelpCircle className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold text-lg">{category.category}</h3>
-                  </div>
-                  <Accordion type="single" collapsible className="space-y-2">
-                    {category.questions.map((faq, index) => (
-                      <AccordionItem
-                        key={index}
-                        value={`item-${categoryIndex}-${index}`}
-                        className="border rounded-lg px-4"
-                      >
-                        <AccordionTrigger className="text-left hover:no-underline">
-                          <span className="font-medium">{faq.question}</span>
-                        </AccordionTrigger>
-                        <AccordionContent className="text-sm text-muted-foreground pt-2">
-                          {faq.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
+        {/* Popular Questions */}
+        {!searchQuery && !selectedCategory && (
           <Card>
-            <CardContent className="pt-6 text-center py-12">
-              <p className="text-muted-foreground">No FAQs found matching your search.</p>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-lg">Popular Questions</h3>
+              </div>
+              <div className="space-y-2">
+                {popularFAQs.map((faq) => {
+                  const Icon = (Icons[faqCategories.find(c => c.id === faq.category)?.icon as keyof typeof Icons] || Icons.HelpCircle) as LucideIcon;
+                  return (
+                    <button
+                      key={faq.id}
+                      onClick={() => setExpandedFAQ(faq.id)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-accent transition-colors group flex items-start gap-3"
+                    >
+                      <Icon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="font-medium group-hover:text-primary transition-colors">
+                          {faq.question}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {faqCategories.find(c => c.id === faq.category)?.name}
+                          </Badge>
+                          {faq.difficulty && (
+                            <Badge variant="outline" className="text-xs">
+                              {faq.difficulty}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         )}
 
+        {/* Category Filter */}
+        {!searchQuery && (
+          <div>
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Browse by Category
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {faqCategories.map((category) => {
+                const categoryQuestions = searchFAQs('', category.id);
+                return (
+                  <FAQCategoryCard
+                    key={category.id}
+                    name={category.name}
+                    icon={category.icon}
+                    count={categoryQuestions.length}
+                    onClick={() => setSelectedCategory(category.id === selectedCategory ? null : category.id)}
+                    active={selectedCategory === category.id}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* FAQs by Category */}
+        {groupedFAQs.length > 0 ? (
+          <div className="space-y-6">
+            {groupedFAQs.map((category) => {
+              const Icon = (Icons[category.icon as keyof typeof Icons] || Icons.HelpCircle) as LucideIcon;
+              return (
+                <Card key={category.id} id={category.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{category.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {category.questions.length} question{category.questions.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <Accordion type="single" collapsible className="space-y-2">
+                      {category.questions.map((faq) => (
+                        <AccordionItem
+                          key={faq.id}
+                          value={faq.id}
+                          id={faq.id}
+                          className="border rounded-lg px-4"
+                        >
+                          <AccordionTrigger className="text-left hover:no-underline py-4">
+                            <div className="flex items-start gap-3 flex-1">
+                              <span className="font-medium flex-1">{faq.question}</span>
+                              <div className="flex gap-2">
+                                {faq.popular && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Popular
+                                  </Badge>
+                                )}
+                                {faq.new && (
+                                  <Badge className="text-xs bg-green-500">
+                                    New
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-2 pb-4">
+                            <div className="space-y-4">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {faq.answer}
+                              </p>
+                              {faq.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {faq.tags.map((tag) => (
+                                    <Badge key={tag} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              <FAQRating faqId={faq.id} />
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : searchQuery ? (
+          <Card>
+            <CardContent className="pt-6 text-center py-12">
+              <p className="text-muted-foreground">
+                No FAQs found matching "{searchQuery}". Try different keywords or browse by category.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* Related Questions for Expanded FAQ */}
+        {expandedFAQ && <FAQRelated faqId={expandedFAQ} />}
+
         {/* Still Need Help */}
-        <Card>
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
-              <h3 className="font-semibold text-lg">Still have questions?</h3>
-              <p className="text-sm text-muted-foreground">
-                Our support team is here to help. Contact us via email, phone, or live chat.
+              <h3 className="font-semibold text-xl">Still have questions?</h3>
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                Can't find what you're looking for? Our support team is available 24/7 to help you via email, phone, or live chat.
               </p>
               <div className="flex flex-wrap gap-4 justify-center text-sm">
-                <a href="/support" className="text-primary hover:underline">Contact Support</a>
+                <a href="/support" className="text-primary hover:underline font-medium">
+                  Contact Support →
+                </a>
                 <span className="text-muted-foreground">•</span>
-                <a href="/contact" className="text-primary hover:underline">Contact Us</a>
+                <a href="/contact" className="text-primary hover:underline font-medium">
+                  Schedule a Demo →
+                </a>
+                <span className="text-muted-foreground">•</span>
+                <a href="/docs" className="text-primary hover:underline font-medium">
+                  View Documentation →
+                </a>
               </div>
             </div>
           </CardContent>
