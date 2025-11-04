@@ -442,34 +442,19 @@ const App = () => {
                         
                         {/* ==================== COURIER PORTAL ==================== */}
                         <Route path="/courier/login" element={<CourierLoginPage />} />
-                        <Route path="/courier/dashboard" element={
-                          <ProtectedCourierRoute>
+                        <Route
+                          path="/courier/*"
+                          element={
                             <CourierProvider>
-                              <CourierDashboardPage />
+                              <Routes>
+                                <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
+                                <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
+                                <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
+                                <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
+                              </Routes>
                             </CourierProvider>
-                          </ProtectedCourierRoute>
-                        } />
-                        <Route path="/courier/earnings" element={
-                          <ProtectedCourierRoute>
-                            <CourierProvider>
-                              <CourierEarningsPage />
-                            </CourierProvider>
-                          </ProtectedCourierRoute>
-                        } />
-                        <Route path="/courier/history" element={
-                          <ProtectedCourierRoute>
-                            <CourierProvider>
-                              <CourierHistoryPage />
-                            </CourierProvider>
-                          </ProtectedCourierRoute>
-                        } />
-                        <Route path="/courier/order/:orderId" element={
-                          <ProtectedCourierRoute>
-                            <CourierProvider>
-                              <CourierActiveOrderPage />
-                            </CourierProvider>
-                          </ProtectedCourierRoute>
-                        } />
+                          }
+                        />
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
                         <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
