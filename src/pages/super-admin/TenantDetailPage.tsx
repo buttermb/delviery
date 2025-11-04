@@ -25,6 +25,8 @@ import { formatSmartDate } from "@/lib/utils/formatDate";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { FeatureList } from "@/components/admin/FeatureList";
+import { TenantDataInspector } from "@/components/super-admin/TenantDataInspector";
+import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
 
 export default function TenantDetailPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
@@ -344,9 +346,21 @@ export default function TenantDetailPage() {
             <TabsTrigger value="billing" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Billing</TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Users</TabsTrigger>
             <TabsTrigger value="activity" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Activity</TabsTrigger>
+            <TabsTrigger value="data" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
+            {tenantId && (
+              <ImpersonationMode
+                tenantId={tenantId}
+                onStartImpersonation={(id) => {
+                  const tenant = tenants?.find((t: any) => t.id === id);
+                  if (tenant) {
+                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                  }
+                }}
+              />
+            )}
             <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
               <CardHeader>
                 <CardTitle className="text-[hsl(var(--super-admin-text))]">Business Information</CardTitle>

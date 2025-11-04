@@ -24,6 +24,8 @@ import {
   List,
 } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
+import { CommandPalette } from "@/components/super-admin/ui/CommandPalette";
+import { SuperAdminNavigation } from "@/components/super-admin/SuperAdminNavigation";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { calculateHealthScore } from "@/lib/tenant";
@@ -183,6 +185,7 @@ export default function SuperAdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
+      <CommandPalette />
       {/* Header */}
       <header className="border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -191,6 +194,7 @@ export default function SuperAdminDashboardPage() {
             <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Complete control center for your SaaS platform</p>
           </div>
           <div className="flex items-center gap-4">
+            <SuperAdminNavigation />
             {superAdmin && (
               <div className="text-sm text-[hsl(var(--super-admin-text))]/70">
                 {superAdmin.email}

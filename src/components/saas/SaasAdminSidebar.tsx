@@ -13,6 +13,16 @@ import {
   LayoutDashboard,
   Users,
   Shield,
+  Activity,
+  TrendingUp,
+  Database,
+  Globe,
+  FileText,
+  Workflow,
+  Mail,
+  Flag,
+  Wrench,
+  Lock,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -38,24 +48,74 @@ const menuItems = [
     icon: Building2,
   },
   {
+    title: 'Monitoring',
+    url: '/super-admin/monitoring',
+    icon: Activity,
+  },
+  {
     title: 'Analytics',
-    url: '/saas/admin/analytics',
+    url: '/super-admin/analytics',
     icon: BarChart3,
   },
   {
-    title: 'Support',
-    url: '/saas/admin/support',
-    icon: Ticket,
+    title: 'Revenue Analytics',
+    url: '/super-admin/revenue-analytics',
+    icon: TrendingUp,
   },
   {
-    title: 'Automation',
-    url: '/saas/admin/automation',
-    icon: Zap,
+    title: 'Data Explorer',
+    url: '/super-admin/data-explorer',
+    icon: Database,
   },
   {
-    title: 'Settings',
-    url: '/super-admin/settings',
+    title: 'API Usage',
+    url: '/super-admin/api-usage',
+    icon: Globe,
+  },
+  {
+    title: 'Audit Logs',
+    url: '/super-admin/audit-logs',
+    icon: FileText,
+  },
+  {
+    title: 'Workflows',
+    url: '/super-admin/workflows',
+    icon: Workflow,
+  },
+  {
+    title: 'Communication',
+    url: '/super-admin/communication',
+    icon: Mail,
+  },
+  {
+    title: 'Feature Flags',
+    url: '/super-admin/feature-flags',
+    icon: Flag,
+  },
+  {
+    title: 'Report Builder',
+    url: '/super-admin/report-builder',
+    icon: BarChart3,
+  },
+  {
+    title: 'Executive Dashboard',
+    url: '/super-admin/executive-dashboard',
+    icon: TrendingUp,
+  },
+  {
+    title: 'Security',
+    url: '/super-admin/security',
+    icon: Lock,
+  },
+  {
+    title: 'System Config',
+    url: '/super-admin/system-config',
     icon: Settings,
+  },
+  {
+    title: 'Tools',
+    url: '/super-admin/tools',
+    icon: Wrench,
   },
 ];
 
@@ -69,7 +129,10 @@ export function SaasAdminSidebar() {
     if (path === '/super-admin/dashboard') {
       return currentPath === path || currentPath.startsWith('/super-admin/tenants');
     }
-    return currentPath.startsWith(path);
+    // Exact match for specific routes
+    if (currentPath === path) return true;
+    // For routes with sub-paths, check if current path starts with the route
+    return currentPath.startsWith(path + '/') || currentPath === path;
   };
 
   return (
