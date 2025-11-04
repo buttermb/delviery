@@ -175,7 +175,10 @@ serve(async (req) => {
     if (action === "login") {
       const { email, password } = body;
 
+      console.log('Login attempt for email:', email);
+
       if (!email || !password) {
+        console.log('Missing email or password');
         return new Response(
           JSON.stringify({ error: "Email and password are required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -190,16 +193,31 @@ serve(async (req) => {
         .eq("status", "active")
         .maybeSingle();
 
+      console.log('Database lookup result:', {
+        found: !!superAdmin,
+        error: findError?.message,
+        email: email.toLowerCase()
+      });
+
       if (findError || !superAdmin) {
+        console.log('User not found or error:', findError);
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
+      console.log('Password hash format check:', {
+        hashLength: superAdmin.password_hash.length,
+        isHex: /^[a-f0-9]+$/i.test(superAdmin.password_hash)
+      });
+
       // Verify password
       const validPassword = await comparePassword(password, superAdmin.password_hash);
+      console.log('Password validation result:', validPassword);
+      
       if (!validPassword) {
+        console.log('Password verification failed');
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
