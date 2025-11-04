@@ -95,9 +95,9 @@ export default function MarketingLanding() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="absolute top-4 right-4">
           <Link 
             to="/saas/login" 
@@ -108,7 +108,7 @@ export default function MarketingLanding() {
         </div>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Menu className="h-6 w-6 text-emerald-600" />
+            <Menu className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">CannabisCRM</span>
           </div>
           <div className="flex items-center gap-4">
@@ -124,7 +124,7 @@ export default function MarketingLanding() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
           Wholesale Cannabis CRM
           <br />
           Built for Operations
@@ -157,7 +157,7 @@ export default function MarketingLanding() {
         <div className="grid md:grid-cols-3 gap-6">
           {features.map((feature, idx) => (
             <Card key={idx} className="p-6 hover:shadow-lg transition-shadow">
-              <feature.icon className="h-12 w-12 text-emerald-600 mb-4" />
+              <feature.icon className="h-12 w-12 text-primary mb-4" />
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
             </Card>
@@ -177,10 +177,10 @@ export default function MarketingLanding() {
           {plans.map((plan, idx) => (
             <Card
               key={idx}
-              className={`p-8 ${plan.popular ? 'border-emerald-500 border-2 shadow-lg' : ''}`}
+              className={`p-8 ${plan.popular ? 'border-primary border-2 shadow-lg' : ''}`}
             >
               {plan.popular && (
-                <div className="bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full w-fit mb-4">
+                <div className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full w-fit mb-4">
                   MOST POPULAR
                 </div>
               )}
@@ -193,7 +193,7 @@ export default function MarketingLanding() {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, fIdx) => (
                   <li key={fIdx} className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-emerald-600" />
+                    <Check className="h-5 w-5 text-primary" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -221,7 +221,7 @@ export default function MarketingLanding() {
               <Card key={idx} className="p-6">
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
                   ))}
                 </div>
                 <p className="text-muted-foreground mb-4">
@@ -236,7 +236,7 @@ export default function MarketingLanding() {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
-        <Card className="p-12 text-center bg-gradient-to-r from-emerald-600 to-blue-600 text-white">
+        <Card className="p-12 text-center bg-gradient-primary text-primary-foreground">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join thousands of operations running on CannabisCRM
@@ -256,7 +256,7 @@ export default function MarketingLanding() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Menu className="h-6 w-6 text-emerald-600" />
+                <Menu className="h-6 w-6 text-primary" />
                 <span className="text-xl font-bold">CannabisCRM</span>
               </div>
               <p className="text-sm text-muted-foreground">
