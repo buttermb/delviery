@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Package, Lock } from 'lucide-react';
+import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
@@ -249,8 +249,18 @@ export default function CourierLoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Need help? Contact your administrator</p>
+          <div className="mt-6 space-y-3">
+            <div className="text-center text-sm text-muted-foreground">
+              <p>Need help? Contact your administrator</p>
+            </div>
+            <div className="text-center">
+              <Link to="/login">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Login Directory
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -8,7 +8,7 @@ import { getLoginUrl, getCurrentUserType } from "@/lib/utils/authHelpers";
 interface AuthGuardProps {
   children: ReactNode;
   requireAuth?: boolean;
-  allowedUserTypes?: ("super_admin" | "tenant_admin" | "customer")[];
+  allowedUserTypes?: ("super_admin" | "tenant_admin" | "customer" | "courier")[];
   redirectTo?: string;
 }
 
@@ -47,6 +47,8 @@ export function AuthGuard({
         ? "/super-admin/dashboard"
         : userType === "tenant_admin"
         ? `/${tenant?.slug}/admin/dashboard`
+        : userType === "courier"
+        ? "/courier/dashboard"
         : `/${tenant?.slug}/shop/dashboard`;
       
       navigate(dashboardUrl || "/", { replace: true });

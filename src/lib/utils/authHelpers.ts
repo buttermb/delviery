@@ -8,7 +8,7 @@ import { getTenantSlugFromLocation } from "@/middleware/tenantMiddleware";
 /**
  * Get the appropriate login URL based on user type and tenant slug
  */
-export function getLoginUrl(userType: "super_admin" | "tenant_admin" | "customer", tenantSlug?: string): string {
+export function getLoginUrl(userType: "super_admin" | "tenant_admin" | "customer" | "courier", tenantSlug?: string): string {
   switch (userType) {
     case "super_admin":
       return "/super-admin/login";
@@ -22,6 +22,8 @@ export function getLoginUrl(userType: "super_admin" | "tenant_admin" | "customer
         tenantSlug = getTenantSlugFromLocation() || "";
       }
       return tenantSlug ? `/${tenantSlug}/shop/login` : "/shop/login";
+    case "courier":
+      return "/courier/login";
     default:
       return "/";
   }
@@ -30,7 +32,7 @@ export function getLoginUrl(userType: "super_admin" | "tenant_admin" | "customer
 /**
  * Get the appropriate dashboard URL based on user type and tenant slug
  */
-export function getDashboardUrl(userType: "super_admin" | "tenant_admin" | "customer", tenantSlug?: string): string {
+export function getDashboardUrl(userType: "super_admin" | "tenant_admin" | "customer" | "courier", tenantSlug?: string): string {
   switch (userType) {
     case "super_admin":
       return "/super-admin/dashboard";
@@ -44,6 +46,8 @@ export function getDashboardUrl(userType: "super_admin" | "tenant_admin" | "cust
         tenantSlug = getTenantSlugFromLocation() || "";
       }
       return tenantSlug ? `/${tenantSlug}/shop/dashboard` : "/shop/dashboard";
+    case "courier":
+      return "/courier/dashboard";
     default:
       return "/";
   }
@@ -56,17 +60,19 @@ export function isLoggedIn(): boolean {
   const superAdminToken = localStorage.getItem("super_admin_token");
   const tenantAdminToken = localStorage.getItem("tenant_admin_token");
   const customerToken = localStorage.getItem("customer_token");
+  const courierSession = localStorage.getItem("courier_pin_session");
   
-  return !!(superAdminToken || tenantAdminToken || customerToken);
+  return !!(superAdminToken || tenantAdminToken || customerToken || courierSession);
 }
 
 /**
  * Get current user type from localStorage
  */
-export function getCurrentUserType(): "super_admin" | "tenant_admin" | "customer" | null {
+export function getCurrentUserType(): "super_admin" | "tenant_admin" | "customer" | "courier" | null {
   if (localStorage.getItem("super_admin_token")) return "super_admin";
   if (localStorage.getItem("tenant_admin_token")) return "tenant_admin";
   if (localStorage.getItem("customer_token")) return "customer";
+  if (localStorage.getItem("courier_pin_session")) return "courier";
   return null;
 }
 
@@ -82,6 +88,7 @@ export function clearAllAuthTokens(): void {
   localStorage.removeItem("customer_token");
   localStorage.removeItem("customer_user");
   localStorage.removeItem("customer_tenant_data");
+  localStorage.removeItem("courier_pin_session");
 }
 
 /**

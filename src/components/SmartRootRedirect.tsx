@@ -43,6 +43,13 @@ export function SmartRootRedirect() {
           return;
         }
 
+        // Check courier
+        if (userType === "courier") {
+          setRedirectPath("/courier/dashboard");
+          setChecking(false);
+          return;
+        }
+
         // Check customer
         if (userType === "customer") {
           const tenantData = localStorage.getItem("customer_tenant_data");
