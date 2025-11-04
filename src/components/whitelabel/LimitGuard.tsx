@@ -29,10 +29,15 @@ export function LimitGuard({
   blockOnLimit = false,
   showProgress = false,
 }: LimitGuardProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, loading } = useTenantAdminAuth();
   const { canCreate, getRemaining, getCurrent, getLimit } = useTenantLimits();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'limit' | 'trial'>('limit');
+
+  // Don't show limits UI while loading tenant data
+  if (loading || !tenant) {
+    return <>{children}</>;
+  }
 
   const current = getCurrent(resource);
   const limit = getLimit(resource);
@@ -48,11 +53,13 @@ export function LimitGuard({
   const showLimitWarning = showWarning && percentage >= warningThreshold && canCreate(resource);
   const showLimitError = !canCreate(resource);
 
-  // Show upgrade dialog when limit is reached
+  // Show upgrade dialog when limit is reached, close when limit is no longer reached
   useEffect(() => {
     if (showLimitError) {
       setShowUpgradeDialog(true);
       setDialogType('limit');
+    } else {
+      setShowUpgradeDialog(false);
     }
   }, [showLimitError]);
 

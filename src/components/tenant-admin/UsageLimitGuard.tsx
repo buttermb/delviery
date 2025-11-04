@@ -19,9 +19,16 @@ export function UsageLimitGuard({ resource, children }: UsageLimitGuardProps) {
   const limits = (tenant as any).limits || {};
   const usage = (tenant as any).usage || {};
   
-  const limit = limits[resource] || 0;
+  const limit = limits[resource];
   const current = usage[resource] || 0;
-  const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0;
+  
+  // -1 means unlimited
+  if (limit === -1) {
+    return <>{children}</>;
+  }
+  
+  const actualLimit = limit || 0;
+  const percentage = actualLimit > 0 ? Math.round((current / actualLimit) * 100) : 0;
   
   // At 100% - Block with upgrade prompt
   if (percentage >= 100) {
@@ -37,11 +44,11 @@ export function UsageLimitGuard({ resource, children }: UsageLimitGuardProps) {
                 {resource.charAt(0).toUpperCase() + resource.slice(1)} Limit Reached
               </h3>
               <p className="text-red-700 mb-4">
-                You've reached your limit of {limit} {resource}. Upgrade your plan to add more.
+                You've reached your limit of {actualLimit} {resource}. Upgrade your plan to add more.
               </p>
               <Progress value={100} className="h-2 mb-4" />
               <p className="text-sm text-red-600 mb-4">
-                {current} / {limit} {resource} used (100%)
+                {current} / {actualLimit} {resource} used (100%)
               </p>
             </div>
             <Button asChild className="bg-red-600 hover:bg-red-700 text-white">
@@ -70,7 +77,7 @@ export function UsageLimitGuard({ resource, children }: UsageLimitGuardProps) {
                     ⚠️ Approaching {resource} limit
                   </p>
                   <p className="text-sm text-yellow-700">
-                    {current} / {limit} used ({percentage}%)
+                    {current} / {actualLimit} used ({percentage}%)
                   </p>
                 </div>
               </div>

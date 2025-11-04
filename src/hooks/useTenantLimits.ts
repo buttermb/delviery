@@ -30,7 +30,21 @@ export function useTenantLimits() {
 
   const getLimit = (resource: Resource): number => {
     if (!tenant) return 0;
-    return tenant.limits?.[resource] === -1 ? Infinity : (tenant.limits?.[resource] || 0);
+    
+    const limit = tenant.limits?.[resource];
+    
+    // -1 means unlimited
+    if (limit === -1) return Infinity;
+    
+    // If limit is undefined or 0, check if enterprise plan (should be unlimited)
+    if (limit === undefined || limit === 0) {
+      if (tenant.subscription_plan === 'enterprise') {
+        return Infinity; // Enterprise plans are unlimited
+      }
+      return 0;
+    }
+    
+    return limit;
   };
 
   return {
