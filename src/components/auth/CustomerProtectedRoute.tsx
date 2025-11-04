@@ -35,7 +35,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       // Verify token is still valid
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+        const response = await window.fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

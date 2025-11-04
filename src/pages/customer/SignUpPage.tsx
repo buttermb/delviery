@@ -80,7 +80,7 @@ export default function CustomerSignUpPage() {
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
+      const response = await window.fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

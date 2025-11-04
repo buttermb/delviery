@@ -76,7 +76,7 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/add-courier`, {
+      const response = await window.fetch(`${supabaseUrl}/functions/v1/add-courier`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

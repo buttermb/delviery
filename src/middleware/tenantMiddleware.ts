@@ -74,7 +74,7 @@ export function getTenantSlugFromLocation(): string | null {
 export async function validateTenant(tenantSlug: string): Promise<{ valid: boolean; tenant?: any; error?: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/validate-tenant`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/validate-tenant`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

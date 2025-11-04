@@ -66,7 +66,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const verifyToken = async (tokenToVerify: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+      const response = await window.fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -99,7 +99,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string, tenantSlug: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
+      const response = await window.fetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -129,7 +129,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
+        await window.fetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

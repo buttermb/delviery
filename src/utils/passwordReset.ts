@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function requestSuperAdminPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/password-reset`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +48,7 @@ export async function requestTenantAdminPasswordReset(
 ): Promise<{ success: boolean; message: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/password-reset`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export async function requestCustomerPasswordReset(
 ): Promise<{ success: boolean; message: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/password-reset`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -125,7 +125,7 @@ export async function resetPasswordWithToken(
 ): Promise<{ success: boolean; message: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/password-reset`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -164,7 +164,7 @@ export async function verifyResetToken(
 ): Promise<{ valid: boolean; email?: string; error?: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/password-reset`, {
+    const response = await window.fetch(`${supabaseUrl}/functions/v1/password-reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -57,7 +57,7 @@ export default function CustomerSettingsPage() {
 
       // Call Edge Function to update password
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth`, {
+      const response = await window.fetch(`${supabaseUrl}/functions/v1/customer-auth`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
