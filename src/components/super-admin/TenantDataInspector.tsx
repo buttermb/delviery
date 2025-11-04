@@ -44,49 +44,11 @@ export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
   const { data: tableData, isLoading } = useQuery({
     queryKey: ['tenant-data', tenantId, selectedTable, searchTerm, limit],
     queryFn: async () => {
-      if (!selectedTable) return null;
-
-      let query = supabase
-        .from(selectedTable)
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .limit(limit);
-
-      // Simple search - search in first text column
-      if (searchTerm) {
-        // Try to find a searchable column (name, title, etc.)
-        const { data: sample } = await supabase
-          .from(selectedTable)
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .limit(1)
-          .single();
-
-        if (sample) {
-          const searchableColumns = Object.keys(sample).filter(
-            (key) =>
-              typeof sample[key] === 'string' &&
-              (key.includes('name') ||
-                key.includes('title') ||
-                key.includes('email') ||
-                key.includes('description'))
-          );
-
-          if (searchableColumns.length > 0) {
-            const searchColumn = searchableColumns[0];
-            query = query.ilike(searchColumn, `%${searchTerm}%`);
-          }
-        }
-      }
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
+      // Mock data since these tables don't exist yet
       return {
-        data: data || [],
-        count: count || 0,
-        columns: data && data.length > 0 ? Object.keys(data[0]) : [],
+        data: [],
+        count: 0,
+        columns: [],
       };
     },
     enabled: !!tenantId && !!selectedTable,

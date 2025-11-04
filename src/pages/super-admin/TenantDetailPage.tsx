@@ -350,12 +350,11 @@ export default function TenantDetailPage() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            {tenantId && (
+            {tenantId && tenant && (
               <ImpersonationMode
                 tenantId={tenantId}
                 onStartImpersonation={(id) => {
-                  const tenant = tenants?.find((t: any) => t.id === id);
-                  if (tenant) {
+                  if (tenant && tenant.id === id) {
                     window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
                   }
                 }}
