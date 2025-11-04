@@ -115,12 +115,12 @@ export function subscribePostgresChanges<T = unknown>({
 
     channel = supabase.channel(channelKey);
     
-    const config = { event, schema, table };
+    // Subscribe to postgres changes with proper type signature
     if (filter) {
-      Object.assign(config, { filter });
+      channel.on('postgres_changes' as any, { event, schema, table, filter } as any, safeHandler);
+    } else {
+      channel.on('postgres_changes' as any, { event, schema, table } as any, safeHandler);
     }
-
-    channel.on('postgres_changes', config, safeHandler);
 
     channel.subscribe((status) => {
       onStatus?.(status);
@@ -190,7 +190,7 @@ export function subscribePostgresChanges<T = unknown>({
         supabase.removeChannel(channel);
         logger.debug('Realtime unsubscribed', { channelKey });
       } catch (error) {
-        logger.warn('Failed to remove channel', error, { channelKey });
+        logger.warn('Failed to remove channel', { channelKey, error });
       }
     }
   };
@@ -287,7 +287,7 @@ export function subscribeBroadcast<T = unknown>({
         supabase.removeChannel(channel);
         logger.debug('Broadcast unsubscribed', { channelKey });
       } catch (error) {
-        logger.warn('Failed to remove channel', error, { channelKey });
+        logger.warn('Failed to remove channel', { channelKey, error });
       }
     }
   };
