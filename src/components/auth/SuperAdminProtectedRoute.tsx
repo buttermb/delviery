@@ -13,11 +13,24 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
   const navigate = useNavigate();
   const [verifying, setVerifying] = useState(true);
 
+  // Safety timeout: if verification takes too long, stop showing loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (verifying) {
+        console.warn("Auth verification timeout - stopping verification");
+        setVerifying(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [verifying]);
+
   useEffect(() => {
     const verifyAuth = async () => {
       if (loading) return;
 
       if (!token || !superAdmin) {
+        setVerifying(false); // Always set verifying to false before redirect
         navigate("/super-admin/login", { replace: true });
         return;
       }
@@ -37,9 +50,17 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
           throw new Error("Token verification failed");
         }
 
+        const data = await response.json();
+        
+        // Ensure we have the expected data structure
+        if (!data || !data.superAdmin) {
+          throw new Error("Invalid response from server");
+        }
+
         setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
+        setVerifying(false); // Always set verifying to false on error
         navigate("/super-admin/login", { replace: true });
       }
     };

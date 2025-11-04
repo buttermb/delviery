@@ -14,6 +14,18 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
 
+  // Safety timeout: if verification takes too long, stop showing loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (verifying) {
+        console.warn("Auth verification timeout - stopping verification");
+        setVerifying(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [verifying]);
+
   useEffect(() => {
     const verifyAuth = async () => {
       if (loading) return;
@@ -50,6 +62,11 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
         const data = await response.json();
         
+        // Ensure we have the expected data structure
+        if (!data || !data.customer) {
+          throw new Error("Invalid response from server");
+        }
+        
         // Verify customer is still active
         if (data.customer.status !== "active") {
           throw new Error("Account is not active");
@@ -58,6 +75,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
+        setVerifying(false); // Always set verifying to false on error
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {

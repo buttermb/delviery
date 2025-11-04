@@ -19,16 +19,21 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
 
+  // Safety timeout: if verification takes too long, stop showing loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (verifying) {
+        console.warn("Auth verification timeout - stopping verification");
+        setVerifying(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [verifying]);
+
   useEffect(() => {
     const verifyAuth = async () => {
-      console.log('🔐 TenantAdminProtectedRoute - verifyAuth called:', {
-        loading,
-        hasToken: !!token,
-        hasAdmin: !!admin,
-        hasTenant: !!tenant,
-        tenantSlug,
-        currentPath: location.pathname,
-      });
+      // Removed console.log for production
 
       if (loading) return;
 
@@ -39,7 +44,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (expiration) {
           const timeUntilExpiry = expiration.getTime() - Date.now();
           if (timeUntilExpiry > 0 && timeUntilExpiry < SILENT_REFRESH_THRESHOLD_MS) {
-            console.log(`Token expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes, silently refreshing`);
             await refreshAuthToken();
           }
         }
@@ -48,29 +52,25 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       // Allow access to welcome page even without full auth (for post-signup flow)
       const isWelcomePage = location.pathname.includes('/welcome');
       
-      if (!token || !admin || !tenant) {
-        console.log('❌ Auth check failed - redirecting to login:', { token: !!token, admin: !!admin, tenant: !!tenant });
+        if (!token || !admin || !tenant) {
         // Allow welcome page for new signups (they may not be logged in yet)
         if (isWelcomePage && tenantSlug) {
           setVerifying(false);
           return;
         }
         
+        setVerifying(false); // Always set verifying to false before redirect
         if (tenantSlug) {
-          console.log('🔀 Redirecting to:', `/${tenantSlug}/admin/login`);
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
-          console.log('🔀 No tenant slug, redirecting to marketing');
           navigate("/marketing", { replace: true });
         }
         return;
       }
 
-      console.log('✅ Auth check passed - user is authenticated');
-
       // Verify tenant slug matches (auth context should have already handled this)
       if (tenantSlug && tenant.slug !== tenantSlug) {
-        console.log('⚠️ Tenant slug mismatch detected, should have been caught by auth context');
+        setVerifying(false); // Always set verifying to false before redirect
         navigate(`/${tenant.slug}/admin/login`, { replace: true });
         return;
       }
@@ -98,6 +98,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
         const data = await response.json();
         
+        // Ensure we have the expected data structure
+        if (!data || !data.tenant) {
+          throw new Error("Invalid response from server");
+        }
+        
         // Check if trial has expired
         if (tenant.subscription_status === "trial" && (tenant as any).trial_ends_at) {
           const trialEnds = new Date((tenant as any).trial_ends_at);
@@ -107,6 +112,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
             // Allow access to billing and trial-expired pages only
             const currentPath = window.location.pathname;
             if (!currentPath.includes('/billing') && !currentPath.includes('/trial-expired')) {
+              setVerifying(false);
               navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
               return;
             }
@@ -115,35 +121,35 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         
         // Verify tenant is still active or in trial
         if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial" || data.tenant.subscription_status === "trialing")) {
+          // Check if trial has expired
+          const trialEndsAt = data.tenant.trial_ends_at;
+          const subscriptionStatus = data.tenant.subscription_status;
+          const isTrialExpired = 
+            subscriptionStatus === "trial" && 
+            trialEndsAt && 
+            new Date(trialEndsAt).getTime() < Date.now();
+
+          // Check if current route is billing, trial-expired, or welcome (allow access)
+          const currentPath = location.pathname;
+          const isAllowedRoute = 
+            currentPath.includes("/billing") || 
+            currentPath.includes("/trial-expired") ||
+            currentPath.includes("/welcome");
+
+          // If trial expired and not on allowed route, redirect to trial-expired
+          if (isTrialExpired && !isAllowedRoute && tenantSlug) {
+            setVerifying(false);
+            navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
+            return;
+          }
+
           setVerifying(false);
         } else {
           throw new Error("Tenant subscription is not active");
         }
-
-        // Check if trial has expired
-        const trialEndsAt = data.tenant.trial_ends_at;
-        const subscriptionStatus = data.tenant.subscription_status;
-        const isTrialExpired = 
-          subscriptionStatus === "trial" && 
-          trialEndsAt && 
-          new Date(trialEndsAt).getTime() < Date.now();
-
-        // Check if current route is billing, trial-expired, or welcome (allow access)
-        const currentPath = location.pathname;
-        const isAllowedRoute = 
-          currentPath.includes("/billing") || 
-          currentPath.includes("/trial-expired") ||
-          currentPath.includes("/welcome");
-
-        // If trial expired and not on allowed route, redirect to trial-expired
-        if (isTrialExpired && !isAllowedRoute && tenantSlug) {
-          navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
-          return;
-        }
-
-        setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
+        setVerifying(false); // Always set verifying to false on error
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
