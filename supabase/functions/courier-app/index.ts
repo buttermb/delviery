@@ -29,7 +29,7 @@ serve(async (req) => {
 
     const { data: courier } = await supabase
       .from("couriers")
-      .select("*")
+      .select("*, tenant_id")
       .eq("user_id", user.id)
       .single();
 
@@ -39,6 +39,9 @@ serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Log tenant_id for debugging
+    console.log("Courier tenant_id:", courier.tenant_id);
 
     // Parse request body to get endpoint
     const body = await req.json();
@@ -177,6 +180,11 @@ serve(async (req) => {
         .eq("courier_id", courier.id)
         .order("created_at", { ascending: false });
 
+      // Add tenant filter for multi-tenant isolation
+      if (courier.tenant_id) {
+        query = query.eq("tenant_id", courier.tenant_id);
+      }
+
       if (status === "active") {
         // Active orders are preparing or out for delivery
         query = query.in("status", ["preparing", "out_for_delivery"]);
@@ -234,7 +242,8 @@ serve(async (req) => {
     }
 
     if (endpoint === "available-orders") {
-      const { data: orders } = await supabase
+      // Filter orders by courier's tenant_id for multi-tenant isolation
+      let query = supabase
         .from("orders")
         .select(`
           *,
@@ -245,6 +254,13 @@ serve(async (req) => {
         .is("courier_id", null)
         .order("created_at", { ascending: true })
         .limit(20);
+
+      // Add tenant filter if courier has a tenant_id
+      if (courier.tenant_id) {
+        query = query.eq("tenant_id", courier.tenant_id);
+      }
+
+      const { data: orders } = await query;
 
       // Fetch customer info from profiles table
       const ordersWithCustomerInfo = await Promise.all(

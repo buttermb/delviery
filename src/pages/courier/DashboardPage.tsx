@@ -19,6 +19,9 @@ import { formatDistance } from 'date-fns';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
+import AvailableOrderCard from '@/components/courier/AvailableOrderCard';
+import { useOrderNotifications } from '@/hooks/useOrderNotifications';
+import { AnimatePresence } from 'framer-motion';
 import {
   Sheet,
   SheetContent,
@@ -168,6 +171,9 @@ export default function CourierDashboardPage() {
     }
   };
 
+  // Enable order notifications when online (after function definitions)
+  useOrderNotifications(isOnline, loadAvailableOrders);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/courier/login');
@@ -281,43 +287,16 @@ export default function CourierDashboardPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {availableOrders.map((order) => (
-                  <Card key={order.id} className="border-2">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">Order #{order.order_number}</h3>
-                            <Badge variant="outline">{order.status}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{order.customer_name}</p>
-                          <div className="flex items-start gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <span className="text-muted-foreground">{order.delivery_address}</span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span className="font-semibold text-primary">
-                              ${order.total_amount.toFixed(2)}
-                            </span>
-                            <span className="text-muted-foreground">
-                              {formatDistance(new Date(order.created_at), new Date(), {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handleAcceptOrder(order.id)}
-                          disabled={!isOnline}
-                          className="gap-2"
-                        >
-                          <Navigation className="h-4 w-4" />
-                          Accept
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {availableOrders.map((order) => (
+                    <AvailableOrderCard
+                      key={order.id}
+                      order={order}
+                      onAccept={handleAcceptOrder}
+                      disabled={!isOnline}
+                    />
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </CardContent>
