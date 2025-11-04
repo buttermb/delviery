@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/utils/test-utils';
-import { CopyButton } from '@/components/CopyButton';
+import CopyButton from '@/components/CopyButton';
 import { SearchBar } from '@/components/SearchBar';
 
 describe('CopyButton', () => {

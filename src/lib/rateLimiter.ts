@@ -21,8 +21,9 @@ export async function checkRateLimit(
 ): Promise<RateLimitCheck> {
   try {
     // Get rate limit configuration
-    // @ts-ignore - Table schema not in types
+    // @ts-ignore - rate_limits table not in types yet
     const { data: rateLimit } = await supabase
+      // @ts-ignore
       .from('rate_limits')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -39,8 +40,9 @@ export async function checkRateLimit(
 
     // Get recent requests (last hour)
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-    // @ts-ignore - Table schema not in types
+    // @ts-ignore - api_logs table not in types yet
     const { data: recentRequests, error } = await supabase
+      // @ts-ignore
       .from('api_logs')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -101,13 +103,16 @@ export async function recordRateLimitViolation(
   violationType: 'hourly' | 'daily' | 'monthly'
 ): Promise<void> {
   try {
-    // @ts-ignore - Table schema not in types
-    await supabase.from('rate_limit_violations').insert({
-      tenant_id: tenantId,
-      endpoint,
-      violation_type: violationType,
-      timestamp: new Date().toISOString(),
-    });
+    // @ts-ignore - rate_limit_violations table not in types yet
+    await supabase
+      // @ts-ignore
+      .from('rate_limit_violations')
+      .insert({
+        tenant_id: tenantId,
+        endpoint,
+        violation_type: violationType,
+        timestamp: new Date().toISOString(),
+      });
   } catch (error) {
     logger.error('Error recording rate limit violation', error);
   }
