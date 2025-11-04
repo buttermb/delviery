@@ -83,15 +83,33 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const storedAdmin = localStorage.getItem(ADMIN_KEY);
     const storedTenant = localStorage.getItem(TENANT_KEY);
 
+    // Get current tenant slug from URL
+    const currentPath = window.location.pathname;
+    const urlTenantSlug = currentPath.split('/')[1]; // e.g., /snak-station-inc/admin/...
+
     if (storedAccessToken && storedRefreshToken && storedAdmin && storedTenant) {
-      setAccessToken(storedAccessToken);
-      setRefreshToken(storedRefreshToken);
-      setToken(storedAccessToken);
       try {
+        const parsedTenant = JSON.parse(storedTenant);
+        
+        // Validate tenant slug matches URL
+        if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
+          console.log(`🔄 Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
+          localStorage.removeItem(ACCESS_TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem(ADMIN_KEY);
+          localStorage.removeItem(TENANT_KEY);
+          setLoading(false);
+          return;
+        }
+        
+        setAccessToken(storedAccessToken);
+        setRefreshToken(storedRefreshToken);
+        setToken(storedAccessToken);
         setAdmin(JSON.parse(storedAdmin));
-        setTenant(JSON.parse(storedTenant));
+        setTenant(parsedTenant);
         verifyToken(storedAccessToken);
       } catch (e) {
+        // Clear invalid data
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem(ADMIN_KEY);
@@ -354,6 +372,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logout();
     }
   };
+
+  // Detect tenant slug changes in URL
+  useEffect(() => {
+    const handleTenantChange = () => {
+      const currentPath = window.location.pathname;
+      const urlTenantSlug = currentPath.split('/')[1];
+      
+      if (tenant && urlTenantSlug && tenant.slug !== urlTenantSlug) {
+        console.log(`🔄 URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
+        logout();
+      }
+    };
+
+    // Check on mount and when location changes
+    handleTenantChange();
+    
+    // Listen for popstate (back/forward navigation)
+    window.addEventListener('popstate', handleTenantChange);
+    return () => window.removeEventListener('popstate', handleTenantChange);
+  }, [tenant]);
 
   // Proactive token refresh effect
   useEffect(() => {

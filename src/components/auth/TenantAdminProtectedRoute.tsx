@@ -67,8 +67,9 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
       console.log('✅ Auth check passed - user is authenticated');
 
-      // Verify tenant slug matches
+      // Verify tenant slug matches (auth context should have already handled this)
       if (tenantSlug && tenant.slug !== tenantSlug) {
+        console.log('⚠️ Tenant slug mismatch detected, should have been caught by auth context');
         navigate(`/${tenant.slug}/admin/login`, { replace: true });
         return;
       }
