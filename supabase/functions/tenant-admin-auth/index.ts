@@ -204,28 +204,9 @@ serve(async (req) => {
             owner_email: tenant.owner_email,
             subscription_plan: tenant.subscription_plan,
             subscription_status: tenant.subscription_status,
-<<<<<<< HEAD
-            limits: tenant.limits || {
-              customers: 50,
-              menus: 3,
-              products: 100,
-              locations: 2,
-              users: 3,
-            },
-            usage: tenant.usage || {
-              customers: 0,
-              menus: 0,
-              products: 0,
-              locations: 0,
-              users: 0,
-            },
-            features: tenant.features || {
-              api_access: false,
-              custom_branding: false,
-              white_label: false,
-              advanced_analytics: false,
-              sms_enabled: false,
-            },
+            limits: tenant.limits,
+            usage: tenant.usage,
+            features: tenant.features,
           },
           access_token: authData.session?.access_token,
           refresh_token: authData.session?.refresh_token,
@@ -408,28 +389,9 @@ serve(async (req) => {
         slug: tenantUser.tenants.slug,
         subscription_plan: tenantUser.tenants.subscription_plan,
         subscription_status: tenantUser.tenants.subscription_status,
-<<<<<<< HEAD
-        limits: tenantUser.tenants.limits || {
-          customers: 50,
-          menus: 3,
-          products: 100,
-          locations: 2,
-          users: 3,
-        },
-        usage: tenantUser.tenants.usage || {
-          customers: 0,
-          menus: 0,
-          products: 0,
-          locations: 0,
-          users: 0,
-        },
-        features: tenantUser.tenants.features || {
-          api_access: false,
-          custom_branding: false,
-          white_label: false,
-          advanced_analytics: false,
-          sms_enabled: false,
-        },
+        limits: tenantUser.tenants.limits,
+        usage: tenantUser.tenants.usage,
+        features: tenantUser.tenants.features,
       };
 
       return new Response(
