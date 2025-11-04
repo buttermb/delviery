@@ -152,8 +152,7 @@ const menuGroups: MenuGroup[] = [
     label: "Financial",
     items: [
       { featureId: "billing", title: "Billing", url: "/admin/billing", icon: CreditCard, tier: "starter" },
-      { featureId: "billing", title: "Financial Center", url: "/admin/financial-center", icon: DollarSign, tier: "professional" },
-      { featureId: "billing", title: "Legacy Financial", url: "/admin/big-plug-financial", icon: BarChart3, tier: "professional" },
+      { featureId: "invoice-management", title: "Financial Center", url: "/admin/financial-center", icon: DollarSign, tier: "professional" },
       { featureId: "commission-tracking", title: "Commission Tracking", url: "/admin/commission-tracking", icon: DollarSign, tier: "professional" },
       { featureId: "revenue-reports", title: "Revenue Reports", url: "/admin/revenue-reports", icon: TrendingUp, tier: "professional" },
       { featureId: "invoice-management", title: "Advanced Invoice", url: "/admin/advanced-invoice", icon: Receipt, tier: "professional" },
@@ -312,7 +311,7 @@ export function TenantAdminSidebar() {
                       const itemIsActive = isActive(item.url);
                       
                       return (
-                        <SidebarMenuItem key={item.featureId}>
+                        <SidebarMenuItem key={`${group.label}-${item.url}`}>
                           {hasAccess ? (
                             <SidebarMenuButton asChild isActive={itemIsActive}>
                               <NavLink 

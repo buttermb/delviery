@@ -349,6 +349,14 @@ const App = () => {
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-inventory" element={<FeatureProtectedRoute featureId="products"><ProductManagement /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-order" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-financial" element={<FeatureProtectedRoute featureId="invoice-management"><FinancialCenter /></FeatureProtectedRoute>} />
+                          <Route path="inventory/dispatch" element={<FeatureProtectedRoute featureId="inventory-transfers"><DispatchInventory /></FeatureProtectedRoute>} />
+                          <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="team" element={<FeatureProtectedRoute featureId="team-members"><TeamManagement /></FeatureProtectedRoute>} />
+                          <Route path="audit-logs" element={<FeatureProtectedRoute featureId="activity-logs"><AuditTrailPage /></FeatureProtectedRoute>} />
                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
