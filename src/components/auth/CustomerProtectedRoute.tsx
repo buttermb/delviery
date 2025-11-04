@@ -31,6 +31,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       if (loading) return;
 
       if (!token || !customer || !tenant) {
+        setVerifying(false); // Always set verifying to false before redirect
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
@@ -41,6 +42,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
       // Verify tenant slug matches
       if (tenantSlug && tenant.slug !== tenantSlug) {
+        setVerifying(false); // Always set verifying to false before redirect
         navigate(`/${tenant.slug}/shop/login`, { replace: true });
         return;
       }
