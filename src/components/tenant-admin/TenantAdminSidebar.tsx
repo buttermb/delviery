@@ -87,22 +87,22 @@ const menuGroups: MenuGroup[] = [
     label: "Dashboard",
     items: [
       { featureId: "dashboard", title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, tier: "starter" },
-      { featureId: "dashboard", title: "Legacy Dashboard", url: "/admin/big-plug-dashboard", icon: LayoutDashboard, tier: "starter" },
     ],
   },
   {
     label: "Products & Inventory",
     items: [
       { featureId: "products", title: "Products", url: "/admin/inventory/products", icon: Package, tier: "starter" },
-      { featureId: "products", title: "Legacy Inventory", url: "/admin/big-plug-inventory", icon: Package, tier: "starter" },
       { featureId: "inventory-dashboard", title: "Inventory Overview", url: "/admin/inventory-dashboard", icon: Warehouse, tier: "starter" },
       { featureId: "generate-barcodes", title: "Generate Barcodes", url: "/admin/generate-barcodes", icon: Barcode, tier: "starter" },
       { featureId: "advanced-inventory", title: "Advanced Inventory", url: "/admin/advanced-inventory", icon: Box, tier: "professional" },
       { featureId: "stock-alerts", title: "Stock Alerts", url: "/admin/stock-alerts", icon: AlertCircle, tier: "professional" },
-      { featureId: "inventory-transfers", title: "Transfers & Delivery", url: "/admin/inventory/dispatch", icon: Truck, tier: "professional" },
       { featureId: "inventory-transfers", title: "Inventory Transfers", url: "/admin/inventory-transfers", icon: ArrowRightLeft, tier: "professional" },
       { featureId: "fronted-inventory", title: "Fronted Inventory", url: "/admin/fronted-inventory", icon: ClipboardList, tier: "professional" },
       { featureId: "products", title: "Receiving & Packaging", url: "/admin/operations/receiving", icon: Warehouse, tier: "professional" },
+      { featureId: "products", title: "Images & Media", url: "/admin/catalog/images", icon: Image, tier: "professional" },
+      { featureId: "products", title: "Batches & Lots", url: "/admin/catalog/batches", icon: Tag, tier: "professional" },
+      { featureId: "products", title: "Categories & Tags", url: "/admin/catalog/categories", icon: Tag, tier: "professional" },
     ],
   },
   {
@@ -110,7 +110,6 @@ const menuGroups: MenuGroup[] = [
     items: [
       { featureId: "disposable-menus", title: "Disposable Menus", url: "/admin/disposable-menus", icon: Menu, tier: "starter" },
       { featureId: "basic-orders", title: "Menu Orders", url: "/admin/disposable-menu-orders", icon: ShoppingCart, tier: "starter" },
-      { featureId: "basic-orders", title: "Legacy Orders", url: "/admin/big-plug-order", icon: FileText, tier: "starter" },
       { featureId: "wholesale-orders", title: "Wholesale Orders", url: "/admin/wholesale-orders", icon: FileText, tier: "starter" },
       { featureId: "live-orders", title: "Live Orders Dashboard", url: "/admin/live-orders", icon: Activity, tier: "professional" },
       { featureId: "order-analytics", title: "Order Analytics", url: "/admin/order-analytics", icon: PieChart, tier: "professional" },
@@ -131,21 +130,10 @@ const menuGroups: MenuGroup[] = [
       { featureId: "menu-analytics", title: "Menu Analytics", url: "/admin/menu-analytics", icon: BarChart3, tier: "professional" },
       { featureId: "disposable-menu-analytics", title: "Disposable Menu Analytics", url: "/admin/disposable-menu-analytics", icon: PieChart, tier: "professional" },
       { featureId: "sales-dashboard", title: "Sales Dashboard", url: "/admin/sales-dashboard", icon: DollarSign, tier: "professional" },
-      { featureId: "analytics", title: "Comprehensive Analytics", url: "/admin/analytics/comprehensive", icon: BarChart3, tier: "professional" },
-      { featureId: "analytics", title: "Analytics Dashboard", url: "/admin/analytics-dashboard", icon: LineChart, tier: "enterprise" },
+      { featureId: "analytics", title: "Analytics", url: "/admin/analytics/comprehensive", icon: BarChart3, tier: "professional" },
       { featureId: "advanced-analytics", title: "Advanced Analytics", url: "/admin/advanced-analytics", icon: TrendingUp, tier: "enterprise" },
       { featureId: "realtime-dashboard", title: "Realtime Dashboard", url: "/admin/realtime-dashboard", icon: Activity, tier: "enterprise" },
       { featureId: "custom-reports", title: "Custom Reports", url: "/admin/custom-reports", icon: FileText, tier: "enterprise" },
-    ],
-  },
-  {
-    label: "Catalog Management",
-    items: [
-      { featureId: "products", title: "Product Catalog", url: "/admin/inventory/products", icon: Package, tier: "starter" },
-      { featureId: "products", title: "Images & Media", url: "/admin/catalog/images", icon: Image, tier: "professional" },
-      { featureId: "products", title: "Batches & Lots", url: "/admin/catalog/batches", icon: Tag, tier: "professional" },
-      { featureId: "products", title: "Categories & Tags", url: "/admin/catalog/categories", icon: Tag, tier: "professional" },
-      { featureId: "products", title: "Pricing & Deals", url: "/admin/sales/pricing", icon: DollarSign, tier: "professional" },
     ],
   },
   {
@@ -179,11 +167,9 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Team & Locations",
     items: [
-      { featureId: "team-members", title: "Staff Management", url: "/admin/team", icon: Users, tier: "professional" },
-      { featureId: "team-members", title: "Team Members", url: "/admin/team-members", icon: Users, tier: "professional" },
+      { featureId: "team-members", title: "Staff Management", url: "/admin/staff-management", icon: Users, tier: "professional" },
       { featureId: "role-management", title: "Role Management", url: "/admin/role-management", icon: UserCog, tier: "professional" },
       { featureId: "activity-logs", title: "Activity Logs", url: "/admin/activity-logs", icon: ScrollText, tier: "professional" },
-      { featureId: "activity-logs", title: "Audit Logs", url: "/admin/audit-logs", icon: FileText, tier: "professional" },
       { featureId: "locations", title: "Locations", url: "/admin/locations", icon: Building, tier: "enterprise" },
       { featureId: "locations", title: "Warehouses", url: "/admin/locations/warehouses", icon: Warehouse, tier: "enterprise" },
       { featureId: "locations", title: "Runners & Vehicles", url: "/admin/locations/runners", icon: Truck, tier: "enterprise" },
