@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 interface SuperAdminProtectedRouteProps {
   children: ReactNode;
@@ -24,12 +25,12 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       // Verify token is still valid
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
+        const response = await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
+          skipAuth: true,
         });
 
         if (!response.ok) {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { logger } from "@/utils/logger";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 interface SuperAdmin {
   id: string;
@@ -53,12 +54,12 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const verifyToken = async (tokenToVerify: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
-          "Content-Type": "application/json",
         },
+        skipAuth: true,
       });
 
       if (!response.ok) {
@@ -82,12 +83,10 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const login = async (email: string, password: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=login`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email, password }),
+        skipAuth: true,
       });
 
       if (!response.ok) {
@@ -110,12 +109,12 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await fetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
+        await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
+          skipAuth: true,
         });
       }
     } catch (error) {
@@ -133,12 +132,10 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ token }),
+        skipAuth: true,
       });
 
       if (!response.ok) {

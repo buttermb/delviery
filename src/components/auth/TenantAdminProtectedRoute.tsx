@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 // Refresh token if it expires within 10 minutes
 const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
@@ -83,12 +84,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("No access token available");
         }
         
-        const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+        const response = await apiFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${tokenToUse}`,
-            "Content-Type": "application/json",
           },
+          skipAuth: true,
         });
 
         if (!response.ok) {
