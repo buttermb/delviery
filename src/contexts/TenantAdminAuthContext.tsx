@@ -17,6 +17,27 @@ interface Tenant {
   slug: string;
   subscription_plan: string;
   subscription_status: string;
+  limits: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  usage: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  features?: {
+    api_access: boolean;
+    custom_branding: boolean;
+    white_label: boolean;
+    advanced_analytics: boolean;
+    sms_enabled: boolean;
+  };
 }
 
 interface TenantAdminAuthContextType {
@@ -44,6 +65,9 @@ const REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const EXPIRATION_BUFFER_MS = 60 * 1000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Bound fetch to prevent "Illegal invocation" error in production builds
+const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
 
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
@@ -142,7 +166,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
       }
       
-      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -157,7 +181,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
             try {
-              const refreshResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+              const refreshResponse = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -265,7 +289,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const login = async (email: string, password: string, tenantSlug: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -309,7 +333,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       if (accessToken) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
+        await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${accessToken}`,
@@ -342,7 +366,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       logger.debug("Refreshing access token...");
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

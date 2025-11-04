@@ -14,6 +14,20 @@ interface Tenant {
   id: string;
   business_name: string;
   slug: string;
+  limits?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  usage?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
 }
 
 interface CustomerAuthContextType {
@@ -31,6 +45,9 @@ const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(u
 const TOKEN_KEY = "customer_token";
 const CUSTOMER_KEY = "customer_user";
 const TENANT_KEY = "customer_tenant_data";
+
+// Bound fetch to prevent "Illegal invocation" error in production builds
+const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
 
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -66,7 +83,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const verifyToken = async (tokenToVerify: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -99,7 +116,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string, tenantSlug: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -129,7 +146,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
+        await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
