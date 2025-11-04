@@ -6,6 +6,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import bugFinder from './bugFinder';
+import { logger } from './logger';
 
 interface FunctionCallOptions {
   functionName: string;

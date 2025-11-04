@@ -72,7 +72,7 @@ export default function PurchaseGiveawayEntries() {
 
       if (error) throw error;
 
-      setEntries(data || []);
+      setEntries(data as any || []);
 
       // Calculate stats
       const stats = {

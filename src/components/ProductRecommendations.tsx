@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "./ProductCard";
 import { Sparkles } from "lucide-react";
+import type { Product } from "@/types/product";
 
 interface ProductRecommendationsProps {
   currentProductId?: string;
@@ -51,7 +52,7 @@ const ProductRecommendations = ({
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product as Product} />
           ))}
         </div>
       </div>

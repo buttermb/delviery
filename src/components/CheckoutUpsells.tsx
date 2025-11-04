@@ -11,6 +11,7 @@ import { getDefaultWeight } from "@/utils/productHelpers";
 import { cleanProductName } from "@/utils/productName";
 import type { RenderCartItem } from "@/types/cart";
 import type { Product } from "@/types/product";
+import { toNumber } from "@/utils/productTypeGuards";
 
 interface CheckoutUpsellsProps {
   cartItems: RenderCartItem[];
@@ -113,9 +114,9 @@ const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
 
   const getProductPrice = (product: Product) => {
     if (product.prices && typeof product.prices === 'object') {
-      return Math.min(...Object.values(product.prices).map(p => Number(p)));
+      return Math.min(...Object.values(product.prices).map(p => toNumber(p)));
     }
-    return Number(product.price);
+    return toNumber(product.price);
   };
 
   if (upsellProducts.length === 0) return null;

@@ -18,6 +18,12 @@ import { toast as sonnerToast } from "sonner";
 import { haptics } from "@/utils/haptics";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import type { Product } from "@/types/product";
+import { 
+  getNumberValue, 
+  getStringArray, 
+  getObjectValue,
+  getStringValue
+} from "@/utils/productTypeGuards";
 import {
   Carousel,
   CarouselContent,
@@ -193,11 +199,12 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
   const weights = getWeights();
   const currentPrice = getCurrentPrice();
 
-  // Parse growing info
-  const growingInfo = product.growing_info || {};
-  const effectsTimeline = product.effects_timeline || {};
-  const medicalBenefits = product.medical_benefits || [];
-  const consumptionMethods = product.consumption_methods || [];
+  // Parse growing info with type guards
+  const growingInfo = getObjectValue(product.growing_info, {});
+  const effectsTimeline = getObjectValue(product.effects_timeline, {});
+  const medicalBenefits = getStringArray(product.medical_benefits);
+  const consumptionMethods = getStringArray(product.consumption_methods);
+  const productImages = getStringArray(product.images);
 
   const handleSubmitReview = async () => {
     if (!user) {
@@ -277,8 +284,8 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
             <div className="relative aspect-square rounded-xl overflow-hidden bg-muted">
               <Carousel className="w-full h-full">
                 <CarouselContent>
-                  {(product.images && product.images.length > 0 
-                    ? product.images 
+                  {(productImages.length > 0 
+                    ? productImages 
                     : [product.image_url || "/placeholder.svg"]
                   ).map((image: string, index: number) => (
                     <CarouselItem key={index}>
@@ -293,7 +300,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                {(product.images && product.images.length > 1) && (
+                {productImages.length > 1 && (
                   <>
                     <CarouselPrevious className="left-2" />
                     <CarouselNext className="right-2" />
@@ -303,9 +310,9 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
             </div>
 
             {/* Image Counter */}
-            {product.images && product.images.length > 1 && (
+            {productImages.length > 1 && (
               <div className="text-center text-sm text-muted-foreground">
-                {product.images.length} photos
+                {productImages.length} photos
               </div>
             )}
 
@@ -327,20 +334,20 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
               </Badge>
               <h2 className="text-4xl font-bold mb-2">{cleanProductName(product.name)}</h2>
               {product.strain_type && (
-                <p className="text-muted-foreground capitalize">{product.strain_type} Strain</p>
+                <p className="text-muted-foreground capitalize">{getStringValue(product.strain_type)} Strain</p>
               )}
             </div>
 
             {/* Quick Stats */}
-            {product.average_rating > 0 && (
+            {getNumberValue(product.average_rating) > 0 && (
               <div className="grid grid-cols-1 gap-4 mb-6">
                 <Card>
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <Star className="w-5 h-5 fill-primary text-primary" />
-                      <p className="text-3xl font-bold">{product.average_rating.toFixed(1)}</p>
+                      <p className="text-3xl font-bold">{getNumberValue(product.average_rating).toFixed(1)}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">{product.review_count} Reviews</p>
+                    <p className="text-xs text-muted-foreground">{getNumberValue(product.review_count)} Reviews</p>
                   </CardContent>
                 </Card>
               </div>
@@ -451,9 +458,9 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <p className="text-sm text-muted-foreground">Lab-tested for potency and purity • Secure checkout • No hidden fees</p>
                 </div>
               </div>
-              {(product.coa_pdf_url || product.coa_url || product.lab_results_url) ? (
+              {(getStringValue(product.coa_pdf_url) || getStringValue(product.coa_url) || getStringValue(product.lab_results_url)) ? (
                 <Button variant="default" size="lg" asChild className="w-full">
-                  <a href={product.coa_pdf_url || product.coa_url || product.lab_results_url} target="_blank" rel="noopener noreferrer">
+                  <a href={getStringValue(product.coa_pdf_url) || getStringValue(product.coa_url) || getStringValue(product.lab_results_url)} target="_blank" rel="noopener noreferrer">
                     <Download className="w-5 h-5 mr-2" />
                     Download Certificate of Analysis
                   </a>
@@ -524,9 +531,9 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                 <Heart className="w-6 h-6 text-primary" />
                 Why You'll Love It
               </h3>
-              {product.usage_tips ? (
+              {getStringValue(product.usage_tips) ? (
                 <div className="space-y-3">
-                  {product.usage_tips.split('\n').filter((tip: string) => tip.trim()).map((tip: string, index: number) => (
+                  {getStringValue(product.usage_tips).split('\n').filter((tip: string) => tip.trim()).map((tip: string, index: number) => (
                     <div key={index} className="flex items-start gap-3 p-3 bg-background rounded-lg">
                       <span className="text-primary text-lg mt-0.5">✓</span>
                       <span className="text-base">{tip}</span>
@@ -553,14 +560,14 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
           </TabsContent>
 
           <TabsContent value="effects" className="space-y-6 mt-6">
-            {product.effects && product.effects.length > 0 && (
+            {getStringArray(product.effects).length > 0 && (
               <div>
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Activity className="w-5 h-5" />
                   Common Effects
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {product.effects.map((effect: string, index: number) => (
+                  {getStringArray(product.effects).map((effect: string, index: number) => (
                     <div key={index} className="p-4 bg-primary/5 rounded-lg text-center border border-primary/10">
                       <p className="font-semibold capitalize">{effect}</p>
                     </div>
@@ -569,7 +576,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
               </div>
             )}
 
-            {effectsTimeline.onset && (
+            {effectsTimeline && 'onset' in effectsTimeline && (
               <div>
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Clock className="w-5 h-5" />
@@ -578,18 +585,18 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <span className="font-semibold">Onset Time</span>
-                    <span className="text-primary">{effectsTimeline.onset}</span>
+                    <span className="text-primary">{String((effectsTimeline as any).onset || '')}</span>
                   </div>
-                  {effectsTimeline.peak && (
+                  {(effectsTimeline as any).peak && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Peak Effects</span>
-                      <span className="text-primary">{effectsTimeline.peak}</span>
+                      <span className="text-primary">{String((effectsTimeline as any).peak)}</span>
                     </div>
                   )}
-                  {effectsTimeline.duration && (
+                  {(effectsTimeline as any).duration && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Duration</span>
-                      <span className="text-primary">{effectsTimeline.duration}</span>
+                      <span className="text-primary">{String((effectsTimeline as any).duration)}</span>
                     </div>
                   )}
                 </div>
@@ -661,7 +668,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Growing Method</h4>
                     <p className="text-2xl font-bold capitalize text-primary">
-                      {growingInfo.method || "Indoor"}
+                      {(growingInfo as any).method || "Indoor"}
                     </p>
                   </CardContent>
                 </Card>
@@ -669,21 +676,21 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Organic</h4>
                     <p className="text-2xl font-bold text-primary">
-                      {growingInfo.organic ? "Yes" : "Standard"}
+                      {(growingInfo as any).organic ? "Yes" : "Standard"}
                     </p>
                   </CardContent>
                 </Card>
               </div>
-              {growingInfo.location && (
+              {(growingInfo as any).location && (
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-semibold mb-2">Location</h4>
-                  <p className="text-muted-foreground">{growingInfo.location}</p>
+                  <p className="text-muted-foreground">{String((growingInfo as any).location)}</p>
                 </div>
               )}
-              {product.strain_lineage && (
+              {getStringValue(product.strain_lineage) && (
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-semibold mb-2">Strain Genetics</h4>
-                  <p className="text-muted-foreground">{product.strain_lineage}</p>
+                  <p className="text-muted-foreground">{getStringValue(product.strain_lineage)}</p>
                 </div>
               )}
             </div>
@@ -719,7 +726,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <Card>
                     <CardContent className="p-4 text-center">
                       <p className="text-xs text-muted-foreground mb-1">Total Cannabinoids</p>
-                      <p className="text-2xl font-bold text-primary">{product.thca_percentage || 0}%</p>
+                      <p className="text-2xl font-bold text-primary">{getNumberValue(product.thca_percentage, 0)}%</p>
                     </CardContent>
                   </Card>
                   <Card>

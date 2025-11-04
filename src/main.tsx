@@ -12,6 +12,7 @@ import { PerformanceMonitor } from "./utils/performance";
 import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
+import { logger } from "@/utils/logger";
 
 // Log app initialization
 console.log('[APP] Starting app initialization...');

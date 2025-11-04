@@ -23,8 +23,9 @@ export const sortProductWeights = (weights: string[]): string[] => {
 
 /**
  * Get the default weight for a product (always QP if available)
+ * Accepts both number and Numeric (number | string) values
  */
-export const getDefaultWeight = (prices: Record<string, number> | null | undefined): string => {
+export const getDefaultWeight = (prices: Record<string, number | string> | null | undefined): string => {
   if (!prices || typeof prices !== 'object') return 'unit';
   
   const weights = Object.keys(prices);
