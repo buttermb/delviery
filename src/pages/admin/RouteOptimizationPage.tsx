@@ -10,6 +10,7 @@ import { Plus, Route, Trash2, MapPin, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import MapboxAddressAutocomplete from "@/components/MapboxAddressAutocomplete";
 
 interface RouteStop {
   address: string;
@@ -34,7 +35,7 @@ export default function RouteOptimizationPage() {
   const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [routeName, setRouteName] = useState("");
-  const [stops, setStops] = useState<string[]>([""]);
+  const [stops, setStops] = useState<RouteStop[]>([{ address: "", order: 1 }]);
 
   const { data: routes = [], isLoading } = useQuery({
     queryKey: ['routes', tenant?.id],
@@ -55,10 +56,14 @@ export default function RouteOptimizationPage() {
 
   const createRouteMutation = useMutation({
     mutationFn: async () => {
-      const validStops = stops.filter(s => s.trim()).map((address, index) => ({
-        address: address.trim(),
-        order: index + 1
-      }));
+      const validStops = stops
+        .filter(s => s.address.trim())
+        .map((stop, index) => ({
+          address: stop.address.trim(),
+          lat: stop.lat,
+          lng: stop.lng,
+          order: index + 1
+        }));
 
       if (validStops.length < 2) {
         throw new Error("Route must have at least 2 stops");
@@ -82,7 +87,7 @@ export default function RouteOptimizationPage() {
       toast.success("Route created successfully");
       setIsAddDialogOpen(false);
       setRouteName("");
-      setStops([""]);
+      setStops([{ address: "", order: 1 }]);
       queryClient.invalidateQueries({ queryKey: ['routes'] });
     },
     onError: (error: any) => {
@@ -139,16 +144,16 @@ export default function RouteOptimizationPage() {
   });
 
   const addStop = () => {
-    setStops([...stops, ""]);
+    setStops([...stops, { address: "", order: stops.length + 1 }]);
   };
 
   const removeStop = (index: number) => {
     setStops(stops.filter((_, i) => i !== index));
   };
 
-  const updateStop = (index: number, value: string) => {
+  const updateStop = (index: number, address: string, lat: number, lng: number) => {
     const newStops = [...stops];
-    newStops[index] = value;
+    newStops[index] = { address, lat, lng, order: index + 1 };
     setStops(newStops);
   };
 
@@ -188,10 +193,11 @@ export default function RouteOptimizationPage() {
                 <div className="space-y-2 mt-2">
                   {stops.map((stop, index) => (
                     <div key={index} className="flex gap-2">
-                      <Input
-                        value={stop}
-                        onChange={(e) => updateStop(index, e.target.value)}
+                      <MapboxAddressAutocomplete
+                        value={stop.address}
+                        onChange={(address, lat, lng) => updateStop(index, address, lat, lng)}
                         placeholder={`Stop ${index + 1} address`}
+                        className="flex-1"
                       />
                       {stops.length > 1 && (
                         <Button
@@ -217,7 +223,7 @@ export default function RouteOptimizationPage() {
               </div>
               <Button
                 onClick={() => createRouteMutation.mutate()}
-                disabled={!routeName.trim() || stops.filter(s => s.trim()).length < 2}
+                disabled={!routeName.trim() || stops.filter(s => s.address.trim()).length < 2}
                 className="w-full"
               >
                 Create Route
