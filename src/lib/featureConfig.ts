@@ -251,11 +251,11 @@ export const FEATURES: Record<FeatureId, Feature> = {
   },
   'invoice-management': {
     id: 'invoice-management',
-    name: 'Invoice Management',
+    name: 'Advanced Invoice',
     description: 'Create and manage invoices',
     tier: 'professional',
     category: 'Financial',
-    route: '/admin/invoice-management',
+    route: '/admin/advanced-invoice',
   },
   'customer-insights': {
     id: 'customer-insights',
@@ -359,11 +359,11 @@ export const FEATURES: Record<FeatureId, Feature> = {
   },
   'route-optimization': {
     id: 'route-optimization',
-    name: 'Route Optimization',
+    name: 'Route Optimizer',
     description: 'AI-powered delivery route planning',
     tier: 'enterprise',
     category: 'Delivery',
-    route: '/admin/route-optimization',
+    route: '/admin/route-optimizer',
   },
   'delivery-analytics': {
     id: 'delivery-analytics',

@@ -213,6 +213,12 @@ export function TenantAdminSidebar() {
   const { canAccess, currentTier } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
+  // Guard against missing tenant slug
+  if (!tenantSlug) {
+    console.error('TenantAdminSidebar rendered without tenantSlug');
+    return null;
+  }
+
   const isActive = (url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');

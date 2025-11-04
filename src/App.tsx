@@ -314,6 +314,9 @@ const App = () => {
                         <Route path="/saas/login" element={<SaasLoginPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
                         
+                        {/* Redirect admin routes without tenant slug */}
+                        <Route path="/admin/*" element={<Navigate to="/login" replace />} />
+                        
                         {/* Invitation Acceptance */}
                         <Route path="/invite/:token" element={<InvitationAcceptPage />} />
                         
