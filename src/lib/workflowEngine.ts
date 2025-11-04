@@ -7,7 +7,7 @@ export async function executeWorkflow(
   triggerData?: Record<string, any>
 ): Promise<void> {
   console.log('Executing workflow:', { workflowId, tenantId, triggerData });
-  await auditActions.workflowExecuted();
+  await auditActions.workflowExecuted(workflowId);
 }
 
 export async function executeAction(action: any, tenantId?: string, triggerData?: Record<string, any>): Promise<void> {
