@@ -78,14 +78,14 @@ export function RevenuePredictionWidget() {
 
       const { data: orders, error: ordersError } = await supabase
         .from('wholesale_orders')
-        .select('created_at, total_amount, customer_id')
+        .select('created_at, total_amount, client_id')
         .eq('tenant_id', tenantId)
         .gte('created_at', thirtyDaysAgo)
         .order('created_at', { ascending: true });
 
       if (ordersError || !orders) return [];
 
-      const dailyData = groupOrdersByDate(orders);
+      const dailyData = groupOrdersByDate(orders as any);
       return dailyData.slice(-7); // Last 7 days for chart
     },
     enabled: !!tenantId,

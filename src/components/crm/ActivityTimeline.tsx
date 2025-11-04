@@ -92,7 +92,7 @@ export function ActivityTimeline({ customerId, tenantId }: ActivityTimelineProps
   });
 
   // Fetch activities
-  const { data: activities, isLoading, refetch } = useQuery<Activity[]>({
+  const { data: activities, isLoading, refetch } = useQuery({
     queryKey: ['customer-activities', customerId, tenantId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -113,13 +113,13 @@ export function ActivityTimeline({ customerId, tenantId }: ActivityTimelineProps
         throw error;
       }
 
-      return data || [];
+      return (data || []) as Activity[];
     },
     enabled: !!customerId && !!tenantId,
   });
 
   // Group activities by date
-  const groupedActivities = activities?.reduce((acc, activity) => {
+  const groupedActivities = (activities || []).reduce((acc, activity) => {
     const date = format(new Date(activity.created_at), 'yyyy-MM-dd');
     if (!acc[date]) {
       acc[date] = [];

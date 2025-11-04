@@ -7,7 +7,7 @@
 export * from './dashboard';
 
 // CRM
-export * from '../../crm';
+export * from '../crm';
 
 // Analytics
 export { SelfHostedAnalytics } from './analytics/SelfHostedAnalytics';
