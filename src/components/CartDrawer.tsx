@@ -12,6 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { SwipeableCartItem } from "@/components/SwipeableCartItem";
 import { haptics } from "@/utils/haptics";
+import type { AppUser } from "@/types/auth";
+import type { Product } from "@/types/product";
+import type { DbCartItem, GuestCartItemWithProduct, RenderCartItem } from "@/types/cart";
 
 interface CartDrawerProps {
   open: boolean;
@@ -19,7 +22,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const { guestCart, updateGuestCartItem, removeFromGuestCart } = useGuestCart();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -30,7 +33,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     });
   }, []);
 
-  const { data: dbCartItems = [] } = useQuery({
+  const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({
     queryKey: ["cart", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -39,7 +42,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
         .select("*, products(*)")
         .eq("user_id", user.id);
       if (error) throw error;
-      return data;
+      return data as DbCartItem[];
     },
     enabled: !!user,
     refetchOnMount: true,
@@ -47,7 +50,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   });
 
   // Fetch product details for guest cart items
-  const { data: guestProducts = [] } = useQuery({
+  const { data: guestProducts = [] } = useQuery<Product[]>({
     queryKey: ["guest-cart-products", guestCart.map(i => i.product_id).sort().join(",")],
     queryFn: async () => {
       if (guestCart.length === 0) return [];
@@ -57,40 +60,43 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
         .select("*")
         .in("id", productIds);
       if (error) throw error;
-      return data;
+      return data as Product[];
     },
     enabled: !user && guestCart.length > 0,
   });
 
+  // Type guard to filter out nulls
+  const isGuestItemWithProduct = (
+    item: GuestCartItemWithProduct | null
+  ): item is GuestCartItemWithProduct => item !== null;
+
   // Combine guest cart items with product data (only items with valid products)
-  const guestCartItems = user ? [] : guestCart
+  const guestCartItems: GuestCartItemWithProduct[] = user ? [] : guestCart
     .map(item => {
       const product = guestProducts.find(p => p.id === item.product_id);
       if (!product) return null;
       return {
         ...item,
-        id: `${item.product_id}-${item.selected_weight}`,
+        id: `${item.product_id}-${item.selected_weight ?? "unit"}`,
         products: product
       };
     })
-    .filter(item => item !== null) as any[];
+    .filter(isGuestItemWithProduct);
 
-  const cartItems = user ? dbCartItems : guestCartItems;
+  const cartItems: RenderCartItem[] = user ? dbCartItems : guestCartItems;
   
   // Show loading state when products are still loading
   const isLoading = !user && guestCart.length > 0 && guestCartItems.length === 0 && guestProducts.length === 0;
 
-  const getItemPrice = (item: any) => {
-    const product = item?.products;
+  const getItemPrice = (item: RenderCartItem) => {
+    const product = item.products;
     if (!product) return 0;
     
-    const selectedWeight = item?.selected_weight || "unit";
+    const selectedWeight = item.selected_weight ?? "unit";
     
-    if (product?.prices && typeof product.prices === 'object') {
-      const price = product.prices[selectedWeight];
-      return price ? Number(price) : Number(product.price) || 0;
-    }
-    return Number(product.price) || 0;
+    const value = (product.prices && product.prices[selectedWeight]) ?? product.price;
+    const asNumber = typeof value === "string" ? parseFloat(value) : value ?? 0;
+    return Number.isFinite(asNumber) ? Number(asNumber) : 0;
   };
 
   const subtotal = cartItems.reduce(
@@ -116,8 +122,8 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to update quantity");
     }
   };
 
@@ -143,8 +149,8 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       toast.success("Item removed from cart");
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to remove item");
       haptics.error();
     }
   };

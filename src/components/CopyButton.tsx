@@ -42,8 +42,8 @@ export default function CopyButton({
     <Button
       type="button"
       onClick={handleCopy}
-      size={size === "md" ? "default" : (size as any)}
-      variant={variant as any}
+      size={size === "md" ? "default" : size}
+      variant={variant}
       className={className}
       aria-label={`Copy ${label}`}
     >

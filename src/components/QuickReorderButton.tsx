@@ -91,9 +91,9 @@ export function QuickReorderButton({ orderId, orderItems, disabled }: QuickReord
         toast.success(`Added ${addedCount} item(s) to cart`);
         navigate("/cart");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Reorder error:", error);
-      toast.error(error.message || "Failed to reorder");
+      toast.error(error instanceof Error ? error.message : "Failed to reorder");
     }
   };
 

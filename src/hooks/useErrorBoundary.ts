@@ -31,7 +31,7 @@ export const useErrorBoundary = () => {
 
     // Log to console in development
     if (import.meta.env.DEV) {
-      console.error('Error caught by boundary:', error, errorInfo);
+      logger.debug('Error caught by boundary', { error, errorInfo }, 'useErrorBoundary');
     }
 
     // Show user-friendly toast

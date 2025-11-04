@@ -100,12 +100,12 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       form.reset();
       setOpen(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to add courier:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to add courier",
+        description: error instanceof Error ? error.message : "Failed to add courier",
       });
     } finally {
       setIsSubmitting(false);

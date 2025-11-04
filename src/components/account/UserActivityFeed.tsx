@@ -28,6 +28,7 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
   useEffect(() => {
     fetchActivity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchActivity = async () => {

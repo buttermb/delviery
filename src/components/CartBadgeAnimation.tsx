@@ -37,7 +37,7 @@ export function CartBadgeAnimation() {
       setTimeout(() => setShowAnimation(false), 1500);
     }
     setPrevCount(cartCount);
-  }, [cartCount]);
+  }, [cartCount, prevCount]);
 
   if (!showAnimation) return null;
 

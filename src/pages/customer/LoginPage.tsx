@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { logger } from "@/utils/logger";
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function CustomerLoginPage() {
 
       navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
     } catch (error: any) {
-      console.error("Customer login error:", error);
+      logger.error("Customer login error", error);
       toast({
         variant: "destructive",
         title: "Login failed",

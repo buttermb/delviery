@@ -4,20 +4,22 @@
  */
 
 import { toast } from 'sonner';
+import { logger } from './logger';
 
 export const handleComponentError = (error: Error, errorInfo?: React.ErrorInfo) => {
-  // Log error in development
-  if (import.meta.env.DEV) {
-    console.error('Component Error:', error);
-    console.error('Error Info:', errorInfo);
+  // Log error
+  logger.error('Component Error', error, 'reactErrorHandler');
+  
+  if (errorInfo) {
+    logger.debug('Error Info', errorInfo, 'reactErrorHandler');
     
     // Log specific details for replace errors
     if (error.message?.includes('replace')) {
-      console.error('Replace Error Details:', {
+      logger.debug('Replace Error Details', {
         error: error.message,
         stack: error.stack,
         componentStack: errorInfo?.componentStack
-      });
+      }, 'reactErrorHandler');
     }
   }
 

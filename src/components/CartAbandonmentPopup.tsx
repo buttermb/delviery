@@ -5,8 +5,17 @@ import { X, ShoppingCart, Percent } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+interface CartItem {
+  id: string;
+  product_id: string;
+  quantity: number;
+  products?: {
+    price: number;
+  };
+}
+
 interface CartAbandonmentPopupProps {
-  cartItems: any[];
+  cartItems: CartItem[];
   onCheckout: () => void;
 }
 

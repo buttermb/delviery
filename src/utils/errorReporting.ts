@@ -3,6 +3,8 @@
  * Helps track and debug issues in production
  */
 
+import { logger } from './logger';
+
 interface ErrorReport {
   message: string;
   stack?: string;
@@ -29,7 +31,7 @@ class ErrorReporter {
         this.errors = JSON.parse(stored);
       }
     } catch (e) {
-      console.error('Failed to load error logs', e);
+      logger.error('Failed to load error logs', e);
     }
   }
 
@@ -38,7 +40,7 @@ class ErrorReporter {
       const recentErrors = this.errors.slice(-MAX_ERRORS);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(recentErrors));
     } catch (e) {
-      console.error('Failed to save error logs', e);
+      logger.error('Failed to save error logs', e);
     }
   }
 
@@ -57,7 +59,7 @@ class ErrorReporter {
 
     // Log to console in development
     if (import.meta.env.DEV) {
-      console.error('[Error Reporter]', errorReport);
+      logger.error('[Error Reporter]', errorReport);
     }
   }
 
@@ -70,7 +72,7 @@ class ErrorReporter {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {
-      console.error('Failed to clear error logs', e);
+      logger.error('Failed to clear error logs', e);
     }
   }
 

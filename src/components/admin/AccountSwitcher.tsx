@@ -11,10 +11,17 @@ import {
 import { Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Account {
+  id: string;
+  company_name: string;
+  slug: string;
+  status: string;
+}
+
 export function AccountSwitcher() {
   const { account, isSuperAdmin, switchAccount } = useAccount();
   const { toast } = useToast();
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

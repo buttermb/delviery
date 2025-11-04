@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { logger } from "@/utils/logger";
 
 interface SuperAdmin {
   id: string;
@@ -69,7 +70,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
       setLoading(false);
     } catch (error) {
-      console.error("Token verification error:", error);
+      logger.error("Token verification error", error);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(SUPER_ADMIN_KEY);
       setToken(null);
@@ -100,7 +101,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error", error);
       throw error;
     }
   };
@@ -118,7 +119,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         });
       }
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error", error);
     } finally {
       setToken(null);
       setSuperAdmin(null);
@@ -148,7 +149,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       setToken(data.token);
       localStorage.setItem(TOKEN_KEY, data.token);
     } catch (error) {
-      console.error("Token refresh error:", error);
+      logger.error("Token refresh error", error);
       // If refresh fails, logout
       await logout();
     }

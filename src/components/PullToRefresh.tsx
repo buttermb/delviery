@@ -61,6 +61,7 @@ export const PullToRefresh = ({ onRefresh, children }: PullToRefreshProps) => {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [touchStart, pullDistance, isRefreshing]);
 
   const rotation = (pullDistance / PULL_THRESHOLD) * 360;

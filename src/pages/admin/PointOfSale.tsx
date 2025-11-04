@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { logger } from '@/utils/logger';
 
 interface Product {
   id: string;
@@ -87,7 +88,7 @@ export default function PointOfSale() {
       
       setProducts(mappedProducts);
     } catch (error) {
-      console.error('Error loading products:', error);
+      logger.error('Error loading products', error);
       toast({ title: 'Error loading products', variant: 'destructive' });
     }
   };
@@ -114,7 +115,7 @@ export default function PointOfSale() {
       
       setCustomers(mappedCustomers);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      logger.error('Error loading customers', error);
     }
   };
 
@@ -213,7 +214,7 @@ export default function PointOfSale() {
       clearCart();
       loadProducts();
     } catch (error) {
-      console.error('Error completing sale:', error);
+      logger.error('Error completing sale', error);
       toast({ 
         title: 'Error completing sale', 
         description: error instanceof Error ? error.message : 'Unknown error',

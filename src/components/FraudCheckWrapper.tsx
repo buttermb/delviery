@@ -46,8 +46,8 @@ export function FraudCheckWrapper({
         } else if (data && data.flags && data.flags.length > 0) {
           toast.warning("Your order has been flagged for review");
         }
-      } catch (error: any) {
-        console.error("Fraud check error:", error);
+      } catch (error: unknown) {
+        console.error("Fraud check error:", error instanceof Error ? error.message : error);
         // Continue processing if fraud check fails
       }
     };

@@ -8,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Bell, Mail, MessageSquare, Package, Gift, Tag, TrendingUp, User } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Package, Gift, Tag, TrendingUp, User, LucideIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface NotificationPref {
   id: string;
   category: string;
-  icon: any;
+  icon: LucideIcon;
   email: boolean;
   sms: boolean;
   push: boolean;

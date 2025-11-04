@@ -15,6 +15,7 @@ import { useProductViewCount } from "@/hooks/useProductViewCount";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { haptics } from "@/utils/haptics";
 import { cleanProductName } from "@/utils/productName";
+import type { Product } from "@/types/product";
 import {
   Carousel,
   CarouselContent,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/carousel";
 
 interface ProductCardProps {
-  product: any;
+  product: Product;
   onAuthRequired?: () => void;
   stockLevel?: number;
 }
@@ -128,9 +129,10 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       });
       setTimeout(() => setAdded(false), 2500);
       setQuantity(1);
-    } catch (error: any) {
+    } catch (error: unknown) {
       haptics.error();
-      toast.error(error.message || "Failed to add to cart");
+      const errorMessage = error instanceof Error ? error.message : "Failed to add to cart";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

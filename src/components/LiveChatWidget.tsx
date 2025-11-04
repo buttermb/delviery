@@ -68,7 +68,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
     };
 
     initSession();
-  }, [isOpen, sessionId]);
+  }, [isOpen, sessionId, toast]);
 
   // Load messages
   useEffect(() => {

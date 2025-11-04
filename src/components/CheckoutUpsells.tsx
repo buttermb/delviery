@@ -9,9 +9,11 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDefaultWeight } from "@/utils/productHelpers";
 import { cleanProductName } from "@/utils/productName";
+import type { RenderCartItem } from "@/types/cart";
+import type { Product } from "@/types/product";
 
 interface CheckoutUpsellsProps {
-  cartItems: any[];
+  cartItems: RenderCartItem[];
 }
 
 const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
@@ -25,7 +27,7 @@ const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
   const cartProductIds = cartItems.map(item => item.product_id);
 
   // Fetch recommended products based on cart
-  const { data: upsellProducts = [] } = useQuery({
+  const { data: upsellProducts = [] } = useQuery<Product[]>({
     queryKey: ["upsell-products", cartCategories],
     queryFn: async () => {
       // Get complementary products (different categories than in cart)
@@ -43,7 +45,7 @@ const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
           .limit(4);
         
         if (error) throw error;
-        return data || [];
+        return (data || []) as Product[];
       }
 
       // Fetch products from complementary categories
@@ -57,12 +59,12 @@ const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
         .limit(4);
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Product[];
     },
     enabled: cartItems.length > 0,
   });
 
-  const handleAddUpsell = async (product: any) => {
+  const handleAddUpsell = async (product: Product) => {
     if (!user || addedProducts.has(product.id)) return;
 
     setAddingProduct(product.id);
@@ -101,14 +103,15 @@ const CheckoutUpsells = ({ cartItems }: CheckoutUpsellsProps) => {
       setAddedProducts(prev => new Set(prev).add(product.id));
       queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add product");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to add product";
+      toast.error(errorMessage);
     } finally {
       setAddingProduct(null);
     }
   };
 
-  const getProductPrice = (product: any) => {
+  const getProductPrice = (product: Product) => {
     if (product.prices && typeof product.prices === 'object') {
       return Math.min(...Object.values(product.prices).map(p => Number(p)));
     }

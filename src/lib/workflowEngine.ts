@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { auditActions } from './auditLog';
+import { logger } from '@/utils/logger';
 
 export interface WorkflowAction {
   id: string;
@@ -106,7 +107,7 @@ export async function executeWorkflow(
       throw actionError;
     }
   } catch (error) {
-    console.error('Error executing workflow:', error);
+    logger.error('Error executing workflow', error);
     throw error;
   }
 }
@@ -122,7 +123,7 @@ async function executeAction(
   switch (action.type) {
     case 'send_email':
       // In production, integrate with email service
-      console.log('Sending email:', action.config);
+      logger.debug('Sending email', action.config);
       break;
 
     case 'create_record':
@@ -184,7 +185,7 @@ async function executeAction(
       break;
 
     default:
-      console.warn(`Unknown action type: ${action.type}`);
+      logger.warn(`Unknown action type: ${action.type}`);
   }
 }
 

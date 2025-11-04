@@ -23,6 +23,8 @@ import MobileBottomNav from "./MobileBottomNav";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { SearchBar } from "./SearchBar";
 import { haptics } from "@/utils/haptics";
+import type { DbCartItem } from "@/types/cart";
+import type { Numeric } from "@/types/money";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -42,7 +44,7 @@ const Navigation = () => {
     return () => window.removeEventListener('cartUpdated', handleCartUpdate);
   }, []);
 
-  const { data: cartItems = [] } = useQuery({
+  const { data: cartItems = [] } = useQuery<DbCartItem[]>({
     queryKey: ["cart", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -51,7 +53,7 @@ const Navigation = () => {
         .select("*, products(*)")
         .eq("user_id", user.id);
       if (error) throw error;
-      return data;
+      return (data || []) as DbCartItem[];
     },
     enabled: !!user,
     refetchOnMount: true,
@@ -62,7 +64,7 @@ const Navigation = () => {
   const guestCartCount = user ? 0 : getGuestCartCount();
   const cartCount = user ? dbCartCount : guestCartCount;
   
-  const getItemPrice = (item: any) => {
+  const getItemPrice = (item: DbCartItem): number => {
     const product = item.products;
     const selectedWeight = item.selected_weight || "unit";
     if (product?.prices && typeof product.prices === 'object') {

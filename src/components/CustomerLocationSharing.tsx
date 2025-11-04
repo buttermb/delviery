@@ -77,12 +77,13 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
 
       // Store interval ID to clear later
       (window as any).__locationUpdateInterval = updateInterval;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to share location:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
         variant: "destructive",
         title: "Location Access Denied",
-        description: error.message === "User denied Geolocation"
+        description: errorMessage === "User denied Geolocation"
           ? "Please enable location access in your browser settings to share your location"
           : "Unable to access your location. Please check your browser settings.",
       });

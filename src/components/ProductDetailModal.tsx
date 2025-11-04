@@ -17,6 +17,7 @@ import ReactStars from 'react-rating-stars-component';
 import { toast as sonnerToast } from "sonner";
 import { haptics } from "@/utils/haptics";
 import { useGuestCart } from "@/hooks/useGuestCart";
+import type { Product } from "@/types/product";
 import {
   Carousel,
   CarouselContent,
@@ -25,8 +26,18 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment?: string | null;
+  photo_urls?: string[] | null;
+  created_at: string;
+}
+
 interface ProductDetailModalProps {
-  product: any;
+  product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAuthRequired?: () => void;
@@ -46,7 +57,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
   const queryClient = useQueryClient();
 
   // Fetch reviews with photos
-  const { data: reviews = [] } = useQuery({
+  const { data: reviews = [] } = useQuery<Review[]>({
     queryKey: ["product-reviews", product?.id],
     queryFn: async () => {
       if (!product?.id) return [];
@@ -57,7 +68,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Review[];
     },
     enabled: !!product?.id && open,
   });

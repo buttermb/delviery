@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export interface RateLimitCheck {
   allowed: boolean;
@@ -45,7 +46,7 @@ export async function checkRateLimit(
       .gte('timestamp', oneHourAgo);
 
     if (error) {
-      console.error('Error checking rate limit:', error);
+      logger.error('Error checking rate limit', error);
       return {
         allowed: true, // Fail open
         remaining: rateLimit.requests_per_hour,
@@ -74,7 +75,7 @@ export async function checkRateLimit(
       resetAt: new Date(Date.now() + 3600000),
     };
   } catch (error) {
-    console.error('Error in checkRateLimit:', error);
+    logger.error('Error in checkRateLimit', error);
     // Fail open
     return {
       allowed: true,
@@ -100,7 +101,7 @@ export async function recordRateLimitViolation(
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error recording rate limit violation:', error);
+    logger.error('Error recording rate limit violation', error);
   }
 }
 

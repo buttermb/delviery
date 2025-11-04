@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { logger } from "@/utils/logger";
 
 interface Customer {
   id: string;
@@ -84,7 +85,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
       setLoading(false);
     } catch (error) {
-      console.error("Token verification error:", error);
+      logger.error("Token verification error", error);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_KEY);
       localStorage.removeItem(TENANT_KEY);
@@ -119,7 +120,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
       localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error", error);
       throw error;
     }
   };
@@ -137,7 +138,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error", error);
     } finally {
       setToken(null);
       setCustomer(null);

@@ -13,6 +13,7 @@
  */
 
 import { toast } from '@/hooks/use-toast';
+import { logger } from './logger';
 
 /**
  * Centralized error handling utilities
@@ -108,7 +109,7 @@ export const showErrorToast = (error: unknown) => {
 
   // Log to console ONLY in development (removed in production builds)
   if (import.meta.env.DEV) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
   }
 };
 
@@ -118,7 +119,7 @@ export const showErrorToast = (error: unknown) => {
  */
 export const safeLog = (...args: any[]) => {
   if (import.meta.env.DEV) {
-    console.log(...args);
+    logger.debug('Safe log', args);
   }
 };
 
@@ -128,7 +129,7 @@ export const safeLog = (...args: any[]) => {
  */
 export const safeError = (...args: any[]) => {
   if (import.meta.env.DEV) {
-    console.error(...args);
+    logger.error('Safe error', args);
   }
 };
 

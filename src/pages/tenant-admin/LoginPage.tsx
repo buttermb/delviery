@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { logger } from "@/utils/logger";
 
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function TenantAdminLoginPage() {
 
       navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
     } catch (error: any) {
-      console.error("Tenant admin login error:", error);
+      logger.error("Tenant admin login error", error);
       toast({
         variant: "destructive",
         title: "Login failed",

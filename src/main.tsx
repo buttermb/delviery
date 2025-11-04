@@ -96,8 +96,10 @@ try {
     </ErrorBoundary>
   );
 } catch (error) {
+  logger.error('[APP] Fatal initialization error', error, 'main');
+  
   if (import.meta.env.DEV) {
-    console.error('[APP] Fatal initialization error:', error);
+    logger.debug('Initialization error details', error, 'main');
   }
   
   // Display user-friendly error message

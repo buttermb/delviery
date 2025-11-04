@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { logger } from "@/utils/logger";
 
 interface TenantAdmin {
   id: string;
@@ -183,7 +184,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               setLoading(false);
               return true; // Successfully refreshed
             } catch (refreshError) {
-              console.error("Token refresh failed:", refreshError);
+              logger.error("Token refresh failed", refreshError);
               throw new Error("Token expired and refresh failed");
             }
           }
@@ -212,7 +213,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setLoading(false);
       return true;
     } catch (error) {
-      console.error("Token verification error:", error);
+      logger.error("Token verification error", error);
       // Clear all auth data
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -238,7 +239,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Get token expiration
     const expiration = getTokenExpiration(token);
     if (!expiration) {
-      console.warn("Could not get token expiration, skipping proactive refresh");
+      logger.warn("Could not get token expiration, skipping proactive refresh");
       return;
     }
 
@@ -293,7 +294,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // Setup proactive refresh timer
       setupRefreshTimer(data.access_token);
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error", error);
       throw error;
     }
   };
@@ -317,7 +318,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         });
       }
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error", error);
     } finally {
       setToken(null);
       setAccessToken(null);
@@ -334,7 +335,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const refreshAuthToken = async () => {
     const currentRefreshToken = refreshToken || localStorage.getItem(REFRESH_TOKEN_KEY);
     if (!currentRefreshToken) {
-      console.warn("No refresh token available");
+      logger.warn("No refresh token available");
       return;
     }
     
@@ -367,7 +368,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       console.log("Token refreshed successfully");
     } catch (error) {
-      console.error("Token refresh error:", error);
+      logger.error("Token refresh error", error);
       // If refresh fails, clear everything
       logout();
     }

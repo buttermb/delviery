@@ -35,6 +35,7 @@ import { SignupStepIndicator } from '@/components/signup/SignupStepIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
 import { SignupStepContent } from '@/components/signup/SignupStepContent';
 import { cn } from '@/lib/utils';
+import { logger } from '@/utils/logger';
 
 const signupSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
@@ -119,7 +120,7 @@ export default function SignUpPage() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
       } catch (error) {
-        console.error('Failed to save form data:', error);
+        logger.error('Failed to save form data', error);
       }
     });
     return () => subscription.unsubscribe();
@@ -134,7 +135,7 @@ export default function SignUpPage() {
         form.reset(parsed);
       }
     } catch (error) {
-      console.error('Failed to load form data:', error);
+      logger.error('Failed to load form data', error);
     }
   }, [form]);
 
@@ -207,7 +208,7 @@ export default function SignUpPage() {
       // Redirect to login page with success message
       navigate(`/saas/login?signup=success&tenant=${tenant.slug}`);
     } catch (error: any) {
-      console.error('Signup error:', error);
+      logger.error('Signup error', error);
       
       // Provide user-friendly error messages
       let errorMessage = 'Failed to create account. Please try again.';

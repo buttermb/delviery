@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { analytics } from '@/utils/analytics';
 import bugFinder from '@/utils/bugFinder';
+import { logger } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -25,13 +27,16 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', error, 'ErrorBoundary');
     analytics.trackError('error_boundary', error.message);
     
     // Report to bug finder
     bugFinder.reportRuntimeError(error, 'ErrorBoundary', {
       componentStack: errorInfo.componentStack,
     });
+
+    // Call onError callback if provided
+    this.props.onError?.(error, errorInfo);
   }
 
   private handleReset = () => {

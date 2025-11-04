@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Users, TrendingUp, DollarSign, Star, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
+import { logger } from '@/utils/logger';
 
 interface Courier {
   id: string;
@@ -45,7 +46,7 @@ export default function Couriers() {
       if (error) throw error;
       setCouriers(data || []);
     } catch (error: any) {
-      console.error('Error loading couriers:', error);
+      logger.error('Error loading couriers', error);
       toast.error('Failed to load couriers');
     } finally {
       setLoading(false);

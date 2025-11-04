@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
+import { logger } from '@/utils/logger';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -70,7 +71,7 @@ export default function CourierLoginPage() {
         description: "Enter your 6-digit PIN to continue",
       });
     } catch (error: any) {
-      console.error('Login error:', error);
+      logger.error('Login error', error);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid email or password",
@@ -127,7 +128,7 @@ export default function CourierLoginPage() {
 
       navigate('/courier/dashboard');
     } catch (error: any) {
-      console.error('PIN verification error:', error);
+      logger.error('PIN verification error', error);
       toast({
         title: "Verification Failed",
         description: error.message || "Invalid PIN",

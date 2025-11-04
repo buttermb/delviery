@@ -454,7 +454,7 @@ const ButtonTester = () => {
         try {
           buttons = getAllButtons();
         } catch (error) {
-          console.error(`Error getting buttons on ${route}:`, error);
+          logger.error(`Error getting buttons on ${route}`, error, 'ButtonTester');
         }
         
         // Find bugs on this page with error handling
@@ -462,7 +462,7 @@ const ButtonTester = () => {
         try {
           pageBugs = findBugs();
         } catch (error) {
-          console.error(`Error finding bugs on ${route}:`, error);
+          logger.error(`Error finding bugs on ${route}`, error, 'ButtonTester');
         }
         
         if (buttons.length === 0) {

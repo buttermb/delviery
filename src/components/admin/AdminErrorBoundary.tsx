@@ -1,9 +1,10 @@
-import { Component, ReactNode } from 'react';
+import { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { errorReporter } from '@/utils/errorReporting';
 import bugFinder from '@/utils/bugFinder';
+import { logger } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -34,20 +35,20 @@ export class AdminErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Report error to error reporter
     errorReporter.report(error, 'AdminErrorBoundary');
     
     // Also report to bug finder
     bugFinder.reportRuntimeError(error, 'AdminErrorBoundary', {
-      componentStack: errorInfo?.componentStack,
+      componentStack: errorInfo.componentStack,
       isWebSocketError: error.message?.includes('WebSocket') || 
                        error.message?.includes('realtime') ||
                        error.message?.includes('connection'),
     });
     
     // Log error details for debugging
-    console.error('Admin Error Boundary caught an error:', error, errorInfo);
+    logger.error('Admin Error Boundary caught an error', error, 'AdminErrorBoundary');
     
     // Detect specific error types
     const isWebSocketError = error.message?.includes('WebSocket') || 
@@ -59,21 +60,21 @@ export class AdminErrorBoundary extends Component<Props, State> {
                         error.message?.includes('Cannot read');
     
     // Log error context
-    console.error('Error context:', {
+    logger.debug('Error context', {
       isWebSocketError,
       isDataError,
       errorType: error.name,
       stack: errorInfo?.componentStack
-    });
+    }, 'AdminErrorBoundary');
     
     this.setState({
       error,
-      errorInfo: errorInfo?.componentStack || 'No stack trace available',
+      errorInfo: errorInfo.componentStack || 'No stack trace available',
     });
     
     // Log WebSocket errors but don't auto-recover (prevents reload loops)
     if (isWebSocketError) {
-      console.log('WebSocket error detected. Manual recovery required.');
+      logger.warn('WebSocket error detected. Manual recovery required.', undefined, 'AdminErrorBoundary');
     }
   }
 

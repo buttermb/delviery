@@ -36,7 +36,7 @@ export async function callAdminFunction<T = any>({
     });
 
     if (error) {
-      console.error(`Error calling ${functionName}:`, error);
+      logger.error(`Error calling ${functionName}`, error, 'adminFunctionHelper');
       
       // Report to bug finder
       bugFinder.reportEdgeFunctionError(
@@ -56,7 +56,7 @@ export async function callAdminFunction<T = any>({
 
     return { data: data as T, error: null };
   } catch (error: any) {
-    console.error(`Exception calling ${functionName}:`, error);
+    logger.error(`Exception calling ${functionName}`, error, 'adminFunctionHelper');
     
     // Report to bug finder
     const errorObj = error instanceof Error ? error : new Error(String(error));

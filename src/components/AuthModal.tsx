@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { logger } from '@/utils/logger';
 
 interface AuthModalProps {
   open: boolean;
@@ -151,8 +151,9 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
         setPassword("");
         onOpenChange(false);
       }
-    } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -5,8 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 
+interface RecentPurchase {
+  id: string;
+  customer_name: string;
+  location: string;
+  created_at: string;
+  products?: {
+    name: string;
+    image_url?: string | null;
+  } | null;
+}
+
 const RecentPurchaseNotification = () => {
-  const [visiblePurchase, setVisiblePurchase] = useState<any>(null);
+  const [visiblePurchase, setVisiblePurchase] = useState<RecentPurchase | null>(null);
   const [showNotification, setShowNotification] = useState(false);
 
   // Fetch recent purchases

@@ -105,11 +105,11 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
       form.reset();
       setOpen(false);
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding runner:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to add runner',
+        description: error instanceof Error ? error.message : 'Failed to add runner',
         variant: 'destructive',
       });
     } finally {

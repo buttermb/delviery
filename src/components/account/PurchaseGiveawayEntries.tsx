@@ -6,8 +6,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ShoppingBag, Gift, Trophy, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+interface GiveawayEntry {
+  id: string;
+  user_id: string;
+  entry_type: 'manual' | 'purchase';
+  total_entries: number;
+  entry_number_start: number;
+  entry_number_end: number;
+  status: 'pending' | 'verified';
+  entered_at: string;
+}
+
 export default function PurchaseGiveawayEntries() {
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<GiveawayEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalEntries: 0,

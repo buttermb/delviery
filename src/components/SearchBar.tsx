@@ -7,15 +7,26 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useDebounce } from '@/hooks/useDebounce';
 import { RecentSearches } from './RecentSearches';
 import { cleanProductName } from '@/utils/productName';
+import { logger } from '@/utils/logger';
 
 interface SearchBarProps {
   variant?: 'full' | 'icon';
 }
 
+interface Product {
+  id: string;
+  name: string;
+  image_url?: string;
+  category?: string;
+  price: number;
+  description?: string;
+  in_stock?: boolean;
+}
+
 export function SearchBar({ variant = 'full' }: SearchBarProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const debouncedSearch = useDebounce(search, 300);
@@ -51,7 +62,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
         
         setProducts(data || []);
       } catch (error) {
-        console.error('Search error:', error);
+        logger.error('Search error', error, 'SearchBar');
       } finally {
         setLoading(false);
       }

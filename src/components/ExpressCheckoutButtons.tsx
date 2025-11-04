@@ -6,10 +6,16 @@ interface ExpressCheckoutButtonsProps {
   onCheckout?: () => void;
 }
 
+interface WindowWithApplePay extends Window {
+  ApplePaySession?: {
+    canMakePayments?: () => boolean;
+  };
+}
+
 const ExpressCheckoutButtons = ({ onCheckout }: ExpressCheckoutButtonsProps) => {
   const handleApplePay = () => {
     // Check if Apple Pay is available
-    const applePaySession = (window as any).ApplePaySession;
+    const applePaySession = (window as WindowWithApplePay).ApplePaySession;
     if (applePaySession?.canMakePayments?.()) {
       toast.info("Apple Pay integration coming soon!");
       // In production, this would trigger Apple Pay flow
