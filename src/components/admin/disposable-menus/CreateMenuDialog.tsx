@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { MenuAccessDetails } from './MenuAccessDetails';
+import { useTenantLimits } from '@/hooks/useTenantLimits';
 
 interface CreateMenuDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ const STEPS = [
 ];
 
 export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) => {
+  const { canCreate, getCurrent, getLimit } = useTenantLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -124,6 +126,18 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
+
+    // Check menu limit before creating
+    if (!canCreate('menus')) {
+      const current = getCurrent('menus');
+      const limit = getLimit('menus');
+      toast.error('Menu Limit Reached', {
+        description: limit === Infinity 
+          ? 'Unable to create menu. Please contact support.'
+          : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
+      });
+      return;
+    }
 
     try {
       const result = await createMenu.mutateAsync({

@@ -18,6 +18,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantLimits } from '@/hooks/useTenantLimits';
 
 interface CreateMenuSimpleDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ const STEPS = [
 
 export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleDialogProps) => {
   const { tenant } = useTenantAdminAuth();
+  const { canCreate, getCurrent, getLimit } = useTenantLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -107,6 +109,18 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
 
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
+
+    // Check menu limit before creating
+    if (!canCreate('menus')) {
+      const current = getCurrent('menus');
+      const limit = getLimit('menus');
+      toast.error('Menu Limit Reached', {
+        description: limit === Infinity 
+          ? 'Unable to create menu. Please contact support.'
+          : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
+      });
+      return;
+    }
 
     try {
       await createMenu.mutateAsync({
