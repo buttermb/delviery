@@ -84,13 +84,20 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("No access token available");
         }
         
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
         const response = await apiFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${tokenToUse}`,
           },
           skipAuth: true,
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error("Token verification failed");

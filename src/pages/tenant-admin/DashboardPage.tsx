@@ -60,33 +60,55 @@ export default function TenantAdminDashboardPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Get today's orders
-      const { data: orders } = await (supabase
-        .from("wholesale_orders") as any)
-        .select("total_amount, status")
-        .eq("tenant_id", tenantId)
-        .gte("created_at", today.toISOString());
+      try {
+        // Get today's orders with error handling
+        const { data: orders, error: ordersError } = await (supabase
+          .from("wholesale_orders") as any)
+          .select("total_amount, status")
+          .eq("tenant_id", tenantId)
+          .gte("created_at", today.toISOString());
 
-      const sales = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
-      const orderCount = orders?.length || 0;
+        if (ordersError) {
+          console.warn("Failed to fetch today's orders:", ordersError);
+          // Return defaults instead of throwing
+        }
 
-      // Get low stock items
-      const { data: inventory } = await (supabase
-        .from("wholesale_inventory") as any)
-        .select("strain, weight_lbs, low_stock_threshold")
-        .eq("tenant_id", tenantId);
+        const sales = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
+        const orderCount = orders?.length || 0;
 
-      const lowStock = inventory?.filter(
-        (item: any) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
-      ) || [];
+        // Get low stock items with error handling
+        const { data: inventory, error: inventoryError } = await (supabase
+          .from("wholesale_inventory") as any)
+          .select("strain, weight_lbs, low_stock_threshold")
+          .eq("tenant_id", tenantId);
 
-      return {
-        sales,
-        orderCount,
-        lowStock: lowStock.slice(0, 5),
-      };
+        if (inventoryError) {
+          console.warn("Failed to fetch inventory:", inventoryError);
+          // Return defaults instead of throwing
+        }
+
+        const lowStock = (inventory || []).filter(
+          (item: any) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
+        );
+
+        return {
+          sales,
+          orderCount,
+          lowStock: lowStock.slice(0, 5),
+        };
+      } catch (error) {
+        console.error("Error fetching dashboard metrics:", error);
+        // Return safe defaults instead of throwing
+        return {
+          sales: 0,
+          orderCount: 0,
+          lowStock: [],
+        };
+      }
     },
     enabled: !!tenantId,
+    retry: 1, // Only retry once
+    retryDelay: 1000,
   });
 
   const handleLogout = async () => {
@@ -119,67 +141,84 @@ export default function TenantAdminDashboardPage() {
 
       const activities: any[] = [];
 
-      // Get tenant's menus first to filter activity
-      // @ts-ignore - Supabase type inference issue
-      const tenantMenusQuery = await supabase
-        .from("disposable_menus")
-        .select("id, name, created_at")
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false })
-        .limit(100);
-      const tenantMenus = tenantMenusQuery.data as any;
+      try {
+        // Get tenant's menus first to filter activity
+        // @ts-ignore - Supabase type inference issue
+        const { data: tenantMenus, error: menusError } = await supabase
+          .from("disposable_menus")
+          .select("id, name, created_at")
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (menusError) {
+          console.warn("Failed to fetch tenant menus:", menusError);
+          return []; // Return empty array instead of throwing
+        }
+
+        if (!tenantMenus || tenantMenus.length === 0) return [];
 
       if (!tenantMenus || tenantMenus.length === 0) return [];
 
-      const menuIds = tenantMenus.map((m) => m.id);
+        const menuIds = tenantMenus.map((m) => m.id);
 
-      // Get recent menu views (from menu_access_logs via menus)
-      const { data: menuLogs } = await supabase
-        .from("menu_access_logs")
-        .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
-        .in("menu_id", menuIds)
-        .order("accessed_at", { ascending: false })
-        .limit(5);
+        // Get recent menu views (from menu_access_logs via menus)
+        const { data: menuLogs, error: logsError } = await supabase
+          .from("menu_access_logs")
+          .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
+          .in("menu_id", menuIds)
+          .order("accessed_at", { ascending: false })
+          .limit(5);
 
-      menuLogs?.forEach((log: any) => {
-        activities.push({
-          type: "menu_view",
-          message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
-          timestamp: log.accessed_at,
+        if (!logsError && menuLogs) {
+          menuLogs.forEach((log: any) => {
+            activities.push({
+              type: "menu_view",
+              message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
+              timestamp: log.accessed_at,
+            });
+          });
+        }
+
+        // Get recent orders (via menu_id)
+        const { data: orders, error: ordersError } = await supabase
+          .from("menu_orders")
+          .select("id, total_amount, created_at, disposable_menus(name)")
+          .in("menu_id", menuIds)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (!ordersError && orders) {
+          orders.forEach((order: any) => {
+            activities.push({
+              type: "order_placed",
+              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
+              timestamp: order.created_at,
+            });
+          });
+        }
+
+        // Get recent menu creations (most recent 5)
+        tenantMenus.slice(0, 5).forEach((menu: any) => {
+          activities.push({
+            type: "menu_created",
+            message: `Menu "${menu.name}" created`,
+            timestamp: menu.created_at,
+          });
         });
-      });
 
-      // Get recent orders (via menu_id)
-      const { data: orders } = await supabase
-        .from("menu_orders")
-        .select("id, total_amount, created_at, disposable_menus(name)")
-        .in("menu_id", menuIds)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      orders?.forEach((order: any) => {
-        activities.push({
-          type: "order_placed",
-          message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
-          timestamp: order.created_at,
-        });
-      });
-
-      // Get recent menu creations (most recent 5)
-      tenantMenus.slice(0, 5).forEach((menu: any) => {
-        activities.push({
-          type: "menu_created",
-          message: `Menu "${menu.name}" created`,
-          timestamp: menu.created_at,
-        });
-      });
-
-      // Sort by timestamp and return top 5
-      return activities
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 5);
+        // Sort by timestamp and return top 5
+        return activities
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 5);
+      } catch (error) {
+        console.error("Error fetching recent activity:", error);
+        return []; // Return empty array on error
+      }
     },
     enabled: !!tenantId,
+    retry: 1,
+    retryDelay: 1000,
   });
 
   // Calculate revenue and commission from actual transaction data
