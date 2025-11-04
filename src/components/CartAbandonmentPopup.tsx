@@ -80,6 +80,7 @@ const CartAbandonmentPopup = ({ cartItems, onCheckout }: CartAbandonmentPopupPro
         <button
           onClick={handleClose}
           className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-background/90 hover:bg-background flex items-center justify-center transition-all hover:rotate-90"
+          aria-label="Close dialog"
         >
           <X className="w-4 h-4" />
         </button>

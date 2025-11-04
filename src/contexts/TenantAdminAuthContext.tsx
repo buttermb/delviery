@@ -94,7 +94,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         // Validate tenant slug matches URL
         if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
-          console.log(`🔄 Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
+          logger.debug(`Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
           localStorage.removeItem(ACCESS_TOKEN_KEY);
           localStorage.removeItem(REFRESH_TOKEN_KEY);
           localStorage.removeItem(ADMIN_KEY);
@@ -131,7 +131,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // Check if token will expire soon (within 60 seconds)
       const tokenExpiration = getTokenExpiration(tokenToVerify);
       if (tokenExpiration && tokenExpiration.getTime() - Date.now() < EXPIRATION_BUFFER_MS) {
-        console.log("Token expires soon, attempting refresh before verification");
+        logger.debug("Token expires soon, attempting refresh before verification");
         const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         if (storedRefreshToken) {
           await refreshAuthToken();
@@ -153,7 +153,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       if (!response.ok) {
         // If token verification fails with 401, try to refresh
         if (response.status === 401) {
-          console.log("Token verification failed with 401, attempting refresh");
+          logger.debug("Token verification failed with 401, attempting refresh");
           const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
             try {
@@ -193,7 +193,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Retry with exponential backoff
         if (retryCount < maxRetries) {
           const backoffMs = Math.pow(2, retryCount) * 100; // 100ms, 200ms, 400ms
-          console.log(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})`);
+          logger.debug(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})`);
           await sleep(backoffMs);
           return verifyToken(tokenToVerify, retryCount + 1);
         }
@@ -248,16 +248,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     
     if (timeUntilRefresh <= 0) {
       // Token expires very soon, refresh immediately
-      console.log("Token expires very soon, refreshing immediately");
+      logger.debug("Token expires very soon, refreshing immediately");
       refreshAuthToken();
       return;
     }
 
-    console.log(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
+    logger.debug(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
     
     // Set timer to refresh token before it expires
     refreshTimerRef.current = setTimeout(() => {
-      console.log("Proactively refreshing token before expiration");
+      logger.debug("Proactively refreshing token before expiration");
       refreshAuthToken();
     }, timeUntilRefresh);
   };
@@ -340,7 +340,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
     
     try {
-      console.log("Refreshing access token...");
+      logger.debug("Refreshing access token...");
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
@@ -366,7 +366,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       // Setup next proactive refresh
       setupRefreshTimer(data.access_token);
       
-      console.log("Token refreshed successfully");
+      logger.debug("Token refreshed successfully");
     } catch (error) {
       logger.error("Token refresh error", error);
       // If refresh fails, clear everything
@@ -381,7 +381,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       const urlTenantSlug = currentPath.split('/')[1];
       
       if (tenant && urlTenantSlug && tenant.slug !== urlTenantSlug) {
-        console.log(`🔄 URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
+        logger.debug(`URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
         logout();
       }
     };

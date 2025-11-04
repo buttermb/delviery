@@ -54,11 +54,11 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
     });
 
     if (error) {
-      console.error('Failed to log audit event:', error);
+      logger.error('Failed to log audit event', error);
       // Don't throw - audit logging failures shouldn't break the app
     }
   } catch (error) {
-    console.error('Error in logAuditEvent:', error);
+    logger.error('Error in logAuditEvent', error);
   }
 }
 
