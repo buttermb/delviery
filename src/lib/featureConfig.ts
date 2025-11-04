@@ -241,6 +241,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Inventory',
     route: '/admin/fronted-inventory',
   },
+  'operations': {
+    id: 'operations',
+    name: 'Receiving & Packaging',
+    description: 'Manage product receiving and packaging operations',
+    tier: 'professional',
+    category: 'Inventory',
+    route: '/admin/operations/receiving',
+  },
   'revenue-reports': {
     id: 'revenue-reports',
     name: 'Revenue Reports',

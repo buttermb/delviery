@@ -26,11 +26,30 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
+import { useTenantLimits } from "@/hooks/useTenantLimits";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
   const { admin, tenant, logout } = useTenantAdminAuth();
+  const { getLimit, getCurrent } = useTenantLimits();
   const tenantId = tenant?.id;
+
+  // Helper functions for handling unlimited limits
+  const isUnlimited = (resource: 'customers' | 'menus' | 'products') => {
+    const limit = getLimit(resource);
+    return limit === Infinity;
+  };
+
+  const getDisplayLimit = (resource: 'customers' | 'menus' | 'products') => {
+    return isUnlimited(resource) ? '∞' : getLimit(resource);
+  };
+
+  const getUsagePercentage = (resource: 'customers' | 'menus' | 'products') => {
+    if (isUnlimited(resource)) return 0;
+    const current = getCurrent(resource);
+    const limit = getLimit(resource);
+    return limit > 0 ? (current / limit) * 100 : 0;
+  };
 
   // Fetch today's metrics
   const { data: todayMetrics } = useQuery({
@@ -413,15 +432,25 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {usage.products || 0}/{limits.products || 100}
+                {usage.products || 0}/{getDisplayLimit('products')}
               </div>
-              <Progress 
-                value={((usage.products || 0) / (limits.products || 100)) * 100} 
-                className="mt-2 h-2"
-              />
-              {((usage.products || 0) / (limits.products || 100)) * 100 >= 80 && (
-                <p className="text-sm text-yellow-600 mt-2">
-                  ⚠️ You're at {Math.round(((usage.products || 0) / (limits.products || 100)) * 100)}% capacity. Upgrade to add more.
+              {!isUnlimited('products') && (
+                <>
+                  <Progress 
+                    value={getUsagePercentage('products')} 
+                    className="mt-2 h-2"
+                  />
+                  {getUsagePercentage('products') >= 80 && (
+                    <p className="text-sm text-yellow-600 mt-2">
+                      ⚠️ You're at {Math.round(getUsagePercentage('products'))}% capacity. 
+                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
+                    </p>
+                  )}
+                </>
+              )}
+              {isUnlimited('products') && (
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
             </CardContent>
@@ -436,15 +465,25 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {usage.customers || 0}/{limits.customers || 50}
+                {usage.customers || 0}/{getDisplayLimit('customers')}
               </div>
-              <Progress 
-                value={((usage.customers || 0) / (limits.customers || 50)) * 100} 
-                className="mt-2 h-2"
-              />
-              {((usage.customers || 0) / (limits.customers || 50)) * 100 >= 80 && (
-                <p className="text-sm text-yellow-600 mt-2">
-                  ⚠️ You're at {Math.round(((usage.customers || 0) / (limits.customers || 50)) * 100)}% capacity. Upgrade to add more.
+              {!isUnlimited('customers') && (
+                <>
+                  <Progress 
+                    value={getUsagePercentage('customers')} 
+                    className="mt-2 h-2"
+                  />
+                  {getUsagePercentage('customers') >= 80 && (
+                    <p className="text-sm text-yellow-600 mt-2">
+                      ⚠️ You're at {Math.round(getUsagePercentage('customers'))}% capacity. 
+                      Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
+                    </p>
+                  )}
+                </>
+              )}
+              {isUnlimited('customers') && (
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
             </CardContent>
@@ -459,15 +498,25 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                {usage.menus || 0}/{limits.menus || 3}
+                {usage.menus || 0}/{getDisplayLimit('menus')}
               </div>
-              <Progress 
-                value={((usage.menus || 0) / (limits.menus || 3)) * 100} 
-                className="mt-2 h-2"
-              />
-              {((usage.menus || 0) / (limits.menus || 3)) * 100 >= 80 && (
-                <p className="text-sm text-yellow-600 mt-2">
-                  ⚠️ You're at {Math.round(((usage.menus || 0) / (limits.menus || 3)) * 100)}% capacity. Upgrade to add more.
+              {!isUnlimited('menus') && (
+                <>
+                  <Progress 
+                    value={getUsagePercentage('menus')} 
+                    className="mt-2 h-2"
+                  />
+                  {getUsagePercentage('menus') >= 80 && (
+                    <p className="text-sm text-yellow-600 mt-2">
+                      ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity. 
+                      Upgrade to Professional for unlimited menus.
+                    </p>
+                  )}
+                </>
+              )}
+              {isUnlimited('menus') && (
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
             </CardContent>
