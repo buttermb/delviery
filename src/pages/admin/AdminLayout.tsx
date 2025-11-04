@@ -1,7 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantAdminSidebar } from "@/components/tenant-admin/TenantAdminSidebar";
-import { Sidebar as NewSidebar } from "@/components/admin/Sidebar";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
@@ -64,65 +63,13 @@ const AdminLayout = () => {
 
   return (
     <>
-      {/* Desktop Layout with New Sidebar */}
-      <div className="hidden lg:block min-h-screen bg-background">
-        <NewSidebar />
-        <main className="lg:pl-64 min-h-screen">
-          <div className="container mx-auto p-4 lg:p-6">
-            {/* Desktop header bar */}
-            <div className="flex items-center justify-between mb-6 border-b pb-4">
-              <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-                {breadcrumbs.map((crumb, index) => (
-                  <div key={crumb.url} className="flex items-center gap-2">
-                    {index > 0 && <ChevronRight className="h-4 w-4" />}
-                    {index === breadcrumbs.length - 1 ? (
-                      <span className="font-medium text-foreground">{crumb.label}</span>
-                    ) : (
-                      <Link 
-                        to={crumb.url}
-                        className="hover:text-foreground transition-colors"
-                      >
-                        {crumb.label}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </nav>
-              
-              <div className="flex items-center gap-4">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AdminKeyboardShortcutsDialog 
-                        open={shortcutsVisible} 
-                        onOpenChange={setShortcutsVisible} 
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>Keyboard Shortcuts</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <AdminNotificationCenter />
-                <ThemeToggle />
-              </div>
-            </div>
-
-            {/* Main content */}
-            <AdminErrorBoundary>
-              <Suspense fallback={<LoadingFallback />}>
-                <Outlet />
-              </Suspense>
-            </AdminErrorBoundary>
-          </div>
-        </main>
-      </div>
-
-      {/* Mobile/Tablet Layout with Legacy Sidebar */}
+      {/* Unified Layout with TenantAdminSidebar */}
       <SidebarProvider>
-        <div className="lg:hidden min-h-screen flex w-full overflow-hidden">
+        <div className="min-h-screen flex w-full overflow-hidden">
           <TenantAdminSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <AccountSwitcher />
-            <header className="h-14 border-b border-border flex items-center px-2 md:px-4 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm">
+            <header className="h-14 border-b border-border flex items-center px-2 md:px-4 lg:px-6 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm">
               <SidebarTrigger className="h-10 w-10 touch-manipulation active:scale-95 transition-transform" />
               
               {/* Breadcrumbs */}
@@ -145,7 +92,7 @@ const AdminLayout = () => {
               </nav>
               
               {/* Header Actions */}
-              <div className="flex items-center gap-2 ml-auto md:ml-0">
+              <div className="flex items-center gap-2 ml-auto">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -162,12 +109,14 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-safe">
-              <AdminErrorBoundary>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Outlet />
-                </Suspense>
-              </AdminErrorBoundary>
+            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-6">
+              <div className="container mx-auto p-4 lg:p-6">
+                <AdminErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Outlet />
+                  </Suspense>
+                </AdminErrorBoundary>
+              </div>
             </main>
           </div>
         </div>
