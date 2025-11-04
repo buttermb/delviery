@@ -85,7 +85,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Overview',
-        href: '/admin/big-plug-dashboard',
+        href: '/admin/dashboard',
         icon: LayoutDashboard
       },
       {
@@ -104,7 +104,7 @@ export const navigationSections: NavSection[] = [
     items: [
       {
         title: 'Orders',
-        href: '/admin/big-plug-order',
+        href: '/admin/wholesale-orders',
         icon: ShoppingCart,
         badge: 'HOT'
       },
@@ -116,7 +116,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Inventory',
-        href: '/admin/big-plug-inventory',
+        href: '/admin/inventory-dashboard',
         icon: Package
       },
       {
@@ -127,7 +127,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Transfers & Delivery',
-        href: '/admin/inventory/dispatch',
+        href: '/admin/dispatch-inventory',
         icon: Truck
       },
       {
@@ -193,7 +193,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Risk Management',
-        href: '/admin/risk-factors',
+        href: '/admin/risk-management',
         icon: Shield,
         tier: 'professional'
       }
@@ -212,7 +212,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Customers',
-        href: '/admin/big-plug-clients',
+        href: '/admin/customers',
         icon: Users
       },
       {
@@ -307,17 +307,10 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Route Optimization',
-        href: '/admin/route-optimization',
+        href: '/admin/route-optimizer',
         icon: Route,
         tier: 'enterprise'
       },
-      {
-        title: 'Route Optimizer',
-        href: '/admin/route-optimizer',
-        icon: Navigation,
-        tier: 'professional',
-        badge: 'NEW'
-      }
     ]
   },
 
@@ -330,11 +323,6 @@ export const navigationSections: NavSection[] = [
         href: '/admin/financial-center',
         icon: Landmark,
         tier: 'professional'
-      },
-      {
-        title: 'Credit Management',
-        href: '/admin/big-plug-financial',
-        icon: CreditCard
       },
       {
         title: 'Payments & Invoices',
@@ -499,7 +487,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Chain of Custody',
-        href: '/admin/reports-new',
+        href: '/admin/reports',
         icon: FileCheck
       }
     ]
@@ -523,7 +511,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Notifications',
-        href: '/admin/admin-notifications',
+        href: '/admin/notifications',
         icon: Bell
       },
       {
@@ -558,12 +546,12 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Printing & Labels',
-        href: '/admin/inventory/barcodes',
+        href: '/admin/generate-barcodes',
         icon: Printer
       },
       {
         title: 'Vendor Management',
-        href: '/admin/vendors',
+        href: '/admin/vendor-management',
         icon: Building2,
         tier: 'enterprise'
       }

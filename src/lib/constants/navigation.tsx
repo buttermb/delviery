@@ -32,19 +32,19 @@ export const navigation: NavItem[] = [
     children: [
       { 
         name: 'Orders', 
-        href: '/admin/big-plug-order', 
+        href: '/admin/wholesale-orders', 
         icon: <FileText className="h-4 w-4" />,
         roles: ['owner', 'manager', 'runner'],
       },
       { 
         name: 'Transfers & Delivery', 
-        href: '/admin/inventory/dispatch', 
+        href: '/admin/dispatch-inventory', 
         icon: <Truck className="h-4 w-4" />,
         roles: ['owner', 'manager', 'runner', 'warehouse'],
       },
       { 
         name: 'Inventory', 
-        href: '/admin/big-plug-inventory', 
+        href: '/admin/inventory-dashboard', 
         icon: <Package className="h-4 w-4" />,
         roles: ['owner', 'manager', 'warehouse'],
       },
@@ -69,7 +69,7 @@ export const navigation: NavItem[] = [
       },
       { 
         name: 'Customers', 
-        href: '/admin/big-plug-clients', 
+        href: '/admin/customers', 
         icon: <Users className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -81,7 +81,7 @@ export const navigation: NavItem[] = [
       },
       { 
         name: 'Sales Analytics', 
-        href: '/admin/analytics/comprehensive', 
+        href: '/admin/sales-dashboard', 
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -137,7 +137,7 @@ export const navigation: NavItem[] = [
       },
       { 
         name: 'Location Analytics', 
-        href: '/admin/analytics/comprehensive', 
+        href: '/admin/location-analytics', 
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -149,28 +149,10 @@ export const navigation: NavItem[] = [
     roles: ['owner', 'manager'],
     children: [
       { 
-        name: 'Payments & Invoices', 
+        name: 'Financial Center', 
         href: '/admin/financial-center', 
         icon: <DollarSign className="h-4 w-4" />,
         roles: ['owner', 'manager'],
-      },
-      { 
-        name: 'Revenue Reports', 
-        href: '/admin/big-plug-financial', 
-        icon: <BarChart3 className="h-4 w-4" />,
-        roles: ['owner', 'manager'],
-      },
-      { 
-        name: 'Credit Management', 
-        href: '/admin/big-plug-financial', 
-        icon: <DollarSign className="h-4 w-4" />,
-        roles: ['owner', 'manager'],
-      },
-      { 
-        name: 'Financial Analytics', 
-        href: '/admin/analytics/comprehensive', 
-        icon: <BarChart3 className="h-4 w-4" />,
-        roles: ['owner'],
       },
     ],
   },
@@ -181,7 +163,7 @@ export const navigation: NavItem[] = [
     children: [
       { 
         name: 'Staff Management', 
-        href: '/admin/team', 
+        href: '/admin/team-members', 
         icon: <Users className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -193,7 +175,7 @@ export const navigation: NavItem[] = [
       },
       { 
         name: 'Activity Log', 
-        href: '/admin/audit-logs', 
+        href: '/admin/audit-trail', 
         icon: <FileText className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -206,7 +188,7 @@ export const navigation: NavItem[] = [
     children: [
       { 
         name: 'Business Intelligence', 
-        href: '/admin/analytics/comprehensive', 
+        href: '/admin/analytics-dashboard', 
         icon: <BarChart3 className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
@@ -255,7 +237,7 @@ export const navigation: NavItem[] = [
       },
       { 
         name: 'Printing & Labels', 
-        href: '/admin/inventory/barcodes', 
+        href: '/admin/generate-barcodes', 
         icon: <Printer className="h-4 w-4" />,
         roles: ['owner', 'manager'],
       },
