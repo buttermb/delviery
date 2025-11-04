@@ -108,42 +108,56 @@ export default function TenantAdminLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--tenant-bg))] via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-30">
+    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/5 via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-secondary))]/5" />
+      
+      {/* Floating Orbs */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-[hsl(var(--tenant-primary))]/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-[hsl(var(--tenant-secondary))]/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "1s" }} />
+      
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--tenant-primary)) 1px, transparent 0)`,
-          backgroundSize: "40px 40px",
+          backgroundSize: "48px 48px",
         }} />
       </div>
 
-      {/* White Card */}
+      {/* Card Container with Glow Effect */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-[hsl(var(--tenant-border))] p-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--tenant-primary))]/20 to-[hsl(var(--tenant-secondary))]/20 rounded-2xl blur-xl" />
+        <div className="relative bg-card rounded-2xl shadow-2xl border border-border backdrop-blur-sm p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               {logo ? (
-                <img src={logo} alt={businessName} className="h-16 object-contain" />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/30 to-[hsl(var(--tenant-secondary))]/30 rounded-2xl blur-xl" />
+                  <img src={logo} alt={businessName} className="relative h-16 object-contain" />
+                </div>
               ) : (
-                <div className="rounded-full bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] p-4 shadow-lg">
-                  <Building2 className="h-8 w-8 text-white" />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] rounded-full blur-lg opacity-50" />
+                  <div className="relative rounded-full bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] p-4 shadow-2xl">
+                    <Building2 className="h-8 w-8 text-white" />
+                  </div>
                 </div>
               )}
             </div>
-            <h1 className="text-3xl font-bold text-[hsl(var(--tenant-text))] mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               {businessName}
             </h1>
-            <p className="text-[hsl(var(--tenant-text-light))]">
-              Admin Panel
-            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--tenant-primary))]/10 border border-[hsl(var(--tenant-primary))]/20">
+              <span className="text-sm font-medium text-[hsl(var(--tenant-primary))]">Admin Panel</span>
+            </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[hsl(var(--tenant-text))]">
-                Email
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email Address
               </Label>
               <Input
                 id="email"
@@ -153,12 +167,12 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="h-12 border-[hsl(var(--tenant-border))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20 transition-all"
+                className="h-12 bg-background/50 backdrop-blur-sm transition-all"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[hsl(var(--tenant-text))]">
+              <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
               <Input
@@ -169,14 +183,14 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="h-12 border-[hsl(var(--tenant-border))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20 transition-all"
+                className="h-12 bg-background/50 backdrop-blur-sm transition-all"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:opacity-90 text-white h-12 font-semibold shadow-lg"
+              className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-white h-12 font-semibold shadow-md"
             >
               {loading ? (
                 <>
@@ -184,7 +198,7 @@ export default function TenantAdminLoginPage() {
                   Signing in...
                 </>
               ) : (
-                "Sign In"
+                "Sign In to Dashboard"
               )}
             </Button>
           </form>
@@ -192,12 +206,13 @@ export default function TenantAdminLoginPage() {
           {/* Links */}
           <div className="mt-6 space-y-3 text-center text-sm">
             <ForgotPasswordDialog userType="tenant_admin" tenantSlug={tenantSlug} />
-            <div className="pt-3 border-t border-[hsl(var(--tenant-border))]">
+            <div className="pt-4 border-t border-border">
+              <p className="text-muted-foreground mb-2">Not an admin?</p>
               <Link 
                 to={`/${tenantSlug}/shop/login`} 
-                className="text-[hsl(var(--tenant-primary))] hover:underline font-medium"
+                className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
               >
-                Customer? Go to Customer Portal →
+                Go to Customer Portal →
               </Link>
             </div>
           </div>
