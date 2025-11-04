@@ -1,10 +1,19 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, Users, DollarSign, Truck, BarChart3, Settings } from "lucide-react";
 
 export function QuickActionsMenu() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+
+  const getFullPath = (href: string) => {
+    if (!tenantSlug) return href;
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const actions = [
     {
