@@ -18,6 +18,27 @@ interface Tenant {
   slug: string;
   subscription_plan: string;
   subscription_status: string;
+  limits?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  usage?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  features?: {
+    api_access: boolean;
+    custom_branding: boolean;
+    white_label: boolean;
+    advanced_analytics: boolean;
+    sms_enabled: boolean;
+  };
 }
 
 interface TenantAdminAuthContextType {

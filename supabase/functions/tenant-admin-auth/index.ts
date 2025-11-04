@@ -204,6 +204,9 @@ serve(async (req) => {
             owner_email: tenant.owner_email,
             subscription_plan: tenant.subscription_plan,
             subscription_status: tenant.subscription_status,
+            limits: tenant.limits,
+            usage: tenant.usage,
+            features: tenant.features,
           },
           access_token: authData.session?.access_token,
           refresh_token: authData.session?.refresh_token,
@@ -386,6 +389,9 @@ serve(async (req) => {
         slug: tenantUser.tenants.slug,
         subscription_plan: tenantUser.tenants.subscription_plan,
         subscription_status: tenantUser.tenants.subscription_status,
+        limits: tenantUser.tenants.limits,
+        usage: tenantUser.tenants.usage,
+        features: tenantUser.tenants.features,
       };
 
       return new Response(

@@ -15,6 +15,20 @@ interface Tenant {
   id: string;
   business_name: string;
   slug: string;
+  limits?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
+  usage?: {
+    customers: number;
+    menus: number;
+    products: number;
+    locations: number;
+    users: number;
+  };
 }
 
 interface CustomerAuthContextType {
