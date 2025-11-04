@@ -4,7 +4,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Building2, ShoppingCart, ArrowRight, Users, Cog, Package } from "lucide-react";
+import { Shield, Building2, ShoppingCart, ArrowRight, Users, Cog, Package, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function LoginDirectory() {
@@ -59,6 +59,23 @@ export default function LoginDirectory() {
       color: "from-green-500/10 to-green-500/5 border-green-500/20",
       iconColor: "text-green-600",
       forWho: "Customers & end users"
+    },
+    {
+      icon: Truck,
+      title: "Courier Portal",
+      badge: "Delivery Driver",
+      description: "Access your courier dashboard. View available orders, manage deliveries, track earnings, and update your status.",
+      features: [
+        "View available orders",
+        "Track active deliveries",
+        "Real-time earnings",
+        "Location tracking"
+      ],
+      loginUrl: "/courier/login",
+      buttonText: "Courier Login",
+      color: "from-orange-500/10 to-orange-500/5 border-orange-500/20",
+      iconColor: "text-orange-600",
+      forWho: "Delivery drivers & couriers"
     }
   ];
 
