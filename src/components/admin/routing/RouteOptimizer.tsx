@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import {
   Route,
   Navigation,
@@ -185,13 +186,19 @@ export function RouteOptimizer() {
                     }
                   </div>
                   <div className="flex-1">
-                    <Input
+                    <AddressAutocomplete
                       placeholder="Delivery address"
                       value={stop.address}
-                      onChange={(e) => {
+                      onChange={(address) => {
                         setStops(stops.map(s => 
-                          s.id === stop.id ? { ...s, address: e.target.value } : s
+                          s.id === stop.id ? { ...s, address } : s
                         ));
+                      }}
+                      onSelectAddress={(address, lat, lng) => {
+                        setStops(stops.map(s => 
+                          s.id === stop.id ? { ...s, address, lat, lng } : s
+                        ));
+                        setOptimizedRoute(null); // Reset optimization when address changes
                       }}
                     />
                   </div>
