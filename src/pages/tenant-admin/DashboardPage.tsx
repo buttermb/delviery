@@ -158,8 +158,6 @@ export default function TenantAdminDashboardPage() {
 
         if (!tenantMenus || tenantMenus.length === 0) return [];
 
-      if (!tenantMenus || tenantMenus.length === 0) return [];
-
         const menuIds = tenantMenus.map((m) => m.id);
 
         // Get recent menu views (from menu_access_logs via menus)
