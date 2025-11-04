@@ -114,7 +114,7 @@ const DisposableMenus = () => {
             <PanicModeButton />
             <Button 
               variant="outline"
-              onClick={() => navigate('/admin/disposable-menus/help')}
+              onClick={() => navigate('../help')}
             >
               <Shield className="h-4 w-4 mr-2" />
               Help & Guide

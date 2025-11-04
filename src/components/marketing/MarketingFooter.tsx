@@ -70,7 +70,7 @@ export function MarketingFooter() {
               </li>
               <li>
                 <Link to="/support" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
-                  Help Center
+                  Support
                 </Link>
               </li>
               <li>

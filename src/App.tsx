@@ -40,17 +40,17 @@ import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
 
 // Eager load critical pages
-import NotFound from "./pages/NotFound";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // Marketing & Public Pages
 const MarketingHome = lazy(() => import("./pages/MarketingHome"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Features = lazy(() => import("./pages/Features"));
-const FAQ = lazy(() => import("./pages/FAQ"));
-const Support = lazy(() => import("./pages/Support"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const About = lazy(() => import("./pages/About"));
 const DemoRequest = lazy(() => import("./pages/DemoRequest"));
 const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
@@ -84,7 +84,7 @@ const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/Dashboa
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
-const HelpPage = lazy(() => import("./pages/Help"));
+const HelpPage = lazy(() => import("./pages/HelpPage"));
 
 // Tenant Admin Feature Pages
 const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
@@ -266,15 +266,16 @@ const App = () => {
                         <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
+<<<<<<< HEAD
                         <Route path="/demo" element={<DemoRequest />} />
                         <Route path="/demo/confirm" element={<DemoConfirmation />} />
                         <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/docs" element={<DocsPage />} />
                         <Route path="/status" element={<StatusPage />} />
-                        <Route path="/faq" element={<FAQ />} />
-                        <Route path="/support" element={<Support />} />
-                        <Route path="/terms" element={<Terms />} />
-                        <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/faq" element={<FAQPage />} />
+                        <Route path="/support" element={<SupportPage />} />
+                        <Route path="/terms" element={<TermsPage />} />
+                        <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/careers" element={<Careers />} />
                         <Route path="/press" element={<Press />} />
                         <Route path="/blog" element={<Blog />} />
@@ -419,7 +420,7 @@ const App = () => {
                         <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
 
                         {/* ==================== 404 NOT FOUND ==================== */}
-                        <Route path="*" element={<NotFound />} />
+                        <Route path="*" element={<NotFoundPage />} />
                       </Routes>
                     </Suspense>
                     </BrowserRouter>
