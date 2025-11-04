@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
+import { useCourier } from "@/contexts/CourierContext";
 import { getDashboardUrl } from "@/lib/utils/authHelpers";
 
 /**
@@ -14,19 +15,22 @@ export function useAuthRedirect() {
   const { superAdmin, loading: superAdminLoading } = useSuperAdminAuth();
   const { admin, tenant, loading: tenantAdminLoading } = useTenantAdminAuth();
   const { customer, tenant: customerTenant, loading: customerLoading } = useCustomerAuth();
+  const { courier, loading: courierLoading } = useCourier();
 
   useEffect(() => {
     // Wait for all auth contexts to finish loading
-    if (superAdminLoading || tenantAdminLoading || customerLoading) return;
+    if (superAdminLoading || tenantAdminLoading || customerLoading || courierLoading) return;
 
-    // Redirect based on which user type is authenticated
+    // Redirect based on which user type is authenticated (priority order matters)
     if (superAdmin) {
       navigate("/super-admin/dashboard", { replace: true });
     } else if (admin && tenant) {
       navigate(`/${tenant.slug}/admin`, { replace: true });
+    } else if (courier) {
+      navigate("/courier/dashboard", { replace: true });
     } else if (customer && customerTenant) {
       navigate(`/${customerTenant.slug}/shop`, { replace: true });
     }
-  }, [superAdmin, admin, tenant, customer, customerTenant, superAdminLoading, tenantAdminLoading, customerLoading, navigate]);
+  }, [superAdmin, admin, tenant, customer, customerTenant, courier, superAdminLoading, tenantAdminLoading, customerLoading, courierLoading, navigate]);
 }
 
