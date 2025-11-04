@@ -1,5 +1,5 @@
-import RouteOptimization from "@/pages/admin/RouteOptimization";
+import RouteOptimizationPage from "@/pages/admin/RouteOptimizationPage";
 
-export default function RouteOptimizationPage() {
-  return <RouteOptimization />;
+export default function TenantRouteOptimizationPage() {
+  return <RouteOptimizationPage />;
 }

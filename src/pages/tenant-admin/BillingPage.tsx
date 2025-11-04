@@ -54,6 +54,21 @@ export default function TenantAdminBillingPage() {
     enabled: !!tenantId,
   });
 
+  // Fetch subscription plans
+  const { data: subscriptionPlans = [] } = useQuery({
+    queryKey: ['subscription-plans'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('monthly_price');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   // Fetch subscription plan details
   const { data: plan } = useQuery({
     queryKey: ["subscription-plan", tenant?.subscription_plan],
@@ -83,71 +98,35 @@ export default function TenantAdminBillingPage() {
 
   // Subscription update mutation
   const updateSubscriptionMutation = useMutation({
-    mutationFn: async ({ plan, useStripe = false }: { plan: SubscriptionTier; useStripe?: boolean }) => {
-      if (!tenantId) throw new Error('Tenant ID required');
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
-      const response = await supabase.functions.invoke('update-subscription', {
-        body: {
-          tenant_id: tenantId,
-          new_plan: plan,
-          use_stripe: useStripe,
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+    mutationFn: async (planId: string) => {
+      const { data, error } = await supabase.functions.invoke('update-subscription', {
+        body: { 
+          tenant_id: tenant?.id,
+          plan_id: planId 
+        }
       });
-
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to update subscription');
-      }
-
-      // Response.data might be a Response object, need to parse it
-      let result;
-      if (response.data instanceof Response) {
-        result = await response.data.json();
-      } else if (typeof response.data === 'string') {
-        result = JSON.parse(response.data);
-      } else {
-        result = response.data;
-      }
-
-      if (!result || !result.success) {
-        throw new Error(result?.error || 'Failed to update subscription');
-      }
-
-      return result;
-    },
-    onSuccess: async (result) => {
-      if (result.checkout_url) {
-        // Redirect to Stripe checkout
-        window.location.href = result.checkout_url;
-        return;
-      }
-
-      // Direct update successful
-      toast({
-        title: 'Subscription Updated',
-        description: result.message || `Successfully updated to ${selectedPlan} plan`,
-      });
-
-      // Refresh tenant data - reload from context
-      window.location.reload(); // Simple approach - reload page to get fresh data
-      // Alternative: could invalidate queries and manually refetch, but reload is simpler
       
-      setUpgradeDialogOpen(false);
-      setSelectedPlan(null);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: 'Redirecting to Stripe',
+          description: 'Opening checkout in new tab...',
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
     onError: (error: any) => {
+      console.error('Subscription update error:', error);
       toast({
         title: 'Update Failed',
-        description: error.message || 'Failed to update subscription. Please try again.',
+        description: error.message || 'Failed to update subscription',
         variant: 'destructive',
       });
-      setUpgradeLoading(false);
-    },
+    }
   });
 
   const handlePlanChange = async (targetPlan: SubscriptionTier, useStripe = false) => {
@@ -174,9 +153,21 @@ export default function TenantAdminBillingPage() {
   };
 
   const confirmPlanChange = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !subscriptionPlans) return;
+    
+    // Find the plan ID from the subscription plans
+    const targetPlan = subscriptionPlans.find(p => p.name === selectedPlan);
+    if (!targetPlan) {
+      toast({
+        title: 'Error',
+        description: 'Selected plan not found',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setUpgradeLoading(true);
-    updateSubscriptionMutation.mutate({ plan: selectedPlan, useStripe: false });
+    updateSubscriptionMutation.mutate(targetPlan.id);
   };
 
   const handlePaymentMethod = async () => {
@@ -195,27 +186,19 @@ export default function TenantAdminBillingPage() {
 
       setUpgradeLoading(true);
 
-      const response = await supabase.functions.invoke('stripe-customer-portal', {
-        body: {
-          tenant_id: tenantId,
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      const { data, error } = await supabase.functions.invoke('stripe-customer-portal', {
+        body: { tenant_id: tenantId }
       });
 
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to open Customer Portal');
-      }
-
-      const result = await response.data;
+      if (error) throw error;
       
-      if (!result || !result.success || !result.url) {
-        throw new Error(result?.error || 'Failed to create Customer Portal session');
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: 'Success',
+          description: 'Opening Stripe Customer Portal...',
+        });
       }
-
-      // Redirect to Stripe Customer Portal
-      window.location.href = result.url;
     } catch (error: any) {
       toast({
         title: 'Error',
