@@ -31,9 +31,19 @@ export function LimitEnforcedButton({
       const current = getCurrent(resource);
       const limit = getLimit(resource);
       
+      // Don't show error for unlimited accounts
+      if (limit === Infinity) {
+        // Unlimited account - allow the action
+        if (onClick) {
+          onClick(e);
+        }
+        await action();
+        return;
+      }
+      
       toast({
         title: 'Limit Reached',
-        description: `You've reached your ${resource} limit (${current}/${limit}). Please upgrade your plan.`,
+        description: `You've reached your ${resource} limit (${current}/${limit === Infinity ? '∞' : limit}). Please upgrade your plan.`,
         variant: 'destructive',
         action: (
           <Button
