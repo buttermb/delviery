@@ -47,6 +47,10 @@ export default function PointOfSale() {
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [loading, setLoading] = useState(false);
 
+  // Get tenant ID - using a default tenant ID for now
+  // In production, this should come from authentication context
+  const tenantId = 'ddc490cf-5c0a-485d-a6cb-94a8cb7b43ff';
+
   useEffect(() => {
     loadProducts();
     loadCustomers();
@@ -62,6 +66,7 @@ export default function PointOfSale() {
       const response = await (supabase as any)
         .from('products')
         .select('id, name, price, category, stock_quantity, thc_percent, image_url')
+        .eq('tenant_id', tenantId)
         .eq('in_stock', true)
         .gt('stock_quantity', 0)
         .order('name');

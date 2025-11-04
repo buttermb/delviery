@@ -37,6 +37,7 @@ export default function ImagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
 
   // Fetch images from storage
   const { data: images, isLoading } = useQuery({
@@ -66,10 +67,28 @@ export default function ImagesPage() {
     enabled: !!tenantId,
   });
 
+  // Load products for assignment
+  const { data: products = [] } = useQuery({
+    queryKey: ['products-for-images', tenantId],
+    queryFn: async () => {
+      if (!tenantId) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name')
+        .eq('tenant_id', tenantId)
+        .order('name');
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tenantId,
+  });
+
   // Upload image
   const uploadImage = useMutation({
     mutationFn: async (file: File) => {
       if (!tenantId) throw new Error('Tenant ID missing');
+      if (!selectedProductId) throw new Error('Please select a product');
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${tenantId}/${Date.now()}.${fileExt}`;
@@ -84,12 +103,21 @@ export default function ImagesPage() {
         .from('product-images')
         .getPublicUrl(fileName);
 
+      // Assign image to product
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ image_url: publicUrl })
+        .eq('id', selectedProductId);
+
+      if (updateError) throw updateError;
+
       return publicUrl;
     },
     onSuccess: () => {
-      toast({ title: 'Image uploaded successfully!' });
+      toast({ title: 'Image uploaded and assigned successfully!' });
       queryClient.invalidateQueries({ queryKey: ['product-images'] });
       setUploadDialogOpen(false);
+      setSelectedProductId('');
     },
     onError: (error: any) => {
       toast({ 
@@ -328,13 +356,29 @@ export default function ImagesPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
+              <Label htmlFor="product-select">Select Product</Label>
+              <select
+                id="product-select"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={selectedProductId}
+                onChange={(e) => setSelectedProductId(e.target.value)}
+              >
+                <option value="">-- Select a product --</option>
+                {products.map(product => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
               <Label htmlFor="image-upload">Select Image</Label>
               <Input
                 id="image-upload"
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
-                disabled={uploadImage.isPending}
+                disabled={uploadImage.isPending || !selectedProductId}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP
