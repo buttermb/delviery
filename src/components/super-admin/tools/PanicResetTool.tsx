@@ -193,7 +193,7 @@ export function PanicResetTool() {
                 {Object.entries(previewMutation.data.preview || {}).map(([table, count]) => (
                   <div key={table} className="flex justify-between text-sm">
                     <span className="font-mono text-xs">{table}</span>
-                    <Badge variant={count > 0 ? 'destructive' : 'outline'}>{count as number} records</Badge>
+                    <Badge variant={(count as number) > 0 ? 'destructive' : 'outline'}>{count as number} records</Badge>
                   </div>
                 ))}
               </div>

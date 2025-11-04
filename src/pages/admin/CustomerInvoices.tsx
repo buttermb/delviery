@@ -164,19 +164,19 @@ export default function CustomerInvoices() {
 
       if (edgeError) {
         // Fallback to direct insert
-        const { error } = await supabase
-          .from('customer_invoices')
-          .insert({
-            tenant_id: tenant.id,
-            customer_id: formData.customer_id,
-            invoice_number: invoiceNumber,
-            subtotal,
-            tax,
-            total,
-            status: 'unpaid',
-            due_date: formData.due_date || null,
-            notes: formData.notes || null,
-          });
+      const { error } = await supabase
+        .from('customer_invoices')
+        .insert({
+          tenant_id: tenant.id,
+          customer_id: formData.customer_id,
+          invoice_number: invoiceNumber,
+          subtotal,
+          tax,
+          total,
+          status: 'unpaid',
+          due_date: formData.due_date || null,
+          notes: formData.notes || null,
+        } as any);
 
         if (error) throw error;
       }

@@ -22,7 +22,7 @@ export interface ActivityLogParams {
  */
 export async function logActivity(params: ActivityLogParams): Promise<void> {
   try {
-    const { data, error } = await supabase.rpc('log_activity', {
+    const { data, error } = await (supabase as any).rpc('log_activity', {
       p_user_id: params.userId,
       p_tenant_id: params.tenantId,
       p_action: params.action,
