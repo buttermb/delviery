@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function LocationsManagement() {
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,19 +36,19 @@ export default function LocationsManagement() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (tenant) {
       loadLocations();
     }
-  }, [account]);
+  }, [tenant]);
 
   const loadLocations = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('locations')
         .select('*')
-        .eq('account_id', account.id)
+        .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -67,7 +67,7 @@ export default function LocationsManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account) return;
+    if (!tenant) return;
 
     try {
       if (editingLocation) {
@@ -87,8 +87,8 @@ export default function LocationsManagement() {
           .from('locations')
           .insert({
             ...formData,
-            account_id: account.id
-          });
+            tenant_id: tenant.id
+          } as any);
 
         if (error) throw error;
 

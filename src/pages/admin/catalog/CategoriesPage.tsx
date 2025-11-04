@@ -459,12 +459,13 @@ export default function CategoriesPage() {
             <div>
               <Label htmlFor="category-parent">Parent Category</Label>
               <Select
-                value={editingCategory?.parent_id || newCategory.parent_id || ''}
+                value={editingCategory?.parent_id || newCategory.parent_id || '__none__'}
                 onValueChange={(value) => {
+                  const parentValue = value === '__none__' ? null : value;
                   if (editingCategory) {
-                    setEditingCategory({ ...editingCategory, parent_id: value || null });
+                    setEditingCategory({ ...editingCategory, parent_id: parentValue });
                   } else {
-                    setNewCategory({ ...newCategory, parent_id: value || null });
+                    setNewCategory({ ...newCategory, parent_id: parentValue });
                   }
                 }}
               >
@@ -472,7 +473,7 @@ export default function CategoriesPage() {
                   <SelectValue placeholder="None (top-level)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (top-level)</SelectItem>
+                  <SelectItem value="__none__">None (top-level)</SelectItem>
                   {categories?.filter(c => c.id !== editingCategory?.id).map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}

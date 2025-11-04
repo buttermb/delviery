@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { SEOHead } from '@/components/SEOHead';
 export default function CustomerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
@@ -80,8 +80,8 @@ export default function CustomerForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!account) {
-      toast.error('Account not found');
+    if (!tenant) {
+      toast.error('Tenant not found');
       return;
     }
 
@@ -96,7 +96,7 @@ export default function CustomerForm() {
 
       const customerData = {
         ...formData,
-        account_id: account.id,
+        tenant_id: tenant.id,
         total_spent: 0,
         loyalty_points: 0,
         loyalty_tier: 'bronze'
@@ -112,44 +112,34 @@ export default function CustomerForm() {
         toast.success('Customer updated successfully');
       } else {
         // Check tenant limits before creating
-        const { data: tenant } = await supabase
-          .from('tenants')
-          .select('id, usage, limits')
-          .eq('id', (account as any).tenant_id)
-          .maybeSingle();
-
-        if (tenant) {
-          const currentCustomers = (tenant.usage as any)?.customers || 0;
-          const customerLimit = (tenant.limits as any)?.customers || 0;
-          
-          if (customerLimit > 0 && currentCustomers >= customerLimit) {
-            toast.error('Customer limit reached', {
-              description: `You've reached your customer limit (${currentCustomers}/${customerLimit}). Please upgrade your plan.`,
-            });
-            return;
-          }
+        const currentCustomers = ((tenant as any).usage as any)?.customers || 0;
+        const customerLimit = ((tenant as any).limits as any)?.customers || 0;
+        
+        if (customerLimit > 0 && currentCustomers >= customerLimit) {
+          toast.error('Customer limit reached', {
+            description: `You've reached your customer limit (${currentCustomers}/${customerLimit}). Please upgrade your plan.`,
+          });
+          return;
         }
 
         const { error } = await supabase
           .from('customers')
-          .insert([customerData]);
+          .insert([customerData as any]);
 
         if (error) throw error;
 
         // Update usage count
-        if (tenant?.id) {
-          const currentUsage = (tenant.usage as any) || {};
-          await supabase
-            .from('tenants')
-            .update({
-              usage: {
-                ...currentUsage,
-                customers: ((currentUsage as any).customers || 0) + 1,
-              },
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', (account as any).tenant_id);
-        }
+        const currentUsage = ((tenant as any).usage as any) || {};
+        await supabase
+          .from('tenants')
+          .update({
+            usage: {
+              ...currentUsage,
+              customers: (currentUsage.customers || 0) + 1,
+            },
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq('id', tenant.id);
 
         toast.success('Customer created successfully');
       }

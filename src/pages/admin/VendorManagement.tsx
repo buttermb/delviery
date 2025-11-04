@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function VendorManagement() {
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,19 +36,19 @@ export default function VendorManagement() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (tenant) {
       loadVendors();
     }
-  }, [account]);
+  }, [tenant]);
 
   const loadVendors = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendors')
         .select('*')
-        .eq('account_id', account.id)
+        .eq('tenant_id', tenant.id)
         .order('name');
 
       if (error) throw error;
@@ -67,7 +67,7 @@ export default function VendorManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account) return;
+    if (!tenant) return;
 
     try {
       if (editingVendor) {
@@ -87,8 +87,8 @@ export default function VendorManagement() {
           .from('vendors')
           .insert({
             ...formData,
-            account_id: account.id
-          });
+            tenant_id: tenant.id
+          } as any);
 
         if (error) throw error;
 

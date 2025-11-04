@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 
 export default function CustomerInvoices() {
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
@@ -40,24 +40,23 @@ export default function CustomerInvoices() {
   });
 
   useEffect(() => {
-    if (account && !accountLoading) {
+    if (tenant && !accountLoading) {
       loadInvoices();
       loadCustomers();
-    } else if (!accountLoading && !account) {
+    } else if (!accountLoading && !tenant) {
       setLoading(false);
     }
-  }, [account, accountLoading]);
+  }, [tenant, accountLoading]);
 
   const loadInvoices = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      // Simplified query to avoid deep type instantiation
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_invoices')
         .select('*')
-        .eq('account_id', account.id)
-        .order('created_at', { ascending: false }) as any;
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setInvoices(data || []);
@@ -69,14 +68,14 @@ export default function CustomerInvoices() {
   };
 
   const loadCustomers = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
-      // @ts-ignore - Avoid deep type instantiation
+      // Get customers from the customers table
       const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email')
-        .eq('account_id', account.id);
+        .from('customers')
+        .select('id, first_name, last_name, email')
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
       setCustomers(data || []);
@@ -117,7 +116,7 @@ export default function CustomerInvoices() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!account) return;
+    if (!tenant) return;
 
     const { subtotal, tax, total } = calculateTotals();
 
@@ -125,12 +124,11 @@ export default function CustomerInvoices() {
       const invoiceNumber = `INV-${Date.now()}`;
       
       const invoiceData: any = {
-        account_id: account.id,
+        tenant_id: tenant.id,
         customer_id: formData.customer_id,
         invoice_number: invoiceNumber,
-        subtotal,
+        amount: subtotal,
         tax,
-        discount: 0,
         total,
         status: 'unpaid',
         due_date: formData.due_date || null,
@@ -138,7 +136,7 @@ export default function CustomerInvoices() {
       };
 
       const { error } = await supabase
-        .from('customer_invoices')
+        .from('invoices')
         .insert(invoiceData);
 
       if (error) throw error;
@@ -223,9 +221,9 @@ export default function CustomerInvoices() {
                     required
                   >
                     <option value="">Select customer</option>
-                    {customers.map((customer) => (
-                      <option key={customer.user_id} value={customer.user_id}>
-                        {customer.full_name || customer.email}
+                    {customers.map((customer: any) => (
+                      <option key={customer.id} value={customer.id}>
+                        {customer.first_name} {customer.last_name} ({customer.email})
                       </option>
                     ))}
                   </select>

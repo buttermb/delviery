@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAccount } from "@/contexts/AccountContext";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ interface Customer {
 
 export default function CustomerManagement() {
   const navigate = useNavigate();
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,22 +53,22 @@ export default function CustomerManagement() {
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
   useEffect(() => {
-    if (account && !accountLoading) {
+    if (tenant && !accountLoading) {
       loadCustomers();
-    } else if (!accountLoading && !account) {
+    } else if (!accountLoading && !tenant) {
       setLoading(false);
     }
-  }, [account, accountLoading, filterType, filterStatus]);
+  }, [tenant, accountLoading, filterType, filterStatus]);
 
   const loadCustomers = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
       setLoading(true);
       let query = supabase
         .from("customers")
         .select("*")
-        .eq("account_id", account.id);
+        .eq("tenant_id", tenant.id);
 
       if (filterType !== "all") {
         query = query.eq("customer_type", filterType);
@@ -187,13 +187,13 @@ export default function CustomerManagement() {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Customer Management</h1>
-            {account && (account as any)?.tenant_id && (
+            {tenant && (
               <TooltipGuide
                 title="💡 Customer Management"
                 content="Import customers from your existing spreadsheet. Add contact info, preferences, and track purchase history."
                 placement="right"
-                tenantId={(account as any)?.tenant_id}
-                tenantCreatedAt={account?.created_at}
+                tenantId={tenant.id}
+                tenantCreatedAt={(tenant as any).created_at}
               />
             )}
           </div>
