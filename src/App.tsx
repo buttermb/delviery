@@ -76,6 +76,18 @@ const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/Tenant
 const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
 const SuperAdminMonitoringPage = lazy(() => import("./pages/super-admin/MonitoringPage"));
 const SuperAdminAnalyticsPage = lazy(() => import("./pages/super-admin/AnalyticsPage"));
+const SuperAdminDataExplorerPage = lazy(() => import("./pages/super-admin/DataExplorerPage"));
+const SuperAdminAPIUsagePage = lazy(() => import("./pages/super-admin/APIUsagePage"));
+const SuperAdminAuditLogsPage = lazy(() => import("./pages/super-admin/AuditLogsPage"));
+const SuperAdminRevenueAnalyticsPage = lazy(() => import("./pages/super-admin/RevenueAnalyticsPage"));
+const SuperAdminReportBuilderPage = lazy(() => import("./pages/super-admin/ReportBuilderPage"));
+const SuperAdminExecutiveDashboardPage = lazy(() => import("./pages/super-admin/ExecutiveDashboardPage"));
+const SuperAdminWorkflowsPage = lazy(() => import("./pages/super-admin/WorkflowsPage"));
+const SuperAdminCommunicationPage = lazy(() => import("./pages/super-admin/CommunicationPage"));
+const SuperAdminFeatureFlagsPage = lazy(() => import("./pages/super-admin/FeatureFlagsPage"));
+const SuperAdminSystemConfigPage = lazy(() => import("./pages/super-admin/SystemConfigPage"));
+const SuperAdminSecurityPage = lazy(() => import("./pages/super-admin/SecurityPage"));
+const SuperAdminToolsPage = lazy(() => import("./pages/super-admin/ToolsPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
