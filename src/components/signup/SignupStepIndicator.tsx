@@ -15,7 +15,7 @@ export function SignupStepIndicator({ currentStep, totalSteps, steps }: SignupSt
       {/* Progress Bar */}
       <div className="relative h-2 bg-muted rounded-full overflow-hidden">
         <div
-          className="absolute inset-y-0 left-0 bg-primary transition-all duration-500 ease-out rounded-full"
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 transition-all duration-500 ease-out rounded-full shadow-lg"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -31,22 +31,22 @@ export function SignupStepIndicator({ currentStep, totalSteps, steps }: SignupSt
             <div key={step.key} className="flex flex-col items-center flex-1">
               <div
                 className={cn(
-                  "relative z-10 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300",
-                  isCompleted && "bg-primary border-primary text-primary-foreground",
-                  isCurrent && "bg-primary border-primary text-primary-foreground scale-110",
-                  isUpcoming && "bg-background border-muted-foreground text-muted-foreground"
+                  "relative z-10 w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300",
+                  isCompleted && "bg-gradient-to-br from-blue-600 to-purple-600 border-transparent text-white shadow-lg",
+                  isCurrent && "bg-gradient-to-br from-blue-600 to-purple-600 border-transparent text-white scale-110 shadow-xl ring-4 ring-blue-500/20",
+                  isUpcoming && "bg-card border-muted text-muted-foreground"
                 )}
               >
                 {isCompleted ? (
-                  <Check className="h-5 w-5" />
+                  <Check className="h-6 w-6" />
                 ) : (
-                  <span className="text-sm font-semibold">{index + 1}</span>
+                  <span className="text-sm font-bold">{index + 1}</span>
                 )}
               </div>
               <span
                 className={cn(
                   "mt-2 text-xs font-medium text-center transition-colors",
-                  isCurrent && "text-primary",
+                  isCurrent && "text-primary font-semibold",
                   !isCurrent && "text-muted-foreground"
                 )}
               >
@@ -58,8 +58,9 @@ export function SignupStepIndicator({ currentStep, totalSteps, steps }: SignupSt
       </div>
 
       {/* Step Number Display */}
-      <div className="text-center text-sm text-muted-foreground">
-        Step {currentStep + 1} of {totalSteps}
+      <div className="text-center text-sm font-medium">
+        <span className="text-primary">Step {currentStep + 1}</span>
+        <span className="text-muted-foreground"> of {totalSteps}</span>
       </div>
     </div>
   );

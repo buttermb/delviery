@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, ArrowLeft, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, FileText } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, FileText, Sparkles } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupStepIndicator } from '@/components/signup/SignupStepIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
@@ -241,15 +241,33 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
+      
+      {/* Floating orbs */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
+      
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
+        backgroundSize: '40px 40px'
+      }} />
+
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            Start Your 14-Day Free Trial
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-sm border border-primary/20 mb-4 animate-fade-in">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">14-Day Free Trial • No Credit Card Required</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            Start Your Journey Today
           </h1>
-          <p className="text-muted-foreground text-lg">No credit card required • Cancel anytime</p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale business in minutes</p>
+          <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             Already have an account?{' '}
             <Link to="/saas/login" className="text-primary font-medium hover:underline">
               Sign in
@@ -260,7 +278,10 @@ export default function SignUpPage() {
         {/* Main Content - Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-8">
           {/* Left Column - Form */}
-          <Card className="w-full shadow-lg">
+          <div className="relative animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
+            <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
             <CardContent className="p-6 sm:p-8">
               {/* Step Indicator */}
               <div className="mb-8">
@@ -297,7 +318,7 @@ export default function SignUpPage() {
                               <Input
                                 placeholder="Big Mike's Wholesale"
                                 {...field}
-                                className="h-11"
+                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                               />
                             </FormControl>
                             <FormMessage />
@@ -315,7 +336,7 @@ export default function SignUpPage() {
                               Your Name *
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="John Doe" {...field} className="h-11" />
+                              <Input placeholder="John Doe" {...field} className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -336,7 +357,7 @@ export default function SignUpPage() {
                                 type="email"
                                 placeholder="you@business.com"
                                 {...field}
-                                className="h-11"
+                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                               />
                             </FormControl>
                             <FormMessage />
@@ -359,7 +380,7 @@ export default function SignUpPage() {
                                   type={showPassword ? "text" : "password"}
                                   placeholder="••••••••"
                                   {...field}
-                                  className="h-11 pr-10"
+                                  className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                                 />
                                 <button
                                   type="button"
@@ -406,7 +427,7 @@ export default function SignUpPage() {
                               <Input
                                 placeholder="555-123-4567"
                                 {...field}
-                                className="h-11"
+                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                               />
                             </FormControl>
                             <FormMessage />
@@ -588,14 +609,14 @@ export default function SignUpPage() {
                     </div>
                   </SignupStepContent>
 
-                  {/* Navigation Buttons */}
+                   {/* Navigation Buttons */}
                   <div className="flex items-center justify-between pt-6 border-t">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleBack}
                       disabled={currentStep === 0}
-                      className="min-w-[100px]"
+                      className="min-w-[100px] h-12 hover:scale-105 transition-all"
                     >
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back
@@ -605,7 +626,7 @@ export default function SignUpPage() {
                       <Button
                         type="button"
                         onClick={handleNext}
-                        className="min-w-[100px]"
+                        className="min-w-[100px] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:scale-105 transition-all duration-200"
                       >
                         Next
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -615,7 +636,7 @@ export default function SignUpPage() {
                         type="button"
                         onClick={handleFinalSubmit}
                         disabled={isSubmitting}
-                        className="min-w-[100px]"
+                        className="min-w-[100px] h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:scale-105 transition-all duration-200"
                       >
                         {isSubmitting ? (
                           'Creating Account...'
@@ -632,9 +653,10 @@ export default function SignUpPage() {
               </Form>
             </CardContent>
           </Card>
+          </div>
 
           {/* Right Column - Features Showcase (Desktop Only) */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="sticky top-8">
               <SignupFeaturesShowcase />
             </div>
@@ -642,7 +664,7 @@ export default function SignUpPage() {
         </div>
 
         {/* Features Showcase - Mobile (Below Form) */}
-        <div className="lg:hidden mt-8">
+        <div className="lg:hidden mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
           <SignupFeaturesShowcase />
         </div>
       </div>
