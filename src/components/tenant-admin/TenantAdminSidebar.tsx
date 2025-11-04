@@ -55,6 +55,8 @@ import {
   ScrollText,
   Headphones,
   Store,
+  Brain,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +124,7 @@ const menuGroups: MenuGroup[] = [
       { featureId: "menu-analytics", title: "Menu Analytics", url: "/admin/menu-analytics", icon: BarChart3, tier: "professional" },
       { featureId: "disposable-menu-analytics", title: "Disposable Menu Analytics", url: "/admin/disposable-menu-analytics", icon: PieChart, tier: "professional" },
       { featureId: "sales-dashboard", title: "Sales Dashboard", url: "/admin/sales-dashboard", icon: DollarSign, tier: "professional" },
+      { featureId: "analytics", title: "Analytics Dashboard", url: "/admin/analytics-dashboard", icon: LineChart, tier: "enterprise" },
       { featureId: "advanced-analytics", title: "Advanced Analytics", url: "/admin/advanced-analytics", icon: TrendingUp, tier: "enterprise" },
       { featureId: "realtime-dashboard", title: "Realtime Dashboard", url: "/admin/realtime-dashboard", icon: Activity, tier: "enterprise" },
       { featureId: "custom-reports", title: "Custom Reports", url: "/admin/custom-reports", icon: FileText, tier: "enterprise" },
@@ -133,7 +136,7 @@ const menuGroups: MenuGroup[] = [
       { featureId: "billing", title: "Billing", url: "/admin/billing", icon: CreditCard, tier: "starter" },
       { featureId: "commission-tracking", title: "Commission Tracking", url: "/admin/commission-tracking", icon: DollarSign, tier: "professional" },
       { featureId: "revenue-reports", title: "Revenue Reports", url: "/admin/revenue-reports", icon: TrendingUp, tier: "professional" },
-      { featureId: "invoice-management", title: "Invoice Management", url: "/admin/invoice-management", icon: Receipt, tier: "professional" },
+      { featureId: "invoice-management", title: "Advanced Invoice", url: "/admin/advanced-invoice", icon: Receipt, tier: "professional" },
     ],
   },
   {
@@ -142,7 +145,7 @@ const menuGroups: MenuGroup[] = [
       { featureId: "delivery-management", title: "Delivery Management", url: "/admin/delivery-management", icon: Truck, tier: "enterprise" },
       { featureId: "fleet-management", title: "Fleet Management", url: "/admin/fleet-management", icon: Building2, tier: "enterprise" },
       { featureId: "live-map", title: "Live Map Tracking", url: "/admin/live-map", icon: MapPin, tier: "enterprise" },
-      { featureId: "route-optimization", title: "Route Optimization", url: "/admin/route-optimization", icon: MapPinned, tier: "enterprise" },
+      { featureId: "route-optimization", title: "Route Optimizer", url: "/admin/route-optimizer", icon: MapPinned, tier: "enterprise" },
       { featureId: "delivery-analytics", title: "Delivery Analytics", url: "/admin/delivery-analytics", icon: BarChart3, tier: "enterprise" },
     ],
   },
@@ -171,10 +174,11 @@ const menuGroups: MenuGroup[] = [
     items: [
       { featureId: "bulk-operations", title: "Bulk Operations", url: "/admin/bulk-operations", icon: FolderKanban, tier: "professional" },
       { featureId: "notifications", title: "Notifications", url: "/admin/notifications", icon: Bell, tier: "professional" },
+      { featureId: "ai", title: "Local AI", url: "/admin/local-ai", icon: Brain, tier: "enterprise" },
       { featureId: "api-access", title: "API Access", url: "/admin/api-access", icon: Zap, tier: "enterprise" },
       { featureId: "webhooks", title: "Webhooks", url: "/admin/webhooks", icon: Activity, tier: "enterprise" },
       { featureId: "custom-integrations", title: "Custom Integrations", url: "/admin/custom-integrations", icon: Zap, tier: "enterprise" },
-      { featureId: "automation", title: "Automation", url: "/admin/automation", icon: Zap, tier: "enterprise" },
+      { featureId: "automation", title: "Workflow Automation", url: "/admin/workflow-automation", icon: Zap, tier: "enterprise" },
       { featureId: "data-export", title: "Data Export", url: "/admin/data-export", icon: Download, tier: "enterprise" },
     ],
   },
