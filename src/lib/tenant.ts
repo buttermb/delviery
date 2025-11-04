@@ -145,12 +145,16 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   // -1 means unlimited
   const unlimited = limit === -1;
   
-  // If limit is undefined or 0, default to unlimited for enterprise plans
+  // If limit is undefined or 0, default to unlimited for enterprise/professional plans
   // This prevents (0/0) errors for top-tier accounts
   if (limit === undefined || limit === 0) {
-    // Check if this is an enterprise plan that should have unlimited
+    // Check if this is an enterprise or professional plan that should have unlimited
     const isEnterprise = tenant.subscription_plan === 'enterprise';
-    if (isEnterprise) {
+    const isProfessional = tenant.subscription_plan === 'professional';
+    
+    // Enterprise plans are unlimited for all resources
+    // Professional plans are unlimited for menus and products
+    if (isEnterprise || (isProfessional && (resource === 'menus' || resource === 'products'))) {
       return {
         allowed: true,
         current,

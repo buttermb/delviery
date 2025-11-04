@@ -36,11 +36,21 @@ export function useTenantLimits() {
     // -1 means unlimited
     if (limit === -1) return Infinity;
     
-    // If limit is undefined or 0, check if enterprise plan (should be unlimited)
+    // If limit is undefined or 0, check if enterprise/professional plan (should be unlimited)
     if (limit === undefined || limit === 0) {
-      if (tenant.subscription_plan === 'enterprise') {
-        return Infinity; // Enterprise plans are unlimited
+      const isEnterprise = tenant.subscription_plan === 'enterprise';
+      const isProfessional = tenant.subscription_plan === 'professional';
+      
+      // Enterprise plans are unlimited for all resources
+      if (isEnterprise) {
+        return Infinity;
       }
+      
+      // Professional plans are unlimited for menus and products
+      if (isProfessional && (resource === 'menus' || resource === 'products')) {
+        return Infinity;
+      }
+      
       return 0;
     }
     
