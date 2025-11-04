@@ -154,6 +154,7 @@ const ReceivingPage = lazy(() => import("./pages/admin/operations/ReceivingPage"
 const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage"));
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
+const InventoryMonitoringPage = lazy(() => import("./pages/admin/InventoryMonitoringPage"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
@@ -402,6 +403,7 @@ const App = () => {
                           <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
                           <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrders /></FeatureProtectedRoute>} />
                           <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
+                          <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                           <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
                           <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
