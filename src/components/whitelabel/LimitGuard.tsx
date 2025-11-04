@@ -52,11 +52,13 @@ export function LimitGuard({
   const showLimitWarning = showWarning && percentage >= warningThreshold && canCreate(resource);
   const showLimitError = !canCreate(resource);
 
-  // Show upgrade dialog when limit is reached
+  // Show upgrade dialog when limit is reached, close when limit is no longer reached
   useEffect(() => {
     if (showLimitError) {
       setShowUpgradeDialog(true);
       setDialogType('limit');
+    } else {
+      setShowUpgradeDialog(false);
     }
   }, [showLimitError]);
 
