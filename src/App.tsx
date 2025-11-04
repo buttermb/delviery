@@ -177,6 +177,9 @@ const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupp
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerSignUpPage = lazy(() => import("./pages/customer/SignUpPage"));
+
+// Invitation Pages
+const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
 const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
@@ -294,6 +297,9 @@ const App = () => {
                         <Route path="/signup" element={<SignUpPage />} />
                         <Route path="/saas/login" element={<SaasLoginPage />} />
                         <Route path="/verify-email" element={<VerifyEmailPage />} />
+                        
+                        {/* Invitation Acceptance */}
+                        <Route path="/invite/:token" element={<InvitationAcceptPage />} />
                         
                         {/* Public Menu Access */}
                         <Route path="/m/:token" element={<SecureMenuAccess />} />

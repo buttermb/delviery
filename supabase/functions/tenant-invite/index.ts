@@ -17,27 +17,43 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const { action, tenantId, email, role, token: inviteToken } = await req.json();
 
+    // Public actions that don't require authentication
+    const publicActions = ['get_invitation_details'];
+    
+    // Skip auth for public actions
+    let user = null;
+    if (!publicActions.includes(action)) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'Missing authorization header' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      user = authUser;
+    }
+
     if (action === 'send_invitation') {
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       console.log('Sending invitation:', { tenantId, email, role });
 
       // Verify user is tenant owner
@@ -114,6 +130,13 @@ serve(async (req) => {
     }
 
     if (action === 'accept_invitation') {
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       console.log('Accepting invitation with token:', inviteToken);
 
       // Verify token is valid and not expired
@@ -198,6 +221,38 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ invitations }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (action === 'get_invitation_details') {
+      console.log('Getting invitation details for token:', inviteToken);
+
+      // This is a public action - no auth required
+      const { data: invitation, error: inviteError } = await supabase
+        .from('tenant_invitations')
+        .select('*, tenants(slug, business_name)')
+        .eq('token', inviteToken)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (inviteError || !invitation) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired invitation' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          invitation: {
+            email: invitation.email,
+            role: invitation.role,
+            tenant_name: invitation.tenants.business_name,
+            tenant_slug: invitation.tenants.slug,
+          }
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
