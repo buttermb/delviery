@@ -101,8 +101,10 @@ export default function ReportsPage() {
       exportCSV(
         inventory.map(i => ({
           product: i.product_name,
-          quantity: i.quantity_in_stock,
-          unit: i.unit,
+          quantity_lbs: Number(i.quantity_lbs || 0),
+          quantity_units: i.quantity_units || 0,
+          category: i.category || 'N/A',
+          warehouse: i.warehouse_location || 'N/A',
           updated: i.updated_at ? format(new Date(i.updated_at), 'yyyy-MM-dd') : 'N/A'
         })),
         { filename: `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
