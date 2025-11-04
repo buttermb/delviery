@@ -135,15 +135,36 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   limit: number;
   remaining: number;
 } {
-  const current = tenant.usage[resource] || 0;
-  const limit = tenant.limits[resource];
+  // Ensure limits and usage exist
+  const limits = tenant.limits || {};
+  const usage = tenant.usage || {};
+  
+  const current = usage[resource] || 0;
+  const limit = limits[resource];
+  
+  // -1 means unlimited
   const unlimited = limit === -1;
+  
+  // If limit is undefined or 0, default to unlimited for enterprise plans
+  // This prevents (0/0) errors for top-tier accounts
+  if (limit === undefined || limit === 0) {
+    // Check if this is an enterprise plan that should have unlimited
+    const isEnterprise = tenant.subscription_plan === 'enterprise';
+    if (isEnterprise) {
+      return {
+        allowed: true,
+        current,
+        limit: Infinity,
+        remaining: Infinity,
+      };
+    }
+  }
 
   return {
     allowed: unlimited || current < limit,
     current,
-    limit: unlimited ? Infinity : limit,
-    remaining: unlimited ? Infinity : Math.max(0, limit - current),
+    limit: unlimited ? Infinity : (limit || 0),
+    remaining: unlimited ? Infinity : Math.max(0, (limit || 0) - current),
   };
 }
 

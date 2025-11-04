@@ -3,13 +3,13 @@
  * Check if tenant can create resources based on plan limits
  */
 
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { checkLimit } from '@/lib/tenant';
 
 type Resource = 'customers' | 'menus' | 'products' | 'locations' | 'users';
 
 export function useTenantLimits() {
-  const { tenant } = useTenant();
+  const { tenant } = useTenantAdminAuth();
 
   const canCreate = (resource: Resource): boolean => {
     if (!tenant) return false;

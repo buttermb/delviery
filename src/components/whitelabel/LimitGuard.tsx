@@ -37,9 +37,10 @@ export function LimitGuard({
   const current = getCurrent(resource);
   const limit = getLimit(resource);
   const remaining = getRemaining(resource);
-  const unlimited = limit === Infinity;
+  const unlimited = limit === Infinity || limit === 0; // Treat 0 as unlimited to prevent (0/0) errors
 
-  if (unlimited) {
+  // If unlimited or limit is 0, don't show limits
+  if (unlimited || limit === 0) {
     return <>{children}</>;
   }
 
