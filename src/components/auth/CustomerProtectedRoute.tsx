@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;
@@ -35,12 +36,12 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       // Verify token is still valid
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+        const response = await apiFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
+          skipAuth: true,
         });
 
         if (!response.ok) {

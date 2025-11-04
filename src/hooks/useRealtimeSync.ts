@@ -145,18 +145,20 @@ export function useRealtimeSync({
           if (status === 'SUBSCRIBED') {
             logger.debug(`Realtime subscription active: ${table}`, { tenantId }, 'useRealtimeSync');
           } else if (status === 'CHANNEL_ERROR') {
-            logger.error(`Realtime subscription error: ${table}`, undefined, {
-              tenantId,
-              table,
-            }, 'useRealtimeSync');
+            logger.error(
+              `Realtime subscription error: ${table} (tenant: ${tenantId})`,
+              { table, tenantId },
+              'useRealtimeSync'
+            );
             // Invalidate queries to trigger refetch
             queryClient.invalidateQueries({ queryKey: [table] });
             queryClient.invalidateQueries({ queryKey: [table, tenantId] });
           } else if (status === 'TIMED_OUT') {
-            logger.warn(`Realtime subscription timed out: ${table}`, {
-              tenantId,
-              table,
-            }, 'useRealtimeSync');
+            logger.warn(
+              `Realtime subscription timed out: ${table}`,
+              { tenantId, table },
+              'useRealtimeSync'
+            );
             // Invalidate queries to trigger refetch
             queryClient.invalidateQueries({ queryKey: [table] });
             queryClient.invalidateQueries({ queryKey: [table, tenantId] });

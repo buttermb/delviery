@@ -3,6 +3,8 @@
  * Extracts tenant slug from URL or subdomain and validates tenant context
  */
 
+import { apiFetch } from "@/lib/utils/apiClient";
+
 export interface TenantContext {
   tenantSlug: string;
   tenantId: string;
@@ -74,12 +76,10 @@ export function getTenantSlugFromLocation(): string | null {
 export async function validateTenant(tenantSlug: string): Promise<{ valid: boolean; tenant?: any; error?: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const response = await fetch(`${supabaseUrl}/functions/v1/validate-tenant`, {
+    const response = await apiFetch(`${supabaseUrl}/functions/v1/validate-tenant`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ tenantSlug }),
+      skipAuth: true,
     });
 
     if (!response.ok) {

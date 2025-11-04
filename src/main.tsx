@@ -13,6 +13,10 @@ import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
 import { logger } from "@/utils/logger";
+import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
+
+// Setup global error handlers
+setupGlobalErrorHandlers();
 
 // Log app initialization
 console.log('[APP] Starting app initialization...');

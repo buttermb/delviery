@@ -204,6 +204,7 @@ serve(async (req) => {
             owner_email: tenant.owner_email,
             subscription_plan: tenant.subscription_plan,
             subscription_status: tenant.subscription_status,
+<<<<<<< HEAD
             limits: tenant.limits || {
               customers: 50,
               menus: 3,
@@ -407,6 +408,7 @@ serve(async (req) => {
         slug: tenantUser.tenants.slug,
         subscription_plan: tenantUser.tenants.subscription_plan,
         subscription_status: tenantUser.tenants.subscription_status,
+<<<<<<< HEAD
         limits: tenantUser.tenants.limits || {
           customers: 50,
           menus: 3,

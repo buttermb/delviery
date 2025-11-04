@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { logger } from "@/utils/logger";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 interface Customer {
   id: string;

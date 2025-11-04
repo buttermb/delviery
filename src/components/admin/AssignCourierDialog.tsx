@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/lib/utils/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -95,16 +96,16 @@ export const AssignCourierDialog = ({
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/assign-courier`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           orderId,
           courierId: selectedCourierId,
         }),
+        skipAuth: true, // Manual auth header
       });
 
       if (!response.ok) {
@@ -141,16 +142,16 @@ export const AssignCourierDialog = ({
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/assign-courier`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/assign-courier`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           orderId,
           // Don't send courierId to trigger auto-assignment
         }),
+        skipAuth: true, // Manual auth header
       });
 
       if (!response.ok) {

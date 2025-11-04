@@ -136,6 +136,7 @@ export default function ProductManagement() {
         toast.success("Product updated successfully");
       } else {
         // Check tenant limits before creating
+<<<<<<< HEAD
         if (tenant?.limits?.products !== undefined) {
           const currentProducts = tenant.usage?.products || 0;
           const productLimit = tenant.limits.products;
