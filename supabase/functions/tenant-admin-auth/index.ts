@@ -60,6 +60,8 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
+      console.log('Looking up tenant with slug:', tenantSlug.toLowerCase());
+
       // Get tenant by slug BEFORE authentication (using service role)
       const { data: tenant, error: tenantError } = await serviceClient
         .from('tenants')
@@ -67,46 +69,84 @@ serve(async (req) => {
         .eq('slug', tenantSlug.toLowerCase())
         .maybeSingle();
 
+      console.log('Tenant lookup result:', { 
+        found: !!tenant, 
+        tenantId: tenant?.id,
+        ownerEmail: tenant?.owner_email,
+        error: tenantError 
+      });
+
       if (tenantError || !tenant) {
-        console.error('Tenant not found:', tenantSlug, tenantError);
+        console.error('Tenant lookup failed:', { 
+          slug: tenantSlug, 
+          error: tenantError,
+          hasServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        });
         return new Response(
-          JSON.stringify({ error: 'Tenant not found' }),
+          JSON.stringify({ 
+            error: 'Tenant not found',
+            detail: 'No tenant exists with this slug. Please check the URL and try again.'
+          }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      console.log('Tenant found:', tenant.business_name, 'Owner:', tenant.owner_email);
+
       // Verify credentials with Supabase Auth
+      console.log('Attempting authentication for:', email);
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (authError) {
-        console.error('Auth error:', authError);
+        console.error('Auth error:', { 
+          email, 
+          errorCode: authError.status, 
+          errorMessage: authError.message 
+        });
         return new Response(
-          JSON.stringify({ error: 'Invalid credentials' }),
+          JSON.stringify({ 
+            error: 'Invalid credentials',
+            detail: 'Email or password is incorrect. Please try again.'
+          }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       if (!authData.user) {
+        console.error('No user returned after authentication');
         return new Response(
           JSON.stringify({ error: 'Authentication failed' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      console.log('Authentication successful for user:', authData.user.id);
+
       // Verify user has access to this tenant (check if email matches tenant owner or is a tenant user)
       const isOwner = tenant.owner_email?.toLowerCase() === email.toLowerCase();
+      console.log('Access check:', { 
+        email, 
+        tenantOwner: tenant.owner_email,
+        isOwner 
+      });
       
       let tenantUser = null;
       if (!isOwner) {
+        console.log('User is not owner, checking tenant_users table');
         const { data: userCheck, error: userCheckError } = await serviceClient
           .from('tenant_users')
           .select('*')
           .eq('email', email.toLowerCase())
           .eq('tenant_id', tenant.id)
           .maybeSingle();
+
+        console.log('Tenant user lookup:', { 
+          found: !!userCheck, 
+          error: userCheckError 
+        });
 
         if (userCheckError) {
           console.error('Tenant user check error:', userCheckError);
@@ -115,11 +155,23 @@ serve(async (req) => {
         tenantUser = userCheck;
         
         if (!tenantUser) {
+          console.error('User not authorized for tenant:', { 
+            email, 
+            tenantId: tenant.id,
+            tenantSlug: tenant.slug
+          });
           return new Response(
-            JSON.stringify({ error: 'You do not have access to this tenant' }),
+            JSON.stringify({ 
+              error: 'You do not have access to this tenant',
+              detail: `The account ${email} is not authorized to access ${tenant.business_name}. Please contact your administrator or use the correct login credentials.`
+            }),
             { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        console.log('User authorized via tenant_users:', tenantUser.role);
+      } else {
+        console.log('User authorized as tenant owner');
       }
 
       // Build admin object
