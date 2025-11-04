@@ -11,6 +11,7 @@ import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { logger } from '@/utils/logger';
 import {
   Form,
   FormControl,
@@ -99,7 +100,7 @@ export default function LoginPage() {
       // Redirect to tenant admin dashboard
       navigate(`/${tenant.slug}/admin/dashboard`);
     } catch (error: any) {
-      console.error('Login error:', error);
+      logger.error('Login error', error);
       toast({
         title: 'Login Failed',
         description: error.message || 'Invalid email or password',

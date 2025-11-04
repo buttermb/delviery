@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Loader2, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 const SuperAdminLogin = () => {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ const SuperAdminLogin = () => {
       // Redirect to super admin dashboard
       navigate("/saas/admin", { replace: true });
     } catch (error: any) {
-      console.error("Super admin sign in error:", error);
+      logger.error("Super admin sign in error", error);
       toast({
         variant: "destructive",
         title: "Login failed",
