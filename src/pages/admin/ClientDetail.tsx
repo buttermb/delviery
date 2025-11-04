@@ -9,7 +9,7 @@ import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
-// SendSMS removed per plan - can be re-added if needed
+import { EditClientDialog } from "@/components/admin/EditClientDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useClientDetail, useClientOrders, useClientPayments } from "@/hooks/useWholesaleData";
 import { Loader2 } from "lucide-react";
@@ -22,6 +22,7 @@ export default function ClientDetail() {
   const navigate = useNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
@@ -138,7 +139,7 @@ export default function ClientDetail() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => showInfoToast("Edit Client", "Client editing coming soon")}
+            onClick={() => setEditDialogOpen(true)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
@@ -383,13 +384,23 @@ export default function ClientDetail() {
         onOpenChange={setPaymentDialogOpen}
       />
 
+      {/* Edit Client Dialog */}
+      <EditClientDialog
+        clientId={id || ""}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => {
+          // Refresh client data
+          window.location.reload();
+        }}
+      />
+
       {/* SMS Dialog */}
       <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Send SMS to {displayClient.business_name}</DialogTitle>
           </DialogHeader>
-          {/* SendSMS removed per plan - can be re-added if needed */}
           <div className="p-4 text-center text-muted-foreground">
             SMS functionality temporarily unavailable
           </div>

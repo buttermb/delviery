@@ -35,16 +35,16 @@ interface NavItem {
 const navigation: NavItem[] = [
   {
     name: 'Dashboard',
-    href: '/admin/big-plug-dashboard',
+    href: '/admin/dashboard',
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     name: 'Operations',
     icon: <Package className="h-5 w-5" />,
     children: [
-      { name: 'Orders', href: '/admin/big-plug-order', icon: <FileText className="h-4 w-4" /> },
-      { name: 'Transfers & Delivery', href: '/admin/inventory/dispatch', icon: <Truck className="h-4 w-4" /> },
-      { name: 'Inventory', href: '/admin/big-plug-inventory', icon: <Package className="h-4 w-4" /> },
+      { name: 'Orders', href: '/admin/wholesale-orders', icon: <FileText className="h-4 w-4" /> },
+      { name: 'Transfers & Delivery', href: '/admin/dispatch-inventory', icon: <Truck className="h-4 w-4" /> },
+      { name: 'Inventory', href: '/admin/inventory-dashboard', icon: <Package className="h-4 w-4" /> },
       { name: 'Receiving & Packaging', href: '/admin/operations/receiving', icon: <Warehouse className="h-4 w-4" /> },
     ],
   },
@@ -53,9 +53,9 @@ const navigation: NavItem[] = [
     icon: <Menu className="h-5 w-5" />,
     children: [
       { name: 'Disposable Menus', href: '/admin/disposable-menus', icon: <Menu className="h-4 w-4" /> },
-      { name: 'Customers', href: '/admin/big-plug-clients', icon: <Users className="h-4 w-4" /> },
+      { name: 'Customers', href: '/admin/customers', icon: <Users className="h-4 w-4" /> },
       { name: 'Pricing & Deals', href: '/admin/sales/pricing', icon: <DollarSign className="h-4 w-4" /> },
-      { name: 'Sales Analytics', href: '/admin/analytics/comprehensive', icon: <BarChart3 className="h-4 w-4" /> },
+      { name: 'Sales Analytics', href: '/admin/sales-dashboard', icon: <BarChart3 className="h-4 w-4" /> },
     ],
   },
   {
@@ -74,26 +74,23 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Warehouses', href: '/admin/locations/warehouses', icon: <Warehouse className="h-4 w-4" /> },
       { name: 'Runners & Vehicles', href: '/admin/locations/runners', icon: <Truck className="h-4 w-4" /> },
-      { name: 'Location Analytics', href: '/admin/analytics/comprehensive', icon: <BarChart3 className="h-4 w-4" /> },
+      { name: 'Location Analytics', href: '/admin/location-analytics', icon: <BarChart3 className="h-4 w-4" /> },
     ],
   },
   {
     name: 'Finance',
     icon: <DollarSign className="h-5 w-5" />,
     children: [
-      { name: 'Payments & Invoices', href: '/admin/financial-center', icon: <DollarSign className="h-4 w-4" /> },
-      { name: 'Revenue Reports', href: '/admin/big-plug-financial', icon: <BarChart3 className="h-4 w-4" /> },
-      { name: 'Credit Management', href: '/admin/big-plug-financial', icon: <DollarSign className="h-4 w-4" /> },
-      { name: 'Financial Analytics', href: '/admin/analytics/comprehensive', icon: <BarChart3 className="h-4 w-4" /> },
+      { name: 'Financial Center', href: '/admin/financial-center', icon: <DollarSign className="h-4 w-4" /> },
     ],
   },
   {
     name: 'Team',
     icon: <Users className="h-5 w-5" />,
     children: [
-      { name: 'Staff Management', href: '/admin/team', icon: <Users className="h-4 w-4" /> },
-      { name: 'Roles & Permissions', href: '/admin/settings', icon: <Shield className="h-4 w-4" /> },
-      { name: 'Activity Log', href: '/admin/audit-logs', icon: <FileText className="h-4 w-4" /> },
+      { name: 'Staff Management', href: '/admin/team-members', icon: <Users className="h-4 w-4" /> },
+      { name: 'Roles & Permissions', href: '/admin/role-management', icon: <Shield className="h-4 w-4" /> },
+      { name: 'Activity Log', href: '/admin/audit-trail', icon: <FileText className="h-4 w-4" /> },
     ],
   },
   {

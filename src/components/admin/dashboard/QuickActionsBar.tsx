@@ -14,7 +14,7 @@ export function QuickActionsBar() {
     {
       label: 'New Order',
       icon: <Package className="h-4 w-4" />,
-      href: '/admin/big-plug-order',
+      href: '/admin/wholesale-orders',
       shortcut: '⌘N',
     },
     {
@@ -32,7 +32,7 @@ export function QuickActionsBar() {
     {
       label: 'Print Labels',
       icon: <FileText className="h-4 w-4" />,
-      href: '/admin/inventory/barcodes',
+      href: '/admin/generate-barcodes',
       shortcut: '⌘P',
     },
   ];

@@ -13,7 +13,7 @@ import {
   ArrowRight, AlertTriangle, CheckCircle2, Info
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -32,7 +32,16 @@ interface Insight {
 export function ActionableInsights() {
   const { account } = useAccount();
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [smsOpen, setSmsOpen] = useState<{ customerId: string; phone: string; name: string } | null>(null);
+
+  const getFullPath = (href: string) => {
+    if (!tenantSlug) return href;
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   // Mock insights - in production, these would come from analytics
   const insights: Insight[] = [

@@ -23,7 +23,7 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.warn('Cannot log audit event: No authenticated user');
+      logger.warn('Cannot log audit event: No authenticated user');
       return;
     }
 
