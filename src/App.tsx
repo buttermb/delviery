@@ -19,6 +19,7 @@ import { AccountProvider } from "./contexts/AccountContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TenantProvider } from "./contexts/TenantContext";
 import { WhiteLabelProvider } from "./components/whitelabel/WhiteLabelProvider";
+import { CourierProvider } from "./contexts/CourierContext";
 import { SuperAdminAuthProvider } from "./contexts/SuperAdminAuthContext";
 import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
@@ -173,6 +174,14 @@ const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPag
 const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
 // These pages were deleted as they referenced non-existent database tables
 // Will be re-added when proper database migrations are created
+
+// Courier Pages
+const CourierLoginPage = lazy(() => import("./pages/courier/LoginPage"));
+const CourierDashboardPage = lazy(() => import("./pages/courier/DashboardPage"));
+const CourierEarningsPage = lazy(() => import("./pages/courier/EarningsPage"));
+const CourierHistoryPage = lazy(() => import("./pages/courier/HistoryPage"));
+const CourierActiveOrderPage = lazy(() => import("./pages/courier/ActiveOrderPage"));
+const ProtectedCourierRoute = lazy(() => import("./components/ProtectedCourierRoute").then(m => ({ default: m.default })));
 
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
@@ -416,6 +425,37 @@ const App = () => {
                           <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
                           <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                         </Route>
+                        
+                        {/* ==================== COURIER PORTAL ==================== */}
+                        <Route path="/courier/login" element={<CourierLoginPage />} />
+                        <Route path="/courier/dashboard" element={
+                          <ProtectedCourierRoute>
+                            <CourierProvider>
+                              <CourierDashboardPage />
+                            </CourierProvider>
+                          </ProtectedCourierRoute>
+                        } />
+                        <Route path="/courier/earnings" element={
+                          <ProtectedCourierRoute>
+                            <CourierProvider>
+                              <CourierEarningsPage />
+                            </CourierProvider>
+                          </ProtectedCourierRoute>
+                        } />
+                        <Route path="/courier/history" element={
+                          <ProtectedCourierRoute>
+                            <CourierProvider>
+                              <CourierHistoryPage />
+                            </CourierProvider>
+                          </ProtectedCourierRoute>
+                        } />
+                        <Route path="/courier/order/:orderId" element={
+                          <ProtectedCourierRoute>
+                            <CourierProvider>
+                              <CourierActiveOrderPage />
+                            </CourierProvider>
+                          </ProtectedCourierRoute>
+                        } />
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
                         <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
