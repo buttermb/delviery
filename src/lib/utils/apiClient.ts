@@ -41,7 +41,9 @@ export async function apiFetch(
   }
 
   try {
-    const response = await fetch(url, {
+    // Bind fetch to window to prevent "illegal invocation" errors in mobile browsers
+    const boundFetch = fetch.bind(window);
+    const response = await boundFetch(url, {
       ...restOptions,
       headers: {
         "Content-Type": "application/json",

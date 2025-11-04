@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { apiFetch } from "@/lib/utils/apiClient";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
@@ -80,11 +81,8 @@ export default function CustomerSignUpPage() {
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -93,6 +91,7 @@ export default function CustomerSignUpPage() {
           phone: formData.phone,
           tenantSlug,
         }),
+        skipAuth: true,
       });
 
       if (!response.ok) {

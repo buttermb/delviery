@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/lib/utils/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -76,13 +77,13 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/add-courier`, {
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/add-courier`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(data),
+        skipAuth: true, // Manual auth header
       });
 
       if (!response.ok) {
