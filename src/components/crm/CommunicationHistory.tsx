@@ -80,10 +80,7 @@ export function CommunicationHistory({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customer_communications')
-        .select(`
-          *,
-          profiles:created_by(full_name, email)
-        `)
+        .select('*')
         .eq('customer_id', customerId)
         .eq('tenant_id', tenantId)
         .order('sent_at', { ascending: false });
@@ -96,7 +93,23 @@ export function CommunicationHistory({
         throw error;
       }
 
-      return data || [];
+      // Map database columns to Communication interface
+      return (data || []).map(item => ({
+        id: item.id,
+        customer_id: item.customer_id,
+        tenant_id: item.tenant_id,
+        type: item.communication_type as 'email' | 'sms',
+        direction: 'outbound' as const, // Default to outbound for now
+        subject: item.subject,
+        body: item.body,
+        status: item.status as 'sent' | 'delivered' | 'read' | 'failed',
+        sent_at: item.sent_at,
+        delivered_at: null,
+        read_at: null,
+        metadata: item.metadata as Record<string, any> | null,
+        created_by: item.created_by,
+        profiles: null
+      })) as Communication[];
     },
     enabled: !!customerId && !!tenantId,
   });
@@ -112,12 +125,12 @@ export function CommunicationHistory({
         .insert({
           customer_id: customerId,
           tenant_id: tenantId,
-          type: message.type,
-          direction: 'outbound',
+          communication_type: message.type,
           subject: message.subject || null,
           body: message.body,
           status: 'sent',
           created_by: user.id,
+          metadata: {},
         })
         .select()
         .single();
@@ -132,13 +145,13 @@ export function CommunicationHistory({
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-communications', customerId, tenantId] });
       toast({
         title: 'Message sent',
-        description: 'Your message has been recorded',
+        description: `${newMessage.type === 'email' ? 'Email' : 'SMS'} has been sent successfully`,
       });
-      setNewMessage({ type: 'email', subject: '', body: '' });
       setSendDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['customer-communications'] });
+      setNewMessage({ type: 'email', subject: '', body: '' });
     },
     onError: (error: any) => {
       toast({

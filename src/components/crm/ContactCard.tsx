@@ -52,9 +52,9 @@ export function ContactCard({
   onMessage,
 }: ContactCardProps) {
   // Fetch recent activity count
-  const { data: activityCount } = useQuery({
+  const { data: activityCount } = useQuery<number>({
     queryKey: ['customer-activity-count', customerId, tenantId],
-    queryFn: async () => {
+    queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('customer_activities')
         .select('*', { count: 'exact', head: true })

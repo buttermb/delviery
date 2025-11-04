@@ -92,15 +92,12 @@ export function ActivityTimeline({ customerId, tenantId }: ActivityTimelineProps
   });
 
   // Fetch activities
-  const { data: activities, isLoading, refetch } = useQuery({
+  const { data: activities, isLoading, refetch } = useQuery<Activity[]>({
     queryKey: ['customer-activities', customerId, tenantId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customer_activities')
-        .select(`
-          *,
-          profiles:created_by(full_name, email)
-        `)
+        .select('*')
         .eq('customer_id', customerId)
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
@@ -113,7 +110,11 @@ export function ActivityTimeline({ customerId, tenantId }: ActivityTimelineProps
         throw error;
       }
 
-      return (data || []) as Activity[];
+      // Transform to Activity type (profiles will be null for now)
+      return (data || []).map(item => ({
+        ...item,
+        profiles: null
+      })) as Activity[];
     },
     enabled: !!customerId && !!tenantId,
   });

@@ -1806,6 +1806,53 @@ export type Database = {
           },
         ]
       }
+      customer_activities: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          tenant_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_activities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_balances: {
         Row: {
           account_id: string
@@ -1846,6 +1893,56 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_communications: {
+        Row: {
+          body: string | null
+          communication_type: string
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          id: string
+          metadata: Json | null
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          tenant_id: string
+        }
+        Insert: {
+          body?: string | null
+          communication_type: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          tenant_id: string
+        }
+        Update: {
+          body?: string | null
+          communication_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_communications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

@@ -49,7 +49,7 @@ interface InvoiceData {
   customerAddress?: string;
   companyName: string;
   companyAddress?: string;
-  items: InvoiceItem[];
+  lineItems: InvoiceItem[];  // Changed from 'items' to match InvoicePDF interface
   subtotal: number;
   tax: number;
   total: number;
@@ -69,7 +69,7 @@ export function AdvancedInvoice() {
     customerAddress: '',
     companyName: 'Your Company',
     companyAddress: '',
-    items: [
+    lineItems: [
       { id: '1', description: '', quantity: 1, unitPrice: 0, taxRate: 0, total: 0 },
     ],
     subtotal: 0,
@@ -82,25 +82,25 @@ export function AdvancedInvoice() {
   const addItem = () => {
     setInvoice({
       ...invoice,
-      items: [
-        ...invoice.items,
+      lineItems: [
+        ...invoice.lineItems,
         { id: Date.now().toString(), description: '', quantity: 1, unitPrice: 0, taxRate: 0, total: 0 },
       ],
     });
   };
 
   const removeItem = (id: string) => {
-    if (invoice.items.length > 1) {
+    if (invoice.lineItems.length > 1) {
       setInvoice({
         ...invoice,
-        items: invoice.items.filter(item => item.id !== id),
+        lineItems: invoice.lineItems.filter(item => item.id !== id),
       });
-      calculateTotals(invoice.items.filter(item => item.id !== id));
+      calculateTotals(invoice.lineItems.filter(item => item.id !== id));
     }
   };
 
   const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
-    const updatedItems = invoice.items.map(item => {
+    const updatedItems = invoice.lineItems.map(item => {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
         if (field === 'quantity' || field === 'unitPrice' || field === 'taxRate') {
@@ -110,7 +110,7 @@ export function AdvancedInvoice() {
       }
       return item;
     });
-    setInvoice({ ...invoice, items: updatedItems });
+    setInvoice({ ...invoice, lineItems: updatedItems });
     calculateTotals(updatedItems);
   };
 
@@ -277,7 +277,7 @@ export function AdvancedInvoice() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {invoice.items.map((item) => (
+                {invoice.lineItems.map((item) => (
                   <div key={item.id} className="grid grid-cols-12 gap-2 items-end">
                     <div className="col-span-5">
                       <Label>Description</Label>
@@ -316,7 +316,7 @@ export function AdvancedInvoice() {
                         size="sm"
                         variant="ghost"
                         onClick={() => removeItem(item.id)}
-                        disabled={invoice.items.length === 1}
+                        disabled={invoice.lineItems.length === 1}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
