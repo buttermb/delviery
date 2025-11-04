@@ -25,6 +25,7 @@ import { SearchBar } from "./SearchBar";
 import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
 import type { Numeric } from "@/types/money";
+import { toNumber } from "@/utils/productTypeGuards";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -68,9 +69,10 @@ const Navigation = () => {
     const product = item.products;
     const selectedWeight = item.selected_weight || "unit";
     if (product?.prices && typeof product.prices === 'object') {
-      return product.prices[selectedWeight] || product.price || 0;
+      const priceValue = product.prices[selectedWeight] || product.price;
+      return priceValue ? toNumber(priceValue) : 0;
     }
-    return product?.price || 0;
+    return product?.price ? toNumber(product.price) : 0;
   };
 
   // Cart total only for authenticated users (guest total not shown in nav to simplify)

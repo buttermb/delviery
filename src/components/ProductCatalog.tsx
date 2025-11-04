@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import type { Product } from "@/types/product";
 
 const INITIAL_CATEGORIES_TO_SHOW = 2;
 
@@ -261,7 +262,7 @@ const ProductCatalog = () => {
                         key={product.id} 
                         className="w-[280px] md:w-[320px] flex-shrink-0 snap-start snap-always"
                       >
-                          <ProductCard product={product} stockLevel={inventoryMap[product.id]} />
+                          <ProductCard product={product as Product} stockLevel={inventoryMap[product.id]} />
                         </div>
                       ))}
                     </div>

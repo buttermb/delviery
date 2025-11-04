@@ -16,6 +16,7 @@ import { useGuestCart } from "@/hooks/useGuestCart";
 import { haptics } from "@/utils/haptics";
 import { cleanProductName } from "@/utils/productName";
 import type { Product } from "@/types/product";
+import { getNumberValue, getStringArray, getDateValue, getStringValue } from "@/utils/productTypeGuards";
 import {
   Carousel,
   CarouselContent,
@@ -52,13 +53,15 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   };
 
   const getProductBadge = () => {
-    if (product.thca_percentage >= 25) {
+    const thcaPercentage = getNumberValue(product.thca_percentage, 0);
+    if (thcaPercentage >= 25) {
       return { icon: Flame, text: "High Potency", className: "bg-destructive/10 text-destructive" };
     }
-    if (product.created_at && new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
+    const createdDate = getDateValue(product.created_at);
+    if (createdDate && createdDate > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
       return { icon: Sparkles, text: "New", className: "bg-accent/10 text-accent" };
     }
-    if (product.thca_percentage >= 20) {
+    if (thcaPercentage >= 20) {
       return { icon: Star, text: "Staff Pick", className: "bg-primary/10 text-primary" };
     }
     return null;
@@ -66,10 +69,10 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
 
   const badge = getProductBadge();
 
-  const productImages = useMemo(() => [
-    product.image_url,
-    ...(product.additional_images || [])
-  ].filter(Boolean), [product.image_url, product.additional_images]);
+  const productImages = useMemo(() => {
+    const additionalImages = getStringArray(product.additional_images);
+    return [product.image_url, ...additionalImages].filter(Boolean);
+  }, [product.image_url, product.additional_images]);
 
   const handleAddToCart = async () => {
     if (!product.in_stock) {
@@ -226,8 +229,8 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           {/* Product Name */}
           <div>
             <h3 className="text-xl font-bold mb-1 line-clamp-1 text-white">{cleanProductName(product.name)}</h3>
-            {product.strain_type && (
-              <p className="text-sm text-white/60 capitalize">{product.strain_type}</p>
+            {getStringValue(product.strain_type) && (
+              <p className="text-sm text-white/60 capitalize">{getStringValue(product.strain_type)}</p>
             )}
           </div>
           
@@ -251,9 +254,9 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-semibold text-white">{product.average_rating || 4.8}</span>
+              <span className="font-semibold text-white">{getNumberValue(product.average_rating, 4.8)}</span>
             </div>
-            <span className="text-white/60">({product.review_count || 127} reviews)</span>
+            <span className="text-white/60">({getNumberValue(product.review_count, 127)} reviews)</span>
           </div>
 
           {/* Stock + Social Proof Alerts */}
