@@ -3644,6 +3644,59 @@ export type Database = {
           },
         ]
       }
+      inventory_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          current_quantity: number
+          id: string
+          is_resolved: boolean | null
+          message: string
+          product_id: string | null
+          product_name: string
+          reorder_point: number | null
+          resolved_at: string | null
+          severity: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          current_quantity: number
+          id?: string
+          is_resolved?: boolean | null
+          message: string
+          product_id?: string | null
+          product_name: string
+          reorder_point?: number | null
+          resolved_at?: string | null
+          severity: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          current_quantity?: number
+          id?: string
+          is_resolved?: boolean | null
+          message?: string
+          product_id?: string | null
+          product_name?: string
+          reorder_point?: number | null
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_batches: {
         Row: {
           account_id: string | null
@@ -8390,6 +8443,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      resolve_inventory_alert: {
+        Args: { alert_id: string }
+        Returns: undefined
       }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }
