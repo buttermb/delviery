@@ -54,6 +54,27 @@ serve(async (req) => {
         );
       }
 
+      // Create a separate service role client for tenant lookup (bypasses RLS)
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Get tenant by slug BEFORE authentication (using service role)
+      const { data: tenant, error: tenantError } = await serviceClient
+        .from('tenants')
+        .select('*')
+        .eq('slug', tenantSlug.toLowerCase())
+        .maybeSingle();
+
+      if (tenantError || !tenant) {
+        console.error('Tenant not found:', tenantSlug, tenantError);
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Verify credentials with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -75,27 +96,12 @@ serve(async (req) => {
         );
       }
 
-      // Get tenant by slug
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('slug', tenantSlug.toLowerCase())
-        .maybeSingle();
-
-      if (tenantError || !tenant) {
-        console.error('Tenant not found:', tenantSlug, tenantError);
-        return new Response(
-          JSON.stringify({ error: 'Tenant not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
       // Verify user has access to this tenant (check if email matches tenant owner or is a tenant user)
       const isOwner = tenant.owner_email?.toLowerCase() === email.toLowerCase();
       
       let tenantUser = null;
       if (!isOwner) {
-        const { data: userCheck, error: userCheckError } = await supabase
+        const { data: userCheck, error: userCheckError } = await serviceClient
           .from('tenant_users')
           .select('*')
           .eq('email', email.toLowerCase())
