@@ -278,8 +278,14 @@ export default function TenantAdminDashboardPage() {
       }
 
       return { total, commission };
+      } catch (error) {
+        console.error("Error fetching revenue stats:", error);
+        return { total: 0, commission: 0 };
+      }
     },
     enabled: !!tenantId,
+    retry: 1,
+    retryDelay: 1000,
   });
 
   return (
