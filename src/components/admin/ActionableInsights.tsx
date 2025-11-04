@@ -43,7 +43,7 @@ export function ActionableInsights() {
       description: 'Your revenue has decreased compared to last week. Consider running promotions or re-engaging inactive customers.',
       action: {
         label: 'View Analytics',
-        onClick: () => navigate('/admin/sales-dashboard'),
+        onClick: () => navigate(getFullPath('/admin/sales-dashboard')),
       },
       priority: 'high',
     },
@@ -72,7 +72,7 @@ export function ActionableInsights() {
       description: 'Review your inventory and restock popular items to avoid stockouts.',
       action: {
         label: 'View Inventory',
-        onClick: () => navigate('/admin/inventory-dashboard'),
+        onClick: () => navigate(getFullPath('/admin/inventory-dashboard')),
       },
       priority: 'high',
     },
@@ -83,7 +83,7 @@ export function ActionableInsights() {
       description: 'Great! You\'re getting new orders. Keep up the momentum.',
       action: {
         label: 'View Orders',
-        onClick: () => navigate('/admin/wholesale-orders'),
+        onClick: () => navigate(getFullPath('/admin/wholesale-orders')),
       },
       priority: 'low',
     },

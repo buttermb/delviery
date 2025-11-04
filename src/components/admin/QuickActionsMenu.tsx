@@ -62,7 +62,7 @@ export function QuickActionsMenu() {
               key={action.path}
               variant="outline"
               className="h-auto flex-col items-start p-4 hover:border-primary"
-              onClick={() => navigate(action.path)}
+              onClick={() => navigate(getFullPath(action.path))}
             >
               <div className="flex items-center gap-2 mb-2">
                 <div className={`${action.color} p-2 rounded-lg`}>

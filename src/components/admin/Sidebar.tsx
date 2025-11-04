@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -18,6 +18,21 @@ export function Sidebar() {
   const [availableFeatures, setAvailableFeatures] = useState<Set<string>>(new Set());
   const location = useLocation();
   const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+
+  const getFullPath = (href: string) => {
+    if (!tenantSlug) return href;
+    // If href starts with /admin, prepend tenant slug
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
+
+  const isActive = (href: string) => {
+    const fullPath = getFullPath(href);
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
+  };
 
   // Check feature availability on mount and when tenant changes
   useEffect(() => {
@@ -86,10 +101,6 @@ export function Sidebar() {
         {tier === 'professional' ? 'PRO' : tier === 'enterprise' ? 'ENT' : 'ULT'}
       </Badge>
     );
-  };
-
-  const isActive = (href: string) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
   return (
@@ -162,12 +173,13 @@ export function Sidebar() {
                         })
                         .map((item) => {
                           const Icon = item.icon;
+                          const fullPath = getFullPath(item.href);
                           const active = isActive(item.href);
 
                           return (
                             <Link
                               key={item.href}
-                              to={item.href}
+                              to={fullPath}
                               onClick={() => setIsOpen(false)}
                               className={cn(
                                 'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',

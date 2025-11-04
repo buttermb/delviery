@@ -18,7 +18,7 @@ import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 
 export default function ClientDetail() {
-  const { id } = useParams();
+  const { id, tenantSlug } = useParams<{ id: string; tenantSlug?: string }>();
   const navigate = useNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
@@ -40,7 +40,7 @@ export default function ClientDetail() {
       <div className="space-y-6 p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Client Not Found</h2>
-          <Button onClick={() => navigate("/admin/wholesale-clients")} className="mt-4">
+          <Button onClick={() => navigate(tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients")} className="mt-4">
             Back to Clients
           </Button>
         </div>
@@ -98,7 +98,7 @@ export default function ClientDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/wholesale-clients")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -157,7 +157,8 @@ export default function ClientDetail() {
             onClick={() => {
               if (confirm(`Are you sure you want to remove ${displayClient.business_name}?`)) {
                 showSuccessToast("Client Removed", `${displayClient.business_name} has been removed`);
-                navigate("/admin/wholesale-clients");
+                const path = tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients";
+                navigate(path);
               }
             }}
           >

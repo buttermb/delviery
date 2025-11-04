@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -13,17 +13,18 @@ import { Sidebar } from './Sidebar';
 
 export function MobileBottomNav() {
   const location = useLocation();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [open, setOpen] = useState(false);
 
   const quickLinks = [
     {
       title: 'Dashboard',
-      href: '/admin/big-plug-dashboard',
+      href: '/admin/dashboard',
       icon: LayoutDashboard
     },
     {
       title: 'Orders',
-      href: '/admin/big-plug-order',
+      href: '/admin/wholesale-orders',
       icon: ShoppingCart
     },
     {
@@ -38,8 +39,18 @@ export function MobileBottomNav() {
     }
   ];
 
+  const getFullPath = (href: string) => {
+    if (!tenantSlug) return href;
+    // If href already starts with /admin, prepend tenant slug
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
+
   const isActive = (href: string) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    const fullPath = getFullPath(href);
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   };
 
   return (
@@ -47,12 +58,13 @@ export function MobileBottomNav() {
       <div className="grid grid-cols-5 gap-1">
         {quickLinks.map((link) => {
           const Icon = link.icon;
+          const fullPath = getFullPath(link.href);
           const active = isActive(link.href);
 
           return (
             <Link
               key={link.href}
-              to={link.href}
+              to={fullPath}
               className={cn(
                 'flex flex-col items-center justify-center py-3 text-xs transition-colors',
                 active

@@ -223,6 +223,7 @@ const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 
 // Public Menu Access
 const MenuAccess = lazy(() => import("./pages/MenuAccess"));
+const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -377,6 +378,17 @@ const App = () => {
                         <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route index element={<Navigate to="dashboard" replace />} />
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
+                          {/* Legacy route redirects - redirect old paths to new paths */}
+                          <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />
+                          <Route path="big-plug-order" element={<Navigate to="wholesale-orders" replace />} />
+                          <Route path="big-plug-inventory" element={<Navigate to="inventory-dashboard" replace />} />
+                          <Route path="big-plug-financial" element={<Navigate to="financial-center" replace />} />
+                          <Route path="inventory/dispatch" element={<Navigate to="../dispatch-inventory" replace />} />
+                          <Route path="admin-notifications" element={<Navigate to="notifications" replace />} />
+                          <Route path="reports-new" element={<Navigate to="reports" replace />} />
+                          <Route path="route-optimization" element={<Navigate to="route-optimizer" replace />} />
+                          <Route path="risk-factors" element={<Navigate to="risk-management" replace />} />
+                          <Route path="inventory/barcodes" element={<Navigate to="../generate-barcodes" replace />} />
                           <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                           <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
                           <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
@@ -469,7 +481,12 @@ const App = () => {
                           <Route path="white-label" element={<FeatureProtectedRoute featureId="white-label"><WhiteLabelPage /></FeatureProtectedRoute>} />
                           <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
                           <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
+                          {/* Coming Soon Pages for missing features */}
+                          <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
                         </Route>
+                        
+                        {/* Catch-all route for /admin/* paths without tenant slug - redirect to login */}
+                        <Route path="/admin/*" element={<Navigate to="/login" replace />} />
                         
                         {/* ==================== COURIER PORTAL ==================== */}
                         <Route path="/courier/login" element={<CourierLoginPage />} />

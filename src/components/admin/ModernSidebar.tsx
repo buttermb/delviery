@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -105,10 +105,16 @@ const navigation: NavItem[] = [
 
 export function ModernSidebar() {
   const location = useLocation();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {
     // Auto-expand section if current path matches
     const currentSection = navigation.find(
-      section => section.children?.some(child => child.href === location.pathname)
+      section => section.children?.some(child => {
+        const fullPath = tenantSlug && child.href?.startsWith('/admin') 
+          ? `/${tenantSlug}${child.href}` 
+          : child.href;
+        return fullPath === location.pathname;
+      })
     );
     return currentSection ? [currentSection.name] : [];
   });
@@ -121,16 +127,27 @@ export function ModernSidebar() {
     );
   };
 
+  const getFullPath = (href?: string) => {
+    if (!href) return '#';
+    if (!tenantSlug) return href;
+    // If href starts with /admin, prepend tenant slug
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
+
   const isActive = (href?: string) => {
     if (!href) return false;
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    const fullPath = getFullPath(href);
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-background border-r border-border flex flex-col z-40">
       {/* Header */}
       <div className="p-4 border-b border-border">
-        <NavLink to="/admin/big-plug-dashboard" className="flex items-center gap-2">
+        <NavLink to={getFullPath('/admin/dashboard')} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
             🌿
           </div>
@@ -174,33 +191,37 @@ export function ModernSidebar() {
                   />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-1 ml-6 space-y-1">
-                  {item.children.map((child) => (
-                    <NavLink
-                      key={child.href}
-                      to={child.href || '#'}
-                      className={({ isActive }) =>
-                        cn(
-                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm',
-                          'transition-colors',
-                          isActive
-                            ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                        )
-                      }
-                    >
-                      <span className="flex-shrink-0">{child.icon}</span>
-                      <span>{child.name}</span>
-                    </NavLink>
-                  ))}
+                  {item.children.map((child) => {
+                    const fullPath = getFullPath(child.href);
+                    return (
+                      <NavLink
+                        key={child.href}
+                        to={fullPath}
+                        className={({ isActive }) =>
+                          cn(
+                            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm',
+                            'transition-colors',
+                            isActive
+                              ? 'bg-primary/10 text-primary font-medium'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          )
+                        }
+                      >
+                        <span className="flex-shrink-0">{child.icon}</span>
+                        <span>{child.name}</span>
+                      </NavLink>
+                    );
+                  })}
                 </CollapsibleContent>
               </Collapsible>
             );
           }
 
+          const fullPath = getFullPath(item.href);
           return (
             <NavLink
               key={item.name}
-              to={item.href || '#'}
+              to={fullPath}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium',
@@ -220,7 +241,7 @@ export function ModernSidebar() {
 
       {/* Footer */}
       <div className="p-4 border-t border-border">
-        <NavLink to="/admin/settings">
+        <NavLink to={getFullPath('/admin/settings')}>
           <Button variant="ghost" className="w-full justify-start">
             <Settings className="h-4 w-4 mr-2" />
             Settings

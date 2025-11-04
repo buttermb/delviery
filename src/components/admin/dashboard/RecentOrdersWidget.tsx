@@ -10,11 +10,20 @@ import { Button } from '@/components/ui/button';
 import { FileText, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 
 export function RecentOrdersWidget() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  
+  const getFullPath = (path: string) => {
+    if (!tenantSlug) return path;
+    if (path.startsWith('/admin')) {
+      return `/${tenantSlug}${path}`;
+    }
+    return path;
+  };
   const { account } = useAccount();
 
   const { data: orders } = useQuery({
@@ -67,7 +76,7 @@ export function RecentOrdersWidget() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/admin/wholesale-clients/new-order')}
+          onClick={() => navigate(getFullPath('/admin/wholesale-clients/new-order'))}
         >
           View All
           <ArrowRight className="h-4 w-4 ml-1" />
@@ -80,7 +89,7 @@ export function RecentOrdersWidget() {
             <div
               key={order.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(`/admin/wholesale-clients/new-order?order=${order.id}`)}
+              onClick={() => navigate(getFullPath(`/admin/wholesale-clients/new-order?order=${order.id}`))}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />

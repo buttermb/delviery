@@ -1,4 +1,4 @@
-import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TenantAdminSidebar } from "@/components/tenant-admin/TenantAdminSidebar";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
@@ -38,10 +38,15 @@ const AdminLayout = () => {
   // Force module refresh
   const moduleVersion = "2.1.0";
   
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/admin/search?q=${encodeURIComponent(searchQuery)}`);
+      const searchPath = tenantSlug 
+        ? `/${tenantSlug}/admin/global-search?q=${encodeURIComponent(searchQuery)}`
+        : `/admin/search?q=${encodeURIComponent(searchQuery)}`;
+      navigate(searchPath);
       setSearchQuery("");
     }
   };
