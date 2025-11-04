@@ -29,7 +29,7 @@ export function LimitGuard({
   blockOnLimit = false,
   showProgress = false,
 }: LimitGuardProps) {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, loading } = useTenantAdminAuth();
   const { canCreate, getRemaining, getCurrent, getLimit } = useTenantLimits();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'limit' | 'trial'>('limit');
@@ -38,6 +38,11 @@ export function LimitGuard({
   const limit = getLimit(resource);
   const remaining = getRemaining(resource);
   const unlimited = limit === Infinity;
+
+  // Don't show limits UI while loading tenant data
+  if (loading || !tenant) {
+    return <>{children}</>;
+  }
 
   if (unlimited) {
     return <>{children}</>;
