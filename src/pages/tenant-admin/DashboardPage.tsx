@@ -225,24 +225,35 @@ export default function TenantAdminDashboardPage() {
     queryFn: async () => {
       if (!tenantId) return { total: 0, commission: 0 };
 
-      // Get tenant's menus first
-      const { data: tenantMenus } = await supabase
-        .from("disposable_menus")
-        .select("id")
-        .eq("tenant_id", tenantId) as { data: any[] | null };
+      try {
+        // Get tenant's menus first
+        const { data: tenantMenus, error: menusError } = await supabase
+          .from("disposable_menus")
+          .select("id")
+          .eq("tenant_id", tenantId);
 
-      if (!tenantMenus || tenantMenus.length === 0) return { total: 0, commission: 0 };
+        if (menusError) {
+          console.warn("Failed to fetch menus for revenue stats:", menusError);
+          return { total: 0, commission: 0 };
+        }
 
-      const menuIds = tenantMenus.map((m) => m.id);
+        if (!tenantMenus || tenantMenus.length === 0) return { total: 0, commission: 0 };
 
-      // Get confirmed orders from these menus for total revenue
-      const { data: orders } = await supabase
-        .from("menu_orders")
-        .select("total_amount")
-        .in("menu_id", menuIds)
-        .eq("status", "confirmed");
+        const menuIds = tenantMenus.map((m) => m.id);
 
-      const total = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
+        // Get confirmed orders from these menus for total revenue
+        const { data: orders, error: ordersError } = await supabase
+          .from("menu_orders")
+          .select("total_amount")
+          .in("menu_id", menuIds)
+          .eq("status", "confirmed");
+
+        if (ordersError) {
+          console.warn("Failed to fetch orders for revenue stats:", ordersError);
+          return { total: 0, commission: 0 };
+        }
+
+        const total = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
 
       // Get actual commission transactions (more accurate than calculating)
       // Handle gracefully if table doesn't exist yet
