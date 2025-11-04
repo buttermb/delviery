@@ -101,6 +101,18 @@ async function hashPassword(password: string): Promise<string> {
 
 async function comparePassword(password: string, hashValue: string): Promise<boolean> {
   try {
+    // Check if it's the old SHA-256 format (hex string, 64 characters)
+    if (hashValue.length === 64 && /^[a-f0-9]+$/i.test(hashValue)) {
+      // Old format: SHA-256(password + 'temp_salt')
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password + 'temp_salt');
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return computedHash === hashValue.toLowerCase();
+    }
+    
+    // New PBKDF2 format (base64 encoded)
     const encoder = new TextEncoder();
     const combined = Uint8Array.from(atob(hashValue), c => c.charCodeAt(0));
     

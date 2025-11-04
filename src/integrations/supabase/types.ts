@@ -8169,6 +8169,15 @@ export type Database = {
         }
         Returns: Json
       }
+      create_super_admin_with_password: {
+        Args: {
+          p_email: string
+          p_first_name: string
+          p_last_name: string
+          p_password: string
+        }
+        Returns: string
+      }
       decrement_giveaway_entries: {
         Args: { p_entries: number; p_giveaway_id: string; p_user_id: string }
         Returns: undefined
