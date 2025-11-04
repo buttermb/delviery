@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { action, tenantId, email, role, token: inviteToken } = await req.json();
+    const { action, tenantId, email, role, token: inviteToken, invitationId } = await req.json();
 
     // Public actions that don't require authentication
     const publicActions = ['get_invitation_details'];
@@ -258,7 +258,12 @@ serve(async (req) => {
     }
 
     if (action === 'cancel_invitation') {
-      const { invitationId } = await req.json();
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       const { error: deleteError } = await supabase
         .from('tenant_invitations')

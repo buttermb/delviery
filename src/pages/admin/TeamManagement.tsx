@@ -23,11 +23,13 @@ import {
 import { Users, Plus, Edit, Trash2, Mail, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
+import { PendingInvitations } from '@/components/admin/PendingInvitations';
 
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
   const { toast } = useToast();
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<any>(null);
@@ -40,6 +42,7 @@ export default function TeamManagement() {
   useEffect(() => {
     if (tenant) {
       loadTeamMembers();
+      loadPendingInvitations();
     }
   }, [tenant]);
 
@@ -100,12 +103,32 @@ export default function TeamManagement() {
       setIsDialogOpen(false);
       setFormData({ email: '', full_name: '', role: 'team_member' });
       loadTeamMembers();
+      loadPendingInvitations();
     } catch (error: any) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to send invitation',
         variant: 'destructive'
       });
+    }
+  };
+
+  const loadPendingInvitations = async () => {
+    if (!tenant) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('tenant-invite', {
+        body: {
+          action: 'list_invitations',
+          tenantId: tenant.id,
+        }
+      });
+
+      if (error) throw error;
+
+      setPendingInvitations(data?.invitations || []);
+    } catch (error) {
+      console.error('Error loading pending invitations:', error);
     }
   };
 
@@ -265,6 +288,14 @@ export default function TeamManagement() {
         )}
       </div>
 
+      {/* Pending Invitations */}
+      <PendingInvitations 
+        invitations={pendingInvitations}
+        tenantId={tenant.id}
+        onInvitationsChange={loadPendingInvitations}
+      />
+
+      {/* Team Members */}
       <div className="grid gap-4">
         {teamMembers.map((member) => (
           <Card key={member.user_id}>
