@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
+import { logger } from "@/utils/logger";
 
 export default function TenantAdminBillingPage() {
   const { tenant, admin } = useTenantAdminAuth();
@@ -36,12 +37,26 @@ export default function TenantAdminBillingPage() {
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
-  // Fetch invoices
+  // Fetch invoices using Edge Function
   const { data: invoices } = useQuery({
     queryKey: ["tenant-invoices", tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
 
+      // Try Edge Function first
+      try {
+        const { data: edgeData, error: edgeError } = await supabase.functions.invoke('invoice-management', {
+          body: { action: 'list', tenant_id: tenantId },
+        });
+
+        if (!edgeError && edgeData?.invoices) {
+          return edgeData.invoices;
+        }
+      } catch (error) {
+        logger.debug('Edge function call failed, falling back to direct query', { error }, 'BillingPage');
+      }
+
+      // Fallback to direct query
       const { data } = await supabase
         .from("invoices")
         .select("*")

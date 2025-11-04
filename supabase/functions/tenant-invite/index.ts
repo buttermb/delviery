@@ -54,10 +54,15 @@ serve(async (req) => {
         );
       }
 
-      console.log('Sending invitation:', { tenantId, email, role });
+      // Logging removed - using centralized logger would require client-side only
 
-      // Verify user is tenant owner
-      const { data: tenant, error: tenantError } = await supabase
+      // Verify user is tenant owner or admin
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: tenant, error: tenantError } = await serviceClient
         .from('tenants')
         .select('*')
         .eq('id', tenantId)
@@ -70,9 +75,22 @@ serve(async (req) => {
         );
       }
 
-      if (tenant.owner_email !== user.email) {
+      // Check if user is tenant owner
+      const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
+      
+      // Check if user is tenant admin
+      const { data: tenantUser } = await serviceClient
+        .from('tenant_users')
+        .select('role')
+        .eq('tenant_id', tenantId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const isAdmin = tenantUser?.role === 'admin' || tenantUser?.role === 'owner';
+      
+      if (!isOwner && !isAdmin) {
         return new Response(
-          JSON.stringify({ error: 'Only tenant owners can send invitations' }),
+          JSON.stringify({ error: 'Only tenant owners and admins can send invitations' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -105,14 +123,13 @@ serve(async (req) => {
         .single();
 
       if (inviteError) {
-        console.error('Error creating invitation:', inviteError);
         return new Response(
           JSON.stringify({ error: 'Failed to create invitation', details: inviteError.message }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log('Invitation created:', invitation.id);
+      // Invitation created successfully
 
       // TODO: Send email with invitation link
       // For now, we'll return the invitation details
@@ -137,7 +154,7 @@ serve(async (req) => {
         );
       }
 
-      console.log('Accepting invitation with token:', inviteToken);
+      // Accepting invitation
 
       // Verify token is valid and not expired
       const { data: invitation, error: inviteError } = await supabase
@@ -177,7 +194,6 @@ serve(async (req) => {
         });
 
       if (userError) {
-        console.error('Error creating tenant user:', userError);
         return new Response(
           JSON.stringify({ error: 'Failed to accept invitation', details: userError.message }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -190,7 +206,7 @@ serve(async (req) => {
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      console.log('Invitation accepted, user added to tenant');
+      // Invitation accepted successfully
 
       return new Response(
         JSON.stringify({
@@ -203,7 +219,46 @@ serve(async (req) => {
     }
 
     if (action === 'list_invitations') {
-      console.log('Listing invitations for tenant:', tenantId);
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify user has access to this tenant
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: tenant } = await serviceClient
+        .from('tenants')
+        .select('id, owner_email')
+        .eq('id', tenantId)
+        .single();
+
+      if (!tenant) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
+      const { data: tenantUser } = await serviceClient
+        .from('tenant_users')
+        .select('role')
+        .eq('tenant_id', tenantId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!isOwner && !tenantUser) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       const { data: invitations, error: listError } = await supabase
         .from('tenant_invitations')
@@ -226,7 +281,6 @@ serve(async (req) => {
     }
 
     if (action === 'get_invitation_details') {
-      console.log('Getting invitation details for token:', inviteToken);
 
       // This is a public action - no auth required
       const { data: invitation, error: inviteError } = await supabase
@@ -290,7 +344,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in tenant-invite function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: errorMessage }),

@@ -11,6 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { logger } from '@/utils/logger';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
 
 interface Product {
   id: string;
@@ -38,6 +41,8 @@ interface Customer {
 export default function PointOfSale() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -48,14 +53,19 @@ export default function PointOfSale() {
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [loading, setLoading] = useState(false);
 
-  // Get tenant ID - using a default tenant ID for now
-  // In production, this should come from authentication context
-  const tenantId = 'ddc490cf-5c0a-485d-a6cb-94a8cb7b43ff';
+  // Enable realtime sync for wholesale_orders and wholesale_inventory
+  useRealtimeSync({
+    tenantId,
+    tables: ['wholesale_orders', 'wholesale_inventory'],
+    enabled: !!tenantId,
+  });
 
   useEffect(() => {
-    loadProducts();
-    loadCustomers();
-  }, []);
+    if (tenantId) {
+      loadProducts();
+      loadCustomers();
+    }
+  }, [tenantId]);
 
   useEffect(() => {
     filterProducts();
@@ -200,6 +210,36 @@ export default function PointOfSale() {
           .eq('id', item.id);
         
         if (error) throw error;
+
+        // Log inventory update activity
+        if (tenantId) {
+          await logActivityAuto(
+            tenantId,
+            ActivityActions.UPDATE_INVENTORY,
+            'product',
+            item.id,
+            { quantity_sold: item.quantity, previous_stock: item.stock_quantity, new_stock: item.stock_quantity - item.quantity }
+          );
+        }
+      }
+
+      // Log sale completion activity
+      if (tenantId) {
+        await logActivityAuto(
+          tenantId,
+          ActivityActions.COMPLETE_ORDER,
+          'pos_sale',
+          undefined,
+          { 
+            total,
+            subtotal,
+            tax,
+            discount,
+            item_count: cart.length,
+            payment_method: paymentMethod,
+            customer_id: selectedCustomer?.id
+          }
+        );
       }
 
       // If customer is selected, we could create an order

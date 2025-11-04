@@ -19,6 +19,7 @@ import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X } from 'luc
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
+import { callAdminFunction } from '@/utils/adminFunctionHelper';
 
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -52,6 +53,21 @@ export default function CustomerInvoices() {
     if (!tenant) return;
 
     try {
+      // Try using Edge Function first
+      const { data: edgeData, error: edgeError } = await callAdminFunction({
+        functionName: 'invoice-management',
+        body: { action: 'list', tenant_id: tenant.id },
+        errorMessage: 'Failed to load invoices',
+        showToast: false,
+      });
+
+      if (!edgeError && edgeData?.invoices) {
+        setInvoices(edgeData.invoices);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback to direct query
       const { data, error } = await (supabase as any)
         .from('customer_invoices')
         .select('*')
@@ -127,19 +143,43 @@ export default function CustomerInvoices() {
         tenant_id: tenant.id,
         customer_id: formData.customer_id,
         invoice_number: invoiceNumber,
-        amount: subtotal,
+        subtotal,
         tax,
         total,
-        status: 'unpaid',
-        due_date: formData.due_date || null,
-        notes: formData.notes || null,
+        amount_paid: 0,
+        amount_due: total,
+        status: 'draft',
+        line_items: lineItems,
+        issue_date: new Date().toISOString().split('T')[0],
+        due_date: formData.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       };
 
-      const { error } = await supabase
-        .from('invoices')
-        .insert(invoiceData);
+      // Try using Edge Function first
+      const { data: edgeData, error: edgeError } = await callAdminFunction({
+        functionName: 'invoice-management',
+        body: { action: 'create', tenant_id: tenant.id, invoice_data: invoiceData },
+        errorMessage: 'Failed to create invoice',
+        showToast: false,
+      });
 
-      if (error) throw error;
+      if (edgeError) {
+        // Fallback to direct insert
+        const { error } = await supabase
+          .from('customer_invoices')
+          .insert({
+            tenant_id: tenant.id,
+            customer_id: formData.customer_id,
+            invoice_number: invoiceNumber,
+            subtotal,
+            tax,
+            total,
+            status: 'unpaid',
+            due_date: formData.due_date || null,
+            notes: formData.notes || null,
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: 'Success',

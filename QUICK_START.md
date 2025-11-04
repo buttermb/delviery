@@ -1,79 +1,158 @@
-# 🚀 Quick Start - Deployment Guide
+# Quick Start Guide
 
-## 5-Minute Deployment Checklist
+Get up and running with the new features in 5 minutes.
 
-### Step 1: Verify Build ✅
-```bash
-npm run build
-```
-**Expected:** Build succeeds with no errors
+## 🚀 Quick Setup
 
-### Step 2: Apply Database Migrations ⚠️
-
-**Option A: Supabase CLI (Fastest)**
-```bash
-supabase migration up
-```
-
-**Option B: Supabase Dashboard**
-1. Go to SQL Editor
-2. Copy/paste each migration file (in order: 00001 → 00005)
-3. Run each one
-
-**See:** `MIGRATION_ORDER.md` for detailed instructions
-
-### Step 3: Configure Security ⚠️
-
-1. Go to Supabase Dashboard → Authentication → Password Settings
-2. Enable "Check passwords against breach database"
-3. Enable "Reject common passwords"
-
-**See:** `SECURITY_SETTINGS.md` for full details
-
-### Step 4: Deploy 🚀
+### 1. Apply Database Migrations
 
 ```bash
-npm run build
-# Deploy dist/ folder to your hosting provider
+supabase db push
 ```
 
----
+This applies:
+- Billing RPC functions
+- Activity logs table
+- Invoice RPC functions
 
-## Files You Need to Know
+### 2. Deploy Edge Functions
 
-| File | Purpose |
-|------|---------|
-| `MIGRATION_ORDER.md` | How to apply database migrations |
-| `SECURITY_SETTINGS.md` | Security configuration steps |
-| `DEPLOYMENT_CHECKLIST.md` | Full deployment checklist |
-| `IMPLEMENTATION_SUMMARY.md` | What was fixed and why |
+```bash
+supabase functions deploy billing
+supabase functions deploy staff-management
+supabase functions deploy invoice-management
+supabase functions deploy panic-reset
+```
 
----
+### 3. Update Existing Functions
 
-## Troubleshooting
+```bash
+supabase functions deploy tenant-invite
+supabase functions deploy stripe-customer-portal
+```
 
-**Build fails?**
-- Run `npm install`
-- Check for TypeScript errors: `npx tsc --noEmit`
+### 4. Test Authentication
 
-**Migrations fail?**
-- Check `MIGRATION_ORDER.md` for troubleshooting section
-- Verify you're applying in the correct order
-
-**Runtime errors?**
-- Verify migrations were applied successfully
-- Check browser console for specific errors
-
----
-
-## Support
-
-All documentation is in the repository root:
-- Migration issues → `MIGRATION_ORDER.md`
-- Security setup → `SECURITY_SETTINGS.md`
-- Full details → `IMPLEMENTATION_SUMMARY.md`
+Login as tenant admin and verify:
+- ✅ No 401 errors in console
+- ✅ Edge Functions work correctly
+- ✅ Data loads properly
 
 ---
 
-**Status:** ✅ Code ready - Apply migrations and configure security
+## 📖 Using New Features
 
+### Real-Time Sync
+
+Real-time sync is **automatic**! Just use the hook:
+
+```typescript
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+
+function MyComponent() {
+  const { tenant } = useTenantAdminAuth();
+  
+  useRealtimeSync({
+    tenantId: tenant?.id,
+    tables: ['orders', 'inventory'],
+    enabled: !!tenant?.id,
+  });
+  
+  // Your component will automatically update when data changes!
+}
+```
+
+### Activity Logging
+
+Log user actions:
+
+```typescript
+import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
+
+await logActivityAuto(
+  tenantId,
+  ActivityActions.CREATE_ORDER,
+  'order',
+  orderId,
+  { amount: 100, customer_id: customerId }
+);
+```
+
+### Invoice Management
+
+Use the Edge Function:
+
+```typescript
+import { callAdminFunction } from '@/utils/adminFunctionHelper';
+
+// Create invoice
+const { data, error } = await callAdminFunction({
+  functionName: 'invoice-management',
+  body: {
+    action: 'create',
+    tenant_id: tenantId,
+    invoice_data: {
+      subtotal: 100,
+      tax: 8.88,
+      total: 108.88,
+      line_items: [],
+      issue_date: '2025-01-01',
+      due_date: '2025-01-31',
+      status: 'draft'
+    }
+  }
+});
+```
+
+### Panic Reset (Super Admin Only)
+
+Navigate to `/super-admin/tools` and use the Panic Reset Tool:
+1. Select tenant
+2. Choose reset type
+3. Click "Preview" to see what will be deleted
+4. Type `CONFIRM_RESET` to proceed
+
+---
+
+## 🔍 Troubleshooting
+
+### "401 Unauthorized" errors
+- Check JWT token is valid
+- Verify user has tenant access
+- Check Edge Function authentication code
+
+### JSON coercion errors
+- Verify RPC functions exist
+- Check RPC returns single JSON object
+- Use Edge Function fallback
+
+### Real-time not working
+- Check Supabase Realtime enabled
+- Verify channel subscriptions
+- Check browser console for errors
+
+---
+
+## 📚 Documentation
+
+- **Full Implementation**: `IMPLEMENTATION_SUMMARY.md`
+- **Edge Functions**: `EDGE_FUNCTIONS_REFERENCE.md`
+- **Deployment**: `DEPLOYMENT_CHECKLIST.md`
+
+---
+
+## ✅ Verification Checklist
+
+After setup, verify:
+
+- [ ] Migrations applied
+- [ ] Edge Functions deployed
+- [ ] Can login as tenant admin
+- [ ] No console errors
+- [ ] Real-time updates work
+- [ ] Activity logs appear
+- [ ] Invoices can be created
+
+---
+
+**Ready to go!** 🎉

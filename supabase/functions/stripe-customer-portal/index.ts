@@ -73,17 +73,21 @@ serve(async (req) => {
       );
     }
 
-    // Verify user has permission
+    // Verify user has permission - check both owner and tenant_users
+    const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
+    
     const { data: tenantUser } = await supabase
       .from('tenant_users')
-      .select('*')
+      .select('role')
       .eq('tenant_id', tenant_id)
-      .eq('email', user.email)
+      .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!tenantUser || (tenantUser.role !== 'owner' && tenantUser.role !== 'admin')) {
+    const isAdmin = tenantUser?.role === 'admin' || tenantUser?.role === 'owner';
+
+    if (!isOwner && !isAdmin) {
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
+        JSON.stringify({ error: 'Insufficient permissions - admin or owner access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

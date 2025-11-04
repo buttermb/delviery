@@ -13,8 +13,19 @@ import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 import { AddRunnerDialog } from "@/components/admin/AddRunnerDialog";
 import { toast } from "@/hooks/use-toast";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FleetManagement() {
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+
+  // Enable realtime sync for deliveries and courier earnings
+  useRealtimeSync({
+    tenantId,
+    tables: ['deliveries', 'courier_earnings'],
+    enabled: !!tenantId,
+  });
   const navigate = useNavigate();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState("");

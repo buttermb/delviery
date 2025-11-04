@@ -4,6 +4,7 @@
  */
 
 import { TenantMigration } from '@/components/super-admin/tools/TenantMigration';
+import { PanicResetTool } from '@/components/super-admin/tools/PanicResetTool';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Wrench } from 'lucide-react';
@@ -19,7 +20,10 @@ export default function ToolsPage() {
           icon={Wrench}
         />
 
-        <TenantMigration />
+        <div className="grid gap-6">
+          <TenantMigration />
+          <PanicResetTool />
+        </div>
       </div>
     </>
   );

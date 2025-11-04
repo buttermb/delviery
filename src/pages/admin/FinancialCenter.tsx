@@ -10,8 +10,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FinancialCenter() {
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
+
+  // Enable realtime sync for payments and earnings
+  useRealtimeSync({
+    tenantId,
+    tables: ['wholesale_payments', 'courier_earnings'],
+    enabled: !!tenantId,
+  });
   const navigate = useNavigate();
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; amount: number } | null>(null);

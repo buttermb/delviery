@@ -26,9 +26,23 @@ export async function callAdminFunction<T = any>({
   try {
     const headers: Record<string, string> = {};
     
-    // Add authorization header if session exists
-    if (session?.access_token) {
-      headers.Authorization = `Bearer ${session.access_token}`;
+    // Get current session from Supabase auth
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    
+    // Add authorization header - prefer provided session, then current session
+    const accessToken = session?.access_token || currentSession?.access_token;
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    } else {
+      // Try to get from localStorage as fallback
+      const storedToken = localStorage.getItem('tenant_admin_access_token');
+      if (storedToken) {
+        headers.Authorization = `Bearer ${storedToken}`;
+      }
+    }
+
+    if (!headers.Authorization) {
+      logger.warn('No access token available for Edge Function call', { functionName }, 'adminFunctionHelper');
     }
 
     const { data, error } = await supabase.functions.invoke(functionName, {

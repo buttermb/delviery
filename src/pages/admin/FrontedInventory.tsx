@@ -14,6 +14,8 @@ import {
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 
 interface FrontedItem {
   id: string;
@@ -38,10 +40,19 @@ interface FrontedItem {
 export default function FrontedInventory() {
   const navigate = useNavigate();
   const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
   const { toast } = useToast();
   const [frontedItems, setFrontedItems] = useState<FrontedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+
+  // Enable realtime sync for inventory changes
+  useRealtimeSync({
+    tenantId,
+    tables: ['wholesale_inventory'],
+    enabled: !!tenantId,
+  });
 
   useEffect(() => {
     if (account) {
