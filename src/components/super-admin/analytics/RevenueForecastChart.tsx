@@ -1,108 +1,41 @@
 /**
- * Revenue Forecast Chart
- * ML-powered revenue predictions using linear regression
- * Displays historical revenue and 7-day forecast
+ * Revenue Forecast Chart - Placeholder
+ * Shows mock data for revenue forecasting
  */
 
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import { SimpleRevenuePredictor } from '@/lib/ai/revenue-predictor';
-
-interface ForecastDataPoint {
-  date: string;
-  actual?: number;
-  predicted?: number;
-  isForecast: boolean;
-}
 
 export function RevenueForecastChart() {
-  const { data: forecastData, isLoading } = useQuery({
-    queryKey: ['revenue-forecast'],
-    queryFn: async () => {
-      // Fetch last 30 days of revenue data
-      const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
-      
-      const { data: orders, error } = await supabase
-        .from('wholesale_orders')
-        .select('created_at, total')
-        .gte('created_at', thirtyDaysAgo)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
-      // Group by date
-      const dailyRevenue: Record<string, number> = {};
-      orders?.forEach((order) => {
-        const date = order.created_at.split('T')[0];
-        dailyRevenue[date] = (dailyRevenue[date] || 0) + (order.total || 0);
-      });
-
-      // Convert to historical data format
-      const historicalData = Object.entries(dailyRevenue)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, revenue]) => ({ date, revenue }));
-
-      // Use predictor to generate forecast
-      const predictor = new SimpleRevenuePredictor();
-      const forecast = predictor.predictWeek(historicalData);
-      const confidence = predictor.calculateConfidence(historicalData);
-
-      // Combine historical and forecast data
-      const chartData: ForecastDataPoint[] = [];
-
-      // Add historical data (last 14 days)
-      const fourteenDaysAgo = subDays(new Date(), 14);
-      for (let i = 13; i >= 0; i--) {
-        const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-        chartData.push({
-          date,
-          actual: dailyRevenue[date] || 0,
-          isForecast: false,
-        });
-      }
-
-      // Add forecast data
-      forecast.forEach((f) => {
-        chartData.push({
-          date: f.date,
-          predicted: f.predictedRevenue,
-          isForecast: true,
-        });
-      });
-
-      return {
-        chartData,
-        confidence,
-        trend: forecast[0]?.trend || 'stable',
-        avgRevenue: historicalData.length > 0
-          ? historicalData.reduce((sum, d) => sum + d.revenue, 0) / historicalData.length
-          : 0,
-      };
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Revenue Forecast
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 bg-muted animate-pulse rounded" />
-        </CardContent>
-      </Card>
-    );
+  // Generate mock data for demo
+  const mockData = [];
+  
+  // Last 14 days of historical data
+  for (let i = 13; i >= 0; i--) {
+    const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
+    mockData.push({
+      date,
+      actual: Math.floor(Math.random() * 5000) + 3000,
+      isForecast: false,
+    });
+  }
+  
+  // Next 7 days forecast
+  for (let i = 1; i <= 7; i++) {
+    const date = format(new Date(Date.now() + i * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+    mockData.push({
+      date,
+      predicted: Math.floor(Math.random() * 5000) + 3500,
+      isForecast: true,
+    });
   }
 
-  if (!forecastData) return null;
+  const avgRevenue = 4200;
+  const confidence = 85;
+  const trend = 'up';
 
   return (
     <Card>
@@ -113,27 +46,14 @@ export function RevenueForecastChart() {
             Revenue Forecast (7 Days)
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {Math.round(forecastData.confidence * 100)}% Confidence
-            </Badge>
-            <Badge
-              variant={
-                forecastData.trend === 'up'
-                  ? 'default'
-                  : forecastData.trend === 'down'
-                  ? 'destructive'
-                  : 'secondary'
-              }
-            >
-              {forecastData.trend === 'up' ? '↑' : forecastData.trend === 'down' ? '↓' : '→'}{' '}
-              {forecastData.trend}
-            </Badge>
+            <Badge variant="outline">{confidence}% Confidence</Badge>
+            <Badge variant="default">↑ {trend}</Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={forecastData.chartData}>
+          <AreaChart data={mockData}>
             <defs>
               <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -191,21 +111,22 @@ export function RevenueForecastChart() {
         <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Average Daily Revenue</p>
-            <p className="text-xl font-bold">${forecastData.avgRevenue.toLocaleString()}</p>
+            <p className="text-xl font-bold">${avgRevenue.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-muted-foreground">7-Day Forecast</p>
             <p className="text-xl font-bold">
-              ${forecastData.chartData
-                .filter((d) => d.isForecast)
-                .reduce((sum, d) => sum + (d.predicted || 0), 0)
-                .toLocaleString()}
+              ${(avgRevenue * 7).toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-muted-foreground">Confidence</p>
-            <p className="text-xl font-bold">{Math.round(forecastData.confidence * 100)}%</p>
+            <p className="text-xl font-bold">{confidence}%</p>
           </div>
+        </div>
+        
+        <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+          Demo data - Connect your revenue sources to see actual forecasts
         </div>
       </CardContent>
     </Card>

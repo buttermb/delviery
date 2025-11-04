@@ -1,7 +1,6 @@
 /**
- * Lifetime Value Calculator
- * Calculates customer lifetime value (LTV) with cohort analysis
- * Inspired by Stripe's LTV metrics
+ * Lifetime Value Calculator - Placeholder
+ * Shows mock LTV calculations based on tenants
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, TrendingUp, Calculator } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { useState } from 'react';
 
 interface LTVMetrics {
@@ -35,81 +34,67 @@ export function LTVCalculator() {
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')
-        .select('id, created_at, cancelled_at, subscription_plan, mrr')
+        .select('id, created_at, subscription_plan')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const activeTenants = tenants?.filter((t) => t.subscription_status === 'active') || [];
-      const cancelledTenants = tenants?.filter((t) => t.cancelled_at) || [];
-
-      // Calculate average monthly revenue per tenant (ARPU)
-      const totalMRR = activeTenants.reduce((sum, t) => sum + (t.mrr || 0), 0);
-      const avgARPU = customARPU || (activeTenants.length > 0 ? totalMRR / activeTenants.length : 0);
-
-      // Calculate average lifetime (in months)
-      const lifetimes = cancelledTenants.map((t) => {
-        const created = new Date(t.created_at);
-        const cancelled = new Date(t.cancelled_at!);
-        const months = (cancelled.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 30);
-        return months;
-      });
-
-      const avgLifetimeMonths =
-        lifetimes.length > 0
-          ? lifetimes.reduce((sum, months) => sum + months, 0) / lifetimes.length
-          : 12; // Default to 12 months if no cancellations
-
-      // Calculate churn rate
-      const totalTenants = tenants?.length || 0;
-      const churnRate =
-        customChurnRate ||
-        (totalTenants > 0 ? (cancelledTenants.length / totalTenants) * 100 : 0);
-
-      // LTV = ARPU / Churn Rate (simplified formula)
-      const avgLTV = churnRate > 0 ? (avgARPU / (churnRate / 100)) : avgARPU * avgLifetimeMonths;
-
-      // LTV by plan
-      const ltvByPlan: Record<string, number> = {};
+      // Plan prices for mock calculation
       const planPrices: Record<string, number> = {
         starter: 99,
         professional: 299,
         enterprise: 799,
       };
 
+      const activeTenants = tenants || [];
+
+      // Calculate average monthly revenue per tenant (ARPU)
+      const totalMRR = activeTenants.reduce(
+        (sum, t) => sum + (planPrices[t.subscription_plan || 'starter'] || 99),
+        0
+      );
+      const avgARPU = customARPU || (activeTenants.length > 0 ? totalMRR / activeTenants.length : 0);
+
+      // Mock lifetime for demo
+      const avgLifetimeMonths = 12;
+
+      // Calculate churn rate (mock for demo)
+      const churnRate = customChurnRate || 2.5; // Mock 2.5% churn
+
+      // LTV = ARPU / Churn Rate (simplified formula)
+      const avgLTV = churnRate > 0 ? (avgARPU / (churnRate / 100)) : avgARPU * avgLifetimeMonths;
+
+      // LTV by plan
+      const ltvByPlan: Record<string, number> = {};
       Object.entries(planPrices).forEach(([plan, price]) => {
-        const planTenants = tenants?.filter((t) => t.subscription_plan === plan) || [];
-        const planChurned = planTenants.filter((t) => t.cancelled_at).length;
-        const planChurnRate =
-          planTenants.length > 0 ? (planChurned / planTenants.length) * 100 : churnRate;
-        ltvByPlan[plan] = planChurnRate > 0 ? price / (planChurnRate / 100) : price * 12;
+        ltvByPlan[plan] = churnRate > 0 ? price / (churnRate / 100) : price * 12;
       });
 
       // LTV by cohort (group by signup month)
-      const cohortMap = new Map<string, { tenants: typeof tenants; cancelled: number }>();
-      
+      const cohortMap = new Map<
+        string,
+        { tenants: Array<{ id: string; created_at: string; subscription_plan: string }> }
+      >();
+
       tenants?.forEach((t) => {
         const cohort = new Date(t.created_at).toISOString().slice(0, 7); // YYYY-MM
         if (!cohortMap.has(cohort)) {
-          cohortMap.set(cohort, { tenants: [], cancelled: 0 });
+          cohortMap.set(cohort, { tenants: [] });
         }
         const cohortData = cohortMap.get(cohort)!;
         cohortData.tenants.push(t);
-        if (t.cancelled_at) {
-          cohortData.cancelled++;
-        }
       });
 
       const ltvByCohort = Array.from(cohortMap.entries())
         .map(([cohort, data]) => {
-          const cohortChurnRate =
-            data.tenants.length > 0 ? (data.cancelled / data.tenants.length) * 100 : 0;
           const cohortARPU =
             data.tenants.length > 0
-              ? data.tenants.reduce((sum, t) => sum + (t.mrr || 0), 0) / data.tenants.length
+              ? data.tenants.reduce(
+                  (sum, t) => sum + (planPrices[t.subscription_plan || 'starter'] || 99),
+                  0
+                ) / data.tenants.length
               : avgARPU;
-          const cohortLTV =
-            cohortChurnRate > 0 ? cohortARPU / (cohortChurnRate / 100) : cohortARPU * 12;
+          const cohortLTV = churnRate > 0 ? cohortARPU / (churnRate / 100) : cohortARPU * 12;
 
           return {
             cohort,
@@ -217,10 +202,7 @@ export function LTVCalculator() {
           <h3 className="text-sm font-semibold mb-3">LTV by Plan</h3>
           <div className="grid grid-cols-3 gap-3">
             {Object.entries(ltvData.ltvByPlan).map(([plan, ltv]) => (
-              <div
-                key={plan}
-                className="p-3 border rounded-lg bg-muted/50"
-              >
+              <div key={plan} className="p-3 border rounded-lg bg-muted/50">
                 <p className="text-xs text-muted-foreground uppercase">{plan}</p>
                 <p className="text-lg font-bold">
                   ${ltv.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -241,9 +223,7 @@ export function LTVCalculator() {
               >
                 <span className="font-medium">{cohort.cohort}</span>
                 <div className="flex items-center gap-4">
-                  <span className="text-muted-foreground">
-                    {cohort.tenantCount} tenants
-                  </span>
+                  <span className="text-muted-foreground">{cohort.tenantCount} tenants</span>
                   <Badge variant="outline">
                     ${cohort.ltv.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </Badge>
@@ -261,9 +241,11 @@ export function LTVCalculator() {
             Current: ${ltvData.avgMonthlyRevenue.toFixed(2)} / ({ltvData.churnRate}% / 100) = $
             {ltvData.avgLTV.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
+          <p className="mt-2 text-xs">
+            * Using mock churn rate - Connect billing system for actual data
+          </p>
         </div>
       </CardContent>
     </Card>
   );
 }
-

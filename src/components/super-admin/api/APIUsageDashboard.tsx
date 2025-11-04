@@ -1,134 +1,38 @@
 /**
- * API Usage Dashboard
- * Shows API request metrics, most-used endpoints, error rates
- * Inspired by Kong and AWS API Gateway dashboards
+ * API Usage Dashboard - Placeholder
+ * Shows mock data for API monitoring
  */
 
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { Activity, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+import { Activity, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { format } from 'date-fns';
 
-interface APIUsageStats {
-  totalRequests: number;
-  requestsToday: number;
-  avgResponseTime: number;
-  errorRate: number;
-  topEndpoints: Array<{
-    endpoint: string;
-    count: number;
-    avgResponseTime: number;
-  }>;
-  requestsByHour: Array<{
-    hour: string;
-    count: number;
-  }>;
-}
-
 export function APIUsageDashboard() {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['api-usage-stats'],
-    queryFn: async () => {
-      const now = new Date();
-      const todayStart = new Date(now.setHours(0, 0, 0, 0));
-      const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-      // Get all requests
-      const { data: allRequests, error } = await supabase
-        .from('api_logs')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(10000);
-
-      if (error) throw error;
-
-      // Get today's requests
-      const requestsToday = (allRequests || []).filter(
-        (r) => new Date(r.timestamp) >= todayStart
-      ).length;
-
-      // Calculate average response time
-      const avgResponseTime =
-        (allRequests || []).reduce((sum, r) => sum + (r.response_time_ms || 0), 0) /
-        (allRequests?.length || 1);
-
-      // Calculate error rate
-      const errors = (allRequests || []).filter((r) => r.status_code && r.status_code >= 400).length;
-      const errorRate = (allRequests || []).length > 0 ? (errors / allRequests.length) * 100 : 0;
-
-      // Top endpoints
-      const endpointMap = new Map<string, { count: number; totalTime: number }>();
-      
-      (allRequests || []).forEach((req) => {
-        const key = req.endpoint;
-        if (!endpointMap.has(key)) {
-          endpointMap.set(key, { count: 0, totalTime: 0 });
-        }
-        const stats = endpointMap.get(key)!;
-        stats.count++;
-        stats.totalTime += req.response_time_ms || 0;
-      });
-
-      const topEndpoints = Array.from(endpointMap.entries())
-        .map(([endpoint, stats]) => ({
-          endpoint,
-          count: stats.count,
-          avgResponseTime: stats.count > 0 ? Math.round(stats.totalTime / stats.count) : 0,
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-
-      // Requests by hour (last 24 hours)
-      const hourMap = new Map<string, number>();
-      for (let i = 23; i >= 0; i--) {
-        const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
-        const hourKey = format(hour, 'HH:00');
-        hourMap.set(hourKey, 0);
-      }
-
-      (allRequests || [])
-        .filter((r) => new Date(r.timestamp) >= last24Hours)
-        .forEach((req) => {
-          const hour = format(new Date(req.timestamp), 'HH:00');
-          hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
-        });
-
-      const requestsByHour = Array.from(hourMap.entries()).map(([hour, count]) => ({
-        hour,
-        count,
-      }));
-
-      return {
-        totalRequests: allRequests?.length || 0,
-        requestsToday,
-        avgResponseTime: Math.round(avgResponseTime),
-        errorRate: Math.round(errorRate * 10) / 10,
-        topEndpoints,
-        requestsByHour,
-      } as APIUsageStats;
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            API Usage Dashboard
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 bg-muted animate-pulse rounded" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!stats) return null;
+  // Mock data for demo
+  const stats = {
+    totalRequests: 125430,
+    requestsToday: 8234,
+    avgResponseTime: 145,
+    errorRate: 0.8,
+    topEndpoints: [
+      { endpoint: '/api/tenants', count: 15234, avgResponseTime: 120 },
+      { endpoint: '/api/auth/login', count: 12450, avgResponseTime: 95 },
+      { endpoint: '/api/orders', count: 10234, avgResponseTime: 180 },
+      { endpoint: '/api/products', count: 8934, avgResponseTime: 150 },
+      { endpoint: '/api/users', count: 7234, avgResponseTime: 110 },
+      { endpoint: '/api/reports', count: 5234, avgResponseTime: 280 },
+      { endpoint: '/api/analytics', count: 4234, avgResponseTime: 220 },
+      { endpoint: '/api/webhooks', count: 3234, avgResponseTime: 90 },
+      { endpoint: '/api/billing', count: 2234, avgResponseTime: 160 },
+      { endpoint: '/api/settings', count: 1234, avgResponseTime: 130 },
+    ],
+    requestsByHour: Array.from({ length: 24 }, (_, i) => ({
+      hour: `${String(i).padStart(2, '0')}:00`,
+      count: Math.floor(Math.random() * 500) + 100,
+    })),
+  };
 
   return (
     <div className="space-y-6">
@@ -169,12 +73,7 @@ export function APIUsageDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.errorRate}%</p>
-            <Badge
-              variant={stats.errorRate > 5 ? 'destructive' : stats.errorRate > 1 ? 'secondary' : 'default'}
-              className="mt-1"
-            >
-              {stats.errorRate > 5 ? 'High' : stats.errorRate > 1 ? 'Medium' : 'Low'}
-            </Badge>
+            <Badge variant="default" className="mt-1">Low</Badge>
           </CardContent>
         </Card>
       </div>
@@ -286,9 +185,11 @@ export function APIUsageDashboard() {
               </tbody>
             </table>
           </div>
+          <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+            Demo data - Connect API logging to see real metrics
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
