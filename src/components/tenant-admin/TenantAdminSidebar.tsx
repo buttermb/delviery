@@ -213,6 +213,13 @@ export function TenantAdminSidebar() {
   const { canAccess, currentTier } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
 
+  // Debug logging
+  console.log('TenantAdminSidebar:', {
+    currentTier,
+    subscriptionPlan: tenant?.subscription_plan,
+    tenantSlug,
+  });
+
   // Guard against missing tenant slug
   if (!tenantSlug) {
     console.error('TenantAdminSidebar rendered without tenantSlug');

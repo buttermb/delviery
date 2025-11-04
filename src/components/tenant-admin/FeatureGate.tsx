@@ -16,10 +16,18 @@ interface FeatureGateProps {
 }
 
 export function FeatureGate({ featureId, children, fallback }: FeatureGateProps) {
-  const { canAccess } = useFeatureAccess();
+  const { canAccess, currentTier, tenant } = useFeatureAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   const hasAccess = canAccess(featureId);
+  
+  // Debug logging
+  console.log('FeatureGate:', {
+    featureId,
+    hasAccess,
+    currentTier,
+    subscriptionPlan: tenant?.subscription_plan,
+  });
   
   if (hasAccess) {
     return <>{children}</>;
