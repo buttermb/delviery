@@ -8,17 +8,17 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import {
   Package,
-  DollarSign,
-  Clock,
-  TrendingUp,
   MapPin,
   Navigation,
-  Power,
   Menu,
   LogOut,
+  DollarSign,
+  Clock,
 } from 'lucide-react';
 import { formatDistance } from 'date-fns';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
+import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
+import QuickStatsCard from '@/components/courier/QuickStatsCard';
 import {
   Sheet,
   SheetContent,
@@ -233,65 +233,28 @@ export default function CourierDashboardPage() {
                 </div>
               </SheetContent>
             </Sheet>
-            <h1 className="text-lg font-semibold">Courier Dashboard</h1>
+            <div>
+              <h1 className="text-lg font-semibold">Courier Dashboard</h1>
+              {courier && (
+                <p className="text-xs text-muted-foreground">{courier.full_name}</p>
+              )}
+            </div>
           </div>
-
-          <Button
-            onClick={toggleOnlineStatus}
-            variant={isOnline ? 'default' : 'outline'}
-            size="sm"
-            className="gap-2"
-          >
-            <Power className="h-4 w-4" />
-            {isOnline ? 'Online' : 'Offline'}
-          </Button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container px-4 py-6 space-y-6">
+        {/* Online Status */}
+        <OnlineStatusCard />
+
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Today's Deliveries</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.todayDeliveries}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Today's Earnings</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.todayEarnings.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Delivery Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgDeliveryTime} min</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completionRate}%</div>
-            </CardContent>
-          </Card>
-        </div>
+        <QuickStatsCard
+          todayDeliveries={stats.todayDeliveries}
+          todayEarnings={stats.todayEarnings}
+          avgDeliveryTime={stats.avgDeliveryTime}
+          completionRate={stats.completionRate}
+        />
 
         {/* Available Orders */}
         <Card>
