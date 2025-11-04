@@ -127,11 +127,30 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           return;
         }
         
+        // Ensure tenant has limits and usage (fallback to defaults if missing)
+        const tenantWithDefaults = {
+          ...parsedTenant,
+          limits: parsedTenant.limits || {
+            customers: 50,
+            menus: 3,
+            products: 100,
+            locations: 2,
+            users: 3,
+          },
+          usage: parsedTenant.usage || {
+            customers: 0,
+            menus: 0,
+            products: 0,
+            locations: 0,
+            users: 0,
+          },
+        };
+        
         setAccessToken(storedAccessToken);
         setRefreshToken(storedRefreshToken);
         setToken(storedAccessToken);
         setAdmin(JSON.parse(storedAdmin));
-        setTenant(parsedTenant);
+        setTenant(tenantWithDefaults);
         verifyToken(storedAccessToken);
       } catch (e) {
         // Clear invalid data
