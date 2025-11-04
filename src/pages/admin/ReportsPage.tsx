@@ -9,15 +9,114 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   BarChart3, FileText, Package, DollarSign, Download,
-  Calendar, TrendingUp
+  Calendar, TrendingUp, Loader2
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, subWeeks, subDays } from 'date-fns';
+import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
+import { useExport } from '@/hooks/useExport';
 
 export default function ReportsPage() {
   const { account } = useAccount();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
+  const { exportCSV } = useExport();
+
+  const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
+  const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
+  const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();
+  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory();
+
+  const loading = clientsLoading || ordersLoading || paymentsLoading || inventoryLoading;
+
+  // Calculate date range based on selection
+  const getDateRange = () => {
+    const now = new Date();
+    switch (timeRange) {
+      case 'week':
+        return { start: subWeeks(now, 1), end: now };
+      case 'month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'quarter':
+        return { start: subMonths(now, 3), end: now };
+      case 'year':
+        return { start: subMonths(now, 12), end: now };
+      default:
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+    }
+  };
+
+  const { start: startDate, end: endDate } = getDateRange();
+
+  // Filter data by date range
+  const filteredOrders = orders.filter(o => {
+    const orderDate = new Date(o.created_at);
+    return orderDate >= startDate && orderDate <= endDate;
+  });
+
+  const filteredPayments = payments.filter(p => {
+    const paymentDate = new Date(p.created_at);
+    return paymentDate >= startDate && paymentDate <= endDate;
+  });
+
+  // Calculate metrics
+  const totalRevenue = filteredOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+  const totalOrders = filteredOrders.length;
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const totalCollected = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+  // Compare with previous period
+  const prevStart = new Date(startDate);
+  prevStart.setDate(prevStart.getDate() - (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const prevOrders = orders.filter(o => {
+    const orderDate = new Date(o.created_at);
+    return orderDate >= prevStart && orderDate < startDate;
+  });
+  const prevRevenue = prevOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+  const revenueGrowth = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+
+  const handleExport = () => {
+    if (reportType === 'business') {
+      exportCSV(
+        filteredOrders.map(o => ({
+          order_number: o.order_number,
+          date: format(new Date(o.created_at), 'yyyy-MM-dd'),
+          client: o.client?.business_name || 'N/A',
+          amount: Number(o.total_amount),
+          status: o.status
+        })),
+        { filename: `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+      );
+    } else if (reportType === 'financial') {
+      exportCSV(
+        filteredPayments.map(p => ({
+          date: format(new Date(p.created_at), 'yyyy-MM-dd'),
+          client: p.client?.business_name || 'N/A',
+          amount: Number(p.amount),
+          method: p.payment_method
+        })),
+        { filename: `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+      );
+    } else if (reportType === 'inventory') {
+      exportCSV(
+        inventory.map(i => ({
+          product: i.product_name,
+          quantity: i.quantity_in_stock,
+          unit: i.unit,
+          updated: i.updated_at ? format(new Date(i.updated_at), 'yyyy-MM-dd') : 'N/A'
+        })),
+        { filename: `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv` }
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -39,7 +138,7 @@ export default function ReportsPage() {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button>
+          <Button onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -71,37 +170,46 @@ export default function ReportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card className="p-6">
               <div className="text-sm text-muted-foreground mb-1">Total Revenue</div>
-              <div className="text-2xl font-bold">$312,000</div>
-              <div className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
+              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+              <div className={`text-sm flex items-center gap-1 mt-1 ${revenueGrowth >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
                 <TrendingUp className="h-3 w-3" />
-                +12.5% vs last month
+                {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth.toFixed(1)}% vs last period
               </div>
             </Card>
             <Card className="p-6">
               <div className="text-sm text-muted-foreground mb-1">Orders</div>
-              <div className="text-2xl font-bold">47</div>
-              <div className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
-                <TrendingUp className="h-3 w-3" />
-                +8 vs last month
+              <div className="text-2xl font-bold">{totalOrders}</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                In selected period
               </div>
             </Card>
             <Card className="p-6">
               <div className="text-sm text-muted-foreground mb-1">Avg Order Value</div>
-              <div className="text-2xl font-bold">$6,638</div>
-              <div className="text-sm text-emerald-600 flex items-center gap-1 mt-1">
-                <TrendingUp className="h-3 w-3" />
-                +4.2% vs last month
+              <div className="text-2xl font-bold">${Math.round(avgOrderValue).toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Per order
               </div>
             </Card>
           </div>
 
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
-            <div className="h-[400px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/20">
-              <div className="text-center text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Chart visualization</p>
-                <p className="text-xs mt-1">Revenue trends, order volume, client performance</p>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm text-muted-foreground mb-2">Revenue Collected</div>
+                <div className="text-3xl font-bold text-emerald-500">
+                  ${totalCollected.toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {((totalCollected / totalRevenue) * 100).toFixed(1)}% collection rate
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground mb-2">Active Clients</div>
+                <div className="text-3xl font-bold">{clients.filter(c => c.status === 'active').length}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Total clients: {clients.length}
+                </div>
               </div>
             </div>
           </Card>

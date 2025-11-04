@@ -990,6 +990,44 @@ export type Database = {
           },
         ]
       }
+      collection_activities: {
+        Row: {
+          activity_type: string
+          amount: number | null
+          client_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          performed_by: string | null
+        }
+        Insert: {
+          activity_type: string
+          amount?: number | null
+          client_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+        }
+        Update: {
+          activity_type?: string
+          amount?: number | null
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_activities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_transactions: {
         Row: {
           commission_amount: number
@@ -5498,6 +5536,50 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "customer_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_schedules: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string | null
+          created_by: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string | null
+          created_by?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_schedules_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
             referencedColumns: ["id"]
           },
         ]
