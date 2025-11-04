@@ -20,6 +20,15 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   useEffect(() => {
     const verifyAuth = async () => {
+      console.log('🔐 TenantAdminProtectedRoute - verifyAuth called:', {
+        loading,
+        hasToken: !!token,
+        hasAdmin: !!admin,
+        hasTenant: !!tenant,
+        tenantSlug,
+        currentPath: location.pathname,
+      });
+
       if (loading) return;
 
       // Silent token refresh if expiring soon
@@ -39,6 +48,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       const isWelcomePage = location.pathname.includes('/welcome');
       
       if (!token || !admin || !tenant) {
+        console.log('❌ Auth check failed - redirecting to login:', { token: !!token, admin: !!admin, tenant: !!tenant });
         // Allow welcome page for new signups (they may not be logged in yet)
         if (isWelcomePage && tenantSlug) {
           setVerifying(false);
@@ -46,12 +56,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         }
         
         if (tenantSlug) {
+          console.log('🔀 Redirecting to:', `/${tenantSlug}/admin/login`);
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
+          console.log('🔀 No tenant slug, redirecting to marketing');
           navigate("/marketing", { replace: true });
         }
         return;
       }
+
+      console.log('✅ Auth check passed - user is authenticated');
 
       // Verify tenant slug matches
       if (tenantSlug && tenant.slug !== tenantSlug) {
