@@ -26,6 +26,7 @@ import { QuickActionsBar } from './dashboard/QuickActionsBar';
 import { LocationMapWidget } from './dashboard/LocationMapWidget';
 import { PendingTransfersWidget } from './dashboard/PendingTransfersWidget';
 import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
+import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
 // FrontedInventoryWidget removed - had type errors
@@ -170,6 +171,7 @@ export function ModernDashboard() {
         {/* Left Column - 2/3 */}
         <div className="lg:col-span-2 space-y-6">
           <SalesChartWidget />
+          <RevenuePredictionWidget />
           <RecentOrdersWidget />
         </div>
 

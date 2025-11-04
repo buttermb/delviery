@@ -14,10 +14,15 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
+import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
+import { ContactCard } from '@/components/crm/ContactCard';
 
 interface Customer {
   id: string;
   account_id: string;
+  tenant_id?: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -25,6 +30,8 @@ interface Customer {
   customer_type: string;
   date_of_birth: string;
   address: string;
+  city?: string;
+  state?: string;
   medical_card_number?: string;
   medical_card_expiration?: string;
   total_spent: number;
@@ -36,12 +43,16 @@ interface Customer {
 export default function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
+  
+  // Get tenant_id from tenant context or customer data
+  const tenantId = tenant?.id || customer?.tenant_id;
 
   useEffect(() => {
     if (id) {
@@ -274,6 +285,7 @@ export default function CustomerDetails() {
           <TabsList className="bg-[hsl(var(--tenant-bg))] border border-[hsl(var(--tenant-border))]">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="orders">Purchase History</TabsTrigger>
+            <TabsTrigger value="communications">Communications</TabsTrigger>
             <TabsTrigger value="financial">Financial Tracking</TabsTrigger>
             <TabsTrigger value="medical">Medical Info</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -281,20 +293,56 @@ export default function CustomerDetails() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Contact Card and Activity Timeline */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {tenantId && customer && (
+                <ContactCard
+                  customer={customer}
+                  customerId={customer.id}
+                  tenantId={tenantId}
+                  onCall={() => {
+                    if (customer.phone) {
+                      window.location.href = `tel:${customer.phone}`;
+                    }
+                  }}
+                  onEmail={() => {
+                    if (customer.email) {
+                      window.location.href = `mailto:${customer.email}`;
+                    }
+                  }}
+                  onMessage={() => {
+                    // Scroll to communication history or open dialog
+                    const commTab = document.querySelector('[value="communications"]');
+                    if (commTab) {
+                      (commTab as HTMLElement).click();
+                    }
+                  }}
+                />
+              )}
+              {tenantId && customer && (
+                <div className="lg:col-span-2">
+                  <ActivityTimeline customerId={customer.id} tenantId={tenantId} />
+                </div>
+              )}
+            </div>
+
+            {/* Communication History */}
+            {tenantId && customer && (
+              <CommunicationHistory
+                customerId={customer.id}
+                tenantId={tenantId}
+                customerEmail={customer.email}
+                customerPhone={customer.phone}
+              />
+            )}
+
+            {/* Legacy Account Info (keep for backward compatibility) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Contact Information</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Account Details</CardTitle>
                 </CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email</label>
-                  <p>{customer.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                  <p>{customer.phone}</p>
-                </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
                   <p>{customer.date_of_birth ? format(new Date(customer.date_of_birth), 'MMM d, yyyy') : 'N/A'}</p>
@@ -302,6 +350,10 @@ export default function CustomerDetails() {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Address</label>
                   <p>{customer.address || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Customer Type</label>
+                  <Badge variant="outline">{customer.customer_type}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -394,6 +446,18 @@ export default function CustomerDetails() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Communications Tab */}
+        {tenantId && customer && (
+          <TabsContent value="communications" className="space-y-6">
+            <CommunicationHistory
+              customerId={customer.id}
+              tenantId={tenantId}
+              customerEmail={customer.email}
+              customerPhone={customer.phone}
+            />
+          </TabsContent>
+        )}
 
         {/* Financial Tab */}
         <TabsContent value="financial">

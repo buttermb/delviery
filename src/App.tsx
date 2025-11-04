@@ -141,6 +141,13 @@ const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 
+// GitHub Repos Integration Pages
+const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
+const RouteOptimizationPageAdmin = lazy(() => import("./pages/admin/RouteOptimizationPage"));
+const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
+const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
+const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));
+
 // Coming Soon Pages - Professional & Enterprise Features
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
@@ -409,6 +416,13 @@ const App = () => {
                           <Route path="z-reports" element={<FeatureProtectedRoute featureId="z-reports"><ZReportPage /></FeatureProtectedRoute>} />
                           <Route path="role-management" element={<FeatureProtectedRoute featureId="role-management"><RoleManagementPage /></FeatureProtectedRoute>} />
                           <Route path="activity-logs" element={<FeatureProtectedRoute featureId="activity-logs"><ActivityLogsPage /></FeatureProtectedRoute>} />
+                          
+                          {/* GitHub Repos Integration Routes */}
+                          <Route path="analytics-dashboard" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
+                          <Route path="route-optimizer" element={<FeatureProtectedRoute featureId="route-optimization"><RouteOptimizationPageAdmin /></FeatureProtectedRoute>} />
+                          <Route path="advanced-invoice" element={<FeatureProtectedRoute featureId="invoice-management"><AdvancedInvoicePage /></FeatureProtectedRoute>} />
+                          <Route path="local-ai" element={<FeatureProtectedRoute featureId="ai"><LocalAIPage /></FeatureProtectedRoute>} />
+                          <Route path="workflow-automation" element={<FeatureProtectedRoute featureId="automation"><WorkflowAutomationPage /></FeatureProtectedRoute>} />
                           <Route path="location-analytics" element={<FeatureProtectedRoute featureId="location-analytics"><LocationAnalyticsPage /></FeatureProtectedRoute>} />
                           <Route path="user-management" element={<FeatureProtectedRoute featureId="user-management"><UserManagementPage /></FeatureProtectedRoute>} />
                           <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><PermissionsPage /></FeatureProtectedRoute>} />

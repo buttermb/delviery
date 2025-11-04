@@ -43,6 +43,7 @@ import {
   Target,
   Rocket,
   Route,
+  Navigation,
   Code,
   Webhook,
   Puzzle,
@@ -59,7 +60,8 @@ import {
   PackageOpen,
   BarChart4,
   UserCheck,
-  Flame
+  Flame,
+  Brain
 } from 'lucide-react';
 
 export interface NavItem {
@@ -308,6 +310,13 @@ export const navigationSections: NavSection[] = [
         href: '/admin/route-optimization',
         icon: Route,
         tier: 'enterprise'
+      },
+      {
+        title: 'Route Optimizer',
+        href: '/admin/route-optimizer',
+        icon: Navigation,
+        tier: 'professional',
+        badge: 'NEW'
       }
     ]
   },
@@ -332,6 +341,13 @@ export const navigationSections: NavSection[] = [
         href: '/admin/invoice-management',
         icon: Receipt,
         tier: 'professional'
+      },
+      {
+        title: 'Advanced Invoice',
+        href: '/admin/advanced-invoice',
+        icon: FileText,
+        tier: 'professional',
+        badge: 'NEW'
       },
       {
         title: 'Revenue Reports',
@@ -413,6 +429,13 @@ export const navigationSections: NavSection[] = [
   {
     title: 'Analytics',
     items: [
+      {
+        title: 'Analytics Dashboard',
+        href: '/admin/analytics-dashboard',
+        icon: BarChart3,
+        tier: 'professional',
+        badge: 'NEW'
+      },
       {
         title: 'Sales Dashboard',
         href: '/admin/sales-dashboard',
@@ -547,16 +570,37 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🤖 AI & AUTOMATION
+  {
+    title: 'AI & Automation',
+    items: [
+      {
+        title: 'Workflow Automation',
+        href: '/admin/workflow-automation',
+        icon: Zap,
+        tier: 'professional',
+        badge: 'NEW'
+      },
+      {
+        title: 'Local AI Assistant',
+        href: '/admin/local-ai',
+        icon: Brain,
+        tier: 'professional',
+        badge: 'FREE'
+      },
+      {
+        title: 'Automation',
+        href: '/admin/automation',
+        icon: Settings,
+        tier: 'enterprise'
+      }
+    ]
+  },
+
   // 🚀 ENTERPRISE
   {
     title: 'Enterprise',
     items: [
-      {
-        title: 'Automation',
-        href: '/admin/automation',
-        icon: Zap,
-        tier: 'enterprise'
-      },
       {
         title: 'API Access',
         href: '/admin/api-access',

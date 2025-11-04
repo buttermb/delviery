@@ -9,6 +9,7 @@ import { MapPin, Warehouse, Truck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
+import { LeafletMapWidget } from './LeafletMapWidget';
 
 export function LocationMapWidget() {
   const { account } = useAccount();
@@ -60,14 +61,34 @@ export function LocationMapWidget() {
         Inventory Map
       </h3>
 
-      {/* Map placeholder */}
-      <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/20 mb-4">
-        <div className="text-center text-muted-foreground">
-          <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Interactive map visualization</p>
-          <p className="text-xs mt-1">Integration with map library (Mapbox/Google Maps)</p>
+      {/* Map - Using Leaflet (OpenStreetMap - FREE!) */}
+      {locations && locations.warehouses.length > 0 && (
+        <LeafletMapWidget
+          locations={[
+            ...locations.warehouses.map((wh: any) => ({
+              name: wh.name,
+              lat: 40.7128 + (Math.random() - 0.5) * 0.1, // TODO: Get actual coordinates
+              lng: -74.0060 + (Math.random() - 0.5) * 0.1,
+              type: 'warehouse' as const,
+            })),
+            ...locations.runners.map((runner: any) => ({
+              name: runner.full_name,
+              lat: 40.7128 + (Math.random() - 0.5) * 0.1, // TODO: Get actual coordinates
+              lng: -74.0060 + (Math.random() - 0.5) * 0.1,
+              type: 'runner' as const,
+            })),
+          ]}
+        />
+      )}
+      {(!locations || locations.warehouses.length === 0) && (
+        <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/20 mb-4">
+          <div className="text-center text-muted-foreground">
+            <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No locations to display</p>
+            <p className="text-xs mt-1">Add warehouses and runners to see them on the map</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Warehouse List */}
       <div className="space-y-2 mb-4">
