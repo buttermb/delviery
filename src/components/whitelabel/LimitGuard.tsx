@@ -54,13 +54,19 @@ export function LimitGuard({
 
   // Show upgrade dialog when limit is reached, close when limit is no longer reached
   useEffect(() => {
+    // Never show dialog for unlimited accounts or while loading
+    if (loading || !tenant || unlimited) {
+      setShowUpgradeDialog(false);
+      return;
+    }
+    
     if (showLimitError) {
       setShowUpgradeDialog(true);
       setDialogType('limit');
     } else {
       setShowUpgradeDialog(false);
     }
-  }, [showLimitError]);
+  }, [showLimitError, loading, tenant, unlimited]);
 
   const getResourceLabel = () => {
     const labels: Record<string, string> = {
