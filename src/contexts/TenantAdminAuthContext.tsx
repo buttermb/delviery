@@ -228,10 +228,29 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       const data = await response.json();
       
       if (data.admin && data.tenant) {
+        // Ensure tenant has limits and usage (fallback to defaults if missing)
+        const tenantWithDefaults = {
+          ...data.tenant,
+          limits: data.tenant.limits || {
+            customers: 50,
+            menus: 3,
+            products: 100,
+            locations: 2,
+            users: 3,
+          },
+          usage: data.tenant.usage || {
+            customers: 0,
+            menus: 0,
+            products: 0,
+            locations: 0,
+            users: 0,
+          },
+        };
+        
         setAdmin(data.admin);
-        setTenant(data.tenant);
+        setTenant(tenantWithDefaults);
         localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
-        localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+        localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       }
       
       setLoading(false);
@@ -304,16 +323,35 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       const data = await response.json();
       
+      // Ensure tenant has limits and usage (fallback to defaults if missing)
+      const tenantWithDefaults = {
+        ...data.tenant,
+        limits: data.tenant.limits || {
+          customers: 50,
+          menus: 3,
+          products: 100,
+          locations: 2,
+          users: 3,
+        },
+        usage: data.tenant.usage || {
+          customers: 0,
+          menus: 0,
+          products: 0,
+          locations: 0,
+          users: 0,
+        },
+      };
+      
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
       setAdmin(data.admin);
-      setTenant(data.tenant);
+      setTenant(tenantWithDefaults);
       
       localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
-      localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+      localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       
       // Setup proactive refresh timer
       setupRefreshTimer(data.access_token);
