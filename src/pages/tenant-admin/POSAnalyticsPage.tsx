@@ -13,6 +13,7 @@ import {
   DollarSign, TrendingUp, ShoppingCart, Clock, Users, 
   CreditCard, Package, Award, Activity 
 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface POSTransaction {
   id: string;
@@ -80,7 +81,7 @@ export default function POSAnalyticsPage() {
         
         return results;
       } catch (error) {
-        console.error('Error fetching transactions:', error);
+        logger.error('Error fetching transactions', error, { component: 'POSAnalyticsPage' });
         return [];
       }
     },

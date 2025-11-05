@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { clearAllAuthTokens } from "@/lib/utils/authHelpers";
 import { Link } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -27,7 +28,8 @@ export class AuthErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Auth Error Boundary caught:", error, errorInfo);
+    // Use logger utility for consistent error logging
+    logger.error("Auth Error Boundary caught", error, { component: 'AuthErrorBoundary', errorInfo });
     
     // If it's an auth-related error, clear tokens
     if (

@@ -181,7 +181,7 @@ export default function TenantAdminDashboardPage() {
           lowStock: lowStock.slice(0, 5),
         };
       } catch (error) {
-        console.error("Error fetching dashboard metrics:", error);
+        logger.error("Error fetching dashboard metrics", error, { component: 'DashboardPage' });
         // Return safe defaults instead of throwing
         return {
           sales: 0,
