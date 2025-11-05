@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 
 interface Particle {
@@ -65,43 +65,50 @@ export function ParticleBackground() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [isMobile, mouseX, mouseY]);
 
+  // Create transforms ONCE outside of map to avoid hook violations
+  const parallaxX = useTransform(
+    mouseX, 
+    [0, typeof window !== 'undefined' ? window.innerWidth : 1920], 
+    [-10, 10]
+  );
+  const parallaxY = useTransform(
+    mouseY, 
+    [0, typeof window !== 'undefined' ? window.innerHeight : 1080], 
+    [-10, 10]
+  );
+
   if (isMobile || particles.length === 0) {
     return null;
   }
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => {
-        const x = useTransform(mouseX, [0, window.innerWidth], [-10, 10]);
-        const y = useTransform(mouseY, [0, window.innerHeight], [-10, 10]);
-
-        return (
-          <motion.div
-            key={particle.id}
-            className="absolute rounded-full"
-            style={{
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-              width: particle.size,
-              height: particle.size,
-              background: 'rgba(255, 255, 255, 0.3)',
-              x,
-              y,
-            }}
-            animate={{
-              y: [0, -20, -10, -30, 0],
-              x: [0, 10, -10, 5, 0],
-              opacity: [0.3, 0.5, 0.4, 0.6, 0.3],
-            }}
-            transition={{
-              duration: particle.duration,
-              delay: particle.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        );
-      })}
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: particle.size,
+            height: particle.size,
+            background: 'rgba(255, 255, 255, 0.3)',
+            x: parallaxX,
+            y: parallaxY,
+          }}
+          animate={{
+            y: [0, -20, -10, -30, 0],
+            x: [0, 10, -10, 5, 0],
+            opacity: [0.3, 0.5, 0.4, 0.6, 0.3],
+          }}
+          transition={{
+            duration: particle.duration,
+            delay: particle.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
     </div>
   );
 }
