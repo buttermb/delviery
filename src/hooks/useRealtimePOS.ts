@@ -1,12 +1,20 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 export function useRealtimeShifts(tenantId: string | undefined) {
+  const { loading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!tenantId) return;
+    // Guard: Don't subscribe if auth is still loading or tenantId not available
+    if (loading || !tenantId) {
+      console.log('[useRealtimeShifts] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      return;
+    }
+
+    console.log('[useRealtimeShifts] Authentication verified, establishing realtime subscription');
 
     const channel = supabase
       .channel('pos-shifts-changes')
@@ -43,16 +51,24 @@ export function useRealtimeShifts(tenantId: string | undefined) {
       });
 
     return () => {
+      console.log('[useRealtimeShifts] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [tenantId, queryClient]);
+  }, [loading, tenantId, queryClient]);
 }
 
 export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: string) {
+  const { loading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!tenantId) return;
+    // Guard: Don't subscribe if auth is still loading or tenantId not available
+    if (loading || !tenantId) {
+      console.log('[useRealtimeTransactions] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      return;
+    }
+
+    console.log('[useRealtimeTransactions] Authentication verified, establishing realtime subscription');
 
     let filter = `tenant_id=eq.${tenantId}`;
     if (shiftId) {
@@ -93,16 +109,24 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
       });
 
     return () => {
+      console.log('[useRealtimeTransactions] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [tenantId, shiftId, queryClient]);
+  }, [loading, tenantId, shiftId, queryClient]);
 }
 
 export function useRealtimeCashDrawer(shiftId: string | undefined) {
+  const { loading } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!shiftId) return;
+    // Guard: Don't subscribe if auth is still loading or shiftId not available
+    if (loading || !shiftId) {
+      console.log('[useRealtimeCashDrawer] Waiting for authentication...', { loading, hasShiftId: !!shiftId });
+      return;
+    }
+
+    console.log('[useRealtimeCashDrawer] Authentication verified, establishing realtime subscription');
 
     const channel = supabase
       .channel('cash-drawer-changes')
@@ -136,7 +160,8 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
       });
 
     return () => {
+      console.log('[useRealtimeCashDrawer] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [shiftId, queryClient]);
+  }, [loading, shiftId, queryClient]);
 }

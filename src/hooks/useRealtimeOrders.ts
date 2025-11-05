@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { validateOrder } from '@/utils/realtimeValidation';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface Order {
   id: string;
@@ -25,6 +26,7 @@ interface UseRealtimeOrdersOptions {
 }
 
 export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
+  const { tenant, loading: authLoading } = useTenantAdminAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -73,6 +75,14 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   }, [statusFilter?.join(',')]);
 
   useEffect(() => {
+    // Guard: Don't fetch or subscribe if auth is still loading or tenant not available
+    if (authLoading || !tenant?.id) {
+      console.log('[useRealtimeOrders] Waiting for authentication...', { authLoading, hasTenant: !!tenant?.id });
+      return;
+    }
+
+    console.log('[useRealtimeOrders] Authentication verified, establishing realtime subscription');
+
     // Wrap in try-catch to handle any synchronous errors
     try {
       fetchOrders().catch((error) => {
@@ -142,13 +152,14 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
     }, 500);
 
     return () => {
+      console.log('[useRealtimeOrders] Cleaning up realtime subscription');
       clearTimeout(connectionTimeout);
       if (channel) {
         channel.unsubscribe();
         supabase.removeChannel(channel);
       }
     };
-  }, [statusFilter?.join(',')]); // Only re-run if filter changes
+  }, [authLoading, tenant?.id, statusFilter?.join(',')]); // Re-run if auth state or filter changes
 
   return {
     orders,
