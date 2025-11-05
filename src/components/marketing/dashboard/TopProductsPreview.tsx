@@ -15,17 +15,16 @@ export function TopProductsPreview() {
   };
 
   return (
-    <Card className="p-6 h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Package className="h-5 w-5 text-primary" />
+    <Card className="p-4 h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Package className="h-4 w-4 text-primary" />
           Top Products
         </h3>
-        <button className="text-sm text-primary hover:underline">View All</button>
       </div>
 
-      <div className="space-y-3">
-        {mockDashboardData.topProducts.map((product, index) => (
+      <div className="space-y-2">
+        {mockDashboardData.topProducts.slice(0, 3).map((product, index) => (
           <motion.div
             key={product.rank}
             initial={{ opacity: 0, x: -20 }}
@@ -36,32 +35,32 @@ export function TopProductsPreview() {
               ease: [0.21, 0.47, 0.32, 0.98]
             }}
             whileHover={{ 
-              scale: 1.02,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              scale: 1.01,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
-            className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+            className="flex items-center gap-2 p-2 rounded border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
           >
             {/* Rank Badge */}
             <Badge 
               variant="outline" 
-              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm ${getRankColor(product.rank)}`}
+              className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs ${getRankColor(product.rank)}`}
             >
               {product.rank}
             </Badge>
 
             {/* Product Info */}
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{product.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {product.quantity} · {product.orders} orders
+              <div className="text-sm font-medium truncate">{product.name}</div>
+              <div className="text-[10px] text-muted-foreground">
+                {product.orders} orders
               </div>
             </div>
 
-            {/* Revenue & Trend */}
+            {/* Revenue */}
             <div className="text-right">
-              <div className="font-semibold">${product.revenue.toLocaleString()}</div>
-              <div className="text-xs text-emerald-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
+              <div className="text-sm font-semibold">${product.revenue.toLocaleString()}</div>
+              <div className="text-[10px] text-emerald-600 flex items-center gap-0.5">
+                <TrendingUp className="h-2.5 w-2.5" />
                 {product.trend}
               </div>
             </div>

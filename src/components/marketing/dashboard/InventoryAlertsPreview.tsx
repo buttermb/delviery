@@ -10,40 +10,39 @@ export function InventoryAlertsPreview() {
     switch (urgency) {
       case 'critical':
         return {
-          badge: 'destructive',
-          barColor: 'bg-red-500',
-          textColor: 'text-red-600'
+          badgeClass: 'bg-red-500/20 text-red-700 border-red-500/30',
+          barClass: 'bg-red-500',
+          textClass: 'text-red-600'
         };
       case 'warning':
         return {
-          badge: 'default',
-          barColor: 'bg-orange-500',
-          textColor: 'text-orange-600'
+          badgeClass: 'bg-orange-500/20 text-orange-700 border-orange-500/30',
+          barClass: 'bg-orange-500',
+          textClass: 'text-orange-600'
         };
       default:
         return {
-          badge: 'secondary',
-          barColor: 'bg-yellow-500',
-          textColor: 'text-yellow-600'
+          badgeClass: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30',
+          barClass: 'bg-yellow-500',
+          textClass: 'text-yellow-600'
         };
     }
   };
 
   return (
-    <Card className="p-6 h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-destructive" />
+    <Card className="p-4 h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
           Inventory Alerts
         </h3>
-        <Badge variant="destructive">{mockDashboardData.inventoryAlerts.length}</Badge>
+        <Badge variant="destructive" className="text-xs">{mockDashboardData.inventoryAlerts.slice(0, 2).length}</Badge>
       </div>
 
-      <div className="space-y-4">
-        {mockDashboardData.inventoryAlerts.map((alert, index) => {
-          const config = getUrgencyConfig(alert.urgency);
-          const percentage = (alert.current / alert.threshold) * 100;
-
+      <div className="space-y-2">
+        {mockDashboardData.inventoryAlerts.slice(0, 2).map((alert, index) => {
+          const urgencyConfig = getUrgencyConfig(alert.urgency);
+          
           return (
             <motion.div
               key={alert.name}
@@ -53,48 +52,61 @@ export function InventoryAlertsPreview() {
                 delay: index * 0.1,
                 duration: 0.4
               }}
-              className="p-3 rounded-lg border bg-card space-y-2"
+              whileHover={{ 
+                scale: 1.01,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              className="p-3 rounded border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{alert.name}</div>
-                  <div className="text-xs text-muted-foreground">{alert.location}</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-1">
+                  <div className="font-medium text-xs">{alert.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{alert.location}</div>
                 </div>
-                <Badge variant={config.badge as any} className="text-xs">
+                <Badge variant="outline" className={`${urgencyConfig.badgeClass} text-[10px] px-1.5 py-0`}>
                   {alert.urgency}
                 </Badge>
               </div>
 
-              {/* Progress Bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className={config.textColor}>{alert.current} lbs</span>
-                  <span className="text-muted-foreground">{alert.threshold} lbs</span>
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px]">
+                  <span className={urgencyConfig.textClass}>
+                    {alert.current} / {alert.threshold} lbs
+                  </span>
+                  <span className="text-muted-foreground">
+                    {Math.round((alert.current / alert.threshold) * 100)}%
+                  </span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+
+                {/* Progress Bar */}
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${percentage}%` }}
-                    transition={{ delay: index * 0.1 + 0.2, duration: 0.6 }}
-                    className={`h-full ${config.barColor}`}
+                    animate={{ width: `${(alert.current / alert.threshold) * 100}%` }}
+                    transition={{ 
+                      delay: index * 0.1 + 0.2,
+                      duration: 0.6,
+                      ease: [0.21, 0.47, 0.32, 0.98]
+                    }}
+                    className={`h-full ${urgencyConfig.barClass}`}
                   />
                 </div>
-              </div>
 
-              {alert.urgency === 'critical' && (
-                <Button size="sm" variant="destructive" className="w-full text-xs">
-                  Restock Now
-                </Button>
-              )}
+                {alert.urgency === 'critical' && (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 + 0.5 }}
+                    className="w-full mt-1 px-2 py-1 bg-destructive text-destructive-foreground text-[10px] font-medium rounded hover:bg-destructive/90 transition-colors"
+                  >
+                    Restock Now
+                  </motion.button>
+                )}
+              </div>
             </motion.div>
           );
         })}
       </div>
-
-      <Button variant="outline" className="w-full mt-4" size="sm">
-        <Package className="h-4 w-4 mr-2" />
-        View All Inventory
-      </Button>
     </Card>
   );
 }

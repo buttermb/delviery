@@ -6,83 +6,63 @@ import { useState } from 'react';
 
 export function SalesChartPreview() {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
-  const maxAmount = Math.max(...mockDashboardData.salesChart.map(d => d.amount));
+  const salesData = mockDashboardData.salesChart.slice(0, 5);
+  const maxAmount = Math.max(...salesData.map(d => d.amount));
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          Sales Performance (7 Days)
+    <Card className="p-4 h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          Sales Performance
         </h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <TrendingUp className="h-4 w-4 text-emerald-500" />
-          <span className="text-emerald-600 font-medium">+12%</span>
+        <div className="flex items-center gap-1 text-xs text-emerald-600">
+          <TrendingUp className="h-3 w-3" />
+          <span className="font-medium">+12%</span>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="h-[240px] flex items-end justify-between gap-3 mb-6">
-        {mockDashboardData.salesChart.map((data, index) => {
-          const heightPercent = (data.amount / maxAmount) * 100;
-          const isHovered = hoveredBar === index;
+      <div className="relative h-[160px] flex items-end justify-between gap-2 px-2">
+        {salesData.map((data, index) => {
+          const height = (data.amount / maxAmount) * 100;
           
           return (
-            <div key={data.day} className="flex-1 flex flex-col items-center gap-2">
+            <div key={data.day} className="flex-1 flex flex-col items-center gap-1">
+              {/* Tooltip */}
+              {hoveredBar === index && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute -top-12 bg-popover text-popover-foreground px-2 py-1 rounded shadow-lg border text-xs"
+                  style={{ left: `${(index / salesData.length) * 100}%` }}
+                >
+                  <div className="font-semibold">${data.amount.toLocaleString()}</div>
+                  <div className="text-muted-foreground text-[10px]">{data.orders} orders</div>
+                </motion.div>
+              )}
+              
+              {/* Bar */}
               <motion.div
-                className="w-full relative group cursor-pointer"
+                initial={{ height: 0 }}
+                animate={{ height: `${height}%` }}
+                transition={{ 
+                  delay: index * 0.1,
+                  duration: 0.6,
+                  ease: [0.21, 0.47, 0.32, 0.98]
+                }}
+                whileHover={{ scaleY: 1.05, originY: 1 }}
                 onMouseEnter={() => setHoveredBar(index)}
                 onMouseLeave={() => setHoveredBar(null)}
-              >
-                {/* Tooltip */}
-                {isHovered && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute -top-16 left-1/2 -translate-x-1/2 bg-popover border rounded-lg px-3 py-2 shadow-lg z-10 whitespace-nowrap"
-                  >
-                    <div className="text-xs font-medium">${data.amount.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">{data.orders} orders</div>
-                  </motion.div>
-                )}
-
-                {/* Bar */}
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: `${heightPercent}%` }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: index * 0.08,
-                    ease: [0.21, 0.47, 0.32, 0.98]
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                  className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t-md relative"
-                  style={{ minHeight: '20px' }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-md" />
-                </motion.div>
-              </motion.div>
+                className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t cursor-pointer relative"
+                style={{ minHeight: '20px' }}
+              />
               
-              {/* Day label */}
-              <span className="text-xs text-muted-foreground font-medium">{data.day}</span>
+              {/* Label */}
+              <span className="text-[10px] text-muted-foreground font-medium">{data.day}</span>
             </div>
           );
         })}
-      </div>
-
-      {/* Category breakdown */}
-      <div className="pt-4 border-t grid grid-cols-3 gap-4">
-        {mockDashboardData.categoryBreakdown.map((category, index) => (
-          <motion.div
-            key={category.name}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 + index * 0.1 }}
-          >
-            <div className="text-sm text-muted-foreground mb-1">{category.name}</div>
-            <div className="text-lg font-semibold">{category.percentage}%</div>
-          </motion.div>
-        ))}
       </div>
     </Card>
   );

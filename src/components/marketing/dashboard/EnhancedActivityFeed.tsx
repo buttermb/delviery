@@ -15,19 +15,19 @@ export function EnhancedActivityFeed() {
   };
 
   return (
-    <Card className="p-6 h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
+    <Card className="p-4 h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Activity className="h-4 w-4 text-primary" />
           Activity Feed
         </h3>
-        <Badge variant="secondary" className="animate-pulse">
+        <Badge variant="secondary" className="animate-pulse text-xs">
           Live
         </Badge>
       </div>
 
-      <div className="space-y-3">
-        {mockDashboardData.activities.map((activity, index) => {
+      <div className="space-y-2">
+        {mockDashboardData.activities.slice(0, 3).map((activity, index) => {
           const Icon = activity.icon;
           
           return (
@@ -40,10 +40,10 @@ export function EnhancedActivityFeed() {
                 duration: 0.4
               }}
               whileHover={{ 
-                x: 4,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                x: 2,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}
-              className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all cursor-pointer"
+              className="flex items-start gap-2 p-2 rounded border bg-card hover:bg-accent/50 transition-all cursor-pointer"
             >
               {/* Icon with animation */}
               <motion.div
@@ -54,18 +54,18 @@ export function EnhancedActivityFeed() {
                   duration: 0.6,
                   ease: [0.21, 0.47, 0.32, 0.98]
                 }}
-                className={`p-2 rounded-full bg-muted ${getStatusColor(activity.status)}`}
+                className={`p-1.5 rounded-full bg-muted ${getStatusColor(activity.status)}`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3 w-3" />
               </motion.div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{activity.message}</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
+                <div className="text-xs font-medium truncate">{activity.message}</div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-muted-foreground">{activity.time}</span>
                   {(activity.value || activity.views || activity.qty) && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-[10px] px-1 py-0">
                       {activity.value || activity.views || activity.qty}
                     </Badge>
                   )}
@@ -75,10 +75,6 @@ export function EnhancedActivityFeed() {
           );
         })}
       </div>
-
-      <button className="w-full mt-4 text-sm text-primary hover:underline">
-        View All Activity
-      </button>
     </Card>
   );
 }
