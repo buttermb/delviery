@@ -20,7 +20,7 @@ export function SalesChartPreview() {
       </div>
 
       {/* Chart */}
-      <div className="relative h-[160px] flex items-end justify-between gap-2 px-2">
+      <div className="relative h-[120px] flex items-end justify-between gap-1.5 px-2">
         {salesData.map((data, index) => {
           const height = (data.amount / maxAmount) * 100;
           
@@ -31,11 +31,11 @@ export function SalesChartPreview() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute -top-12 bg-popover text-popover-foreground px-2 py-1 rounded shadow-lg border text-xs"
+                  className="absolute -top-10 bg-popover text-popover-foreground px-1.5 py-0.5 rounded shadow-lg border text-[10px] z-10"
                   style={{ left: `${(index / salesData.length) * 100}%` }}
                 >
                   <div className="font-semibold">${data.amount.toLocaleString()}</div>
-                  <div className="text-muted-foreground text-[10px]">{data.orders} orders</div>
+                  <div className="text-muted-foreground text-[9px]">{data.orders} orders</div>
                 </motion.div>
               )}
               

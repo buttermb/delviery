@@ -7,9 +7,8 @@ import { mockDashboardData } from './mockDashboardData';
 import { SalesChartPreview } from './dashboard/SalesChartPreview';
 import { TopProductsPreview } from './dashboard/TopProductsPreview';
 import { InventoryAlertsPreview } from './dashboard/InventoryAlertsPreview';
-import { PendingTransfersPreview } from './dashboard/PendingTransfersPreview';
-import { LocationMapPreview } from './dashboard/LocationMapPreview';
 import { EnhancedActivityFeed } from './dashboard/EnhancedActivityFeed';
+import { MiniSidebarPreview } from './dashboard/MiniSidebarPreview';
 import { 
   ShoppingCart, 
   Package, 
@@ -22,28 +21,40 @@ import {
 
 const tourSteps = [
   {
+    target: 'sidebar',
+    title: 'Navigation Hub',
+    description: 'Access all features: Catalog, Orders, Inventory, Transfers, and more.',
+    position: { top: '45%', left: '8%' }
+  },
+  {
     target: 'metrics',
     title: 'Real-time Metrics',
-    description: 'Track revenue, orders, and customer activity at a glance.',
-    position: { top: '12%', left: '50%' }
+    description: 'Track revenue, orders, customers, and transfers at a glance.',
+    position: { top: '20%', left: '50%' }
   },
   {
     target: 'chart',
     title: 'Sales Analytics',
     description: 'Visualize your sales performance with interactive charts.',
-    position: { top: '35%', left: '50%' }
+    position: { top: '45%', left: '40%' }
+  },
+  {
+    target: 'products',
+    title: 'Top Products',
+    description: 'See your best-selling products ranked by performance.',
+    position: { top: '45%', left: '68%' }
   },
   {
     target: 'activity',
     title: 'Live Activity Feed',
-    description: 'Monitor system events in real-time.',
-    position: { top: '62%', left: '25%' }
+    description: 'Monitor orders, views, and alerts in real-time.',
+    position: { top: '72%', left: '40%' }
   },
   {
     target: 'inventory',
-    title: 'Inventory Alerts',
-    description: 'Get alerts for low stock items.',
-    position: { top: '62%', left: '75%' }
+    title: 'Inventory Management',
+    description: 'Get notified when stock levels run low and restock instantly.',
+    position: { top: '72%', left: '68%' }
   }
 ];
 
@@ -67,16 +78,16 @@ export function EnhancedDashboardPreview() {
   const skipTour = () => setCurrentStep(-1);
 
   return (
-    <div className="relative max-w-6xl mx-auto">
+    <div className="relative max-w-[900px] mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -20 }}
         className="text-center mb-4"
       >
-        <h2 className="text-3xl font-bold mb-2">Complete Wholesale Management</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-          Everything you need to manage your wholesale operations
+        <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Complete Wholesale Management</h2>
+        <p className="text-slate-300 max-w-2xl mx-auto text-sm">
+          Everything you need to manage your wholesale operations in one dashboard
         </p>
         {currentStep === -1 && (
           <Button onClick={startTour} size="sm" className="gap-2 mt-3">
@@ -86,114 +97,141 @@ export function EnhancedDashboardPreview() {
         )}
       </motion.div>
 
+      {/* Browser Chrome Mockup */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.95 }}
+        transition={{ delay: 0.2 }}
+        className="bg-slate-900 rounded-t-lg border border-border/50 border-b-0"
+      >
+        <div className="p-2 flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <div className="flex-1 bg-slate-800 rounded px-3 py-1 text-xs text-slate-400 font-mono">
+            dashboard.yourapp.com
+          </div>
+        </div>
+      </motion.div>
+
       {/* Unified Dashboard Panel */}
-      <Card className="p-4 bg-card/80 backdrop-blur-sm border-border/50 shadow-lg">
-        {/* Metrics Grid */}
-        <motion.div
-          id="metrics"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3"
-        >
-        {mockDashboardData.metrics.slice(0, 4).map((metric, i) => {
-          const Icon = metric.icon;
-          return (
+      <div className="flex bg-card/80 backdrop-blur-sm border border-border/50 border-t-0 rounded-b-lg shadow-lg overflow-hidden ring-2 ring-primary/10">
+        {/* Sidebar */}
+        <MiniSidebarPreview />
+
+        {/* Main Content Area */}
+        <div className="flex-1 p-3">
+          {/* Metrics Grid */}
+          <motion.div
+            id="metrics"
+            className="grid grid-cols-4 gap-2 mb-2"
+          >
+          {mockDashboardData.metrics.slice(0, 4).map((metric, i) => {
+            const Icon = metric.icon;
+            return (
+              <motion.div
+                key={metric.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isVisible ? { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: {
+                    delay: i * 0.1,
+                    duration: 0.5
+                  }
+                } : { opacity: 0, y: 20 }}
+                whileHover={{ y: -1 }}
+              >
+                <div className="p-1.5 bg-muted/30 rounded border border-border/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-[9px] text-muted-foreground mb-0.5 uppercase tracking-wide">{metric.label}</p>
+                      <p className="text-base font-bold">{metric.value}</p>
+                      <p className={`text-[9px] mt-0.5 ${metric.change.startsWith('+') ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                        {metric.change}
+                      </p>
+                    </div>
+                    <div className={`p-1 rounded-full bg-muted ${metric.color}`}>
+                      <Icon className="h-3 w-3" />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+          </motion.div>
+
+          {/* Chart and Top Products - Side by Side */}
+          <div className="grid grid-cols-5 gap-2 mb-2">
             <motion.div
-              key={metric.label}
+              id="chart"
               initial={{ opacity: 0, y: 20 }}
               animate={isVisible ? { 
                 opacity: 1, 
                 y: 0,
                 transition: {
-                  delay: i * 0.1,
+                  delay: 0.4,
                   duration: 0.5
                 }
               } : { opacity: 0, y: 20 }}
-              whileHover={{ y: -2, boxShadow: '0 8px 20px -8px rgba(0,0,0,0.2)' }}
+              className="col-span-3"
             >
-              <div className="p-2 bg-muted/30 rounded-lg border border-border/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">{metric.label}</p>
-                    <p className="text-lg font-bold">{metric.value}</p>
-                    <p className={`text-[10px] mt-0.5 ${metric.change.startsWith('+') ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                      {metric.change}
-                    </p>
-                  </div>
-                  <div className={`p-1.5 rounded-full bg-muted ${metric.color}`}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                </div>
-              </div>
+              <SalesChartPreview />
             </motion.div>
-          );
-        })}
-        </motion.div>
+            
+            <motion.div
+              id="products"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isVisible ? { 
+                opacity: 1, 
+                y: 0,
+                transition: {
+                  delay: 0.5,
+                  duration: 0.5
+                }
+              } : { opacity: 0, y: 20 }}
+              className="col-span-2"
+            >
+              <TopProductsPreview />
+            </motion.div>
+          </div>
 
-        {/* Chart and Top Products - Side by Side */}
-        <div id="chart" className="grid grid-cols-1 lg:grid-cols-5 gap-2 mb-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isVisible ? { 
-            opacity: 1, 
-            y: 0,
-            transition: {
-              delay: 0.4,
-              duration: 0.5
-            }
-          } : { opacity: 0, y: 20 }}
-          className="lg:col-span-3"
-        >
-          <SalesChartPreview />
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isVisible ? { 
-            opacity: 1, 
-            y: 0,
-            transition: {
-              delay: 0.5,
-              duration: 0.5
-            }
-          } : { opacity: 0, y: 20 }}
-          className="lg:col-span-2"
-        >
-          <TopProductsPreview />
-        </motion.div>
+          {/* Activity Feed and Inventory Alerts */}
+          <div className="grid grid-cols-2 gap-2">
+            <motion.div
+              id="activity"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isVisible ? { 
+                opacity: 1, 
+                x: 0,
+                transition: {
+                  delay: 0.6,
+                  duration: 0.5
+                }
+              } : { opacity: 0, x: -20 }}
+            >
+              <EnhancedActivityFeed />
+            </motion.div>
+            
+            <motion.div
+              id="inventory"
+              initial={{ opacity: 0, x: 20 }}
+              animate={isVisible ? { 
+                opacity: 1, 
+                x: 0,
+                transition: {
+                  delay: 0.7,
+                  duration: 0.5
+                }
+              } : { opacity: 0, x: 20 }}
+            >
+              <InventoryAlertsPreview />
+            </motion.div>
+          </div>
         </div>
-
-        {/* Activity Feed and Inventory Alerts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-        <motion.div
-          id="activity"
-          initial={{ opacity: 0, x: -20 }}
-          animate={isVisible ? { 
-            opacity: 1, 
-            x: 0,
-            transition: {
-              delay: 0.6,
-              duration: 0.5
-            }
-          } : { opacity: 0, x: -20 }}
-        >
-          <EnhancedActivityFeed />
-        </motion.div>
-        
-        <motion.div
-          id="inventory"
-          initial={{ opacity: 0, x: 20 }}
-          animate={isVisible ? { 
-            opacity: 1, 
-            x: 0,
-            transition: {
-              delay: 0.7,
-              duration: 0.5
-            }
-          } : { opacity: 0, x: 20 }}
-        >
-          <InventoryAlertsPreview />
-        </motion.div>
-        </div>
-      </Card>
+      </div>
 
       {/* Tour Tooltips */}
       {currentStep >= 0 && currentStep < tourSteps.length && (
