@@ -29,12 +29,8 @@ export function usePermissions() {
         interface UserRoleRow {
           role: string;
         }
-        const result: any = await (supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', admin.id)
-          .eq('tenant_id', tenant.id)
-          .single() as any);
+        // @ts-ignore - Supabase complex query types cause TS2589
+        const result: any = await supabase.from('user_roles').select('role').eq('user_id', admin.id).eq('tenant_id', tenant.id).single();
         
         const { data, error } = result;
 
