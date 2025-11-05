@@ -4,18 +4,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  DollarSign, TrendingUp, Package, Truck, Users,
-  ArrowUp, ArrowDown, Activity, AlertTriangle, CheckCircle2,
-  Clock, Zap, Target, BarChart3
-} from 'lucide-react';
+import { DollarSign, Package, Truck, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { format, startOfWeek, subDays } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { StatCard } from './dashboard/StatCard';
 import { RecentOrdersWidget } from './dashboard/RecentOrdersWidget';
@@ -29,14 +20,12 @@ import { RevenueChartWidget } from './dashboard/RevenueChartWidget';
 import { RevenuePredictionWidget } from './dashboard/RevenuePredictionWidget';
 import { TopProductsWidget } from './dashboard/TopProductsWidget';
 import { ActionableInsights } from '@/components/admin/ActionableInsights';
-// FrontedInventoryWidget removed - had type errors
 
 export function ModernDashboard() {
-  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
-  // Fetch dashboard data - PARALLEL QUERIES for 5x faster load
+  // Fetch dashboard data
   const { data: dashboardData } = useQuery<{
     revenue: number;
     revenueChange: number;
@@ -53,7 +42,38 @@ export function ModernDashboard() {
       const weekStart = startOfWeek(today);
       const lastWeekStart = startOfWeek(subDays(today, 7));
 
-      // Execute all queries in parallel using Promise.all
+      // Execute all queries in parallel
+      const todayOrdersPromise = supabase
+        .from('wholesale_orders')
+        .select('total_amount')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', today.toISOString());
+      
+      const lastWeekOrdersPromise = supabase
+        .from('wholesale_orders')
+        .select('total_amount')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', lastWeekStart.toISOString())
+        .lt('created_at', weekStart.toISOString());
+      
+      const activeOrdersPromise = supabase
+        .from('wholesale_orders')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .in('status', ['pending', 'assigned', 'in_transit']);
+      
+      const transfersPromise = supabase
+        .from('wholesale_deliveries')
+        .select('id, status')
+        .eq('tenant_id', tenantId)
+        .in('status', ['assigned', 'picked_up', 'in_transit']);
+      
+      const lowStockPromise = supabase
+        .from('wholesale_inventory')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .lt('quantity_lbs', 30);
+
       const [
         todayOrdersResult,
         lastWeekOrdersResult,
@@ -61,47 +81,17 @@ export function ModernDashboard() {
         transfersResult,
         lowStockResult
       ] = await Promise.all([
-        // Today's revenue
-        supabase
-          .from('wholesale_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenantId)
-          .gte('created_at', today.toISOString()),
-        
-        // Last week for comparison
-        supabase
-          .from('wholesale_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenantId)
-          .gte('created_at', lastWeekStart.toISOString())
-          .lt('created_at', weekStart.toISOString()),
-        
-        // Active orders
-        supabase
-          .from('wholesale_orders')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .in('status', ['pending', 'assigned', 'in_transit']),
-        
-        // Transfers
-        supabase
-          .from('wholesale_deliveries')
-          .select('id, status')
-          .eq('tenant_id', tenantId)
-          .in('status', ['assigned', 'picked_up', 'in_transit']),
-        
-        // Alerts
-        supabase
-          .from('wholesale_inventory')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .lt('quantity_lbs', 30)
+        todayOrdersPromise,
+        lastWeekOrdersPromise,
+        activeOrdersPromise,
+        transfersPromise,
+        lowStockPromise
       ]);
 
-      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number }) => 
+      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: any) => 
         sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number }) => 
+      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: any) => 
         sum + Number(o.total_amount || 0), 0);
 
       return {
@@ -114,7 +104,7 @@ export function ModernDashboard() {
         alerts: lowStockResult.data?.length || 0,
       };
     },
-    enabled: !!account?.id,
+    enabled: !!tenantId,
     refetchInterval: 60000,
   });
 
@@ -133,7 +123,7 @@ export function ModernDashboard() {
       {/* Quick Actions Bar */}
       <QuickActionsBar />
 
-      {/* Stat Cards - Mobile-first responsive grid */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Revenue"
@@ -175,16 +165,13 @@ export function ModernDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - 2/3 */}
         <div className="lg:col-span-2 space-y-6">
           <SalesChartWidget />
           <RevenuePredictionWidget />
           <RecentOrdersWidget />
         </div>
 
-        {/* Right Column - 1/3 */}
         <div className="space-y-6">
-          {/* FrontedInventoryWidget removed - had type errors */}
           <InventoryAlertsWidget />
           <ActivityFeedWidget />
         </div>
@@ -207,4 +194,3 @@ export function ModernDashboard() {
     </div>
   );
 }
-

@@ -244,7 +244,10 @@ export function DataTable<TData, TValue>({
                     onCheckedChange={toggleAllSelection}
                     ref={(el) => {
                       if (el) {
-                        el.indeterminate = isIndeterminate;
+                        const button = el as any;
+                        if (button && 'indeterminate' in button) {
+                          button.indeterminate = isIndeterminate;
+                        }
                       }
                     }}
                     aria-label="Select all"

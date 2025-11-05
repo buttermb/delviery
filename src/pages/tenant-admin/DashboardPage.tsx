@@ -70,7 +70,7 @@ export default function TenantAdminDashboardPage() {
 
       try {
         // Get today's orders with error handling
-        const { data: orders, error: ordersError } = await supabase
+        const { data: orders, error: ordersError }: any = await supabase
           .from("wholesale_orders")
           .select("total_amount, status")
           .eq("tenant_id", tenantId)
@@ -85,10 +85,9 @@ export default function TenantAdminDashboardPage() {
         const orderCount = orders?.length || 0;
 
         // Get low stock items with error handling
-        // Use product_name if strain doesn't exist, fallback gracefully
-        const { data: inventory, error: inventoryError } = await supabase
+        const { data: inventory, error: inventoryError }: any = await supabase
           .from("wholesale_inventory")
-          .select("strain, product_name, weight_lbs, quantity_lbs, low_stock_threshold, reorder_point")
+          .select("id, product_name, quantity_lbs, reorder_point")
           .eq("tenant_id", tenantId);
 
         if (inventoryError) {
@@ -96,16 +95,14 @@ export default function TenantAdminDashboardPage() {
           // Return defaults instead of throwing
         }
 
-        const lowStock = (inventory || []).map((item) => ({
-          ...item,
-          // Use strain if available, otherwise product_name
-          strain: item.strain || item.product_name || 'Unknown',
-          // Use weight_lbs if available, otherwise quantity_lbs
-          weight_lbs: item.weight_lbs ?? item.quantity_lbs ?? 0,
-          // Use low_stock_threshold if available, otherwise reorder_point, otherwise default 10
-          low_stock_threshold: item.low_stock_threshold ?? item.reorder_point ?? 10,
+        const lowStock = (inventory || []).map((item: any) => ({
+          id: item.id,
+          strain: item.product_name || 'Unknown',
+          product_name: item.product_name,
+          quantity_lbs: item.quantity_lbs ?? 0,
+          reorder_point: item.reorder_point ?? 10,
         })).filter(
-          (item: any) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
+          (item: any) => Number(item.quantity_lbs || 0) <= Number(item.reorder_point || 10)
         );
 
         return {

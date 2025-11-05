@@ -59,7 +59,6 @@ const statusConfig: Record<string, { variant: StatusVariant; label: string }> = 
   
   // Transfer statuses
   'scheduled': { variant: 'info', label: 'Scheduled' },
-  'completed': { variant: 'success', label: 'Completed' },
 };
 
 const variantStyles: Record<StatusVariant, string> = {

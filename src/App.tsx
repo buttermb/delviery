@@ -375,9 +375,9 @@ const App = () => {
                         {/* Help Page */}
                         <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
                         
-                        {/* Tenant Admin Portal */}
-                        <Route path="/:tenantSlug/admin" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
-                          <Route index element={<Navigate to="dashboard" replace />} />
+                        {/* Tenant Admin Portal - Exact redirect */}
+                        <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />
+                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           {/* Legacy route redirects - redirect old paths to new paths */}
                           <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />
