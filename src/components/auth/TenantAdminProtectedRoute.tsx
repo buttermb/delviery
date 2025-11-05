@@ -24,15 +24,15 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [verifying, setVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
-  const [verificationAttempts, setVerificationAttempts] = useState(0);
   const location = useLocation();
   
   // Track auth values in refs to avoid re-triggering verification
   const authRef = useRef({ token, admin, tenant });
   const verificationLockRef = useRef(false);
 
-  // Cache verification results to avoid repeated API calls
+  // Cache verification results to avoid repeated checks
   const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
+  const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
 
   const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
     const cacheKey = `${email}:${tenantSlug}`;
@@ -113,32 +113,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         verificationLockRef.current = false;
       } catch (err) {
         console.error('[TenantAdminProtectedRoute] Verification error:', err);
-        setVerificationAttempts(prev => prev + 1);
-        
-        if (verificationAttempts >= 2) {
-          setVerificationError('Verification failed. Please try again.');
-          setVerifying(false);
-          verificationLockRef.current = false;
-        } else {
-          verificationLockRef.current = false;
-          setTimeout(() => verifyAccess(), 500);
-        }
+        setVerificationError('Verification failed. Please try again.');
+        setVerifying(false);
+        verificationLockRef.current = false;
       }
     };
 
     verifyAccess();
-
-    // Safety timeout
-    const timeout = setTimeout(() => {
-      if (verifying && !verified) {
-        console.error('[TenantAdminProtectedRoute] Verification timeout');
-        setVerificationError('Verification timed out. Please try again.');
-        setVerifying(false);
-        verificationLockRef.current = false;
-      }
-    }, VERIFICATION_TIMEOUT_MS);
-
-    return () => clearTimeout(timeout);
   }, [tenantSlug, location.pathname]); // Only re-run if tenantSlug or route changes
 
   // Loading state - wait for auth AND verification
@@ -170,7 +151,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
             <Button
               onClick={() => {
                 setVerificationError(null);
-                setVerificationAttempts(0);
                 setVerified(false);
                 setVerifying(true);
                 verificationLockRef.current = false;

@@ -17,8 +17,9 @@ interface VerificationContextType {
 const VerificationContext = createContext<VerificationContextType | undefined>(undefined);
 
 export function VerificationProvider({ children }: { children: ReactNode }) {
-  const [isVerified, setIsVerified] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(true);
+  // Start with verified state since we only render children after verification in ProtectedRoute
+  const [isVerified, setIsVerified] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
 
   return (
