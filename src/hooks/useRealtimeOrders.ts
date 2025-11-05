@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { validateOrder } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useVerification } from '@/contexts/VerificationContext';
 
 interface Order {
   id: string;
@@ -27,6 +28,7 @@ interface UseRealtimeOrdersOptions {
 
 export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
+  const { isVerified, isVerifying } = useVerification();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -75,9 +77,15 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   }, [statusFilter?.join(',')]);
 
   useEffect(() => {
-    // Guard: Don't fetch or subscribe if auth is still loading or tenant not available
+    // Guard 1: Don't fetch or subscribe if auth is still loading or tenant not available
     if (authLoading || !tenant?.id) {
       console.log('[useRealtimeOrders] Waiting for authentication...', { authLoading, hasTenant: !!tenant?.id });
+      return;
+    }
+
+    // Guard 2: Don't subscribe until verification is complete
+    if (!isVerified || isVerifying) {
+      console.log('[useRealtimeOrders] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
@@ -159,7 +167,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
         supabase.removeChannel(channel);
       }
     };
-  }, [authLoading, tenant?.id, statusFilter?.join(',')]); // Re-run if auth state or filter changes
+  }, [authLoading, tenant?.id, isVerified, isVerifying, statusFilter?.join(',')]); // Re-run if auth state or filter changes
 
   return {
     orders,

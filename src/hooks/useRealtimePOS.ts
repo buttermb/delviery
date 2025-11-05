@@ -2,15 +2,23 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useVerification } from '@/contexts/VerificationContext';
 
 export function useRealtimeShifts(tenantId: string | undefined) {
   const { loading } = useTenantAdminAuth();
+  const { isVerified, isVerifying } = useVerification();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Guard: Don't subscribe if auth is still loading or tenantId not available
+    // Guard 1: Don't subscribe if auth is still loading or tenantId not available
     if (loading || !tenantId) {
       console.log('[useRealtimeShifts] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      return;
+    }
+
+    // Guard 2: Don't subscribe until verification is complete
+    if (!isVerified || isVerifying) {
+      console.log('[useRealtimeShifts] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
@@ -54,17 +62,24 @@ export function useRealtimeShifts(tenantId: string | undefined) {
       console.log('[useRealtimeShifts] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [loading, tenantId, queryClient]);
+  }, [loading, tenantId, isVerified, isVerifying, queryClient]);
 }
 
 export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: string) {
   const { loading } = useTenantAdminAuth();
+  const { isVerified, isVerifying } = useVerification();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Guard: Don't subscribe if auth is still loading or tenantId not available
+    // Guard 1: Don't subscribe if auth is still loading or tenantId not available
     if (loading || !tenantId) {
       console.log('[useRealtimeTransactions] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      return;
+    }
+
+    // Guard 2: Don't subscribe until verification is complete
+    if (!isVerified || isVerifying) {
+      console.log('[useRealtimeTransactions] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
@@ -112,17 +127,24 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
       console.log('[useRealtimeTransactions] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [loading, tenantId, shiftId, queryClient]);
+  }, [loading, tenantId, shiftId, isVerified, isVerifying, queryClient]);
 }
 
 export function useRealtimeCashDrawer(shiftId: string | undefined) {
   const { loading } = useTenantAdminAuth();
+  const { isVerified, isVerifying } = useVerification();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Guard: Don't subscribe if auth is still loading or shiftId not available
+    // Guard 1: Don't subscribe if auth is still loading or shiftId not available
     if (loading || !shiftId) {
       console.log('[useRealtimeCashDrawer] Waiting for authentication...', { loading, hasShiftId: !!shiftId });
+      return;
+    }
+
+    // Guard 2: Don't subscribe until verification is complete
+    if (!isVerified || isVerifying) {
+      console.log('[useRealtimeCashDrawer] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
@@ -163,5 +185,5 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
       console.log('[useRealtimeCashDrawer] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [loading, shiftId, queryClient]);
+  }, [loading, shiftId, isVerified, isVerifying, queryClient]);
 }
