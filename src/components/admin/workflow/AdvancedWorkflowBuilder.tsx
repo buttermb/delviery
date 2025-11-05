@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { WorkflowCanvas } from './WorkflowCanvas';
 import { WorkflowMonitoringDashboard } from './WorkflowMonitoringDashboard';
+import { DeadLetterQueue } from './DeadLetterQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -88,7 +89,7 @@ export function AdvancedWorkflowBuilder() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
           <TabsTrigger value="builder">
             Workflow Builder
           </TabsTrigger>
@@ -97,6 +98,9 @@ export function AdvancedWorkflowBuilder() {
           </TabsTrigger>
           <TabsTrigger value="history">
             Execution History
+          </TabsTrigger>
+          <TabsTrigger value="dead-letter-queue">
+            Dead Letter Queue
           </TabsTrigger>
         </TabsList>
 
@@ -167,6 +171,11 @@ export function AdvancedWorkflowBuilder() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Dead Letter Queue Tab */}
+        <TabsContent value="dead-letter-queue">
+          <DeadLetterQueue />
         </TabsContent>
       </Tabs>
     </div>

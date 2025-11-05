@@ -8347,6 +8347,103 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_dead_letter_queue: {
+        Row: {
+          created_at: string | null
+          error_details: Json | null
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          execution_log: Json | null
+          first_failed_at: string
+          id: string
+          last_attempt_at: string
+          manual_retry_requested: boolean | null
+          manual_retry_requested_at: string | null
+          manual_retry_requested_by: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          tenant_id: string | null
+          total_attempts: number | null
+          trigger_data: Json | null
+          updated_at: string | null
+          workflow_execution_id: string
+          workflow_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_details?: Json | null
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          execution_log?: Json | null
+          first_failed_at?: string
+          id?: string
+          last_attempt_at?: string
+          manual_retry_requested?: boolean | null
+          manual_retry_requested_at?: string | null
+          manual_retry_requested_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          total_attempts?: number | null
+          trigger_data?: Json | null
+          updated_at?: string | null
+          workflow_execution_id: string
+          workflow_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          execution_log?: Json | null
+          first_failed_at?: string
+          id?: string
+          last_attempt_at?: string
+          manual_retry_requested?: boolean | null
+          manual_retry_requested_at?: string | null
+          manual_retry_requested_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          total_attempts?: number | null
+          trigger_data?: Json | null
+          updated_at?: string | null
+          workflow_execution_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_dead_letter_queue_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_dead_letter_queue_workflow_execution_id_fkey"
+            columns: ["workflow_execution_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_dead_letter_queue_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_definitions: {
         Row: {
           actions: Json
@@ -8358,6 +8455,7 @@ export type Database = {
           is_active: boolean | null
           last_run_at: string | null
           name: string
+          retry_config: Json | null
           run_count: number | null
           tenant_id: string
           trigger_config: Json
@@ -8374,6 +8472,7 @@ export type Database = {
           is_active?: boolean | null
           last_run_at?: string | null
           name: string
+          retry_config?: Json | null
           run_count?: number | null
           tenant_id: string
           trigger_config?: Json
@@ -8390,6 +8489,7 @@ export type Database = {
           is_active?: boolean | null
           last_run_at?: string | null
           name?: string
+          retry_config?: Json | null
           run_count?: number | null
           tenant_id?: string
           trigger_config?: Json
@@ -8410,9 +8510,14 @@ export type Database = {
         Row: {
           completed_at: string | null
           duration_ms: number | null
+          error_details: Json | null
           error_message: string | null
           execution_log: Json | null
           id: string
+          is_retryable: boolean | null
+          last_error: string | null
+          next_retry_at: string | null
+          retry_count: number | null
           started_at: string
           status: string
           tenant_id: string
@@ -8422,9 +8527,14 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           duration_ms?: number | null
+          error_details?: Json | null
           error_message?: string | null
           execution_log?: Json | null
           id?: string
+          is_retryable?: boolean | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
           started_at?: string
           status: string
           tenant_id: string
@@ -8434,9 +8544,14 @@ export type Database = {
         Update: {
           completed_at?: string | null
           duration_ms?: number | null
+          error_details?: Json | null
           error_message?: string | null
           execution_log?: Json | null
           id?: string
+          is_retryable?: boolean | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
           started_at?: string
           status?: string
           tenant_id?: string
@@ -8600,6 +8715,10 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_next_retry_delay: {
+        Args: { p_retry_config: Json; p_retry_count: number }
+        Returns: number
+      }
       calculate_risk_score: { Args: { p_user_id: string }; Returns: number }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
       compare_workflow_versions: {
@@ -8751,6 +8870,10 @@ export type Database = {
       is_admin_user: { Args: never; Returns: boolean }
       is_age_verified: { Args: { _user_id: string }; Returns: boolean }
       is_device_blocked: { Args: { _fingerprint: string }; Returns: boolean }
+      is_error_retryable: {
+        Args: { p_error_type: string; p_retry_config: Json }
+        Returns: boolean
+      }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
@@ -8771,6 +8894,14 @@ export type Database = {
         }
         Returns: string
       }
+      move_to_dead_letter_queue: {
+        Args: { p_execution_id: string }
+        Returns: string
+      }
+      resolve_dead_letter_entry: {
+        Args: { p_dlq_id: string; p_notes?: string; p_user_id: string }
+        Returns: undefined
+      }
       resolve_inventory_alert: {
         Args: { alert_id: string }
         Returns: undefined
@@ -8778,6 +8909,10 @@ export type Database = {
       restore_workflow_version: {
         Args: { p_version_number: number; p_workflow_id: string }
         Returns: Json
+      }
+      retry_from_dead_letter_queue: {
+        Args: { p_dlq_id: string; p_user_id?: string }
+        Returns: string
       }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }

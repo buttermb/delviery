@@ -160,26 +160,103 @@ serve(async (req) => {
       );
 
     } catch (error: any) {
-      // Update execution as failed
-      await supabase
-        .from('workflow_executions')
-        .update({
-          status: 'failed',
-          execution_log: executionLog,
-          error_message: error.message,
-          completed_at: new Date().toISOString(),
-          duration_ms: Date.now() - startTime
-        })
-        .eq('id', execution_id);
+      // Classify error type for retry logic
+      const errorType = classifyError(error);
+      const errorDetails = {
+        error_type: errorType,
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      };
 
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: error.message,
-          execution_log: executionLog
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Get workflow retry config
+      const retryConfig = execution.workflow.retry_config || {
+        max_attempts: 3,
+        initial_delay_seconds: 5,
+        max_delay_seconds: 300,
+        backoff_multiplier: 2,
+        retry_on_errors: ['timeout', 'network_error', 'rate_limit', 'server_error']
+      };
+
+      // Check if error is retryable
+      const isRetryable = retryConfig.retry_on_errors.includes(errorType);
+      const retryCount = (execution.retry_count || 0) + 1;
+      const canRetry = isRetryable && retryCount < retryConfig.max_attempts;
+
+      if (canRetry) {
+        // Calculate next retry delay with exponential backoff
+        const { data: delayData } = await supabase.rpc('calculate_next_retry_delay', {
+          p_retry_count: retryCount,
+          p_retry_config: retryConfig
+        });
+
+        const delaySeconds = delayData || 5;
+        const nextRetryAt = new Date(Date.now() + delaySeconds * 1000).toISOString();
+
+        // Update execution for retry
+        await supabase
+          .from('workflow_executions')
+          .update({
+            status: 'failed',
+            execution_log: executionLog,
+            last_error: error.message,
+            error_details: errorDetails,
+            retry_count: retryCount,
+            next_retry_at: nextRetryAt,
+            is_retryable: true,
+            duration_ms: Date.now() - startTime
+          })
+          .eq('id', execution_id);
+
+        console.log(`Workflow execution ${execution_id} will retry in ${delaySeconds}s (attempt ${retryCount}/${retryConfig.max_attempts})`);
+
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: error.message,
+            retry_scheduled: true,
+            retry_attempt: retryCount,
+            max_attempts: retryConfig.max_attempts,
+            next_retry_at: nextRetryAt,
+            delay_seconds: delaySeconds
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // Max retries exhausted or non-retryable error - move to dead letter queue
+        await supabase
+          .from('workflow_executions')
+          .update({
+            status: 'failed',
+            execution_log: executionLog,
+            last_error: error.message,
+            error_details: errorDetails,
+            retry_count: retryCount,
+            is_retryable: false,
+            completed_at: new Date().toISOString(),
+            duration_ms: Date.now() - startTime
+          })
+          .eq('id', execution_id);
+
+        // Move to dead letter queue
+        await supabase.rpc('move_to_dead_letter_queue', {
+          p_execution_id: execution_id
+        });
+
+        console.error(`Workflow execution ${execution_id} moved to dead letter queue after ${retryCount} attempts`);
+
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: error.message,
+            moved_to_dlq: true,
+            total_attempts: retryCount,
+            error_type: errorType,
+            execution_log: executionLog
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
   } catch (error: any) {
@@ -299,4 +376,67 @@ async function executeEdgeFunction(supabase: any, action: WorkflowAction, execut
   
   if (error) throw error;
   return data;
+}
+
+// Error classifier for retry logic
+function classifyError(error: any): string {
+  const message = error.message?.toLowerCase() || '';
+  
+  // Timeout errors
+  if (message.includes('timeout') || message.includes('timed out')) {
+    return 'timeout';
+  }
+  
+  // Network errors
+  if (
+    message.includes('network') ||
+    message.includes('connection') ||
+    message.includes('econnrefused') ||
+    message.includes('enotfound') ||
+    message.includes('fetch failed')
+  ) {
+    return 'network_error';
+  }
+  
+  // Rate limiting
+  if (
+    message.includes('rate limit') ||
+    message.includes('too many requests') ||
+    error.status === 429
+  ) {
+    return 'rate_limit';
+  }
+  
+  // Server errors (5xx)
+  if (error.status >= 500 && error.status < 600) {
+    return 'server_error';
+  }
+  
+  // Authentication errors (non-retryable)
+  if (
+    message.includes('unauthorized') ||
+    message.includes('authentication') ||
+    error.status === 401 ||
+    error.status === 403
+  ) {
+    return 'auth_error';
+  }
+  
+  // Validation errors (non-retryable)
+  if (
+    message.includes('validation') ||
+    message.includes('invalid') ||
+    error.status === 400 ||
+    error.status === 422
+  ) {
+    return 'validation_error';
+  }
+  
+  // Not found errors (non-retryable)
+  if (message.includes('not found') || error.status === 404) {
+    return 'not_found';
+  }
+  
+  // Default to unknown
+  return 'unknown_error';
 }
