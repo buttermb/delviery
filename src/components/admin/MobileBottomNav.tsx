@@ -66,7 +66,7 @@ export function MobileBottomNav() {
               key={link.href}
               to={fullPath}
               className={cn(
-                'flex flex-col items-center justify-center py-3 text-xs transition-colors',
+                'flex flex-col items-center justify-center py-3 text-xs transition-colors min-h-[60px] touch-manipulation',
                 active
                   ? 'text-primary font-medium'
                   : 'text-muted-foreground'
@@ -81,12 +81,12 @@ export function MobileBottomNav() {
         {/* More menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center py-3 text-xs text-muted-foreground">
+            <button className="flex flex-col items-center justify-center py-3 text-xs text-muted-foreground min-h-[60px] touch-manipulation w-full">
               <Menu className="h-5 w-5 mb-1" />
               <span>More</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
+          <SheetContent side="left" className="p-0 w-[85vw] max-w-sm">
             <Sidebar />
           </SheetContent>
         </Sheet>

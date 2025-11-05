@@ -532,56 +532,58 @@ export default function ProductManagement() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex gap-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="relative flex-1 w-full sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-9 min-h-[44px]"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name (A-Z)</SelectItem>
-            <SelectItem value="price">Price (High-Low)</SelectItem>
-            <SelectItem value="stock">Stock (High-Low)</SelectItem>
-            <SelectItem value="margin">Margin (High-Low)</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-1 border rounded-md overflow-hidden">
-          <Toggle
-            pressed={viewMode === "grid"}
-            onPressedChange={() => setViewMode("grid")}
-            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            pressed={viewMode === "list"}
-            onPressedChange={() => setViewMode("list")}
-            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l"
-          >
-            <List className="h-4 w-4" />
-          </Toggle>
+        <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name (A-Z)</SelectItem>
+              <SelectItem value="price">Price (High-Low)</SelectItem>
+              <SelectItem value="stock">Stock (High-Low)</SelectItem>
+              <SelectItem value="margin">Margin (High-Low)</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-1 border rounded-md overflow-hidden min-h-[44px]">
+            <Toggle
+              pressed={viewMode === "grid"}
+              onPressedChange={() => setViewMode("grid")}
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none min-h-[44px] min-w-[44px]"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Toggle>
+            <Toggle
+              pressed={viewMode === "list"}
+              onPressedChange={() => setViewMode("list")}
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-0 rounded-none border-l min-h-[44px] min-w-[44px]"
+            >
+              <List className="h-4 w-4" />
+            </Toggle>
+          </div>
         </div>
       </div>
 
