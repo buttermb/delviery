@@ -40,7 +40,8 @@ export function InventoryAlertsWidget() {
       return data || [];
     },
     enabled: !!account?.id,
-    refetchInterval: 60000,
+    // Use real-time updates via useRealtimeSync instead of polling
+    staleTime: 10000, // Allow 10s stale time for real-time updates
   });
 
   return (
