@@ -27,6 +27,9 @@ const statusConfig: Record<string, { variant: StatusVariant; label: string }> = 
   'delivered': { variant: 'success', label: 'Delivered' },
   'completed': { variant: 'success', label: 'Completed' },
   'cancelled': { variant: 'error', label: 'Cancelled' },
+  'processing': { variant: 'info', label: 'Processing' },
+  'picked_up': { variant: 'info', label: 'Picked Up' },
+  'failed': { variant: 'error', label: 'Failed' },
   
   // Payment statuses
   'paid': { variant: 'success', label: 'Paid' },
@@ -45,7 +48,18 @@ const statusConfig: Record<string, { variant: StatusVariant; label: string }> = 
   'suspended': { variant: 'warning', label: 'Suspended' },
   'inactive': { variant: 'default', label: 'Inactive' },
   'burned': { variant: 'error', label: 'Burned' },
+  'soft_burned': { variant: 'warning', label: 'Soft Burned' },
+  'hard_burned': { variant: 'error', label: 'Hard Burned' },
   'expired': { variant: 'warning', label: 'Expired' },
+  
+  // Courier statuses
+  'available': { variant: 'success', label: 'Available' },
+  'on_delivery': { variant: 'info', label: 'On Delivery' },
+  'offline': { variant: 'default', label: 'Offline' },
+  
+  // Transfer statuses
+  'scheduled': { variant: 'info', label: 'Scheduled' },
+  'completed': { variant: 'success', label: 'Completed' },
 };
 
 const variantStyles: Record<StatusVariant, string> = {

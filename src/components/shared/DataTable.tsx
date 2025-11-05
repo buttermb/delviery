@@ -4,14 +4,22 @@
  */
 
 import { useState } from 'react';
-// Simplified DataTable without @tanstack/react-table dependency
-// TODO: Install @tanstack/react-table for full functionality: npm install @tanstack/react-table
+import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
   header: string;
   cell?: (row: { original: T }) => React.ReactNode;
   id?: string;
+  enableHiding?: boolean;
+  visible?: boolean;
 };
 
 import { Card } from '@/components/ui/card';
@@ -34,6 +42,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData>[];
@@ -48,6 +57,10 @@ interface DataTableProps<TData, TValue> {
   filterAction?: () => void;
   loading?: boolean;
   emptyMessage?: string;
+  enableSelection?: boolean;
+  enableColumnVisibility?: boolean;
+  onSelectionChange?: (selected: TData[]) => void;
+  getRowId?: (row: TData) => string | number;
 }
 
 export function DataTable<TData, TValue>({
@@ -63,10 +76,17 @@ export function DataTable<TData, TValue>({
   filterAction,
   loading = false,
   emptyMessage = 'No results found.',
+  enableSelection = false,
+  enableColumnVisibility = true,
+  onSelectionChange,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const [currentPage, setCurrentPage] = useState(0);
   const [searchValue, setSearchValue] = useState('');
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
+    new Set(columns.map((col) => col.id || col.accessorKey?.toString() || '').filter(Boolean))
+  );
 
   // Filter data
   const filteredData = data.filter((item: any) => {
@@ -83,6 +103,55 @@ export function DataTable<TData, TValue>({
     : filteredData;
 
   const totalPages = pagination ? Math.ceil(filteredData.length / pageSize) : 1;
+
+  // Filter visible columns
+  const visibleColumnsList = columns.filter((col) => {
+    const colId = col.id || col.accessorKey?.toString() || '';
+    return visibleColumns.has(colId) && (col.visible !== false);
+  });
+
+  // Handle row selection
+  const toggleRowSelection = (row: TData, rowIndex: number) => {
+    const rowId = getRowId ? getRowId(row) : (row as any).id || rowIndex;
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(rowId)) {
+      newSelected.delete(rowId);
+    } else {
+      newSelected.add(rowId);
+    }
+    setSelectedRows(newSelected);
+    
+    // Notify parent of selection changes
+    if (onSelectionChange) {
+      const selectedData = filteredData.filter((item, idx) => {
+        const id = getRowId ? getRowId(item) : (item as any).id || idx;
+        return newSelected.has(id);
+      });
+      onSelectionChange(selectedData);
+    }
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedRows.size === paginatedData.length) {
+      setSelectedRows(new Set());
+      if (onSelectionChange) {
+        onSelectionChange([]);
+      }
+    } else {
+      const allIds = new Set<string | number>();
+      paginatedData.forEach((row, idx) => {
+        const id = getRowId ? getRowId(row) : (row as any).id || idx;
+        allIds.add(id);
+      });
+      setSelectedRows(allIds);
+      if (onSelectionChange) {
+        onSelectionChange(paginatedData);
+      }
+    }
+  };
+
+  const isAllSelected = selectedRows.size === paginatedData.length && paginatedData.length > 0;
+  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < paginatedData.length;
 
   return (
     <Card className="overflow-hidden">
@@ -115,6 +184,39 @@ export function DataTable<TData, TValue>({
         </div>
 
         <div className="flex items-center gap-2">
+          {enableColumnVisibility && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Columns
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {columns.map((column) => {
+                  const colId = column.id || column.accessorKey?.toString() || '';
+                  const isVisible = visibleColumns.has(colId);
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={colId}
+                      checked={isVisible}
+                      onCheckedChange={(checked) => {
+                        const newVisible = new Set(visibleColumns);
+                        if (checked) {
+                          newVisible.add(colId);
+                        } else {
+                          newVisible.delete(colId);
+                        }
+                        setVisibleColumns(newVisible);
+                      }}
+                    >
+                      {column.header}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {filterAction && (
             <Button variant="outline" size="sm" onClick={filterAction}>
               <Filter className="h-4 w-4 mr-2" />
@@ -135,7 +237,21 @@ export function DataTable<TData, TValue>({
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column, index) => (
+              {enableSelection && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={toggleAllSelection}
+                    ref={(el) => {
+                      if (el) {
+                        el.indeterminate = isIndeterminate;
+                      }
+                    }}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+              )}
+              {visibleColumnsList.map((column, index) => (
                 <TableHead key={column.id || column.accessorKey?.toString() || index}>
                   {column.header}
                 </TableHead>
@@ -146,7 +262,7 @@ export function DataTable<TData, TValue>({
             {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={visibleColumnsList.length + (enableSelection ? 1 : 0)}
                   className="h-24 text-center"
                 >
                   <div className="flex items-center justify-center">
@@ -156,26 +272,39 @@ export function DataTable<TData, TValue>({
                 </TableCell>
               </TableRow>
             ) : paginatedData.length ? (
-              paginatedData.map((row, rowIndex) => (
-                <TableRow
-                  key={rowIndex}
-                  className="hover:bg-muted/50"
-                >
-                  {columns.map((column, colIndex) => (
-                    <TableCell key={column.id || column.accessorKey?.toString() || colIndex}>
-                      {column.cell
-                        ? column.cell({ original: row })
-                        : column.accessorKey
-                        ? (row as any)[column.accessorKey]
-                        : ''}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              paginatedData.map((row, rowIndex) => {
+                const rowId = getRowId ? getRowId(row) : (row as any).id || rowIndex;
+                const isSelected = selectedRows.has(rowId);
+                return (
+                  <TableRow
+                    key={rowIndex}
+                    className={cn("hover:bg-muted/50", isSelected && "bg-muted")}
+                  >
+                    {enableSelection && (
+                      <TableCell>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleRowSelection(row, rowIndex)}
+                          aria-label={`Select row ${rowIndex + 1}`}
+                        />
+                      </TableCell>
+                    )}
+                    {visibleColumnsList.map((column, colIndex) => (
+                      <TableCell key={column.id || column.accessorKey?.toString() || colIndex}>
+                        {column.cell
+                          ? column.cell({ original: row })
+                          : column.accessorKey
+                          ? (row as any)[column.accessorKey]
+                          : ''}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={visibleColumnsList.length + (enableSelection ? 1 : 0)}
                   className="h-24 text-center"
                 >
                   {emptyMessage}
