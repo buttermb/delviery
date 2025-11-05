@@ -29,8 +29,8 @@ export function LimitGuard({
   blockOnLimit = false,
   showProgress = false,
 }: LimitGuardProps) {
-  const { tenant, loading } = useTenantAdminAuth();
-  const { canCreate, getRemaining, getCurrent, getLimit } = useTenantLimits();
+  const { tenant } = useTenantAdminAuth();
+  const { canCreate, getRemaining, getCurrent, getLimit, loading } = useTenantLimits();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'limit' | 'trial'>('limit');
 
@@ -42,26 +42,32 @@ export function LimitGuard({
   const current = getCurrent(resource);
   const limit = getLimit(resource);
   const remaining = getRemaining(resource);
-  const unlimited = limit === Infinity || limit === 0; // Treat 0 as unlimited to prevent (0/0) errors
+  
+  // Use checkLimit logic: Infinity means unlimited, 0 means no limit set (should be treated as unlimited for top-tier plans)
+  // But we check limit > 0 to avoid division by zero and (0/0) display issues
+  const unlimited = limit === Infinity || limit <= 0;
 
-  // If unlimited or limit is 0, don't show limits
-  if (unlimited || limit === 0) {
+  // If unlimited, don't show limits UI
+  if (unlimited) {
     return <>{children}</>;
   }
 
-  const percentage = (current / limit) * 100;
+  // Calculate percentage safely (limit should always be > 0 here)
+  const percentage = limit > 0 ? (current / limit) * 100 : 0;
   const showLimitWarning = showWarning && percentage >= warningThreshold && canCreate(resource);
   const showLimitError = !canCreate(resource);
 
   // Show upgrade dialog when limit is reached, close when limit is no longer reached
+  // Fixed race condition: only check when data is fully loaded
   useEffect(() => {
-    // Never show dialog for unlimited accounts or while loading
+    // Never show dialog while loading or for unlimited accounts
     if (loading || !tenant || unlimited) {
       setShowUpgradeDialog(false);
       return;
     }
     
-    if (showLimitError) {
+    // Only check limit error after loading is complete
+    if (!loading && showLimitError) {
       setShowUpgradeDialog(true);
       setDialogType('limit');
     } else {

@@ -164,11 +164,16 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
     }
   }
 
+  // Handle case where limit is 0 but plan should have unlimited
+  // For starter plans with 0 limit, return 0 (not unlimited)
+  // For enterprise/professional with 0 limit, already handled above
+  const finalLimit = unlimited ? Infinity : (limit || 0);
+  
   return {
-    allowed: unlimited || current < limit,
+    allowed: unlimited || (finalLimit > 0 && current < finalLimit),
     current,
-    limit: unlimited ? Infinity : (limit || 0),
-    remaining: unlimited ? Infinity : Math.max(0, (limit || 0) - current),
+    limit: finalLimit,
+    remaining: unlimited ? Infinity : Math.max(0, finalLimit - current),
   };
 }
 
