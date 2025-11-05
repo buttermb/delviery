@@ -65,15 +65,18 @@ export function WorkflowCanvas() {
   const { toast } = useToast();
   
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [templates, setTemplates] = useState<Workflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
   const [actionTemplates, setActionTemplates] = useState<any[]>([]);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [configuringAction, setConfiguringAction] = useState<WorkflowAction | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     if (tenant?.id) {
       loadWorkflows();
+      loadTemplates();
       loadActionTemplates();
     }
   }, [tenant?.id]);
@@ -99,6 +102,26 @@ export function WorkflowCanvas() {
     }
   };
 
+  const loadTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('workflow_definitions')
+        .select('*')
+        .eq('tenant_id', tenant?.id)
+        .eq('is_active', false)
+        .in('name', [
+          'Auto-Assign Courier on New Order',
+          'Low Inventory Alert',
+          'Order Status Update Notification'
+        ]);
+
+      if (error) throw error;
+      setTemplates((data as any) || []);
+    } catch (error: any) {
+      console.error('Error loading templates:', error);
+    }
+  };
+
   const loadActionTemplates = async () => {
     try {
       const { data, error } = await supabase
@@ -111,6 +134,17 @@ export function WorkflowCanvas() {
     } catch (error: any) {
       console.error('Error loading templates:', error);
     }
+  };
+
+  const handleCloneTemplate = (template: Workflow) => {
+    const cloned: Workflow = {
+      ...template,
+      id: undefined,
+      name: `${template.name} (Copy)`,
+      is_active: false,
+    };
+    setSelectedWorkflow(cloned);
+    setShowTemplates(false);
   };
 
   const handleCreateWorkflow = () => {
@@ -287,11 +321,42 @@ export function WorkflowCanvas() {
             Automate tasks with visual workflow builder
           </p>
         </div>
-        <Button onClick={handleCreateWorkflow}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Workflow
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowTemplates(!showTemplates)}>
+            Templates
+          </Button>
+          <Button onClick={handleCreateWorkflow}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Workflow
+          </Button>
+        </div>
       </div>
+
+      {/* Templates Panel */}
+      {showTemplates && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Workflow Templates</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {templates.map((template) => (
+                <Card key={template.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleCloneTemplate(template)}>
+                  <CardHeader>
+                    <CardTitle className="text-base">{template.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {template.description}
+                    </p>
+                    <Badge>{template.trigger_type}</Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Workflow List */}
