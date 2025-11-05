@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
-import { useVerification } from "@/contexts/VerificationContext";
 import { Loader2 } from "lucide-react";
 
 interface CustomerProtectedRouteProps {
@@ -10,7 +9,6 @@ interface CustomerProtectedRouteProps {
 
 export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps) {
   const { customer, tenant, token, loading } = useCustomerAuth();
-  const { setIsVerified, setIsVerifying } = useVerification();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
@@ -60,7 +58,6 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       // Check auth requirements
       if (!token || !customer || !tenant) {
         setVerifying(false);
-        setIsVerifying(false);
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
@@ -70,13 +67,11 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       }
 
       verificationLockRef.current = true;
-      setIsVerifying(true);
 
       try {
         // Local validation: verify tenant slug matches
         if (tenantSlug && tenant.slug !== tenantSlug) {
           setVerifying(false);
-          setIsVerifying(false);
           verificationLockRef.current = false;
           navigate(`/${tenant.slug}/shop/login`, { replace: true });
           return;
@@ -86,8 +81,6 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         const cacheKey = `${customer.email}:${tenant.slug}`;
         if (isVerificationCacheValid(customer.email, tenant.slug)) {
           setVerifying(false);
-          setIsVerified(true);
-          setIsVerifying(false);
           verificationLockRef.current = false;
           return;
         }
@@ -99,19 +92,16 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         });
 
         setVerifying(false);
-        setIsVerified(true);
-        setIsVerifying(false);
         verificationLockRef.current = false;
       } catch (err) {
         console.error('[CustomerProtectedRoute] Verification error:', err);
         setVerifying(false);
-        setIsVerifying(false);
         verificationLockRef.current = false;
       }
     };
 
     verifyAccess();
-  }, [tenantSlug, location.pathname, loading, token, customer, tenant, navigate, setIsVerified, setIsVerifying]);
+  }, [tenantSlug, location.pathname, loading, token, customer, tenant, navigate]);
 
   if (loading || verifying) {
     return (

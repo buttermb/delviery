@@ -17,9 +17,9 @@ interface VerificationContextType {
 const VerificationContext = createContext<VerificationContextType | undefined>(undefined);
 
 export function VerificationProvider({ children }: { children: ReactNode }) {
-  // Start with verifying state - protected routes will set verified after local checks
-  const [isVerified, setIsVerified] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(true);
+  // Children only render after verification is complete in ProtectedRoute
+  const [isVerified, setIsVerified] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
 
   return (
