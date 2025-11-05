@@ -30,6 +30,7 @@ import { GuidedDashboardPreview } from "@/components/marketing/GuidedDashboardPr
 import { ParticleBackground } from "@/components/marketing/ParticleBackground";
 import { TypewriterHeadline } from "@/components/marketing/TypewriterHeadline";
 import { SpotlightSection } from "@/components/marketing/SpotlightSection";
+import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 import { useEffect, useState } from "react";
 import "@/components/marketing/animations.css";
 
@@ -200,21 +201,22 @@ export default function MarketingHome() {
       {/* SECTION 2: SOCIAL PROOF */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-8 text-foreground">
-              Trusted by Leading Wholesalers
-            </h2>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-8 text-foreground">
+                Trusted by Leading Wholesalers
+              </h2>
             
-            {/* Customer Logos Placeholder */}
-            <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60 grayscale">
+              {/* Customer Logos Placeholder */}
+              <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60 grayscale">
               <div className="text-2xl font-bold text-muted-foreground">BigMike</div>
               <div className="text-2xl font-bold text-muted-foreground">Joe's</div>
               <div className="text-2xl font-bold text-muted-foreground">Valley</div>
-              <div className="text-2xl font-bold text-muted-foreground">Green</div>
-            </div>
+                <div className="text-2xl font-bold text-muted-foreground">Green</div>
+              </div>
 
-            {/* Rotating Testimonials */}
-            <div className="max-w-3xl mx-auto">
+              {/* Rotating Testimonials */}
+              <div className="max-w-3xl mx-auto">
               <TestimonialCard {...testimonials[currentTestimonial]} />
               <div className="flex justify-center gap-2 mt-6">
                 {testimonials.map((_, index) => (
@@ -231,33 +233,40 @@ export default function MarketingHome() {
                 ))}
               </div>
             </div>
-          </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* SECTION 3: KEY FEATURES */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Everything You Need to Run Your Wholesale Business
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                Everything You Need to Run Your Wholesale Business
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <FeatureCard key={index} {...feature} />
+              <ScrollReveal key={index} delay={index * 0.1}>
+                <FeatureCard {...feature} />
+              </ScrollReveal>
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Link to="/features">
-              <Button variant="outline" size="lg">
-                See All Features
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+          <ScrollReveal delay={0.6}>
+            <div className="text-center mt-12">
+              <Link to="/features">
+                <Button variant="outline" size="lg">
+                  See All Features
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -265,30 +274,38 @@ export default function MarketingHome() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              How DevPanel Works
-            </h2>
-            <p className="text-xl text-muted-foreground mb-12">
-              Get started in minutes, not months
-            </p>
-
-            <AnimatedHowItWorks />
-
-            <div className="bg-card p-6 rounded-xl border border-border mb-8">
-              <p className="text-foreground italic">
-                "Setup took 10 minutes. We were fully operational the same day."
+            <ScrollReveal>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                How DevPanel Works
+              </h2>
+              <p className="text-xl text-muted-foreground mb-12">
+                Get started in minutes, not months
               </p>
-              <p className="mt-2 font-medium text-foreground">
-                - Sarah Chen, Valley Distribution
-              </p>
-            </div>
+            </ScrollReveal>
 
-            <Link to="/signup">
-              <MagneticButton className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
-                Start Your Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </MagneticButton>
-            </Link>
+            <ScrollReveal delay={0.2}>
+              <AnimatedHowItWorks />
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.4}>
+              <div className="bg-card p-6 rounded-xl border border-border mb-8">
+                <p className="text-foreground italic">
+                  "Setup took 10 minutes. We were fully operational the same day."
+                </p>
+                <p className="mt-2 font-medium text-foreground">
+                  - Sarah Chen, Valley Distribution
+                </p>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.6}>
+              <Link to="/signup">
+                <MagneticButton className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
+                  Start Your Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </MagneticButton>
+              </Link>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -296,14 +313,16 @@ export default function MarketingHome() {
       {/* SECTION 5: PRICING PREVIEW */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Start free, upgrade as you grow
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                Simple, Transparent Pricing
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Start free, upgrade as you grow
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
@@ -324,14 +343,14 @@ export default function MarketingHome() {
                 features: ["Unlimited", "Everything", "White-label", "Dedicated"],
               },
             ].map((plan, index) => (
-              <div
-                key={index}
-                className={`p-6 rounded-2xl border ${
-                  plan.popular
-                    ? "border-primary bg-primary/5 shadow-xl scale-105"
-                    : "border-border bg-card"
-                }`}
-              >
+              <ScrollReveal key={index} delay={index * 0.15}>
+                <div
+                  className={`p-6 rounded-2xl border ${
+                    plan.popular
+                      ? "border-primary bg-primary/5 shadow-xl scale-105"
+                      : "border-border bg-card"
+                  }`}
+                >
                 {plan.popular && (
                   <div className="text-center mb-4">
                     <span className="inline-block px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
@@ -364,11 +383,13 @@ export default function MarketingHome() {
                   </Button>
                 </Link>
               </div>
+              </ScrollReveal>
             ))}
           </div>
 
-          <div className="text-center mt-8">
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-4">
+          <ScrollReveal delay={0.5}>
+            <div className="text-center mt-8">
+              <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-4">
               <span className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-accent" />
                 14-day free trial
@@ -392,7 +413,8 @@ export default function MarketingHome() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-          </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -400,43 +422,51 @@ export default function MarketingHome() {
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              See DevPanel in Action
-            </h2>
+            <ScrollReveal>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                See DevPanel in Action
+              </h2>
+            </ScrollReveal>
 
-            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border mb-8">
-              <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center">
-                <button className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
-                  <Play className="h-10 w-10 text-white ml-1" />
-                </button>
+            <ScrollReveal delay={0.2}>
+              <div className="rounded-2xl overflow-hidden shadow-2xl border border-border mb-8">
+                <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center">
+                  <button className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <Play className="h-10 w-10 text-white ml-1" />
+                  </button>
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
 
-            <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Create disposable menu in 2 clicks</span>
+            <ScrollReveal delay={0.4}>
+              <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                  <span className="text-foreground">Create disposable menu in 2 clicks</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                  <span className="text-foreground">Track inventory in real-time</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                  <span className="text-foreground">Manage orders from one dashboard</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                  <span className="text-foreground">Customer portal for self-service</span>
+                </div>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Track inventory in real-time</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Manage orders from one dashboard</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Customer portal for self-service</span>
-              </div>
-            </div>
+            </ScrollReveal>
 
-            <Link to="/demo">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8">
-                Request Live Demo
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+            <ScrollReveal delay={0.6}>
+              <Link to="/demo">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8">
+                  Request Live Demo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -444,11 +474,13 @@ export default function MarketingHome() {
       {/* SECTION 7: STATS & NUMBERS */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              DevPanel by the Numbers
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                DevPanel by the Numbers
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <CountUpStat icon={Users} value="400+" label="Distributors" delay={0} />
