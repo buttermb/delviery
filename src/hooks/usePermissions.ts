@@ -24,7 +24,7 @@ export function usePermissions() {
 
       try {
         // Check if user_roles table exists and has role for this tenant
-        const { data, error } = await supabase
+        const { data, error }: any = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', admin.id)
