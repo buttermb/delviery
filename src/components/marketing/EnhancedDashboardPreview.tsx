@@ -72,25 +72,27 @@ export function EnhancedDashboardPreview() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -20 }}
-        className="text-center mb-6"
+        className="text-center mb-4"
       >
-        <h2 className="text-3xl font-bold mb-3">Complete Wholesale Management</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <h2 className="text-3xl font-bold mb-2">Complete Wholesale Management</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
           Everything you need to manage your wholesale operations
         </p>
         {currentStep === -1 && (
-          <Button onClick={startTour} size="lg" className="gap-2 mt-4">
-            <Play className="h-4 w-4" />
+          <Button onClick={startTour} size="sm" className="gap-2 mt-3">
+            <Play className="h-3 w-3" />
             Take a Quick Tour
           </Button>
         )}
       </motion.div>
 
-      {/* Metrics Grid */}
-      <motion.div
-        id="metrics"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"
-      >
+      {/* Unified Dashboard Panel */}
+      <Card className="p-4 bg-card/80 backdrop-blur-sm border-border/50 shadow-lg">
+        {/* Metrics Grid */}
+        <motion.div
+          id="metrics"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3"
+        >
         {mockDashboardData.metrics.slice(0, 4).map((metric, i) => {
           const Icon = metric.icon;
           return (
@@ -107,27 +109,27 @@ export function EnhancedDashboardPreview() {
               } : { opacity: 0, y: 20 }}
               whileHover={{ y: -2, boxShadow: '0 8px 20px -8px rgba(0,0,0,0.2)' }}
             >
-              <Card className="p-3 bg-card/50 backdrop-blur border-border/50">
+              <div className="p-2 bg-muted/30 rounded-lg border border-border/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">{metric.label}</p>
-                    <p className="text-xl font-bold">{metric.value}</p>
-                    <p className={`text-xs mt-0.5 ${metric.change.startsWith('+') ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{metric.label}</p>
+                    <p className="text-lg font-bold">{metric.value}</p>
+                    <p className={`text-[10px] mt-0.5 ${metric.change.startsWith('+') ? 'text-emerald-600' : 'text-muted-foreground'}`}>
                       {metric.change}
                     </p>
                   </div>
-                  <div className={`p-2 rounded-full bg-muted ${metric.color}`}>
-                    <Icon className="h-4 w-4" />
+                  <div className={`p-1.5 rounded-full bg-muted ${metric.color}`}>
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           );
         })}
-      </motion.div>
+        </motion.div>
 
-      {/* Chart and Top Products - Side by Side */}
-      <div id="chart" className="grid grid-cols-1 lg:grid-cols-5 gap-3 mb-4">
+        {/* Chart and Top Products - Side by Side */}
+        <div id="chart" className="grid grid-cols-1 lg:grid-cols-5 gap-2 mb-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { 
@@ -157,10 +159,10 @@ export function EnhancedDashboardPreview() {
         >
           <TopProductsPreview />
         </motion.div>
-      </div>
+        </div>
 
-      {/* Activity Feed and Inventory Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {/* Activity Feed and Inventory Alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         <motion.div
           id="activity"
           initial={{ opacity: 0, x: -20 }}
@@ -190,7 +192,8 @@ export function EnhancedDashboardPreview() {
         >
           <InventoryAlertsPreview />
         </motion.div>
-      </div>
+        </div>
+      </Card>
 
       {/* Tour Tooltips */}
       {currentStep >= 0 && currentStep < tourSteps.length && (

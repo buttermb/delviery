@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { mockDashboardData } from '../mockDashboardData';
 import { useState } from 'react';
 
@@ -10,16 +10,13 @@ export function SalesChartPreview() {
   const maxAmount = Math.max(...salesData.map(d => d.amount));
 
   return (
-    <Card className="p-4 h-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Sales Performance
+    <div className="p-3 bg-muted/30 rounded-lg border border-border/30 h-full">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold flex items-center gap-1.5">
+          <BarChart3 className="h-3.5 w-3.5 text-primary" />
+          Sales Overview
         </h3>
-        <div className="flex items-center gap-1 text-xs text-emerald-600">
-          <TrendingUp className="h-3 w-3" />
-          <span className="font-medium">+12%</span>
-        </div>
+        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Last 5 Days</Badge>
       </div>
 
       {/* Chart */}
@@ -64,6 +61,6 @@ export function SalesChartPreview() {
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

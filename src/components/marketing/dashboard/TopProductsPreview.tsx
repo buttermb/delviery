@@ -15,15 +15,15 @@ export function TopProductsPreview() {
   };
 
   return (
-    <Card className="p-4 h-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <Package className="h-4 w-4 text-primary" />
+    <div className="p-3 bg-muted/30 rounded-lg border border-border/30 h-full">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold flex items-center gap-1.5">
+          <Package className="h-3.5 w-3.5 text-primary" />
           Top Products
         </h3>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {mockDashboardData.topProducts.slice(0, 3).map((product, index) => (
           <motion.div
             key={product.rank}
@@ -38,7 +38,7 @@ export function TopProductsPreview() {
               scale: 1.01,
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
-            className="flex items-center gap-2 p-2 rounded border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+            className="flex items-center gap-2 p-1.5 rounded border border-border/50 bg-background/50 hover:bg-accent/30 transition-colors cursor-pointer"
           >
             {/* Rank Badge */}
             <Badge 
@@ -67,6 +67,6 @@ export function TopProductsPreview() {
           </motion.div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

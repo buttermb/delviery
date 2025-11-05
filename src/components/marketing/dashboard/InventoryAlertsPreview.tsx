@@ -1,8 +1,6 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, Package } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { mockDashboardData } from '../mockDashboardData';
 
 export function InventoryAlertsPreview() {
@@ -30,16 +28,16 @@ export function InventoryAlertsPreview() {
   };
 
   return (
-    <Card className="p-4 h-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
+    <div className="p-3 bg-muted/30 rounded-lg border border-border/30 h-full">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-primary" />
           Inventory Alerts
         </h3>
-        <Badge variant="destructive" className="text-xs">{mockDashboardData.inventoryAlerts.slice(0, 2).length}</Badge>
+        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{mockDashboardData.inventoryAlerts.slice(0, 2).length}</Badge>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {mockDashboardData.inventoryAlerts.slice(0, 2).map((alert, index) => {
           const urgencyConfig = getUrgencyConfig(alert.urgency);
           
@@ -56,9 +54,9 @@ export function InventoryAlertsPreview() {
                 scale: 1.01,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}
-              className="p-3 rounded border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+              className="p-1.5 rounded border border-border/50 bg-background/50 hover:bg-accent/30 transition-colors cursor-pointer"
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex-1">
                   <div className="font-medium text-xs">{alert.name}</div>
                   <div className="text-[10px] text-muted-foreground">{alert.location}</div>
@@ -68,7 +66,7 @@ export function InventoryAlertsPreview() {
                 </Badge>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex justify-between text-[10px]">
                   <span className={urgencyConfig.textClass}>
                     {alert.current} / {alert.threshold} lbs
@@ -79,7 +77,7 @@ export function InventoryAlertsPreview() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-1 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(alert.current / alert.threshold) * 100}%` }}
@@ -97,7 +95,7 @@ export function InventoryAlertsPreview() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.1 + 0.5 }}
-                    className="w-full mt-1 px-2 py-1 bg-destructive text-destructive-foreground text-[10px] font-medium rounded hover:bg-destructive/90 transition-colors"
+                    className="w-full mt-1 px-2 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-medium rounded hover:bg-destructive/90 transition-colors"
                   >
                     Restock Now
                   </motion.button>
@@ -107,6 +105,6 @@ export function InventoryAlertsPreview() {
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

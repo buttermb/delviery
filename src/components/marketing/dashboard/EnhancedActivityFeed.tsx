@@ -15,18 +15,18 @@ export function EnhancedActivityFeed() {
   };
 
   return (
-    <Card className="p-4 h-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
+    <div className="p-3 bg-muted/30 rounded-lg border border-border/30 h-full">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold flex items-center gap-1.5">
+          <Activity className="h-3.5 w-3.5 text-primary" />
           Activity Feed
         </h3>
-        <Badge variant="secondary" className="animate-pulse text-xs">
+        <Badge variant="secondary" className="animate-pulse text-[10px] px-1.5 py-0">
           Live
         </Badge>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {mockDashboardData.activities.slice(0, 3).map((activity, index) => {
           const Icon = activity.icon;
           
@@ -43,7 +43,7 @@ export function EnhancedActivityFeed() {
                 x: 2,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}
-              className="flex items-start gap-2 p-2 rounded border bg-card hover:bg-accent/50 transition-all cursor-pointer"
+              className="flex items-start gap-1.5 p-1.5 rounded border border-border/50 bg-background/50 hover:bg-accent/30 transition-all cursor-pointer"
             >
               {/* Icon with animation */}
               <motion.div
@@ -75,6 +75,6 @@ export function EnhancedActivityFeed() {
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }
