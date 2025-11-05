@@ -314,6 +314,64 @@
     input, select, textarea {
       font-size: 16px;
     }
+    
+    /* Mobile table optimization */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better mobile typography */
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.2;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.3;
+    }
+    
+    h3 {
+      font-size: 1.25rem;
+      line-height: 1.4;
+    }
+    
+    /* Mobile form improvements */
+    form {
+      width: 100%;
+    }
+    
+    /* Mobile dialog/modal improvements */
+    [role="dialog"] {
+      max-width: calc(100vw - 2rem);
+      margin: 1rem;
+    }
+    
+    /* Mobile button improvements */
+    button {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Mobile card improvements */
+    .card {
+      border-radius: 0.5rem;
+    }
+    
+    /* Mobile spacing utilities */
+    .mobile-space-y > * + * {
+      margin-top: 1rem;
+    }
+    
+    .mobile-gap-2 {
+      gap: 0.5rem;
+    }
+    
+    .mobile-gap-4 {
+      gap: 1rem;
+    }
   }
 
   body {

@@ -311,18 +311,21 @@ export default function CustomerManagement() {
             </Select>
           </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial">
               <Download className="w-4 h-4 mr-2" />
-              Export
+              <span className="hidden sm:inline">Export</span>
+              <span className="sm:hidden">Export</span>
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial">
               <Upload className="w-4 h-4 mr-2" />
-              Import
+              <span className="hidden sm:inline">Import</span>
+              <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={loadCustomers}>
+            <Button variant="outline" size="sm" onClick={loadCustomers} className="min-h-[44px] flex-1 sm:flex-initial">
               <Filter className="w-4 h-4 mr-2" />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
+              <span className="sm:hidden">Refresh</span>
             </Button>
           </div>
         </CardContent>
@@ -331,7 +334,8 @@ export default function CustomerManagement() {
       {/* Customer Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
                 <tr>
@@ -472,16 +476,117 @@ export default function CustomerManagement() {
             )}
           </div>
 
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3 p-4">
+            {filteredCustomers.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground mb-4">
+                  {searchTerm ? "No customers found matching your search" : "No customers yet"}
+                </p>
+                <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[44px]">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Customer
+                </Button>
+              </div>
+            ) : (
+              filteredCustomers.map((customer) => (
+                <Card key={customer.id} className="overflow-hidden">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
+                          {customer.first_name?.[0]}{customer.last_name?.[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base truncate">
+                            {customer.first_name} {customer.last_name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground truncate">{customer.email || customer.phone}</p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px]">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/admin/customers/${customer.id}`)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/customer-management/${customer.id}/edit`)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/admin/pos?customer=${customer.id}`)}>
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            New Order
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDelete(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</div>
+                        <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
+                          {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Spent</div>
+                          <div className="text-sm font-semibold">${customer.total_spent?.toFixed(2) || '0.00'}</div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Points</div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Award className="w-4 h-4 text-yellow-600" />
+                            {customer.loyalty_points || 0}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Order</div>
+                        <div className="text-sm text-muted-foreground">
+                          {customer.last_purchase_at 
+                            ? new Date(customer.last_purchase_at).toLocaleDateString()
+                            : 'Never'}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</div>
+                        <div>{getCustomerStatus(customer)}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+
           {/* Pagination */}
           {filteredCustomers.length > 0 && (
-            <div className="px-6 py-4 border-t flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
+            <div className="px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground text-center sm:text-left">
                 Showing {filteredCustomers.length} of {customers.length} customers
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm" disabled>1</Button>
-                <Button variant="outline" size="sm" disabled>Next</Button>
+                <Button variant="outline" size="sm" disabled className="min-h-[44px]">Previous</Button>
+                <Button variant="outline" size="sm" disabled className="min-h-[44px]">1</Button>
+                <Button variant="outline" size="sm" disabled className="min-h-[44px]">Next</Button>
               </div>
             </div>
           )}
