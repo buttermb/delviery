@@ -112,6 +112,7 @@
     "react-spinners": "^0.17.0",
     "react-swipeable": "^7.0.2",
     "react-window": "^2.2.1",
+    "reactflow": "^11.11.4",
     "recharts": "^2.15.4",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",

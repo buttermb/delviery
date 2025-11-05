@@ -3,7 +3,7 @@
  * Database-connected workflow automation
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,10 +36,15 @@ import {
   Webhook as WebhookIcon,
   Clock,
   ArrowRight,
+  Blocks,
+  Layout,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { VisualWorkflowEditor } from './VisualWorkflowEditor';
+import { NodePalette } from './NodePalette';
+import { Node, Edge } from 'reactflow';
 
 interface WorkflowAction {
   id: string;
@@ -72,6 +77,8 @@ export function WorkflowCanvas() {
   const [configuringAction, setConfiguringAction] = useState<WorkflowAction | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [viewMode, setViewMode] = useState<'visual' | 'form'>('visual');
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (tenant?.id) {
@@ -307,6 +314,44 @@ export function WorkflowCanvas() {
     }
   };
 
+  const handleVisualWorkflowSave = useCallback(async (nodes: Node[], edges: Edge[]) => {
+    if (!selectedWorkflow) return;
+
+    try {
+      // Convert nodes and edges back to workflow actions
+      const actions = nodes
+        .filter(node => node.type === 'action')
+        .map((node, index) => ({
+          id: node.id,
+          type: node.data.actionType,
+          config: node.data.config || {},
+        }));
+
+      const updatedWorkflow = {
+        ...selectedWorkflow,
+        actions,
+      };
+
+      setSelectedWorkflow(updatedWorkflow);
+
+      toast({
+        title: 'Visual workflow updated',
+        description: 'Click Save to persist changes',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Update failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  }, [selectedWorkflow, toast]);
+
+  const handleNodeDragStart = (event: React.DragEvent, nodeType: string, config: any) => {
+    event.dataTransfer.setData('application/reactflow', JSON.stringify({ nodeType, config }));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center p-8">Loading workflows...</div>;
   }
@@ -398,6 +443,22 @@ export function WorkflowCanvas() {
               </CardTitle>
               {selectedWorkflow && (
                 <div className="flex gap-2">
+                  <Button
+                    variant={viewMode === 'visual' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('visual')}
+                  >
+                    <Blocks className="w-4 h-4 mr-2" />
+                    Visual
+                  </Button>
+                  <Button
+                    variant={viewMode === 'form' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('form')}
+                  >
+                    <Layout className="w-4 h-4 mr-2" />
+                    Form
+                  </Button>
                   <Button variant="outline" size="sm" onClick={handleTestWorkflow}>
                     <Play className="w-4 h-4 mr-2" />
                     Test
@@ -412,6 +473,17 @@ export function WorkflowCanvas() {
           </CardHeader>
           <CardContent>
             {selectedWorkflow ? (
+              viewMode === 'visual' ? (
+                <div className="flex gap-4" ref={reactFlowWrapper}>
+                  <NodePalette onNodeDragStart={handleNodeDragStart} />
+                  <div className="flex-1">
+                    <VisualWorkflowEditor
+                      workflow={selectedWorkflow}
+                      onSave={handleVisualWorkflowSave}
+                    />
+                  </div>
+                </div>
+              ) : (
               <div className="space-y-6">
                 {/* Workflow Settings */}
                 <div className="space-y-4">
@@ -596,6 +668,7 @@ export function WorkflowCanvas() {
                   </div>
                 </div>
               </div>
+              )
             ) : (
               <div className="flex items-center justify-center h-64 text-muted-foreground">
                 Select a workflow to edit or create a new one
