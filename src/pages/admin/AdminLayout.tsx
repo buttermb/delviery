@@ -53,14 +53,32 @@ const AdminLayout = () => {
   
   const getBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = paths.map((path, index) => {
-      const url = '/' + paths.slice(0, index + 1).join('/');
+    
+    // Skip tenant slug in breadcrumbs if present
+    const startIndex = tenantSlug && paths[0] === tenantSlug ? 1 : 0;
+    const relevantPaths = paths.slice(startIndex);
+    
+    const breadcrumbs = relevantPaths.map((path, index) => {
+      const pathSlice = relevantPaths.slice(0, index + 1);
+      const url = tenantSlug 
+        ? `/${tenantSlug}/${pathSlice.join('/')}`
+        : '/' + pathSlice.join('/');
+      
       const label = path
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
       return { label, url };
     });
+    
+    // Add tenant name as first breadcrumb if tenant slug exists
+    if (tenantSlug && breadcrumbs.length > 0) {
+      return [
+        { label: tenantSlug, url: tenantSlug ? `/${tenantSlug}/admin/dashboard` : '/admin/dashboard' },
+        ...breadcrumbs
+      ];
+    }
+    
     return breadcrumbs;
   };
 
