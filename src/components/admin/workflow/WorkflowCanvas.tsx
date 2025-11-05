@@ -38,12 +38,15 @@ import {
   ArrowRight,
   Blocks,
   Layout,
+  History,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { VisualWorkflowEditor } from './VisualWorkflowEditor';
 import { NodePalette } from './NodePalette';
+import { WorkflowVersionHistory } from './WorkflowVersionHistory';
+import { useWorkflowVersionStats } from '@/hooks/useWorkflowVersions';
 import { Node, Edge } from 'reactflow';
 
 interface WorkflowAction {
@@ -78,7 +81,9 @@ export function WorkflowCanvas() {
   const [loading, setLoading] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
   const [viewMode, setViewMode] = useState<'visual' | 'form'>('visual');
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const versionStats = useWorkflowVersionStats(selectedWorkflow?.id || null);
 
   useEffect(() => {
     if (tenant?.id) {
@@ -403,6 +408,14 @@ export function WorkflowCanvas() {
         </Card>
       )}
 
+      {/* Version History */}
+      {showVersionHistory && selectedWorkflow?.id && (
+        <WorkflowVersionHistory
+          workflowId={selectedWorkflow.id}
+          workflowName={selectedWorkflow.name}
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Workflow List */}
         <Card className="lg:col-span-1">
@@ -459,6 +472,16 @@ export function WorkflowCanvas() {
                     <Layout className="w-4 h-4 mr-2" />
                     Form
                   </Button>
+                  {selectedWorkflow.id && versionStats.totalVersions > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowVersionHistory(!showVersionHistory)}
+                    >
+                      <History className="w-4 h-4 mr-2" />
+                      Versions ({versionStats.totalVersions})
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={handleTestWorkflow}>
                     <Play className="w-4 h-4 mr-2" />
                     Test

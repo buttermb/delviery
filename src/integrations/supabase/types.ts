@@ -8505,6 +8505,78 @@ export type Database = {
           },
         ]
       }
+      workflow_versions: {
+        Row: {
+          actions: Json
+          change_details: Json | null
+          change_summary: string | null
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          restored_from_version: number | null
+          tenant_id: string | null
+          trigger_config: Json | null
+          trigger_type: string
+          version_number: number
+          workflow_id: string
+        }
+        Insert: {
+          actions?: Json
+          change_details?: Json | null
+          change_summary?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          restored_from_version?: number | null
+          tenant_id?: string | null
+          trigger_config?: Json | null
+          trigger_type: string
+          version_number: number
+          workflow_id: string
+        }
+        Update: {
+          actions?: Json
+          change_details?: Json | null
+          change_summary?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          restored_from_version?: number | null
+          tenant_id?: string | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          version_number?: number
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_versions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_versions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -8530,6 +8602,14 @@ export type Database = {
       }
       calculate_risk_score: { Args: { p_user_id: string }; Returns: number }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      compare_workflow_versions: {
+        Args: {
+          p_version_a: number
+          p_version_b: number
+          p_workflow_id: string
+        }
+        Returns: Json
+      }
       create_courier_pin_session: {
         Args: { p_courier_id: string }
         Returns: string
@@ -8694,6 +8774,10 @@ export type Database = {
       resolve_inventory_alert: {
         Args: { alert_id: string }
         Returns: undefined
+      }
+      restore_workflow_version: {
+        Args: { p_version_number: number; p_workflow_id: string }
+        Returns: Json
       }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }
