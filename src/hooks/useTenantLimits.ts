@@ -4,7 +4,7 @@
  */
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { checkLimit } from '@/lib/tenant';
+import { checkLimit, type Tenant } from '@/lib/tenant';
 
 type Resource = 'customers' | 'menus' | 'products' | 'locations' | 'users';
 
@@ -13,13 +13,13 @@ export function useTenantLimits() {
 
   const canCreate = (resource: Resource): boolean => {
     if (!tenant) return false;
-    const limitCheck = checkLimit(tenant, resource);
+    const limitCheck = checkLimit(tenant as Tenant, resource);
     return limitCheck.allowed;
   };
 
   const getRemaining = (resource: Resource): number => {
     if (!tenant) return 0;
-    const limitCheck = checkLimit(tenant, resource);
+    const limitCheck = checkLimit(tenant as Tenant, resource);
     return limitCheck.remaining;
   };
 

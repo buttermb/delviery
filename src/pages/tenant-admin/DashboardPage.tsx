@@ -230,7 +230,7 @@ export default function TenantAdminDashboardPage() {
         const { data: tenantMenus, error: menusError } = await supabase
           .from("disposable_menus")
           .select("id")
-          .eq("tenant_id", tenantId);
+          .eq("tenant_id", tenantId) as { data: { id: string }[] | null; error: any };
 
         if (menusError) {
           console.warn("Failed to fetch menus for revenue stats:", menusError);
@@ -246,7 +246,7 @@ export default function TenantAdminDashboardPage() {
           .from("menu_orders")
           .select("total_amount")
           .in("menu_id", menuIds)
-          .eq("status", "confirmed");
+          .eq("status", "confirmed") as { data: { total_amount: number }[] | null; error: any };
 
         if (ordersError) {
           console.warn("Failed to fetch orders for revenue stats:", ordersError);

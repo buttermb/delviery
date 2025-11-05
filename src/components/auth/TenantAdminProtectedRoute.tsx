@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { getTokenExpiration } from "@/lib/auth/jwt";
@@ -7,6 +7,8 @@ import { apiFetch } from "@/lib/utils/apiClient";
 
 // Refresh token if it expires within 10 minutes
 const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
+// Prevent redirect loops - don't redirect more than once per 2 seconds
+const REDIRECT_THROTTLE_MS = 2000;
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -18,6 +20,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
+  const lastRedirectTime = useRef<number>(0);
+  const verifyAttempted = useRef(false);
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
@@ -33,9 +37,23 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   useEffect(() => {
     const verifyAuth = async () => {
-      // Removed console.log for production
+      // Prevent multiple verification attempts
+      if (verifyAttempted.current) return;
+      verifyAttempted.current = true;
 
-      if (loading) return;
+      if (loading) {
+        verifyAttempted.current = false;
+        return;
+      }
+
+      // Throttle redirects to prevent loops
+      const now = Date.now();
+      const timeSinceLastRedirect = now - lastRedirectTime.current;
+      if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
+        setVerifying(false);
+        verifyAttempted.current = false;
+        return;
+      }
 
       // Silent token refresh if expiring soon
       const currentToken = accessToken || token;
@@ -60,6 +78,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         }
         
         setVerifying(false); // Always set verifying to false before redirect
+        lastRedirectTime.current = Date.now();
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -71,6 +90,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       // Verify tenant slug matches (auth context should have already handled this)
       if (tenantSlug && tenant.slug !== tenantSlug) {
         setVerifying(false); // Always set verifying to false before redirect
+        lastRedirectTime.current = Date.now();
         navigate(`/${tenant.slug}/admin/login`, { replace: true });
         return;
       }
@@ -120,6 +140,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
             const currentPath = window.location.pathname;
             if (!currentPath.includes('/billing') && !currentPath.includes('/trial-expired')) {
               setVerifying(false);
+              lastRedirectTime.current = Date.now();
               navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
               return;
             }
@@ -146,6 +167,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           // If trial expired and not on allowed route, redirect to trial-expired
           if (isTrialExpired && !isAllowedRoute && tenantSlug) {
             setVerifying(false);
+            lastRedirectTime.current = Date.now();
             navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
             return;
           }
@@ -157,11 +179,14 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       } catch (error) {
         console.error("Auth verification error:", error);
         setVerifying(false); // Always set verifying to false on error
+        lastRedirectTime.current = Date.now();
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
           navigate("/marketing", { replace: true });
         }
+      } finally {
+        verifyAttempted.current = false;
       }
     };
 
