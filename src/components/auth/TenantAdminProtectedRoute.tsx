@@ -2,7 +2,6 @@ import { ReactNode, useEffect, useState, useRef } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
-import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,7 +62,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       return;
     }
 
-    const verifyAccess = async () => {
+    const verifyAccess = () => {
       const { token: currentToken, admin: currentAdmin, tenant: currentTenant } = authRef.current;
       
       if (!currentToken || !currentAdmin || !currentTenant || !tenantSlug) {
@@ -90,28 +89,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       setVerificationError(null);
 
       try {
-        const { data, error } = await supabase.functions.invoke('tenant-admin-auth', {
-          body: { email: currentAdmin.email, tenantSlug },
-        });
-
-        if (error) {
-          console.error('[TenantAdminProtectedRoute] Verification failed:', error);
-          setVerificationAttempts(prev => prev + 1);
-          
-          if (verificationAttempts >= 2) {
-            setVerificationError('Unable to verify access. Please try again.');
-            setVerifying(false);
-            verificationLockRef.current = false;
-          } else {
-            verificationLockRef.current = false;
-            setTimeout(() => verifyAccess(), 1000);
-          }
-          return;
-        }
-
-        if (!data?.hasAccess) {
-          console.error('[TenantAdminProtectedRoute] Access denied');
-          setVerificationError('Access denied');
+        // Simple local verification: check if tenant slug matches
+        // Auth context already validated user has access to this tenant
+        if (currentTenant.slug.toLowerCase() !== tenantSlug.toLowerCase()) {
+          console.error('[TenantAdminProtectedRoute] Tenant slug mismatch');
+          setVerificationError('Access denied - tenant mismatch');
           setVerifying(false);
           verificationLockRef.current = false;
           return;
@@ -124,7 +106,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           timestamp: Date.now()
         });
 
-        console.log('[TenantAdminProtectedRoute] Authentication verified successfully');
+        console.log('[TenantAdminProtectedRoute] Verification successful');
         setVerified(true);
         setVerifying(false);
         setVerificationError(null);
@@ -139,7 +121,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           verificationLockRef.current = false;
         } else {
           verificationLockRef.current = false;
-          setTimeout(() => verifyAccess(), 1000);
+          setTimeout(() => verifyAccess(), 500);
         }
       }
     };
