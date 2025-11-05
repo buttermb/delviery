@@ -2,9 +2,11 @@ import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { logger } from "@/lib/logger";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Refresh token if it expires within 10 minutes
 const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
@@ -13,6 +15,10 @@ const REDIRECT_THROTTLE_MS = 3000;
 // Maximum number of redirects in a short period
 const MAX_REDIRECTS_PER_WINDOW = 3;
 const REDIRECT_WINDOW_MS = 10000; // 10 seconds
+// Maximum verification failures before showing error UI
+const MAX_VERIFICATION_FAILURES = 3;
+// Verification timeout increased to 8 seconds
+const VERIFICATION_TIMEOUT_MS = 8000;
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -24,22 +30,33 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [failureCount, setFailureCount] = useState(0);
   const lastRedirectTime = useRef<number>(0);
   const verifyAttempted = useRef(false);
   const redirectCount = useRef<number>(0);
   const redirectWindowStart = useRef<number>(0);
 
-  // Safety timeout: if verification takes too long, stop showing loading (reduced from 10s to 5s)
+  // Safety timeout: if verification takes too long, handle as failure
   useEffect(() => {
-    if (verifying) {
+    if (verifying && !verificationError) {
       const timeout = setTimeout(() => {
-        logger.warn("Verification timeout exceeded, allowing navigation", { component: 'TenantAdminProtectedRoute' });
+        logger.error("Verification timeout exceeded", { 
+          component: 'TenantAdminProtectedRoute',
+          timeout: VERIFICATION_TIMEOUT_MS,
+          failureCount: failureCount + 1
+        });
         setVerifying(false);
-      }, 5000); // 5 second timeout (reduced for faster failure)
+        setFailureCount(prev => prev + 1);
+        
+        if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+          setVerificationError("Authentication verification timed out. Please try logging in again.");
+        }
+      }, VERIFICATION_TIMEOUT_MS);
 
       return () => clearTimeout(timeout);
     }
-  }, [verifying]);
+  }, [verifying, verificationError, failureCount]);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -64,8 +81,18 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       
       // Check if we've exceeded max redirects in window
       if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
-        console.warn("Redirect limit exceeded - preventing further redirects to avoid loop");
+        logger.error("Redirect limit exceeded", { 
+          component: 'TenantAdminProtectedRoute',
+          redirectCount: redirectCount.current,
+          windowMs: REDIRECT_WINDOW_MS
+        });
         setVerifying(false);
+        setFailureCount(prev => prev + 1);
+        
+        if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+          setVerificationError("Too many redirect attempts. Please clear your browser cache and try again.");
+        }
+        
         verifyAttempted.current = false;
         return;
       }
@@ -95,13 +122,29 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (!token || !admin || !tenant) {
         // Allow welcome page for new signups (they may not be logged in yet)
         if (isWelcomePage && tenantSlug) {
+          logger.info("Allowing access to welcome page", { component: 'TenantAdminProtectedRoute' });
           setVerifying(false);
           return;
         }
         
-        setVerifying(false); // Always set verifying to false before redirect
+        logger.warn("Missing authentication credentials", { 
+          component: 'TenantAdminProtectedRoute',
+          hasToken: !!token,
+          hasAdmin: !!admin,
+          hasTenant: !!tenant,
+          failureCount: failureCount + 1
+        });
+        
+        setVerifying(false);
+        setFailureCount(prev => prev + 1);
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;
+        
+        if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+          setVerificationError("Unable to verify authentication. Please log in again.");
+          return;
+        }
+        
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -112,7 +155,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
       // Verify tenant slug matches (auth context should have already handled this)
       if (tenantSlug && tenant.slug !== tenantSlug) {
-        setVerifying(false); // Always set verifying to false before redirect
+        logger.warn("Tenant slug mismatch", {
+          component: 'TenantAdminProtectedRoute',
+          expectedSlug: tenantSlug,
+          actualSlug: tenant.slug
+        });
+        setVerifying(false);
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;
         navigate(`/${tenant.slug}/admin/login`, { replace: true });
@@ -149,9 +197,17 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           clearTimeout(timeoutId);
           // If request is aborted or fails, don't block navigation
           if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-            logger.warn('Token verification timeout', error, { component: 'TenantAdminProtectedRoute' });
-            // Allow navigation to proceed - user might have valid token in localStorage
+            logger.error('Token verification network timeout', error, { 
+              component: 'TenantAdminProtectedRoute',
+              failureCount: failureCount + 1,
+              timeout: 3000
+            });
             setVerifying(false);
+            setFailureCount(prev => prev + 1);
+            
+            if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+              setVerificationError("Network timeout while verifying authentication. Please check your connection and try again.");
+            }
             return;
           }
           throw error;
@@ -160,9 +216,18 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          // If verification fails, don't block - let the auth context handle it
-          logger.warn('Token verification failed', { status: response.status }, { component: 'TenantAdminProtectedRoute' });
+          logger.error('Token verification failed', { 
+            component: 'TenantAdminProtectedRoute',
+            status: response.status,
+            statusText: response.statusText,
+            failureCount: failureCount + 1
+          });
           setVerifying(false);
+          setFailureCount(prev => prev + 1);
+          
+          if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+            setVerificationError(`Authentication verification failed (${response.status}). Please log in again.`);
+          }
           return;
         }
 
@@ -229,11 +294,23 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         } else {
           throw new Error("Tenant subscription is not active");
         }
-      } catch (error) {
-        logger.error("Auth verification error", error, { component: 'TenantAdminProtectedRoute' });
-        setVerifying(false); // Always set verifying to false on error
+      } catch (error: any) {
+        logger.error("Auth verification error", error, { 
+          component: 'TenantAdminProtectedRoute',
+          errorMessage: error?.message,
+          errorStack: error?.stack,
+          failureCount: failureCount + 1
+        });
+        setVerifying(false);
+        setFailureCount(prev => prev + 1);
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;
+        
+        if (failureCount + 1 >= MAX_VERIFICATION_FAILURES) {
+          setVerificationError(`Authentication error: ${error?.message || 'Unknown error'}. Please log in again.`);
+          return;
+        }
+        
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -247,12 +324,63 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     verifyAuth();
   }, [token, admin, tenant, tenantSlug, loading, navigate]); // Removed location.pathname to prevent re-runs on navigation
 
+  // Show error UI if max failures reached
+  if (verificationError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+              <CardTitle>Authentication Error</CardTitle>
+            </div>
+            <CardDescription>
+              We encountered an issue verifying your authentication
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">{verificationError}</p>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setVerificationError(null);
+                  setFailureCount(0);
+                  setVerifying(true);
+                  verifyAttempted.current = false;
+                }}
+              >
+                Try Again
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (tenantSlug) {
+                    navigate(`/${tenantSlug}/admin/login`, { replace: true });
+                  } else {
+                    navigate("/marketing", { replace: true });
+                  }
+                }}
+              >
+                Return to Login
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (loading || verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Verifying access...</p>
+          {failureCount > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Attempt {failureCount + 1} of {MAX_VERIFICATION_FAILURES}
+            </p>
+          )}
         </div>
       </div>
     );
