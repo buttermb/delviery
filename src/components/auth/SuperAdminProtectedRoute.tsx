@@ -1,8 +1,11 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
+
+// Prevent redirect loops - don't redirect more than once per 2 seconds
+const REDIRECT_THROTTLE_MS = 2000;
 
 interface SuperAdminProtectedRouteProps {
   children: ReactNode;
@@ -12,6 +15,8 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
   const { superAdmin, token, loading, refreshToken } = useSuperAdminAuth();
   const navigate = useNavigate();
   const [verifying, setVerifying] = useState(true);
+  const lastRedirectTime = useRef<number>(0);
+  const verifyAttempted = useRef(false);
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
@@ -27,10 +32,27 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
 
   useEffect(() => {
     const verifyAuth = async () => {
-      if (loading) return;
+      // Prevent multiple verification attempts
+      if (verifyAttempted.current) return;
+      verifyAttempted.current = true;
+
+      if (loading) {
+        verifyAttempted.current = false;
+        return;
+      }
+
+      // Throttle redirects to prevent loops
+      const now = Date.now();
+      const timeSinceLastRedirect = now - lastRedirectTime.current;
+      if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
+        setVerifying(false);
+        verifyAttempted.current = false;
+        return;
+      }
 
       if (!token || !superAdmin) {
-        setVerifying(false); // Always set verifying to false before redirect
+        setVerifying(false);
+        lastRedirectTime.current = Date.now();
         navigate("/super-admin/login", { replace: true });
         return;
       }
@@ -60,8 +82,11 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
-        setVerifying(false); // Always set verifying to false on error
+        setVerifying(false);
+        lastRedirectTime.current = Date.now();
         navigate("/super-admin/login", { replace: true });
+      } finally {
+        verifyAttempted.current = false;
       }
     };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { LoadingFallback } from "./LoadingFallback";
 import { getCurrentUserType } from "@/lib/utils/authHelpers";
@@ -6,8 +6,13 @@ import { getCurrentUserType } from "@/lib/utils/authHelpers";
 export function SmartRootRedirect() {
   const [checking, setChecking] = useState(true);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
+  const hasChecked = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple checks
+    if (hasChecked.current) return;
+    hasChecked.current = true;
+
     const checkAuthAndRedirect = () => {
       try {
         const userType = getCurrentUserType();

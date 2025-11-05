@@ -1,8 +1,11 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
+
+// Prevent redirect loops - don't redirect more than once per 2 seconds
+const REDIRECT_THROTTLE_MS = 2000;
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;
@@ -13,6 +16,8 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
+  const lastRedirectTime = useRef<number>(0);
+  const verifyAttempted = useRef(false);
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
@@ -28,10 +33,27 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
   useEffect(() => {
     const verifyAuth = async () => {
-      if (loading) return;
+      // Prevent multiple verification attempts
+      if (verifyAttempted.current) return;
+      verifyAttempted.current = true;
+
+      if (loading) {
+        verifyAttempted.current = false;
+        return;
+      }
+
+      // Throttle redirects to prevent loops
+      const now = Date.now();
+      const timeSinceLastRedirect = now - lastRedirectTime.current;
+      if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
+        setVerifying(false);
+        verifyAttempted.current = false;
+        return;
+      }
 
       if (!token || !customer || !tenant) {
-        setVerifying(false); // Always set verifying to false before redirect
+        setVerifying(false);
+        lastRedirectTime.current = Date.now();
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
@@ -42,7 +64,8 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
       // Verify tenant slug matches
       if (tenantSlug && tenant.slug !== tenantSlug) {
-        setVerifying(false); // Always set verifying to false before redirect
+        setVerifying(false);
+        lastRedirectTime.current = Date.now();
         navigate(`/${tenant.slug}/shop/login`, { replace: true });
         return;
       }
@@ -77,12 +100,15 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
       } catch (error) {
         console.error("Auth verification error:", error);
-        setVerifying(false); // Always set verifying to false on error
+        setVerifying(false);
+        lastRedirectTime.current = Date.now();
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
           navigate("/shop/login", { replace: true });
         }
+      } finally {
+        verifyAttempted.current = false;
       }
     };
 
