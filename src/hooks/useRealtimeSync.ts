@@ -67,6 +67,8 @@ export function useRealtimeSync({
             event: '*',
             schema: 'public',
             table,
+            // Only filter by tenant_id if we have a tenantId
+            // If tenant_id column doesn't exist, the subscription will still work without filter
             filter: tenantId ? `tenant_id=eq.${tenantId}` : undefined,
           },
           (payload) => {

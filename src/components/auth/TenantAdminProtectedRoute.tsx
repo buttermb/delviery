@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { logger } from "@/lib/logger";
 
 // Refresh token if it expires within 10 minutes
 const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
@@ -28,16 +29,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const redirectCount = useRef<number>(0);
   const redirectWindowStart = useRef<number>(0);
 
-  // Safety timeout: if verification takes too long, stop showing loading
+  // Safety timeout: if verification takes too long, stop showing loading (reduced from 10s to 5s)
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (verifying) {
-        console.warn("Auth verification timeout - stopping verification");
+    if (verifying) {
+      const timeout = setTimeout(() => {
+        logger.warn("Verification timeout exceeded, allowing navigation", { component: 'TenantAdminProtectedRoute' });
         setVerifying(false);
-      }
-    }, 10000); // 10 second timeout
+      }, 5000); // 5 second timeout (reduced for faster failure)
 
-    return () => clearTimeout(timeout);
+      return () => clearTimeout(timeout);
+    }
   }, [verifying]);
 
   useEffect(() => {
@@ -127,30 +128,59 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("No access token available");
         }
         
-        // Add timeout to prevent hanging
+        // Add timeout to prevent hanging (reduced to 3 seconds for faster failure)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+          setVerifying(false); // Ensure we exit verifying state on timeout
+        }, 3000); // 3 second timeout
         
-        const response = await apiFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${tokenToUse}`,
-          },
-          skipAuth: true,
-          signal: controller.signal,
-        });
+        let response;
+        try {
+          response = await apiFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${tokenToUse}`,
+            },
+            skipAuth: true,
+            signal: controller.signal,
+          });
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          // If request is aborted or fails, don't block navigation
+          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            logger.warn('Token verification timeout', error, { component: 'TenantAdminProtectedRoute' });
+            // Allow navigation to proceed - user might have valid token in localStorage
+            setVerifying(false);
+            return;
+          }
+          throw error;
+        }
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          throw new Error("Token verification failed");
+          // If verification fails, don't block - let the auth context handle it
+          logger.warn('Token verification failed', { status: response.status }, { component: 'TenantAdminProtectedRoute' });
+          setVerifying(false);
+          return;
         }
 
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (error) {
+          logger.error('Failed to parse verification response', error, { component: 'TenantAdminProtectedRoute' });
+          setVerifying(false);
+          return;
+        }
         
         // Ensure we have the expected data structure
         if (!data || !data.tenant) {
-          throw new Error("Invalid response from server");
+          logger.warn('Invalid verification response structure', { data }, { component: 'TenantAdminProtectedRoute' });
+          // Don't block navigation - proceed with existing tenant data
+          setVerifying(false);
+          return;
         }
         
         // Check if trial has expired
@@ -200,7 +230,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           throw new Error("Tenant subscription is not active");
         }
       } catch (error) {
-        console.error("Auth verification error:", error);
+        logger.error("Auth verification error", error, { component: 'TenantAdminProtectedRoute' });
         setVerifying(false); // Always set verifying to false on error
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;

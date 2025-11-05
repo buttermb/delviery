@@ -88,10 +88,15 @@ export function ModernDashboard() {
         lowStockPromise
       ]);
 
-      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: any) => 
+      // Type-safe revenue calculation
+      interface OrderAmount {
+        total_amount: number | null;
+      }
+      
+      const todayRevenue = (todayOrdersResult.data as OrderAmount[] || []).reduce((sum: number, o) => 
         sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: any) => 
+      const lastWeekRevenue = (lastWeekOrdersResult.data as OrderAmount[] || []).reduce((sum: number, o) => 
         sum + Number(o.total_amount || 0), 0);
 
       return {

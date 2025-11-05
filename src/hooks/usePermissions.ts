@@ -24,12 +24,17 @@ export function usePermissions() {
 
       try {
         // Check if user_roles table exists and has role for this tenant
-        const { data, error }: any = await supabase
+        // Note: Using type assertion here because user_roles table may not exist in all deployments
+        // This is a defensive approach to handle missing tables gracefully
+        interface UserRoleRow {
+          role: string;
+        }
+        const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', admin.id)
           .eq('tenant_id', tenant.id)
-          .single();
+          .single() as { data: UserRoleRow | null; error: any };
 
         if (error && error.code === '42P01') {
           // Table doesn't exist, default to owner
