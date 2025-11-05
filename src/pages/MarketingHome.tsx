@@ -191,10 +191,55 @@ export default function MarketingHome() {
             <div className="mb-12">
               <FloatingBadges />
             </div>
-
-            {/* Guided Dashboard Preview */}
-            <EnhancedDashboardPreview />
           </div>
+        </div>
+      </section>
+
+      {/* SECTION: DASHBOARD SHOWCASE */}
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        
+        <div className="container mx-auto px-4">
+          {/* Section Header */}
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                See Your Business at a Glance
+              </h2>
+              <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+                All your wholesale operations in one powerful dashboard
+              </p>
+            </div>
+          </ScrollReveal>
+
+          {/* Dashboard Container with Visual Highlighting */}
+          <ScrollReveal delay={0.2}>
+            <div className="max-w-6xl mx-auto">
+              <div className="relative group">
+                {/* Glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-xl blur-xl opacity-75 group-hover:opacity-100 transition duration-1000" />
+                
+                {/* Dashboard */}
+                <div className="relative transform-gpu hover:scale-[1.02] transition-transform duration-500">
+                  <EnhancedDashboardPreview />
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* CTA Button */}
+          <ScrollReveal delay={0.4}>
+            <div className="text-center mt-12">
+              <Link to="/signup">
+                <MagneticButton className="bg-white text-slate-900 hover:bg-white/90 h-14 px-8 text-lg font-semibold">
+                  Start Your Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </MagneticButton>
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
