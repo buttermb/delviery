@@ -29,7 +29,7 @@ const navItems = [
 
 export function MiniSidebarPreview() {
   return (
-    <div id="sidebar" className="w-12 bg-slate-900 border-r border-slate-800 py-2 flex flex-col gap-0.5">
+    <div id="sidebar" className="w-10 sm:w-12 bg-slate-900 border-r border-slate-800 py-2 flex flex-col gap-0.5">
       <TooltipProvider>
         {navItems.map((item, index) => {
           const Icon = item.icon;
@@ -41,7 +41,7 @@ export function MiniSidebarPreview() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
-                  className={`w-full p-2 flex items-center justify-center transition-colors relative ${
+                  className={`w-full p-1.5 sm:p-2 flex items-center justify-center transition-colors relative ${
                     item.active 
                       ? 'bg-primary/20 text-primary' 
                       : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50'
@@ -55,7 +55,7 @@ export function MiniSidebarPreview() {
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent side="right" className="text-xs">
