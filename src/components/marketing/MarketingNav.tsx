@@ -1,13 +1,61 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function MarketingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show navbar at top of page
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } 
+      // Hide when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [lastScrollY]);
 
   return (
-    <nav className="border-b border-[hsl(var(--marketing-border))] backdrop-blur-sm sticky top-0 z-50 bg-[hsl(var(--marketing-bg))]/80">
+    <motion.nav
+      initial={{ y: 0, opacity: 1 }}
+      animate={{ 
+        y: isVisible ? 0 : -100,
+        opacity: isVisible ? 1 : 0,
+      }}
+      transition={{ 
+        duration: 0.3,
+        ease: "easeInOut",
+      }}
+      className="border-b border-[hsl(var(--marketing-border))] backdrop-blur-sm sticky top-0 z-50 bg-[hsl(var(--marketing-bg))]/80"
+    >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-[hsl(var(--marketing-text))]">
           Dev<span className="text-[hsl(var(--marketing-primary))]">Panel</span>
@@ -60,10 +108,17 @@ export function MarketingNav() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
-          <div className="container mx-auto px-4 py-4 space-y-4">
+      {/* Mobile Menu with Animation */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] overflow-hidden"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-4">
             <Link
               to="/features"
               className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
@@ -105,9 +160,10 @@ export function MarketingNav() {
               </Link>
             </div>
           </div>
-        </div>
-      )}
-    </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 }
 
