@@ -19,10 +19,23 @@ const REDIRECT_WINDOW_MS = 10000; // 10 seconds
 const MAX_VERIFICATION_FAILURES = 3;
 // Verification timeout increased to 8 seconds
 const VERIFICATION_TIMEOUT_MS = 8000;
+// Network timeout reduced to 2 seconds (edge function is now optimized)
+const NETWORK_TIMEOUT_MS = 2000;
+// Cache verification results for 2 minutes
+const VERIFICATION_CACHE_MS = 2 * 60 * 1000;
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
 }
+
+// Cache for verification results to avoid redundant API calls
+const verificationCache = new Map<string, { verified: boolean; timestamp: number; tenant: any }>();
+
+const isVerificationCacheValid = (token: string): boolean => {
+  const cached = verificationCache.get(token);
+  if (!cached) return false;
+  return Date.now() - cached.timestamp < VERIFICATION_CACHE_MS;
+};
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
   const { admin, tenant, token, accessToken, loading, refreshAuthToken } = useTenantAdminAuth();
@@ -175,13 +188,24 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         if (!tokenToUse) {
           throw new Error("No access token available");
         }
+
+        // Check cache first to avoid redundant API calls
+        if (isVerificationCacheValid(tokenToUse)) {
+          const cached = verificationCache.get(tokenToUse);
+          logger.info('Using cached verification result', { 
+            component: 'TenantAdminProtectedRoute',
+            tenant: cached?.tenant?.business_name 
+          });
+          setVerifying(false);
+          return;
+        }
         
-        // Add timeout to prevent hanging (reduced to 3 seconds for faster failure)
+        // Reduced timeout to 2 seconds (edge function is now optimized)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
           controller.abort();
-          setVerifying(false); // Ensure we exit verifying state on timeout
-        }, 3000); // 3 second timeout
+          setVerifying(false);
+        }, NETWORK_TIMEOUT_MS);
         
         let response;
         try {
@@ -291,6 +315,18 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           }
 
           setVerifying(false);
+          
+          // Cache successful verification
+          verificationCache.set(tokenToUse, {
+            verified: true,
+            timestamp: Date.now(),
+            tenant: data.tenant
+          });
+          
+          logger.info('Verification successful, cached result', {
+            component: 'TenantAdminProtectedRoute',
+            tenant: data.tenant?.business_name
+          });
         } else {
           throw new Error("Tenant subscription is not active");
         }
