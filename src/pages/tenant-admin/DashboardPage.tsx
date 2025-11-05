@@ -76,44 +76,30 @@ export default function TenantAdminDashboardPage() {
           status: string;
         }
         
-        let orders: OrderRow[] | null = null;
-        let ordersError: any = null;
+        // Try with tenant_id filter first
+        let ordersResult = await supabase
+          .from("wholesale_orders")
+          .select("total_amount, status")
+          .eq("tenant_id", tenantId)
+          .gte("created_at", today.toISOString())
+          .returns<OrderRow[]>();
         
-        try {
-          const result = await supabase
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.status === 400 || ordersResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          ordersResult = await supabase
             .from("wholesale_orders")
             .select("total_amount, status")
-            .eq("tenant_id", tenantId)
             .gte("created_at", today.toISOString())
+            .limit(100)
             .returns<OrderRow[]>();
-          
-          orders = result.data;
-          ordersError = result.error;
-        } catch (error: any) {
-          // If error is 42703 (column doesn't exist) or 400 (bad request), try without tenant filter
-          if (error?.code === '42703' || error?.message?.includes('column') || error?.status === 400) {
-            logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", error, { component: 'DashboardPage' });
-            try {
-              const result = await supabase
-                .from("wholesale_orders")
-                .select("total_amount, status")
-                .gte("created_at", today.toISOString())
-                .limit(100)
-                .returns<OrderRow[]>();
-              orders = result.data;
-              ordersError = result.error;
-            } catch (fallbackError) {
-              logger.error("Failed to fetch orders even without tenant filter", fallbackError, { component: 'DashboardPage' });
-              orders = [];
-            }
-          } else {
-            ordersError = error;
-          }
         }
-
-        if (ordersError && !orders) {
-          logger.warn("Failed to fetch today's orders", ordersError, { component: 'DashboardPage' });
-          orders = []; // Return empty array instead of throwing
+        
+        const orders = ordersResult.error ? [] : (ordersResult.data || []);
+        
+        if (ordersResult.error && orders.length === 0) {
+          logger.warn("Failed to fetch today's orders", ordersResult.error, { component: 'DashboardPage' });
         }
 
         const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
@@ -127,42 +113,28 @@ export default function TenantAdminDashboardPage() {
           reorder_point: number | null;
         }
         
-        let inventory: InventoryRow[] | null = null;
-        let inventoryError: any = null;
+        // Try with tenant_id filter first
+        let inventoryResult = await supabase
+          .from("wholesale_inventory")
+          .select("id, product_name, quantity_lbs, reorder_point")
+          .eq("tenant_id", tenantId)
+          .returns<InventoryRow[]>();
         
-        try {
-          const result = await supabase
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.status === 400 || inventoryResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          inventoryResult = await supabase
             .from("wholesale_inventory")
             .select("id, product_name, quantity_lbs, reorder_point")
-            .eq("tenant_id", tenantId)
+            .limit(100)
             .returns<InventoryRow[]>();
-          
-          inventory = result.data;
-          inventoryError = result.error;
-        } catch (error: any) {
-          // If error is 42703 (column doesn't exist) or 400 (bad request), try without tenant filter
-          if (error?.code === '42703' || error?.message?.includes('column') || error?.status === 400) {
-            logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", error, { component: 'DashboardPage' });
-            try {
-              const result = await supabase
-                .from("wholesale_inventory")
-                .select("id, product_name, quantity_lbs, reorder_point")
-                .limit(100)
-                .returns<InventoryRow[]>();
-              inventory = result.data;
-              inventoryError = result.error;
-            } catch (fallbackError) {
-              logger.error("Failed to fetch inventory even without tenant filter", fallbackError, { component: 'DashboardPage' });
-              inventory = [];
-            }
-          } else {
-            inventoryError = error;
-          }
         }
-
-        if (inventoryError && !inventory) {
-          logger.warn("Failed to fetch inventory", inventoryError, { component: 'DashboardPage' });
-          inventory = []; // Return empty array instead of throwing
+        
+        const inventory = inventoryResult.error ? [] : (inventoryResult.data || []);
+        
+        if (inventoryResult.error && inventory.length === 0) {
+          logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
         }
 
         const lowStock = (inventory as InventoryRow[] || []).map((item) => ({
@@ -226,19 +198,32 @@ export default function TenantAdminDashboardPage() {
       const activities: any[] = [];
 
       try {
-        // Get tenant's menus first to filter activity
+        // Get tenant's menus first to filter activity - handle missing tenant_id gracefully
         // @ts-ignore - Supabase type inference issue
-        const { data: tenantMenus, error: menusError } = await supabase
+        let menusResult = await supabase
           .from("disposable_menus")
           .select("id, name, created_at")
           .eq("tenant_id", tenantId)
           .order("created_at", { ascending: false })
           .limit(100);
 
-        if (menusError) {
-          console.warn("Failed to fetch tenant menus:", menusError);
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.status === 400 || menusResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          menusResult = await supabase
+            .from("disposable_menus")
+            .select("id, name, created_at")
+            .order("created_at", { ascending: false })
+            .limit(100);
+        }
+
+        if (menusResult.error) {
+          logger.warn("Failed to fetch tenant menus", menusResult.error, { component: 'DashboardPage' });
           return []; // Return empty array instead of throwing
         }
+
+        const tenantMenus = menusResult.data;
 
         if (!tenantMenus || tenantMenus.length === 0) return [];
 
@@ -294,7 +279,7 @@ export default function TenantAdminDashboardPage() {
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, 5);
       } catch (error) {
-        console.error("Error fetching recent activity:", error);
+        logger.error("Error fetching recent activity", error, { component: 'DashboardPage' });
         return []; // Return empty array on error
       }
     },
@@ -312,40 +297,30 @@ export default function TenantAdminDashboardPage() {
       try {
         // Get tenant's menus first - handle missing tenant_id column gracefully
         let tenantMenus: { id: string }[] | null = null;
-        let menusError: any = null;
         
-        try {
-          const result = await supabase
+        // Try with tenant_id filter first
+        let result = await supabase
+          .from("disposable_menus")
+          .select("id")
+          .eq("tenant_id", tenantId);
+        
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (result.error && (result.error.code === '42703' || result.error.status === 400 || result.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", result.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          result = await supabase
             .from("disposable_menus")
             .select("id")
-            .eq("tenant_id", tenantId);
-          
-          tenantMenus = result.data;
-          menusError = result.error;
-        } catch (error: any) {
-          // If error is 42703 (column doesn't exist) or 400 (bad request), try without tenant filter
-          if (error?.code === '42703' || error?.message?.includes('column') || error?.status === 400) {
-            logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", error, { component: 'DashboardPage' });
-            try {
-              const result = await supabase
-                .from("disposable_menus")
-                .select("id")
-                .limit(100); // Limit to prevent loading too much
-              tenantMenus = result.data;
-              menusError = result.error;
-            } catch (fallbackError) {
-              logger.error("Failed to fetch menus even without tenant filter", fallbackError, { component: 'DashboardPage' });
-              return { total: 0, commission: 0 };
-            }
-          } else {
-            menusError = error;
-          }
+            .limit(100); // Limit to prevent loading too much
         }
-
-        if (menusError) {
-          logger.warn("Failed to fetch menus for revenue stats", menusError, { component: 'DashboardPage' });
+        
+        // If still has error, return defaults
+        if (result.error) {
+          logger.warn("Failed to fetch menus for revenue stats", result.error, { component: 'DashboardPage' });
           return { total: 0, commission: 0 };
         }
+        
+        tenantMenus = result.data;
 
         if (!tenantMenus || tenantMenus.length === 0) return { total: 0, commission: 0 };
 
