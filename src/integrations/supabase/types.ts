@@ -8238,6 +8238,7 @@ export type Database = {
           phone: string
           rating: number | null
           status: string
+          tenant_id: string | null
           total_deliveries: number
           updated_at: string
           vehicle_plate: string | null
@@ -8253,6 +8254,7 @@ export type Database = {
           phone: string
           rating?: number | null
           status?: string
+          tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
           vehicle_plate?: string | null
@@ -8268,12 +8270,21 @@ export type Database = {
           phone?: string
           rating?: number | null
           status?: string
+          tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
           vehicle_plate?: string | null
           vehicle_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_runners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_suppliers: {
         Row: {
