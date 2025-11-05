@@ -9,12 +9,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 
 export function InventoryAlertsWidget() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { account } = useAccount();
+
+  const getFullPath = (href: string) => {
+    if (href.startsWith('/admin') && tenantSlug) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const { data: alerts } = useQuery({
     queryKey: ['inventory-alerts-widget', account?.id],
@@ -53,7 +61,7 @@ export function InventoryAlertsWidget() {
             <div
               key={index}
               className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate('/admin/big-plug-inventory')}
+              onClick={() => navigate(getFullPath('/admin/big-plug-inventory'))}
             >
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-muted-foreground" />
@@ -82,7 +90,7 @@ export function InventoryAlertsWidget() {
           variant="ghost"
           size="sm"
           className="w-full mt-4"
-          onClick={() => navigate('/admin/big-plug-inventory')}
+          onClick={() => navigate(getFullPath('/admin/big-plug-inventory'))}
         >
           View All
           <ArrowRight className="h-4 w-4 ml-1" />

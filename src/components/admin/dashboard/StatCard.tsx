@@ -2,7 +2,7 @@
  * Stat Card Component - Modern dashboard stat card
  */
 
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { ArrowUp, ArrowDown } from 'lucide-react';
@@ -45,11 +45,19 @@ export function StatCard({
   color = 'blue',
   href,
 }: StatCardProps) {
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const Component = href ? Link : 'div';
+  
+  // Build the full path with tenant slug if href is provided
+  const fullPath = href 
+    ? href.startsWith('/admin') && tenantSlug
+      ? `/${tenantSlug}${href}`
+      : href
+    : '#';
 
   return (
     <Component
-      to={href || '#'}
+      to={fullPath}
       className={cn(href && 'cursor-pointer')}
     >
       <Card className={cn(

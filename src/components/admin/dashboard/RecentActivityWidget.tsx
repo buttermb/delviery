@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatRelativeTime } from '@/lib/utils/formatDate';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface ActivityItem {
   id: string;
@@ -24,6 +24,14 @@ interface ActivityItem {
 export function RecentActivityWidget() {
   const { account } = useAccount();
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+
+  const getFullPath = (href: string) => {
+    if (href.startsWith('/admin') && tenantSlug) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const { data: activities } = useQuery({
     queryKey: ['recent-activity', account?.id],
@@ -106,9 +114,9 @@ export function RecentActivityWidget() {
               className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
               onClick={() => {
                 if (activity.entity_type === 'order') {
-                  navigate(`/admin/big-plug-order?order=${activity.entity_id}`);
+                  navigate(getFullPath(`/admin/big-plug-order?order=${activity.entity_id}`));
                 } else if (activity.entity_type === 'transfer') {
-                  navigate(`/admin/inventory/dispatch?transfer=${activity.entity_id}`);
+                  navigate(getFullPath(`/admin/inventory/dispatch?transfer=${activity.entity_id}`));
                 }
               }}
             >

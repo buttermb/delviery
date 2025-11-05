@@ -5,10 +5,18 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Package, Menu, Truck, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export function QuickActionsBar() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+
+  const getFullPath = (href: string) => {
+    if (href.startsWith('/admin') && tenantSlug) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const actions = [
     {
@@ -46,8 +54,8 @@ export function QuickActionsBar() {
             key={action.label}
             variant="outline"
             size="sm"
-            onClick={() => navigate(action.href)}
-            className="gap-2"
+            onClick={() => navigate(getFullPath(action.href))}
+            className="gap-2 min-h-[44px]"
           >
             {action.icon}
             <span>{action.label}</span>

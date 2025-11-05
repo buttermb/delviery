@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { formatWeight } from '@/lib/utils/formatWeight';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { format, subDays } from 'date-fns';
 
 interface TopProduct {
@@ -24,6 +24,14 @@ interface TopProduct {
 export function TopProductsWidget() {
   const { account } = useAccount();
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+
+  const getFullPath = (href: string) => {
+    if (href.startsWith('/admin') && tenantSlug) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const { data: topProducts } = useQuery({
     queryKey: ['top-products', account?.id],
@@ -106,7 +114,7 @@ export function TopProductsWidget() {
           Top Products
         </h3>
         <button
-          onClick={() => navigate('/admin/analytics/comprehensive')}
+          onClick={() => navigate(getFullPath('/admin/analytics/comprehensive'))}
           className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
         >
           View All
@@ -120,7 +128,7 @@ export function TopProductsWidget() {
             <div
               key={product.product_id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(`/admin/inventory/products?product=${product.product_id}`)}
+              onClick={() => navigate(getFullPath(`/admin/inventory/products?product=${product.product_id}`))}
             >
               <div className="flex items-center gap-3 flex-1">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">

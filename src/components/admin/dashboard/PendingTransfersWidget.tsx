@@ -9,12 +9,20 @@ import { Truck, ArrowRight, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 
 export function PendingTransfersWidget() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { account } = useAccount();
+
+  const getFullPath = (href: string) => {
+    if (href.startsWith('/admin') && tenantSlug) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
 
   const { data: transfers } = useQuery({
     queryKey: ['pending-transfers', account?.id],
@@ -55,7 +63,7 @@ export function PendingTransfersWidget() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/admin/inventory/dispatch')}
+          onClick={() => navigate(getFullPath('/admin/inventory/dispatch'))}
         >
           View All
           <ArrowRight className="h-4 w-4 ml-1" />
@@ -68,7 +76,7 @@ export function PendingTransfersWidget() {
             <div
               key={transfer.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => navigate(`/admin/inventory/dispatch?transfer=${transfer.id}`)}
+              onClick={() => navigate(getFullPath(`/admin/inventory/dispatch?transfer=${transfer.id}`))}
             >
               <div className="flex-1">
                 <div className="font-medium">
