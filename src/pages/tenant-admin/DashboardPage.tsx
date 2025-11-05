@@ -477,7 +477,10 @@ export default function TenantAdminDashboardPage() {
 
         {/* Usage Limit Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="hover:shadow-md transition-shadow">
+          <Card 
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">📦 Products</CardTitle>
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -510,7 +513,10 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
+          <Card 
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">👥 Customers</CardTitle>
               <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
@@ -543,7 +549,10 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
+          <Card 
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => navigate(`/${tenant?.slug}/admin/disposable-menus`)}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">📱 Menus</CardTitle>
               <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -576,7 +585,10 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
+          <Card 
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => navigate(`/${tenant?.slug}/admin/financial-center`)}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">💰 Revenue</CardTitle>
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
