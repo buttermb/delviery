@@ -77,9 +77,10 @@ export default function TenantAdminDashboardPage() {
         const orderCount = orders?.length || 0;
 
         // Get low stock items with error handling
+        // Use product_name if strain doesn't exist, fallback gracefully
         const { data: inventory, error: inventoryError } = await (supabase
           .from("wholesale_inventory") as any)
-          .select("strain, weight_lbs, low_stock_threshold")
+          .select("strain, product_name, weight_lbs, quantity_lbs, low_stock_threshold, reorder_point")
           .eq("tenant_id", tenantId);
 
         if (inventoryError) {
@@ -87,7 +88,15 @@ export default function TenantAdminDashboardPage() {
           // Return defaults instead of throwing
         }
 
-        const lowStock = (inventory || []).filter(
+        const lowStock = (inventory || []).map((item: any) => ({
+          ...item,
+          // Use strain if available, otherwise product_name
+          strain: item.strain || item.product_name || 'Unknown',
+          // Use weight_lbs if available, otherwise quantity_lbs
+          weight_lbs: item.weight_lbs ?? item.quantity_lbs ?? 0,
+          // Use low_stock_threshold if available, otherwise reorder_point, otherwise default 10
+          low_stock_threshold: item.low_stock_threshold ?? item.reorder_point ?? 10,
+        })).filter(
           (item: any) => Number(item.weight_lbs || 0) <= Number(item.low_stock_threshold || 10)
         );
 
@@ -708,7 +717,7 @@ export default function TenantAdminDashboardPage() {
                 {todayMetrics.lowStock.map((item: any, index: number) => (
                   <div key={index} className="flex items-center justify-between p-4 border border-yellow-200 rounded-lg bg-yellow-50">
                     <div>
-                      <p className="font-medium text-[hsl(var(--tenant-text))]">{item.strain}</p>
+                      <p className="font-medium text-[hsl(var(--tenant-text))]">{item.strain || item.product_name || 'Unknown'}</p>
                       <p className="text-sm text-[hsl(var(--tenant-text-light))]">
                         {Number(item.weight_lbs || 0).toFixed(2)} lbs remaining
                       </p>
