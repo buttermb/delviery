@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GuideTooltip } from './GuideTooltip';
@@ -10,6 +10,7 @@ import { InventoryAlertsPreview } from './dashboard/InventoryAlertsPreview';
 import { EnhancedActivityFeed } from './dashboard/EnhancedActivityFeed';
 import { MiniSidebarPreview } from './dashboard/MiniSidebarPreview';
 import { AnimatedMetricValue } from './dashboard/AnimatedMetricValue';
+import { dashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
 import { 
   ShoppingCart, 
   Package, 
@@ -62,6 +63,7 @@ const tourSteps = [
 export function EnhancedDashboardPreview() {
   const [currentStep, setCurrentStep] = useState(-1);
   const [isVisible, setIsVisible] = useState(false);
+  const [activeView, setActiveView] = useState<DashboardViewKey>('dashboard');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -119,15 +121,24 @@ export function EnhancedDashboardPreview() {
 
       {/* Unified Dashboard Panel */}
       <div className="flex flex-col sm:flex-row bg-card/80 backdrop-blur-sm border border-border/50 border-t-0 rounded-b-lg shadow-lg overflow-hidden ring-2 ring-primary/10 mx-2 sm:mx-0">
-        {/* Sidebar - Hidden on mobile */}
+        {/* Sidebar - Hidden on mobile, Interactive */}
         <div className="hidden sm:block">
-          <MiniSidebarPreview />
+          <MiniSidebarPreview activeView={activeView} onViewChange={setActiveView} />
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 p-2 sm:p-3">
-          {/* Metrics Grid */}
-          <motion.div
+        <div className="flex-1 p-2 sm:p-3 relative overflow-hidden">
+          <AnimatePresence mode="wait">
+            {activeView === 'dashboard' ? (
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Metrics Grid */}
+                <motion.div
             id="metrics"
             className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mb-2"
           >
@@ -235,6 +246,26 @@ export function EnhancedDashboardPreview() {
               <InventoryAlertsPreview />
             </motion.div>
           </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={activeView}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="h-full"
+              >
+                <div className="mb-3">
+                  <h3 className="text-lg font-bold">{dashboardViews[activeView].title}</h3>
+                  <p className="text-xs text-muted-foreground">{dashboardViews[activeView].description}</p>
+                </div>
+                <div className="h-[400px] overflow-y-auto">
+                  {dashboardViews[activeView].preview}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
