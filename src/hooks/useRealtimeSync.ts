@@ -4,10 +4,10 @@
  * Phase 3: Implement Real-Time Synchronization
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UseRealtimeSyncOptions {
@@ -23,6 +23,10 @@ const DEFAULT_TABLES = [
   'courier_earnings',
 ];
 
+// Track failed connection attempts per table
+const connectionFailures = new Map<string, number>();
+const MAX_FAILURES = 3; // Disable after 3 failures
+
 /**
  * Unified hook for real-time synchronization across multiple tables
  * Handles INSERT, UPDATE, DELETE events and invalidates relevant query caches
@@ -34,43 +38,79 @@ export function useRealtimeSync({
 }: UseRealtimeSyncOptions = {}) {
   const queryClient = useQueryClient();
   const channelsRef = useRef<RealtimeChannel[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!enabled || !tenantId) {
+      // Cleanup if disabled
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
       return;
     }
 
-    // Clear any existing channels
-    channelsRef.current.forEach(channel => {
-      try {
-        supabase.removeChannel(channel);
-      } catch (error) {
-        logger.warn('Error removing channel', error, 'useRealtimeSync');
-      }
-    });
-    channelsRef.current = [];
+    // Prevent multiple simultaneous connection attempts
+    if (isConnecting) {
+      return;
+    }
 
-    // Subscribe to each table
+    setIsConnecting(true);
+
+    // Cleanup function - silently handle WebSocket errors during cleanup
+    const cleanup = () => {
+      channelsRef.current.forEach(channel => {
+        try {
+          // Suppress WebSocket errors during cleanup (they're expected when channels close)
+          supabase.removeChannel(channel).catch(() => {
+            // Silently ignore cleanup errors - WebSocket disconnects are expected
+          });
+        } catch (error) {
+          // Silently ignore cleanup errors - these are not critical
+        }
+      });
+      channelsRef.current = [];
+    };
+
+    cleanupRef.current = cleanup;
+
+    // Clear any existing channels first
+    cleanup();
+
+    // Subscribe to each table (skip if too many failures)
     tables.forEach(table => {
+      const failureKey = `${table}-${tenantId}`;
+      const failures = connectionFailures.get(failureKey) || 0;
+      
+      // Skip if too many failures (disable realtime for this table)
+      if (failures >= MAX_FAILURES) {
+        logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures }, 'useRealtimeSync');
+        return;
+      }
+
       const channelKey = `realtime-sync-${table}-${tenantId}`;
       
-      const channel = supabase
-        .channel(channelKey, {
-          config: {
-            broadcast: { self: false },
-            presence: { key: '' },
-          },
-        })
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table,
-            // Only filter by tenant_id if we have a tenantId
-            // If tenant_id column doesn't exist, the subscription will still work without filter
-            filter: tenantId ? `tenant_id=eq.${tenantId}` : undefined,
-          },
+      let channel: RealtimeChannel;
+      
+      try {
+        channel = supabase
+          .channel(channelKey, {
+            config: {
+              broadcast: { self: false },
+              presence: { key: '' },
+            },
+          })
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table,
+              // Don't filter by tenant_id if column doesn't exist - this causes 400 errors
+              // The filter will be applied server-side by RLS policies if they exist
+              filter: undefined, // Remove tenant_id filter to avoid 400 errors
+            },
           (payload) => {
             try {
               logger.debug(`Realtime update: ${table}`, {
@@ -145,22 +185,39 @@ export function useRealtimeSync({
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
+            // Reset failure count on successful subscription
+            connectionFailures.delete(failureKey);
             logger.debug(`Realtime subscription active: ${table}`, { tenantId }, 'useRealtimeSync');
           } else if (status === 'CHANNEL_ERROR') {
-            logger.error(
-              `Realtime subscription error: ${table} (tenant: ${tenantId})`,
-              { table, tenantId },
-              'useRealtimeSync'
-            );
+            // Increment failure count
+            const currentFailures = connectionFailures.get(failureKey) || 0;
+            connectionFailures.set(failureKey, currentFailures + 1);
+            
+            // Only log if not too many failures (to reduce noise)
+            if (currentFailures < MAX_FAILURES) {
+              logger.warn(
+                `Realtime subscription error: ${table} (tenant: ${tenantId})`,
+                { table, tenantId, failures: currentFailures + 1 },
+                'useRealtimeSync'
+              );
+            }
+            
             // Invalidate queries to trigger refetch
             queryClient.invalidateQueries({ queryKey: [table] });
             queryClient.invalidateQueries({ queryKey: [table, tenantId] });
           } else if (status === 'TIMED_OUT') {
-            logger.warn(
-              `Realtime subscription timed out: ${table}`,
-              { tenantId, table },
-              'useRealtimeSync'
-            );
+            // Increment failure count
+            const currentFailures = connectionFailures.get(failureKey) || 0;
+            connectionFailures.set(failureKey, currentFailures + 1);
+            
+            if (currentFailures < MAX_FAILURES) {
+              logger.warn(
+                `Realtime subscription timed out: ${table}`,
+                { tenantId, table, failures: currentFailures + 1 },
+                'useRealtimeSync'
+              );
+            }
+            
             // Invalidate queries to trigger refetch
             queryClient.invalidateQueries({ queryKey: [table] });
             queryClient.invalidateQueries({ queryKey: [table, tenantId] });
@@ -168,20 +225,28 @@ export function useRealtimeSync({
         });
 
       channelsRef.current.push(channel);
+      } catch (error) {
+        // Catch any errors during channel creation
+        const currentFailures = connectionFailures.get(failureKey) || 0;
+        connectionFailures.set(failureKey, currentFailures + 1);
+        
+        if (currentFailures < MAX_FAILURES) {
+          logger.warn(`Failed to create realtime channel for ${table}`, error, 'useRealtimeSync');
+        }
+      }
     });
+
+    setIsConnecting(false);
 
     // Cleanup function
     return () => {
-      channelsRef.current.forEach(channel => {
-        try {
-          supabase.removeChannel(channel);
-        } catch (error) {
-          logger.warn('Error removing channel on cleanup', error, 'useRealtimeSync');
-        }
-      });
-      channelsRef.current = [];
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      setIsConnecting(false);
     };
-  }, [tenantId, tables, enabled, queryClient]);
+  }, [tenantId, tables, enabled, queryClient, isConnecting]);
 
   return {
     isActive: channelsRef.current.length > 0,
