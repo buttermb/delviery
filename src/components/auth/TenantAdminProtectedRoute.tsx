@@ -50,6 +50,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Main verification effect - only depends on tenantSlug and location
   useEffect(() => {
+    console.log('[TenantAdminProtectedRoute] Effect triggered', {
+      verified,
+      verificationLock: verificationLockRef.current,
+      tenantSlug,
+      pathname: location.pathname,
+      hasToken: !!authRef.current.token,
+      hasAdmin: !!authRef.current.admin,
+      hasTenant: !!authRef.current.tenant
+    });
+
     // Skip if already verified
     if (verified) {
       console.log('[TenantAdminProtectedRoute] Already verified, skipping');
@@ -65,8 +75,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     const verifyAccess = () => {
       const { token: currentToken, admin: currentAdmin, tenant: currentTenant } = authRef.current;
       
+      console.log('[TenantAdminProtectedRoute] Starting verification', {
+        hasToken: !!currentToken,
+        hasAdmin: !!currentAdmin,
+        hasTenant: !!currentTenant,
+        tenantSlug,
+        currentTenantSlug: currentTenant?.slug
+      });
+
       if (!currentToken || !currentAdmin || !currentTenant || !tenantSlug) {
-        console.log('[TenantAdminProtectedRoute] Waiting for auth data...');
+        console.log('[TenantAdminProtectedRoute] Missing auth data, stopping verification');
         setVerifying(false);
         return;
       }
@@ -84,7 +102,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         return;
       }
 
-      console.log('[TenantAdminProtectedRoute] Starting verification...');
+      console.log('[TenantAdminProtectedRoute] Performing local verification...');
       setVerifying(true);
       setVerificationError(null);
 
@@ -92,7 +110,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         // Simple local verification: check if tenant slug matches
         // Auth context already validated user has access to this tenant
         if (currentTenant.slug.toLowerCase() !== tenantSlug.toLowerCase()) {
-          console.error('[TenantAdminProtectedRoute] Tenant slug mismatch');
+          console.error('[TenantAdminProtectedRoute] Tenant slug mismatch', {
+            expected: tenantSlug,
+            actual: currentTenant.slug
+          });
           setVerificationError('Access denied - tenant mismatch');
           setVerifying(false);
           verificationLockRef.current = false;
@@ -106,7 +127,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           timestamp: Date.now()
         });
 
-        console.log('[TenantAdminProtectedRoute] Verification successful');
+        console.log('[TenantAdminProtectedRoute] ✅ Verification successful');
         setVerified(true);
         setVerifying(false);
         setVerificationError(null);
@@ -120,9 +141,17 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     };
 
     verifyAccess();
-  }, [tenantSlug, location.pathname]); // Only re-run if tenantSlug or route changes
+  }, [tenantSlug, location.pathname, verified]); // Added verified to dependencies
 
   // Loading state - wait for auth AND verification
+  console.log('[TenantAdminProtectedRoute] Render state', {
+    loading,
+    verifying,
+    verified,
+    hasAdmin: !!admin,
+    hasTenant: !!tenant
+  });
+
   if (loading || verifying || !verified) {
     return <LoadingFallback />;
   }
