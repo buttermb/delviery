@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
 import { MenuShareDialog } from './MenuShareDialog';
+import { MenuShareDialogEnhanced } from './MenuShareDialogEnhanced';
 import { MenuAnalyticsDialog } from './MenuAnalyticsDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
@@ -249,11 +250,20 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         onOpenChange={setManageAccessOpen}
       />
 
-      <MenuShareDialog
+      {/* Enhanced Share Dialog with QR, SMS, and Customer Management */}
+      <MenuShareDialogEnhanced
         menu={menu}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
+        whitelistEntry={undefined}
       />
+      
+      {/* Keep original share dialog as fallback */}
+      {/* <MenuShareDialog
+        menu={menu}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+      /> */}
 
       <MenuAnalyticsDialog
         menu={menu}

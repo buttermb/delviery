@@ -5,8 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, FileSpreadsheet as ExcelIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface AnalyticsExportButtonProps {
   data: any;
@@ -31,6 +32,41 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       toast.success('Analytics exported to JSON');
     } catch (error) {
       toast.error('Failed to export data');
+    }
+  };
+
+  const exportToExcel = () => {
+    try {
+      let worksheetData: any[];
+      
+      if (Array.isArray(data)) {
+        worksheetData = data;
+      } else if (typeof data === 'object') {
+        // Convert object to array of key-value pairs
+        worksheetData = Object.entries(data).map(([key, value]) => ({
+          Metric: key,
+          Value: value,
+        }));
+      } else {
+        worksheetData = [{ Value: data }];
+      }
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+      
+      // Auto-size columns
+      const maxWidth = worksheetData.reduce((w, r) => Math.max(w, Object.keys(r).length), 10);
+      worksheet['!cols'] = Array.from({ length: maxWidth }, () => ({ wch: 15 }));
+      
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Analytics');
+      
+      // Generate Excel file
+      XLSX.writeFile(workbook, `${filename}.xlsx`);
+      toast.success('Analytics exported to Excel');
+    } catch (error) {
+      console.error('Excel export error:', error);
+      toast.error('Failed to export to Excel');
     }
   };
 
@@ -66,6 +102,10 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={exportToExcel}>
+          <ExcelIcon className="h-4 w-4 mr-2" />
+          Export as Excel
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={exportToCSV}>
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           Export as CSV

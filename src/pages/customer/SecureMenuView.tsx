@@ -14,6 +14,7 @@ import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 // import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
+import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
 
 interface Product {
@@ -78,11 +79,20 @@ const SecureMenuView = () => {
   
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<Record<string, { quantity: number; weight: string }>>({});
   const [placingOrder, setPlacingOrder] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
+
+  // Use Zustand cart store
+  const cartItems = useMenuCartStore((state) => state.items);
+  const addItem = useMenuCartStore((state) => state.addItem);
+  const removeItem = useMenuCartStore((state) => state.removeItem);
+  const updateQuantityStore = useMenuCartStore((state) => state.updateQuantity);
+  const clearCart = useMenuCartStore((state) => state.clearCart);
+  const setMenuToken = useMenuCartStore((state) => state.setMenuToken);
+  const getTotal = useMenuCartStore((state) => state.getTotal);
+  const getItemCount = useMenuCartStore((state) => state.getItemCount);
 
   const cleanupScreenshotProtection = useRef<(() => void) | null>(null);
 
@@ -93,6 +103,11 @@ const SecureMenuView = () => {
       const parsed = JSON.parse(storedMenu);
       setMenuData(parsed);
       setLoading(false);
+
+      // Set menu token in cart store for persistence
+      if (token) {
+        setMenuToken(token);
+      }
 
       // Enable screenshot protection if enabled in menu settings (disabled - module removed)
       // if (parsed.security_settings?.screenshot_protection?.enabled) {
@@ -116,7 +131,7 @@ const SecureMenuView = () => {
       // Redirect back to access page if not validated
       navigate(`/m/${token}`);
     }
-  }, [token, navigate]);
+  }, [token, navigate, setMenuToken]);
 
   const getProductPrice = (product: Product, weight?: string) => {
     if (product.prices && typeof product.prices === 'object') {
@@ -127,34 +142,40 @@ const SecureMenuView = () => {
   };
 
   const updateQuantity = (productId: string, delta: number) => {
-    setCart(prev => {
-      const current = prev[productId]?.quantity || 0;
-      const newQty = Math.max(0, current + delta);
-      
-      if (newQty === 0) {
-        const { [productId]: _, ...rest } = prev;
-        return rest;
+    const product = menuData?.products?.find((p: Product) => p.id === productId);
+    if (!product) return;
+
+    const existingItem = cartItems.find(item => item.productId === productId);
+    const currentQty = existingItem?.quantity || 0;
+    const newQty = Math.max(0, currentQty + delta);
+    
+    const weight = selectedWeights[productId] || getDefaultWeight(product.prices);
+    const price = getProductPrice(product, weight);
+
+    if (newQty === 0) {
+      removeItem(productId);
+    } else if (existingItem) {
+      updateQuantityStore(productId, newQty);
+    } else {
+      addItem({
+        productId,
+        weight,
+        price,
+        productName: product.name,
+      });
+      // Then update to the correct quantity if needed
+      if (newQty > 1) {
+        updateQuantityStore(productId, newQty);
       }
-      
-      const weight = selectedWeights[productId] || getDefaultWeight(
-        menuData?.products.find(p => p.id === productId)?.prices
-      );
-      
-      return { ...prev, [productId]: { quantity: newQty, weight } };
-    });
+    }
   };
 
   const calculateTotal = () => {
-    return Object.entries(cart).reduce((sum, [productId, { quantity, weight }]) => {
-      const product = menuData?.products?.find((p: Product) => p.id === productId);
-      if (!product) return sum;
-      const price = getProductPrice(product, weight);
-      return sum + (price * quantity);
-    }, 0);
+    return getTotal();
   };
 
   const handlePlaceOrder = async () => {
-    if (Object.keys(cart).length === 0) return;
+    if (cartItems.length === 0) return;
 
     // Get contact phone
     const contact_phone = prompt("Enter your contact phone number for order updates:");
@@ -165,14 +186,13 @@ const SecureMenuView = () => {
 
     setPlacingOrder(true);
     try {
-      const orderItems = Object.entries(cart).map(([productId, { quantity, weight }]) => {
-        const product = menuData!.products.find((p: Product) => p.id === productId);
-        const price = getProductPrice(product!, weight);
+      const orderItems = cartItems.map(item => {
+        const product = menuData!.products.find((p: Product) => p.id === item.productId);
         return {
-          product_id: productId,
-          quantity,
-          price: price,
-          weight
+          product_id: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          weight: item.weight
         };
       });
 
@@ -192,7 +212,7 @@ const SecureMenuView = () => {
       if (error) throw error;
 
       showSuccessToast('Order Placed', 'Your order has been submitted successfully');
-      setCart({});
+      clearCart();
       setSelectedWeights({});
       
       // Clear session after order
@@ -220,8 +240,11 @@ const SecureMenuView = () => {
     return null;
   }
 
-  const totalItems = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = getItemCount();
   const totalAmount = calculateTotal();
+  
+  // Convert cart items to a map for easier lookup
+  const cartMap = new Map(cartItems.map(item => [item.productId, item]));
 
   return (
     <div className="min-h-screen bg-background">
@@ -270,7 +293,7 @@ const SecureMenuView = () => {
             </div>
           ) : (
             menuData.products.map((product: Product) => {
-              const cartItem = cart[product.id];
+              const cartItem = cartMap.get(product.id);
               const quantity = cartItem?.quantity || 0;
               const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
               const imageUrl = product.image_url || product.images?.[0];
@@ -410,10 +433,26 @@ const SecureMenuView = () => {
                         onChange={(e) => {
                           const val = parseInt(e.target.value) || 0;
                           const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
-                          setCart(prev => val === 0 ? 
-                            Object.fromEntries(Object.entries(prev).filter(([k]) => k !== product.id)) :
-                            { ...prev, [product.id]: { quantity: val, weight } }
-                          );
+                          const price = getProductPrice(product, weight);
+                          
+                          if (val === 0) {
+                            removeItem(product.id);
+                          } else {
+                            const existingItem = cartItems.find(item => item.productId === product.id);
+                            if (existingItem) {
+                              updateQuantityStore(product.id, val);
+                            } else {
+                              addItem({
+                                productId: product.id,
+                                weight,
+                                price,
+                                productName: product.name,
+                              });
+                              if (val > 1) {
+                                updateQuantityStore(product.id, val);
+                              }
+                            }
+                          }
                         }}
                         className="flex-1 text-center h-9"
                         min={0}

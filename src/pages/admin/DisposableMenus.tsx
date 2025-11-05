@@ -6,6 +6,7 @@ import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activi
 import { useDisposableMenus, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { MenuCard } from '@/components/admin/disposable-menus/MenuCard';
 import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenuDialog';
+import { MenuCreationWizard } from '@/components/admin/disposable-menus/MenuCreationWizard';
 import { EnhancedMenuDashboard } from '@/components/admin/disposable-menus/EnhancedMenuDashboard';
 import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
@@ -25,6 +26,7 @@ const DisposableMenus = () => {
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createWizardOpen, setCreateWizardOpen] = useState(false);
   const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
   const [selectedMenuIds, setSelectedMenuIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -119,9 +121,16 @@ const DisposableMenus = () => {
               <Shield className="h-4 w-4 mr-2" />
               Help & Guide
             </Button>
-            <Button onClick={() => setCreateDialogOpen(true)}>
+            <Button 
+              variant="outline"
+              onClick={() => setCreateDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
-              Create Menu
+              Quick Create
+            </Button>
+            <Button onClick={() => setCreateWizardOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Menu (Wizard)
             </Button>
           </div>
         </div>
@@ -284,6 +293,11 @@ const DisposableMenus = () => {
       <CreateMenuDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen} 
+      />
+
+      <MenuCreationWizard
+        open={createWizardOpen}
+        onOpenChange={setCreateWizardOpen}
       />
 
       <BulkActionsDialog
