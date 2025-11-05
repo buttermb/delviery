@@ -62,8 +62,8 @@ export default function TenantAdminDashboardPage() {
 
       try {
         // Get today's orders with error handling
-        const { data: orders, error: ordersError } = await (supabase
-          .from("wholesale_orders") as any)
+        const { data: orders, error: ordersError } = await supabase
+          .from("wholesale_orders")
           .select("total_amount, status")
           .eq("tenant_id", tenantId)
           .gte("created_at", today.toISOString());
@@ -78,8 +78,8 @@ export default function TenantAdminDashboardPage() {
 
         // Get low stock items with error handling
         // Use product_name if strain doesn't exist, fallback gracefully
-        const { data: inventory, error: inventoryError } = await (supabase
-          .from("wholesale_inventory") as any)
+        const { data: inventory, error: inventoryError } = await supabase
+          .from("wholesale_inventory")
           .select("strain, product_name, weight_lbs, quantity_lbs, low_stock_threshold, reorder_point")
           .eq("tenant_id", tenantId);
 
@@ -88,7 +88,7 @@ export default function TenantAdminDashboardPage() {
           // Return defaults instead of throwing
         }
 
-        const lowStock = (inventory || []).map((item: any) => ({
+        const lowStock = (inventory || []).map((item) => ({
           ...item,
           // Use strain if available, otherwise product_name
           strain: item.strain || item.product_name || 'Unknown',
