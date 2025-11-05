@@ -27,12 +27,20 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
   const { admin, tenant, logout } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
   const tenantId = tenant?.id;
+
+  // Enable real-time sync for dashboard data
+  useRealtimeSync({
+    tenantId,
+    tables: ['wholesale_orders', 'wholesale_inventory', 'disposable_menus', 'customers'],
+    enabled: !!tenantId,
+  });
 
   // Helper functions for handling unlimited limits
   const isUnlimited = (resource: 'customers' | 'menus' | 'products') => {
