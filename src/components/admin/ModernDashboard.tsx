@@ -42,61 +42,51 @@ export function ModernDashboard() {
       const weekStart = startOfWeek(today);
       const lastWeekStart = startOfWeek(subDays(today, 7));
 
-      // Execute all queries in parallel
-      const todayOrdersPromise = supabase
+      // Execute queries sequentially with explicit types
+      interface OrderAmount { total_amount: number | null; }
+      interface OrderId { id: string; }
+      interface TransferId { id: string; status: string; }
+      
+      const todayOrdersResult = await supabase
         .from('wholesale_orders')
         .select('total_amount')
         .eq('tenant_id', tenantId)
-        .gte('created_at', today.toISOString());
-      
-      const lastWeekOrdersPromise = supabase
+        .gte('created_at', today.toISOString())
+        .returns<OrderAmount[]>();
+
+      const lastWeekOrdersResult = await supabase
         .from('wholesale_orders')
         .select('total_amount')
         .eq('tenant_id', tenantId)
         .gte('created_at', lastWeekStart.toISOString())
-        .lt('created_at', weekStart.toISOString());
-      
-      const activeOrdersPromise = supabase
+        .lt('created_at', weekStart.toISOString())
+        .returns<OrderAmount[]>();
+
+      const activeOrdersResult = await supabase
         .from('wholesale_orders')
         .select('id')
         .eq('tenant_id', tenantId)
-        .in('status', ['pending', 'assigned', 'in_transit']);
-      
-      const transfersPromise = supabase
+        .in('status', ['pending', 'assigned', 'in_transit'])
+        .returns<OrderId[]>();
+
+      const transfersResult = await supabase
         .from('wholesale_deliveries')
         .select('id, status')
         .eq('tenant_id', tenantId)
-        .in('status', ['assigned', 'picked_up', 'in_transit']);
-      
-      const lowStockPromise = supabase
+        .in('status', ['assigned', 'picked_up', 'in_transit']) as { data: TransferId[] | null; error: any };
+
+      const lowStockResult = await supabase
         .from('wholesale_inventory')
         .select('id')
         .eq('tenant_id', tenantId)
-        .lt('quantity_lbs', 30);
+        .lt('quantity_lbs', 30)
+        .returns<OrderId[]>();
 
-      const [
-        todayOrdersResult,
-        lastWeekOrdersResult,
-        activeOrdersResult,
-        transfersResult,
-        lowStockResult
-      ] = await Promise.all([
-        todayOrdersPromise,
-        lastWeekOrdersPromise,
-        activeOrdersPromise,
-        transfersPromise,
-        lowStockPromise
-      ]);
-
-      // Type-safe revenue calculation
-      interface OrderAmount {
-        total_amount: number | null;
-      }
-      
-      const todayRevenue = (todayOrdersResult.data as OrderAmount[] || []).reduce((sum: number, o) => 
+      // Revenue calculation
+      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o) => 
         sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data as OrderAmount[] || []).reduce((sum: number, o) => 
+      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o) => 
         sum + Number(o.total_amount || 0), 0);
 
       return {

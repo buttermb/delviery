@@ -29,12 +29,14 @@ export function usePermissions() {
         interface UserRoleRow {
           role: string;
         }
-        const { data, error } = await supabase
+        const result = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', admin.id)
           .eq('tenant_id', tenant.id)
-          .single() as { data: UserRoleRow | null; error: any };
+          .single();
+        
+        const { data, error } = result as { data: UserRoleRow | null; error: any };
 
         if (error && error.code === '42P01') {
           // Table doesn't exist, default to owner

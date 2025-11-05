@@ -43,31 +43,44 @@ class Logger {
   /**
    * Warning logging - always logged
    */
-  warn(message: string, context?: LogContext): void {
-    console.warn(`[WARN] ${message}`, context || '');
+  warn(message: string, errorOrContext?: unknown, context?: LogContext): void {
+    const actualContext = typeof errorOrContext === 'object' && errorOrContext !== null && !('message' in errorOrContext) 
+      ? errorOrContext as LogContext 
+      : context;
+    
+    console.warn(`[WARN] ${message}`, actualContext || '');
     
     if (this.isProduction) {
-      // TODO: Send to monitoring service (Sentry, etc.)
-      this.sendToMonitoring('warn', message, context);
+      this.sendToMonitoring('warn', message, actualContext);
     }
   }
 
   /**
    * Error logging - always logged
    */
-  error(message: string, error?: unknown, context?: LogContext): void {
-    const errorDetails = error instanceof Error ? {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    } : error;
+  error(message: string, errorOrContext?: unknown, context?: LogContext): void {
+    let errorDetails = null;
+    let actualContext = context;
 
-    console.error(`[ERROR] ${message}`, errorDetails, context || '');
+    if (errorOrContext instanceof Error) {
+      errorDetails = {
+        message: errorOrContext.message,
+        stack: errorOrContext.stack,
+        name: errorOrContext.name
+      };
+    } else if (typeof errorOrContext === 'object' && errorOrContext !== null) {
+      if ('message' in errorOrContext) {
+        errorDetails = errorOrContext;
+      } else {
+        actualContext = errorOrContext as LogContext;
+      }
+    }
+
+    console.error(`[ERROR] ${message}`, errorDetails, actualContext || '');
     
     if (this.isProduction) {
-      // TODO: Send to monitoring service
       this.sendToMonitoring('error', message, {
-        ...context,
+        ...actualContext,
         error: errorDetails
       });
     }
