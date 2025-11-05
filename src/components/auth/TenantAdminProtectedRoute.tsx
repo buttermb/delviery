@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState, useRef } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useVerification } from '@/contexts/VerificationContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ const VERIFICATION_CACHE_MS = 2 * 60 * 1000;
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
   const { admin, tenant, token, loading } = useTenantAdminAuth();
+  const { setIsVerified, setIsVerifying } = useVerification();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
@@ -68,11 +70,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       if (!currentToken || !currentAdmin || !currentTenant || !tenantSlug) {
         console.log('[TenantAdminProtectedRoute] Waiting for auth data...');
         setVerifying(false);
+        setIsVerifying(false);
         return;
       }
 
       // Lock verification
       verificationLockRef.current = true;
+      setIsVerifying(true);
 
       // Check cache first
       if (isVerificationCacheValid(currentAdmin.email, tenantSlug)) {
@@ -80,6 +84,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         setVerified(true);
         setVerifying(false);
         setVerificationError(null);
+        setIsVerified(true);
+        setIsVerifying(false);
         verificationLockRef.current = false;
         return;
       }
@@ -95,6 +101,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           console.error('[TenantAdminProtectedRoute] Tenant slug mismatch');
           setVerificationError('Access denied - tenant mismatch');
           setVerifying(false);
+          setIsVerifying(false);
           verificationLockRef.current = false;
           return;
         }
@@ -110,17 +117,20 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         setVerified(true);
         setVerifying(false);
         setVerificationError(null);
+        setIsVerified(true);
+        setIsVerifying(false);
         verificationLockRef.current = false;
       } catch (err) {
         console.error('[TenantAdminProtectedRoute] Verification error:', err);
         setVerificationError('Verification failed. Please try again.');
         setVerifying(false);
+        setIsVerifying(false);
         verificationLockRef.current = false;
       }
     };
 
     verifyAccess();
-  }, [tenantSlug, location.pathname]); // Only re-run if tenantSlug or route changes
+  }, [tenantSlug, location.pathname, setIsVerified, setIsVerifying]); // Only re-run if tenantSlug or route changes
 
   // Loading state - wait for auth AND verification
   if (loading || verifying || !verified) {
