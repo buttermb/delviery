@@ -7,8 +7,11 @@ import { apiFetch } from "@/lib/utils/apiClient";
 
 // Refresh token if it expires within 10 minutes
 const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
-// Prevent redirect loops - don't redirect more than once per 2 seconds
-const REDIRECT_THROTTLE_MS = 2000;
+// Prevent redirect loops - don't redirect more than once per 3 seconds
+const REDIRECT_THROTTLE_MS = 3000;
+// Maximum number of redirects in a short period
+const MAX_REDIRECTS_PER_WINDOW = 3;
+const REDIRECT_WINDOW_MS = 10000; // 10 seconds
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -22,6 +25,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [verifying, setVerifying] = useState(true);
   const lastRedirectTime = useRef<number>(0);
   const verifyAttempted = useRef(false);
+  const redirectCount = useRef<number>(0);
+  const redirectWindowStart = useRef<number>(0);
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
@@ -46,9 +51,25 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         return;
       }
 
-      // Throttle redirects to prevent loops
+      // Enhanced redirect throttling to prevent loops
       const now = Date.now();
       const timeSinceLastRedirect = now - lastRedirectTime.current;
+      
+      // Reset redirect count if window has passed
+      if (now - redirectWindowStart.current > REDIRECT_WINDOW_MS) {
+        redirectCount.current = 0;
+        redirectWindowStart.current = now;
+      }
+      
+      // Check if we've exceeded max redirects in window
+      if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
+        console.warn("Redirect limit exceeded - preventing further redirects to avoid loop");
+        setVerifying(false);
+        verifyAttempted.current = false;
+        return;
+      }
+      
+      // Throttle individual redirects
       if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
         setVerifying(false);
         verifyAttempted.current = false;
@@ -79,6 +100,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         
         setVerifying(false); // Always set verifying to false before redirect
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -91,6 +113,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       if (tenantSlug && tenant.slug !== tenantSlug) {
         setVerifying(false); // Always set verifying to false before redirect
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         navigate(`/${tenant.slug}/admin/login`, { replace: true });
         return;
       }
@@ -180,6 +203,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         console.error("Auth verification error:", error);
         setVerifying(false); // Always set verifying to false on error
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         if (tenantSlug) {
           navigate(`/${tenantSlug}/admin/login`, { replace: true });
         } else {
@@ -191,7 +215,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     };
 
     verifyAuth();
-  }, [token, admin, tenant, tenantSlug, loading, navigate, location.pathname]);
+  }, [token, admin, tenant, tenantSlug, loading, navigate]); // Removed location.pathname to prevent re-runs on navigation
 
   if (loading || verifying) {
     return (

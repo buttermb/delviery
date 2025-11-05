@@ -4,8 +4,10 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
 
-// Prevent redirect loops - don't redirect more than once per 2 seconds
-const REDIRECT_THROTTLE_MS = 2000;
+// Prevent redirect loops - don't redirect more than once per 3 seconds
+const REDIRECT_THROTTLE_MS = 3000;
+const MAX_REDIRECTS_PER_WINDOW = 3;
+const REDIRECT_WINDOW_MS = 10000;
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;
@@ -18,6 +20,8 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const [verifying, setVerifying] = useState(true);
   const lastRedirectTime = useRef<number>(0);
   const verifyAttempted = useRef(false);
+  const redirectCount = useRef<number>(0);
+  const redirectWindowStart = useRef<number>(0);
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
@@ -42,9 +46,25 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         return;
       }
 
-      // Throttle redirects to prevent loops
+      // Enhanced redirect throttling to prevent loops
       const now = Date.now();
       const timeSinceLastRedirect = now - lastRedirectTime.current;
+      
+      // Reset redirect count if window has passed
+      if (now - redirectWindowStart.current > REDIRECT_WINDOW_MS) {
+        redirectCount.current = 0;
+        redirectWindowStart.current = now;
+      }
+      
+      // Check if we've exceeded max redirects in window
+      if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
+        console.warn("Redirect limit exceeded - preventing further redirects to avoid loop");
+        setVerifying(false);
+        verifyAttempted.current = false;
+        return;
+      }
+      
+      // Throttle individual redirects
       if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
         setVerifying(false);
         verifyAttempted.current = false;
@@ -54,6 +74,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       if (!token || !customer || !tenant) {
         setVerifying(false);
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
@@ -66,6 +87,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
       if (tenantSlug && tenant.slug !== tenantSlug) {
         setVerifying(false);
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         navigate(`/${tenant.slug}/shop/login`, { replace: true });
         return;
       }
@@ -102,6 +124,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         console.error("Auth verification error:", error);
         setVerifying(false);
         lastRedirectTime.current = Date.now();
+        redirectCount.current += 1;
         if (tenantSlug) {
           navigate(`/${tenantSlug}/shop/login`, { replace: true });
         } else {
