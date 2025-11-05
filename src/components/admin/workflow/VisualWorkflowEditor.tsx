@@ -16,11 +16,14 @@ import ReactFlow, {
   NodeTypes,
   BackgroundVariant,
   MarkerType,
+  ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ActionConfigForm } from './ActionConfigForm';
 import { 
   Play, 
   Zap, 
@@ -31,6 +34,7 @@ import {
   GitBranch,
   CheckCircle,
   XCircle,
+  Trash2,
 } from 'lucide-react';
 
 // Custom Node Components
@@ -64,7 +68,7 @@ function ActionNode({ data }: { data: any }) {
   };
 
   return (
-    <Card className="p-4 border-2 border-accent min-w-[200px]">
+    <Card className="p-4 border-2 border-accent min-w-[200px] relative group">
       <div className="flex items-center gap-2 mb-2">
         {getIcon()}
         <span className="font-semibold">{data.label}</span>
@@ -78,6 +82,17 @@ function ActionNode({ data }: { data: any }) {
         <Badge variant="secondary" className="mt-2">
           {data.status}
         </Badge>
+      )}
+      {data.onDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            data.onDelete();
+          }}
+          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
       )}
     </Card>
   );
@@ -131,6 +146,9 @@ interface VisualWorkflowEditorProps {
 export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: VisualWorkflowEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [configuringNode, setConfiguringNode] = useState<Node | null>(null);
 
   // Load workflow into visual editor
   useEffect(() => {
@@ -184,20 +202,141 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
     [setEdges]
   );
 
+  // Handle drop events from NodePalette
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      if (!reactFlowInstance) return;
+
+      const type = event.dataTransfer.getData('application/reactflow');
+      if (!type) return;
+
+      const actionData = JSON.parse(type);
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const newNode: Node = {
+        id: `action-${Date.now()}`,
+        type: 'action',
+        position,
+        data: {
+          label: actionData.label,
+          actionType: actionData.type,
+          config: {},
+          onDelete: () => handleDeleteNode(`action-${Date.now()}`),
+        },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+      setConfiguringNode(newNode);
+      setIsConfiguring(true);
+    },
+    [reactFlowInstance, setNodes]
+  );
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  // Handle node click to edit
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      if (node.type === 'action' && !readOnly) {
+        setConfiguringNode(node);
+        setIsConfiguring(true);
+      }
+    },
+    [readOnly]
+  );
+
+  // Handle node deletion
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    },
+    [setNodes, setEdges]
+  );
+
+  // Save node configuration
+  const handleSaveNodeConfig = useCallback(
+    (name: string, config: Record<string, any>) => {
+      if (!configuringNode) return;
+
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === configuringNode.id
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  label: name,
+                  config,
+                  description: config.description || '',
+                },
+              }
+            : n
+        )
+      );
+
+      setIsConfiguring(false);
+      setConfiguringNode(null);
+    },
+    [configuringNode, setNodes]
+  );
+
+  // Add delete handlers to existing action nodes
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.type === 'action' && !node.data.onDelete) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onDelete: () => handleDeleteNode(node.id),
+            },
+          };
+        }
+        return node;
+      })
+    );
+  }, [handleDeleteNode, setNodes]);
+
   const handleSave = () => {
     if (onSave) {
+      // Convert nodes back to workflow actions
+      const actions = nodes
+        .filter((n) => n.type === 'action')
+        .sort((a, b) => a.position.y - b.position.y) // Sort by Y position
+        .map((node) => ({
+          id: node.id,
+          name: node.data.label,
+          type: node.data.actionType,
+          config: node.data.config || {},
+        }));
+
+      // Pass back the actions along with nodes and edges
       onSave(nodes, edges);
     }
   };
 
   return (
-    <div className="h-[600px] w-full border rounded-lg overflow-hidden">
+    <div className="h-[600px] w-full border rounded-lg overflow-hidden relative">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onNodeClick={onNodeClick}
+        onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         fitView
         nodesDraggable={!readOnly}
@@ -215,6 +354,29 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
           </Button>
         </div>
       )}
+
+      {/* Node Configuration Dialog */}
+      <Dialog open={isConfiguring} onOpenChange={setIsConfiguring}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {configuringNode ? `Configure ${configuringNode.data.actionType.replace('_', ' ')}` : 'Configure Action'}
+            </DialogTitle>
+          </DialogHeader>
+          {configuringNode && (
+            <ActionConfigForm
+              actionType={configuringNode.data.actionType}
+              actionName={configuringNode.data.label}
+              config={configuringNode.data.config || {}}
+              onSave={handleSaveNodeConfig}
+              onCancel={() => {
+                setIsConfiguring(false);
+                setConfiguringNode(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -241,13 +403,14 @@ function convertWorkflowToNodes(workflow: any): Node[] {
   if (workflow.actions && Array.isArray(workflow.actions)) {
     workflow.actions.forEach((action: any, index: number) => {
       nodes.push({
-        id: `action-${index + 1}`,
+        id: action.id || `action-${index + 1}`,
         type: 'action',
         position: { x: 250, y: yOffset },
         data: {
           label: action.name || `Action ${index + 1}`,
           actionType: action.type,
-          description: action.config?.description,
+          config: action.config || {},
+          description: action.config?.description || '',
           status: 'ready',
         },
       });

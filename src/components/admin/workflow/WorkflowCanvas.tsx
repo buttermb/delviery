@@ -326,8 +326,10 @@ export function WorkflowCanvas() {
       // Convert nodes and edges back to workflow actions
       const actions = nodes
         .filter(node => node.type === 'action')
-        .map((node, index) => ({
+        .sort((a, b) => a.position.y - b.position.y) // Sort by Y position for correct order
+        .map((node) => ({
           id: node.id,
+          name: node.data.label || 'Untitled Action',
           type: node.data.actionType,
           config: node.data.config || {},
         }));
@@ -341,7 +343,7 @@ export function WorkflowCanvas() {
 
       toast({
         title: 'Visual workflow updated',
-        description: 'Click Save to persist changes',
+        description: 'Click Save to persist changes to database',
       });
     } catch (error: any) {
       toast({
@@ -353,7 +355,11 @@ export function WorkflowCanvas() {
   }, [selectedWorkflow, toast]);
 
   const handleNodeDragStart = (event: React.DragEvent, nodeType: string, config: any) => {
-    event.dataTransfer.setData('application/reactflow', JSON.stringify({ nodeType, config }));
+    event.dataTransfer.setData('application/reactflow', JSON.stringify({ 
+      type: nodeType, 
+      label: config.label || nodeType.replace('_', ' '),
+      ...config 
+    }));
     event.dataTransfer.effectAllowed = 'move';
   };
 
