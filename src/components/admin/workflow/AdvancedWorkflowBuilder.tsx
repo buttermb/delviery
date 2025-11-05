@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { WorkflowCanvas } from './WorkflowCanvas';
+import { WorkflowMonitoringDashboard } from './WorkflowMonitoringDashboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -87,9 +88,12 @@ export function AdvancedWorkflowBuilder() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="builder">
             Workflow Builder
+          </TabsTrigger>
+          <TabsTrigger value="monitoring">
+            Monitoring
           </TabsTrigger>
           <TabsTrigger value="history">
             Execution History
@@ -99,6 +103,11 @@ export function AdvancedWorkflowBuilder() {
         {/* Builder Tab */}
         <TabsContent value="builder">
           <WorkflowCanvas />
+        </TabsContent>
+
+        {/* Monitoring Tab */}
+        <TabsContent value="monitoring">
+          <WorkflowMonitoringDashboard />
         </TabsContent>
 
         {/* Execution History Tab */}
