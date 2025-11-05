@@ -2566,6 +2566,7 @@ export type Database = {
           show_minimum_order: boolean | null
           show_product_images: boolean | null
           status: Database["public"]["Enums"]["menu_status"]
+          tenant_id: string
           view_limit_per_customer: number | null
           view_limit_period: string | null
         }
@@ -2600,6 +2601,7 @@ export type Database = {
           show_minimum_order?: boolean | null
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          tenant_id: string
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
@@ -2634,10 +2636,19 @@ export type Database = {
           show_minimum_order?: boolean | null
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          tenant_id?: string
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_disposable_menus_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       error_logs: {
         Row: {
@@ -7709,6 +7720,7 @@ export type Database = {
           phone: string
           reliability_score: number
           status: string
+          tenant_id: string
           updated_at: string
         }
         Insert: {
@@ -7730,6 +7742,7 @@ export type Database = {
           phone: string
           reliability_score?: number
           status?: string
+          tenant_id: string
           updated_at?: string
         }
         Update: {
@@ -7751,9 +7764,18 @@ export type Database = {
           phone?: string
           reliability_score?: number
           status?: string
+          tenant_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_clients_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_deliveries: {
         Row: {
@@ -7771,6 +7793,7 @@ export type Database = {
           runner_id: string
           scheduled_pickup_time: string | null
           status: string
+          tenant_id: string
           total_value: number | null
           total_weight: number | null
         }
@@ -7789,6 +7812,7 @@ export type Database = {
           runner_id: string
           scheduled_pickup_time?: string | null
           status?: string
+          tenant_id: string
           total_value?: number | null
           total_weight?: number | null
         }
@@ -7807,10 +7831,18 @@ export type Database = {
           runner_id?: string
           scheduled_pickup_time?: string | null
           status?: string
+          tenant_id?: string
           total_value?: number | null
           total_weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_deliveries_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wholesale_deliveries_client_id_fkey"
             columns: ["client_id"]
@@ -7856,6 +7888,7 @@ export type Database = {
           quantity_units: number
           reorder_point: number
           strain_type: string | null
+          tenant_id: string
           terpenes: Json | null
           thc_percentage: number | null
           updated_at: string
@@ -7882,6 +7915,7 @@ export type Database = {
           quantity_units?: number
           reorder_point?: number
           strain_type?: string | null
+          tenant_id: string
           terpenes?: Json | null
           thc_percentage?: number | null
           updated_at?: string
@@ -7908,12 +7942,21 @@ export type Database = {
           quantity_units?: number
           reorder_point?: number
           strain_type?: string | null
+          tenant_id?: string
           terpenes?: Json | null
           thc_percentage?: number | null
           updated_at?: string
           warehouse_location?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_inventory_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_inventory_movements: {
         Row: {
@@ -8079,6 +8122,7 @@ export type Database = {
           payment_status: string
           runner_id: string | null
           status: string
+          tenant_id: string
           total_amount: number
         }
         Insert: {
@@ -8095,6 +8139,7 @@ export type Database = {
           payment_status?: string
           runner_id?: string | null
           status?: string
+          tenant_id: string
           total_amount: number
         }
         Update: {
@@ -8111,9 +8156,17 @@ export type Database = {
           payment_status?: string
           runner_id?: string | null
           status?: string
+          tenant_id?: string
           total_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_orders_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wholesale_orders_client_id_fkey"
             columns: ["client_id"]
