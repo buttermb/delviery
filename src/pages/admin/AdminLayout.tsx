@@ -12,6 +12,7 @@ import { AdminNotificationCenter } from "@/components/admin/AdminNotificationCen
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { AdminKeyboardShortcutsDialog } from "@/components/admin/AdminKeyboardShortcutsDialog";
+import { TenantAdminCommandPalette } from "@/components/tenant-admin/CommandPalette";
 import { MobileNav } from "@/components/admin/MobileNav";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,9 @@ const AdminLayout = () => {
 
   return (
     <>
+      {/* Command Palette */}
+      <TenantAdminCommandPalette />
+      
       {/* Unified Layout with TenantAdminSidebar */}
       <SidebarProvider>
         <div className="min-h-screen flex w-full overflow-hidden">

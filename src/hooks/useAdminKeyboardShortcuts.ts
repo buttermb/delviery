@@ -1,21 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 export const useAdminKeyboardShortcuts = () => {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Check if Cmd/Ctrl + K is pressed (for search)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        navigate('/admin/search');
-        toast({ title: 'Opening Global Search' });
-        return;
-      }
-
       // Check if ? is pressed (for shortcuts help)
       if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
@@ -27,19 +21,32 @@ export const useAdminKeyboardShortcuts = () => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
         e.preventDefault();
         
-        // Note: Most admin routes are tenant-specific (/:tenantSlug/admin/...)
-        // These shortcuts are disabled until routes are properly configured
+        const getPath = (path: string) => {
+          if (!tenantSlug) return path;
+          return path.startsWith('/admin') ? `/${tenantSlug}${path}` : path;
+        };
+
         switch(e.key.toLowerCase()) {
           case 'd':
             // Navigate to current tenant's dashboard
-            const currentPath = window.location.pathname;
-            const tenantMatch = currentPath.match(/^\/([^/]+)\/admin/);
-            if (tenantMatch) {
-              navigate(`/${tenantMatch[1]}/admin/dashboard`);
-              toast({ title: 'Dashboard' });
-            }
+            navigate(getPath('/admin/dashboard'));
+            toast({ title: 'Dashboard', duration: 1000 });
             break;
-          // Other shortcuts disabled - routes not configured
+          case 'n':
+            // Create new order
+            navigate(getPath('/admin/wholesale-orders'));
+            toast({ title: 'New Order', duration: 1000 });
+            break;
+          case 'm':
+            // Navigate to menus
+            navigate(getPath('/admin/disposable-menus'));
+            toast({ title: 'Menus', duration: 1000 });
+            break;
+          case 'i':
+            // Navigate to inventory
+            navigate(getPath('/admin/inventory-dashboard'));
+            toast({ title: 'Inventory', duration: 1000 });
+            break;
           default:
             break;
         }
@@ -48,7 +55,12 @@ export const useAdminKeyboardShortcuts = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [navigate]);
+  }, [navigate, tenantSlug]);
 
-  return { shortcutsVisible, setShortcutsVisible };
+  return { 
+    shortcutsVisible, 
+    setShortcutsVisible,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
+  };
 };
