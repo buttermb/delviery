@@ -16,7 +16,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { StatCard } from './dashboard/StatCard';
 import { RecentOrdersWidget } from './dashboard/RecentOrdersWidget';
 import { InventoryAlertsWidget } from './dashboard/InventoryAlertsWidget';
@@ -33,13 +33,20 @@ import { ActionableInsights } from '@/components/admin/ActionableInsights';
 
 export function ModernDashboard() {
   const navigate = useNavigate();
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
 
   // Fetch dashboard data - PARALLEL QUERIES for 5x faster load
-  const { data: dashboardData } = useQuery<any>({
-    queryKey: ['modern-dashboard', account?.id],
+  const { data: dashboardData } = useQuery<{
+    revenue: number;
+    revenueChange: number;
+    orders: number;
+    transfers: number;
+    alerts: number;
+  }>({
+    queryKey: ['modern-dashboard', tenantId],
     queryFn: async () => {
-      if (!account?.id) return null;
+      if (!tenantId) return null;
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -55,47 +62,47 @@ export function ModernDashboard() {
         lowStockResult
       ] = await Promise.all([
         // Today's revenue
-        (supabase as any)
+        supabase
           .from('wholesale_orders')
           .select('total_amount')
-          .eq('account_id', account.id)
+          .eq('tenant_id', tenantId)
           .gte('created_at', today.toISOString()),
         
         // Last week for comparison
-        (supabase as any)
+        supabase
           .from('wholesale_orders')
           .select('total_amount')
-          .eq('account_id', account.id)
+          .eq('tenant_id', tenantId)
           .gte('created_at', lastWeekStart.toISOString())
           .lt('created_at', weekStart.toISOString()),
         
         // Active orders
-        (supabase as any)
+        supabase
           .from('wholesale_orders')
           .select('id')
-          .eq('account_id', account.id)
+          .eq('tenant_id', tenantId)
           .in('status', ['pending', 'assigned', 'in_transit']),
         
         // Transfers
-        (supabase as any)
+        supabase
           .from('wholesale_deliveries')
           .select('id, status')
-          .eq('account_id', account.id)
+          .eq('tenant_id', tenantId)
           .in('status', ['assigned', 'picked_up', 'in_transit']),
         
         // Alerts
-        (supabase as any)
+        supabase
           .from('wholesale_inventory')
           .select('id')
-          .eq('account_id', account.id)
+          .eq('tenant_id', tenantId)
           .lt('quantity_lbs', 30)
       ]);
 
-      const todayRevenue = (todayOrdersResult.data as any[])?.reduce((sum: number, o: any) => 
-        sum + Number(o.total_amount || 0), 0) || 0;
+      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number }) => 
+        sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data as any[])?.reduce((sum: number, o: any) => 
-        sum + Number(o.total_amount || 0), 0) || 0;
+      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number }) => 
+        sum + Number(o.total_amount || 0), 0);
 
       return {
         revenue: todayRevenue,
@@ -146,7 +153,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.orders || 0} Active`}
           icon={<Package className="h-5 w-5" />}
           color="blue"
-          href="/admin/big-plug-order"
+          href="/admin/wholesale-orders"
         />
 
         <StatCard
@@ -162,7 +169,7 @@ export function ModernDashboard() {
           value={`${dashboardData?.alerts || 0} Items`}
           icon={<AlertTriangle className="h-5 w-5" />}
           color={dashboardData && dashboardData.alerts > 0 ? 'red' : 'green'}
-          href="/admin/big-plug-inventory"
+          href="/admin/inventory-dashboard"
         />
       </div>
 
