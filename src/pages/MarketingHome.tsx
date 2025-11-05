@@ -12,16 +12,22 @@ import {
   Star,
   Play,
   TrendingUp,
-  Lock as LockIcon
+  Lock as LockIcon,
+  DollarSign,
+  Clock
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { FeatureCard } from "@/components/marketing/FeatureCard";
-import { StatCard } from "@/components/marketing/StatCard";
 import { TestimonialCard } from "@/components/marketing/TestimonialCard";
 import { CTASection } from "@/components/marketing/CTASection";
+import { AnimatedHowItWorks } from "@/components/marketing/AnimatedHowItWorks";
+import { CountUpStat } from "@/components/marketing/CountUpStat";
+import { MagneticButton } from "@/components/marketing/MagneticButton";
+import { FloatingBadges } from "@/components/marketing/FloatingBadges";
 import { useEffect, useState } from "react";
+import "@/components/marketing/animations.css";
 
 export default function MarketingHome() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -152,16 +158,19 @@ export default function MarketingHome() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link to="/signup">
-                <Button size="lg" className="bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-bg))]/90 h-14 px-8 text-lg font-semibold">
+                <MagneticButton className="bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-bg))]/90 h-14 px-8 text-lg font-semibold">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                </MagneticButton>
               </Link>
               <Link to="/demo">
-                <Button size="lg" variant="outline" className="border-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-bg))] hover:bg-[hsl(var(--marketing-bg))]/10 h-14 px-8 text-lg">
+                <MagneticButton 
+                  variant="outline" 
+                  className="border-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-bg))] hover:bg-[hsl(var(--marketing-bg))]/10 h-14 px-8 text-lg"
+                >
                   <Play className="mr-2 h-5 w-5" />
                   Schedule Demo
-                </Button>
+                </MagneticButton>
               </Link>
             </div>
 
@@ -169,20 +178,9 @@ export default function MarketingHome() {
               Trusted by 400+ distributors • $1.4M orders/month
             </p>
 
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-6 mb-12">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">Bank-Level Security</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <CheckCircle className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">GDPR Compliant</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <LockIcon className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">256-bit SSL</span>
-              </div>
+            {/* Floating Trust Badges */}
+            <div className="mb-12">
+              <FloatingBadges />
             </div>
 
             {/* Dashboard Preview */}
@@ -306,7 +304,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* SECTION 4: HOW IT WORKS */}
+      {/* SECTION 4: HOW IT WORKS - ANIMATED */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -317,35 +315,7 @@ export default function MarketingHome() {
               Get started in minutes, not months
             </p>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">✏️</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 1<br />Sign Up</h3>
-                <p className="text-muted-foreground">
-                  Create your free account in 60 seconds
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">📥</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 2<br />Import Data</h3>
-                <p className="text-muted-foreground">
-                  Import your products & customers (or add them manually)
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🚀</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 3<br />Go Live</h3>
-                <p className="text-muted-foreground">
-                  Start taking orders and managing your business
-                </p>
-              </div>
-            </div>
+            <AnimatedHowItWorks />
 
             <div className="bg-card p-6 rounded-xl border border-border mb-8">
               <p className="text-foreground italic">
@@ -357,10 +327,10 @@ export default function MarketingHome() {
             </div>
 
             <Link to="/signup">
-              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
+              <MagneticButton className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
                 Start Your Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              </MagneticButton>
             </Link>
           </div>
         </div>
@@ -524,12 +494,12 @@ export default function MarketingHome() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <StatCard value="400+" label="Distributors" />
-            <StatCard value="$1.4M" label="Orders/Month" />
-            <StatCard value="15hrs" label="Saved/Week" />
-            <StatCard value="99.9%" label="Uptime" />
-            <StatCard value="4.8" label="Rating" />
-            <StatCard value="24/7" label="Support" />
+            <CountUpStat icon={Users} value="400+" label="Distributors" delay={0} />
+            <CountUpStat icon={DollarSign} value="$1.4M" label="Orders/Month" delay={0.1} />
+            <CountUpStat icon={Clock} value="15" label="Saved/Week" delay={0.2} />
+            <CountUpStat icon={TrendingUp} value="99.9%" label="Uptime" delay={0.3} />
+            <CountUpStat icon={Star} value="4.8" label="Rating" delay={0.4} />
+            <CountUpStat icon={Shield} value="24/7" label="Support" delay={0.5} />
           </div>
         </div>
       </section>
