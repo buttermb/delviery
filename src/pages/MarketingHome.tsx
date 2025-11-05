@@ -26,7 +26,10 @@ import { AnimatedHowItWorks } from "@/components/marketing/AnimatedHowItWorks";
 import { CountUpStat } from "@/components/marketing/CountUpStat";
 import { MagneticButton } from "@/components/marketing/MagneticButton";
 import { FloatingBadges } from "@/components/marketing/FloatingBadges";
-import { AnimatedDashboardPreview } from "@/components/marketing/AnimatedDashboardPreview";
+import { GuidedDashboardPreview } from "@/components/marketing/GuidedDashboardPreview";
+import { ParticleBackground } from "@/components/marketing/ParticleBackground";
+import { TypewriterHeadline } from "@/components/marketing/TypewriterHeadline";
+import { SpotlightSection } from "@/components/marketing/SpotlightSection";
 import { useEffect, useState } from "react";
 import "@/components/marketing/animations.css";
 
@@ -125,15 +128,19 @@ export default function MarketingHome() {
 
       {/* SECTION 1: HERO */}
       <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
+        {/* Particle Background */}
+        <ParticleBackground />
+        
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              The Modern CRM for<br />
-              Wholesale Distributors
-            </h1>
+            {/* Typewriter Headline */}
+            <TypewriterHeadline 
+              text="The Modern CRM for Wholesale Distributors"
+              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            />
             <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
               Manage customers, products, orders, and inventory in one powerful platform
             </p>
@@ -184,8 +191,8 @@ export default function MarketingHome() {
               <FloatingBadges />
             </div>
 
-            {/* Dashboard Preview */}
-            <AnimatedDashboardPreview />
+            {/* Guided Dashboard Preview */}
+            <GuidedDashboardPreview />
           </div>
         </div>
       </section>
@@ -454,20 +461,35 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* SECTION 8: FINAL CTA */}
-      <CTASection
-        title="Ready to Transform Your Wholesale Business?"
-        description="Start your 14-day free trial today. No credit card required."
-        primaryCta={{
-          text: "Start Free Trial →",
-          link: "/signup",
-        }}
-        secondaryCta={{
-          text: "Schedule a Demo",
-          link: "/demo",
-        }}
-        variant="gradient"
-      />
+      {/* SECTION 8: FINAL CTA - with Spotlight Effect */}
+      <SpotlightSection className="text-white py-20">
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ready to Transform Your Wholesale Business?
+            </h2>
+            <p className="text-xl mb-8 text-white/90">
+              Start your 14-day free trial today. No credit card required.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/signup">
+                <MagneticButton className="bg-white text-[hsl(var(--marketing-primary))] hover:bg-white/90 h-14 px-8 text-lg font-semibold">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </MagneticButton>
+              </Link>
+              <Link to="/demo">
+                <MagneticButton 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white/10 h-14 px-8 text-lg"
+                >
+                  Schedule a Demo
+                </MagneticButton>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </SpotlightSection>
 
       {/* SECTION 9: FOOTER */}
       <MarketingFooter />

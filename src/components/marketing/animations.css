@@ -276,3 +276,47 @@
 .diagonal-stagger:nth-child(4) { animation-delay: 0.3s; }
 .diagonal-stagger:nth-child(5) { animation-delay: 0.4s; }
 .diagonal-stagger:nth-child(6) { animation-delay: 0.5s; }
+
+/* Cursor blink animation for typewriter */
+@keyframes blink-cursor {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink-cursor 1s infinite;
+}
+
+/* Pointer pulse animation */
+@keyframes pulse-pointer {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.pulse-pointer {
+  animation: pulse-pointer 2s infinite ease-in-out;
+}
+
+/* Spotlight reveal effect */
+@keyframes spotlight-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.spotlight-reveal {
+  animation: spotlight-reveal 0.8s ease-out forwards;
+}
