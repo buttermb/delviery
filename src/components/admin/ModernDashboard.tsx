@@ -42,45 +42,37 @@ export function ModernDashboard() {
       const weekStart = startOfWeek(today);
       const lastWeekStart = startOfWeek(subDays(today, 7));
 
-      // Execute queries sequentially with explicit types
-      interface OrderAmount { total_amount: number | null; }
-      interface OrderId { id: string; }
-      interface TransferId { id: string; status: string; }
-      
-      const todayOrdersResult = await supabase
+      // Execute queries sequentially with explicit type bypass
+      const todayOrdersResult: any = await (supabase
         .from('wholesale_orders')
         .select('total_amount')
         .eq('tenant_id', tenantId)
-        .gte('created_at', today.toISOString())
-        .returns<OrderAmount[]>();
+        .gte('created_at', today.toISOString()) as any);
 
-      const lastWeekOrdersResult = await supabase
+      const lastWeekOrdersResult: any = await (supabase
         .from('wholesale_orders')
         .select('total_amount')
         .eq('tenant_id', tenantId)
         .gte('created_at', lastWeekStart.toISOString())
-        .lt('created_at', weekStart.toISOString())
-        .returns<OrderAmount[]>();
+        .lt('created_at', weekStart.toISOString()) as any);
 
-      const activeOrdersResult = await supabase
+      const activeOrdersResult: any = await (supabase
         .from('wholesale_orders')
         .select('id')
         .eq('tenant_id', tenantId)
-        .in('status', ['pending', 'assigned', 'in_transit'])
-        .returns<OrderId[]>();
-
-      const transfersResult = await supabase
+        .in('status', ['pending', 'assigned', 'in_transit']) as any);
+      
+      const transfersResult: any = await (supabase
         .from('wholesale_deliveries')
         .select('id, status')
         .eq('tenant_id', tenantId)
-        .in('status', ['assigned', 'picked_up', 'in_transit']) as { data: TransferId[] | null; error: any };
+        .in('status', ['assigned', 'picked_up', 'in_transit']) as any);
 
-      const lowStockResult = await supabase
+      const lowStockResult: any = await (supabase
         .from('wholesale_inventory')
         .select('id')
         .eq('tenant_id', tenantId)
-        .lt('quantity_lbs', 30)
-        .returns<OrderId[]>();
+        .lt('quantity_lbs', 30) as any);
 
       // Revenue calculation
       const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o) => 

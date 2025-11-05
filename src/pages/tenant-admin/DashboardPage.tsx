@@ -77,12 +77,11 @@ export default function TenantAdminDashboardPage() {
         }
         
         // Try with tenant_id filter first
-        let ordersResult = await supabase
+        let ordersResult: any = await (supabase
           .from("wholesale_orders")
           .select("total_amount, status")
           .eq("tenant_id", tenantId)
-          .gte("created_at", today.toISOString())
-          .returns<OrderRow[]>();
+          .gte("created_at", today.toISOString()) as any);
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.message?.includes('column'))) {
@@ -114,11 +113,10 @@ export default function TenantAdminDashboardPage() {
         }
         
         // Try with tenant_id filter first
-        let inventoryResult = await supabase
+        let inventoryResult: any = await (supabase
           .from("wholesale_inventory")
           .select("id, product_name, quantity_lbs, reorder_point")
-          .eq("tenant_id", tenantId)
-          .returns<InventoryRow[]>();
+          .eq("tenant_id", tenantId) as any);
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {

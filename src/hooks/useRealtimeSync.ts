@@ -188,7 +188,7 @@ export function useRealtimeSync({
           if (status === 'SUBSCRIBED') {
             // Reset failure count on successful subscription
             connectionFailures.delete(failureKey);
-            logger.debug(`Realtime subscription active: ${table}`, { tenantId }, 'useRealtimeSync');
+            logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
           } else if (status === 'CHANNEL_ERROR') {
             // Increment failure count
             const currentFailures = connectionFailures.get(failureKey) || 0;
