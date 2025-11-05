@@ -26,7 +26,7 @@ import { AnimatedHowItWorks } from "@/components/marketing/AnimatedHowItWorks";
 import { CountUpStat } from "@/components/marketing/CountUpStat";
 import { MagneticButton } from "@/components/marketing/MagneticButton";
 import { FloatingBadges } from "@/components/marketing/FloatingBadges";
-import { GuidedDashboardPreview } from "@/components/marketing/GuidedDashboardPreview";
+import { EnhancedDashboardPreview } from "@/components/marketing/EnhancedDashboardPreview";
 import { ParticleBackground } from "@/components/marketing/ParticleBackground";
 import { TypewriterHeadline } from "@/components/marketing/TypewriterHeadline";
 import { SpotlightSection } from "@/components/marketing/SpotlightSection";
@@ -193,7 +193,7 @@ export default function MarketingHome() {
             </div>
 
             {/* Guided Dashboard Preview */}
-            <GuidedDashboardPreview />
+            <EnhancedDashboardPreview />
           </div>
         </div>
       </section>

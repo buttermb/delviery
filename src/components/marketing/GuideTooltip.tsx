@@ -7,7 +7,7 @@ interface GuideTooltipProps {
   totalSteps: number;
   title: string;
   description: string;
-  position?: "top" | "bottom" | "left" | "right";
+  position?: "top" | "bottom" | "left" | "right" | { top?: string; bottom?: string; left?: string; right?: string };
   onNext: () => void;
   onSkip: () => void;
   className?: string;
@@ -30,13 +30,18 @@ export function GuideTooltip({
     right: "left-full ml-2",
   };
 
+  const isCustomPosition = typeof position === 'object';
+  const positionStyle = isCustomPosition ? position : {};
+  const positionClass = isCustomPosition ? '' : positionClasses[position];
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9, y: position === "top" ? 10 : -10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`absolute ${positionClasses[position]} ${className} z-50`}
+      className={`${isCustomPosition ? 'fixed' : 'absolute'} ${positionClass} ${className} z-50`}
+      style={positionStyle}
     >
       <div className="bg-card border-2 border-primary rounded-lg shadow-xl p-4 max-w-xs">
         {/* Header */}
@@ -82,17 +87,19 @@ export function GuideTooltip({
         </div>
 
         {/* Arrow pointer */}
-        <div
-          className={`absolute w-3 h-3 bg-card border-primary rotate-45 ${
-            position === "top"
-              ? "top-full -mt-[7px] border-b-2 border-r-2"
-              : position === "bottom"
-              ? "bottom-full -mb-[7px] border-t-2 border-l-2"
-              : position === "left"
-              ? "left-full -ml-[7px] border-t-2 border-r-2"
-              : "right-full -mr-[7px] border-b-2 border-l-2"
-          } left-1/2 -translate-x-1/2`}
-        />
+        {!isCustomPosition && (
+          <div
+            className={`absolute w-3 h-3 bg-card border-primary rotate-45 ${
+              position === "top"
+                ? "top-full -mt-[7px] border-b-2 border-r-2"
+                : position === "bottom"
+                ? "bottom-full -mb-[7px] border-t-2 border-l-2"
+                : position === "left"
+                ? "left-full -ml-[7px] border-t-2 border-r-2"
+                : "right-full -mr-[7px] border-b-2 border-l-2"
+            } left-1/2 -translate-x-1/2`}
+          />
+        )}
       </div>
     </motion.div>
   );
