@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { mockDashboardData } from '../mockDashboardData';
+import { LiveTrackingPreview } from './LiveTrackingPreview';
+import { DisposableMenusPreview } from './DisposableMenusPreview';
 
 export const dashboardViews = {
   dashboard: {
@@ -323,6 +325,16 @@ export const dashboardViews = {
       </div>
     ),
   },
+  tracking: {
+    title: 'Live Tracking',
+    description: 'Real-time delivery monitoring with WebSocket connection',
+    preview: <LiveTrackingPreview />
+  },
+  menus: {
+    title: 'OPSEC Menu Analytics',
+    description: 'Encrypted disposable menus with security insights',
+    preview: <DisposableMenusPreview />
+  }
 };
 
 export type DashboardViewKey = keyof typeof dashboardViews;

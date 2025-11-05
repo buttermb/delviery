@@ -7,7 +7,9 @@ import {
   Truck, 
   Users, 
   BarChart3, 
-  Settings 
+  Settings,
+  Radio,
+  Shield
 } from 'lucide-react';
 import { 
   Tooltip,
@@ -17,8 +19,10 @@ import {
 } from "@/components/ui/tooltip";
 import { DashboardViewKey } from './DashboardViews';
 
-const navItems: Array<{ icon: any; label: string; view: DashboardViewKey | null }> = [
+const navItems: Array<{ icon: any; label: string; view: DashboardViewKey | null; special?: boolean; pulse?: boolean }> = [
   { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
+  { icon: Radio, label: 'Live Tracking', view: 'tracking', special: true, pulse: true },
+  { icon: Shield, label: 'OPSEC Menus', view: 'menus', special: true },
   { icon: Package, label: 'Catalog', view: 'catalog' },
   { icon: ShoppingCart, label: 'Orders', view: 'orders' },
   { icon: Warehouse, label: 'Inventory', view: 'inventory' },
@@ -55,7 +59,7 @@ export function MiniSidebarPreview({ activeView, onViewChange }: MiniSidebarPrev
                       : item.view
                       ? 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 cursor-pointer'
                       : 'text-slate-600 cursor-not-allowed'
-                  }`}
+                  } ${item.special ? 'ring-1 ring-inset ring-primary/30' : ''}`}
                 >
                   {item.view === activeView && (
                     <motion.div
@@ -65,7 +69,19 @@ export function MiniSidebarPreview({ activeView, onViewChange }: MiniSidebarPrev
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
-                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <div className="relative">
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    {item.pulse && (
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"
+                      />
+                    )}
+                    {item.special && !item.pulse && (
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </div>
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent side="right" className="text-xs">

@@ -11,6 +11,7 @@ import { EnhancedActivityFeed } from './dashboard/EnhancedActivityFeed';
 import { MiniSidebarPreview } from './dashboard/MiniSidebarPreview';
 import { AnimatedMetricValue } from './dashboard/AnimatedMetricValue';
 import { dashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
+import { SuperstarFeaturesCard } from './dashboard/SuperstarFeaturesCard';
 import { 
   ShoppingCart, 
   Package, 
@@ -29,10 +30,16 @@ const tourSteps = [
     position: { top: '45%', left: '8%' }
   },
   {
+    target: 'superstar',
+    title: '🌟 Superstar Features',
+    description: 'Real-time tracking with live maps and encrypted disposable menus - unique features that set us apart',
+    position: { top: '24%', left: '50%' }
+  },
+  {
     target: 'metrics',
     title: 'Real-time Metrics',
     description: 'Track revenue, orders, customers, and transfers at a glance.',
-    position: { top: '20%', left: '50%' }
+    position: { top: '30%', left: '50%' }
   },
   {
     target: 'chart',
@@ -137,6 +144,11 @@ export function EnhancedDashboardPreview() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
+                {/* Superstar Features Card */}
+                <div id="superstar">
+                  <SuperstarFeaturesCard onViewChange={setActiveView} />
+                </div>
+
                 {/* Metrics Grid */}
                 <motion.div
             id="metrics"
