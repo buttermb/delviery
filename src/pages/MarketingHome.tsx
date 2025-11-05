@@ -26,6 +26,7 @@ import { AnimatedHowItWorks } from "@/components/marketing/AnimatedHowItWorks";
 import { CountUpStat } from "@/components/marketing/CountUpStat";
 import { MagneticButton } from "@/components/marketing/MagneticButton";
 import { FloatingBadges } from "@/components/marketing/FloatingBadges";
+import { AnimatedDashboardPreview } from "@/components/marketing/AnimatedDashboardPreview";
 import { useEffect, useState } from "react";
 import "@/components/marketing/animations.css";
 
@@ -184,58 +185,7 @@ export default function MarketingHome() {
             </div>
 
             {/* Dashboard Preview */}
-            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-[hsl(var(--marketing-bg))]/20 bg-gradient-to-br from-white to-gray-100">
-              <div className="p-8">
-                <div className="space-y-4">
-                  {/* Mock Dashboard Header */}
-                  <div className="flex items-center justify-between pb-4 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-500" />
-                      <div>
-                        <div className="h-3 w-32 bg-gray-300 rounded mb-2" />
-                        <div className="h-2 w-24 bg-gray-200 rounded" />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="h-8 w-20 bg-emerald-500 rounded" />
-                      <div className="h-8 w-20 bg-gray-200 rounded" />
-                    </div>
-                  </div>
-                  {/* Mock Stats Cards */}
-                  <div className="grid grid-cols-4 gap-4 py-4">
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-emerald-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-blue-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-purple-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-orange-500/20 rounded" />
-                    </div>
-                  </div>
-                  {/* Mock Chart */}
-                  <div className="p-6 bg-white rounded-lg shadow">
-                    <div className="h-3 w-32 bg-gray-300 rounded mb-4" />
-                    <div className="flex items-end gap-2 h-32">
-                      {[40, 70, 50, 80, 60, 90, 75, 85].map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-t"
-                          style={{ height: `${height}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AnimatedDashboardPreview />
           </div>
         </div>
       </section>
