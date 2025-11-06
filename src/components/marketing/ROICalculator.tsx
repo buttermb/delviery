@@ -140,7 +140,7 @@ export function ROICalculator() {
                 <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Monthly Savings</div>
               </div>
               <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                $<CountUpNumber end={savings.monthlySavings} duration={1500} />
+                $<CountUpNumber key={savings.monthlySavings} end={savings.monthlySavings} duration={1500} />
               </div>
               {/* Visual bar */}
               <motion.div
@@ -166,7 +166,7 @@ export function ROICalculator() {
                 <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Annual Savings</div>
               </div>
               <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                $<CountUpNumber end={savings.annualSavings} duration={1500} />
+                $<CountUpNumber key={savings.annualSavings} end={savings.annualSavings} duration={1500} />
               </div>
               <motion.div
                 className="h-1 bg-emerald-500/30 rounded-full mt-3 overflow-hidden"
@@ -191,7 +191,7 @@ export function ROICalculator() {
                 <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Time Saved/Week</div>
               </div>
               <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                <CountUpNumber end={savings.timeSaved} decimals={1} duration={1500} />hrs
+                <CountUpNumber key={savings.timeSaved} end={savings.timeSaved} decimals={1} duration={1500} />hrs
               </div>
               <motion.div
                 className="h-1 bg-emerald-500/30 rounded-full mt-3 overflow-hidden"
@@ -228,7 +228,7 @@ export function ROICalculator() {
                   <div className="text-xs font-medium">Return on Investment</div>
                 </div>
                 <div className="text-4xl font-bold">
-                  <CountUpNumber end={savings.roi} duration={1500} />%
+                  <CountUpNumber key={savings.roi} end={savings.roi} duration={1500} />%
                 </div>
               </div>
             </motion.div>

@@ -174,7 +174,10 @@ export default function MarketingHome() {
                   metric={
                     feature.title === 'AUTOMATION' ? { label: 'Time Saved', value: '15hrs/wk' } :
                     feature.title === 'DISPOSABLE MENUS' ? { label: 'Security', value: '256-bit' } :
-                    { label: 'Efficiency', value: '+75%' }
+                    feature.title === 'ENCRYPTED & SECURE' ? { label: 'Compliance', value: '100%' } :
+                    feature.title === 'INVENTORY TRACKING' ? { label: 'Accuracy', value: '99.9%' } :
+                    feature.title === 'CUSTOMER PORTAL' ? { label: 'Uptime', value: '24/7' } :
+                    { label: 'Data Quality', value: 'Real-time' }
                   }
                 />
               ))}
