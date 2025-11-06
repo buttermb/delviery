@@ -282,6 +282,12 @@ const App = () => {
     }
   }, []);
   
+  // Signal when App has successfully mounted and rendered
+  useEffect(() => {
+    console.log('[APP] React app mounted successfully, dispatching event...');
+    window.dispatchEvent(new CustomEvent('app-mounted'));
+  }, []);
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

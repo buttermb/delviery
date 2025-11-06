@@ -119,7 +119,7 @@ try {
     throw new Error('Root element not found');
   }
   
-  console.log('[APP] React ready, removing loader...');
+  console.log('[APP] Mounting React app...');
   
   // Create and mount React app first
   createRoot(rootElement).render(
@@ -128,14 +128,48 @@ try {
     </ErrorBoundary>
   );
   
-  // Remove loader after React mounts successfully
-  setTimeout(() => {
+  // Remove loader only after React confirms it's mounted
+  let loaderRemoved = false;
+  
+  const removeLoader = () => {
+    if (loaderRemoved) return;
+    loaderRemoved = true;
+    
+    console.log('[APP] Removing loader, app is ready');
     const initialLoader = document.getElementById('app-loader');
     if (initialLoader) {
       initialLoader.classList.add('fade-out');
       setTimeout(() => initialLoader.remove(), 300);
     }
-  }, 100);
+    
+    // Clear service workers AFTER app loads successfully
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        if (registrations.length > 0) {
+          console.log('[APP] Post-load: Clearing stale service workers...');
+          registrations.forEach(reg => {
+            if (!reg.active || reg.active.scriptURL.includes('sw.js?v=')) {
+              // Keep current version, clear old ones
+              if (!reg.active?.scriptURL.includes('sw.js?v=12')) {
+                reg.unregister();
+              }
+            }
+          });
+        }
+      });
+    }
+  };
+  
+  // Listen for app mount event
+  window.addEventListener('app-mounted', removeLoader, { once: true });
+  
+  // Fallback timeout (3 seconds) in case event doesn't fire
+  setTimeout(() => {
+    if (!loaderRemoved) {
+      console.warn('[APP] Fallback timeout triggered, removing loader anyway');
+      removeLoader();
+    }
+  }, 3000);
   
 } catch (error) {
   logger.error('[APP] Fatal initialization error', error, 'main');
