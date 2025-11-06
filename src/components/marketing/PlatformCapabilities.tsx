@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { 
-  Package, 
-  Zap, 
-  ShoppingCart, 
-  BarChart3, 
-  Lock, 
-  Truck,
+  Database, 
+  Sparkles, 
+  Store, 
+  LineChart, 
+  Key, 
+  Navigation,
   type LucideIcon
 } from 'lucide-react';
 
@@ -24,42 +24,42 @@ const capabilities: Capability[] = [
     id: 1,
     title: 'Inventory Management',
     description: 'Real-time tracking across multiple locations with automated alerts',
-    icon: Package,
+    icon: Database,
     metrics: '99.9% accuracy',
   },
   {
     id: 2,
     title: 'Order Automation',
     description: 'Streamlined order processing with automated workflows',
-    icon: Zap,
+    icon: Sparkles,
     metrics: '15hrs/week saved',
   },
   {
     id: 3,
     title: 'Customer Portal',
     description: 'Self-service portal for customers to browse and order',
-    icon: ShoppingCart,
+    icon: Store,
     metrics: '24/7 access',
   },
   {
     id: 4,
     title: 'Analytics & Reporting',
     description: 'Powerful insights into your business performance',
-    icon: BarChart3,
+    icon: LineChart,
     metrics: 'Real-time data',
   },
   {
     id: 5,
     title: 'Disposable Menus',
     description: 'Secure, encrypted menus for wholesale clients',
-    icon: Lock,
+    icon: Key,
     metrics: '100% secure',
   },
   {
     id: 6,
     title: 'Fleet Management',
     description: 'Track deliveries, optimize routes, manage couriers',
-    icon: Truck,
+    icon: Navigation,
     metrics: 'GPS tracking',
   },
 ];

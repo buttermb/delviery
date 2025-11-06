@@ -1,15 +1,16 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  Smartphone, 
-  Package, 
-  Zap, 
-  Users, 
-  BarChart3,
+  Sparkles, 
+  Layers, 
+  Workflow, 
+  Crown, 
+  TrendingUp,
   ArrowRight,
   CheckCircle,
-  Shield,
+  ShieldCheck,
   Play,
+  FileKey2,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -60,37 +61,37 @@ export default function MarketingHome() {
 
   const features = [
     {
-      icon: Smartphone,
+      icon: FileKey2,
       title: "DISPOSABLE MENUS",
       description: "Create encrypted product catalogs that burn after viewing or expire. Set expiration times for maximum security.",
       link: "/features",
     },
     {
-      icon: Shield,
+      icon: ShieldCheck,
       title: "ENCRYPTED & SECURE",
       description: "Bank-level encryption for your sensitive business data. GDPR compliant with regular security audits.",
       link: "/features",
     },
     {
-      icon: Package,
+      icon: Layers,
       title: "INVENTORY TRACKING",
       description: "Real-time stock levels, barcode scanning, multi-location support. Low stock alerts and automated reordering.",
       link: "/features",
     },
     {
-      icon: Zap,
+      icon: Workflow,
       title: "AUTOMATION",
       description: "Automate orders, alerts, reports, and workflows to save time. Focus on growing your business.",
       link: "/features",
     },
     {
-      icon: Users,
+      icon: Crown,
       title: "CUSTOMER PORTAL",
       description: "White-label portal for customers to browse & order 24/7 without calling you. Self-service ordering.",
       link: "/features",
     },
     {
-      icon: BarChart3,
+      icon: TrendingUp,
       title: "ANALYTICS",
       description: "Real-time insights into sales, orders, inventory, and customer behavior. Beautiful, actionable dashboards.",
       link: "/features",
