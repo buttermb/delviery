@@ -28,6 +28,7 @@ import viteCompression from 'vite-plugin-compression';
 import { VitePWA } from 'vite-plugin-pwa';
 import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
+import { cacheHeadersPlugin } from './vite-plugins/cache-headers';
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -43,6 +44,7 @@ export default defineConfig(({ mode }) => ({
     buildTimestampPlugin(),
     deferCssPlugin(),
     realtimeValidationPlugin(),
+    cacheHeadersPlugin(),
     viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
@@ -54,7 +56,8 @@ export default defineConfig(({ mode }) => ({
       threshold: 10240,
     }),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt', // Change to prompt to avoid blocking render
+      injectRegister: 'inline',
       includeAssets: ['favicon.ico', 'placeholder.svg'],
       manifest: {
         name: 'Delivery Platform - Wholesale Management',
@@ -149,13 +152,19 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     assetsInlineLimit: 4096,
     cssMinify: true,
+    cssCodeSplit: true,
     terserOptions: {
       compress: {
         drop_console: ['log'], // Only drop console.log, keep errors/warnings
         drop_debugger: true,
+        passes: 2, // Two passes for better minification
+        pure_funcs: ['console.log', 'console.debug'], // Remove these function calls
       },
       format: {
         comments: false,
+      },
+      mangle: {
+        safari10: true, // Fix Safari 10 issues
       },
     },
     sourcemap: 'hidden', // Generate hidden source maps for production debugging
@@ -169,29 +178,70 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/entry-[hash].js',
         chunkFileNames: 'assets/chunk-[hash].js',
         assetFileNames: 'assets/asset-[hash].[ext]',
-        // Ensure React is not split into separate chunks
+        // Aggressive code splitting for better caching and loading
         manualChunks: (id) => {
-          // Exclude React from chunking - keep it in vendor
+          // React core - keep together
           if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-            return 'vendor';
+            return 'react-vendor';
           }
-          // Large deps into separate chunks
+          
+          // Route/page-specific chunks
+          if (id.includes('/src/pages/')) {
+            if (id.includes('/admin/')) return 'pages-admin';
+            if (id.includes('/courier/')) return 'pages-courier';
+            if (id.includes('/marketing/')) return 'pages-marketing';
+            return 'pages-core';
+          }
+          
+          // UI components
+          if (id.includes('/src/components/')) {
+            if (id.includes('/ui/')) return 'ui-components';
+            if (id.includes('/admin/')) return 'admin-components';
+            if (id.includes('/courier/')) return 'courier-components';
+            if (id.includes('/marketing/')) return 'marketing-components';
+            return 'components-core';
+          }
+          
+          // Large third-party libraries
           if (id.includes('node_modules')) {
-            if (id.includes('@tanstack')) {
-              return 'vendor-query';
+            // Charts and visualization
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
             }
-            if (id.includes('framer-motion')) {
-              return 'vendor-motion';
+            // State management
+            if (id.includes('@tanstack') || id.includes('zustand')) {
+              return 'vendor-state';
             }
-            if (id.includes('mapbox') || id.includes('leaflet')) {
+            // Animation
+            if (id.includes('framer-motion') || id.includes('lottie')) {
+              return 'vendor-animation';
+            }
+            // Maps
+            if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-map')) {
               return 'vendor-maps';
             }
-            return 'vendor';
+            // UI libraries
+            if (id.includes('@radix-ui') || id.includes('cmdk')) {
+              return 'vendor-ui';
+            }
+            // Forms
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'vendor-forms';
+            }
+            // PDF/Excel
+            if (id.includes('jspdf') || id.includes('xlsx') || id.includes('@react-pdf')) {
+              return 'vendor-documents';
+            }
+            // Supabase
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            // Other vendors
+            return 'vendor-misc';
           }
         },
       },
     },
-    chunkSizeWarningLimit: 600,
-    cssCodeSplit: true,
+    chunkSizeWarningLimit: 500, // Lower threshold to catch bloat earlier
   },
 }));
