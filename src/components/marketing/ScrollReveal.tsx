@@ -1,62 +1,79 @@
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
+import { motion, Variants } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 interface ScrollRevealProps {
   children: ReactNode;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'fade';
   delay?: number;
-  direction?: "up" | "down" | "left" | "right";
+  duration?: number;
   className?: string;
 }
 
-export function ScrollReveal({ 
-  children, 
-  delay = 0, 
-  direction = "up",
-  className = "" 
+export function ScrollReveal({
+  children,
+  direction = 'up',
+  delay = 0,
+  duration = 0.6,
+  className = '',
 }: ScrollRevealProps) {
-  const getInitialPosition = () => {
-    switch (direction) {
-      case "up": return { y: 50, x: 0 };
-      case "down": return { y: -50, x: 0 };
-      case "left": return { y: 0, x: 50 };
-      case "right": return { y: 0, x: -50 };
-      default: return { y: 50, x: 0 };
-    }
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const variants: Variants = {
+    hidden: {
+      opacity: 0,
+      y: direction === 'up' ? 40 : direction === 'down' ? -40 : 0,
+      x: direction === 'left' ? 40 : direction === 'right' ? -40 : 0,
+      scale: direction === 'fade' ? 0.95 : 1,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      x: 0,
+      scale: 1,
+    },
   };
-
-  // Check for reduced motion preference
-  const prefersReducedMotion = typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
-    : false;
-
-  if (prefersReducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
 
   return (
     <motion.div
-      initial={{ 
-        opacity: 0,
-        ...getInitialPosition()
-      }}
-      whileInView={{ 
-        opacity: 1,
-        y: 0,
-        x: 0,
-      }}
-      viewport={{ 
-        once: true,
-        margin: "-100px",
-        amount: 0.2
-      }}
-      transition={{ 
-        duration: 0.6,
+      ref={ref}
+      initial="hidden"
+      animate={inView ? 'visible' : 'hidden'}
+      variants={variants}
+      transition={{
+        duration,
         delay,
-        ease: [0.25, 0.4, 0.25, 1],
+        ease: [0.25, 0.46, 0.45, 0.94],
       }}
       className={className}
     >
       {children}
     </motion.div>
+  );
+}
+
+interface StaggerContainerProps {
+  children: ReactNode;
+  staggerDelay?: number;
+  className?: string;
+}
+
+export function StaggerContainer({
+  children,
+  staggerDelay = 0.1,
+  className = '',
+}: StaggerContainerProps) {
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
   );
 }

@@ -21,6 +21,10 @@ import { HeroSection } from "@/components/marketing/HeroSection";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { ParallaxBackground } from "@/components/marketing/ParallaxBackground";
+import { ConfettiButton } from "@/components/marketing/ConfettiButton";
+import { ScrollReveal, StaggerContainer } from "@/components/marketing/ScrollReveal";
+import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
+import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 
@@ -40,9 +44,7 @@ const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/Enhan
 
 // Loading fallback component
 const SectionLoader = () => (
-  <div className="py-20 flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-[hsl(var(--marketing-primary))] border-t-transparent rounded-full animate-spin" />
-  </div>
+  <SectionSkeleton />
 );
 
 export default function MarketingHome() {
@@ -145,53 +147,59 @@ export default function MarketingHome() {
       {/* SECTION 5C: KEY FEATURES GRID */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Everything You Need to Run Your Wholesale Business
-            </h2>
-          </div>
+          <ScrollReveal direction="up">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                Everything You Need to Run Your Wholesale Business
+              </h2>
+            </div>
+          </ScrollReveal>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {features.map((feature, index) => (
-              <FlippableFeatureCard 
-                key={index} 
-                {...feature}
-                benefits={
-                  feature.title === 'DISPOSABLE MENUS' ? ['256-bit encryption', 'Auto-expiration', 'One-time view', 'QR code sharing'] :
-                  feature.title === 'ENCRYPTED & SECURE' ? ['Bank-level security', 'GDPR compliant', 'Regular audits', 'Data protection'] :
-                  feature.title === 'INVENTORY TRACKING' ? ['Multi-location', 'Real-time sync', 'Low stock alerts', 'Barcode scanning'] :
-                  feature.title === 'AUTOMATION' ? ['Save 15hrs/week', 'Auto-confirmations', 'Smart workflows', 'Email notifications'] :
-                  feature.title === 'CUSTOMER PORTAL' ? ['24/7 availability', 'Mobile friendly', 'Self-service', 'Order history'] :
-                  ['Real-time data', 'Custom reports', 'Sales insights', 'Export options']
-                }
-                metric={
-                  feature.title === 'AUTOMATION' ? { label: 'Time Saved', value: '15hrs/wk' } :
-                  feature.title === 'DISPOSABLE MENUS' ? { label: 'Security', value: '256-bit' } :
-                  { label: 'Efficiency', value: '+75%' }
-                }
-              />
-            ))}
-          </div>
+          <StaggerContainer staggerDelay={0.15}>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {features.map((feature, index) => (
+                <FlippableFeatureCard 
+                  key={index} 
+                  {...feature}
+                  benefits={
+                    feature.title === 'DISPOSABLE MENUS' ? ['256-bit encryption', 'Auto-expiration', 'One-time view', 'QR code sharing'] :
+                    feature.title === 'ENCRYPTED & SECURE' ? ['Bank-level security', 'GDPR compliant', 'Regular audits', 'Data protection'] :
+                    feature.title === 'INVENTORY TRACKING' ? ['Multi-location', 'Real-time sync', 'Low stock alerts', 'Barcode scanning'] :
+                    feature.title === 'AUTOMATION' ? ['Save 15hrs/week', 'Auto-confirmations', 'Smart workflows', 'Email notifications'] :
+                    feature.title === 'CUSTOMER PORTAL' ? ['24/7 availability', 'Mobile friendly', 'Self-service', 'Order history'] :
+                    ['Real-time data', 'Custom reports', 'Sales insights', 'Export options']
+                  }
+                  metric={
+                    feature.title === 'AUTOMATION' ? { label: 'Time Saved', value: '15hrs/wk' } :
+                    feature.title === 'DISPOSABLE MENUS' ? { label: 'Security', value: '256-bit' } :
+                    { label: 'Efficiency', value: '+75%' }
+                  }
+                />
+              ))}
+            </div>
+          </StaggerContainer>
 
-          <div className="text-center mt-16">
-            <Link to="/features">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button variant="outline" size="lg" className="mx-auto group">
-                  Discover More Features
-                  <motion.div
-                    className="inline-block ml-2"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.div>
-                </Button>
-              </motion.div>
-            </Link>
-          </div>
+          <ScrollReveal direction="up" delay={0.4}>
+            <div className="text-center mt-16">
+              <Link to="/features">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button variant="outline" size="lg" className="mx-auto group">
+                    Discover More Features
+                    <motion.div
+                      className="inline-block ml-2"
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.div>
+                  </Button>
+                </motion.div>
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -286,22 +294,22 @@ export default function MarketingHome() {
                   ))}
                 </ul>
                 <Link to="/signup">
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  <ConfettiButton
+                    variant={plan.popular ? "default" : "outline"}
+                    size="default"
+                    className={`w-full ${
+                      plan.popular
+                        ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                        : ""
+                    }`}
+                    confettiConfig={{
+                      particleCount: plan.popular ? 150 : 100,
+                      colors: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe'],
+                    }}
+                    onClick={() => window.location.href = '/signup'}
                   >
-                    <Button
-                      className={`w-full ${
-                        plan.popular
-                          ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                          : ""
-                      }`}
-                      variant={plan.popular ? "default" : "outline"}
-                    >
-                      {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
-                    </Button>
-                  </motion.div>
+                    {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
+                  </ConfettiButton>
                 </Link>
               </div>
             ))}
@@ -467,6 +475,9 @@ export default function MarketingHome() {
       <Suspense fallback={null}>
         <FloatingChatButton />
       </Suspense>
+
+      {/* Keyboard Navigation Helper */}
+      <KeyboardNavigationHelper />
     </div>
   );
 }
