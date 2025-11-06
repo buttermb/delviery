@@ -47,8 +47,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Trigger verification when URL changes or initial mount
   useEffect(() => {
-    // Skip if already checking, not authenticated, or recently verified
-    if (verifying || !admin || !tenant) {
+    // Skip if not authenticated
+    if (!admin || !tenant) {
+      // If auth is loaded but no admin/tenant, stop verifying
+      if (!loading) {
+        setVerifying(false);
+      }
       return;
     }
 
@@ -62,6 +66,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     const cached = verificationCache.current[cacheKey];
     if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_DURATION) {
       setVerified(true);
+      setVerifying(false);
       return;
     }
 
@@ -90,7 +95,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     setVerified(true);
     setVerifying(false);
     verificationLockRef.current = false;
-  }, [tenantSlug, location.pathname, admin, tenant, verifying]); // Removed 'verified' from deps
+  }, [tenantSlug, location.pathname, admin, tenant, loading]);
 
   // Loading state - wait for auth AND verification
   if (loading || verifying || !verified) {
