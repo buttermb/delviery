@@ -36,6 +36,7 @@ const AnimatedHowItWorks = lazy(() => import("@/components/marketing/AnimatedHow
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
 const FeatureExplorer = lazy(() => import("@/components/marketing/FeatureExplorer").then(m => ({ default: m.FeatureExplorer })));
 const InteractiveDashboardShowcase = lazy(() => import("@/components/marketing/InteractiveDashboardShowcase").then(m => ({ default: m.InteractiveDashboardShowcase })));
+const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -148,12 +149,6 @@ export default function MarketingHome() {
         </Suspense>
       </SectionTransition>
 
-      {/* SECTION 2B: DASHBOARD SHOWCASE */}
-      <SectionTransition variant="fade" delay={0.1}>
-        <Suspense fallback={<SectionLoader />}>
-          <InteractiveDashboardShowcase />
-        </Suspense>
-      </SectionTransition>
 
       {/* SECTION 3: PROBLEM/SOLUTION */}
       <SectionTransition variant="fade" delay={0.1}>
@@ -382,47 +377,52 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* SECTION 6: PRODUCT SHOWCASE */}
-      <section className="py-20 bg-muted/30">
+      {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
+      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              See DevPanel in Action
-            </h2>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                See DevPanel in Action
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8">
+                Explore our interactive dashboard - click around and see all the features
+              </p>
+            </div>
 
-            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border mb-8">
-              <div className="aspect-video bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] flex items-center justify-center">
-                <button className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
-                  <Play className="h-10 w-10 text-white ml-1" />
-                </button>
+            {/* Full Interactive Dashboard */}
+            <Suspense fallback={<SectionLoader />}>
+              <EnhancedDashboardPreview />
+            </Suspense>
+
+            {/* Feature Highlights Below Dashboard */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-card/50 border border-border/50">
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-sm text-foreground">Create disposable menu in 2 clicks</span>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-card/50 border border-border/50">
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-sm text-foreground">Track deliveries in real-time</span>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-card/50 border border-border/50">
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-sm text-foreground">Manage orders from one dashboard</span>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-card/50 border border-border/50">
+                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <span className="text-sm text-foreground">Customer portal for self-service</span>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Create disposable menu in 2 clicks</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Track inventory in real-time</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Manage orders from one dashboard</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
-                <span className="text-foreground">Customer portal for self-service</span>
-              </div>
+            <div className="text-center mt-8">
+              <Link to="/demo">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8">
+                  Request Live Demo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
-
-            <Link to="/demo">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8">
-                Request Live Demo
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
