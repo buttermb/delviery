@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -57,6 +57,7 @@ const capabilities: Capability[] = [
 
 export function PlatformCapabilities() {
   const [activeCapability, setActiveCapability] = useState(0);
+  const scrollRef = useRef<HTMLElement>(null);
   const { ref, inView } = useInView({
     threshold: 0.3,
     triggerOnce: false,
@@ -73,7 +74,7 @@ export function PlatformCapabilities() {
   }, [inView]);
 
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: scrollRef,
     offset: ['start end', 'end start'],
   });
 
@@ -81,7 +82,13 @@ export function PlatformCapabilities() {
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-muted/30" ref={ref}>
+    <section 
+      className="py-20 bg-gradient-to-b from-background to-muted/30" 
+      ref={(node) => {
+        ref(node);
+        (scrollRef as any).current = node;
+      }}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div

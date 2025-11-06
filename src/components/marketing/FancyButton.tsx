@@ -3,7 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface FancyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface FancyButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   magnetic?: boolean;
@@ -11,6 +11,10 @@ interface FancyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   loading?: boolean;
   children: React.ReactNode;
   showArrow?: boolean;
+  className?: string;
+  disabled?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export function FancyButton({
@@ -24,7 +28,7 @@ export function FancyButton({
   className,
   disabled,
   onClick,
-  ...props
+  type = 'button',
 }: FancyButtonProps) {
   const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [isHovered, setIsHovered] = useState(false);
@@ -118,9 +122,9 @@ export function FancyButton({
       onMouseEnter={() => setIsHovered(true)}
       onClick={handleClick}
       disabled={disabled || loading}
+      type={type}
       whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
       whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
-      {...props}
     >
       {/* Gradient overlay on hover */}
       <motion.div

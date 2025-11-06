@@ -41,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { EnhancedProductTable } from "@/components/admin/EnhancedProductTable";
 import {
   Select,
   SelectContent,
@@ -60,6 +61,7 @@ export default function ProductManagement() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -192,8 +194,60 @@ export default function ProductManagement() {
       if (error) throw error;
       toast.success("Product deleted");
       loadProducts();
+      setSelectedProducts((prev) => prev.filter((pid) => pid !== id));
     } catch (error: any) {
       toast.error("Failed to delete: " + error.message);
+    }
+  };
+
+  const handleDuplicate = async (id: string) => {
+    const productToDuplicate = products.find((p) => p.id === id);
+    if (!productToDuplicate) return;
+
+    try {
+      const { id: _id, created_at, ...productData } = productToDuplicate;
+      const duplicatedProduct = {
+        ...productData,
+        name: `${productData.name} (Copy)`,
+        sku: productData.sku ? `${productData.sku}-COPY` : null,
+      };
+
+      const { error } = await supabase.from("products").insert([duplicatedProduct]);
+      if (error) throw error;
+      
+      toast.success("Product duplicated successfully");
+      loadProducts();
+    } catch (error: any) {
+      toast.error("Failed to duplicate product: " + error.message);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProducts.length === filteredProducts.length) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(filteredProducts.map((p) => p.id));
+    }
+  };
+
+  const handleUpdate = async (id: string, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from("products")
+        .update(updates)
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Product updated");
+      loadProducts();
+    } catch (error: any) {
+      toast.error("Failed to update: " + error.message);
     }
   };
 
@@ -531,43 +585,51 @@ export default function ProductManagement() {
         </Card>
       </div>
 
-      {/* Search and Filters */}
+      {/* Filters and View Mode Toggle */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        <div className="relative flex-1 w-full sm:min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 min-h-[44px]"
-          />
-        </div>
-        <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name (A-Z)</SelectItem>
-              <SelectItem value="price">Price (High-Low)</SelectItem>
-              <SelectItem value="stock">Stock (High-Low)</SelectItem>
-              <SelectItem value="margin">Margin (High-Low)</SelectItem>
-            </SelectContent>
-          </Select>
+        {viewMode === "grid" && (
+          <>
+            <div className="relative flex-1 w-full sm:min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 min-h-[44px]"
+              />
+            </div>
+            <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name (A-Z)</SelectItem>
+                  <SelectItem value="price">Price (High-Low)</SelectItem>
+                  <SelectItem value="stock">Stock (High-Low)</SelectItem>
+                  <SelectItem value="margin">Margin (High-Low)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+        
+        {/* View Mode Toggle */}
+        <div className={viewMode === "list" ? "ml-auto" : ""}>
           <div className="flex items-center gap-1 border rounded-md overflow-hidden min-h-[44px]">
             <Toggle
               pressed={viewMode === "grid"}
@@ -612,74 +674,16 @@ export default function ProductManagement() {
                 ))}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Cost</TableHead>
-                    <TableHead>Wholesale</TableHead>
-                    <TableHead>Margin</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          {product.strain_name && (
-                            <p className="text-xs text-muted-foreground">
-                              {product.strain_name}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs">{product.sku || "-"}</code>
-                      </TableCell>
-                      <TableCell>
-                        {product.category && <Badge variant="outline">{product.category}</Badge>}
-                      </TableCell>
-                      <TableCell>${product.cost_per_unit?.toFixed(2) || "0.00"}</TableCell>
-                      <TableCell>
-                        ${product.wholesale_price?.toFixed(2) || "0.00"}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-green-600 font-medium">
-                          {profitMargin(product.cost_per_unit, product.wholesale_price)}%
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={product.available_quantity > 0 ? "default" : "destructive"}>
-                          {product.available_quantity || 0} units
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEdit(product)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDelete(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <EnhancedProductTable
+                products={products}
+                selectedProducts={selectedProducts}
+                onToggleSelect={handleToggleSelect}
+                onSelectAll={handleSelectAll}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onDuplicate={handleDuplicate}
+              />
             )
           ) : (
             <EnhancedEmptyState

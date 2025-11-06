@@ -8,6 +8,8 @@ import {
   BarChart3,
   ArrowRight,
   CheckCircle,
+  Shield,
+  Play,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
