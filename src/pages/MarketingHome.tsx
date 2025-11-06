@@ -26,7 +26,6 @@ import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { ScrollReveal, StaggerContainer } from "@/components/marketing/ScrollReveal";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
-import { SocialProof } from "@/components/marketing/SocialProof";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -484,9 +483,6 @@ export default function MarketingHome() {
 
       {/* Keyboard Navigation Helper */}
       <KeyboardNavigationHelper />
-      
-      {/* Social Proof Notifications */}
-      <SocialProof />
       
       {/* Live Chat Widget */}
       <LiveChatWidget />
