@@ -21,14 +21,6 @@ export function FeatureGate({ featureId, children, fallback }: FeatureGateProps)
   
   const hasAccess = canAccess(featureId);
   
-  // Debug logging
-  console.log('FeatureGate:', {
-    featureId,
-    hasAccess,
-    currentTier,
-    subscriptionPlan: tenant?.subscription_plan,
-  });
-  
   if (hasAccess) {
     return <>{children}</>;
   }

@@ -300,10 +300,7 @@ export function TenantAdminSidebar() {
                         <SidebarMenuItem key={`${group.label}-${item.url}`}>
                           {hasAccess ? (
                             <SidebarMenuButton asChild isActive={itemIsActive}>
-                              <NavLink 
-                                to={`/${tenantSlug}${item.url}`}
-                                onClick={() => console.log('Navigating to:', `/${tenantSlug}${item.url}`, { hasAccess, featureId: item.featureId })}
-                              >
+                              <NavLink to={`/${tenantSlug}${item.url}`}>
                                 <item.icon className="h-4 w-4" />
                                 <span>{item.title}</span>
                               </NavLink>

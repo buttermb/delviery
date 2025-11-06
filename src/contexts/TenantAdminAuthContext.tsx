@@ -217,13 +217,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
       }
       
+      // Add timeout to fetch call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         // If token verification fails with 401, try to refresh
@@ -359,13 +366,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const login = async (email: string, password: string, tenantSlug: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Add timeout to fetch call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s for login
+      
       const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password, tenantSlug }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const error = await response.json();
@@ -455,13 +470,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       logger.debug("Refreshing access token...");
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Add timeout to fetch call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ refresh_token: currentRefreshToken }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error("Token refresh failed");

@@ -11,12 +11,10 @@ interface TenantAdminProtectedRouteProps {
   children: ReactNode;
 }
 
-// Verification timeout - 8 seconds
-const VERIFICATION_TIMEOUT_MS = 8000;
-// Network timeout - 2 seconds (edge function is optimized)
-const NETWORK_TIMEOUT_MS = 2000;
+// Verification timeout - 5 seconds
+const VERIFICATION_TIMEOUT = 5000;
 // Cache verification results for 2 minutes
-const VERIFICATION_CACHE_MS = 2 * 60 * 1000;
+const VERIFICATION_CACHE_DURATION = 2 * 60 * 1000;
 
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
   const { admin, tenant, token, loading } = useTenantAdminAuth();
@@ -26,132 +24,75 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const location = useLocation();
   
-  // Track auth values in refs to avoid re-triggering verification
-  const authRef = useRef({ token, admin, tenant });
+  // Use lock to prevent concurrent verification requests
   const verificationLockRef = useRef(false);
-
+  
   // Cache verification results to avoid repeated checks
-  const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
-  const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
-
-  const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
-    const cacheKey = `${email}:${tenantSlug}`;
-    const cached = verificationCache.current.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_MS) {
-      return cached.result;
-    }
-    return false;
-  };
-
-  // Update auth refs when auth changes (doesn't trigger verification)
+  const verificationCache = useRef<Record<string, { verified: boolean; timestamp: number }>>({});
+  
+  // Safety timeout to unlock verification if it gets stuck
   useEffect(() => {
-    authRef.current = { token, admin, tenant };
-  }, [token, admin, tenant]);
+    if (!verifying) return;
+    
+    const timeout = setTimeout(() => {
+      if (verificationLockRef.current) {
+        console.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking');
+        verificationLockRef.current = false;
+        setVerifying(false);
+      }
+    }, VERIFICATION_TIMEOUT);
+    
+    return () => clearTimeout(timeout);
+  }, [verifying]);
 
-  // Main verification effect - only depends on tenantSlug and location
+  // Trigger verification when URL changes or initial mount
   useEffect(() => {
-    console.log('[TenantAdminProtectedRoute] Effect triggered', {
-      verified,
-      verificationLock: verificationLockRef.current,
-      tenantSlug,
-      pathname: location.pathname,
-      hasToken: !!authRef.current.token,
-      hasAdmin: !!authRef.current.admin,
-      hasTenant: !!authRef.current.tenant
-    });
-
-    // Skip if already verified
-    if (verified) {
-      console.log('[TenantAdminProtectedRoute] Already verified, skipping');
+    // Skip if already checking, not authenticated, or recently verified
+    if (verifying || !admin || !tenant) {
       return;
     }
 
-    // Prevent concurrent verification attempts
+    // Use lock to prevent race conditions
     if (verificationLockRef.current) {
-      console.log('[TenantAdminProtectedRoute] Verification in progress, skipping');
       return;
     }
 
-    const verifyAccess = () => {
-      const { token: currentToken, admin: currentAdmin, tenant: currentTenant } = authRef.current;
-      
-      console.log('[TenantAdminProtectedRoute] Starting verification', {
-        hasToken: !!currentToken,
-        hasAdmin: !!currentAdmin,
-        hasTenant: !!currentTenant,
-        tenantSlug,
-        currentTenantSlug: currentTenant?.slug
-      });
+    // Check cache
+    const cacheKey = `${tenantSlug}-${location.pathname}`;
+    const cached = verificationCache.current[cacheKey];
+    if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_DURATION) {
+      setVerified(true);
+      return;
+    }
 
-      if (!currentToken || !currentAdmin || !currentTenant || !tenantSlug) {
-        console.log('[TenantAdminProtectedRoute] Missing auth data, stopping verification');
-        setVerifying(false);
-        return;
-      }
+    // Lock verification to prevent concurrent requests
+    verificationLockRef.current = true;
+    setVerifying(true);
+    setVerificationError(null);
 
-      // Lock verification
-      verificationLockRef.current = true;
+    // Local verification: compare tenant slug from URL with authenticated tenant
+    const isValidSlug = tenant.slug === tenantSlug;
+    
+    if (!isValidSlug) {
+      setVerificationError("Tenant mismatch. Please re-login.");
+      setVerified(false);
+      setVerifying(false);
+      verificationLockRef.current = false;
+      return;
+    }
 
-      // Check cache first
-      if (isVerificationCacheValid(currentAdmin.email, tenantSlug)) {
-        console.log('[TenantAdminProtectedRoute] Using cached verification result');
-        setVerified(true);
-        setVerifying(false);
-        setVerificationError(null);
-        verificationLockRef.current = false;
-        return;
-      }
-
-      console.log('[TenantAdminProtectedRoute] Performing local verification...');
-      setVerifying(true);
-      setVerificationError(null);
-
-      try {
-        // Simple local verification: check if tenant slug matches
-        // Auth context already validated user has access to this tenant
-        if (currentTenant.slug.toLowerCase() !== tenantSlug.toLowerCase()) {
-          console.error('[TenantAdminProtectedRoute] Tenant slug mismatch', {
-            expected: tenantSlug,
-            actual: currentTenant.slug
-          });
-          setVerificationError('Access denied - tenant mismatch');
-          setVerifying(false);
-          verificationLockRef.current = false;
-          return;
-        }
-
-        // Cache successful verification
-        const cacheKey = `${currentAdmin.email}:${tenantSlug}`;
-        verificationCache.current.set(cacheKey, {
-          result: true,
-          timestamp: Date.now()
-        });
-
-        console.log('[TenantAdminProtectedRoute] ✅ Verification successful');
-        setVerified(true);
-        setVerifying(false);
-        setVerificationError(null);
-        verificationLockRef.current = false;
-      } catch (err) {
-        console.error('[TenantAdminProtectedRoute] Verification error:', err);
-        setVerificationError('Verification failed. Please try again.');
-        setVerifying(false);
-        verificationLockRef.current = false;
-      }
+    // If we reach here, verification passed
+    verificationCache.current[cacheKey] = {
+      verified: true,
+      timestamp: Date.now(),
     };
-
-    verifyAccess();
-  }, [tenantSlug, location.pathname, verified]); // Added verified to dependencies
+    
+    setVerified(true);
+    setVerifying(false);
+    verificationLockRef.current = false;
+  }, [tenantSlug, location.pathname, admin, tenant, verifying]); // Removed 'verified' from deps
 
   // Loading state - wait for auth AND verification
-  console.log('[TenantAdminProtectedRoute] Render state', {
-    loading,
-    verifying,
-    verified,
-    hasAdmin: !!admin,
-    hasTenant: !!tenant
-  });
-
   if (loading || verifying || !verified) {
     return <LoadingFallback />;
   }
