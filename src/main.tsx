@@ -18,6 +18,14 @@ import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
 // Setup global error handlers
 setupGlobalErrorHandlers();
 
+// Add chunk loading error handler - force reload on chunk failures
+window.addEventListener('error', (event) => {
+  if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
+    console.error('[APP] Chunk loading failed, forcing hard reload...');
+    window.location.reload();
+  }
+});
+
 // Log app initialization
 console.log('[APP] Starting app initialization...');
 
@@ -37,22 +45,28 @@ if (import.meta.env.PROD) {
   }
 }
 
-// Clear service worker cache if createContext error occurs (stale cache issue)
+// Clear ALL service workers and caches immediately (before React loads)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     if (registrations.length > 0) {
-      console.log('[APP] Clearing stale service workers...');
+      console.log('[APP] Clearing ALL service workers...');
       registrations.forEach(reg => reg.unregister());
     }
   });
+  
+  // Also clear all caches
+  caches.keys().then((names) => {
+    console.log('[APP] Clearing ALL caches:', names);
+    Promise.all(names.map(name => caches.delete(name)));
+  });
 }
 
-// Register service worker after app loads (production only)
+// Register NEW service worker after app loads successfully (production only)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     setTimeout(async () => {
       try {
-        const registration = await navigator.serviceWorker.register('/sw.js?v=11');
+        const registration = await navigator.serviceWorker.register('/sw.js?v=12');
         console.log('[APP] ServiceWorker registered:', registration.scope);
         
         if (registration.waiting) {

@@ -89,6 +89,28 @@
   </head>
 
   <body>
+    <!-- Inline cache clearing - runs BEFORE any module loads -->
+    <script>
+      (function() {
+        // Clear corrupt caches immediately
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            if (names.length > 0) {
+              console.log('[INLINE] Clearing corrupt caches:', names);
+              Promise.all(names.map(function(name) { return caches.delete(name); }));
+            }
+          });
+        }
+        
+        // Unregister all service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(reg) { reg.unregister(); });
+          });
+        }
+      })();
+    </script>
+    
     <!-- Apply theme BEFORE React loads to prevent flash -->
     <script>
       try {

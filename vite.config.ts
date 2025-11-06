@@ -178,69 +178,22 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/entry-[hash].js',
         chunkFileNames: 'assets/chunk-[hash].js',
         assetFileNames: 'assets/asset-[hash].[ext]',
-        // Aggressive code splitting for better caching and loading
+        // Simplified code splitting - fewer chunks = fewer loading order issues
         manualChunks: (id) => {
-          // React core - keep together
+          // React core - MUST load first
           if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
             return 'react-vendor';
           }
           
-          // Route/page-specific chunks
-          if (id.includes('/src/pages/')) {
-            if (id.includes('/admin/')) return 'pages-admin';
-            if (id.includes('/courier/')) return 'pages-courier';
-            if (id.includes('/marketing/')) return 'pages-marketing';
-            return 'pages-core';
-          }
-          
-          // UI components
-          if (id.includes('/src/components/')) {
-            if (id.includes('/ui/')) return 'ui-components';
-            if (id.includes('/admin/')) return 'admin-components';
-            if (id.includes('/courier/')) return 'courier-components';
-            if (id.includes('/marketing/')) return 'marketing-components';
-            return 'components-core';
-          }
-          
-          // Large third-party libraries
+          // All other node_modules together
           if (id.includes('node_modules')) {
-            // Charts and visualization
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'vendor-charts';
-            }
-            // State management
-            if (id.includes('@tanstack') || id.includes('zustand')) {
-              return 'vendor-state';
-            }
-            // Animation
-            if (id.includes('framer-motion') || id.includes('lottie')) {
-              return 'vendor-animation';
-            }
-            // Maps
-            if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-map')) {
-              return 'vendor-maps';
-            }
-            // UI libraries
-            if (id.includes('@radix-ui') || id.includes('cmdk')) {
-              return 'vendor-ui';
-            }
-            // Forms
-            if (id.includes('react-hook-form') || id.includes('zod')) {
-              return 'vendor-forms';
-            }
-            // PDF/Excel
-            if (id.includes('jspdf') || id.includes('xlsx') || id.includes('@react-pdf')) {
-              return 'vendor-documents';
-            }
-            // Supabase
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            // Other vendors
-            return 'vendor-misc';
+            return 'vendor';
           }
+          
+          // Application code - let Vite auto-split by route
         },
       },
+      preserveEntrySignatures: 'strict', // Prevent chunk ordering issues
     },
     chunkSizeWarningLimit: 500, // Lower threshold to catch bloat earlier
   },

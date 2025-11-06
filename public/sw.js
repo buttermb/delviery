@@ -7,7 +7,7 @@
 // Version: 4.0.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v9'; // Increment this manually on each deploy
+const CACHE_VERSION = 'v12'; // Increment this manually on each deploy
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -144,22 +144,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache first for static assets (JS, CSS)
+  // Network-first for static assets (JS, CSS) - prevents stale chunk issues
   if (event.request.destination === 'script' || event.request.destination === 'style') {
     event.respondWith(
-      caches.match(event.request).then((cached) => {
-        if (cached && !isCacheExpired(cached, CACHE_DURATION.static)) {
-          return cached;
-        }
-        return fetch(event.request).then((response) => {
+      fetch(event.request)
+        .then((response) => {
           if (response.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, response.clone());
             });
           }
           return response;
-        });
-      })
+        })
+        .catch(() => caches.match(event.request)) // Fallback to cache only if network fails
     );
     return;
   }
