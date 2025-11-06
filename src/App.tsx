@@ -204,6 +204,8 @@ const CourierDashboardPage = lazy(() => import("./pages/courier/DashboardPage"))
 const CourierEarningsPage = lazy(() => import("./pages/courier/EarningsPage"));
 const CourierHistoryPage = lazy(() => import("./pages/courier/HistoryPage"));
 const CourierActiveOrderPage = lazy(() => import("./pages/courier/ActiveOrderPage"));
+const UnifiedActiveDeliveryPage = lazy(() => import("./pages/courier/UnifiedActiveDeliveryPage"));
+const CourierSettingsPage = lazy(() => import("./pages/courier/SettingsPage"));
 const ProtectedCourierRoute = lazy(() => import("./components/ProtectedCourierRoute").then(m => ({ default: m.default })));
 
 // Customer Pages
@@ -502,7 +504,9 @@ const App = () => {
                                 <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
                                 <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
                                 <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
+                                <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
                                 <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
+                                <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
                               </Routes>
                             </CourierProvider>
                           }

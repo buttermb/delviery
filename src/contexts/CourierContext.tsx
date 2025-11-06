@@ -247,34 +247,27 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error('Courier location update error:', error);
+          throw error;
         } else {
           console.log('✅ Courier location updated successfully');
         }
       } else if (courier.role === 'runner') {
-        // Update runner location directly in database
-        const { error } = await supabase
-          .from('wholesale_runners')
-          .update({
-            current_lat: lat,
-            current_lng: lng,
-            current_location: { lat, lng }
-          })
-          .eq('id', courier.id);
+        // Update runner location via edge function (includes history logging)
+        const { error } = await supabase.functions.invoke('runner-location-update', {
+          body: {
+            runner_id: courier.id,
+            latitude: lat,
+            longitude: lng,
+            speed: 0, // Can be enhanced with actual speed from navigator
+            heading: 0, // Can be enhanced with actual heading
+          }
+        });
 
         if (error) {
           console.error('Runner location update error:', error);
+          throw error;
         } else {
           console.log('✅ Runner location updated successfully');
-          
-          // Also log to location history
-          await supabase
-            .from('runner_location_history')
-            .insert({
-              runner_id: courier.id,
-              latitude: lat,
-              longitude: lng,
-              recorded_at: new Date().toISOString(),
-            });
         }
       }
     } catch (error) {

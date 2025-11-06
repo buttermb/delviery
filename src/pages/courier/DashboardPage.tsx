@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Package, Menu, LogOut, DollarSign, Clock } from 'lucide-react';
+import { Package, Menu, LogOut, DollarSign, Clock, Settings } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
 import { UnifiedDeliveryView } from '@/components/courier/UnifiedDeliveryView';
 import { RoleIndicator } from '@/components/courier/RoleIndicator';
+import { LocationTrackingStatus } from '@/components/courier/LocationTrackingStatus';
 import { useRunnerStats } from '@/hooks/useRunnerStats';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { AnimatePresence } from 'framer-motion';
@@ -221,6 +222,14 @@ export default function CourierDashboardPage() {
                   </Button>
                   <Button
                     variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => navigate('/courier/settings')}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Button>
+                  <Button
+                    variant="ghost"
                     className="w-full justify-start text-destructive"
                     onClick={handleLogout}
                   >
@@ -243,6 +252,9 @@ export default function CourierDashboardPage() {
         {/* Online Status */}
         <OnlineStatusCard />
 
+        {/* Location Tracking Status (when online) */}
+        <LocationTrackingStatus />
+
         {/* Stats Grid */}
         <QuickStatsCard
           todayDeliveries={stats.todayDeliveries}
@@ -252,11 +264,23 @@ export default function CourierDashboardPage() {
         />
 
         {/* Unified Delivery View */}
-        <UnifiedDeliveryView
-          courierOrders={availableOrders}
-          onAcceptOrder={handleAcceptOrder}
-          onCompleteDelivery={() => {}}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>{role === 'courier' ? 'Available Orders' : 'Delivery Assignments'}</span>
+              <Badge variant={isOnline ? 'default' : 'secondary'}>
+                {isOnline ? (role === 'courier' ? 'Accepting Orders' : 'Active') : 'Offline'}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <UnifiedDeliveryView
+              courierOrders={availableOrders}
+              onAcceptOrder={handleAcceptOrder}
+              onCompleteDelivery={() => {}}
+            />
+          </CardContent>
+        </Card>
       </main>
 
       <CourierKeyboardShortcuts
