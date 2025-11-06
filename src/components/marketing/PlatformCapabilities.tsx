@@ -1,12 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { 
+  Package, 
+  Zap, 
+  ShoppingCart, 
+  BarChart3, 
+  Lock, 
+  Truck,
+  type LucideIcon
+} from 'lucide-react';
 
 interface Capability {
   id: number;
   title: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
   metrics: string;
 }
 
@@ -15,42 +24,42 @@ const capabilities: Capability[] = [
     id: 1,
     title: 'Inventory Management',
     description: 'Real-time tracking across multiple locations with automated alerts',
-    icon: '📦',
+    icon: Package,
     metrics: '99.9% accuracy',
   },
   {
     id: 2,
     title: 'Order Automation',
     description: 'Streamlined order processing with automated workflows',
-    icon: '⚡',
+    icon: Zap,
     metrics: '15hrs/week saved',
   },
   {
     id: 3,
     title: 'Customer Portal',
     description: 'Self-service portal for customers to browse and order',
-    icon: '🛒',
+    icon: ShoppingCart,
     metrics: '24/7 access',
   },
   {
     id: 4,
     title: 'Analytics & Reporting',
     description: 'Powerful insights into your business performance',
-    icon: '📊',
+    icon: BarChart3,
     metrics: 'Real-time data',
   },
   {
     id: 5,
     title: 'Disposable Menus',
     description: 'Secure, encrypted menus for wholesale clients',
-    icon: '🔒',
+    icon: Lock,
     metrics: '100% secure',
   },
   {
     id: 6,
     title: 'Fleet Management',
     description: 'Track deliveries, optimize routes, manage couriers',
-    icon: '🚚',
+    icon: Truck,
     metrics: 'GPS tracking',
   },
 ];
@@ -124,7 +133,9 @@ export function PlatformCapabilities() {
                   whileHover={{ scale: 1.02, y: -2 }}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="text-3xl flex-shrink-0">{capability.icon}</div>
+                    <div className="flex-shrink-0">
+                      <capability.icon className="h-8 w-8 text-primary" />
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-lg text-foreground">{capability.title}</h3>
@@ -160,9 +171,27 @@ export function PlatformCapabilities() {
               >
                 {/* Icon Badge */}
                 <div className="mb-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 text-5xl">
-                    {capabilities[activeCapability].icon}
-                  </div>
+                  <motion.div 
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 5, -5, 0],
+                      }}
+                      transition={{ 
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      {(() => {
+                        const Icon = capabilities[activeCapability].icon;
+                        return <Icon className="h-10 w-10 text-primary" />;
+                      })()}
+                    </motion.div>
+                  </motion.div>
                 </div>
 
                 {/* Content */}
