@@ -124,6 +124,38 @@
     --marketing-bg-subtle: 220 14% 96%;     /* #f9fafb - Gray 50 */
     --marketing-border: 220 13% 91%;        /* #e5e7eb - Gray 200 */
 
+    /* Unified Design System - Spacing Scale (4px base unit) */
+    --spacing-1: 0.25rem;   /* 4px */
+    --spacing-2: 0.5rem;    /* 8px */
+    --spacing-3: 0.75rem;   /* 12px */
+    --spacing-4: 1rem;      /* 16px */
+    --spacing-6: 1.5rem;    /* 24px */
+    --spacing-8: 2rem;      /* 32px */
+    --spacing-12: 3rem;     /* 48px */
+    --spacing-16: 4rem;     /* 64px */
+
+    /* Unified Design System - Border Radius */
+    --radius-sm: 0.5rem;    /* 8px */
+    --radius-md: 0.75rem;   /* 12px */
+    --radius-lg: 1rem;      /* 16px */
+    --radius-xl: 1.5rem;    /* 24px */
+
+    /* Unified Design System - Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--marketing-accent)) 0%, hsl(var(--marketing-secondary)) 50%, hsl(var(--marketing-primary)) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+    /* Unified Design System - Depth Hierarchy Shadows */
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1);
+    --shadow-depth: 0 20px 60px -10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-glow-pulse: 0 0 0 0 rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.3);
+
+    /* Unified Design System - Motion Variables */
+    --motion-reduce: 0;
+    --motion-normal: 1;
+    --motion-preference: var(--motion-normal);
+
     /* Super Admin Colors - Light Theme */
     --super-admin-primary: 239 84% 60%;     /* Indigo - Bright for light theme */
     --super-admin-secondary: 271 81% 60%;   /* Purple - Bright for light theme */
@@ -205,6 +237,38 @@
     --marketing-bg: 222 47% 8%;            /* Dark background */
     --marketing-bg-subtle: 222 40% 12%;     /* Dark subtle */
     --marketing-border: 222 30% 25%;        /* Dark border */
+
+    /* Unified Design System - Spacing Scale (same for dark) */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+
+    /* Unified Design System - Border Radius (same for dark) */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+
+    /* Unified Design System - Gradients (adjusted for dark) */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--marketing-accent)) 0%, hsl(var(--marketing-secondary)) 50%, hsl(var(--marketing-primary)) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+
+    /* Unified Design System - Depth Hierarchy Shadows (adjusted for dark) */
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
+    --shadow-depth: 0 20px 60px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-glow-pulse: 0 0 0 0 rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
+
+    /* Unified Design System - Motion Variables */
+    --motion-reduce: 0;
+    --motion-normal: 1;
+    --motion-preference: var(--motion-normal);
 
     /* Super Admin Colors - Dark Theme */
     --super-admin-primary: 239 84% 45%;     /* Indigo - Muted for dark theme */
@@ -854,5 +918,184 @@
 
   .progress-bar {
     animation: progress 1s ease-out;
+  }
+
+  /* Glassmorphism Utility Classes */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .dark .glass-nav {
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .animate-on-scroll,
+    .stagger-children > * {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* Mobile-First Enhancements */
+  @media (max-width: 768px) {
+    /* Touch-optimized tap targets - minimum 44x44px */
+    button,
+    a,
+    [role="button"],
+    input[type="button"],
+    input[type="submit"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Thumb-friendly CTA spacing */
+    .mobile-cta {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1rem;
+      background: hsl(var(--marketing-bg));
+      border-top: 1px solid hsl(var(--marketing-border));
+      z-index: 40;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Larger touch targets for interactive elements */
+    .touch-target {
+      min-height: 48px;
+      min-width: 48px;
+      padding: 0.75rem;
+    }
+
+    /* Progressive disclosure - hide on mobile, show on click */
+    .mobile-collapsible {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .mobile-collapsible.open {
+      max-height: 1000px;
+      transition: max-height 0.5s ease-in;
+    }
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    /* Better tap feedback */
+    button:active,
+    a:active,
+    [role="button"]:active {
+      transform: scale(0.95);
+      transition: transform 0.1s;
+    }
+
+    /* Remove hover states on touch devices */
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+
+    .hover\:shadow-xl:hover {
+      box-shadow: none;
+    }
+  }
+
+  /* Safe area insets for notched devices */
+  @supports (padding: max(0px)) {
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .safe-area-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+
+    .safe-area-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+
+    .safe-area-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Glow Effects */
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: var(--shadow-glow-pulse);
+    }
+    50% {
+      box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6), 0 0 30px rgba(37, 99, 235, 0.4);
+    }
+  }
+
+  /* Depth Utilities */
+  .depth-1 {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .depth-2 {
+    box-shadow: var(--shadow-md);
+  }
+
+  .depth-3 {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .depth-4 {
+    box-shadow: var(--shadow-depth);
+  }
+
+  /* Gradient Text */
+  .gradient-text-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-secondary {
+    background: var(--gradient-secondary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { LucideIcon, ArrowRight } from "lucide-react";
+import { AnimatedIcon } from "./AnimatedIcon";
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -12,9 +13,11 @@ export function FeatureCard({ icon: Icon, title, description, link }: FeatureCar
   const content = (
     <div className="p-6 rounded-xl border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] hover:border-[hsl(var(--marketing-primary))]/50 transition-all card-hover group">
       <div className="w-12 h-12 rounded-xl bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mb-4 group-hover:bg-[hsl(var(--marketing-primary))]/20 transition-colors">
-        <Icon className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
+        <AnimatedIcon animation="morph" hover size={24} color="hsl(var(--marketing-primary))">
+          <Icon className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
+        </AnimatedIcon>
       </div>
-      <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))]">{title}</h3>
+      <h3 className="text-xl font-bold mb-2 text-[hsl(var(--marketing-text))] group-hover:gradient-text-primary transition-all">{title}</h3>
       <p className="text-[hsl(var(--marketing-text-light))] mb-4">{description}</p>
       {link && (
         <Link to={link} className="inline-flex items-center text-[hsl(var(--marketing-primary))] font-medium hover:gap-2 transition-all">

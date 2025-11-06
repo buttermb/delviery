@@ -1,13 +1,48 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function MarketingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show nav when scrolled past threshold
+      setIsScrolled(currentScrollY > 50);
+      
+      // Hide/show based on scroll direction
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   return (
-    <nav className="border-b border-[hsl(var(--marketing-border))] backdrop-blur-sm sticky top-0 z-50 bg-[hsl(var(--marketing-bg))]/80">
+    <AnimatePresence>
+      {isVisible && (
+        <motion.nav
+          className={`glass-nav border-b border-[hsl(var(--marketing-border))] sticky top-0 z-50 transition-all ${
+            isScrolled ? 'shadow-md' : ''
+          }`}
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -100, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold text-[hsl(var(--marketing-text))]">
           Dev<span className="text-[hsl(var(--marketing-primary))]">Panel</span>
@@ -62,8 +97,14 @@ export function MarketingNav() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
-          <div className="container mx-auto px-4 py-4 space-y-4">
+        <motion.div
+          className="md:hidden border-t border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="container mx-auto px-4 py-4 space-y-4 safe-area-bottom">
             <Link
               to="/features"
               className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
@@ -105,9 +146,11 @@ export function MarketingNav() {
               </Link>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
-    </nav>
+        </motion.nav>
+      )}
+    </AnimatePresence>
   );
 }
 

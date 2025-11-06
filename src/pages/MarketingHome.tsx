@@ -2,17 +2,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   Smartphone, 
-  Shield, 
   Package, 
   Zap, 
   Users, 
   BarChart3,
-  CheckCircle,
   ArrowRight,
-  Star,
-  Play,
-  TrendingUp,
-  Lock as LockIcon
+  CheckCircle,
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -21,7 +16,31 @@ import { FeatureCard } from "@/components/marketing/FeatureCard";
 import { StatCard } from "@/components/marketing/StatCard";
 import { TestimonialCard } from "@/components/marketing/TestimonialCard";
 import { CTASection } from "@/components/marketing/CTASection";
+import { HeroSection } from "@/components/marketing/HeroSection";
+import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
+import { SectionTransition } from "@/components/marketing/SectionTransition";
+import { lazy, Suspense } from "react";
 import { useEffect, useState } from "react";
+
+// Lazy load heavy components for better performance
+const LiveActivitySection = lazy(() => import("@/components/marketing/LiveActivitySection").then(m => ({ default: m.LiveActivitySection })));
+const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
+const CustomerSuccessTimeline = lazy(() => import("@/components/marketing/CustomerSuccessTimeline").then(m => ({ default: m.CustomerSuccessTimeline })));
+const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
+const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
+const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
+const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
+const AnimatedHowItWorks = lazy(() => import("@/components/marketing/AnimatedHowItWorks").then(m => ({ default: m.AnimatedHowItWorks })));
+const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
+const FeatureExplorer = lazy(() => import("@/components/marketing/FeatureExplorer").then(m => ({ default: m.FeatureExplorer })));
+const InteractiveDashboardShowcase = lazy(() => import("@/components/marketing/InteractiveDashboardShowcase").then(m => ({ default: m.InteractiveDashboardShowcase })));
+
+// Loading fallback component
+const SectionLoader = () => (
+  <div className="py-20 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-[hsl(var(--marketing-primary))] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 export default function MarketingHome() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -114,135 +133,34 @@ export default function MarketingHome() {
         }}
       />
       
+      <ScrollProgressIndicator />
       <MarketingNav />
 
       {/* SECTION 1: HERO */}
-      <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              The Modern CRM for<br />
-              Wholesale Distributors
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
-              Manage customers, products, orders, and inventory in one powerful platform
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 mb-8 text-sm md:text-base">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span>Disposable Encrypted Menus</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span>Real-time Inventory Tracking</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span>Order Management & Automation</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                <span>Customer Portal Included</span>
-              </div>
-            </div>
+      <HeroSection />
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Link to="/signup">
-                <Button size="lg" className="bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-bg))]/90 h-14 px-8 text-lg font-semibold">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/demo">
-                <Button size="lg" variant="outline" className="border-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-bg))] hover:bg-[hsl(var(--marketing-bg))]/10 h-14 px-8 text-lg">
-                  <Play className="mr-2 h-5 w-5" />
-                  Schedule Demo
-                </Button>
-              </Link>
-            </div>
+      {/* SECTION 2: LIVE ACTIVITY */}
+      <SectionTransition variant="fade">
+        <Suspense fallback={<SectionLoader />}>
+          <LiveActivitySection />
+        </Suspense>
+      </SectionTransition>
 
-            <p className="text-sm text-white/80 mb-8">
-              Trusted by 400+ distributors • $1.4M orders/month
-            </p>
+      {/* SECTION 2B: DASHBOARD SHOWCASE */}
+      <SectionTransition variant="fade" delay={0.1}>
+        <Suspense fallback={<SectionLoader />}>
+          <InteractiveDashboardShowcase />
+        </Suspense>
+      </SectionTransition>
 
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-6 mb-12">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">Bank-Level Security</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <CheckCircle className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">GDPR Compliant</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                <LockIcon className="h-5 w-5 text-white" />
-                <span className="text-sm text-white font-medium">256-bit SSL</span>
-              </div>
-            </div>
+      {/* SECTION 3: PROBLEM/SOLUTION */}
+      <SectionTransition variant="fade" delay={0.1}>
+        <Suspense fallback={<SectionLoader />}>
+          <ProblemSolutionSection />
+        </Suspense>
+      </SectionTransition>
 
-            {/* Dashboard Preview */}
-            <div className="mt-12 rounded-2xl overflow-hidden shadow-2xl border-4 border-[hsl(var(--marketing-bg))]/20 bg-gradient-to-br from-white to-gray-100">
-              <div className="p-8">
-                <div className="space-y-4">
-                  {/* Mock Dashboard Header */}
-                  <div className="flex items-center justify-between pb-4 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-500" />
-                      <div>
-                        <div className="h-3 w-32 bg-gray-300 rounded mb-2" />
-                        <div className="h-2 w-24 bg-gray-200 rounded" />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="h-8 w-20 bg-emerald-500 rounded" />
-                      <div className="h-8 w-20 bg-gray-200 rounded" />
-                    </div>
-                  </div>
-                  {/* Mock Stats Cards */}
-                  <div className="grid grid-cols-4 gap-4 py-4">
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-emerald-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-blue-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-purple-500/20 rounded" />
-                    </div>
-                    <div className="p-4 bg-white rounded-lg shadow">
-                      <div className="h-2 w-16 bg-gray-200 rounded mb-3" />
-                      <div className="h-6 w-20 bg-orange-500/20 rounded" />
-                    </div>
-                  </div>
-                  {/* Mock Chart */}
-                  <div className="p-6 bg-white rounded-lg shadow">
-                    <div className="h-3 w-32 bg-gray-300 rounded mb-4" />
-                    <div className="flex items-end gap-2 h-32">
-                      {[40, 70, 50, 80, 60, 90, 75, 85].map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-t"
-                          style={{ height: `${height}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 2: SOCIAL PROOF */}
+      {/* SECTION 4: SOCIAL PROOF */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -280,7 +198,21 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* SECTION 3: KEY FEATURES */}
+      {/* SECTION 5: PLATFORM CAPABILITIES */}
+      <SectionTransition variant="fade">
+        <Suspense fallback={<SectionLoader />}>
+          <PlatformCapabilities />
+        </Suspense>
+      </SectionTransition>
+
+      {/* SECTION 5B: FEATURE EXPLORER */}
+      <SectionTransition variant="fade" delay={0.1}>
+        <Suspense fallback={<SectionLoader />}>
+          <FeatureExplorer />
+        </Suspense>
+      </SectionTransition>
+
+      {/* SECTION 5C: KEY FEATURES GRID */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -306,67 +238,39 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* SECTION 4: HOW IT WORKS */}
-      <section className="py-20 bg-muted/30">
+      {/* SECTION 6: CUSTOMER SUCCESS */}
+      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              How DevPanel Works
-            </h2>
-            <p className="text-xl text-muted-foreground mb-12">
-              Get started in minutes, not months
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">✏️</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 1<br />Sign Up</h3>
-                <p className="text-muted-foreground">
-                  Create your free account in 60 seconds
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">📥</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 2<br />Import Data</h3>
-                <p className="text-muted-foreground">
-                  Import your products & customers (or add them manually)
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🚀</span>
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-foreground">STEP 3<br />Go Live</h3>
-                <p className="text-muted-foreground">
-                  Start taking orders and managing your business
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-card p-6 rounded-xl border border-border mb-8">
-              <p className="text-foreground italic">
-                "Setup took 10 minutes. We were fully operational the same day."
-              </p>
-              <p className="mt-2 font-medium text-foreground">
-                - Sarah Chen, Valley Distribution
-              </p>
-            </div>
-
-            <Link to="/signup">
-              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 px-8">
-                Start Your Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
+          <Suspense fallback={<SectionLoader />}>
+            <CustomerSuccessTimeline />
+          </Suspense>
         </div>
       </section>
 
-      {/* SECTION 5: PRICING PREVIEW */}
+      {/* SECTION 7: HOW IT WORKS */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <Suspense fallback={<SectionLoader />}>
+            <AnimatedHowItWorks />
+          </Suspense>
+        </div>
+      </section>
+
+      {/* SECTION 8: COMPARISON */}
+      <SectionTransition variant="fade">
+        <Suspense fallback={<SectionLoader />}>
+          <ComparisonSection />
+        </Suspense>
+      </SectionTransition>
+
+      {/* SECTION 9: INTEGRATION */}
+      <SectionTransition variant="fade" delay={0.1}>
+        <Suspense fallback={<SectionLoader />}>
+          <IntegrationEcosystem />
+        </Suspense>
+      </SectionTransition>
+
+      {/* SECTION 10: PRICING PREVIEW */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -466,6 +370,13 @@ export default function MarketingHome() {
               </Button>
             </Link>
           </div>
+
+          {/* ROI Calculator */}
+          <div className="max-w-2xl mx-auto mt-12">
+            <Suspense fallback={<SectionLoader />}>
+              <ROICalculator />
+            </Suspense>
+          </div>
         </div>
       </section>
 
@@ -551,6 +462,11 @@ export default function MarketingHome() {
 
       {/* SECTION 9: FOOTER */}
       <MarketingFooter />
+
+      {/* Floating Chat Button */}
+      <Suspense fallback={null}>
+        <FloatingChatButton />
+      </Suspense>
     </div>
   );
 }
