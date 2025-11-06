@@ -95,6 +95,9 @@ export function ParticleBackground() {
             background: 'rgba(255, 255, 255, 0.3)',
             x: parallaxX,
             y: parallaxY,
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
+            transform: 'translate3d(0, 0, 0)',
           }}
           animate={{
             y: [0, -20, -10, -30, 0],

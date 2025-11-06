@@ -1,4 +1,4 @@
-/* Custom Marketing Animations */
+/* Custom Marketing Animations - Mobile Optimized */
 
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -11,22 +11,36 @@
   }
 }
 
-/* Background particle animation */
+/* Reduce animations on mobile for better performance */
+@media (max-width: 768px) {
+  * {
+    animation-duration: 0.4s !important;
+  }
+  
+  .particle,
+  .badge-shine::after,
+  .pulse-glow,
+  .gradient-border {
+    animation: none !important;
+  }
+}
+
+/* Background particle animation - GPU accelerated */
 @keyframes float-particles {
   0%, 100% {
-    transform: translateY(0) translateX(0);
+    transform: translate3d(0, 0, 0);
     opacity: 0.3;
   }
   25% {
-    transform: translateY(-20px) translateX(10px);
+    transform: translate3d(10px, -20px, 0);
     opacity: 0.5;
   }
   50% {
-    transform: translateY(-10px) translateX(-10px);
+    transform: translate3d(-10px, -10px, 0);
     opacity: 0.4;
   }
   75% {
-    transform: translateY(-30px) translateX(5px);
+    transform: translate3d(5px, -30px, 0);
     opacity: 0.6;
   }
 }
@@ -38,6 +52,9 @@
   background: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   animation: float-particles 10s infinite ease-in-out;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
 .particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
@@ -242,29 +259,40 @@
   animation: scale-in 0.4s ease-out forwards;
 }
 
-/* Hover lift effect */
+/* Hover lift effect - GPU accelerated */
 .hover-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
 .hover-lift:hover {
-  transform: translateY(-8px);
+  transform: translate3d(0, -8px, 0);
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.2);
 }
 
-/* Diagonal stagger entrance */
+@media (max-width: 768px) {
+  .hover-lift:hover {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+/* Diagonal stagger entrance - GPU accelerated */
 .diagonal-stagger {
   animation: diagonal-stagger 0.6s ease-out forwards;
   opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 @keyframes diagonal-stagger {
   from {
-    transform: translate(-30px, 30px);
+    transform: translate3d(-30px, 30px, 0);
     opacity: 0;
   }
   to {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
     opacity: 1;
   }
 }

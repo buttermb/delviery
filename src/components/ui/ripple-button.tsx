@@ -59,9 +59,11 @@ export function RippleButton({
               left: ripple.x,
               top: ripple.y,
               backgroundColor: rippleColor,
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
             }}
-            initial={{ width: 0, height: 0, opacity: 0.8, x: '-50%', y: '-50%' }}
-            animate={{ width: 500, height: 500, opacity: 0 }}
+            initial={{ width: 0, height: 0, opacity: 0.8, x: '-50%', y: '-50%', scale: 1 }}
+            animate={{ width: 500, height: 500, opacity: 0, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           />

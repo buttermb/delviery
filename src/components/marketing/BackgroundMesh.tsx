@@ -7,43 +7,50 @@ interface BackgroundMeshProps {
 export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
   return (
     <div className={`absolute inset-0 w-full h-full overflow-hidden ${className}`}>
-      {/* Multiple gradient layers with different speeds */}
+      {/* Multiple gradient layers - optimized for mobile with GPU acceleration */}
       <motion.div
-        className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-40 md:opacity-40 hidden md:block"
         style={{
           background: 'radial-gradient(circle at 20% 50%, hsl(217, 91%, 55%) 0%, transparent 50%), radial-gradient(circle at 80% 80%, hsl(271, 81%, 56%) 0%, transparent 50%), radial-gradient(circle at 40% 20%, hsl(160, 84%, 35%) 0%, transparent 50%)',
+          willChange: 'opacity',
+          backfaceVisibility: 'hidden',
         }}
         animate={{
-          backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+          opacity: [0.3, 0.5, 0.3],
         }}
         transition={{
           duration: 20,
           repeat: Infinity,
-          ease: 'linear',
+          ease: 'easeInOut',
         }}
       />
       <motion.div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-30 md:opacity-30 hidden md:block"
         style={{
           background: 'radial-gradient(circle at 60% 30%, hsl(271, 81%, 56%) 0%, transparent 40%), radial-gradient(circle at 30% 70%, hsl(217, 91%, 55%) 0%, transparent 40%)',
+          willChange: 'opacity',
+          backfaceVisibility: 'hidden',
         }}
         animate={{
-          backgroundPosition: ['100% 100%', '0% 0%', '100% 100%'],
+          opacity: [0.2, 0.4, 0.2],
         }}
         transition={{
           duration: 25,
           repeat: Infinity,
-          ease: 'linear',
+          ease: 'easeInOut',
         }}
       />
       <motion.div
         className="absolute inset-0 opacity-20"
         style={{
           background: 'radial-gradient(circle at 50% 50%, hsl(160, 84%, 35%) 0%, transparent 60%)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+          transform: 'translate3d(0, 0, 0)',
         }}
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.2, 0.3, 0.2],
+          scale: [1, 1.05, 1],
+          opacity: [0.2, 0.25, 0.2],
         }}
         transition={{
           duration: 15,
