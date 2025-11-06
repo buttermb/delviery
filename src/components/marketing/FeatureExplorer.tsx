@@ -9,6 +9,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { AnimatedIcon } from './AnimatedIcon';
+import { FeatureDemoPreview } from './demos/FeatureDemoPreview';
 
 interface Feature {
   id: string;
@@ -230,14 +231,9 @@ export function FeatureExplorer() {
                       ))}
                     </div>
 
-                    {/* Preview Placeholder */}
-                    <div className="aspect-video rounded-lg bg-gradient-to-br from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-accent))]/10 border border-border flex items-center justify-center">
-                      <div className="text-center">
-                        <AnimatedIcon animation="glow" size={48} color="hsl(var(--marketing-primary))">
-                          <activeFeature.icon className="h-12 w-12 text-[hsl(var(--marketing-primary))]" />
-                        </AnimatedIcon>
-                        <p className="text-sm text-muted-foreground mt-2">Feature Preview</p>
-                      </div>
+                    {/* Interactive Demo */}
+                    <div className="aspect-video rounded-lg border border-border overflow-hidden">
+                      <FeatureDemoPreview featureId={activeFeature.id} />
                     </div>
                   </div>
                 </div>

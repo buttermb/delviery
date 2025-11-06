@@ -12,10 +12,10 @@ import { TrustBadgesCluster } from "./TrustBadgesCluster";
 
 export function HeroSection() {
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 500], [0, 150]);
-  const y2 = useTransform(scrollY, [0, 500], [0, 100]);
-  const y3 = useTransform(scrollY, [0, 500], [0, 50]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const y1 = useTransform(scrollY, [0, 500], [0, 100]);
+  const y2 = useTransform(scrollY, [0, 500], [0, 70]);
+  const y3 = useTransform(scrollY, [0, 500], [0, 40]);
+  const opacity = useTransform(scrollY, [200, 600], [1, 0.3]);
 
   const benefits = [
     "Manage orders.",

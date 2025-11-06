@@ -14,7 +14,7 @@ import {
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { FeatureCard } from "@/components/marketing/FeatureCard";
+import { FlippableFeatureCard } from "@/components/marketing/FlippableFeatureCard";
 import { StatCard } from "@/components/marketing/StatCard";
 import { TestimonialCard } from "@/components/marketing/TestimonialCard";
 import { CTASection } from "@/components/marketing/CTASection";
@@ -203,7 +203,7 @@ export default function MarketingHome() {
       </SectionTransition>
 
       {/* SECTION 5B: FEATURE EXPLORER */}
-      <SectionTransition variant="fade" delay={0.1}>
+      <SectionTransition variant="fade">
         <Suspense fallback={<SectionLoader />}>
           <FeatureExplorer />
         </Suspense>
@@ -220,7 +220,23 @@ export default function MarketingHome() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {features.map((feature, index) => (
-              <FeatureCard key={index} {...feature} />
+              <FlippableFeatureCard 
+                key={index} 
+                {...feature}
+                benefits={
+                  feature.title === 'DISPOSABLE MENUS' ? ['256-bit encryption', 'Auto-expiration', 'One-time view', 'QR code sharing'] :
+                  feature.title === 'ENCRYPTED & SECURE' ? ['Bank-level security', 'GDPR compliant', 'Regular audits', 'Data protection'] :
+                  feature.title === 'INVENTORY TRACKING' ? ['Multi-location', 'Real-time sync', 'Low stock alerts', 'Barcode scanning'] :
+                  feature.title === 'AUTOMATION' ? ['Save 15hrs/week', 'Auto-confirmations', 'Smart workflows', 'Email notifications'] :
+                  feature.title === 'CUSTOMER PORTAL' ? ['24/7 availability', 'Mobile friendly', 'Self-service', 'Order history'] :
+                  ['Real-time data', 'Custom reports', 'Sales insights', 'Export options']
+                }
+                metric={
+                  feature.title === 'AUTOMATION' ? { label: 'Time Saved', value: '15hrs/wk' } :
+                  feature.title === 'DISPOSABLE MENUS' ? { label: 'Security', value: '256-bit' } :
+                  { label: 'Efficiency', value: '+75%' }
+                }
+              />
             ))}
           </div>
 
