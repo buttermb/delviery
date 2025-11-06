@@ -37,21 +37,23 @@ if (import.meta.env.PROD) {
   }
 }
 
-// Register service worker (production only)
+// Register service worker (production only) - defer to not block render
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', async () => {
-    try {
-      // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js?v=10');
-      console.log('[APP] ServiceWorker registered:', registration.scope);
-      
-      // Only activate new service workers, don't force reload
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  // Wait 3 seconds after load to register SW so it doesn't block initial render
+  window.addEventListener('load', () => {
+    setTimeout(async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js?v=10');
+        console.log('[APP] ServiceWorker registered:', registration.scope);
+        
+        // Only activate new service workers, don't force reload
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      } catch (error) {
+        console.error('[APP] ServiceWorker registration failed:', error);
       }
-    } catch (error) {
-      console.error('[APP] ServiceWorker registration failed:', error);
-    }
+    }, 3000);
   });
 }
 
@@ -93,6 +95,13 @@ try {
   
   if (!rootElement) {
     throw new Error('Root element not found');
+  }
+  
+  // Remove initial loader when React is ready
+  const initialLoader = document.getElementById('app-loader');
+  if (initialLoader) {
+    initialLoader.classList.add('fade-out');
+    setTimeout(() => initialLoader.remove(), 300);
   }
   
   createRoot(rootElement).render(
