@@ -7,7 +7,7 @@ import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { MapPin, AlertCircle } from "lucide-react";
 
 // Mapbox token
-const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 export function TerritoryMapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -17,6 +17,7 @@ export function TerritoryMapView() {
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') return;
 
     try {
       mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -150,15 +151,15 @@ export function TerritoryMapView() {
     });
   }, [mapLoaded]);
 
-  if (!MAPBOX_TOKEN || MAPBOX_TOKEN.includes('example')) {
+  if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
     return (
       <Card className="p-6">
         <div className="flex items-center gap-3 text-amber-600">
           <AlertCircle className="h-5 w-5" />
           <div>
-            <h3 className="font-semibold">Mapbox Token Required</h3>
+            <h3 className="font-semibold">Map Configuration Required</h3>
             <p className="text-sm text-muted-foreground">
-              Add your Mapbox public token to display the territory map.
+              The Mapbox token needs to be configured. Please contact support.
             </p>
           </div>
         </div>
