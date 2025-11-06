@@ -165,19 +165,5 @@
     </div>
     
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Remove loader once React mounts -->
-    <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        const loader = document.getElementById('app-loader');
-        if (loader) {
-          // Keep loader for at least 300ms for smooth transition
-          setTimeout(() => {
-            loader.classList.add('fade-out');
-            setTimeout(() => loader.remove(), 300);
-          }, 300);
-        }
-      });
-    </script>
   </body>
 </html>
