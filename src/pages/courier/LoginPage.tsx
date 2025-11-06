@@ -35,41 +35,61 @@ export default function CourierLoginPage() {
 
       if (authError) throw authError;
 
-      // Check if user is a courier
-      const { data: courierData, error: courierError } = await supabase
+      // Check if user is a courier or runner
+      const { data: courierData } = await supabase
         .from('couriers')
         .select('id, is_active, admin_pin')
         .eq('user_id', authData.user.id)
-        .single();
+        .maybeSingle();
 
-      if (courierError || !courierData) {
-        await supabase.auth.signOut();
-        throw new Error('Not authorized as a courier');
-      }
-
-      if (!courierData.is_active) {
-        await supabase.auth.signOut();
-        throw new Error('Your courier account is inactive. Contact admin.');
-      }
-
-      // Check if PIN is set
-      if (!courierData.admin_pin) {
+      if (courierData && courierData.is_active) {
+        if (!courierData.admin_pin) {
+          toast({
+            title: "PIN Not Set",
+            description: "Please contact admin to set up your PIN.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          return;
+        }
+        setCourierId(courierData.id);
+        setStep('pin');
         toast({
-          title: "PIN Not Set",
-          description: "Please contact admin to set up your PIN.",
-          variant: "destructive",
+          title: "Enter Your PIN",
+          description: "Enter your 6-digit PIN to continue",
         });
-        await supabase.auth.signOut();
         return;
       }
 
-      // Move to PIN verification step
-      setCourierId(courierData.id);
-      setStep('pin');
-      toast({
-        title: "Enter Your PIN",
-        description: "Enter your 6-digit PIN to continue",
-      });
+      // Check if user is a runner
+      const { data: runnerData } = await supabase
+        .from('wholesale_runners')
+        .select('id, status, admin_pin')
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+      if (runnerData && runnerData.status === 'active') {
+        if (!runnerData.admin_pin) {
+          toast({
+            title: "PIN Not Set",
+            description: "Please contact admin to set up your PIN.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          return;
+        }
+        setCourierId(runnerData.id);
+        setStep('pin');
+        toast({
+          title: "Enter Your PIN",
+          description: "Enter your 6-digit PIN to continue",
+        });
+        return;
+      }
+
+      // Not authorized
+      await supabase.auth.signOut();
+      throw new Error('Not authorized as a courier or runner');
     } catch (error: any) {
       logger.error('Login error', error);
       toast({

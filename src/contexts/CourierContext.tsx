@@ -19,12 +19,15 @@ interface CourierData {
   rating?: number;
   total_deliveries?: number;
   on_time_rate?: number;
+  role: 'courier' | 'runner'; // Added role field
+  tenant_id?: string;
 }
 
 interface CourierContextType {
   courier: CourierData | null;
   loading: boolean;
   isOnline: boolean;
+  role: 'courier' | 'runner' | null;
   toggleOnlineStatus: () => Promise<void>;
   updateLocation: (lat: number, lng: number) => Promise<void>;
   refreshCourier: () => Promise<void>;
@@ -115,35 +118,70 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Query couriers table directly instead of using edge function
-      const { data: courierData, error } = await supabase
+      // Try to fetch as courier first
+      const { data: courierData } = await supabase
         .from('couriers')
-        .select('*')
+        .select('id, email, full_name, phone, vehicle_type, vehicle_make, vehicle_model, vehicle_plate, is_online, commission_rate, current_lat, current_lng, rating, total_deliveries, tenant_id')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (error || !courierData) {
-        // Silently fail if user is not a courier (e.g., admin accessing other pages)
+      if (courierData) {
+        setCourier({
+          id: courierData.id,
+          email: courierData.email,
+          full_name: courierData.full_name,
+          phone: courierData.phone,
+          vehicle_type: courierData.vehicle_type,
+          vehicle_make: courierData.vehicle_make || undefined,
+          vehicle_model: courierData.vehicle_model || undefined,
+          vehicle_plate: courierData.vehicle_plate || undefined,
+          is_online: courierData.is_online,
+          commission_rate: courierData.commission_rate || 30,
+          current_lat: courierData.current_lat,
+          current_lng: courierData.current_lng,
+          rating: courierData.rating || undefined,
+          total_deliveries: courierData.total_deliveries || undefined,
+          role: 'courier',
+          tenant_id: courierData.tenant_id || undefined
+        });
+        setIsOnline(courierData.is_online);
         setLoading(false);
         return;
       }
 
-      setCourier({
-        id: courierData.id,
-        email: courierData.email,
-        full_name: courierData.full_name,
-        phone: courierData.phone,
-        vehicle_type: courierData.vehicle_type,
-        is_online: courierData.is_online,
-        commission_rate: 30, // Default commission rate
-        current_lat: courierData.current_lat || undefined,
-        current_lng: courierData.current_lng || undefined
-      });
-      setIsOnline(courierData.is_online);
+      // Try to fetch as wholesale runner
+      const { data: runnerData } = await supabase
+        .from('wholesale_runners')
+        .select('id, email, full_name, phone, vehicle_type, vehicle_plate, status, current_lat, current_lng, rating, total_deliveries, tenant_id')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (runnerData) {
+        setCourier({
+          id: runnerData.id,
+          email: runnerData.email || session.user.email || '',
+          full_name: runnerData.full_name,
+          phone: runnerData.phone,
+          vehicle_type: runnerData.vehicle_type,
+          vehicle_plate: runnerData.vehicle_plate || undefined,
+          is_online: runnerData.status === 'active',
+          commission_rate: 5,
+          current_lat: runnerData.current_lat,
+          current_lng: runnerData.current_lng,
+          rating: runnerData.rating || undefined,
+          total_deliveries: runnerData.total_deliveries || undefined,
+          role: 'runner',
+          tenant_id: runnerData.tenant_id || undefined
+        });
+        setIsOnline(runnerData.status === 'active');
+        setLoading(false);
+        return;
+      }
+
+      // Not a courier or runner
+      setLoading(false);
     } catch (error) {
-      // Silently fail - user might not be a courier
-      console.log('Not a courier user');
-    } finally {
+      console.log('Not a courier/runner user');
       setLoading(false);
     }
   };
@@ -195,19 +233,49 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     if (!courier) return;
 
     try {
-      console.log('📤 Sending location update to backend:', { lat, lng });
-      const { data, error } = await supabase.functions.invoke('courier-app', {
-        body: {
-          endpoint: 'update-location',
-          lat,
-          lng
-        }
-      });
+      console.log('📤 Sending location update to backend:', { lat, lng, role: courier.role });
 
-      if (error) {
-        console.error('Location update error:', error);
-      } else {
-        console.log('✅ Location updated successfully');
+      if (courier.role === 'courier') {
+        // Update courier location via edge function
+        const { data, error } = await supabase.functions.invoke('courier-app', {
+          body: {
+            endpoint: 'update-location',
+            lat,
+            lng
+          }
+        });
+
+        if (error) {
+          console.error('Courier location update error:', error);
+        } else {
+          console.log('✅ Courier location updated successfully');
+        }
+      } else if (courier.role === 'runner') {
+        // Update runner location directly in database
+        const { error } = await supabase
+          .from('wholesale_runners')
+          .update({
+            current_lat: lat,
+            current_lng: lng,
+            current_location: { lat, lng }
+          })
+          .eq('id', courier.id);
+
+        if (error) {
+          console.error('Runner location update error:', error);
+        } else {
+          console.log('✅ Runner location updated successfully');
+          
+          // Also log to location history
+          await supabase
+            .from('runner_location_history')
+            .insert({
+              runner_id: courier.id,
+              latitude: lat,
+              longitude: lng,
+              recorded_at: new Date().toISOString(),
+            });
+        }
       }
     } catch (error) {
       console.error('Failed to update location:', error);
@@ -223,6 +291,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       courier,
       loading,
       isOnline,
+      role: courier?.role || null,
       toggleOnlineStatus,
       updateLocation,
       refreshCourier

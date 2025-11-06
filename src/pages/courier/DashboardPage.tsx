@@ -20,6 +20,7 @@ import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortc
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
 import AvailableOrderCard from '@/components/courier/AvailableOrderCard';
+import { UnifiedDeliveryView } from '@/components/courier/UnifiedDeliveryView';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { AnimatePresence } from 'framer-motion';
 import {
@@ -48,7 +49,7 @@ interface Stats {
 }
 
 export default function CourierDashboardPage() {
-  const { courier, loading, isOnline, toggleOnlineStatus } = useCourier();
+  const { courier, loading, isOnline, toggleOnlineStatus, role } = useCourier();
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({
     todayDeliveries: 0,

@@ -8292,10 +8292,12 @@ export type Database = {
       }
       wholesale_runners: {
         Row: {
+          admin_pin: string | null
           created_at: string
           current_lat: number | null
           current_lng: number | null
           current_location: Json | null
+          email: string | null
           full_name: string
           id: string
           phone: string
@@ -8304,14 +8306,17 @@ export type Database = {
           tenant_id: string | null
           total_deliveries: number
           updated_at: string
+          user_id: string | null
           vehicle_plate: string | null
           vehicle_type: string
         }
         Insert: {
+          admin_pin?: string | null
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
           current_location?: Json | null
+          email?: string | null
           full_name: string
           id?: string
           phone: string
@@ -8320,14 +8325,17 @@ export type Database = {
           tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
+          user_id?: string | null
           vehicle_plate?: string | null
           vehicle_type: string
         }
         Update: {
+          admin_pin?: string | null
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
           current_location?: Json | null
+          email?: string | null
           full_name?: string
           id?: string
           phone?: string
@@ -8336,6 +8344,7 @@ export type Database = {
           tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
+          user_id?: string | null
           vehicle_plate?: string | null
           vehicle_type?: string
         }
