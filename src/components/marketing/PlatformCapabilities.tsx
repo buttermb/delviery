@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Rotatable3DCard } from './Rotatable3DCard';
 
 interface Capability {
   id: number;
@@ -147,13 +146,51 @@ export function PlatformCapabilities() {
               ))}
             </div>
 
-            {/* 3D Rotatable Preview Card */}
-            <Rotatable3DCard 
-              activeCapability={activeCapability}
-              capability={capabilities[activeCapability]}
-              opacity={opacity}
-              scale={scale}
-            />
+            {/* Feature Preview Card */}
+            <motion.div
+              style={{ opacity, scale }}
+              className="glass-card p-8 rounded-xl border-2 border-border relative overflow-hidden"
+            >
+              <motion.div
+                key={activeCapability}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="relative z-10"
+              >
+                <div className="text-center">
+                  <motion.div
+                    className="text-8xl mb-6"
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {capabilities[activeCapability].icon}
+                  </motion.div>
+                  <h3 className="text-3xl font-bold mb-4 text-foreground">
+                    {capabilities[activeCapability].title}
+                  </h3>
+                  <p className="text-lg text-muted-foreground mb-6">
+                    {capabilities[activeCapability].description}
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white font-bold text-xl">
+                    {capabilities[activeCapability].metrics}
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Background Gradient */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"
+                animate={{
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                }}
+              />
+            </motion.div>
           </div>
         </div>
       </div>
