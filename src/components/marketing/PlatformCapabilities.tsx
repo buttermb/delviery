@@ -149,47 +149,45 @@ export function PlatformCapabilities() {
             {/* Feature Preview Card */}
             <motion.div
               style={{ opacity, scale }}
-              className="glass-card p-8 rounded-xl border-2 border-border relative overflow-hidden"
+              className="relative"
             >
               <motion.div
                 key={activeCapability}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="relative z-10"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="glass-card p-10 rounded-2xl border border-border/50 relative overflow-hidden bg-gradient-to-br from-card to-card/50"
               >
-                <div className="text-center">
-                  <motion.div
-                    className="text-8xl mb-6"
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+                {/* Icon Badge */}
+                <div className="mb-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 text-5xl">
                     {capabilities[activeCapability].icon}
-                  </motion.div>
-                  <h3 className="text-3xl font-bold mb-4 text-foreground">
-                    {capabilities[activeCapability].title}
-                  </h3>
-                  <p className="text-lg text-muted-foreground mb-6">
-                    {capabilities[activeCapability].description}
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white font-bold text-xl">
-                    {capabilities[activeCapability].metrics}
                   </div>
                 </div>
+
+                {/* Content */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-foreground">
+                    {capabilities[activeCapability].title}
+                  </h3>
+                  <p className="text-base text-muted-foreground leading-relaxed">
+                    {capabilities[activeCapability].description}
+                  </p>
+                  
+                  {/* Metric Badge */}
+                  <div className="pt-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <span className="text-sm font-semibold text-primary">
+                        {capabilities[activeCapability].metrics}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Subtle corner accent */}
+                <div className="absolute -right-16 -bottom-16 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
               </motion.div>
-              
-              {/* Background Gradient */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"
-                animate={{
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                }}
-              />
             </motion.div>
           </div>
         </div>
