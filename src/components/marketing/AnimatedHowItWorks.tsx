@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ArrowRight } from '@phosphor-icons/react';
 import { AnimatedIcon } from './AnimatedIcon';
+import { UserPlus, Upload, Rocket, type LucideIcon } from 'lucide-react';
 
 interface Step {
   id: number;
   title: string;
   description: string;
   time: string;
-  icon: string;
+  icon: LucideIcon;
   details: string[];
 }
 
@@ -18,7 +19,7 @@ const steps: Step[] = [
     title: 'Sign Up',
     description: 'Create your free account in 60 seconds',
     time: '1 min',
-    icon: '✏️',
+    icon: UserPlus,
     details: [
       'No credit card required',
       'Instant access',
@@ -30,7 +31,7 @@ const steps: Step[] = [
     title: 'Import Data',
     description: 'Import your products & customers (or add them manually)',
     time: '5 min',
-    icon: '📥',
+    icon: Upload,
     details: [
       'CSV/Excel import support',
       'Manual entry option',
@@ -42,7 +43,7 @@ const steps: Step[] = [
     title: 'Go Live',
     description: 'Start taking orders and managing your business',
     time: '10 min',
-    icon: '🚀',
+    icon: Rocket,
     details: [
       'Create your first menu',
       'Invite customers',
@@ -128,8 +129,8 @@ export function AnimatedHowItWorks() {
                 transition={{ delay: index * 0.2 }}
                 onClick={() => setActiveStep(index)}
               >
-                <motion.div
-                  className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl transition-all ${
+              <motion.div
+                  className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center transition-all ${
                     activeStep === index
                       ? 'bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] scale-110 shadow-lg'
                       : 'bg-muted'
@@ -137,7 +138,7 @@ export function AnimatedHowItWorks() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {step.icon}
+                  <step.icon className={`h-10 w-10 ${activeStep === index ? 'text-white' : 'text-muted-foreground'}`} />
                 </motion.div>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <h3 className="text-xl font-bold text-foreground">{step.title}</h3>
