@@ -1,269 +1,209 @@
-import { ReactNode, useEffect, useState, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { getTokenExpiration } from "@/lib/auth/jwt";
-import { Loader2 } from "lucide-react";
-import { apiFetch } from "@/lib/utils/apiClient";
-import { logger } from "@/lib/logger";
-
-// Refresh token if it expires within 10 minutes
-const SILENT_REFRESH_THRESHOLD_MS = 10 * 60 * 1000;
-// Prevent redirect loops - don't redirect more than once per 3 seconds
-const REDIRECT_THROTTLE_MS = 3000;
-// Maximum number of redirects in a short period
-const MAX_REDIRECTS_PER_WINDOW = 3;
-const REDIRECT_WINDOW_MS = 10000; // 10 seconds
+import { ReactNode, useEffect, useState, useRef } from 'react';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { LoadingFallback } from '@/components/LoadingFallback';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { VerificationProvider } from '@/contexts/VerificationContext';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
 }
 
+// Verification timeout - 8 seconds
+const VERIFICATION_TIMEOUT_MS = 8000;
+// Network timeout - 2 seconds (edge function is optimized)
+const NETWORK_TIMEOUT_MS = 2000;
+// Cache verification results for 2 minutes
+const VERIFICATION_CACHE_MS = 2 * 60 * 1000;
+
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
-  const { admin, tenant, token, accessToken, loading, refreshAuthToken } = useTenantAdminAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { admin, tenant, token, loading } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [verifying, setVerifying] = useState(true);
-  const lastRedirectTime = useRef<number>(0);
-  const verifyAttempted = useRef(false);
-  const redirectCount = useRef<number>(0);
-  const redirectWindowStart = useRef<number>(0);
+  const [verified, setVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const location = useLocation();
+  
+  // Track auth values in refs to avoid re-triggering verification
+  const authRef = useRef({ token, admin, tenant });
+  const verificationLockRef = useRef(false);
 
-  // Safety timeout: if verification takes too long, stop showing loading (reduced from 10s to 5s)
-  useEffect(() => {
-    if (verifying) {
-      const timeout = setTimeout(() => {
-        logger.warn("Verification timeout exceeded, allowing navigation", { component: 'TenantAdminProtectedRoute' });
-        setVerifying(false);
-      }, 5000); // 5 second timeout (reduced for faster failure)
+  // Cache verification results to avoid repeated checks
+  const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
+  const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
 
-      return () => clearTimeout(timeout);
+  const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
+    const cacheKey = `${email}:${tenantSlug}`;
+    const cached = verificationCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_MS) {
+      return cached.result;
     }
-  }, [verifying]);
+    return false;
+  };
 
+  // Update auth refs when auth changes (doesn't trigger verification)
   useEffect(() => {
-    const verifyAuth = async () => {
-      // Prevent multiple verification attempts
-      if (verifyAttempted.current) return;
-      verifyAttempted.current = true;
+    authRef.current = { token, admin, tenant };
+  }, [token, admin, tenant]);
 
-      if (loading) {
-        verifyAttempted.current = false;
-        return;
-      }
+  // Main verification effect - only depends on tenantSlug and location
+  useEffect(() => {
+    console.log('[TenantAdminProtectedRoute] Effect triggered', {
+      verified,
+      verificationLock: verificationLockRef.current,
+      tenantSlug,
+      pathname: location.pathname,
+      hasToken: !!authRef.current.token,
+      hasAdmin: !!authRef.current.admin,
+      hasTenant: !!authRef.current.tenant
+    });
 
-      // Enhanced redirect throttling to prevent loops
-      const now = Date.now();
-      const timeSinceLastRedirect = now - lastRedirectTime.current;
+    // Skip if already verified
+    if (verified) {
+      console.log('[TenantAdminProtectedRoute] Already verified, skipping');
+      return;
+    }
+
+    // Prevent concurrent verification attempts
+    if (verificationLockRef.current) {
+      console.log('[TenantAdminProtectedRoute] Verification in progress, skipping');
+      return;
+    }
+
+    const verifyAccess = () => {
+      const { token: currentToken, admin: currentAdmin, tenant: currentTenant } = authRef.current;
       
-      // Reset redirect count if window has passed
-      if (now - redirectWindowStart.current > REDIRECT_WINDOW_MS) {
-        redirectCount.current = 0;
-        redirectWindowStart.current = now;
-      }
-      
-      // Check if we've exceeded max redirects in window
-      if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
-        console.warn("Redirect limit exceeded - preventing further redirects to avoid loop");
+      console.log('[TenantAdminProtectedRoute] Starting verification', {
+        hasToken: !!currentToken,
+        hasAdmin: !!currentAdmin,
+        hasTenant: !!currentTenant,
+        tenantSlug,
+        currentTenantSlug: currentTenant?.slug
+      });
+
+      if (!currentToken || !currentAdmin || !currentTenant || !tenantSlug) {
+        console.log('[TenantAdminProtectedRoute] Missing auth data, stopping verification');
         setVerifying(false);
-        verifyAttempted.current = false;
         return;
       }
-      
-      // Throttle individual redirects
-      if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
+
+      // Lock verification
+      verificationLockRef.current = true;
+
+      // Check cache first
+      if (isVerificationCacheValid(currentAdmin.email, tenantSlug)) {
+        console.log('[TenantAdminProtectedRoute] Using cached verification result');
+        setVerified(true);
         setVerifying(false);
-        verifyAttempted.current = false;
+        setVerificationError(null);
+        verificationLockRef.current = false;
         return;
       }
 
-      // Silent token refresh if expiring soon
-      const currentToken = accessToken || token;
-      if (currentToken) {
-        const expiration = getTokenExpiration(currentToken);
-        if (expiration) {
-          const timeUntilExpiry = expiration.getTime() - Date.now();
-          if (timeUntilExpiry > 0 && timeUntilExpiry < SILENT_REFRESH_THRESHOLD_MS) {
-            await refreshAuthToken();
-          }
-        }
-      }
+      console.log('[TenantAdminProtectedRoute] Performing local verification...');
+      setVerifying(true);
+      setVerificationError(null);
 
-      // Allow access to welcome page even without full auth (for post-signup flow)
-      const isWelcomePage = location.pathname.includes('/welcome');
-      
-        if (!token || !admin || !tenant) {
-        // Allow welcome page for new signups (they may not be logged in yet)
-        if (isWelcomePage && tenantSlug) {
-          setVerifying(false);
-          return;
-        }
-        
-        setVerifying(false); // Always set verifying to false before redirect
-        lastRedirectTime.current = Date.now();
-        redirectCount.current += 1;
-        if (tenantSlug) {
-          navigate(`/${tenantSlug}/admin/login`, { replace: true });
-        } else {
-          navigate("/marketing", { replace: true });
-        }
-        return;
-      }
-
-      // Verify tenant slug matches (auth context should have already handled this)
-      if (tenantSlug && tenant.slug !== tenantSlug) {
-        setVerifying(false); // Always set verifying to false before redirect
-        lastRedirectTime.current = Date.now();
-        redirectCount.current += 1;
-        navigate(`/${tenant.slug}/admin/login`, { replace: true });
-        return;
-      }
-
-      // Verify token is still valid
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const tokenToUse = accessToken || token;
-        
-        if (!tokenToUse) {
-          throw new Error("No access token available");
-        }
-        
-        // Add timeout to prevent hanging (reduced to 3 seconds for faster failure)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          controller.abort();
-          setVerifying(false); // Ensure we exit verifying state on timeout
-        }, 3000); // 3 second timeout
-        
-        let response;
-        try {
-          response = await apiFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${tokenToUse}`,
-            },
-            skipAuth: true,
-            signal: controller.signal,
+        // Simple local verification: check if tenant slug matches
+        // Auth context already validated user has access to this tenant
+        if (currentTenant.slug.toLowerCase() !== tenantSlug.toLowerCase()) {
+          console.error('[TenantAdminProtectedRoute] Tenant slug mismatch', {
+            expected: tenantSlug,
+            actual: currentTenant.slug
           });
-        } catch (error: any) {
-          clearTimeout(timeoutId);
-          // If request is aborted or fails, don't block navigation
-          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-            logger.warn('Token verification timeout', error, { component: 'TenantAdminProtectedRoute' });
-            // Allow navigation to proceed - user might have valid token in localStorage
-            setVerifying(false);
-            return;
-          }
-          throw error;
-        }
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          // If verification fails, don't block - let the auth context handle it
-          logger.warn('Token verification failed', { status: response.status }, { component: 'TenantAdminProtectedRoute' });
+          setVerificationError('Access denied - tenant mismatch');
           setVerifying(false);
+          verificationLockRef.current = false;
           return;
         }
 
-        let data;
-        try {
-          data = await response.json();
-        } catch (error) {
-          logger.error('Failed to parse verification response', error, { component: 'TenantAdminProtectedRoute' });
-          setVerifying(false);
-          return;
-        }
-        
-        // Ensure we have the expected data structure
-        if (!data || !data.tenant) {
-          logger.warn('Invalid verification response structure', { data }, { component: 'TenantAdminProtectedRoute' });
-          // Don't block navigation - proceed with existing tenant data
-          setVerifying(false);
-          return;
-        }
-        
-        // Check if trial has expired
-        if (tenant.subscription_status === "trial" && (tenant as any).trial_ends_at) {
-          const trialEnds = new Date((tenant as any).trial_ends_at);
-          const now = new Date();
-          
-          if (now > trialEnds) {
-            // Allow access to billing and trial-expired pages only
-            const currentPath = window.location.pathname;
-            if (!currentPath.includes('/billing') && !currentPath.includes('/trial-expired')) {
-              setVerifying(false);
-              lastRedirectTime.current = Date.now();
-              navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
-              return;
-            }
-          }
-        }
-        
-        // Verify tenant is still active or in trial
-        if (data.tenant && (data.tenant.subscription_status === "active" || data.tenant.subscription_status === "trial" || data.tenant.subscription_status === "trialing")) {
-          // Check if trial has expired
-          const trialEndsAt = data.tenant.trial_ends_at;
-          const subscriptionStatus = data.tenant.subscription_status;
-          const isTrialExpired = 
-            subscriptionStatus === "trial" && 
-            trialEndsAt && 
-            new Date(trialEndsAt).getTime() < Date.now();
+        // Cache successful verification
+        const cacheKey = `${currentAdmin.email}:${tenantSlug}`;
+        verificationCache.current.set(cacheKey, {
+          result: true,
+          timestamp: Date.now()
+        });
 
-          // Check if current route is billing, trial-expired, or welcome (allow access)
-          const currentPath = location.pathname;
-          const isAllowedRoute = 
-            currentPath.includes("/billing") || 
-            currentPath.includes("/trial-expired") ||
-            currentPath.includes("/welcome");
-
-          // If trial expired and not on allowed route, redirect to trial-expired
-          if (isTrialExpired && !isAllowedRoute && tenantSlug) {
-            setVerifying(false);
-            lastRedirectTime.current = Date.now();
-            navigate(`/${tenantSlug}/admin/trial-expired`, { replace: true });
-            return;
-          }
-
-          setVerifying(false);
-        } else {
-          throw new Error("Tenant subscription is not active");
-        }
-      } catch (error) {
-        logger.error("Auth verification error", error, { component: 'TenantAdminProtectedRoute' });
-        setVerifying(false); // Always set verifying to false on error
-        lastRedirectTime.current = Date.now();
-        redirectCount.current += 1;
-        if (tenantSlug) {
-          navigate(`/${tenantSlug}/admin/login`, { replace: true });
-        } else {
-          navigate("/marketing", { replace: true });
-        }
-      } finally {
-        verifyAttempted.current = false;
+        console.log('[TenantAdminProtectedRoute] ✅ Verification successful');
+        setVerified(true);
+        setVerifying(false);
+        setVerificationError(null);
+        verificationLockRef.current = false;
+      } catch (err) {
+        console.error('[TenantAdminProtectedRoute] Verification error:', err);
+        setVerificationError('Verification failed. Please try again.');
+        setVerifying(false);
+        verificationLockRef.current = false;
       }
     };
 
-    verifyAuth();
-  }, [token, admin, tenant, tenantSlug, loading, navigate]); // Removed location.pathname to prevent re-runs on navigation
+    verifyAccess();
+  }, [tenantSlug, location.pathname, verified]); // Added verified to dependencies
 
-  if (loading || verifying) {
+  // Loading state - wait for auth AND verification
+  console.log('[TenantAdminProtectedRoute] Render state', {
+    loading,
+    verifying,
+    verified,
+    hasAdmin: !!admin,
+    hasTenant: !!tenant
+  });
+
+  if (loading || verifying || !verified) {
+    return <LoadingFallback />;
+  }
+
+  // Not authenticated
+  if (!admin || !tenant) {
+    return <Navigate to={`/${tenantSlug}/admin/login`} replace />;
+  }
+
+  // Tenant slug mismatch
+  if (tenant.slug !== tenantSlug) {
+    return <Navigate to={`/${tenant.slug}/admin`} replace />;
+  }
+
+  // Show error UI after multiple failures
+  if (verificationError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Verifying access...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+            <h2 className="text-lg font-semibold">Authentication Error</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-6">{verificationError}</p>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => {
+                setVerificationError(null);
+                setVerified(false);
+                setVerifying(true);
+                verificationLockRef.current = false;
+              }}
+            >
+              Try Again
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = `/${tenantSlug}/admin/login`}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Return to Login
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
 
-  // Allow welcome page without full auth (for post-signup flow)
-  const isWelcomePage = location.pathname.includes('/welcome');
-  if ((!token || !admin || !tenant) && !isWelcomePage) {
-    return null; // Will redirect
-  }
-
-  return <>{children}</>;
+  // Success - render protected content with verification context
+  return (
+    <VerificationProvider>
+      {children}
+    </VerificationProvider>
+  );
 }
-

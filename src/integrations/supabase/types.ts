@@ -2566,6 +2566,7 @@ export type Database = {
           show_minimum_order: boolean | null
           show_product_images: boolean | null
           status: Database["public"]["Enums"]["menu_status"]
+          tenant_id: string
           view_limit_per_customer: number | null
           view_limit_period: string | null
         }
@@ -2600,6 +2601,7 @@ export type Database = {
           show_minimum_order?: boolean | null
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          tenant_id: string
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
@@ -2634,10 +2636,19 @@ export type Database = {
           show_minimum_order?: boolean | null
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
+          tenant_id?: string
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_disposable_menus_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       error_logs: {
         Row: {
@@ -7709,6 +7720,7 @@ export type Database = {
           phone: string
           reliability_score: number
           status: string
+          tenant_id: string
           updated_at: string
         }
         Insert: {
@@ -7730,6 +7742,7 @@ export type Database = {
           phone: string
           reliability_score?: number
           status?: string
+          tenant_id: string
           updated_at?: string
         }
         Update: {
@@ -7751,9 +7764,18 @@ export type Database = {
           phone?: string
           reliability_score?: number
           status?: string
+          tenant_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_clients_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_deliveries: {
         Row: {
@@ -7771,6 +7793,7 @@ export type Database = {
           runner_id: string
           scheduled_pickup_time: string | null
           status: string
+          tenant_id: string
           total_value: number | null
           total_weight: number | null
         }
@@ -7789,6 +7812,7 @@ export type Database = {
           runner_id: string
           scheduled_pickup_time?: string | null
           status?: string
+          tenant_id: string
           total_value?: number | null
           total_weight?: number | null
         }
@@ -7807,10 +7831,18 @@ export type Database = {
           runner_id?: string
           scheduled_pickup_time?: string | null
           status?: string
+          tenant_id?: string
           total_value?: number | null
           total_weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_deliveries_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wholesale_deliveries_client_id_fkey"
             columns: ["client_id"]
@@ -7856,6 +7888,7 @@ export type Database = {
           quantity_units: number
           reorder_point: number
           strain_type: string | null
+          tenant_id: string
           terpenes: Json | null
           thc_percentage: number | null
           updated_at: string
@@ -7882,6 +7915,7 @@ export type Database = {
           quantity_units?: number
           reorder_point?: number
           strain_type?: string | null
+          tenant_id: string
           terpenes?: Json | null
           thc_percentage?: number | null
           updated_at?: string
@@ -7908,12 +7942,21 @@ export type Database = {
           quantity_units?: number
           reorder_point?: number
           strain_type?: string | null
+          tenant_id?: string
           terpenes?: Json | null
           thc_percentage?: number | null
           updated_at?: string
           warehouse_location?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_inventory_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_inventory_movements: {
         Row: {
@@ -8079,6 +8122,7 @@ export type Database = {
           payment_status: string
           runner_id: string | null
           status: string
+          tenant_id: string
           total_amount: number
         }
         Insert: {
@@ -8095,6 +8139,7 @@ export type Database = {
           payment_status?: string
           runner_id?: string | null
           status?: string
+          tenant_id: string
           total_amount: number
         }
         Update: {
@@ -8111,9 +8156,17 @@ export type Database = {
           payment_status?: string
           runner_id?: string | null
           status?: string
+          tenant_id?: string
           total_amount?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_wholesale_orders_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wholesale_orders_client_id_fkey"
             columns: ["client_id"]
@@ -8185,6 +8238,7 @@ export type Database = {
           phone: string
           rating: number | null
           status: string
+          tenant_id: string | null
           total_deliveries: number
           updated_at: string
           vehicle_plate: string | null
@@ -8200,6 +8254,7 @@ export type Database = {
           phone: string
           rating?: number | null
           status?: string
+          tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
           vehicle_plate?: string | null
@@ -8215,12 +8270,21 @@ export type Database = {
           phone?: string
           rating?: number | null
           status?: string
+          tenant_id?: string | null
           total_deliveries?: number
           updated_at?: string
           vehicle_plate?: string | null
           vehicle_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_runners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wholesale_suppliers: {
         Row: {
@@ -8258,6 +8322,387 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_action_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          edge_function_name: string | null
+          icon: string | null
+          id: string
+          input_schema: Json
+          is_system: boolean | null
+          name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          edge_function_name?: string | null
+          icon?: string | null
+          id?: string
+          input_schema?: Json
+          is_system?: boolean | null
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          edge_function_name?: string | null
+          icon?: string | null
+          id?: string
+          input_schema?: Json
+          is_system?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      workflow_dead_letter_queue: {
+        Row: {
+          created_at: string | null
+          error_details: Json | null
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          execution_log: Json | null
+          first_failed_at: string
+          id: string
+          last_attempt_at: string
+          manual_retry_requested: boolean | null
+          manual_retry_requested_at: string | null
+          manual_retry_requested_by: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          tenant_id: string | null
+          total_attempts: number | null
+          trigger_data: Json | null
+          updated_at: string | null
+          workflow_execution_id: string
+          workflow_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_details?: Json | null
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          execution_log?: Json | null
+          first_failed_at?: string
+          id?: string
+          last_attempt_at?: string
+          manual_retry_requested?: boolean | null
+          manual_retry_requested_at?: string | null
+          manual_retry_requested_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          total_attempts?: number | null
+          trigger_data?: Json | null
+          updated_at?: string | null
+          workflow_execution_id: string
+          workflow_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          execution_log?: Json | null
+          first_failed_at?: string
+          id?: string
+          last_attempt_at?: string
+          manual_retry_requested?: boolean | null
+          manual_retry_requested_at?: string | null
+          manual_retry_requested_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          total_attempts?: number | null
+          trigger_data?: Json | null
+          updated_at?: string | null
+          workflow_execution_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_dead_letter_queue_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_dead_letter_queue_workflow_execution_id_fkey"
+            columns: ["workflow_execution_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_dead_letter_queue_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_definitions: {
+        Row: {
+          actions: Json
+          conditions: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          name: string
+          retry_config: Json | null
+          run_count: number | null
+          tenant_id: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name: string
+          retry_config?: Json | null
+          run_count?: number | null
+          tenant_id: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          retry_config?: Json | null
+          run_count?: number | null
+          tenant_id?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_definitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_executions: {
+        Row: {
+          completed_at: string | null
+          duration_ms: number | null
+          error_details: Json | null
+          error_message: string | null
+          execution_log: Json | null
+          id: string
+          is_retryable: boolean | null
+          last_error: string | null
+          next_retry_at: string | null
+          retry_count: number | null
+          started_at: string
+          status: string
+          tenant_id: string
+          trigger_data: Json | null
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          error_message?: string | null
+          execution_log?: Json | null
+          id?: string
+          is_retryable?: boolean | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
+          started_at?: string
+          status: string
+          tenant_id: string
+          trigger_data?: Json | null
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          error_message?: string | null
+          execution_log?: Json | null
+          id?: string
+          is_retryable?: boolean | null
+          last_error?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
+          started_at?: string
+          status?: string
+          tenant_id?: string
+          trigger_data?: Json | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_triggers: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          event_type: string
+          id: string
+          table_name: string
+          tenant_id: string
+          workflow_id: string
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          event_type: string
+          id?: string
+          table_name: string
+          tenant_id: string
+          workflow_id: string
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          table_name?: string
+          tenant_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_triggers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_triggers_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_versions: {
+        Row: {
+          actions: Json
+          change_details: Json | null
+          change_summary: string | null
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          restored_from_version: number | null
+          tenant_id: string | null
+          trigger_config: Json | null
+          trigger_type: string
+          version_number: number
+          workflow_id: string
+        }
+        Insert: {
+          actions?: Json
+          change_details?: Json | null
+          change_summary?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          restored_from_version?: number | null
+          tenant_id?: string | null
+          trigger_config?: Json | null
+          trigger_type: string
+          version_number: number
+          workflow_id: string
+        }
+        Update: {
+          actions?: Json
+          change_details?: Json | null
+          change_summary?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          restored_from_version?: number | null
+          tenant_id?: string | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          version_number?: number
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_versions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_versions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -8281,8 +8726,20 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_next_retry_delay: {
+        Args: { p_retry_config: Json; p_retry_count: number }
+        Returns: number
+      }
       calculate_risk_score: { Args: { p_user_id: string }; Returns: number }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      compare_workflow_versions: {
+        Args: {
+          p_version_a: number
+          p_version_b: number
+          p_workflow_id: string
+        }
+        Returns: Json
+      }
       create_courier_pin_session: {
         Args: { p_courier_id: string }
         Returns: string
@@ -8424,6 +8881,10 @@ export type Database = {
       is_admin_user: { Args: never; Returns: boolean }
       is_age_verified: { Args: { _user_id: string }; Returns: boolean }
       is_device_blocked: { Args: { _fingerprint: string }; Returns: boolean }
+      is_error_retryable: {
+        Args: { p_error_type: string; p_retry_config: Json }
+        Returns: boolean
+      }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
@@ -8444,9 +8905,25 @@ export type Database = {
         }
         Returns: string
       }
+      move_to_dead_letter_queue: {
+        Args: { p_execution_id: string }
+        Returns: string
+      }
+      resolve_dead_letter_entry: {
+        Args: { p_dlq_id: string; p_notes?: string; p_user_id: string }
+        Returns: undefined
+      }
       resolve_inventory_alert: {
         Args: { alert_id: string }
         Returns: undefined
+      }
+      restore_workflow_version: {
+        Args: { p_version_number: number; p_workflow_id: string }
+        Returns: Json
+      }
+      retry_from_dead_letter_queue: {
+        Args: { p_dlq_id: string; p_user_id?: string }
+        Returns: string
       }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }

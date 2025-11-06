@@ -50,11 +50,38 @@ const TENANT_KEY = "customer_tenant_data";
 // Bound fetch to prevent "Illegal invocation" error in production builds
 const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
 
+// Validate environment variables
+const validateEnvironment = (): { valid: boolean; error?: string } => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  
+  if (!supabaseUrl) {
+    return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
+  }
+  
+  try {
+    new URL(supabaseUrl);
+  } catch {
+    return { valid: false, error: 'Invalid VITE_SUPABASE_URL format' };
+  }
+  
+  return { valid: true };
+};
+
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Validate environment on mount
+  useEffect(() => {
+    const envCheck = validateEnvironment();
+    if (!envCheck.valid) {
+      logger.error('Environment validation failed:', envCheck.error);
+      console.error('[CustomerAuth] Configuration error:', envCheck.error);
+      setLoading(false);
+    }
+  }, []);
 
   // Initialize from localStorage
   useEffect(() => {
@@ -83,6 +110,11 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const verifyToken = async (tokenToVerify: string) => {
     try {
+      const envCheck = validateEnvironment();
+      if (!envCheck.valid) {
+        throw new Error(envCheck.error || 'Environment configuration error');
+      }
+      
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
@@ -93,7 +125,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Token verification failed");
+        const errorText = await response.text();
+        logger.error("Token verification failed:", response.status, errorText);
+        throw new Error(`Token verification failed: ${response.status}`);
       }
 
       const data = await response.json();
@@ -116,6 +150,11 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string, tenantSlug: string) => {
     try {
+      const envCheck = validateEnvironment();
+      if (!envCheck.valid) {
+        throw new Error(envCheck.error || 'Environment configuration error');
+      }
+      
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
@@ -126,7 +165,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ error: "Login failed" }));
         throw new Error(error.error || "Login failed");
       }
 

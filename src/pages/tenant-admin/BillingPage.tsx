@@ -135,7 +135,7 @@ export default function TenantAdminBillingPage() {
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
     onError: (error: any) => {
-      logger.error('Subscription update error', error, { component: 'BillingPage' });
+      logger.error('Subscription update error', error, { component: 'BillingPage' } as any);
       toast({
         title: 'Update Failed',
         description: error.message || 'Failed to update subscription',

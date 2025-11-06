@@ -1,11 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { hash, compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, hash, compare, corsHeaders } from '../_shared/deps.ts';
 
 // Hash password using bcrypt
 async function hashPassword(password: string): Promise<string> {
@@ -352,28 +345,100 @@ serve(async (req) => {
 
       const token = authHeader.replace('Bearer ', '');
       
-      const { data: { user }, error } = await supabase.auth.getUser(token);
+      // Verify token and get user (fast auth check)
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
-      if (error || !user) {
+      if (authError || !user || !user.email) {
+        console.error('Token verification failed:', authError);
         return new Response(
           JSON.stringify({ error: 'Invalid or expired token' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get tenant_users record to find tenant
-      const { data: tenantUser, error: tenantUserError } = await supabase
-        .from('tenant_users')
-        .select('*, tenants(*)')
-        .eq('user_id', user.id)
+      const userEmail = user.email.toLowerCase();
+      console.log('[VERIFY] Checking access for:', userEmail);
+
+      // Optimized: Check tenant ownership first (single query, no joins)
+      const { data: ownedTenant, error: ownerError } = await supabase
+        .from('tenants')
+        .select('id, business_name, slug, owner_email, owner_name, subscription_plan, subscription_status, trial_ends_at, limits, usage, features')
+        .eq('owner_email', userEmail)
         .maybeSingle();
 
-      if (tenantUserError || !tenantUser) {
+      if (ownerError && ownerError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('[VERIFY] Owner lookup error:', ownerError);
+      }
+
+      if (ownedTenant) {
+        // User is tenant owner - fast path
+        console.log('[VERIFY] User is owner of tenant:', ownedTenant.business_name);
+        
+        const admin = {
+          id: user.id,
+          email: userEmail,
+          name: ownedTenant.owner_name || userEmail.split('@')[0],
+          role: 'owner',
+          tenant_id: ownedTenant.id,
+        };
+
+        const tenant = {
+          id: ownedTenant.id,
+          business_name: ownedTenant.business_name,
+          slug: ownedTenant.slug,
+          owner_email: ownedTenant.owner_email,
+          subscription_plan: ownedTenant.subscription_plan,
+          subscription_status: ownedTenant.subscription_status,
+          trial_ends_at: ownedTenant.trial_ends_at,
+          limits: ownedTenant.limits,
+          usage: ownedTenant.usage,
+          features: ownedTenant.features,
+        };
+
         return new Response(
-          JSON.stringify({ error: 'Tenant access not found' }),
+          JSON.stringify({ user, admin, tenant }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Not owner - check tenant_users (optimized: specific fields only, manual join)
+      console.log('[VERIFY] User not owner, checking tenant_users');
+      
+      const { data: tenantUser, error: tenantUserError } = await supabase
+        .from('tenant_users')
+        .select('id, email, name, role, tenant_id, status')
+        .eq('email', userEmail)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (tenantUserError && tenantUserError.code !== 'PGRST116') {
+        console.error('[VERIFY] Tenant user lookup error:', tenantUserError);
+      }
+
+      if (!tenantUser) {
+        console.log('[VERIFY] No tenant access found for:', userEmail);
+        return new Response(
+          JSON.stringify({ error: 'No tenant access found' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Get tenant info separately (more efficient than nested select)
+      const { data: userTenant, error: userTenantError } = await supabase
+        .from('tenants')
+        .select('id, business_name, slug, owner_email, subscription_plan, subscription_status, trial_ends_at, limits, usage, features')
+        .eq('id', tenantUser.tenant_id)
+        .single();
+
+      if (userTenantError || !userTenant) {
+        console.error('[VERIFY] Tenant lookup error:', userTenantError);
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('[VERIFY] User has access to tenant:', userTenant.business_name);
 
       const admin = {
         id: tenantUser.id,
@@ -384,14 +449,16 @@ serve(async (req) => {
       };
 
       const tenant = {
-        id: tenantUser.tenants.id,
-        business_name: tenantUser.tenants.business_name,
-        slug: tenantUser.tenants.slug,
-        subscription_plan: tenantUser.tenants.subscription_plan,
-        subscription_status: tenantUser.tenants.subscription_status,
-        limits: tenantUser.tenants.limits,
-        usage: tenantUser.tenants.usage,
-        features: tenantUser.tenants.features,
+        id: userTenant.id,
+        business_name: userTenant.business_name,
+        slug: userTenant.slug,
+        owner_email: userTenant.owner_email,
+        subscription_plan: userTenant.subscription_plan,
+        subscription_status: userTenant.subscription_status,
+        trial_ends_at: userTenant.trial_ends_at,
+        limits: userTenant.limits,
+        usage: userTenant.usage,
+        features: userTenant.features,
       };
 
       return new Response(

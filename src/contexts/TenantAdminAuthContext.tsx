@@ -69,6 +69,23 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Bound fetch to prevent "Illegal invocation" error in production builds
 const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
 
+// Validate environment variables
+const validateEnvironment = (): { valid: boolean; error?: string } => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  
+  if (!supabaseUrl) {
+    return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
+  }
+  
+  try {
+    new URL(supabaseUrl);
+  } catch {
+    return { valid: false, error: 'Invalid VITE_SUPABASE_URL format' };
+  }
+  
+  return { valid: true };
+};
+
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -77,6 +94,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Validate environment on mount
+  useEffect(() => {
+    const envCheck = validateEnvironment();
+    if (!envCheck.valid) {
+      logger.error('Environment validation failed:', envCheck.error);
+      console.error('[TenantAdminAuth] Configuration error:', envCheck.error);
+      setLoading(false);
+    }
+  }, []);
 
   // Sync with Supabase auth state changes
   useEffect(() => {
@@ -169,6 +196,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const maxRetries = 3;
     
     try {
+      const envCheck = validateEnvironment();
+      if (!envCheck.valid) {
+        throw new Error(envCheck.error || 'Environment configuration error');
+      }
+      
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       
       // Check if token will expire soon (within 60 seconds)

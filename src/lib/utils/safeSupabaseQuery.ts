@@ -28,7 +28,7 @@ export async function columnExists(
     
     // Other errors might mean table doesn't exist, but we'll assume column doesn't exist
     if (error) {
-      logger.debug(`Column check error for ${table}.${column}`, error, { component: 'safeSupabaseQuery' });
+      logger.debug(`Column check error for ${table}.${column}`, { error, component: 'safeSupabaseQuery' });
       return false;
     }
     
@@ -135,7 +135,8 @@ export async function safeQuery<T = any>(
       query = query.limit(limit);
     }
 
-    return await query;
+    const result = await query;
+    return { data: result.data as T[] | null, error: result.error };
   } catch (error) {
     logger.error(`Safe query failed for ${table}`, error, { component: 'safeSupabaseQuery' });
     return { data: null, error };

@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface CloneMenuDialogProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface CloneMenuDialogProps {
 }
 
 export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDialogProps) {
+  const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(false);
   const [newTitle, setNewTitle] = useState(`${menu?.title || ''} (Copy)`);
   const [cloneSettings, setCloneSettings] = useState({
@@ -42,6 +44,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
       const { data: newMenu, error: menuError } = await supabase
         .from('disposable_menus')
         .insert({
+          tenant_id: tenant?.id || menu.tenant_id,
           name: newTitle.trim(),
           description: menu.description,
           encrypted_url_token: crypto.randomUUID().replace(/-/g, '').substring(0, 24),

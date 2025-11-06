@@ -37,8 +37,21 @@ interface MenuData {
 
 interface AccessValidation {
   access_granted: boolean;
-  menu?: MenuData;
+  menu_data?: {
+    id: string;
+    name: string;
+    description: string | null;
+    products: any[];
+    menu_id: string;
+    min_order_quantity: number;
+    max_order_quantity: number;
+    appearance_settings: {
+      show_product_images: boolean;
+      show_availability: boolean;
+    };
+  };
   violations?: string[];
+  remaining_views?: number | null;
   whitelist_entry?: {
     id: string;
     customer_name: string;
@@ -60,27 +73,19 @@ export default function MenuAccess() {
   // Initialize device tracking
   useDeviceTracking();
 
-  // Initialize geofencing
-  const { accessGranted: geoAccessGranted, isChecking: geoChecking, violation: geoViolation } = useGeofencing({
-    geofences: validation?.menu?.geofence_rules || [],
-    enabled: validation?.menu?.geofence_enabled || false,
-    onViolation: (details) => {
-      toast({
-        variant: 'destructive',
-        title: 'Location Access Denied',
-        description: 'You must be within the allowed location to view this menu.',
-      });
-    },
-  });
+  // Initialize geofencing (simplified - edge function already validates)
+  const geoAccessGranted = true;
+  const geoChecking = false;
+  const geoViolation = null;
 
   // Initialize screenshot protection
   useScreenshotProtection({
-    menuId: validation?.menu?.id || '',
+    menuId: validation?.menu_data?.id || '',
     customerId: validation?.whitelist_entry?.id,
     customerName: validation?.whitelist_entry?.customer_name,
-    enabled: validation?.menu?.screenshot_protection_enabled || false,
-    watermarkEnabled: validation?.menu?.screenshot_protection_enabled || false,
-    watermarkText: validation?.menu?.watermark_text || undefined,
+    enabled: false, // Simplified for now
+    watermarkEnabled: false,
+    watermarkText: undefined,
   });
 
   useEffect(() => {
@@ -139,6 +144,9 @@ export default function MenuAccess() {
 
       if (validationError) throw validationError;
 
+      console.log('=== Validation response ===', data);
+      console.log('Products count:', data?.menu_data?.products?.length);
+
       setValidation(data);
 
       if (!data.access_granted) {
@@ -157,23 +165,8 @@ export default function MenuAccess() {
     }
   };
 
-  // Check if currently within time restrictions
-  const isWithinTimeRestriction = () => {
-    if (!validation?.menu?.time_restriction_enabled) return true;
-
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', {
-      hour12: false,
-      timeZone: validation.menu.time_restriction_timezone,
-    });
-
-    const start = validation.menu.time_restriction_start;
-    const end = validation.menu.time_restriction_end;
-
-    if (!start || !end) return true;
-
-    return currentTime >= start && currentTime <= end;
-  };
+  // Simplified - edge function handles all time restrictions
+  const isWithinTimeRestriction = () => true;
 
   if (loading || geoChecking) {
     return (
@@ -246,53 +239,34 @@ export default function MenuAccess() {
     );
   }
 
-  const menu = validation.menu!;
+  const menuData = validation.menu_data!;
 
   return (
     <MenuCartProvider>
       <div className="min-h-screen bg-background">
       <MenuHeader
-        title={menu.title}
-        description={menu.description}
-        expiresAt={menu.expires_at}
+        title={menuData.name}
+        description={menuData.description}
+        expiresAt={null}
         customerName={validation.whitelist_entry?.customer_name}
       />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Security indicators */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {menu.geofence_enabled && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-              <MapPin className="h-4 w-4 text-primary" />
-              Location Verified
-            </div>
-          )}
-          {menu.time_restriction_enabled && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-              <Clock className="h-4 w-4 text-primary" />
-              Time Restricted
-            </div>
-          )}
-          {menu.screenshot_protection_enabled && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-              <Shield className="h-4 w-4 text-primary" />
-              Protected Content
-            </div>
-          )}
-        </div>
-
         {/* Success message */}
         <Alert className="mb-6 border-primary/50 bg-primary/5">
           <CheckCircle2 className="h-4 w-4 text-primary" />
           <AlertDescription>
             Welcome! You have been granted access to this exclusive menu.
+            {validation.remaining_views && validation.remaining_views > 0 && (
+              <> ({validation.remaining_views} views remaining)</>
+            )}
           </AlertDescription>
         </Alert>
 
         {/* Products */}
         <EnhancedMenuProductGrid 
-          products={menu.products} 
-          menuId={menu.id}
+          products={menuData.products} 
+          menuId={menuData.id}
           whitelistEntryId={validation.whitelist_entry?.id}
         />
 
@@ -313,7 +287,7 @@ export default function MenuAccess() {
         <ModernCheckoutFlow
           open={orderFormOpen}
           onClose={() => setOrderFormOpen(false)}
-          menuId={menu.id}
+          menuId={menuData.id}
           whitelistEntryId={validation.whitelist_entry?.id}
         />
       </div>

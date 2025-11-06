@@ -85,7 +85,7 @@ export function useRealtimeSync({
       
       // Skip if too many failures (disable realtime for this table)
       if (failures >= MAX_FAILURES) {
-        logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures }, 'useRealtimeSync');
+        logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures, component: 'useRealtimeSync' });
         return;
       }
 
@@ -117,7 +117,8 @@ export function useRealtimeSync({
                 event: payload.eventType,
                 table,
                 tenantId,
-              }, 'useRealtimeSync');
+                component: 'useRealtimeSync',
+              });
 
               // Invalidate relevant query caches based on table
               switch (table) {
@@ -179,7 +180,7 @@ export function useRealtimeSync({
               queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
               queryClient.invalidateQueries({ queryKey: ['summary'] });
             } catch (error) {
-              logger.error(`Error processing realtime update for ${table}`, error, 'useRealtimeSync');
+              logger.error(`Error processing realtime update for ${table}`, error, { component: 'useRealtimeSync' });
             }
           }
         )
@@ -187,7 +188,7 @@ export function useRealtimeSync({
           if (status === 'SUBSCRIBED') {
             // Reset failure count on successful subscription
             connectionFailures.delete(failureKey);
-            logger.debug(`Realtime subscription active: ${table}`, { tenantId }, 'useRealtimeSync');
+            logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
           } else if (status === 'CHANNEL_ERROR') {
             // Increment failure count
             const currentFailures = connectionFailures.get(failureKey) || 0;
@@ -197,8 +198,7 @@ export function useRealtimeSync({
             if (currentFailures < MAX_FAILURES) {
               logger.warn(
                 `Realtime subscription error: ${table} (tenant: ${tenantId})`,
-                { table, tenantId, failures: currentFailures + 1 },
-                'useRealtimeSync'
+                { table, tenantId, failures: currentFailures + 1, component: 'useRealtimeSync' }
               );
             }
             
@@ -213,8 +213,7 @@ export function useRealtimeSync({
             if (currentFailures < MAX_FAILURES) {
               logger.warn(
                 `Realtime subscription timed out: ${table}`,
-                { tenantId, table, failures: currentFailures + 1 },
-                'useRealtimeSync'
+                { tenantId, table, failures: currentFailures + 1, component: 'useRealtimeSync' }
               );
             }
             
@@ -231,7 +230,7 @@ export function useRealtimeSync({
         connectionFailures.set(failureKey, currentFailures + 1);
         
         if (currentFailures < MAX_FAILURES) {
-          logger.warn(`Failed to create realtime channel for ${table}`, error, 'useRealtimeSync');
+          logger.warn(`Failed to create realtime channel for ${table}`, error, { component: 'useRealtimeSync' });
         }
       }
     });

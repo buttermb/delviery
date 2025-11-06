@@ -82,7 +82,9 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
   const handleTemplateSelect = (template: MenuTemplate) => {
     setSelectedTemplate(template);
     // Auto-populate settings based on template
-    setExpirationDays(template.expirationDays === 'unlimited' ? 'unlimited' : String(template.expirationDays));
+    const days = template.expirationDays;
+    const daysStr = typeof days === 'string' && days === 'unlimited' ? 'unlimited' : String(days);
+    setExpirationDays(daysStr);
     setBurnAfterRead(template.burnAfterRead);
     setMaxViews(template.maxViews === 'unlimited' ? 'unlimited' : String(template.maxViews));
     setAccessType(template.accessType);
@@ -158,7 +160,9 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         },
       });
 
-      toast.success('Menu Created', 'Your disposable menu has been created successfully');
+      toast.success('Menu Created', {
+        description: 'Your disposable menu has been created successfully',
+      } as any);
       onOpenChange(false);
       // Reset form
       setCurrentStep(1);

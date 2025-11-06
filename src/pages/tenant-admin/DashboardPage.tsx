@@ -77,15 +77,11 @@ export default function TenantAdminDashboardPage() {
         }
         
         // Try with tenant_id filter first
-        let ordersResult = await supabase
-          .from("wholesale_orders")
-          .select("total_amount, status")
-          .eq("tenant_id", tenantId)
-          .gte("created_at", today.toISOString())
-          .returns<OrderRow[]>();
+        // @ts-ignore - Supabase complex query types cause TS2589
+        let ordersResult: any = await supabase.from("wholesale_orders").select("total_amount, status").eq("tenant_id", tenantId).gte("created_at", today.toISOString());
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.status === 400 || ordersResult.error.message?.includes('column'))) {
+        if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.message?.includes('column'))) {
           logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, { component: 'DashboardPage' });
           // Retry without tenant_id filter
           ordersResult = await supabase
@@ -114,14 +110,11 @@ export default function TenantAdminDashboardPage() {
         }
         
         // Try with tenant_id filter first
-        let inventoryResult = await supabase
-          .from("wholesale_inventory")
-          .select("id, product_name, quantity_lbs, reorder_point")
-          .eq("tenant_id", tenantId)
-          .returns<InventoryRow[]>();
+        // @ts-ignore - Supabase complex query types cause TS2589
+        let inventoryResult: any = await supabase.from("wholesale_inventory").select("id, product_name, quantity_lbs, reorder_point").eq("tenant_id", tenantId);
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.status === 400 || inventoryResult.error.message?.includes('column'))) {
+        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
           logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
           // Retry without tenant_id filter
           inventoryResult = await supabase
@@ -208,7 +201,7 @@ export default function TenantAdminDashboardPage() {
           .limit(100);
 
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.status === 400 || menusResult.error.message?.includes('column'))) {
+        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.message?.includes('column'))) {
           logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
           // Retry without tenant_id filter
           menusResult = await supabase
@@ -305,7 +298,7 @@ export default function TenantAdminDashboardPage() {
           .eq("tenant_id", tenantId);
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (result.error && (result.error.code === '42703' || result.error.status === 400 || result.error.message?.includes('column'))) {
+        if (result.error && (result.error.code === '42703' || result.error.message?.includes('column'))) {
           logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", result.error, { component: 'DashboardPage' });
           // Retry without tenant_id filter
           result = await supabase

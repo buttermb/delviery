@@ -2,6 +2,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function createSampleWholesaleData() {
   try {
+    // Get current tenant ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+    
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    const tenant_id = tenantUser?.tenant_id;
+    if (!tenant_id) throw new Error("Tenant not found");
+
     // Clear existing sample data first (in reverse order of dependencies)
     console.log("🧹 Clearing existing wholesale data...");
     
@@ -112,7 +125,7 @@ export async function createSampleWholesaleData() {
 
     const { data: clientData, error: clientError } = await supabase
       .from("wholesale_clients")
-      .insert(clients)
+      .insert(clients.map(c => ({ ...c, tenant_id })))
       .select();
 
     if (clientError) {
@@ -242,7 +255,7 @@ export async function createSampleWholesaleData() {
 
     const { error: inventoryError } = await supabase
       .from("wholesale_inventory")
-      .insert(inventory);
+      .insert(inventory.map(i => ({ ...i, tenant_id })));
 
     if (inventoryError) {
       console.error("Inventory creation error:", inventoryError);
@@ -304,7 +317,7 @@ export async function createSampleWholesaleData() {
 
     const { data: orderData, error: orderError } = await supabase
       .from("wholesale_orders")
-      .insert(sampleOrders)
+      .insert(sampleOrders.map(o => ({ ...o, tenant_id })))
       .select();
 
     if (orderError) {
@@ -363,7 +376,7 @@ export async function createSampleWholesaleData() {
 
       const { error: deliveryError } = await supabase
         .from("wholesale_deliveries")
-        .insert(sampleDeliveries.filter(d => d.order_id)); // Only insert if order exists
+        .insert(sampleDeliveries.filter(d => d.order_id).map(d => ({ ...d, tenant_id }))); // Only insert if order exists
 
       if (deliveryError) {
         console.error("Delivery creation error:", deliveryError);

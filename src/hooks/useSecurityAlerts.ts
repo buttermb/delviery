@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useVerification } from '@/contexts/VerificationContext';
 
 export interface SecurityAlert {
   id: string;
@@ -14,10 +16,25 @@ export interface SecurityAlert {
 }
 
 export const useSecurityAlerts = () => {
+  const { tenant, loading } = useTenantAdminAuth();
+  const { isVerified, isVerifying } = useVerification();
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    // Guard 1: Don't subscribe if auth is still loading or tenant not available
+    if (loading || !tenant?.id) {
+      console.log('[useSecurityAlerts] Waiting for authentication...', { loading, hasTenant: !!tenant?.id });
+      return;
+    }
+
+    // Guard 2: Don't subscribe until verification is complete
+    if (!isVerified || isVerifying) {
+      console.log('[useSecurityAlerts] Waiting for verification to complete...', { isVerified, isVerifying });
+      return;
+    }
+
+    console.log('[useSecurityAlerts] Authentication verified, establishing realtime subscription');
     // Fetch recent alerts
     const fetchAlerts = async () => {
       const { data } = await supabase
@@ -132,9 +149,10 @@ export const useSecurityAlerts = () => {
       });
 
     return () => {
+      console.log('[useSecurityAlerts] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [loading, tenant?.id, isVerified, isVerifying]);
 
   const markAsRead = () => {
     setUnreadCount(0);
