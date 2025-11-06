@@ -6835,6 +6835,69 @@ export type Database = {
         }
         Relationships: []
       }
+      runner_location_history: {
+        Row: {
+          accuracy: number | null
+          altitude: number | null
+          battery_level: number | null
+          created_at: string
+          delivery_id: string | null
+          heading: number | null
+          id: string
+          is_moving: boolean | null
+          latitude: number
+          longitude: number
+          recorded_at: string
+          runner_id: string
+          speed: number | null
+        }
+        Insert: {
+          accuracy?: number | null
+          altitude?: number | null
+          battery_level?: number | null
+          created_at?: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          is_moving?: boolean | null
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          runner_id: string
+          speed?: number | null
+        }
+        Update: {
+          accuracy?: number | null
+          altitude?: number | null
+          battery_level?: number | null
+          created_at?: string
+          delivery_id?: string | null
+          heading?: number | null
+          id?: string
+          is_moving?: boolean | null
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          runner_id?: string
+          speed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runner_location_history_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "runner_location_history_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_events: {
         Row: {
           created_at: string | null
@@ -8732,6 +8795,7 @@ export type Database = {
       }
       calculate_risk_score: { Args: { p_user_id: string }; Returns: number }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      cleanup_old_location_history: { Args: never; Returns: undefined }
       compare_workflow_versions: {
         Args: {
           p_version_a: number
@@ -8859,6 +8923,21 @@ export type Database = {
           status: string
           total_amount: number
           tracking_code: string
+        }[]
+      }
+      get_route_statistics: {
+        Args: {
+          p_delivery_id?: string
+          p_end_time?: string
+          p_runner_id: string
+          p_start_time?: string
+        }
+        Returns: {
+          average_speed: number
+          max_speed: number
+          points_count: number
+          total_distance: number
+          total_duration: unknown
         }[]
       }
       has_role: {

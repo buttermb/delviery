@@ -1,0 +1,148 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+
+export interface LocationPoint {
+  id: string;
+  runner_id: string;
+  delivery_id: string | null;
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  speed: number | null;
+  heading: number | null;
+  altitude: number | null;
+  recorded_at: string;
+  battery_level: number | null;
+  is_moving: boolean;
+}
+
+export interface RouteStatistics {
+  total_distance: number;
+  total_duration: string;
+  average_speed: number;
+  max_speed: number;
+  points_count: number;
+}
+
+interface UseRunnerLocationHistoryProps {
+  runnerId?: string;
+  deliveryId?: string;
+  startTime?: string;
+  endTime?: string;
+  enableRealtime?: boolean;
+}
+
+export function useRunnerLocationHistory({
+  runnerId,
+  deliveryId,
+  startTime,
+  endTime,
+  enableRealtime = false
+}: UseRunnerLocationHistoryProps) {
+  const [realtimeLocations, setRealtimeLocations] = useState<LocationPoint[]>([]);
+
+  // Fetch location history
+  const { data: locations = [], refetch, isLoading } = useQuery({
+    queryKey: ['runner-location-history', runnerId, deliveryId, startTime, endTime],
+    queryFn: async () => {
+      if (!runnerId) return [];
+
+      let query = supabase
+        .from('runner_location_history')
+        .select('*')
+        .eq('runner_id', runnerId)
+        .order('recorded_at', { ascending: true });
+
+      if (deliveryId) {
+        query = query.eq('delivery_id', deliveryId);
+      }
+
+      if (startTime) {
+        query = query.gte('recorded_at', startTime);
+      }
+
+      if (endTime) {
+        query = query.lte('recorded_at', endTime);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching location history:', error);
+        throw error;
+      }
+
+      return data as LocationPoint[];
+    },
+    enabled: !!runnerId,
+    refetchInterval: enableRealtime ? false : 30000, // Refetch every 30 seconds if not using realtime
+  });
+
+  // Fetch route statistics
+  const { data: statistics } = useQuery({
+    queryKey: ['route-statistics', runnerId, deliveryId, startTime, endTime],
+    queryFn: async () => {
+      if (!runnerId) return null;
+
+      const { data, error } = await supabase
+        .rpc('get_route_statistics', {
+          p_runner_id: runnerId,
+          p_delivery_id: deliveryId || null,
+          p_start_time: startTime || null,
+          p_end_time: endTime || null,
+        });
+
+      if (error) {
+        console.error('Error fetching route statistics:', error);
+        return null;
+      }
+
+      return data?.[0] as RouteStatistics | null;
+    },
+    enabled: !!runnerId && locations.length > 0,
+  });
+
+  // Set up realtime subscription
+  useEffect(() => {
+    if (!enableRealtime || !runnerId) return;
+
+    console.log('Setting up realtime subscription for runner:', runnerId);
+
+    const channel = supabase
+      .channel(`runner-location-${runnerId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'runner_location_history',
+          filter: `runner_id=eq.${runnerId}`,
+        },
+        (payload) => {
+          console.log('New location received:', payload);
+          const newLocation = payload.new as LocationPoint;
+          setRealtimeLocations((prev) => [...prev, newLocation]);
+          refetch(); // Also refetch to ensure consistency
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [runnerId, enableRealtime, refetch]);
+
+  // Combine historical and realtime data
+  const allLocations = [...locations, ...realtimeLocations];
+
+  return {
+    locations: allLocations,
+    statistics,
+    isLoading,
+    refetch,
+  };
+}

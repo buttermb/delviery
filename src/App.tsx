@@ -124,6 +124,7 @@ const InventoryManagement = lazy(() => import("./pages/admin/InventoryManagement
 const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
 const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
 const FleetManagement = lazy(() => import("./pages/admin/FleetManagement"));
+const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
 const DeliveryManagement = lazy(() => import("./pages/admin/DeliveryManagement"));
 const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
 const PointOfSale = lazy(() => import("./pages/admin/PointOfSale"));
@@ -418,6 +419,7 @@ const App = () => {
                           <Route path="fleet-management" element={<FeatureProtectedRoute featureId="fleet-management"><FleetManagement /></FeatureProtectedRoute>} />
                           <Route path="delivery-management" element={<FeatureProtectedRoute featureId="delivery-management"><DeliveryManagement /></FeatureProtectedRoute>} />
                           <Route path="live-map" element={<FeatureProtectedRoute featureId="live-map"><LiveMap /></FeatureProtectedRoute>} />
+                          <Route path="gps-tracking" element={<FeatureProtectedRoute featureId="fleet-management"><RunnerLocationTracking /></FeatureProtectedRoute>} />
                           <Route path="pos-system" element={<FeatureProtectedRoute featureId="pos-system"><PointOfSale /></FeatureProtectedRoute>} />
                           <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
                           <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
