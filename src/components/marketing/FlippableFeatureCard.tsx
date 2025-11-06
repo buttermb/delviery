@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface FlippableFeatureCardProps {
   icon: React.ElementType;
@@ -28,96 +26,95 @@ export function FlippableFeatureCard({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <div 
-      className="relative h-[280px] cursor-pointer perspective-1000"
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
+    <motion.div 
+      className="h-[420px] perspective-1000 cursor-pointer"
+      onHoverStart={() => setIsFlipped(true)}
+      onHoverEnd={() => setIsFlipped(false)}
       onClick={() => setIsFlipped(!isFlipped)}
     >
       <motion.div
         className="relative w-full h-full"
-        initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Front Side */}
-        <motion.div
-          className="absolute inset-0 w-full h-full backface-hidden"
+        {/* FRONT SIDE */}
+        <motion.div 
+          className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))] shadow-lg flex flex-col"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="glass-card p-6 rounded-xl h-full flex flex-col border border-border hover:border-primary/50 transition-colors group">
-            <motion.div 
-              className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-            >
-              <Icon className="h-7 w-7 text-white" />
-            </motion.div>
-            <h3 className="text-xl font-bold mb-3 text-foreground">{title}</h3>
-            <p className="text-muted-foreground text-sm flex-grow">{description}</p>
-            <div className="mt-4 text-xs text-primary font-medium flex items-center gap-1">
-              Hover to explore
-              <ArrowRight className="h-3 w-3" />
-            </div>
-          </div>
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+            className="mb-6"
+          >
+            <Icon className="h-14 w-14 text-[hsl(var(--marketing-primary))]" />
+          </motion.div>
+          <h3 className="text-xl font-bold mb-3 text-[hsl(var(--marketing-text))]">
+            {title}
+          </h3>
+          <p className="text-[hsl(var(--marketing-text-light))] mb-6 flex-grow">
+            {description}
+          </p>
+          <p className="text-sm text-[hsl(var(--marketing-accent))] font-medium mt-auto">
+            Hover to see benefits →
+          </p>
         </motion.div>
 
-        {/* Back Side */}
-        <motion.div
-          className="absolute inset-0 w-full h-full backface-hidden"
+        {/* BACK SIDE */}
+        <motion.div 
+          className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] shadow-xl flex flex-col justify-between"
           style={{ 
             backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
+            transform: 'rotateY(180deg)'
           }}
         >
-          <div className="glass-card p-6 rounded-xl h-full flex flex-col bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/30">
-            <div className="flex items-center gap-2 mb-4">
-              <Icon className="h-5 w-5 text-primary" />
-              <h3 className="font-bold text-foreground">{title}</h3>
-            </div>
-
-            {/* Benefits */}
-            <div className="space-y-2 mb-4 flex-grow">
-              {benefits.map((benefit, index) => (
-                  <motion.div
+          <div>
+            <h3 className="text-xl font-bold mb-6 text-white">
+              {title}
+            </h3>
+            
+            {benefits && (
+              <ul className="space-y-3 mb-6">
+                {benefits.map((benefit, index) => (
+                  <motion.li 
                     key={index}
-                    className="flex items-start gap-3"
                     initial={{ opacity: 0, x: -10 }}
-                    animate={isFlipped ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                    transition={{ 
-                      type: 'spring' as const,
-                      stiffness: 300,
-                      damping: 25,
-                      delay: index * 0.05,
-                    }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1, type: 'spring', stiffness: 200 }}
+                    className="flex items-start gap-3 text-white/90"
                   >
-                  <CheckCircle className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">{benefit}</span>
-                </motion.div>
-              ))}
-            </div>
+                    <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm leading-relaxed">{benefit}</span>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-            {/* Metric */}
-            <motion.div
-              className="bg-card/50 rounded-lg p-3 mb-3 text-center"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring' as const, stiffness: 400, damping: 20 }}
+          <div className="space-y-4">
+            {metric && (
+              <motion.div 
+                className="p-4 rounded-lg bg-white/10 backdrop-blur-sm"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <div className="text-xs text-white/70 mb-1">{metric.label}</div>
+                <div className="text-3xl font-bold text-white">{metric.value}</div>
+              </motion.div>
+            )}
+
+            <a 
+              href={link}
+              className="inline-flex items-center gap-2 text-sm font-medium text-white hover:text-white/80 transition-colors border-b border-white/30 pb-1"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="text-2xl font-bold text-primary">{metric.value}</div>
-              <div className="text-xs text-muted-foreground">{metric.label}</div>
-            </motion.div>
-
-            {/* CTA */}
-            <Link to={link}>
-              <Button variant="outline" size="sm" className="w-full group/btn">
-                Learn More
-                <ArrowRight className="ml-2 h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+              Learn More
+              <ArrowRight className="h-4 w-4" />
+            </a>
           </div>
         </motion.div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

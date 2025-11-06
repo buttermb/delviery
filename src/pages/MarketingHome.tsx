@@ -16,13 +16,11 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { FlippableFeatureCard } from "@/components/marketing/FlippableFeatureCard";
 import { StatCard } from "@/components/marketing/StatCard";
-import { TestimonialCard } from "@/components/marketing/TestimonialCard";
 import { CTASection } from "@/components/marketing/CTASection";
 import { HeroSection } from "@/components/marketing/HeroSection";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { lazy, Suspense } from "react";
-import { useEffect, useState } from "react";
 
 // Lazy load heavy components for better performance
 const LiveActivitySection = lazy(() => import("@/components/marketing/LiveActivitySection").then(m => ({ default: m.LiveActivitySection })));
@@ -46,39 +44,6 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-
-  const testimonials = [
-    {
-      quote: "DevPanel transformed our wholesale operations. Orders are up 40%, and our team saves 15 hours per week.",
-      author: "Mike Johnson",
-      role: "BigMike Wholesale",
-      rating: 5,
-      photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces",
-    },
-    {
-      quote: "Setup took 10 minutes. We were fully operational the same day. Best decision we made for our business.",
-      author: "Sarah Chen",
-      role: "Valley Distribution",
-      rating: 5,
-      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces",
-    },
-    {
-      quote: "The disposable menus feature is a game-changer. Our customers love the secure, modern experience.",
-      author: "David Rodriguez",
-      role: "Green Valley Supplies",
-      rating: 5,
-      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces",
-    },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
-
   const features = [
     {
       icon: Smartphone,
@@ -157,43 +122,6 @@ export default function MarketingHome() {
         </Suspense>
       </SectionTransition>
 
-      {/* SECTION 4: SOCIAL PROOF */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-8 text-foreground">
-              Trusted by Leading Wholesalers
-            </h2>
-            
-            {/* Customer Logos Placeholder */}
-            <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60 grayscale">
-              <div className="text-2xl font-bold text-muted-foreground">BigMike</div>
-              <div className="text-2xl font-bold text-muted-foreground">Joe's</div>
-              <div className="text-2xl font-bold text-muted-foreground">Valley</div>
-              <div className="text-2xl font-bold text-muted-foreground">Green</div>
-            </div>
-
-            {/* Rotating Testimonials */}
-            <div className="max-w-3xl mx-auto">
-              <TestimonialCard {...testimonials[currentTestimonial]} />
-              <div className="flex justify-center gap-2 mt-6">
-                {testimonials.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentTestimonial(index)}
-                    className={`h-2 rounded-full transition-all ${
-                      index === currentTestimonial
-                        ? "w-8 bg-primary"
-                        : "w-2 bg-border"
-                    }`}
-                    aria-label={`View testimonial ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* SECTION 5: PLATFORM CAPABILITIES */}
       <SectionTransition variant="fade">
@@ -211,14 +139,14 @@ export default function MarketingHome() {
 
       {/* SECTION 5C: KEY FEATURES GRID */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               Everything You Need to Run Your Wholesale Business
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <FlippableFeatureCard 
                 key={index} 
@@ -240,10 +168,10 @@ export default function MarketingHome() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Link to="/features">
-              <Button variant="outline" size="lg">
-                See All Features
+              <Button variant="outline" size="lg" className="mx-auto">
+                Discover More Features
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
