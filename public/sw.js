@@ -75,10 +75,14 @@ self.addEventListener('activate', (event) => {
       // Force immediate control
       await self.clients.claim();
       
-      // Notify all clients to reload
+      // Notify all clients about version update
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
-        client.postMessage({ type: 'CACHE_CLEARED', version: CACHE_VERSION });
+        client.postMessage({ 
+          type: 'VERSION_UPDATE', 
+          version: CACHE_VERSION,
+          timestamp: Date.now()
+        });
       });
       
       console.log('[SW] All caches cleared, service worker activated');
@@ -321,6 +325,14 @@ self.addEventListener('message', (event) => {
     event.waitUntil(
       caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))))
     );
+  }
+  
+  if (event.data && event.data.type === 'CHECK_VERSION') {
+    // Respond with current version
+    event.source.postMessage({
+      type: 'VERSION_INFO',
+      version: CACHE_VERSION
+    });
   }
   
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {

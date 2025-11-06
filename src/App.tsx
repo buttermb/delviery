@@ -39,6 +39,7 @@ import { toast } from "./hooks/use-toast";
 import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
+import { UpdatePrompt } from "./components/UpdatePrompt";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -297,6 +298,7 @@ const App = () => {
                     <SkipToContent />
                     <OfflineBanner />
                     <InstallPWA />
+                    <UpdatePrompt />
                     
                     <Toaster />
                     <Sonner />
