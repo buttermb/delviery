@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { Rotatable3DCard } from './Rotatable3DCard';
 
 interface Capability {
   id: number;
@@ -146,44 +147,13 @@ export function PlatformCapabilities() {
               ))}
             </div>
 
-            {/* Sticky Preview */}
-            <motion.div
-              className="lg:sticky lg:top-24"
-              style={{ opacity, scale }}
-            >
-              <div className="glass-card p-8 rounded-xl border border-border">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCapability}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="text-center mb-6">
-                      <div className="text-6xl mb-4">{capabilities[activeCapability].icon}</div>
-                      <h3 className="text-2xl font-bold text-foreground mb-2">
-                        {capabilities[activeCapability].title}
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        {capabilities[activeCapability].description}
-                      </p>
-                      <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] text-white font-semibold">
-                        {capabilities[activeCapability].metrics}
-                      </div>
-                    </div>
-
-                    {/* Preview Placeholder */}
-                    <div className="aspect-video rounded-lg bg-gradient-to-br from-[hsl(var(--marketing-primary))]/20 to-[hsl(var(--marketing-accent))]/20 flex items-center justify-center border border-border">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">{capabilities[activeCapability].icon}</div>
-                        <p className="text-muted-foreground">Interactive Preview</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </motion.div>
+            {/* 3D Rotatable Preview Card */}
+            <Rotatable3DCard 
+              activeCapability={activeCapability}
+              capability={capabilities[activeCapability]}
+              opacity={opacity}
+              scale={scale}
+            />
           </div>
         </div>
       </div>

@@ -72,12 +72,48 @@ export function AnimatedHowItWorks() {
             </p>
           </motion.div>
 
-          {/* Progress Bar */}
+          {/* Animated Progress Bar */}
           <div className="relative mb-12">
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted rounded-full transform -translate-y-1/2" />
-            <div className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] rounded-full transform -translate-y-1/2 transition-all duration-500"
-              style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
-            />
+            <div className="absolute top-1/2 left-0 right-0 h-2 bg-muted rounded-full transform -translate-y-1/2" />
+            <motion.div 
+              className="absolute top-1/2 left-0 h-2 rounded-full transform -translate-y-1/2 overflow-hidden"
+              initial={{ width: 0 }}
+              animate={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
+              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+            >
+              <motion.div
+                className="h-full bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-primary))]"
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
+                style={{
+                  backgroundSize: '200% 100%',
+                }}
+              />
+            </motion.div>
+            
+            {/* Progress dots */}
+            <div className="relative flex justify-between">
+              {steps.map((_, index) => (
+                <motion.div
+                  key={index}
+                  className={`w-4 h-4 rounded-full border-2 ${
+                    index <= activeStep
+                      ? 'bg-[hsl(var(--marketing-primary))] border-[hsl(var(--marketing-primary))]'
+                      : 'bg-background border-muted'
+                  }`}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: index * 0.1, type: 'spring', stiffness: 200 }}
+                  whileHover={{ scale: 1.3 }}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Steps */}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link2, X, ExternalLink, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { NetworkWeb } from './NetworkWeb';
 
 interface Integration {
   name: string;
@@ -113,110 +114,29 @@ export function IntegrationEcosystem() {
             ))}
           </div>
 
-          {/* Connection Diagram */}
+          {/* Network Web Visualization */}
           <motion.div
             className="glass-card p-8 rounded-xl relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-foreground mb-2">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-foreground mb-2">
                 Centralized Integration Hub
               </h3>
               <p className="text-muted-foreground">
-                DevPanel connects all your tools in one place
+                DevPanel connects all your tools in one unified network
               </p>
             </div>
 
-            {/* Visual Connection Flow */}
-            <div className="relative h-32 flex items-center justify-center">
-              {/* Center DevPanel */}
-              <motion.div 
-                className="absolute z-10 w-20 h-20 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center text-white font-bold shadow-lg"
-                animate={{ 
-                  boxShadow: [
-                    '0 0 20px rgba(var(--marketing-primary-rgb), 0.5)',
-                    '0 0 40px rgba(var(--marketing-primary-rgb), 0.8)',
-                    '0 0 20px rgba(var(--marketing-primary-rgb), 0.5)',
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                DevPanel
-              </motion.div>
-
-              {/* Connected Tools */}
-              {integrations.slice(0, 4).map((integration, index) => {
-                const angle = (index * 90) * (Math.PI / 180);
-                const radius = 80;
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-
-                return (
-                  <motion.div
-                    key={integration.name}
-                    className="absolute"
-                    style={{
-                      left: `calc(50% + ${x}px)`,
-                      top: `calc(50% + ${y}px)`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 }}
-                  >
-                    <motion.div 
-                      className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-2xl shadow-md"
-                      whileHover={{ scale: 1.2, rotate: 5 }}
-                    >
-                      {integration.logo}
-                    </motion.div>
-                    {/* Animated Connection Line with Pulsing Dots */}
-                    <svg
-                      className="absolute inset-0 w-full h-full pointer-events-none"
-                      style={{ width: radius * 2, height: radius * 2, left: -radius, top: -radius }}
-                    >
-                      <defs>
-                        <linearGradient id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="hsl(var(--marketing-primary))" stopOpacity="0.5" />
-                          <stop offset="100%" stopColor="hsl(var(--marketing-accent))" stopOpacity="0.5" />
-                        </linearGradient>
-                      </defs>
-                      <motion.line
-                        x1={radius}
-                        y1={radius}
-                        x2={radius + x}
-                        y2={radius + y}
-                        stroke={`url(#gradient-${index})`}
-                        strokeWidth="2"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.2 + 0.5, duration: 0.8 }}
-                      />
-                      {/* Pulsing dot traveling along line */}
-                      <motion.circle
-                        cx={radius}
-                        cy={radius}
-                        r="3"
-                        fill="hsl(var(--marketing-accent))"
-                        animate={{
-                          cx: [radius, radius + x],
-                          cy: [radius, radius + y],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: index * 0.5,
-                          ease: "linear"
-                        }}
-                      />
-                    </svg>
-                  </motion.div>
-                );
-              })}
+            {/* Interactive Network Web */}
+            <NetworkWeb integrations={integrations} centerLabel="DevPanel" />
+            
+            <div className="mt-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Click on any integration to see connection details
+              </p>
             </div>
           </motion.div>
 
