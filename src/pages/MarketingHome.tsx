@@ -32,7 +32,6 @@ import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components for better performance
-const LiveActivitySection = lazy(() => import("@/components/marketing/LiveActivitySection").then(m => ({ default: m.LiveActivitySection })));
 const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
 const CustomerSuccessTimeline = lazy(() => import("@/components/marketing/CustomerSuccessTimeline").then(m => ({ default: m.CustomerSuccessTimeline })));
 const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
@@ -125,15 +124,7 @@ export default function MarketingHome() {
       {/* SECTION 1: HERO */}
       <HeroSection />
 
-      {/* SECTION 2: LIVE ACTIVITY */}
-      <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <LiveActivitySection />
-        </Suspense>
-      </SectionTransition>
-
-
-      {/* SECTION 3: PROBLEM/SOLUTION */}
+      {/* SECTION 2: PROBLEM/SOLUTION */}
       <SectionTransition variant="fade" delay={0}>
         <Suspense fallback={<SectionLoader />}>
           <ProblemSolutionSection />

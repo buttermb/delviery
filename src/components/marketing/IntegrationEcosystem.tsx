@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link2, X, ExternalLink, CheckCircle } from 'lucide-react';
+import { X, ExternalLink, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NetworkWeb } from './NetworkWeb';
+import { SimplifiedIntegrationHub } from './SimplifiedIntegrationHub';
 
 interface Integration {
   name: string;
@@ -114,14 +114,14 @@ export function IntegrationEcosystem() {
             ))}
           </div>
 
-          {/* Network Web Visualization */}
+          {/* Simplified Integration Hub */}
           <motion.div
             className="glass-card p-8 rounded-xl relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <div className="text-center mb-8">
+            <div className="text-center mb-4">
               <h3 className="text-2xl font-bold text-foreground mb-2">
                 Centralized Integration Hub
               </h3>
@@ -130,14 +130,7 @@ export function IntegrationEcosystem() {
               </p>
             </div>
 
-            {/* Interactive Network Web */}
-            <NetworkWeb integrations={integrations} centerLabel="DevPanel" />
-            
-            <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Click on any integration to see connection details
-              </p>
-            </div>
+            <SimplifiedIntegrationHub integrations={integrations} />
           </motion.div>
 
           {/* Request Integration */}

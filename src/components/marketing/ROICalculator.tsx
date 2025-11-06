@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, TrendingUp, DollarSign, Clock, Target } from 'lucide-react';
 import { CountUpNumber } from './CountUpNumber';
@@ -11,7 +11,7 @@ export function ROICalculator() {
     errors: 500,
   });
 
-  const calculateSavings = () => {
+  const savings = useMemo(() => {
     const timeSavings = currentCosts.manualHours * 0.75 * currentCosts.hourlyRate * 4; // 75% time saved, monthly
     const errorReduction = currentCosts.errors * 0.8; // 80% fewer errors
     const softwareCost = 299; // Professional plan
@@ -25,9 +25,7 @@ export function ROICalculator() {
       roi: Math.max(0, parseFloat(roi)),
       timeSaved: currentCosts.manualHours * 0.75,
     };
-  };
-
-  const savings = calculateSavings();
+  }, [currentCosts]);
 
   return (
     <div className="glass-card p-8 rounded-xl border border-border">

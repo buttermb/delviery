@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { GuideTooltip } from './GuideTooltip';
 import { mockDashboardData } from './mockDashboardData';
 import { SalesChartPreview } from './dashboard/SalesChartPreview';
 import { TopProductsPreview } from './dashboard/TopProductsPreview';
@@ -12,64 +9,8 @@ import { MiniSidebarPreview } from './dashboard/MiniSidebarPreview';
 import { AnimatedMetricValue } from './dashboard/AnimatedMetricValue';
 import { dashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
 import { SuperstarFeaturesCard } from './dashboard/SuperstarFeaturesCard';
-import { DashboardTour } from './DashboardTour';
-import { 
-  ShoppingCart, 
-  Package, 
-  Users, 
-  FileText, 
-  BarChart3, 
-  Settings,
-  Play
-} from 'lucide-react';
-
-const tourSteps = [
-  {
-    target: 'sidebar',
-    title: 'Navigation Hub',
-    description: 'Access all features: Catalog, Orders, Inventory, Transfers, and more.',
-    position: { top: '45%', left: '8%' }
-  },
-  {
-    target: 'superstar',
-    title: '🌟 Superstar Features',
-    description: 'Real-time tracking with live maps and encrypted disposable menus - unique features that set us apart',
-    position: { top: '24%', left: '50%' }
-  },
-  {
-    target: 'metrics',
-    title: 'Real-time Metrics',
-    description: 'Track revenue, orders, customers, and transfers at a glance.',
-    position: { top: '30%', left: '50%' }
-  },
-  {
-    target: 'chart',
-    title: 'Sales Analytics',
-    description: 'Visualize your sales performance with interactive charts.',
-    position: { top: '45%', left: '40%' }
-  },
-  {
-    target: 'products',
-    title: 'Top Products',
-    description: 'See your best-selling products ranked by performance.',
-    position: { top: '45%', left: '68%' }
-  },
-  {
-    target: 'activity',
-    title: 'Live Activity Feed',
-    description: 'Monitor orders, views, and alerts in real-time.',
-    position: { top: '72%', left: '40%' }
-  },
-  {
-    target: 'inventory',
-    title: 'Inventory Management',
-    description: 'Get notified when stock levels run low and restock instantly.',
-    position: { top: '72%', left: '68%' }
-  }
-];
 
 export function EnhancedDashboardPreview() {
-  const [currentStep, setCurrentStep] = useState(-1);
   const [isVisible, setIsVisible] = useState(false);
   const [activeView, setActiveView] = useState<DashboardViewKey>('dashboard');
 
@@ -77,16 +18,6 @@ export function EnhancedDashboardPreview() {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
-
-  const startTour = () => setCurrentStep(0);
-  const nextStep = () => {
-    if (currentStep < tourSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setCurrentStep(-1);
-    }
-  };
-  const skipTour = () => setCurrentStep(-1);
 
   return (
     <div className="relative w-full max-w-[900px] mx-auto">
@@ -100,12 +31,6 @@ export function EnhancedDashboardPreview() {
         <p className="text-slate-300 max-w-2xl mx-auto text-xs sm:text-sm">
           Everything you need to manage your wholesale operations in one dashboard
         </p>
-        {currentStep === -1 && (
-          <Button onClick={startTour} size="sm" className="gap-2 mt-3">
-            <Play className="h-3 w-3" />
-            Take a Quick Tour
-          </Button>
-        )}
       </motion.div>
 
       {/* Browser Chrome Mockup */}
@@ -129,13 +54,8 @@ export function EnhancedDashboardPreview() {
 
       {/* Unified Dashboard Panel */}
       <div className="flex flex-col sm:flex-row bg-card/80 backdrop-blur-sm border border-border/50 border-t-0 rounded-b-lg shadow-lg overflow-hidden ring-2 ring-primary/10 mx-2 sm:mx-0 relative">
-        {/* Dashboard Tour Overlay */}
-        {currentStep >= 0 && (
-          <DashboardTour />
-        )}
-        
         {/* Sidebar - Hidden on mobile, Interactive */}
-        <div className="hidden sm:block" id="sidebar">
+        <div className="hidden sm:block">
           <MiniSidebarPreview activeView={activeView} onViewChange={setActiveView} />
         </div>
 
@@ -151,15 +71,12 @@ export function EnhancedDashboardPreview() {
                 transition={{ duration: 0.3 }}
               >
                 {/* Superstar Features Card */}
-                <div id="superstar">
+                <div>
                   <SuperstarFeaturesCard onViewChange={setActiveView} />
                 </div>
 
                 {/* Metrics Grid */}
-                <motion.div
-            id="metrics"
-            className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mb-2"
-          >
+                <motion.div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mb-2">
           {mockDashboardData.metrics.slice(0, 4).map((metric, i) => {
             const Icon = metric.icon;
             return (
@@ -200,7 +117,6 @@ export function EnhancedDashboardPreview() {
           {/* Chart and Top Products - Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-1.5 sm:gap-2 mb-2">
             <motion.div
-              id="chart"
               initial={{ opacity: 0, y: 20 }}
               animate={isVisible ? { 
                 opacity: 1, 
@@ -216,7 +132,6 @@ export function EnhancedDashboardPreview() {
             </motion.div>
             
             <motion.div
-              id="products"
               initial={{ opacity: 0, y: 20 }}
               animate={isVisible ? { 
                 opacity: 1, 
@@ -235,7 +150,6 @@ export function EnhancedDashboardPreview() {
           {/* Activity Feed and Inventory Alerts - Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
             <motion.div
-              id="activity"
               initial={{ opacity: 0, x: -20 }}
               animate={isVisible ? { 
                 opacity: 1, 
@@ -250,7 +164,6 @@ export function EnhancedDashboardPreview() {
             </motion.div>
             
             <motion.div
-              id="inventory"
               initial={{ opacity: 0, x: 20 }}
               animate={isVisible ? { 
                 opacity: 1, 
@@ -286,44 +199,6 @@ export function EnhancedDashboardPreview() {
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Tour Tooltips */}
-      {currentStep >= 0 && currentStep < tourSteps.length && (
-        <GuideTooltip
-          step={currentStep + 1}
-          totalSteps={tourSteps.length}
-          title={tourSteps[currentStep].title}
-          description={tourSteps[currentStep].description}
-          position={tourSteps[currentStep].position}
-          onNext={nextStep}
-          onSkip={skipTour}
-        />
-      )}
-
-      {/* Pointer Animation */}
-      {currentStep >= 0 && (
-        <motion.div
-          className="fixed pointer-events-none z-50"
-          animate={{
-            top: tourSteps[currentStep].position.top,
-            left: tourSteps[currentStep].position.left,
-            x: '-50%',
-            y: '-50%'
-          }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-        >
-          <motion.div
-            className="relative"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            <div className="h-16 w-16 rounded-full bg-primary/20 absolute inset-0 animate-ping" />
-            <div className="h-16 w-16 rounded-full bg-primary/40 flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full bg-primary" />
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </div>
   );
 }
