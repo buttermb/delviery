@@ -21,6 +21,7 @@ import { HeroSection } from "@/components/marketing/HeroSection";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { lazy, Suspense } from "react";
+import { motion } from "framer-motion";
 
 // Lazy load heavy components for better performance
 const LiveActivitySection = lazy(() => import("@/components/marketing/LiveActivitySection").then(m => ({ default: m.LiveActivitySection })));
@@ -372,21 +373,42 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 7: STATS & NUMBERS */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+      <section className="py-20 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-5">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="stats-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <circle cx="30" cy="30" r="2" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#stats-grid)" />
+          </svg>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-primary))] bg-clip-text text-transparent">
               DevPanel by the Numbers
             </h2>
-          </div>
+            <p className="text-xl text-muted-foreground">
+              Trusted by wholesale distributors worldwide
+            </p>
+          </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <StatCard value="400+" label="Distributors" />
-            <StatCard value="$1.4M" label="Orders/Month" />
-            <StatCard value="15hrs" label="Saved/Week" />
-            <StatCard value="99.9%" label="Uptime" />
-            <StatCard value="4.8" label="Rating" />
-            <StatCard value="24/7" label="Support" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <StatCard value="400+" label="Distributors" index={0} icon="Distributors" />
+            <StatCard value="$1.4M" label="Orders/Month" index={1} icon="Orders/Month" />
+            <StatCard value="15hrs" label="Saved/Week" index={2} icon="Saved/Week" />
+            <StatCard value="99.9%" label="Uptime" index={3} icon="Uptime" />
+            <StatCard value="4.8" label="Rating" index={4} icon="Rating" />
+            <StatCard value="24/7" label="Support" index={5} icon="Support" />
           </div>
         </div>
       </section>
