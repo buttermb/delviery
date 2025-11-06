@@ -98,6 +98,7 @@ const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
+const TenantAdminProtectedWrapper = lazy(() => import("./components/auth/TenantAdminProtectedWrapper").then(m => ({ default: m.TenantAdminProtectedWrapper })));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
@@ -370,17 +371,17 @@ const App = () => {
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
                         {/* Welcome Page (must be before AdminLayout) */}
-                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedWrapper><TenantAdminWelcomePage /></TenantAdminProtectedWrapper>} />
                         
                         {/* Trial Expired Page (must be before AdminLayout) */}
-                        <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedWrapper><TrialExpiredPage /></TenantAdminProtectedWrapper>} />
                         
                         {/* Help Page */}
-                        <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
+                        <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedWrapper><HelpPage /></TenantAdminProtectedWrapper>} />
                         
                         {/* Tenant Admin Portal - Exact redirect */}
                         <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />
-                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
+                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedWrapper><AdminLayout /></TenantAdminProtectedWrapper>}>
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           {/* Legacy route redirects - redirect old paths to new paths */}
                           <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />
