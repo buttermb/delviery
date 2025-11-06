@@ -45,6 +45,27 @@ if (import.meta.env.PROD) {
   }
 }
 
+// Chunk loading timeout handler - force reload if chunks take too long
+let chunkLoadTimeout: NodeJS.Timeout | null = null;
+const CHUNK_LOAD_TIMEOUT = 10000; // 10 seconds
+
+window.addEventListener('DOMContentLoaded', () => {
+  chunkLoadTimeout = setTimeout(() => {
+    console.error('[APP] Chunk loading timeout - forcing reload with cache bypass');
+    // Add timestamp to bypass all caches
+    window.location.href = `${window.location.pathname}?nocache=${Date.now()}`;
+  }, CHUNK_LOAD_TIMEOUT);
+});
+
+// Clear timeout when app successfully mounts
+window.addEventListener('app-mounted', () => {
+  if (chunkLoadTimeout) {
+    clearTimeout(chunkLoadTimeout);
+    chunkLoadTimeout = null;
+    console.log('[APP] Chunk loading successful - timeout cleared');
+  }
+});
+
 // Clear ALL service workers and caches immediately (before React loads)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {

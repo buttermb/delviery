@@ -31,18 +31,20 @@ import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
 
-// Lazy load heavy components for better performance
-const ProblemSolutionSection = lazy(() => import("@/components/marketing/ProblemSolutionSection").then(m => ({ default: m.ProblemSolutionSection })));
-const CustomerSuccessTimeline = lazy(() => import("@/components/marketing/CustomerSuccessTimeline").then(m => ({ default: m.CustomerSuccessTimeline })));
-const ComparisonSection = lazy(() => import("@/components/marketing/ComparisonSection").then(m => ({ default: m.ComparisonSection })));
-const IntegrationEcosystem = lazy(() => import("@/components/marketing/IntegrationEcosystem").then(m => ({ default: m.IntegrationEcosystem })));
-const ROICalculator = lazy(() => import("@/components/marketing/ROICalculator").then(m => ({ default: m.ROICalculator })));
-const FloatingChatButton = lazy(() => import("@/components/marketing/FloatingChatButton").then(m => ({ default: m.FloatingChatButton })));
-const AnimatedHowItWorks = lazy(() => import("@/components/marketing/AnimatedHowItWorks").then(m => ({ default: m.AnimatedHowItWorks })));
+// Lazy load only the heaviest components - reduced from 11 to 3 to prevent chunk loading deadlock
 const PlatformCapabilities = lazy(() => import("@/components/marketing/PlatformCapabilities").then(m => ({ default: m.PlatformCapabilities })));
-const FeatureExplorer = lazy(() => import("@/components/marketing/FeatureExplorer").then(m => ({ default: m.FeatureExplorer })));
-const InteractiveDashboardShowcase = lazy(() => import("@/components/marketing/InteractiveDashboardShowcase").then(m => ({ default: m.InteractiveDashboardShowcase })));
 const EnhancedDashboardPreview = lazy(() => import("@/components/marketing/EnhancedDashboardPreview").then(m => ({ default: m.EnhancedDashboardPreview })));
+const InteractiveDashboardShowcase = lazy(() => import("@/components/marketing/InteractiveDashboardShowcase").then(m => ({ default: m.InteractiveDashboardShowcase })));
+
+// Eager load these components to reduce chunk dependencies
+import { ProblemSolutionSection } from "@/components/marketing/ProblemSolutionSection";
+import { CustomerSuccessTimeline } from "@/components/marketing/CustomerSuccessTimeline";
+import { ComparisonSection } from "@/components/marketing/ComparisonSection";
+import { IntegrationEcosystem } from "@/components/marketing/IntegrationEcosystem";
+import { ROICalculator } from "@/components/marketing/ROICalculator";
+import { FloatingChatButton } from "@/components/marketing/FloatingChatButton";
+import { AnimatedHowItWorks } from "@/components/marketing/AnimatedHowItWorks";
+import { FeatureExplorer } from "@/components/marketing/FeatureExplorer";
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -126,9 +128,7 @@ export default function MarketingHome() {
 
       {/* SECTION 2: PROBLEM/SOLUTION */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <ProblemSolutionSection />
-        </Suspense>
+        <ProblemSolutionSection />
       </SectionTransition>
 
 
@@ -141,9 +141,7 @@ export default function MarketingHome() {
 
       {/* SECTION 5B: FEATURE EXPLORER */}
       <SectionTransition variant="fade">
-        <Suspense fallback={<SectionLoader />}>
-          <FeatureExplorer />
-        </Suspense>
+        <FeatureExplorer />
       </SectionTransition>
 
       {/* SECTION 5C: KEY FEATURES GRID */}
@@ -211,33 +209,25 @@ export default function MarketingHome() {
       {/* SECTION 6: CUSTOMER SUCCESS */}
       <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
-          <Suspense fallback={<SectionLoader />}>
-            <CustomerSuccessTimeline />
-          </Suspense>
+          <CustomerSuccessTimeline />
         </div>
       </section>
 
       {/* SECTION 7: HOW IT WORKS */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <Suspense fallback={<SectionLoader />}>
-            <AnimatedHowItWorks />
-          </Suspense>
+          <AnimatedHowItWorks />
         </div>
       </section>
 
       {/* SECTION 8: COMPARISON */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <ComparisonSection />
-        </Suspense>
+        <ComparisonSection />
       </SectionTransition>
 
       {/* SECTION 9: INTEGRATION */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <IntegrationEcosystem />
-        </Suspense>
+        <IntegrationEcosystem />
       </SectionTransition>
 
       {/* SECTION 10: PRICING PREVIEW */}
@@ -360,9 +350,7 @@ export default function MarketingHome() {
 
           {/* ROI Calculator */}
           <div className="max-w-2xl mx-auto mt-12">
-            <Suspense fallback={<SectionLoader />}>
-              <ROICalculator />
-            </Suspense>
+            <ROICalculator />
           </div>
         </div>
       </section>

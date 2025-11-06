@@ -157,15 +157,17 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: ['log'], // Only drop console.log, keep errors/warnings
         drop_debugger: true,
-        passes: 2, // Two passes for better minification
-        pure_funcs: ['console.log', 'console.debug'], // Remove these function calls
+        passes: 1, // Single pass - two passes breaks chunk references
+        // Removed pure_funcs - it breaks React.createElement calls between chunks
       },
       format: {
         comments: false,
       },
       mangle: {
         safari10: true, // Fix Safari 10 issues
+        toplevel: false, // Don't mangle top-level names - breaks cross-chunk references
       },
+      module: true, // Preserve ES module structure
     },
     sourcemap: 'hidden', // Generate hidden source maps for production debugging
     commonjsOptions: {

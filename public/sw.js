@@ -148,8 +148,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for static assets (JS, CSS) - prevents stale chunk issues
-  if (event.request.destination === 'script' || event.request.destination === 'style') {
+  // Network-ONLY for JavaScript chunks - NEVER cache during initial load to prevent stale chunk issues
+  if (event.request.destination === 'script') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Only cache non-chunk JavaScript (main entry files)
+          if (response.status === 200 && !url.pathname.includes('chunk-')) {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, response.clone());
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Only fallback to cache for non-chunk files
+          if (!url.pathname.includes('chunk-')) {
+            return caches.match(event.request);
+          }
+          // For chunks, always throw to trigger reload
+          throw new Error('Chunk load failed - network required');
+        })
+    );
+    return;
+  }
+
+  // Network-first for CSS
+  if (event.request.destination === 'style') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -160,7 +185,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request)) // Fallback to cache only if network fails
+        .catch(() => caches.match(event.request))
     );
     return;
   }
