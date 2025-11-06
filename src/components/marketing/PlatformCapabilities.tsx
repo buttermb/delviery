@@ -10,6 +10,14 @@ import {
   Navigation,
   type LucideIcon
 } from 'lucide-react';
+import { 
+  InventoryDemo, 
+  OrderAutomationDemo, 
+  AnalyticsDemo, 
+  CustomerPortalDemo, 
+  DisposableMenuDemo, 
+  FleetDemo 
+} from './CapabilityDemos';
 
 interface Capability {
   id: number;
@@ -17,6 +25,7 @@ interface Capability {
   description: string;
   icon: LucideIcon;
   metrics: string;
+  demo: React.ComponentType;
 }
 
 const capabilities: Capability[] = [
@@ -26,6 +35,7 @@ const capabilities: Capability[] = [
     description: 'Real-time tracking across multiple locations with automated alerts',
     icon: Database,
     metrics: '99.9% accuracy',
+    demo: InventoryDemo,
   },
   {
     id: 2,
@@ -33,6 +43,7 @@ const capabilities: Capability[] = [
     description: 'Streamlined order processing with automated workflows',
     icon: Sparkles,
     metrics: '15hrs/week saved',
+    demo: OrderAutomationDemo,
   },
   {
     id: 3,
@@ -40,6 +51,7 @@ const capabilities: Capability[] = [
     description: 'Self-service portal for customers to browse and order',
     icon: Store,
     metrics: '24/7 access',
+    demo: CustomerPortalDemo,
   },
   {
     id: 4,
@@ -47,6 +59,7 @@ const capabilities: Capability[] = [
     description: 'Powerful insights into your business performance',
     icon: LineChart,
     metrics: 'Real-time data',
+    demo: AnalyticsDemo,
   },
   {
     id: 5,
@@ -54,6 +67,7 @@ const capabilities: Capability[] = [
     description: 'Secure, encrypted menus for wholesale clients',
     icon: Key,
     metrics: '100% secure',
+    demo: DisposableMenuDemo,
   },
   {
     id: 6,
@@ -61,6 +75,7 @@ const capabilities: Capability[] = [
     description: 'Track deliveries, optimize routes, manage couriers',
     icon: Navigation,
     metrics: 'GPS tracking',
+    demo: FleetDemo,
   },
 ];
 
@@ -167,50 +182,23 @@ export function PlatformCapabilities() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4 }}
-                className="glass-card p-10 rounded-2xl border border-border/50 relative overflow-hidden bg-gradient-to-br from-card to-card/50"
+                className="glass-card p-8 rounded-2xl border border-border/50 relative overflow-hidden bg-gradient-to-br from-card to-card/50"
               >
-                {/* Icon Badge */}
-                <div className="mb-8">
-                  <motion.div 
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <motion.div
-                      animate={{ 
-                        rotate: [0, 5, -5, 0],
-                      }}
-                      transition={{ 
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      {(() => {
-                        const Icon = capabilities[activeCapability].icon;
-                        return <Icon className="h-10 w-10 text-primary" />;
-                      })()}
-                    </motion.div>
-                  </motion.div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-4">
-                  <h3 className="text-2xl font-bold text-foreground">
+                {/* Interactive Demo */}
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-foreground mb-2">
                     {capabilities[activeCapability].title}
                   </h3>
-                  <p className="text-base text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground mb-4">
                     {capabilities[activeCapability].description}
                   </p>
                   
-                  {/* Metric Badge */}
-                  <div className="pt-4">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      <span className="text-sm font-semibold text-primary">
-                        {capabilities[activeCapability].metrics}
-                      </span>
-                    </div>
+                  {/* Live Demo Component */}
+                  <div className="mt-6 p-4 rounded-xl bg-background/50 border border-border">
+                    {(() => {
+                      const DemoComponent = capabilities[activeCapability].demo;
+                      return <DemoComponent />;
+                    })()}
                   </div>
                 </div>
 
