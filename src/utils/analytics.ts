@@ -184,6 +184,27 @@ class Analytics {
   trackError(errorType: string, errorMessage: string) {
     this.track('error', { error_type: errorType, error_message: errorMessage });
   }
+
+  // Marketing-specific events
+  trackMarketingCTA(ctaName: string, location: string) {
+    this.track('marketing_cta_click', { cta_name: ctaName, location });
+  }
+
+  trackFeatureInteraction(featureName: string, interactionType: string) {
+    this.track('feature_interaction', { feature_name: featureName, interaction_type: interactionType });
+  }
+
+  trackScrollDepth(depth: number) {
+    this.track('scroll_depth', { depth_percentage: depth });
+  }
+
+  trackVideoPlay(videoId: string) {
+    this.track('video_play', { video_id: videoId });
+  }
+
+  trackSocialShare(platform: string, content: string) {
+    this.track('social_share', { platform, content });
+  }
 }
 
 export const analytics = new Analytics();

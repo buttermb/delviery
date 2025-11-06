@@ -25,8 +25,11 @@ import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { ScrollReveal, StaggerContainer } from "@/components/marketing/ScrollReveal";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
-import { lazy, Suspense } from "react";
+import { SocialProof } from "@/components/marketing/SocialProof";
+import { LiveChatWidget } from "@/components/LiveChatWidget";
+import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
+import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components for better performance
 const LiveActivitySection = lazy(() => import("@/components/marketing/LiveActivitySection").then(m => ({ default: m.LiveActivitySection })));
@@ -48,6 +51,14 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
+  // Track page view on mount
+  useEffect(() => {
+    analytics.track('marketing_page_view', {
+      page: 'home',
+      referrer: document.referrer,
+    });
+  }, []);
+
   const features = [
     {
       icon: Smartphone,
@@ -478,6 +489,12 @@ export default function MarketingHome() {
 
       {/* Keyboard Navigation Helper */}
       <KeyboardNavigationHelper />
+      
+      {/* Social Proof Notifications */}
+      <SocialProof />
+      
+      {/* Live Chat Widget */}
+      <LiveChatWidget />
     </div>
   );
 }
