@@ -1,103 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
+import { useUnifiedEarnings } from '@/hooks/useUnifiedEarnings';
+import { RoleIndicator } from '@/components/courier/RoleIndicator';
 import {
   ArrowLeft,
   DollarSign,
-  TrendingUp,
-  Calendar,
   Download,
+  Package,
+  Truck,
 } from 'lucide-react';
-import { format, startOfWeek, startOfMonth, endOfWeek, endOfMonth } from 'date-fns';
-
-interface Earning {
-  id: string;
-  order_id: string;
-  order_total: number;
-  commission_amount: number;
-  tip_amount: number;
-  bonus_amount: number;
-  total_earned: number;
-  created_at: string;
-  order_number: string;
-}
+import { format } from 'date-fns';
 
 export default function CourierEarningsPage() {
-  const { courier } = useCourier();
-  const [earnings, setEarnings] = useState<Earning[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { courier, role } = useCourier();
   const [timeframe, setTimeframe] = useState<'today' | 'week' | 'month'>('today');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (courier) {
-      loadEarnings();
-    }
-  }, [courier, timeframe]);
+  const { data, isLoading } = useUnifiedEarnings(role, courier?.id, timeframe);
 
-  const loadEarnings = async () => {
-    setLoading(true);
-    try {
-      let startDate: Date;
-      let endDate: Date = new Date();
-
-      switch (timeframe) {
-        case 'today':
-          startDate = new Date();
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        case 'week':
-          startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
-          endDate = endOfWeek(new Date(), { weekStartsOn: 1 });
-          break;
-        case 'month':
-          startDate = startOfMonth(new Date());
-          endDate = endOfMonth(new Date());
-          break;
-      }
-
-      const { data, error } = await supabase
-        .from('courier_earnings')
-        .select(`
-          *,
-          orders:order_id (
-            order_number
-          )
-        `)
-        .eq('courier_id', courier?.id)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedEarnings = data?.map((e: any) => ({
-        ...e,
-        order_number: e.orders?.order_number || 'N/A',
-      })) || [];
-
-      setEarnings(formattedEarnings);
-    } catch (error) {
-      console.error('Failed to load earnings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const totals = earnings.reduce(
-    (acc, e) => ({
-      commission: acc.commission + parseFloat(e.commission_amount.toString()),
-      tips: acc.tips + parseFloat((e.tip_amount || 0).toString()),
-      bonuses: acc.bonuses + parseFloat((e.bonus_amount || 0).toString()),
-      total: acc.total + parseFloat(e.total_earned.toString()),
-    }),
-    { commission: 0, tips: 0, bonuses: 0, total: 0 }
-  );
+  const earnings = data?.earnings || [];
+  const totals = data?.totals || { commission: 0, tips: 0, bonuses: 0, deliveryFees: 0, total: 0 };
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,7 +34,10 @@ export default function CourierEarningsPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/courier/dashboard')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Earnings</h1>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold">Earnings</h1>
+            <RoleIndicator role={role} />
+          </div>
         </div>
       </header>
 
@@ -134,34 +64,75 @@ export default function CourierEarningsPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Commission
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totals.commission.toFixed(2)}</div>
-            </CardContent>
-          </Card>
+          {role === 'courier' ? (
+            <>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Commission
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${totals.commission.toFixed(2)}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totals.tips.toFixed(2)}</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Tips</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${totals.tips.toFixed(2)}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Bonuses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totals.bonuses.toFixed(2)}</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Bonuses</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${totals.bonuses.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Delivery Fees
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${totals.deliveryFees.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Deliveries
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{earnings.length}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Avg per Delivery
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ${earnings.length > 0 ? (totals.total / earnings.length).toFixed(2) : '0.00'}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Earnings List */}
@@ -176,7 +147,7 @@ export default function CourierEarningsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {isLoading ? (
               <p className="text-center py-8 text-muted-foreground">Loading earnings...</p>
             ) : earnings.length === 0 ? (
               <div className="text-center py-8 space-y-2">
@@ -191,32 +162,55 @@ export default function CourierEarningsPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-2 flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">Order #{earning.order_number}</h3>
+                            {earning.type === 'courier' ? (
+                              <Package className="h-4 w-4 text-primary" />
+                            ) : (
+                              <Truck className="h-4 w-4 text-primary" />
+                            )}
+                            <h3 className="font-semibold">
+                              {earning.type === 'courier' ? 'Order' : 'Delivery'} #{earning.order_number}
+                            </h3>
                             <Badge variant="outline">Delivered</Badge>
                           </div>
+                          {earning.type === 'runner' && earning.client_name && (
+                            <p className="text-sm text-muted-foreground">{earning.client_name}</p>
+                          )}
                           <div className="text-sm text-muted-foreground">
                             {format(new Date(earning.created_at), 'MMM dd, yyyy h:mm a')}
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Commission:</span>{' '}
-                              <span className="font-medium">
-                                ${parseFloat(earning.commission_amount.toString()).toFixed(2)}
-                              </span>
-                            </div>
-                            {earning.tip_amount > 0 && (
+                            {earning.type === 'courier' ? (
+                              <>
+                                {earning.commission_amount !== undefined && (
+                                  <div>
+                                    <span className="text-muted-foreground">Commission:</span>{' '}
+                                    <span className="font-medium">
+                                      ${earning.commission_amount.toFixed(2)}
+                                    </span>
+                                  </div>
+                                )}
+                                {earning.tip_amount && earning.tip_amount > 0 && (
+                                  <div>
+                                    <span className="text-muted-foreground">Tip:</span>{' '}
+                                    <span className="font-medium text-green-600">
+                                      ${earning.tip_amount.toFixed(2)}
+                                    </span>
+                                  </div>
+                                )}
+                                {earning.bonus_amount && earning.bonus_amount > 0 && (
+                                  <div>
+                                    <span className="text-muted-foreground">Bonus:</span>{' '}
+                                    <span className="font-medium text-blue-600">
+                                      ${earning.bonus_amount.toFixed(2)}
+                                    </span>
+                                  </div>
+                                )}
+                              </>
+                            ) : (
                               <div>
-                                <span className="text-muted-foreground">Tip:</span>{' '}
-                                <span className="font-medium text-green-600">
-                                  ${parseFloat(earning.tip_amount.toString()).toFixed(2)}
-                                </span>
-                              </div>
-                            )}
-                            {earning.bonus_amount > 0 && (
-                              <div>
-                                <span className="text-muted-foreground">Bonus:</span>{' '}
-                                <span className="font-medium text-blue-600">
-                                  ${parseFloat(earning.bonus_amount.toString()).toFixed(2)}
+                                <span className="text-muted-foreground">Delivery Fee:</span>{' '}
+                                <span className="font-medium">
+                                  ${earning.delivery_fee?.toFixed(2)}
                                 </span>
                               </div>
                             )}
@@ -224,7 +218,7 @@ export default function CourierEarningsPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-primary">
-                            ${parseFloat(earning.total_earned.toString()).toFixed(2)}
+                            ${earning.total_earned.toFixed(2)}
                           </div>
                           <div className="text-xs text-muted-foreground">Total</div>
                         </div>

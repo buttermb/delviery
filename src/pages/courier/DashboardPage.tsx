@@ -6,30 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import {
-  Package,
-  MapPin,
-  Navigation,
-  Menu,
-  LogOut,
-  DollarSign,
-  Clock,
-} from 'lucide-react';
-import { formatDistance } from 'date-fns';
+import { Package, Menu, LogOut, DollarSign, Clock } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
-import AvailableOrderCard from '@/components/courier/AvailableOrderCard';
 import { UnifiedDeliveryView } from '@/components/courier/UnifiedDeliveryView';
+import { RoleIndicator } from '@/components/courier/RoleIndicator';
+import { useRunnerStats } from '@/hooks/useRunnerStats';
 import { useOrderNotifications } from '@/hooks/useOrderNotifications';
 import { AnimatePresence } from 'framer-motion';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface Order {
   id: string;
@@ -51,15 +37,19 @@ interface Stats {
 export default function CourierDashboardPage() {
   const { courier, loading, isOnline, toggleOnlineStatus, role } = useCourier();
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<Stats>({
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const { data: runnerStats } = useRunnerStats(role === 'runner' ? courier?.id : undefined);
+  const [courierStats, setCourierStats] = useState<Stats>({
     todayDeliveries: 0,
     todayEarnings: 0,
     avgDeliveryTime: 0,
     completionRate: 100,
   });
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+
+  const stats = role === 'runner' && runnerStats ? runnerStats : courierStats;
 
   useEffect(() => {
     if (courier) {
@@ -116,29 +106,29 @@ export default function CourierDashboardPage() {
   };
 
   const loadStats = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
+    if (role === 'courier') {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data: earnings, error } = await supabase
+          .from('courier_earnings')
+          .select('total_earned')
+          .eq('courier_id', courier?.id)
+          .gte('created_at', today);
 
-      // Get today's deliveries and earnings
-      const { data: earnings, error: earningsError } = await supabase
-        .from('courier_earnings')
-        .select('total_earned')
-        .eq('courier_id', courier?.id)
-        .gte('created_at', today);
+        if (error) throw error;
 
-      if (earningsError) throw earningsError;
+        const todayEarnings = earnings?.reduce((sum, e) => sum + parseFloat(e.total_earned.toString()), 0) || 0;
+        const todayDeliveries = earnings?.length || 0;
 
-      const todayEarnings = earnings?.reduce((sum, e) => sum + parseFloat(e.total_earned.toString()), 0) || 0;
-      const todayDeliveries = earnings?.length || 0;
-
-      setStats({
-        todayDeliveries,
-        todayEarnings,
-        avgDeliveryTime: 28, // TODO: Calculate from actual data
-        completionRate: 98, // TODO: Calculate from actual data
-      });
-    } catch (error) {
-      console.error('Failed to load stats:', error);
+        setCourierStats({
+          todayDeliveries,
+          todayEarnings,
+          avgDeliveryTime: 28,
+          completionRate: 98,
+        });
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
     }
   };
 
@@ -241,10 +231,8 @@ export default function CourierDashboardPage() {
               </SheetContent>
             </Sheet>
             <div>
-              <h1 className="text-lg font-semibold">Courier Dashboard</h1>
-              {courier && (
-                <p className="text-xs text-muted-foreground">{courier.full_name}</p>
-              )}
+              <h1 className="text-lg font-semibold">{courier?.full_name}</h1>
+              <RoleIndicator role={role} />
             </div>
           </div>
         </div>
@@ -263,45 +251,12 @@ export default function CourierDashboardPage() {
           completionRate={stats.completionRate}
         />
 
-        {/* Available Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Available Orders</span>
-              <Badge variant={isOnline ? 'default' : 'secondary'}>
-                {isOnline ? 'Accepting Orders' : 'Offline'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loadingOrders ? (
-              <p className="text-muted-foreground text-center py-8">Loading orders...</p>
-            ) : availableOrders.length === 0 ? (
-              <div className="text-center py-8 space-y-2">
-                <Package className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <p className="text-muted-foreground">No orders available</p>
-                {!isOnline && (
-                  <p className="text-sm text-muted-foreground">
-                    Go online to start receiving orders
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <AnimatePresence mode="popLayout">
-                  {availableOrders.map((order) => (
-                    <AvailableOrderCard
-                      key={order.id}
-                      order={order}
-                      onAccept={handleAcceptOrder}
-                      disabled={!isOnline}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Unified Delivery View */}
+        <UnifiedDeliveryView
+          courierOrders={availableOrders}
+          onAcceptOrder={handleAcceptOrder}
+          onCompleteDelivery={() => {}}
+        />
       </main>
 
       <CourierKeyboardShortcuts

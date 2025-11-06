@@ -6886,6 +6886,13 @@ export type Database = {
             foreignKeyName: "runner_location_history_delivery_id_fkey"
             columns: ["delivery_id"]
             isOneToOne: false
+            referencedRelation: "runner_earnings_view"
+            referencedColumns: ["delivery_id"]
+          },
+          {
+            foreignKeyName: "runner_location_history_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
             referencedRelation: "wholesale_deliveries"
             referencedColumns: ["id"]
           },
@@ -8777,7 +8784,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      runner_earnings_view: {
+        Row: {
+          client_name: string | null
+          created_at: string | null
+          delivery_address: string | null
+          delivery_fee: number | null
+          delivery_id: string | null
+          order_id: string | null
+          order_number: string | null
+          order_total: number | null
+          runner_id: string | null
+          status: string | null
+          total_earned: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_deliveries_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_to_cart: {
@@ -8963,6 +9000,10 @@ export type Database = {
       }
       increment_giveaway_entries: {
         Args: { p_entries: number; p_giveaway_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      increment_runner_deliveries: {
+        Args: { p_runner_id: string }
         Returns: undefined
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
