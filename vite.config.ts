@@ -28,7 +28,6 @@ import viteCompression from 'vite-plugin-compression';
 import { VitePWA } from 'vite-plugin-pwa';
 import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
-import { cacheHeadersPlugin } from './vite-plugins/cache-headers';
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -44,7 +43,6 @@ export default defineConfig(({ mode }) => ({
     buildTimestampPlugin(),
     deferCssPlugin(),
     realtimeValidationPlugin(),
-    cacheHeadersPlugin(),
     viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
@@ -56,8 +54,7 @@ export default defineConfig(({ mode }) => ({
       threshold: 10240,
     }),
     VitePWA({
-      registerType: 'prompt', // Change to prompt to avoid blocking render
-      injectRegister: 'inline',
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'placeholder.svg'],
       manifest: {
         name: 'Delivery Platform - Wholesale Management',
@@ -152,22 +149,14 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     assetsInlineLimit: 4096,
     cssMinify: true,
-    cssCodeSplit: true,
     terserOptions: {
       compress: {
         drop_console: ['log'], // Only drop console.log, keep errors/warnings
         drop_debugger: true,
-        passes: 1, // Single pass - two passes breaks chunk references
-        // Removed pure_funcs - it breaks React.createElement calls between chunks
       },
       format: {
         comments: false,
       },
-      mangle: {
-        safari10: true, // Fix Safari 10 issues
-        toplevel: false, // Don't mangle top-level names - breaks cross-chunk references
-      },
-      module: true, // Preserve ES module structure
     },
     sourcemap: 'hidden', // Generate hidden source maps for production debugging
     commonjsOptions: {
@@ -180,23 +169,29 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/entry-[hash].js',
         chunkFileNames: 'assets/chunk-[hash].js',
         assetFileNames: 'assets/asset-[hash].[ext]',
-        // Simplified code splitting - fewer chunks = fewer loading order issues
+        // Ensure React is not split into separate chunks
         manualChunks: (id) => {
-          // React core - MUST load first
+          // Exclude React from chunking - keep it in vendor
           if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-            return 'react-vendor';
-          }
-          
-          // All other node_modules together
-          if (id.includes('node_modules')) {
             return 'vendor';
           }
-          
-          // Application code - let Vite auto-split by route
+          // Large deps into separate chunks
+          if (id.includes('node_modules')) {
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('mapbox') || id.includes('leaflet')) {
+              return 'vendor-maps';
+            }
+            return 'vendor';
+          }
         },
       },
-      preserveEntrySignatures: 'strict', // Prevent chunk ordering issues
     },
-    chunkSizeWarningLimit: 500, // Lower threshold to catch bloat earlier
+    chunkSizeWarningLimit: 600,
+    cssCodeSplit: true,
   },
 }));

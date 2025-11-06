@@ -18,14 +18,6 @@ import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
 // Setup global error handlers
 setupGlobalErrorHandlers();
 
-// Add chunk loading error handler - force reload on chunk failures
-window.addEventListener('error', (event) => {
-  if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
-    console.error('[APP] Chunk loading failed, forcing hard reload...');
-    window.location.reload();
-  }
-});
-
 // Log app initialization
 console.log('[APP] Starting app initialization...');
 
@@ -45,58 +37,21 @@ if (import.meta.env.PROD) {
   }
 }
 
-// Chunk loading timeout handler - force reload if chunks take too long
-let chunkLoadTimeout: NodeJS.Timeout | null = null;
-const CHUNK_LOAD_TIMEOUT = 10000; // 10 seconds
-
-window.addEventListener('DOMContentLoaded', () => {
-  chunkLoadTimeout = setTimeout(() => {
-    console.error('[APP] Chunk loading timeout - forcing reload with cache bypass');
-    // Add timestamp to bypass all caches
-    window.location.href = `${window.location.pathname}?nocache=${Date.now()}`;
-  }, CHUNK_LOAD_TIMEOUT);
-});
-
-// Clear timeout when app successfully mounts
-window.addEventListener('app-mounted', () => {
-  if (chunkLoadTimeout) {
-    clearTimeout(chunkLoadTimeout);
-    chunkLoadTimeout = null;
-    console.log('[APP] Chunk loading successful - timeout cleared');
-  }
-});
-
-// Clear ALL service workers and caches immediately (before React loads)
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    if (registrations.length > 0) {
-      console.log('[APP] Clearing ALL service workers...');
-      registrations.forEach(reg => reg.unregister());
-    }
-  });
-  
-  // Also clear all caches
-  caches.keys().then((names) => {
-    console.log('[APP] Clearing ALL caches:', names);
-    Promise.all(names.map(name => caches.delete(name)));
-  });
-}
-
-// Register NEW service worker after app loads successfully (production only)
+// Register service worker (production only)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    setTimeout(async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js?v=12');
-        console.log('[APP] ServiceWorker registered:', registration.scope);
-        
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-      } catch (error) {
-        console.error('[APP] ServiceWorker registration failed:', error);
+  window.addEventListener('load', async () => {
+    try {
+      // Register service worker
+      const registration = await navigator.serviceWorker.register('/sw.js?v=10');
+      console.log('[APP] ServiceWorker registered:', registration.scope);
+      
+      // Only activate new service workers, don't force reload
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
-    }, 5000);
+    } catch (error) {
+      console.error('[APP] ServiceWorker registration failed:', error);
+    }
   });
 }
 
@@ -140,58 +95,11 @@ try {
     throw new Error('Root element not found');
   }
   
-  console.log('[APP] Mounting React app...');
-  
-  // Create and mount React app first
   createRoot(rootElement).render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   );
-  
-  // Remove loader only after React confirms it's mounted
-  let loaderRemoved = false;
-  
-  const removeLoader = () => {
-    if (loaderRemoved) return;
-    loaderRemoved = true;
-    
-    console.log('[APP] Removing loader, app is ready');
-    const initialLoader = document.getElementById('app-loader');
-    if (initialLoader) {
-      initialLoader.classList.add('fade-out');
-      setTimeout(() => initialLoader.remove(), 300);
-    }
-    
-    // Clear service workers AFTER app loads successfully
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        if (registrations.length > 0) {
-          console.log('[APP] Post-load: Clearing stale service workers...');
-          registrations.forEach(reg => {
-            if (!reg.active || reg.active.scriptURL.includes('sw.js?v=')) {
-              // Keep current version, clear old ones
-              if (!reg.active?.scriptURL.includes('sw.js?v=12')) {
-                reg.unregister();
-              }
-            }
-          });
-        }
-      });
-    }
-  };
-  
-  // Listen for app mount event
-  window.addEventListener('app-mounted', removeLoader, { once: true });
-  
-  // Fallback timeout (3 seconds) in case event doesn't fire
-  setTimeout(() => {
-    if (!loaderRemoved) {
-      console.warn('[APP] Fallback timeout triggered, removing loader anyway');
-      removeLoader();
-    }
-  }, 3000);
-  
 } catch (error) {
   logger.error('[APP] Fatal initialization error', error, 'main');
   

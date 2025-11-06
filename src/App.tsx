@@ -39,7 +39,6 @@ import { toast } from "./hooks/use-toast";
 import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
-import { UpdatePrompt } from "./components/UpdatePrompt";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -99,7 +98,6 @@ const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 // Tenant Admin Pages
 const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
-const TenantAdminProtectedWrapper = lazy(() => import("./components/auth/TenantAdminProtectedWrapper").then(m => ({ default: m.TenantAdminProtectedWrapper })));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
@@ -282,12 +280,6 @@ const App = () => {
     }
   }, []);
   
-  // Signal when App has successfully mounted and rendered
-  useEffect(() => {
-    console.log('[APP] React app mounted successfully, dispatching event...');
-    window.dispatchEvent(new CustomEvent('app-mounted'));
-  }, []);
-  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -304,7 +296,6 @@ const App = () => {
                     <SkipToContent />
                     <OfflineBanner />
                     <InstallPWA />
-                    <UpdatePrompt />
                     
                     <Toaster />
                     <Sonner />
@@ -379,17 +370,17 @@ const App = () => {
                         <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                         
                         {/* Welcome Page (must be before AdminLayout) */}
-                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedWrapper><TenantAdminWelcomePage /></TenantAdminProtectedWrapper>} />
+                        <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
                         
                         {/* Trial Expired Page (must be before AdminLayout) */}
-                        <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedWrapper><TrialExpiredPage /></TenantAdminProtectedWrapper>} />
+                        <Route path="/:tenantSlug/admin/trial-expired" element={<TenantAdminProtectedRoute><TrialExpiredPage /></TenantAdminProtectedRoute>} />
                         
                         {/* Help Page */}
-                        <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedWrapper><HelpPage /></TenantAdminProtectedWrapper>} />
+                        <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
                         
                         {/* Tenant Admin Portal - Exact redirect */}
                         <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />
-                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedWrapper><AdminLayout /></TenantAdminProtectedWrapper>}>
+                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
                           <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
                           {/* Legacy route redirects - redirect old paths to new paths */}
                           <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />

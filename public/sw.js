@@ -7,7 +7,7 @@
 // Version: 4.0.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v12'; // Increment this manually on each deploy
+const CACHE_VERSION = 'v9'; // Increment this manually on each deploy
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -75,14 +75,10 @@ self.addEventListener('activate', (event) => {
       // Force immediate control
       await self.clients.claim();
       
-      // Notify all clients about version update
+      // Notify all clients to reload
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
-        client.postMessage({ 
-          type: 'VERSION_UPDATE', 
-          version: CACHE_VERSION,
-          timestamp: Date.now()
-        });
+        client.postMessage({ type: 'CACHE_CLEARED', version: CACHE_VERSION });
       });
       
       console.log('[SW] All caches cleared, service worker activated');
@@ -148,44 +144,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-ONLY for JavaScript chunks - NEVER cache during initial load to prevent stale chunk issues
-  if (event.request.destination === 'script') {
+  // Cache first for static assets (JS, CSS)
+  if (event.request.destination === 'script' || event.request.destination === 'style') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Only cache non-chunk JavaScript (main entry files)
-          if (response.status === 200 && !url.pathname.includes('chunk-')) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, response.clone());
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Only fallback to cache for non-chunk files
-          if (!url.pathname.includes('chunk-')) {
-            return caches.match(event.request);
-          }
-          // For chunks, always throw to trigger reload
-          throw new Error('Chunk load failed - network required');
-        })
-    );
-    return;
-  }
-
-  // Network-first for CSS
-  if (event.request.destination === 'style') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
+      caches.match(event.request).then((cached) => {
+        if (cached && !isCacheExpired(cached, CACHE_DURATION.static)) {
+          return cached;
+        }
+        return fetch(event.request).then((response) => {
           if (response.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, response.clone());
             });
           }
           return response;
-        })
-        .catch(() => caches.match(event.request))
+        });
+      })
     );
     return;
   }
@@ -350,14 +324,6 @@ self.addEventListener('message', (event) => {
     event.waitUntil(
       caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))))
     );
-  }
-  
-  if (event.data && event.data.type === 'CHECK_VERSION') {
-    // Respond with current version
-    event.source.postMessage({
-      type: 'VERSION_INFO',
-      version: CACHE_VERSION
-    });
   }
   
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
