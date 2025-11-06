@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, Clock, Zap } from 'lucide-react';
+import { CheckCircle, Clock, Zap, Sparkles } from 'lucide-react';
 
 const steps = [
   { label: 'Order Received', icon: Clock, status: 'complete' },
@@ -76,8 +76,15 @@ export function WorkflowDiagram() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
       >
-        <div className="text-sm text-foreground font-medium">⚡ 75% Faster Processing</div>
-        <div className="text-xs text-muted-foreground mt-1">Automated workflows save 15hrs/week</div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-accent" />
+          </div>
+          <div>
+            <div className="text-sm text-foreground font-medium">75% Faster Processing</div>
+            <div className="text-xs text-muted-foreground">Automated workflows save 15hrs/week</div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

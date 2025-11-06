@@ -1,32 +1,48 @@
 import { motion } from 'framer-motion';
-import { X, Check } from 'lucide-react';
+import { 
+  X, 
+  Check,
+  FileSpreadsheet,
+  Clock,
+  AlertCircle,
+  Mail,
+  ShieldAlert,
+  TrendingDown,
+  LayoutDashboard,
+  Sparkles,
+  RefreshCw,
+  Target,
+  ShieldCheck,
+  BarChart3,
+  type LucideIcon
+} from 'lucide-react';
 
 interface Problem {
-  icon: string;
+  icon: LucideIcon;
   text: string;
 }
 
 interface Solution {
-  icon: string;
+  icon: LucideIcon;
   text: string;
 }
 
 const problems: Problem[] = [
-  { icon: '📊', text: 'Multiple spreadsheets to manage' },
-  { icon: '⏰', text: 'Hours wasted on manual data entry' },
-  { icon: '❌', text: 'No real-time inventory tracking' },
-  { icon: '📧', text: 'Order management via email chaos' },
-  { icon: '🔒', text: 'Security concerns with shared files' },
-  { icon: '📈', text: 'No insights into business performance' },
+  { icon: FileSpreadsheet, text: 'Multiple spreadsheets to manage' },
+  { icon: Clock, text: 'Hours wasted on manual data entry' },
+  { icon: AlertCircle, text: 'No real-time inventory tracking' },
+  { icon: Mail, text: 'Order management via email chaos' },
+  { icon: ShieldAlert, text: 'Security concerns with shared files' },
+  { icon: TrendingDown, text: 'No insights into business performance' },
 ];
 
 const solutions: Solution[] = [
-  { icon: '✅', text: 'Single unified dashboard' },
-  { icon: '⚡', text: 'Automation saves 15hrs/week' },
-  { icon: '📱', text: 'Real-time updates across devices' },
-  { icon: '🎯', text: 'Streamlined order processing' },
-  { icon: '🛡️', text: 'Bank-level encryption & security' },
-  { icon: '📊', text: 'Powerful analytics & insights' },
+  { icon: LayoutDashboard, text: 'Single unified dashboard' },
+  { icon: Sparkles, text: 'Automation saves 15hrs/week' },
+  { icon: RefreshCw, text: 'Real-time updates across devices' },
+  { icon: Target, text: 'Streamlined order processing' },
+  { icon: ShieldCheck, text: 'Bank-level encryption & security' },
+  { icon: BarChart3, text: 'Powerful analytics & insights' },
 ];
 
 export function ProblemSolutionSection() {
@@ -63,19 +79,24 @@ export function ProblemSolutionSection() {
                 <h3 className="text-2xl font-bold text-foreground">Before DevPanel</h3>
               </div>
               <ul className="space-y-4">
-                {problems.map((problem, index) => (
-                  <motion.li
-                    key={index}
-                    className="flex items-center gap-3 text-muted-foreground"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <span className="text-2xl">{problem.icon}</span>
-                    <span>{problem.text}</span>
-                  </motion.li>
-                ))}
+                {problems.map((problem, index) => {
+                  const Icon = problem.icon;
+                  return (
+                    <motion.li
+                      key={index}
+                      className="flex items-center gap-3 text-muted-foreground"
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      </div>
+                      <span>{problem.text}</span>
+                    </motion.li>
+                  );
+                })}
               </ul>
             </motion.div>
 
@@ -93,19 +114,24 @@ export function ProblemSolutionSection() {
                 <h3 className="text-2xl font-bold text-foreground">With DevPanel</h3>
               </div>
               <ul className="space-y-4">
-                {solutions.map((solution, index) => (
-                  <motion.li
-                    key={index}
-                    className="flex items-center gap-3 text-foreground font-medium"
-                    initial={{ opacity: 0, x: 10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <span className="text-2xl">{solution.icon}</span>
-                    <span>{solution.text}</span>
-                  </motion.li>
-                ))}
+                {solutions.map((solution, index) => {
+                  const Icon = solution.icon;
+                  return (
+                    <motion.li
+                      key={index}
+                      className="flex items-center gap-3 text-foreground font-medium"
+                      initial={{ opacity: 0, x: 10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <span>{solution.text}</span>
+                    </motion.li>
+                  );
+                })}
               </ul>
             </motion.div>
           </div>

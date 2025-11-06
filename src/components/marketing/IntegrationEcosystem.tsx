@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, CheckCircle } from 'lucide-react';
+import { X, ExternalLink, CheckCircle, ShoppingBag, Wallet, Target, CreditCard, MessageSquare, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SimplifiedIntegrationHub } from './SimplifiedIntegrationHub';
 
 interface Integration {
   name: string;
-  logo: string;
+  logo: LucideIcon;
   description: string;
   category: 'ecommerce' | 'accounting' | 'crm' | 'payment' | 'communication';
 }
@@ -14,31 +14,31 @@ interface Integration {
 const integrations: Integration[] = [
   {
     name: 'Shopify',
-    logo: '🛍️',
+    logo: ShoppingBag,
     description: 'Sync products & orders',
     category: 'ecommerce',
   },
   {
     name: 'QuickBooks',
-    logo: '📊',
+    logo: Wallet,
     description: 'Financial sync',
     category: 'accounting',
   },
   {
     name: 'HubSpot',
-    logo: '🎯',
+    logo: Target,
     description: 'CRM integration',
     category: 'crm',
   },
   {
     name: 'Stripe',
-    logo: '💳',
+    logo: CreditCard,
     description: 'Payment processing',
     category: 'payment',
   },
   {
     name: 'Twilio',
-    logo: '📱',
+    logo: MessageSquare,
     description: 'SMS notifications',
     category: 'communication',
   },
@@ -92,11 +92,13 @@ export function IntegrationEcosystem() {
                 
                 <div className="relative z-10">
                   <motion.div 
-                    className="text-4xl mb-3"
+                    className="mb-3 flex justify-center"
                     whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                     transition={{ duration: 0.5 }}
                   >
-                    {integration.logo}
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <integration.logo className="h-8 w-8 text-primary" />
+                    </div>
                   </motion.div>
                   <h3 className="font-semibold text-foreground mb-1">{integration.name}</h3>
                   <p className="text-xs text-muted-foreground mb-3">{integration.description}</p>
@@ -178,7 +180,9 @@ export function IntegrationEcosystem() {
               >
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-4">
-                        <div className="text-5xl">{selectedIntegration.logo}</div>
+                        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <selectedIntegration.logo className="h-8 w-8 text-primary" />
+                        </div>
                         <div>
                           <h3 className="text-2xl font-bold text-foreground">{selectedIntegration.name}</h3>
                           <p className="text-sm text-muted-foreground">{selectedIntegration.description}</p>

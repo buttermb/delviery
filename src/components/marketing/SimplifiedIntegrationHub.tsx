@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
+import { type LucideIcon } from 'lucide-react';
 
 interface Integration {
   name: string;
-  logo: string;
+  logo: LucideIcon;
 }
 
 interface SimplifiedIntegrationHubProps {
@@ -104,8 +105,8 @@ export function SimplifiedIntegrationHub({ integrations }: SimplifiedIntegration
                 />
 
                 {/* Integration Node */}
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border flex items-center justify-center text-2xl shadow-lg hover:border-primary/50 transition-colors">
-                  {integration.logo}
+                <div className="w-16 h-16 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-primary/50 transition-colors">
+                  <integration.logo className="h-7 w-7 text-primary" />
                 </div>
                 
                 {/* Label */}
