@@ -20,6 +20,7 @@ import { CTASection } from "@/components/marketing/CTASection";
 import { HeroSection } from "@/components/marketing/HeroSection";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
+import { ParallaxBackground } from "@/components/marketing/ParallaxBackground";
 import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 
@@ -85,8 +86,11 @@ export default function MarketingHome() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <SEOHead 
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Parallax Background Effects */}
+      <ParallaxBackground />
+      
+      <SEOHead
         title="DevPanel - Modern CRM for Wholesale Distributors"
         description="Manage customers, products, orders, and inventory in one powerful platform. Disposable menus, real-time tracking, customer portal. Start free trial."
         structuredData={{
@@ -171,10 +175,21 @@ export default function MarketingHome() {
 
           <div className="text-center mt-16">
             <Link to="/features">
-              <Button variant="outline" size="lg" className="mx-auto">
-                Discover More Features
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="outline" size="lg" className="mx-auto group">
+                  Discover More Features
+                  <motion.div
+                    className="inline-block ml-2"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.div>
+                </Button>
+              </motion.div>
             </Link>
           </div>
         </div>
@@ -271,16 +286,22 @@ export default function MarketingHome() {
                   ))}
                 </ul>
                 <Link to="/signup">
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                        : ""
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   >
-                    {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
-                  </Button>
+                    <Button
+                      className={`w-full ${
+                        plan.popular
+                          ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                          : ""
+                      }`}
+                      variant={plan.popular ? "default" : "outline"}
+                    >
+                      {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
+                    </Button>
+                  </motion.div>
                 </Link>
               </div>
             ))}
@@ -306,10 +327,21 @@ export default function MarketingHome() {
               </span>
             </div>
             <Link to="/pricing">
-              <Button variant="ghost">
-                See Full Pricing Details
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="ghost" className="group">
+                  See Full Pricing Details
+                  <motion.div
+                    className="inline-block ml-2"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.div>
+                </Button>
+              </motion.div>
             </Link>
           </div>
 

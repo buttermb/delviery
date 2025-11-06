@@ -12,6 +12,7 @@ import { MiniSidebarPreview } from './dashboard/MiniSidebarPreview';
 import { AnimatedMetricValue } from './dashboard/AnimatedMetricValue';
 import { dashboardViews, DashboardViewKey } from './dashboard/DashboardViews';
 import { SuperstarFeaturesCard } from './dashboard/SuperstarFeaturesCard';
+import { DashboardTour } from './DashboardTour';
 import { 
   ShoppingCart, 
   Package, 
@@ -127,9 +128,14 @@ export function EnhancedDashboardPreview() {
       </motion.div>
 
       {/* Unified Dashboard Panel */}
-      <div className="flex flex-col sm:flex-row bg-card/80 backdrop-blur-sm border border-border/50 border-t-0 rounded-b-lg shadow-lg overflow-hidden ring-2 ring-primary/10 mx-2 sm:mx-0">
+      <div className="flex flex-col sm:flex-row bg-card/80 backdrop-blur-sm border border-border/50 border-t-0 rounded-b-lg shadow-lg overflow-hidden ring-2 ring-primary/10 mx-2 sm:mx-0 relative">
+        {/* Dashboard Tour Overlay */}
+        {currentStep >= 0 && (
+          <DashboardTour />
+        )}
+        
         {/* Sidebar - Hidden on mobile, Interactive */}
-        <div className="hidden sm:block">
+        <div className="hidden sm:block" id="sidebar">
           <MiniSidebarPreview activeView={activeView} onViewChange={setActiveView} />
         </div>
 
