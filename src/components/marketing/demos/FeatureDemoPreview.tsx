@@ -102,14 +102,14 @@ export function FeatureDemoPreview({ featureId }: FeatureDemoPreviewProps) {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        key={featureId}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.3 }}
-        className="h-full"
-      >
+              <motion.div
+                key={featureId}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ type: 'spring' as const, stiffness: 200, damping: 25 }}
+                className="h-full"
+              >
         {renderDemo()}
       </motion.div>
     </AnimatePresence>

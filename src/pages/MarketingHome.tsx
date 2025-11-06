@@ -143,7 +143,7 @@ export default function MarketingHome() {
       <HeroSection />
 
       {/* SECTION 2: LIVE ACTIVITY */}
-      <SectionTransition variant="fade">
+      <SectionTransition variant="fade" delay={0}>
         <Suspense fallback={<SectionLoader />}>
           <LiveActivitySection />
         </Suspense>
@@ -151,7 +151,7 @@ export default function MarketingHome() {
 
 
       {/* SECTION 3: PROBLEM/SOLUTION */}
-      <SectionTransition variant="fade" delay={0.1}>
+      <SectionTransition variant="fade" delay={0}>
         <Suspense fallback={<SectionLoader />}>
           <ProblemSolutionSection />
         </Suspense>
@@ -270,14 +270,14 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 8: COMPARISON */}
-      <SectionTransition variant="fade">
+      <SectionTransition variant="fade" delay={0}>
         <Suspense fallback={<SectionLoader />}>
           <ComparisonSection />
         </Suspense>
       </SectionTransition>
 
       {/* SECTION 9: INTEGRATION */}
-      <SectionTransition variant="fade" delay={0.1}>
+      <SectionTransition variant="fade" delay={0}>
         <Suspense fallback={<SectionLoader />}>
           <IntegrationEcosystem />
         </Suspense>

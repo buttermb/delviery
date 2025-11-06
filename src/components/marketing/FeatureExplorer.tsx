@@ -150,7 +150,7 @@ export function FeatureExplorer() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <button
+                <motion.button
                   key={feature.id}
                   onClick={() => setActiveTab(feature.id)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
@@ -158,10 +158,18 @@ export function FeatureExplorer() {
                       ? 'bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] text-white shadow-lg'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 >
-                  <Icon className="h-4 w-4" />
+                  <motion.div
+                    animate={activeTab === feature.id ? { rotate: [0, -10, 10, 0] } : {}}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </motion.div>
                   <span className="hidden sm:inline">{feature.title}</span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -173,7 +181,7 @@ export function FeatureExplorer() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
             >
               <div className="glass-card p-8 rounded-xl border border-border">
                 <div className="grid md:grid-cols-2 gap-8">
@@ -202,7 +210,12 @@ export function FeatureExplorer() {
                           className="flex items-center gap-3"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
+                          transition={{ 
+                            type: 'spring' as const,
+                            stiffness: 300,
+                            damping: 25,
+                            delay: index * 0.05,
+                          }}
                         >
                           <div className="w-2 h-2 rounded-full bg-[hsl(var(--marketing-primary))]" />
                           <span className="text-foreground">{benefit}</span>
@@ -221,7 +234,12 @@ export function FeatureExplorer() {
                           className="glass-card p-4 rounded-lg text-center"
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.1 }}
+                          transition={{ 
+                            type: 'spring' as const,
+                            stiffness: 300,
+                            damping: 25,
+                            delay: index * 0.05,
+                          }}
                         >
                           <div className="text-2xl font-bold text-[hsl(var(--marketing-primary))] mb-1">
                             {metric.value}

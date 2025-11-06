@@ -73,8 +73,14 @@ export function IntegrationEcosystem() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ 
+                  type: 'spring',
+                  stiffness: 200,
+                  damping: 20,
+                  delay: index * 0.03,
+                }}
                 whileHover={{ y: -8, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedIntegration(integration)}
               >
                 {/* Glow effect on hover */}
@@ -249,13 +255,14 @@ export function IntegrationEcosystem() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <motion.div
-                    className="glass-card p-8 rounded-2xl max-w-md w-full border border-border shadow-2xl"
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.9, y: 20 }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
+              <motion.div
+                className="glass-card p-8 rounded-2xl max-w-md w-full border border-border shadow-2xl"
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}
+                onClick={(e) => e.stopPropagation()}
+              >
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-4">
                         <div className="text-5xl">{selectedIntegration.logo}</div>

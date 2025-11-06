@@ -23,7 +23,12 @@ export function AnimatedStockChart() {
             className="space-y-2"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ 
+              type: 'spring',
+              stiffness: 200,
+              damping: 20,
+              delay: index * 0.05,
+            }}
           >
             <div className="flex justify-between items-center text-sm">
               <span className="text-foreground font-medium">{item.name}</span>

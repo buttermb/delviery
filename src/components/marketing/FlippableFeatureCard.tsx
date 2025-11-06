@@ -38,7 +38,7 @@ export function FlippableFeatureCard({
         className="relative w-full h-full"
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
+        transition={{ type: 'spring', stiffness: 120, damping: 18 }}
         style={{ transformStyle: 'preserve-3d' }}
       >
         {/* Front Side */}
@@ -47,9 +47,13 @@ export function FlippableFeatureCard({
           style={{ backfaceVisibility: 'hidden' }}
         >
           <div className="glass-card p-6 rounded-xl h-full flex flex-col border border-border hover:border-primary/50 transition-colors group">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <motion.div 
+              className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
               <Icon className="h-7 w-7 text-white" />
-            </div>
+            </motion.div>
             <h3 className="text-xl font-bold mb-3 text-foreground">{title}</h3>
             <p className="text-muted-foreground text-sm flex-grow">{description}</p>
             <div className="mt-4 text-xs text-primary font-medium flex items-center gap-1">
@@ -76,13 +80,18 @@ export function FlippableFeatureCard({
             {/* Benefits */}
             <div className="space-y-2 mb-4 flex-grow">
               {benefits.map((benefit, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-start gap-2 text-sm"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isFlipped ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                  transition={{ delay: index * 0.1 }}
-                >
+                  <motion.div
+                    key={index}
+                    className="flex items-start gap-3"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isFlipped ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
+                    transition={{ 
+                      type: 'spring' as const,
+                      stiffness: 300,
+                      damping: 25,
+                      delay: index * 0.05,
+                    }}
+                  >
                   <CheckCircle className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
                   <span className="text-foreground">{benefit}</span>
                 </motion.div>
@@ -90,10 +99,14 @@ export function FlippableFeatureCard({
             </div>
 
             {/* Metric */}
-            <div className="bg-background/50 rounded-lg p-3 mb-3 text-center">
+            <motion.div
+              className="bg-card/50 rounded-lg p-3 mb-3 text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring' as const, stiffness: 400, damping: 20 }}
+            >
               <div className="text-2xl font-bold text-primary">{metric.value}</div>
               <div className="text-xs text-muted-foreground">{metric.label}</div>
-            </div>
+            </motion.div>
 
             {/* CTA */}
             <Link to={link}>

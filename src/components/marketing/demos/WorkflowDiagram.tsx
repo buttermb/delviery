@@ -25,7 +25,12 @@ export function WorkflowDiagram() {
               className="flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.2 }}
+              transition={{ 
+                type: 'spring',
+                stiffness: 200,
+                damping: 20,
+                delay: index * 0.1,
+              }}
             >
               <motion.div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
