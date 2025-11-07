@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 export default function CustomerSettingsPage() {
   const { customer, tenant } = useCustomerAuth();
@@ -63,7 +64,7 @@ export default function CustomerSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("customer_token")}`,
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.CUSTOMER_TOKEN)}`,
         },
         body: JSON.stringify({
           action: "update-password",

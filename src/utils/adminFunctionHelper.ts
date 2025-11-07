@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import bugFinder from './bugFinder';
 import { logger } from './logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface FunctionCallOptions {
   functionName: string;
@@ -35,7 +36,7 @@ export async function callAdminFunction<T = any>({
       headers.Authorization = `Bearer ${accessToken}`;
     } else {
       // Try to get from localStorage as fallback
-      const storedToken = localStorage.getItem('tenant_admin_access_token');
+      const storedToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
       if (storedToken) {
         headers.Authorization = `Bearer ${storedToken}`;
       }

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, Check, AlertCircle, Clock, User, Building2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { getTokenExpiration, verifyJWT } from '@/lib/auth/jwt';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface DecodedToken {
   header: Record<string, unknown>;
@@ -38,9 +39,9 @@ export function JWTDecoder() {
     const tokens: TokenInfo[] = [];
     
     try {
-      const customerToken = localStorage.getItem('customer_token');
-      const tenantAdminAccessToken = localStorage.getItem('tenant_admin_access_token');
-      const superAdminToken = localStorage.getItem('super_admin_token');
+      const customerToken = localStorage.getItem(STORAGE_KEYS.CUSTOMER_TOKEN);
+      const tenantAdminAccessToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+      const superAdminToken = localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TOKEN);
       
       if (customerToken) {
         tokens.push({ name: 'Customer Token', token: customerToken, icon: User });

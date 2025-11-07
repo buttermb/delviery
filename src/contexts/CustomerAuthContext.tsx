@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { logger } from "@/utils/logger";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 interface Customer {
   id: string;
@@ -43,9 +44,9 @@ interface CustomerAuthContextType {
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "customer_token";
-const CUSTOMER_KEY = "customer_user";
-const TENANT_KEY = "customer_tenant_data";
+const TOKEN_KEY = STORAGE_KEYS.CUSTOMER_TOKEN;
+const CUSTOMER_KEY = STORAGE_KEYS.CUSTOMER_USER;
+const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
 // Bound fetch to prevent "Illegal invocation" error in production builds
 const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;

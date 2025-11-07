@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { logger } from "@/utils/logger";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 interface SuperAdmin {
   id: string;
@@ -20,8 +21,8 @@ interface SuperAdminAuthContextType {
 
 const SuperAdminAuthContext = createContext<SuperAdminAuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "super_admin_token";
-const SUPER_ADMIN_KEY = "super_admin_user";
+const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_TOKEN;
+const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
 
 // Bound fetch to prevent "Illegal invocation" error in production builds
 const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;

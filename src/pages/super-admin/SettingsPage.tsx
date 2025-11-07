@@ -8,6 +8,7 @@ import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 export default function SuperAdminSettingsPage() {
   const { superAdmin } = useSuperAdminAuth();
@@ -62,7 +63,7 @@ export default function SuperAdminSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("super_admin_token")}`,
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TOKEN)}`,
         },
         body: JSON.stringify({
           action: "update-password",

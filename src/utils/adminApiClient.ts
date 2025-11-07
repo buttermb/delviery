@@ -4,6 +4,7 @@
  */
 
 import { invokeEdgeFunction } from './edgeFunctionHelper';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface AdminApiOptions<T = any> {
   resource: 'api_keys' | 'audit_trail' | 'automation_rules' | 'custom_integrations' | 'webhooks' | 'custom_reports';
@@ -16,7 +17,7 @@ export interface AdminApiOptions<T = any> {
  * Call admin API operations through the edge function
  */
 export async function adminApiCall<T = any>(options: AdminApiOptions): Promise<{ data: T | null; error: Error | null }> {
-  const token = localStorage.getItem('tenant_admin_token');
+  const token = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
   
   if (!token) {
     return { data: null, error: new Error('Not authenticated') };

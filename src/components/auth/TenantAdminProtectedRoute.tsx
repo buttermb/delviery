@@ -45,6 +45,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     authRef.current = { token, admin, tenant };
   }, [token, admin, tenant]);
 
+  // Cleanup verification lock on unmount - MUST be before any conditional returns
+  useEffect(() => {
+    return () => {
+      verificationLockRef.current = false;
+    };
+  }, []);
+
   // Safety timeout to unlock verification if it gets stuck
   useEffect(() => {
     if (!verifying) return;
@@ -225,13 +232,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       </div>
     );
   }
-
-  // Cleanup verification lock on unmount
-  useEffect(() => {
-    return () => {
-      verificationLockRef.current = false;
-    };
-  }, []);
 
   // Success - render protected content with verification context
   return (

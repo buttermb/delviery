@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { logger } from "@/utils/logger";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 interface TenantAdmin {
   id: string;
@@ -54,10 +55,11 @@ interface TenantAdminAuthContextType {
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = "tenant_admin_access_token";
-const REFRESH_TOKEN_KEY = "tenant_admin_refresh_token";
-const ADMIN_KEY = "tenant_admin_user";
-const TENANT_KEY = "tenant_data";
+// Use centralized storage keys
+const ACCESS_TOKEN_KEY = STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN;
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN;
+const ADMIN_KEY = STORAGE_KEYS.TENANT_ADMIN_USER;
+const TENANT_KEY = STORAGE_KEYS.TENANT_DATA;
 
 // Token refresh buffer (5 minutes before expiration)
 const REFRESH_BUFFER_MS = 5 * 60 * 1000;
