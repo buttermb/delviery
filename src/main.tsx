@@ -95,20 +95,41 @@ if (import.meta.env.PROD) {
   }
 }
 
-// Register service worker (production only)
+// Register custom service worker (production only)
+// IMPORTANT: This must run BEFORE React renders to prevent hook order issues
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  // Unregister any existing Workbox service workers first
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      // Unregister Workbox service workers (they have 'workbox' in scope or scriptURL)
+      if (registration.scope.includes('workbox') || 
+          registration.active?.scriptURL?.includes('workbox') ||
+          registration.waiting?.scriptURL?.includes('workbox') ||
+          registration.installing?.scriptURL?.includes('workbox')) {
+        registration.unregister();
+      }
+    });
+  });
+
+  // Register custom service worker after a short delay to ensure cleanup happens first
   window.addEventListener('load', async () => {
     try {
-      // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js?v=10');
-      console.log('[APP] ServiceWorker registered:', registration.scope);
+      // Small delay to ensure Workbox cleanup completes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Register custom service worker
+      const registration = await navigator.serviceWorker.register('/sw.js?v=11'); // Bump version
+      logger.debug('[APP] Custom ServiceWorker registered', undefined, { 
+        component: 'main',
+        scope: registration.scope 
+      });
       
       // Only activate new service workers, don't force reload
       if (registration.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
     } catch (error) {
-      console.error('[APP] ServiceWorker registration failed:', error);
+      logger.error('[APP] ServiceWorker registration failed', error, { component: 'main' });
     }
   });
 }

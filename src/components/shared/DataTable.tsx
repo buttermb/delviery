@@ -43,6 +43,8 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VirtualizedTable } from './VirtualizedTable';
+import { useMemo } from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData>[];
@@ -61,6 +63,10 @@ interface DataTableProps<TData, TValue> {
   enableColumnVisibility?: boolean;
   onSelectionChange?: (selected: TData[]) => void;
   getRowId?: (row: TData) => string | number;
+  virtualized?: boolean;
+  virtualizedThreshold?: number;
+  virtualizedHeight?: number;
+  virtualizedRowHeight?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -80,6 +86,10 @@ export function DataTable<TData, TValue>({
   enableColumnVisibility = true,
   onSelectionChange,
   getRowId,
+  virtualized,
+  virtualizedThreshold = 100,
+  virtualizedHeight = 600,
+  virtualizedRowHeight = 50,
 }: DataTableProps<TData, TValue>) {
   const [currentPage, setCurrentPage] = useState(0);
   const [searchValue, setSearchValue] = useState('');
@@ -89,18 +99,27 @@ export function DataTable<TData, TValue>({
   );
 
   // Filter data
-  const filteredData = data.filter((item: any) => {
-    if (!searchValue) return true;
-    const searchLower = searchValue.toLowerCase();
-    const columnKey = searchColumn as keyof TData;
-    const value = item[columnKey];
-    return value?.toString().toLowerCase().includes(searchLower);
-  });
+  const filteredData = useMemo(() => {
+    return data.filter((item: TData) => {
+      if (!searchValue) return true;
+      const searchLower = searchValue.toLowerCase();
+      const columnKey = searchColumn as keyof TData;
+      const value = item[columnKey];
+      return value?.toString().toLowerCase().includes(searchLower);
+    });
+  }, [data, searchValue, searchColumn]);
 
-  // Paginate data
-  const paginatedData = pagination
-    ? filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-    : filteredData;
+  // Determine if virtualization should be used
+  const shouldVirtualize = virtualized ?? (filteredData.length > virtualizedThreshold);
+  const useVirtual = shouldVirtualize && !pagination; // Don't virtualize if pagination is enabled
+
+  // Paginate data (only if not using virtualization)
+  const paginatedData = useMemo(() => {
+    if (useVirtual) return filteredData;
+    return pagination
+      ? filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+      : filteredData;
+  }, [filteredData, currentPage, pageSize, pagination, useVirtual]);
 
   const totalPages = pagination ? Math.ceil(filteredData.length / pageSize) : 1;
 
@@ -112,7 +131,7 @@ export function DataTable<TData, TValue>({
 
   // Handle row selection
   const toggleRowSelection = (row: TData, rowIndex: number) => {
-    const rowId = getRowId ? getRowId(row) : (row as any).id || rowIndex;
+    const rowId = getRowId ? getRowId(row) : (row as Record<string, unknown>).id as string | number || rowIndex;
     const newSelected = new Set(selectedRows);
     if (newSelected.has(rowId)) {
       newSelected.delete(rowId);
@@ -124,7 +143,7 @@ export function DataTable<TData, TValue>({
     // Notify parent of selection changes
     if (onSelectionChange) {
       const selectedData = filteredData.filter((item, idx) => {
-        const id = getRowId ? getRowId(item) : (item as any).id || idx;
+        const id = getRowId ? getRowId(item) : (item as Record<string, unknown>).id as string | number || idx;
         return newSelected.has(id);
       });
       onSelectionChange(selectedData);
@@ -140,7 +159,7 @@ export function DataTable<TData, TValue>({
     } else {
       const allIds = new Set<string | number>();
       paginatedData.forEach((row, idx) => {
-        const id = getRowId ? getRowId(row) : (row as any).id || idx;
+        const id = getRowId ? getRowId(row) : (row as Record<string, unknown>).id as string | number || idx;
         allIds.add(id);
       });
       setSelectedRows(allIds);
@@ -233,8 +252,23 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <Table>
+      {useVirtual ? (
+        <VirtualizedTable
+          columns={visibleColumnsList.map((col) => ({
+            accessorKey: col.accessorKey,
+            header: col.header,
+            cell: col.cell ? (row) => col.cell!({ original: row.original }) : undefined,
+            id: col.id || col.accessorKey?.toString(),
+          }))}
+          data={filteredData}
+          height={virtualizedHeight}
+          rowHeight={virtualizedRowHeight}
+          emptyMessage={emptyMessage}
+          getRowId={getRowId}
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow>
               {enableSelection && (
@@ -244,7 +278,7 @@ export function DataTable<TData, TValue>({
                     onCheckedChange={toggleAllSelection}
                     ref={(el) => {
                       if (el) {
-                        const button = el as any;
+                        const button = el as HTMLButtonElement & { indeterminate?: boolean };
                         if (button && 'indeterminate' in button) {
                           button.indeterminate = isIndeterminate;
                         }
@@ -276,7 +310,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ) : paginatedData.length ? (
               paginatedData.map((row, rowIndex) => {
-                const rowId = getRowId ? getRowId(row) : (row as any).id || rowIndex;
+                const rowId = getRowId ? getRowId(row) : (row as Record<string, unknown>).id as string | number || rowIndex;
                 const isSelected = selectedRows.has(rowId);
                 return (
                   <TableRow
@@ -297,7 +331,7 @@ export function DataTable<TData, TValue>({
                         {column.cell
                           ? column.cell({ original: row })
                           : column.accessorKey
-                          ? (row as any)[column.accessorKey]
+                          ? (row as Record<string, unknown>)[column.accessorKey as string]
                           : ''}
                       </TableCell>
                     ))}
@@ -317,9 +351,10 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+      )}
 
       {/* Pagination */}
-      {pagination && totalPages > 1 && (
+      {!useVirtual && pagination && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t">
           <div className="text-sm text-muted-foreground">
             Showing {currentPage * pageSize + 1} to{' '}

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { isFeatureAvailable, featureTableRequirements } from '@/utils/featureAvailability';
 
 export function Sidebar() {
@@ -181,6 +182,7 @@ export function Sidebar() {
                               key={item.href}
                               to={fullPath}
                               onClick={() => setIsOpen(false)}
+                              onMouseEnter={() => prefetchOnHover(fullPath)}
                               className={cn(
                                 'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
                                 active

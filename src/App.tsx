@@ -156,6 +156,7 @@ const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage
 const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
 const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
 const InventoryMonitoringPage = lazy(() => import("./pages/admin/InventoryMonitoringPage"));
+const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
 
 // GitHub Repos Integration Pages
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
@@ -478,6 +479,7 @@ const App = () => {
                           <Route path="permissions" element={<FeatureProtectedRoute featureId="permissions"><PermissionsPage /></FeatureProtectedRoute>} />
                           <Route path="bulk-operations" element={<FeatureProtectedRoute featureId="bulk-operations"><BulkOperationsPage /></FeatureProtectedRoute>} />
                           <Route path="operations/receiving" element={<FeatureProtectedRoute featureId="operations"><ReceivingPage /></FeatureProtectedRoute>} />
+                          <Route path="developer-tools" element={<DeveloperTools />} />
                           <Route path="api-access" element={<FeatureProtectedRoute featureId="api-access"><APIAccessPage /></FeatureProtectedRoute>} />
                           <Route path="webhooks" element={<FeatureProtectedRoute featureId="webhooks"><WebhooksPage /></FeatureProtectedRoute>} />
                           <Route path="custom-integrations" element={<FeatureProtectedRoute featureId="custom-integrations"><CustomIntegrationsPage /></FeatureProtectedRoute>} />

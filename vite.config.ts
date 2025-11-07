@@ -54,7 +54,21 @@ export default defineConfig(({ mode }) => ({
       threshold: 10240,
     }),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Completely disable service worker generation - using custom sw.js instead
+      // This prevents Workbox from interfering with chunk loading
+      injectRegister: false, // Don't register service worker
+      strategies: 'generateSW',
+      workbox: {
+        // Disable all precaching and runtime caching - custom sw.js handles everything
+        globPatterns: [],
+        skipWaiting: false,
+        clientsClaim: false,
+        runtimeCaching: [],
+        // Generate empty service worker (will be ignored, custom sw.js takes precedence)
+        swDest: 'dist/sw-workbox.js', // Different name so custom sw.js is used
+      },
+      // Only generate manifest, don't register service worker
+      registerType: false,
       includeAssets: ['favicon.ico', 'placeholder.svg'],
       manifest: {
         name: 'Delivery Platform - Wholesale Management',
@@ -97,37 +111,8 @@ export default defineConfig(({ mode }) => ({
             icons: [{ src: '/placeholder.svg', sizes: '192x192' }]
           }
         ]
-      },
-      workbox: {
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB to accommodate large chunks
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60
-              }
-            }
-          },
-          {
-            urlPattern: /\.(png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30
-              }
-            }
-          }
-        ]
       }
+      // Removed workbox config - custom sw.js handles everything
     })
   ].filter(Boolean),
   resolve: {
@@ -185,6 +170,14 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes('mapbox') || id.includes('leaflet')) {
               return 'vendor-maps';
+            }
+            // Split Radix UI components into separate chunk
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            // Split chart libraries
+            if (id.includes('recharts') || id.includes('@tremor')) {
+              return 'vendor-charts';
             }
             return 'vendor';
           }

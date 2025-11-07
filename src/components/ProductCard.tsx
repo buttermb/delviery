@@ -17,6 +17,8 @@ import { haptics } from "@/utils/haptics";
 import { cleanProductName } from "@/utils/productName";
 import type { Product } from "@/types/product";
 import { getNumberValue, getStringArray, getDateValue, getStringValue } from "@/utils/productTypeGuards";
+import { usePrefetch } from "@/hooks/usePrefetch";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Carousel,
   CarouselContent,
@@ -41,10 +43,28 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   const [added, setAdded] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const queryClient = useQueryClient();
+  const { prefetchQuery } = usePrefetch();
 
   // Use provided stockLevel instead of making individual API call
   const actualStockLevel = stockLevel !== undefined ? stockLevel : 0;
   const isLowStock = actualStockLevel > 0 && actualStockLevel <= 5;
+
+  // Prefetch product reviews on hover
+  const handleMouseEnter = useCallback(() => {
+    prefetchQuery(
+      ["product-reviews", product.id],
+      async () => {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("*")
+          .eq("product_id", product.id)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (error) throw error;
+        return data || [];
+      }
+    );
+  }, [product.id, prefetchQuery]);
 
   const handleCardClick = () => {
     haptics.light();
@@ -166,7 +186,8 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
 
   return (
     <>
-      <Card 
+      <Card
+        onMouseEnter={handleMouseEnter} 
         className="group overflow-hidden backdrop-blur-2xl transition-all duration-500 cursor-pointer relative bg-white/[0.02] border border-white/[0.05] hover:border-white/10 hover:-translate-y-3 hover:scale-[1.02]"
         onClick={handleCardClick}
       >

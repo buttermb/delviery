@@ -7,7 +7,7 @@
 // Version: 4.0.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v10'; // Increment this manually on each deploy
+const CACHE_VERSION = 'v11'; // Increment this manually on each deploy - bumped to clear Workbox conflicts
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API calls - Network only for admin/realtime
+  // API calls - Stale-while-revalidate for non-admin endpoints
   if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
     const isAdminOrRealtime = ADMIN_ENDPOINTS.some(endpoint => url.pathname.includes(endpoint));
     
@@ -117,9 +117,25 @@ self.addEventListener('fetch', (event) => {
       return;
     }
     
-    // For other API calls, network first with fallback
+    // Stale-while-revalidate for other API calls
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      caches.open(RUNTIME_CACHE).then((cache) => {
+        return cache.match(event.request).then((cached) => {
+          const fetchPromise = fetch(event.request).then((response) => {
+            // Update cache with fresh response
+            if (response.status === 200) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          }).catch(() => {
+            // If network fails and we have cache, return it
+            return cached;
+          });
+
+          // Return cached version immediately if available, otherwise wait for network
+          return cached || fetchPromise;
+        });
+      })
     );
     return;
   }

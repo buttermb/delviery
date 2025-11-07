@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Package, TrendingUp, Clock, XCircle, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { prefetchOnHover } from '@/lib/utils/prefetch';
+import { logger } from '@/lib/logger';
 
 interface Order {
   id: string;
@@ -54,8 +56,8 @@ export default function Orders() {
       }
       
       setOrders(data || []);
-    } catch (error: any) {
-      console.error('Unexpected error loading orders:', error);
+    } catch (error: unknown) {
+      logger.error('Unexpected error loading orders', error);
       toast.error('Failed to load orders. Please check your connection.');
     } finally {
       setLoading(false);
@@ -182,6 +184,7 @@ export default function Orders() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        onMouseEnter={() => prefetchOnHover(`/admin/orders/${order.id}`)}
                         onClick={() => navigate(`/admin/orders/${order.id}`)}
                       >
                         <Eye className="h-4 w-4" />

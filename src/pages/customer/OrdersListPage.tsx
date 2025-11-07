@@ -21,6 +21,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { prefetchOnHover } from "@/lib/utils/prefetch";
 
 type OrderStatus = "pending" | "accepted" | "preparing" | "out_for_delivery" | "delivered" | "cancelled";
 
@@ -76,7 +77,7 @@ export default function OrdersListPage() {
   // Fetch all orders
   const { data: orders, isLoading } = useQuery({
     queryKey: ["customer-all-orders", tenantId, customerId],
-    queryFn: async (): Promise<any[]> => {
+    queryFn: async (): Promise<Array<Record<string, unknown>>> => {
       if (!tenantId || !customerId) return [];
 
       const { data, error } = await supabase
@@ -211,6 +212,11 @@ export default function OrdersListPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onMouseEnter={() => {
+                            if (tenant?.slug) {
+                              prefetchOnHover(`/${tenant.slug}/shop/orders/${order.id}`);
+                            }
+                          }}
                           onClick={() => navigate(`/${tenant?.slug}/shop/orders/${order.id}`)}
                           className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
                         >

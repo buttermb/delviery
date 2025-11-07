@@ -26,6 +26,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import type { LucideIcon } from 'lucide-react';
+import { prefetchOnHover } from '@/lib/utils/prefetch';
 
 export function RoleBasedSidebar() {
   const { state } = useSidebar();
@@ -205,6 +206,7 @@ export function RoleBasedSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink
                     to={href}
+                    onMouseEnter={() => prefetchOnHover(href)}
                     className={({ isActive }) =>
                       cn(
                         isActive 
