@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { logger } from "@/utils/logger";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { getTokenExpiration } from "@/lib/auth/jwt";
 
 interface Customer {
   id: string;
@@ -213,6 +214,49 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return;
     await verifyToken(token);
   };
+
+  // Token expiration monitoring - check and verify token before expiry
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    if (!token) {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const checkAndRefreshToken = () => {
+      const expiration = getTokenExpiration(token);
+      if (!expiration) return;
+
+      const now = new Date();
+      const timeUntilExpiry = expiration.getTime() - now.getTime();
+      const oneDay = 24 * 60 * 60 * 1000;
+
+      // Verify token if it expires in less than 1 day
+      if (timeUntilExpiry < oneDay && timeUntilExpiry > 0) {
+        logger.info("Token expiring soon, verifying...", undefined, 'CustomerAuth');
+        refreshToken();
+      } else if (timeUntilExpiry <= 0) {
+        logger.warn("Token expired, logging out...", undefined, 'CustomerAuth');
+        logout();
+      }
+    };
+
+    // Check immediately
+    checkAndRefreshToken();
+
+    // Check every hour for customer tokens (they last 30 days)
+    refreshIntervalRef.current = setInterval(checkAndRefreshToken, 60 * 60 * 1000);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [token]);
 
   return (
     <CustomerAuthContext.Provider value={{ customer, tenant, token, loading, login, logout, refreshToken }}>

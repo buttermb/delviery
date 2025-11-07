@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { getTokenExpiration } from "@/lib/auth/jwt";
 
 interface SuperAdmin {
   id: string;
@@ -158,6 +159,49 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       await logout();
     }
   };
+
+  // Token expiration monitoring - refresh 5 minutes before expiry
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    if (!token) {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const checkAndRefreshToken = () => {
+      const expiration = getTokenExpiration(token);
+      if (!expiration) return;
+
+      const now = new Date();
+      const timeUntilExpiry = expiration.getTime() - now.getTime();
+      const fiveMinutes = 5 * 60 * 1000;
+
+      // Refresh if token expires in less than 5 minutes
+      if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
+        logger.info("Token expiring soon, refreshing...", undefined, 'SuperAdminAuth');
+        refreshToken();
+      } else if (timeUntilExpiry <= 0) {
+        logger.warn("Token expired, logging out...", undefined, 'SuperAdminAuth');
+        logout();
+      }
+    };
+
+    // Check immediately
+    checkAndRefreshToken();
+
+    // Check every minute
+    refreshIntervalRef.current = setInterval(checkAndRefreshToken, 60 * 1000);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [token]);
 
   return (
     <SuperAdminAuthContext.Provider value={{ superAdmin, token, loading, login, logout, refreshToken }}>
