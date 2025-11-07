@@ -174,8 +174,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(totalWaitTimeout);
       clearTimeout(verificationTimeout);
     };
-    // Remove verified and skipVerification from deps to prevent infinite loops
-  }, [tenantSlug, location.pathname, admin, tenant, loading, verifying]);
+    // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
+  }, [tenantSlug, location.pathname, admin, tenant, loading]);
 
   // Loading state - wait for auth AND verification (unless skipped)
   if ((loading || verifying || !verified) && !skipVerification) {
