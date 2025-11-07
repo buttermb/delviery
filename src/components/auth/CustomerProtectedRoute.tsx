@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Loader2 } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;
@@ -12,7 +13,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
-  const [verifying, setVerifying] = useState(true);
+  const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   
   // Track auth values in refs to avoid re-triggering verification
   const authRef = useRef({ token, customer, tenant });
@@ -51,11 +52,12 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         return;
       }
 
+      // If auth is still loading, wait
       if (loading) {
         return;
       }
 
-      // Check auth requirements
+      // If not authenticated, don't verify - let the redirect happen
       if (!token || !customer || !tenant) {
         setVerifying(false);
         if (tenantSlug) {
@@ -66,7 +68,13 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         return;
       }
 
+      // Skip if already checking
+      if (verifying) {
+        return;
+      }
+
       verificationLockRef.current = true;
+      setVerifying(true);
 
       try {
         // Local validation: verify tenant slug matches
@@ -94,7 +102,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
         verificationLockRef.current = false;
       } catch (err) {
-        console.error('[CustomerProtectedRoute] Verification error:', err);
+        logger.error('[CustomerProtectedRoute] Verification error', err, { component: 'CustomerProtectedRoute' });
         setVerifying(false);
         verificationLockRef.current = false;
       }

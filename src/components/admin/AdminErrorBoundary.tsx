@@ -39,12 +39,20 @@ export class AdminErrorBoundary extends Component<Props, State> {
     // Report error to error reporter
     errorReporter.report(error, 'AdminErrorBoundary');
     
+    // Detect chunk loading errors specifically
+    const isChunkError = error.message?.includes('chunk') || 
+                        error.message?.includes('Loading') ||
+                        error.message?.includes('createContext') ||
+                        error.message?.includes('Failed to fetch') ||
+                        errorInfo.componentStack?.includes('chunk');
+    
     // Also report to bug finder
     bugFinder.reportRuntimeError(error, 'AdminErrorBoundary', {
       componentStack: errorInfo.componentStack,
       isWebSocketError: error.message?.includes('WebSocket') || 
                        error.message?.includes('realtime') ||
                        error.message?.includes('connection'),
+      isChunkError,
     });
     
     // Log error details for debugging
@@ -63,6 +71,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
     logger.debug('Error context', {
       isWebSocketError,
       isDataError,
+      isChunkError,
       errorType: error.name,
       stack: errorInfo?.componentStack
     }, 'AdminErrorBoundary');
@@ -76,6 +85,14 @@ export class AdminErrorBoundary extends Component<Props, State> {
     if (isWebSocketError) {
       logger.warn('WebSocket error detected. Manual recovery required.', undefined, 'AdminErrorBoundary');
     }
+    
+    // Log chunk errors with recovery suggestion
+    if (isChunkError) {
+      logger.error('Chunk loading error detected in AdminErrorBoundary', error, { 
+        component: 'AdminErrorBoundary',
+        componentStack: errorInfo.componentStack
+      });
+    }
   }
 
   handleReset = () => {
@@ -86,8 +103,18 @@ export class AdminErrorBoundary extends Component<Props, State> {
     });
   };
 
-  handleGoHome = () => {
-    window.location.href = '/admin';
+  handleClearCacheAndReload = () => {
+    // Clear all caches and reload
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        names.forEach(name => caches.delete(name));
+      });
+    }
+    // Clear localStorage cache-related items
+    const keysToRemove = ['js-cache-count', 'chunk-reload-count'];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    // Reload with cache bypass
+    window.location.href = `${window.location.pathname}?nocache=${Date.now()}`;
   };
 
   render() {
@@ -114,6 +141,14 @@ export class AdminErrorBoundary extends Component<Props, State> {
                   <p className="font-mono text-sm text-destructive font-semibold mb-2">
                     {this.state.error.message}
                   </p>
+                  {this.state.error.message?.includes('chunk') && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-900 font-semibold mb-1">Chunk Loading Error Detected</p>
+                      <p className="text-xs text-blue-700">
+                        This usually happens when cached JavaScript files are outdated. Try clearing your cache and reloading.
+                      </p>
+                    </div>
+                  )}
                   {import.meta.env.DEV && this.state.errorInfo && (
                     <details className="mt-2">
                       <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
@@ -136,6 +171,12 @@ export class AdminErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
+              {this.state.error?.message?.includes('chunk') && (
+                <Button onClick={this.handleClearCacheAndReload} variant="destructive" className="flex-1">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Clear Cache & Reload
+                </Button>
+              )}
               <Button onClick={this.handleGoHome} className="flex-1">
                 <Home className="h-4 w-4 mr-2" />
                 Go to Dashboard

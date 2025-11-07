@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 
@@ -38,20 +38,23 @@ const generateEntry = (): Entry => {
 export function RecentEntryPopup() {
   const [currentEntry, setCurrentEntry] = useState<Entry | null>(null);
   const [show, setShow] = useState(false);
+  const timeoutIdsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeout IDs for cleanup
 
   useEffect(() => {
     const showNotification = () => {
       setCurrentEntry(generateEntry());
       setShow(true);
       
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setShow(false);
       }, 4000);
+      timeoutIdsRef.current.push(timeoutId);
     };
 
     // Show first notification after 3-8 seconds
     const initialDelay = 3000 + Math.random() * 5000;
     const initialTimer = setTimeout(showNotification, initialDelay);
+    timeoutIdsRef.current.push(initialTimer);
 
     // Then show every 8-15 seconds
     const interval = setInterval(() => {
@@ -61,6 +64,9 @@ export function RecentEntryPopup() {
     return () => {
       clearTimeout(initialTimer);
       clearInterval(interval);
+      // Clear all nested timeouts
+      timeoutIdsRef.current.forEach(id => clearTimeout(id));
+      timeoutIdsRef.current = [];
     };
   }, []);
 

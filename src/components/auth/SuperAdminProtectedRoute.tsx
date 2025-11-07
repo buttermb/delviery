@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { logger } from "@/utils/logger";
 
 // Prevent redirect loops - don't redirect more than once per 3 seconds
 const REDIRECT_THROTTLE_MS = 3000;
@@ -16,7 +17,7 @@ interface SuperAdminProtectedRouteProps {
 export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteProps) {
   const { superAdmin, token, loading, refreshToken } = useSuperAdminAuth();
   const navigate = useNavigate();
-  const [verifying, setVerifying] = useState(true);
+  const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const lastRedirectTime = useRef<number>(0);
   const verifyAttempted = useRef(false);
   const redirectCount = useRef<number>(0);
@@ -24,9 +25,11 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
 
   // Safety timeout: if verification takes too long, stop showing loading
   useEffect(() => {
+    if (!verifying) return;
+    
     const timeout = setTimeout(() => {
       if (verifying) {
-        console.warn("Auth verification timeout - stopping verification");
+        logger.warn("Auth verification timeout - stopping verification", undefined, { component: 'SuperAdminProtectedRoute' });
         setVerifying(false);
       }
     }, 10000); // 10 second timeout
@@ -57,7 +60,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       
       // Check if we've exceeded max redirects in window
       if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
-        console.warn("Redirect limit exceeded - preventing further redirects to avoid loop");
+        logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", undefined, { component: 'SuperAdminProtectedRoute' });
         setVerifying(false);
         verifyAttempted.current = false;
         return;
@@ -70,6 +73,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         return;
       }
 
+      // If not authenticated, don't verify - let the redirect happen
       if (!token || !superAdmin) {
         setVerifying(false);
         lastRedirectTime.current = Date.now();
@@ -77,6 +81,15 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         navigate("/super-admin/login", { replace: true });
         return;
       }
+
+      // Skip if already checking
+      if (verifying) {
+        verifyAttempted.current = false;
+        return;
+      }
+
+      // Lock verification to prevent concurrent requests
+      setVerifying(true);
 
       // Verify token is still valid
       try {
@@ -101,13 +114,13 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         }
 
         setVerifying(false);
+        verifyAttempted.current = false;
       } catch (error) {
-        console.error("Auth verification error:", error);
+        logger.error("Auth verification error", error, { component: 'SuperAdminProtectedRoute' });
         setVerifying(false);
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;
         navigate("/super-admin/login", { replace: true });
-      } finally {
         verifyAttempted.current = false;
       }
     };

@@ -18,6 +18,76 @@ import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
 // Setup global error handlers
 setupGlobalErrorHandlers();
 
+// Chunk loading error recovery with retry limit
+let chunkReloadCount = 0;
+const MAX_CHUNK_RELOADS = 3;
+
+window.addEventListener('error', (event) => {
+  const errorMessage = event.message || '';
+  const isChunkError = errorMessage.includes('chunk') || 
+                      errorMessage.includes('Loading') ||
+                      errorMessage.includes('createContext') ||
+                      errorMessage.includes('Failed to fetch') ||
+                      (event.filename && event.filename.includes('chunk'));
+  
+  if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {
+    chunkReloadCount++;
+    const timestamp = new Date().toISOString();
+    logger.error('Chunk loading failed', new Error(errorMessage), { 
+      component: 'main',
+      reloadCount: chunkReloadCount,
+      maxReloads: MAX_CHUNK_RELOADS,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      timestamp
+    });
+    
+    // Show error message to user
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'chunk-loading-error';
+    errorDiv.innerHTML = '⚠️ Loading error detected. Reloading page...';
+    errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:1rem;text-align:center;z-index:9999;font-family:system-ui,sans-serif;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2)';
+    document.body.appendChild(errorDiv);
+    
+    // Reload with cache bypass after 2 seconds
+    setTimeout(() => {
+      const currentPath = window.location.pathname;
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set('nocache', Date.now().toString());
+      window.location.href = `${currentPath}?${searchParams.toString()}`;
+    }, 2000);
+  } else if (isChunkError && chunkReloadCount >= MAX_CHUNK_RELOADS) {
+    // Max reloads reached - show permanent error
+    logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), { 
+      component: 'main',
+      reloadCount: chunkReloadCount,
+      maxReloads: MAX_CHUNK_RELOADS
+    });
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'chunk-loading-error-permanent';
+    errorDiv.innerHTML = `
+      <div style="max-width:600px;margin:2rem auto;padding:2rem;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;">
+        <h2 style="color:#dc2626;margin:0 0 1rem 0;">⚠️ Loading Error</h2>
+        <p style="color:#374151;margin:0 0 1.5rem 0;line-height:1.6;">
+          The application failed to load after multiple attempts. Please try:
+        </p>
+        <ul style="color:#374151;margin:0 0 1.5rem 0;padding-left:1.5rem;line-height:1.8;">
+          <li>Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)</li>
+          <li>Clear browser cache and reload</li>
+          <li>Try an incognito/private window</li>
+        </ul>
+        <button onclick="location.reload(true)" style="width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;">
+          Reload Page
+        </button>
+      </div>
+    `;
+    errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;z-index:99999;padding:1rem';
+    document.body.appendChild(errorDiv);
+  }
+});
+
 // Log app initialization
 console.log('[APP] Starting app initialization...');
 

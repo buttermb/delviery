@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, MapPin, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ interface RecentPurchase {
 const RecentPurchaseNotification = () => {
   const [visiblePurchase, setVisiblePurchase] = useState<RecentPurchase | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const timeoutIdsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeout IDs for cleanup
 
   // Fetch recent purchases
   const { data: recentPurchases = [] } = useQuery({
@@ -55,15 +56,19 @@ const RecentPurchaseNotification = () => {
           setVisiblePurchase(payload.new as any);
           setShowNotification(true);
           
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             setShowNotification(false);
           }, 5000); // Hide after 5 seconds
+          timeoutIdsRef.current.push(timeoutId);
         }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      // Clear all timeouts
+      timeoutIdsRef.current.forEach(id => clearTimeout(id));
+      timeoutIdsRef.current = [];
     };
   }, []);
 
@@ -79,24 +84,30 @@ const RecentPurchaseNotification = () => {
         setVisiblePurchase(purchase);
         setShowNotification(true);
         
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           setShowNotification(false);
         }, 4000);
+        timeoutIdsRef.current.push(timeoutId);
       }
     };
 
     // Show first notification after 5 seconds
     const initialTimeout = setTimeout(showRandomPurchase, 5000);
+    timeoutIdsRef.current.push(initialTimeout);
     
     // Then show randomly every 15-25 seconds
     const interval = setInterval(() => {
       const randomDelay = 15000 + Math.random() * 10000;
-      setTimeout(showRandomPurchase, randomDelay);
+      const nestedTimeoutId = setTimeout(showRandomPurchase, randomDelay);
+      timeoutIdsRef.current.push(nestedTimeoutId);
     }, 25000);
 
     return () => {
       clearTimeout(initialTimeout);
       clearInterval(interval);
+      // Clear all nested timeouts
+      timeoutIdsRef.current.forEach(id => clearTimeout(id));
+      timeoutIdsRef.current = [];
     };
   }, [recentPurchases]);
 

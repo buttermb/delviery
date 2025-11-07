@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,12 +28,43 @@ import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { logger } from "@/utils/logger";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
-  const { admin, tenant, logout } = useTenantAdminAuth();
+  const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
   const tenantId = tenant?.id;
+  
+  // Defensive check: if auth loading takes >15s, show error
+  useEffect(() => {
+    if (authLoading) {
+      const loadingTimeout = setTimeout(() => {
+        if (authLoading) {
+          logger.warn('Auth loading timeout (>15s) in DashboardPage', undefined, { 
+            component: 'DashboardPage',
+            tenantId,
+            hasTenant: !!tenant
+          });
+        }
+      }, 15000);
+      
+      return () => clearTimeout(loadingTimeout);
+    }
+  }, [authLoading, tenantId, tenant]);
+  
+  // Early return if auth loading takes too long
+  if (authLoading) {
+    // Show loading fallback, but with timeout protection
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Enable real-time sync for dashboard data
   useRealtimeSync({

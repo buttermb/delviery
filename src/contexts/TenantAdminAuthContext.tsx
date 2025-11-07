@@ -130,6 +130,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
   // Initialize from localStorage
   useEffect(() => {
+    const LOADING_TIMEOUT_MS = 12000; // 12-second safety timeout
+    const startTime = Date.now();
+    
     const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     const storedAdmin = localStorage.getItem(ADMIN_KEY);
@@ -139,12 +142,46 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const currentPath = window.location.pathname;
     const urlTenantSlug = currentPath.split('/')[1]; // e.g., /snak-station-inc/admin/...
 
+    // Safety timeout: force loading to false after 12 seconds
+    const safetyTimeout = setTimeout(() => {
+      const duration = Date.now() - startTime;
+      logger.warn(`Auth initialization timeout after ${duration}ms - forcing loading to false`, undefined, { 
+        component: 'TenantAdminAuthContext',
+        duration,
+        hasToken: !!storedAccessToken,
+        hasAdmin: !!storedAdmin,
+        hasTenant: !!storedTenant
+      });
+      
+      // Clear auth state and redirect to login if we have a tenant slug
+      if (urlTenantSlug) {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        localStorage.removeItem(ADMIN_KEY);
+        localStorage.removeItem(TENANT_KEY);
+        setToken(null);
+        setAccessToken(null);
+        setRefreshToken(null);
+        setAdmin(null);
+        setTenant(null);
+        setLoading(false);
+        
+        // Redirect to login after a brief delay
+        setTimeout(() => {
+          window.location.href = `/${urlTenantSlug}/admin/login`;
+        }, 500);
+      } else {
+        setLoading(false);
+      }
+    }, LOADING_TIMEOUT_MS);
+
     if (storedAccessToken && storedRefreshToken && storedAdmin && storedTenant) {
       try {
         const parsedTenant = JSON.parse(storedTenant);
         
         // Validate tenant slug matches URL
         if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
+          clearTimeout(safetyTimeout);
           logger.debug(`Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
           localStorage.removeItem(ACCESS_TOKEN_KEY);
           localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -178,8 +215,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         setToken(storedAccessToken);
         setAdmin(JSON.parse(storedAdmin));
         setTenant(tenantWithDefaults);
-        verifyToken(storedAccessToken);
+        
+        // Verify token and clear timeout when done
+        verifyToken(storedAccessToken).finally(() => {
+          clearTimeout(safetyTimeout);
+        });
       } catch (e) {
+        clearTimeout(safetyTimeout);
         // Clear invalid data
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
@@ -188,12 +230,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         setLoading(false);
       }
     } else {
+      clearTimeout(safetyTimeout);
       setLoading(false);
     }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const verifyToken = async (tokenToVerify: string, retryCount = 0): Promise<boolean> => {
-    const maxRetries = 3;
+    const maxRetries = 1; // Fail-fast: only 1 retry
+    const VERIFY_TIMEOUT_MS = 8000; // 8-second timeout (fail-fast approach)
     
     try {
       const envCheck = validateEnvironment();
@@ -217,20 +266,60 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
       }
       
-      // Add timeout to fetch call
+      // Create AbortController for timeout (8 seconds - fail-fast approach)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => {
+        logger.warn(`Token verification timed out after ${VERIFY_TIMEOUT_MS}ms`, undefined, { component: 'TenantAdminAuthContext', retryCount });
+        controller.abort();
+      }, VERIFY_TIMEOUT_MS);
       
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${tokenToVerify}`,
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-      });
+      const startTime = Date.now();
+      let response: Response;
       
-      clearTimeout(timeoutId);
+      try {
+        response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenToVerify}`,
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        const duration = Date.now() - startTime;
+        logger.debug(`Token verification completed in ${duration}ms`, undefined, { component: 'TenantAdminAuthContext', duration });
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        const duration = Date.now() - startTime;
+        
+        if (fetchError.name === 'AbortError') {
+          logger.warn(`Token verification aborted after ${duration}ms (timeout)`, fetchError, { component: 'TenantAdminAuthContext', retryCount });
+          
+          // Retry once if not already retried (fail-fast: max 1 retry)
+          if (retryCount < maxRetries) {
+            logger.debug(`Retrying token verification (attempt ${retryCount + 1}/${maxRetries + 1})`, undefined, { component: 'TenantAdminAuthContext' });
+            await sleep(Math.pow(2, retryCount) * 100); // Exponential backoff: 100ms, 200ms
+            return verifyToken(tokenToVerify, retryCount + 1);
+          }
+          
+          // Clear auth state on timeout after retries exhausted
+          logger.error('Token verification failed after timeout and retries', fetchError, { component: 'TenantAdminAuthContext' });
+          setLoading(false);
+          setToken(null);
+          setAccessToken(null);
+          setRefreshToken(null);
+          setAdmin(null);
+          setTenant(null);
+          localStorage.removeItem(ACCESS_TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem(ADMIN_KEY);
+          localStorage.removeItem(TENANT_KEY);
+          return false;
+        }
+        
+        throw fetchError; // Re-throw non-abort errors
+      }
 
       if (!response.ok) {
         // If token verification fails with 401, try to refresh
@@ -272,10 +361,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           }
         }
         
-        // Retry with exponential backoff
+        // Retry with exponential backoff (only if not already retried due to timeout)
         if (retryCount < maxRetries) {
-          const backoffMs = Math.pow(2, retryCount) * 100; // 100ms, 200ms, 400ms
-          logger.debug(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})`);
+          const backoffMs = Math.pow(2, retryCount) * 100; // 100ms, 200ms
+          logger.debug(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries + 1})`, undefined, { component: 'TenantAdminAuthContext' });
           await sleep(backoffMs);
           return verifyToken(tokenToVerify, retryCount + 1);
         }
