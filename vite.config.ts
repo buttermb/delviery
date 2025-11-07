@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => ({
         swDest: 'dist/sw-workbox.js', // Different name so custom sw.js is used
       },
       // Only generate manifest, don't register service worker
-      registerType: false,
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'placeholder.svg'],
       manifest: {
         name: 'Delivery Platform - Wholesale Management',

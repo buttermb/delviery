@@ -257,7 +257,7 @@ export function DataTable<TData, TValue>({
           columns={visibleColumnsList.map((col) => ({
             accessorKey: col.accessorKey,
             header: col.header,
-            cell: col.cell ? (row) => col.cell!({ original: row.original }) : undefined,
+            cell: col.cell ? (row: any) => col.cell!({ original: row.original as TData }) : undefined,
             id: col.id || col.accessorKey?.toString(),
           }))}
           data={filteredData}
@@ -331,7 +331,7 @@ export function DataTable<TData, TValue>({
                         {column.cell
                           ? column.cell({ original: row })
                           : column.accessorKey
-                          ? (row as Record<string, unknown>)[column.accessorKey as string]
+                          ? String((row as Record<string, unknown>)[column.accessorKey as string] ?? '')
                           : ''}
                       </TableCell>
                     ))}

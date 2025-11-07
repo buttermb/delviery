@@ -162,11 +162,11 @@ export default function OrdersListPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => {
-              const statusConfig = getStatusConfig(order.status || "pending");
+              const statusConfig = getStatusConfig((order.status as string) || "pending");
 
               return (
                 <Card
-                  key={order.id}
+                  key={order.id as string}
                   className="bg-white border-[hsl(var(--customer-border))] shadow-sm hover:shadow-md transition-shadow card-lift"
                 >
                   <CardContent className="p-6">
@@ -179,10 +179,10 @@ export default function OrdersListPage() {
                           </div>
                           <div>
                             <h3 className="font-semibold text-lg text-[hsl(var(--customer-text))]">
-                              Order #{order.order_number || order.id.slice(0, 8)}
+                              Order #{(order.order_number as string) || (order.id as string).slice(0, 8)}
                             </h3>
                             <p className="text-sm text-[hsl(var(--customer-text-light))]">
-                              {formatSmartDate(order.created_at)}
+                              {formatSmartDate(order.created_at as string | Date)}
                             </p>
                           </div>
                         </div>
@@ -202,7 +202,7 @@ export default function OrdersListPage() {
 
                         {order.delivery_address && (
                           <p className="text-sm text-[hsl(var(--customer-text-light))]">
-                            📍 {order.delivery_address}
+                            📍 {String(order.delivery_address)}
                           </p>
                         )}
                       </div>

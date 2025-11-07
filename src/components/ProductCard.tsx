@@ -18,7 +18,6 @@ import { cleanProductName } from "@/utils/productName";
 import type { Product } from "@/types/product";
 import { getNumberValue, getStringArray, getDateValue, getStringValue } from "@/utils/productTypeGuards";
 import { usePrefetch } from "@/hooks/usePrefetch";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Carousel,
   CarouselContent,

@@ -616,7 +616,7 @@ export const navigationSections: NavSection[] = [
       {
         title: 'Developer Tools',
         href: '/admin/developer-tools',
-        icon: Code2,
+        icon: Code,
         tier: 'professional'
       }
     ]

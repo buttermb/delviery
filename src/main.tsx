@@ -119,17 +119,16 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       
       // Register custom service worker
       const registration = await navigator.serviceWorker.register('/sw.js?v=11'); // Bump version
-      logger.debug('[APP] Custom ServiceWorker registered', undefined, { 
-        component: 'main',
+      logger.debug('[APP] Custom ServiceWorker registered', { 
         scope: registration.scope 
-      });
+      }, 'main');
       
       // Only activate new service workers, don't force reload
       if (registration.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
     } catch (error) {
-      logger.error('[APP] ServiceWorker registration failed', error, { component: 'main' });
+      logger.error('[APP] ServiceWorker registration failed', error, 'main');
     }
   });
 }

@@ -1,12 +1,9 @@
 /**
  * Virtualized Table Component
- * Uses react-window for efficient rendering of large lists
- * Only renders visible rows for better performance
+ * Simple table component for rendering data
  */
 
-import { List } from 'react-window';
 import { cn } from '@/lib/utils';
-import { memo } from 'react';
 
 interface Column<T> {
   accessorKey?: keyof T | string;
@@ -31,8 +28,6 @@ interface VirtualizedTableProps<T> {
 function VirtualizedTableInner<T>({
   columns,
   data,
-  height = 600,
-  rowHeight = 50,
   className,
   emptyMessage = 'No data available',
   getRowId,
@@ -45,51 +40,6 @@ function VirtualizedTableInner<T>({
       </div>
     );
   }
-
-  // Calculate column widths
-  const totalWidth = columns.reduce((sum, col) => sum + (col.width || 150), 0);
-
-  // Row renderer component for react-window v2
-  // Matches the RowComponent signature from react-window v2
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const row = data[index];
-    if (!row) return null;
-    
-    const rowId = getRowId ? getRowId(row, index) : index;
-
-    return (
-      <div
-        style={style}
-        className={cn(
-          'flex border-b hover:bg-muted/50 transition-colors',
-          onRowClick && 'cursor-pointer'
-        )}
-        onClick={() => onRowClick?.(row, index)}
-      >
-        {columns.map((column, colIndex) => {
-          const cellContent = column.cell
-            ? column.cell({ original: row, index })
-            : column.accessorKey
-              ? (row as Record<string, unknown>)[column.accessorKey as string]
-              : null;
-
-          return (
-            <div
-              key={column.id || colIndex}
-              className={cn(
-                'px-4 py-2 flex items-center',
-                column.className,
-                column.width ? '' : 'flex-1'
-              )}
-              style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
-            >
-              {cellContent ?? '-'}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
 
   return (
     <div className={cn('border rounded-lg overflow-hidden', className)}>
@@ -110,19 +60,50 @@ function VirtualizedTableInner<T>({
         ))}
       </div>
 
-      {/* Virtualized List */}
-      <List
-        height={height}
-        rowCount={data.length}
-        rowHeight={rowHeight}
-        width="100%"
-        overscanCount={5} // Render 5 extra items above/below viewport
-        rowComponent={Row}
-      />
+      {/* Data Rows */}
+      <div>
+        {data.map((row, index) => {
+          const rowId = getRowId ? getRowId(row, index) : index;
+          
+          return (
+            <div
+              key={String(rowId)}
+              className={cn(
+                'flex border-b hover:bg-muted/50 transition-colors',
+                onRowClick && 'cursor-pointer'
+              )}
+              onClick={() => onRowClick?.(row, index)}
+            >
+              {columns.map((column, colIndex) => {
+                const cellContent = column.cell
+                  ? column.cell({ original: row, index })
+                  : column.accessorKey
+                    ? (row as Record<string, unknown>)[column.accessorKey as string]
+                    : null;
+
+                return (
+                  <div
+                    key={column.id || colIndex}
+                    className={cn(
+                      'px-4 py-2 flex items-center',
+                      column.className,
+                      column.width ? '' : 'flex-1'
+                    )}
+                    style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
+                  >
+                    {cellContent !== null && cellContent !== undefined ? String(cellContent) : '-'}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-// Memoize to prevent unnecessary re-renders
-export const VirtualizedTable = memo(VirtualizedTableInner) as typeof VirtualizedTableInner;
-
+// Export with proper typing
+export const VirtualizedTable = VirtualizedTableInner as <T>(
+  props: VirtualizedTableProps<T>
+) => JSX.Element;
