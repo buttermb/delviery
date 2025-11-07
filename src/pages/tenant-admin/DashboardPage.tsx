@@ -41,11 +41,7 @@ export default function TenantAdminDashboardPage() {
     if (authLoading) {
       const loadingTimeout = setTimeout(() => {
         if (authLoading) {
-          logger.warn('Auth loading timeout (>15s) in DashboardPage', undefined, { 
-            component: 'DashboardPage',
-            tenantId,
-            hasTenant: !!tenant
-          });
+          logger.warn('Auth loading timeout (>15s) in DashboardPage', undefined, 'DashboardPage');
         }
       }, 15000);
       
@@ -112,7 +108,7 @@ export default function TenantAdminDashboardPage() {
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, { component: 'DashboardPage' });
+          logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, 'DashboardPage');
           // Retry without tenant_id filter
           ordersResult = await supabase
             .from("wholesale_orders")
@@ -125,7 +121,7 @@ export default function TenantAdminDashboardPage() {
         const orders = ordersResult.error ? [] : (ordersResult.data || []);
         
         if (ordersResult.error && orders.length === 0) {
-          logger.warn("Failed to fetch today's orders", ordersResult.error, { component: 'DashboardPage' });
+          logger.warn("Failed to fetch today's orders", ordersResult.error, 'DashboardPage');
         }
 
         const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
@@ -145,7 +141,7 @@ export default function TenantAdminDashboardPage() {
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
+          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, 'DashboardPage');
           // Retry without tenant_id filter
           inventoryResult = await supabase
             .from("wholesale_inventory")
@@ -157,7 +153,7 @@ export default function TenantAdminDashboardPage() {
         const inventory = inventoryResult.error ? [] : (inventoryResult.data || []);
         
         if (inventoryResult.error && inventory.length === 0) {
-          logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
+          logger.warn("Failed to fetch inventory", inventoryResult.error, 'DashboardPage');
         }
 
         const lowStock = (inventory as InventoryRow[] || []).map((item) => ({
@@ -176,7 +172,7 @@ export default function TenantAdminDashboardPage() {
           lowStock: lowStock.slice(0, 5),
         };
       } catch (error) {
-        logger.error("Error fetching dashboard metrics", error, { component: 'DashboardPage' });
+        logger.error("Error fetching dashboard metrics", error, 'DashboardPage');
         // Return safe defaults instead of throwing
         return {
           sales: 0,
@@ -232,7 +228,7 @@ export default function TenantAdminDashboardPage() {
 
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, 'DashboardPage');
           // Retry without tenant_id filter
           menusResult = await supabase
             .from("disposable_menus")
@@ -242,7 +238,7 @@ export default function TenantAdminDashboardPage() {
         }
 
         if (menusResult.error) {
-          logger.warn("Failed to fetch tenant menus", menusResult.error, { component: 'DashboardPage' });
+          logger.warn("Failed to fetch tenant menus", menusResult.error, 'DashboardPage');
           return []; // Return empty array instead of throwing
         }
 
@@ -302,7 +298,7 @@ export default function TenantAdminDashboardPage() {
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, 5);
       } catch (error) {
-        logger.error("Error fetching recent activity", error, { component: 'DashboardPage' });
+        logger.error("Error fetching recent activity", error, 'DashboardPage');
         return []; // Return empty array on error
       }
     },
@@ -329,7 +325,7 @@ export default function TenantAdminDashboardPage() {
         
         // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
         if (result.error && (result.error.code === '42703' || result.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", result.error, { component: 'DashboardPage' });
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", result.error, 'DashboardPage');
           // Retry without tenant_id filter
           result = await supabase
             .from("disposable_menus")
@@ -339,7 +335,7 @@ export default function TenantAdminDashboardPage() {
         
         // If still has error, return defaults
         if (result.error) {
-          logger.warn("Failed to fetch menus for revenue stats", result.error, { component: 'DashboardPage' });
+          logger.warn("Failed to fetch menus for revenue stats", result.error, 'DashboardPage');
           return { total: 0, commission: 0 };
         }
         

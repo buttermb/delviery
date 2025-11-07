@@ -88,10 +88,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
     
     // Log chunk errors with recovery suggestion
     if (isChunkError) {
-      logger.error('Chunk loading error detected in AdminErrorBoundary', error, { 
-        component: 'AdminErrorBoundary',
-        componentStack: errorInfo.componentStack
-      });
+      logger.error('Chunk loading error detected in AdminErrorBoundary', error, 'AdminErrorBoundary');
     }
   }
 
@@ -177,7 +174,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
                   Clear Cache & Reload
                 </Button>
               )}
-              <Button onClick={this.handleGoHome} className="flex-1">
+              <Button onClick={() => window.location.href = '/'} className="flex-1">
                 <Home className="h-4 w-4 mr-2" />
                 Go to Dashboard
               </Button>

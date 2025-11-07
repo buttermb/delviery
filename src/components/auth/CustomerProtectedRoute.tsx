@@ -102,7 +102,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
         verificationLockRef.current = false;
       } catch (err) {
-        logger.error('[CustomerProtectedRoute] Verification error', err, { component: 'CustomerProtectedRoute' });
+        logger.error('[CustomerProtectedRoute] Verification error', err, 'CustomerProtectedRoute');
         setVerifying(false);
         verificationLockRef.current = false;
       }

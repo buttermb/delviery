@@ -29,7 +29,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
     
     const timeout = setTimeout(() => {
       if (verifying) {
-        logger.warn("Auth verification timeout - stopping verification", undefined, { component: 'SuperAdminProtectedRoute' });
+        logger.warn("Auth verification timeout - stopping verification", undefined, 'SuperAdminProtectedRoute');
         setVerifying(false);
       }
     }, 10000); // 10 second timeout
@@ -60,7 +60,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       
       // Check if we've exceeded max redirects in window
       if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
-        logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", undefined, { component: 'SuperAdminProtectedRoute' });
+        logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", undefined, 'SuperAdminProtectedRoute');
         setVerifying(false);
         verifyAttempted.current = false;
         return;
@@ -116,7 +116,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
         setVerifying(false);
         verifyAttempted.current = false;
       } catch (error) {
-        logger.error("Auth verification error", error, { component: 'SuperAdminProtectedRoute' });
+        logger.error("Auth verification error", error, 'SuperAdminProtectedRoute');
         setVerifying(false);
         lastRedirectTime.current = Date.now();
         redirectCount.current += 1;

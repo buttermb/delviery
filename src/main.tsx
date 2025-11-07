@@ -33,15 +33,7 @@ window.addEventListener('error', (event) => {
   if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {
     chunkReloadCount++;
     const timestamp = new Date().toISOString();
-    logger.error('Chunk loading failed', new Error(errorMessage), { 
-      component: 'main',
-      reloadCount: chunkReloadCount,
-      maxReloads: MAX_CHUNK_RELOADS,
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-      timestamp
-    });
+    logger.error('Chunk loading failed', new Error(errorMessage), 'main');
     
     // Show error message to user
     const errorDiv = document.createElement('div');
@@ -59,11 +51,7 @@ window.addEventListener('error', (event) => {
     }, 2000);
   } else if (isChunkError && chunkReloadCount >= MAX_CHUNK_RELOADS) {
     // Max reloads reached - show permanent error
-    logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), { 
-      component: 'main',
-      reloadCount: chunkReloadCount,
-      maxReloads: MAX_CHUNK_RELOADS
-    });
+    logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), 'main');
     
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error-permanent';

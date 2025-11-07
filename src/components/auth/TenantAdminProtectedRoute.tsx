@@ -51,7 +51,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     const timeout = setTimeout(() => {
       if (verificationLockRef.current) {
-        logger.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking', undefined, { component: 'TenantAdminProtectedRoute' });
+        logger.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking', undefined, 'TenantAdminProtectedRoute');
         verificationLockRef.current = false;
         setVerifying(false);
       }
@@ -71,12 +71,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     const totalWaitTimeout = setTimeout(() => {
       const totalWait = Date.now() - (totalWaitStartRef.current || Date.now());
       if (totalWait >= TOTAL_WAIT_TIMEOUT_MS && !verified && !skipVerification) {
-        logger.warn(`Total wait timeout (${totalWait}ms) - skipping verification`, undefined, { 
-          component: 'TenantAdminProtectedRoute',
-          tenantSlug,
-          loading,
-          verifying
-        });
+        logger.warn(`Total wait timeout (${totalWait}ms) - skipping verification`, undefined, 'TenantAdminProtectedRoute');
         setSkipVerification(true);
         setVerifying(false);
         setVerified(true); // Allow access after timeout
@@ -94,10 +89,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     if (loading) {
       const loadingTimeout = setTimeout(() => {
         if (loading) {
-          logger.warn('Auth context loading timeout (>10s) - skipping verification', undefined, { 
-            component: 'TenantAdminProtectedRoute',
-            tenantSlug
-          });
+          logger.warn('Auth context loading timeout (>10s) - skipping verification', undefined, 'TenantAdminProtectedRoute');
           setSkipVerification(true);
           setVerifying(false);
           setVerified(true);
@@ -145,10 +137,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     // Set verification timeout (5 seconds)
     const verificationTimeout = setTimeout(() => {
-      logger.warn(`Verification timeout (${VERIFICATION_TIMEOUT_MS}ms)`, undefined, { 
-        component: 'TenantAdminProtectedRoute',
-        tenantSlug
-      });
+      logger.warn(`Verification timeout (${VERIFICATION_TIMEOUT_MS}ms)`, undefined, 'TenantAdminProtectedRoute');
       setVerificationError('Verification timed out. Please try again.');
       setVerifying(false);
       verificationLockRef.current = false;
