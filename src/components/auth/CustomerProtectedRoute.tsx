@@ -44,11 +44,27 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
     authRef.current = { token, customer, tenant };
   }, [token, customer, tenant]);
 
+  // Safety timeout to unlock verification if it gets stuck
+  useEffect(() => {
+    if (!verifying) return;
+    
+    const timeout = setTimeout(() => {
+      if (verificationLockRef.current) {
+        logger.warn('[CustomerProtectedRoute] Verification timeout - unlocking', undefined, 'CustomerProtectedRoute');
+        verificationLockRef.current = false;
+        setVerifying(false);
+      }
+    }, 5000); // 5 second timeout
+    
+    return () => clearTimeout(timeout);
+  }, [verifying]);
+
   // Verify access on route change or auth change
   useEffect(() => {
     const verifyAccess = async () => {
-      // Prevent concurrent verification attempts
-      if (verificationLockRef.current) {
+      // CRITICAL: Check verifying and lock FIRST to prevent re-entry
+      // This must be the first check to avoid infinite loops
+      if (verifying || verificationLockRef.current) {
         return;
       }
 
@@ -68,11 +84,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         return;
       }
 
-      // Skip if already checking
-      if (verifying) {
-        return;
-      }
-
+      // Set lock and verifying state atomically to prevent race conditions
       verificationLockRef.current = true;
       setVerifying(true);
 
@@ -109,6 +121,10 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
     };
 
     verifyAccess();
+    // NOTE: verifying is intentionally NOT in the dependency array
+    // to prevent infinite loops. The lock ref handles concurrency.
+    // isVerificationCacheValid is stable (only uses refs) and doesn't need to be included.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, location.pathname, loading, token, customer, tenant, navigate]);
 
   if (loading || verifying) {
