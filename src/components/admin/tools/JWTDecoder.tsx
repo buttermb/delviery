@@ -3,7 +3,7 @@
  * Decode and inspect JWT tokens
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -22,29 +22,41 @@ interface DecodedToken {
   isExpired: boolean;
 }
 
+interface TokenInfo {
+  name: string;
+  token: string | null;
+  icon: typeof User;
+}
+
 export function JWTDecoder() {
   const [token, setToken] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
+  const [currentTokens, setCurrentTokens] = useState<TokenInfo[]>([]);
 
-  // Get current auth tokens
-  const currentTokens = useMemo(() => {
-    const tokens: { name: string; token: string | null; icon: typeof User }[] = [];
+  // Load tokens from localStorage after mount (client-side only)
+  useEffect(() => {
+    const tokens: TokenInfo[] = [];
     
-    const customerToken = localStorage.getItem('customer_token');
-    const tenantAdminAccessToken = localStorage.getItem('tenant_admin_access_token');
-    const superAdminToken = localStorage.getItem('super_admin_token');
-    
-    if (customerToken) {
-      tokens.push({ name: 'Customer Token', token: customerToken, icon: User });
+    try {
+      const customerToken = localStorage.getItem('customer_token');
+      const tenantAdminAccessToken = localStorage.getItem('tenant_admin_access_token');
+      const superAdminToken = localStorage.getItem('super_admin_token');
+      
+      if (customerToken) {
+        tokens.push({ name: 'Customer Token', token: customerToken, icon: User });
+      }
+      if (tenantAdminAccessToken) {
+        tokens.push({ name: 'Tenant Admin Token', token: tenantAdminAccessToken, icon: Building2 });
+      }
+      if (superAdminToken) {
+        tokens.push({ name: 'Super Admin Token', token: superAdminToken, icon: Shield });
+      }
+      
+      setCurrentTokens(tokens);
+    } catch (error) {
+      // localStorage might not be available (SSR, private browsing, etc.)
+      setCurrentTokens([]);
     }
-    if (tenantAdminAccessToken) {
-      tokens.push({ name: 'Tenant Admin Token', token: tenantAdminAccessToken, icon: Building2 });
-    }
-    if (superAdminToken) {
-      tokens.push({ name: 'Super Admin Token', token: superAdminToken, icon: Shield });
-    }
-    
-    return tokens;
   }, []);
 
   const decodedToken: DecodedToken | null = useMemo(() => {
