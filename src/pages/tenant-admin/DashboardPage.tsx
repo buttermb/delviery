@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,22 +69,22 @@ export default function TenantAdminDashboardPage() {
     enabled: !!tenantId,
   });
 
-  // Helper functions for handling unlimited limits
-  const isUnlimited = (resource: 'customers' | 'menus' | 'products') => {
+  // Memoized helper functions for handling unlimited limits
+  const isUnlimited = useCallback((resource: 'customers' | 'menus' | 'products') => {
     const limit = getLimit(resource);
     return limit === Infinity;
-  };
+  }, [getLimit]);
 
-  const getDisplayLimit = (resource: 'customers' | 'menus' | 'products') => {
+  const getDisplayLimit = useCallback((resource: 'customers' | 'menus' | 'products') => {
     return isUnlimited(resource) ? '∞' : getLimit(resource);
-  };
+  }, [isUnlimited, getLimit]);
 
-  const getUsagePercentage = (resource: 'customers' | 'menus' | 'products') => {
+  const getUsagePercentage = useCallback((resource: 'customers' | 'menus' | 'products') => {
     if (isUnlimited(resource)) return 0;
     const current = getCurrent(resource);
     const limit = getLimit(resource);
     return limit > 0 ? (current / limit) * 100 : 0;
-  };
+  }, [isUnlimited, getCurrent, getLimit]);
 
   // Fetch today's metrics
   const { data: todayMetrics } = useQuery({
@@ -186,28 +186,32 @@ export default function TenantAdminDashboardPage() {
     retryDelay: 1000,
   });
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     navigate(`/${tenant?.slug}/admin/login`);
-  };
+  }, [logout, navigate, tenant?.slug]);
 
-  // Calculate trial days remaining
-  const trialEndsAt = (tenant as any)?.trial_ends_at;
-  const trialDaysRemaining = trialEndsAt
-    ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null;
-  const trialEndingSoon = trialDaysRemaining !== null && trialDaysRemaining <= 10 && trialDaysRemaining > 0;
+  // Memoize trial calculations
+  const trialInfo = useMemo(() => {
+    const trialEndsAt = (tenant as any)?.trial_ends_at;
+    const trialDaysRemaining = trialEndsAt
+      ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      : null;
+    const trialEndingSoon = trialDaysRemaining !== null && trialDaysRemaining <= 10 && trialDaysRemaining > 0;
+    
+    return { trialDaysRemaining, trialEndingSoon };
+  }, [(tenant as any)?.trial_ends_at]);
 
-  // Get usage and limits
-  const usage = (tenant as any)?.usage || {};
-  const limits = (tenant as any)?.limits || {};
+  // Memoize usage and limits
+  const tenantUsage = useMemo(() => (tenant as any)?.usage || {}, [tenant]);
+  const tenantLimits = useMemo(() => (tenant as any)?.limits || {}, [tenant]);
 
-  // Calculate onboarding progress
-  const onboardingSteps = [
-    { id: "products", completed: (usage.products || 0) > 0 },
-    { id: "customers", completed: (usage.customers || 0) > 0 },
-    { id: "menu", completed: (usage.menus || 0) > 0 },
-  ];
+  // Memoize onboarding progress
+  const onboardingSteps = useMemo(() => [
+    { id: "products", completed: (tenantUsage.products || 0) > 0 },
+    { id: "customers", completed: (tenantUsage.customers || 0) > 0 },
+    { id: "menu", completed: (tenantUsage.menus || 0) > 0 },
+  ], [tenantUsage.products, tenantUsage.customers, tenantUsage.menus]);
   // Fetch recent activity (menu views, orders, menu creations)
   const { data: recentActivity } = useQuery({
     queryKey: ["recent-activity", tenantId],
@@ -435,11 +439,11 @@ export default function TenantAdminDashboardPage() {
 
       <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Trial Countdown Banner */}
-        {tenant?.subscription_status === "trial" && trialDaysRemaining !== null && (
+        {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${
-            trialDaysRemaining <= 3 
+            trialInfo.trialDaysRemaining <= 3 
               ? "border-red-400 bg-red-50" 
-              : trialDaysRemaining <= 10 
+              : trialInfo.trialDaysRemaining <= 10 
               ? "border-yellow-400 bg-yellow-50" 
               : "border-blue-400 bg-blue-50"
           }`}>
@@ -447,28 +451,28 @@ export default function TenantAdminDashboardPage() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className={`h-5 w-5 ${
-                    trialDaysRemaining <= 3 ? "text-red-600" : trialDaysRemaining <= 10 ? "text-yellow-600" : "text-blue-600"
+                    trialInfo.trialDaysRemaining <= 3 ? "text-red-600" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-600" : "text-blue-600"
                   }`} />
                   <div>
                     <p className={`font-semibold ${
-                      trialDaysRemaining <= 3 ? "text-red-900" : trialDaysRemaining <= 10 ? "text-yellow-900" : "text-blue-900"
+                      trialInfo.trialDaysRemaining <= 3 ? "text-red-900" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-900" : "text-blue-900"
                     }`}>
-                      {trialDaysRemaining <= 0 
+                      {trialInfo.trialDaysRemaining <= 0 
                         ? "⚠️ Trial Expired" 
-                        : trialDaysRemaining <= 3 
-                        ? "⚠️ Trial Ending in " + trialDaysRemaining + " days"
-                        : "⏰ Trial Ending in " + trialDaysRemaining + " days"}
+                        : trialInfo.trialDaysRemaining <= 3 
+                        ? "⚠️ Trial Ending in " + trialInfo.trialDaysRemaining + " days"
+                        : "⏰ Trial Ending in " + trialInfo.trialDaysRemaining + " days"}
                     </p>
                     <p className={`text-sm ${
-                      trialDaysRemaining <= 3 ? "text-red-700" : trialDaysRemaining <= 10 ? "text-yellow-700" : "text-blue-700"
+                      trialInfo.trialDaysRemaining <= 3 ? "text-red-700" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-700" : "text-blue-700"
                     }`}>
-                      {trialDaysRemaining <= 0 
+                      {trialInfo.trialDaysRemaining <= 0 
                         ? "Upgrade to continue using the platform"
                         : "Upgrade now to keep your data and continue using all features"}
                     </p>
                   </div>
                 </div>
-                  <Button 
+                  <Button
                     className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap min-h-[44px] px-3 sm:px-4 text-sm sm:text-base touch-manipulation"
                   asChild
                 >
@@ -593,7 +597,7 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {usage.products || 0}/{getDisplayLimit('products')}
+                {tenantUsage.products || 0}/{getDisplayLimit('products')}
               </div>
               {!isUnlimited('products') && (
                 <>
@@ -629,7 +633,7 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {usage.customers || 0}/{getDisplayLimit('customers')}
+                {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
               </div>
               {!isUnlimited('customers') && (
                 <>
@@ -665,7 +669,7 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                {usage.menus || 0}/{getDisplayLimit('menus')}
+                {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
               </div>
               {!isUnlimited('menus') && (
                 <>

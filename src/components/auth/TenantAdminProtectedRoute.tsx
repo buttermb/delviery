@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState, useRef } from 'react';
+import { ReactNode, useEffect, useState, useRef, memo } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
@@ -240,3 +240,6 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     </VerificationProvider>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(TenantAdminProtectedRoute);
