@@ -62,6 +62,11 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Main verification effect with total wait timeout
   useEffect(() => {
+    // Skip if already verified or skipped - MUST be first check to prevent loops
+    if (verified || skipVerification) {
+      return;
+    }
+    
     // Track total wait time
     if (!totalWaitStartRef.current) {
       totalWaitStartRef.current = Date.now();
@@ -79,16 +84,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       }
     }, TOTAL_WAIT_TIMEOUT_MS);
     
-    // Skip if already verified or skipped
-    if (verified || skipVerification) {
-      clearTimeout(totalWaitTimeout);
-      return;
-    }
-    
     // If auth is still loading, wait (but with timeout protection)
     if (loading) {
       const loadingTimeout = setTimeout(() => {
-        if (loading) {
+        if (loading && !verified && !skipVerification) {
           logger.warn('Auth context loading timeout (>10s) - skipping verification', undefined, 'TenantAdminProtectedRoute');
           setSkipVerification(true);
           setVerifying(false);
@@ -137,10 +136,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     // Set verification timeout (5 seconds)
     const verificationTimeout = setTimeout(() => {
-      logger.warn(`Verification timeout (${VERIFICATION_TIMEOUT_MS}ms)`, undefined, 'TenantAdminProtectedRoute');
-      setVerificationError('Verification timed out. Please try again.');
-      setVerifying(false);
-      verificationLockRef.current = false;
+      if (!verified && !skipVerification) {
+        logger.warn(`Verification timeout (${VERIFICATION_TIMEOUT_MS}ms)`, undefined, 'TenantAdminProtectedRoute');
+        setVerificationError('Verification timed out. Please try again.');
+        setVerifying(false);
+        verificationLockRef.current = false;
+      }
     }, VERIFICATION_TIMEOUT_MS);
 
     // Local verification: compare tenant slug from URL with authenticated tenant
@@ -173,7 +174,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(totalWaitTimeout);
       clearTimeout(verificationTimeout);
     };
-  }, [tenantSlug, location.pathname, admin, tenant, verified, skipVerification, loading]);
+    // Remove verified and skipVerification from deps to prevent infinite loops
+  }, [tenantSlug, location.pathname, admin, tenant, loading, verifying]);
 
   // Loading state - wait for auth AND verification (unless skipped)
   if ((loading || verifying || !verified) && !skipVerification) {
