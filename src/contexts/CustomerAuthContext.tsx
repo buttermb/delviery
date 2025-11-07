@@ -3,6 +3,7 @@ import { logger } from "@/utils/logger";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 
 interface Customer {
   id: string;
@@ -74,6 +75,8 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [secondsUntilLogout, setSecondsUntilLogout] = useState(300);
   
   // Validate environment on mount
   useEffect(() => {
@@ -234,13 +237,19 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       const now = new Date();
       const timeUntilExpiry = expiration.getTime() - now.getTime();
       const oneDay = 24 * 60 * 60 * 1000;
+      const fiveMinutes = 5 * 60 * 1000;
 
-      // Verify token if it expires in less than 1 day
-      if (timeUntilExpiry < oneDay && timeUntilExpiry > 0) {
+      // Show warning if less than 5 minutes until expiry
+      if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
+        setSecondsUntilLogout(Math.floor(timeUntilExpiry / 1000));
+        setShowTimeoutWarning(true);
+      } else if (timeUntilExpiry < oneDay && timeUntilExpiry >= fiveMinutes) {
+        // Auto-verify between 5 minutes and 1 day before expiry
         logger.info("Token expiring soon, verifying...", undefined, 'CustomerAuth');
         refreshToken();
       } else if (timeUntilExpiry <= 0) {
         logger.warn("Token expired, logging out...", undefined, 'CustomerAuth');
+        setShowTimeoutWarning(false);
         logout();
       }
     };
@@ -258,9 +267,25 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [token]);
 
+  const handleStayLoggedIn = () => {
+    setShowTimeoutWarning(false);
+    refreshToken();
+  };
+
+  const handleLogoutFromWarning = () => {
+    setShowTimeoutWarning(false);
+    logout();
+  };
+
   return (
     <CustomerAuthContext.Provider value={{ customer, tenant, token, loading, login, logout, refreshToken }}>
       {children}
+      <SessionTimeoutWarning
+        open={showTimeoutWarning}
+        onStayLoggedIn={handleStayLoggedIn}
+        onLogout={handleLogoutFromWarning}
+        secondsRemaining={secondsUntilLogout}
+      />
     </CustomerAuthContext.Provider>
   );
 };

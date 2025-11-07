@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
+import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 
 interface SuperAdmin {
   id: string;
@@ -32,6 +33,8 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
 
   // Initialize from localStorage
   useEffect(() => {
@@ -179,13 +182,19 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       const now = new Date();
       const timeUntilExpiry = expiration.getTime() - now.getTime();
       const fiveMinutes = 5 * 60 * 1000;
+      const oneMinute = 60 * 1000;
 
-      // Refresh if token expires in less than 5 minutes
-      if (timeUntilExpiry < fiveMinutes && timeUntilExpiry > 0) {
+      // Show warning if less than 1 minute until expiry
+      if (timeUntilExpiry < oneMinute && timeUntilExpiry > 0) {
+        setSecondsUntilLogout(Math.floor(timeUntilExpiry / 1000));
+        setShowTimeoutWarning(true);
+      } else if (timeUntilExpiry < fiveMinutes && timeUntilExpiry >= oneMinute) {
+        // Auto-refresh between 1-5 minutes before expiry
         logger.info("Token expiring soon, refreshing...", undefined, 'SuperAdminAuth');
         refreshToken();
       } else if (timeUntilExpiry <= 0) {
         logger.warn("Token expired, logging out...", undefined, 'SuperAdminAuth');
+        setShowTimeoutWarning(false);
         logout();
       }
     };
@@ -203,9 +212,25 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     };
   }, [token]);
 
+  const handleStayLoggedIn = () => {
+    setShowTimeoutWarning(false);
+    refreshToken();
+  };
+
+  const handleLogoutFromWarning = () => {
+    setShowTimeoutWarning(false);
+    logout();
+  };
+
   return (
     <SuperAdminAuthContext.Provider value={{ superAdmin, token, loading, login, logout, refreshToken }}>
       {children}
+      <SessionTimeoutWarning
+        open={showTimeoutWarning}
+        onStayLoggedIn={handleStayLoggedIn}
+        onLogout={handleLogoutFromWarning}
+        secondsRemaining={secondsUntilLogout}
+      />
     </SuperAdminAuthContext.Provider>
   );
 };

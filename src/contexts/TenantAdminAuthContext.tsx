@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 
 interface TenantAdmin {
   id: string;
@@ -95,7 +96,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Validate environment on mount
   useEffect(() => {
@@ -416,10 +420,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   const setupRefreshTimer = (token: string) => {
-    // Clear existing timer
+    // Clear existing timers
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
+    }
+    if (warningTimerRef.current) {
+      clearTimeout(warningTimerRef.current);
+      warningTimerRef.current = null;
     }
 
     // Get token expiration
@@ -431,12 +439,23 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     // Calculate time until refresh (5 minutes before expiration)
     const timeUntilRefresh = expiration.getTime() - Date.now() - REFRESH_BUFFER_MS;
+    const timeUntilWarning = expiration.getTime() - Date.now() - (60 * 1000); // 1 minute before expiry
     
     if (timeUntilRefresh <= 0) {
       // Token expires very soon, refresh immediately
       logger.debug("Token expires very soon, refreshing immediately");
       refreshAuthToken();
       return;
+    }
+
+    // Set timer to show warning 1 minute before expiration
+    if (timeUntilWarning > 0 && timeUntilWarning < timeUntilRefresh) {
+      logger.debug(`Setting up session timeout warning in ${Math.round(timeUntilWarning / 1000)} seconds`);
+      warningTimerRef.current = setTimeout(() => {
+        const secondsLeft = Math.floor((expiration.getTime() - Date.now()) / 1000);
+        setSecondsUntilLogout(secondsLeft > 0 ? secondsLeft : 60);
+        setShowTimeoutWarning(true);
+      }, timeUntilWarning);
     }
 
     logger.debug(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
@@ -625,12 +644,31 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
       }
+      if (warningTimerRef.current) {
+        clearTimeout(warningTimerRef.current);
+      }
     };
   }, [accessToken]);
+
+  const handleStayLoggedIn = () => {
+    setShowTimeoutWarning(false);
+    refreshAuthToken();
+  };
+
+  const handleLogoutFromWarning = () => {
+    setShowTimeoutWarning(false);
+    logout();
+  };
 
   return (
     <TenantAdminAuthContext.Provider value={{ admin, tenant, token, accessToken, refreshToken: refreshToken, loading, login, logout, refreshAuthToken }}>
       {children}
+      <SessionTimeoutWarning
+        open={showTimeoutWarning}
+        onStayLoggedIn={handleStayLoggedIn}
+        onLogout={handleLogoutFromWarning}
+        secondsRemaining={secondsUntilLogout}
+      />
     </TenantAdminAuthContext.Provider>
   );
 };
