@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { lazy, Suspense, useState, useEffect } from "react";
 import { motion, useTransform } from "framer-motion";
 import { Play } from "lucide-react";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react";
@@ -12,6 +11,8 @@ import { TrustBadgesCluster } from "./TrustBadgesCluster";
 import { useThrottledScroll } from "@/hooks/useThrottledScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 // Lazy load heavy animation components
 const BackgroundMesh = lazy(() => import('./BackgroundMesh').then(m => ({ default: m.BackgroundMesh })));
@@ -19,6 +20,7 @@ const FloatingUIElements = lazy(() => import('./FloatingUIElements').then(m => (
 const ParallaxBackground = lazy(() => import('./ParallaxBackground').then(m => ({ default: m.ParallaxBackground })));
 
 export function HeroSection() {
+  usePerformanceMonitor('HeroSection');
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   const isMobile = useIsMobile();
   const prefersReducedMotion = useReducedMotion();

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Truck, Award } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
+import { useThrottledScroll } from "@/hooks/useThrottledScroll";
 
 export function ParallaxHero() {
-  const { scrollY } = useScroll();
+  const { scrollY } = useThrottledScroll(32);
   const y1 = useTransform(scrollY, [0, 800], [0, 200]);
   const y2 = useTransform(scrollY, [0, 800], [0, -80]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);

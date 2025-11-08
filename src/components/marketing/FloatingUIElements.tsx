@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
 interface FloatingCard {
   id: number;
@@ -11,6 +12,7 @@ interface FloatingCard {
 }
 
 export function FloatingUIElements() {
+  usePerformanceMonitor('FloatingUIElements');
   // Reduced from 5 to 3 cards for better mobile performance
   const cards: FloatingCard[] = [
     { id: 1, x: 10, y: 20, width: 80, height: 60, delay: 0, duration: 8 },

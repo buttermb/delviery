@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
 interface BackgroundMeshProps {
   className?: string;
 }
 
 export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
+  usePerformanceMonitor('BackgroundMesh');
   return (
     <div className={`absolute inset-0 w-full h-full overflow-hidden ${className}`}>
       {/* Multiple gradient layers - optimized for mobile with GPU acceleration */}

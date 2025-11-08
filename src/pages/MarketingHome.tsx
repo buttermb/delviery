@@ -126,28 +126,34 @@ export default function MarketingHome() {
 
       {/* SECTION 2: PROBLEM/SOLUTION */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <ProblemSolutionSection />
-        </Suspense>
+        <section style={{ contentVisibility: 'auto' }}>
+          <Suspense fallback={<SectionLoader />}>
+            <ProblemSolutionSection />
+          </Suspense>
+        </section>
       </SectionTransition>
 
 
       {/* SECTION 5: PLATFORM CAPABILITIES */}
       <SectionTransition variant="fade">
-        <Suspense fallback={<SectionLoader />}>
-          <PlatformCapabilities />
-        </Suspense>
+        <section style={{ contentVisibility: 'auto' }}>
+          <Suspense fallback={<SectionLoader />}>
+            <PlatformCapabilities />
+          </Suspense>
+        </section>
       </SectionTransition>
 
       {/* SECTION 5B: FEATURE EXPLORER */}
       <SectionTransition variant="fade">
-        <Suspense fallback={<SectionLoader />}>
-          <FeatureExplorer />
-        </Suspense>
+        <section style={{ contentVisibility: 'auto' }}>
+          <Suspense fallback={<SectionLoader />}>
+            <FeatureExplorer />
+          </Suspense>
+        </section>
       </SectionTransition>
 
       {/* SECTION 5C: KEY FEATURES GRID */}
-      <section className="py-20">
+      <section className="py-20" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4 max-w-7xl">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
@@ -209,7 +215,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: CUSTOMER SUCCESS */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
+      <section className="py-20 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <CustomerSuccessTimeline />
@@ -218,7 +224,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 7: HOW IT WORKS */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-muted/30" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <AnimatedHowItWorks />
@@ -228,20 +234,24 @@ export default function MarketingHome() {
 
       {/* SECTION 8: COMPARISON */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <ComparisonSection />
-        </Suspense>
+        <section style={{ contentVisibility: 'auto' }}>
+          <Suspense fallback={<SectionLoader />}>
+            <ComparisonSection />
+          </Suspense>
+        </section>
       </SectionTransition>
 
       {/* SECTION 9: INTEGRATION */}
       <SectionTransition variant="fade" delay={0}>
-        <Suspense fallback={<SectionLoader />}>
-          <IntegrationEcosystem />
-        </Suspense>
+        <section style={{ contentVisibility: 'auto' }}>
+          <Suspense fallback={<SectionLoader />}>
+            <IntegrationEcosystem />
+          </Suspense>
+        </section>
       </SectionTransition>
 
       {/* SECTION 10: PRICING PREVIEW */}
-      <section className="py-20">
+      <section className="py-20" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
@@ -368,7 +378,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
+      <section className="py-20 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">

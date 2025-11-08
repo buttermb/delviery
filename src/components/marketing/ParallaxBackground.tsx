@@ -1,7 +1,9 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 
 export function ParallaxBackground() {
+  usePerformanceMonitor('ParallaxBackground');
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
