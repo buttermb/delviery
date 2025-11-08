@@ -42,6 +42,47 @@
   animation: panic-pulse 1s infinite;
 }
 
+/* Performance Optimizations */
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Force GPU acceleration for animated elements */
+.hero-gradient,
+.glass-card,
+[class*="motion-div"],
+[data-framer-motion] {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Optimize mobile performance */
+@media (max-width: 768px) {
+  /* Reduce animation complexity on mobile */
+  [data-framer-motion] {
+    animation-duration: 0.3s !important;
+  }
+  
+  /* Use simpler gradients on mobile */
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-secondary)) 100%);
+  }
+  
+  /* Disable expensive effects on mobile */
+  .blur-3xl {
+    filter: blur(40px);
+  }
+}
+
 /* NYM Design System - Dark Slate & Teal Premium Brand */
 
 @layer base {

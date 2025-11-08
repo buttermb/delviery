@@ -11,12 +11,11 @@ interface FloatingCard {
 }
 
 export function FloatingUIElements() {
+  // Reduced from 5 to 3 cards for better mobile performance
   const cards: FloatingCard[] = [
     { id: 1, x: 10, y: 20, width: 80, height: 60, delay: 0, duration: 8 },
     { id: 2, x: 70, y: 10, width: 100, height: 80, delay: 2, duration: 10 },
     { id: 3, x: 40, y: 60, width: 90, height: 70, delay: 4, duration: 12 },
-    { id: 4, x: 80, y: 70, width: 70, height: 50, delay: 1, duration: 9 },
-    { id: 5, x: 15, y: 80, width: 85, height: 65, delay: 3, duration: 11 },
   ];
 
   return (
@@ -30,6 +29,8 @@ export function FloatingUIElements() {
             top: `${card.y}%`,
             width: `${card.width}px`,
             height: `${card.height}px`,
+            willChange: 'transform, opacity',
+            transform: 'translate3d(0, 0, 0)',
           }}
           animate={{
             y: [0, -30, 0],

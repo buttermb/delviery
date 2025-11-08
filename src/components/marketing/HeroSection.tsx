@@ -1,21 +1,42 @@
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { lazy, Suspense, useState, useEffect } from "react";
+import { motion, useTransform } from "framer-motion";
 import { Play } from "lucide-react";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react";
+import { useInView } from "react-intersection-observer";
 import { AnimatedIcon } from "./AnimatedIcon";
-import { BackgroundMesh } from "./BackgroundMesh";
-import { FloatingUIElements } from "./FloatingUIElements";
 import { TypewriterHeadline } from "./TypewriterHeadline";
 import { ScrollIndicator } from "./ScrollIndicator";
 import { FancyButton } from "./FancyButton";
 import { TrustBadgesCluster } from "./TrustBadgesCluster";
+import { useThrottledScroll } from "@/hooks/useThrottledScroll";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
+// Lazy load heavy animation components
+const BackgroundMesh = lazy(() => import('./BackgroundMesh').then(m => ({ default: m.BackgroundMesh })));
+const FloatingUIElements = lazy(() => import('./FloatingUIElements').then(m => ({ default: m.FloatingUIElements })));
+const ParallaxBackground = lazy(() => import('./ParallaxBackground').then(m => ({ default: m.ParallaxBackground })));
 
 export function HeroSection() {
-  const { scrollY } = useScroll();
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const isMobile = useIsMobile();
+  const prefersReducedMotion = useReducedMotion();
+  const shouldAnimate = inView && !prefersReducedMotion;
+  const [shouldAnimateChart, setShouldAnimateChart] = useState(false);
+  
+  // Use throttled scroll for better performance
+  const { scrollY } = useThrottledScroll(32);
   const y1 = useTransform(scrollY, [0, 500], [0, 100]);
   const y2 = useTransform(scrollY, [0, 500], [0, 70]);
   const y3 = useTransform(scrollY, [0, 500], [0, 40]);
   const opacity = useTransform(scrollY, [200, 600], [1, 0.3]);
+
+  // Defer chart animation
+  useEffect(() => {
+    const timer = setTimeout(() => setShouldAnimateChart(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const benefits = [
     "Manage orders.",
@@ -25,12 +46,21 @@ export function HeroSection() {
   ];
 
   return (
-    <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden min-h-screen flex items-center">
-      {/* Animated Background Mesh */}
-      <BackgroundMesh />
+    <section ref={ref} className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden min-h-screen flex items-center">
+      {/* Conditionally render heavy animations - desktop only when in view */}
+      {!isMobile && shouldAnimate && (
+        <Suspense fallback={null}>
+          <BackgroundMesh />
+          <FloatingUIElements />
+        </Suspense>
+      )}
       
-      {/* Floating UI Elements */}
-      <FloatingUIElements />
+      {/* Parallax background - desktop only, respect motion preferences */}
+      {!isMobile && !prefersReducedMotion && (
+        <Suspense fallback={null}>
+          <ParallaxBackground />
+        </Suspense>
+      )}
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 opacity-10">
@@ -177,15 +207,15 @@ export function HeroSection() {
                         key={i}
                         className="flex-1 bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-t"
                         style={{ height: `${height}%` }}
-                        animate={{
+                        animate={shouldAnimateChart ? {
                           height: [`${height}%`, `${height + 10}%`, `${height}%`],
-                        }}
-                        transition={{
+                        } : {}}
+                        transition={shouldAnimateChart ? {
                           duration: 2,
                           repeat: Infinity,
                           delay: i * 0.2,
                           ease: "easeInOut",
-                        }}
+                        } : {}}
                       />
                     ))}
                   </div>

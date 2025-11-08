@@ -19,27 +19,29 @@ export function ParallaxBackground() {
       {/* Gradient orbs */}
       <motion.div
         className="absolute top-[10%] left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))]/20 to-[hsl(var(--marketing-accent))]/10 blur-3xl"
-        style={{ y: y1, opacity, scale }}
+        style={{ y: y1, opacity, scale, willChange: 'transform, opacity', transform: 'translate3d(0, 0, 0)' }}
       />
       
       <motion.div
         className="absolute top-[40%] right-[15%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-[hsl(var(--marketing-accent))]/20 to-[hsl(var(--marketing-secondary))]/10 blur-3xl"
-        style={{ y: y2, opacity }}
+        style={{ y: y2, opacity, willChange: 'transform, opacity', transform: 'translate3d(0, 0, 0)' }}
       />
 
       <motion.div
         className="absolute bottom-[20%] left-[20%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-[hsl(var(--marketing-secondary))]/15 to-[hsl(var(--marketing-primary))]/10 blur-3xl"
-        style={{ y: y3, opacity }}
+        style={{ y: y3, opacity, willChange: 'transform, opacity', transform: 'translate3d(0, 0, 0)' }}
       />
 
-      {/* Floating shapes */}
-      {[...Array(20)].map((_, i) => (
+      {/* Floating shapes - reduced from 20 to 8 for performance */}
+      {[...Array(8)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-2 h-2 rounded-full bg-[hsl(var(--marketing-accent))]/20"
           style={{
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
+            willChange: 'transform, opacity',
+            transform: 'translate3d(0, 0, 0)',
           }}
           animate={{
             y: [0, -30, 0],
@@ -78,7 +80,7 @@ export function ParallaxBackground() {
             <stop offset="100%" stopColor="hsl(var(--marketing-accent))" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {[...Array(5)].map((_, i) => (
+        {[...Array(3)].map((_, i) => (
           <motion.path
             key={i}
             d={`M 0,${100 + i * 150} Q ${250 + i * 50},${50 + i * 100} ${500 + i * 100},${100 + i * 150}`}
