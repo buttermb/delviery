@@ -33,6 +33,20 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    headers: {
+      // Content Security Policy - Critical security header
+      // Development: Allows Vite HMR and all Supabase connections
+      // Production: Stricter policy (configured in vercel.json and _headers)
+      'Content-Security-Policy': mode === 'development' 
+        ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.mapbox.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://*.mapbox.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com data: https://api.mapbox.com https://*.mapbox.com; connect-src 'self' http://localhost:* http://[::]:* ws://localhost:* ws://[::]:* https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.mapbox.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';"
+        : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.mapbox.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://*.mapbox.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com data: https://api.mapbox.com https://*.mapbox.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.mapbox.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests;",
+      // Additional security headers
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'geolocation=(self), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
+    },
   },
   define: {
     'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString())
