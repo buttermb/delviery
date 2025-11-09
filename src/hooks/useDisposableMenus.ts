@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 
-export const useDisposableMenus = () => {
+export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
-    queryKey: ['disposable-menus'],
+    queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('disposable_menus')
         .select(`
           *,
@@ -17,12 +17,18 @@ export const useDisposableMenus = () => {
           menu_access_whitelist(count),
           menu_access_logs(count),
           menu_orders(*)
-        `)
-        .order('created_at', { ascending: false });
+        `);
+      
+      if (tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: tenantId !== undefined,
   });
 };
 

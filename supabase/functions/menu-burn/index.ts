@@ -30,14 +30,50 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Get tenant_id from user
+    let tenantId: string | null = null;
+    
+    // Try to get from tenant_users table
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (tenantUser) {
+      tenantId = tenantUser.tenant_id;
+    } else {
+      // Check if user is tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      if (tenant) {
+        tenantId = tenant.id;
+      }
+    }
+
+    if (!tenantId) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found or user not authorized' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { data: menu, error: fetchError } = await supabase
       .from('disposable_menus')
       .select('*')
       .eq('id', menu_id)
+      .eq('tenant_id', tenantId)
       .single();
 
     if (fetchError || !menu) {
-      throw new Error('Menu not found');
+      return new Response(
+        JSON.stringify({ error: 'Menu not found or access denied' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     let updateData: any = {

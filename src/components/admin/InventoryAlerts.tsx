@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Package, TrendingDown } from "lucide-react";
 import { useWholesaleInventory } from "@/hooks/useWholesaleData";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export function InventoryAlerts() {
-  const { data: inventory = [] } = useWholesaleInventory();
+  const { tenant } = useTenantAdminAuth();
+  const { data: inventory = [] } = useWholesaleInventory(tenant?.id);
 
   const lowStockItems = inventory
     .filter(item => item.quantity_lbs < item.reorder_point)

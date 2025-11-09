@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { queryKeys } from "@/lib/queryKeys";
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
@@ -124,10 +126,17 @@ export default function WholesaleClients() {
           <Button 
             className="bg-emerald-500 hover:bg-emerald-600"
             onClick={() => setCreateClientDialogOpen(true)}
+            data-tutorial="add-customer"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Client
           </Button>
+          <TakeTourButton
+            tutorialId={customersTutorial.id}
+            steps={customersTutorial.steps}
+            variant="outline"
+            size="sm"
+          />
         </div>
       </div>
 
@@ -184,7 +193,7 @@ export default function WholesaleClients() {
 
       {/* Clients Table */}
       <Card>
-        <Table>
+        <Table data-tutorial="customer-list">
           <TableHeader>
             <TableRow>
               <TableHead>Client</TableHead>

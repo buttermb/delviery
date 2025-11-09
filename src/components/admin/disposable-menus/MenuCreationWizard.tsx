@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { MenuTemplates, type MenuTemplate } from '@/components/admin/disposable-menus/MenuTemplates';
 import { Eye, CheckCircle2, Shield, Calendar, Lock, Search, X, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -31,6 +32,7 @@ const STEPS = [
 ];
 
 export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardProps) => {
+  const { tenant } = useTenantAdminAuth();
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTemplate, setSelectedTemplate] = useState<MenuTemplate | null>(null);
@@ -48,7 +50,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
   const [accessType, setAccessType] = useState<'invite_only' | 'shared' | 'hybrid'>('invite_only');
   const [requireAccessCode, setRequireAccessCode] = useState(true);
 
-  const { data: inventory, isLoading: inventoryLoading } = useWholesaleInventory();
+  const { data: inventory, isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
 
   // Generate 8-character alphanumeric code

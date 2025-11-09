@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TutorialProvider } from "@/components/tutorial/TutorialProvider";
 
 /**
  * Admin Layout Component - v2.1.1
@@ -86,7 +87,7 @@ const AdminLayout = () => {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <>
+    <TutorialProvider>
       {/* Command Palette */}
       <TenantAdminCommandPalette />
       
@@ -154,7 +155,7 @@ const AdminLayout = () => {
       
       {/* PWA install */}
       <InstallPWA />
-    </>
+    </TutorialProvider>
   );
 };
 

@@ -128,18 +128,24 @@ export const useUpdateDeliveryStatus = () => {
   });
 };
 
-export const useWholesaleInventory = () => {
+export const useWholesaleInventory = (tenantId?: string) => {
   return useQuery({
-    queryKey: ["wholesale-inventory"],
+    queryKey: ["wholesale-inventory", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("wholesale_inventory")
-        .select("*")
-        .order("product_name");
+        .select("*");
+      
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+      
+      const { data, error } = await query.order("product_name");
       
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: tenantId !== undefined,
   });
 };
 

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
 import { useDisposableMenus, useMenuAccessLogs, useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { EnhancedAnalyticsCard } from '@/components/admin/disposable-menus/EnhancedAnalyticsCard';
 import { SecurityEventsTable } from '@/components/admin/disposable-menus/SecurityEventsTable';
 import { ViewTrackingChart } from '@/components/admin/disposable-menus/ViewTrackingChart';
@@ -14,10 +15,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, parseISO } from 'date-fns';
 
 const DisposableMenuAnalytics = () => {
+  const { tenant } = useTenantAdminAuth();
   const { menuId } = useParams();
   const [dateRange, setDateRange] = useState(7); // days
 
-  const { data: menus, isLoading: menusLoading } = useDisposableMenus();
+  const { data: menus, isLoading: menusLoading } = useDisposableMenus(tenant?.id);
   const { data: accessLogs, isLoading: logsLoading, refetch: refetchLogs } = useMenuAccessLogs(menuId!);
   const { data: securityEvents, refetch: refetchEvents } = useMenuSecurityEvents(menuId);
 

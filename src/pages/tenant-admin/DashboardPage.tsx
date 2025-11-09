@@ -29,6 +29,8 @@ import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { logger } from "@/utils/logger";
+import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
@@ -408,6 +410,12 @@ export default function TenantAdminDashboardPage() {
             <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Admin Panel</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <TakeTourButton
+              tutorialId={dashboardTutorial.id}
+              steps={dashboardTutorial.steps}
+              variant="outline"
+              size="sm"
+            />
             {admin && (
               <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block truncate max-w-[120px]">
                 {admin.email}
@@ -418,6 +426,7 @@ export default function TenantAdminDashboardPage() {
               size="sm"
               asChild 
               className="min-h-[44px] px-2 sm:px-3"
+              data-tutorial="settings-access"
             >
               <Link to={`/${tenant?.slug}/admin/settings`}>
                 <Settings className="h-4 w-4 sm:mr-2" />
@@ -584,7 +593,7 @@ export default function TenantAdminDashboardPage() {
         </div>
 
         {/* Usage Limit Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tutorial="dashboard-stats">
           <Card 
             className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
             onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
@@ -715,7 +724,7 @@ export default function TenantAdminDashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <Card>
+        <Card data-tutorial="quick-actions">
           <CardHeader>
             <CardTitle>🚀 Quick Actions</CardTitle>
           </CardHeader>
@@ -756,7 +765,7 @@ export default function TenantAdminDashboardPage() {
         </Card>
 
         {/* Recent Activity Feed */}
-        <Card>
+        <Card data-tutorial="activity-feed">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>📋 Recent Activity</CardTitle>
@@ -804,7 +813,7 @@ export default function TenantAdminDashboardPage() {
 
         {/* Low Stock Alerts */}
         {todayMetrics?.lowStock && todayMetrics.lowStock.length > 0 && (
-          <Card className="border-yellow-300 border-2">
+          <Card className="border-yellow-300 border-2" data-tutorial="low-stock-alerts">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />

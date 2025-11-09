@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface CreateMenuDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ const STEPS = [
 ];
 
 export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) => {
+  const { tenant } = useTenantAdminAuth();
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
   const [currentStep, setCurrentStep] = useState(1);
   const [name, setName] = useState('');
@@ -90,7 +92,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     menuName: string;
   } | null>(null);
 
-  const { data: inventory } = useWholesaleInventory();
+  const { data: inventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
   const bulkGenerateImages = useBulkGenerateImages();
 

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus, Trash2 } from "lucide-react";
 import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners, useCreateWholesaleOrder } from "@/hooks/useWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -24,9 +25,10 @@ export default function NewWholesaleOrderReal() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const clientIdParam = searchParams.get('clientId');
+  const { tenant } = useTenantAdminAuth();
 
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
-  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory();
+  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
   const { data: runners = [], isLoading: runnersLoading } = useWholesaleRunners();
   const createOrder = useCreateWholesaleOrder();
 

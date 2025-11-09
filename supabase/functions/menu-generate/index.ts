@@ -80,10 +80,73 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Get tenant_id from user
+    let tenantId: string | null = null;
+    
+    // Try to get from tenant_users table
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (tenantUser) {
+      tenantId = tenantUser.tenant_id;
+    } else {
+      // Check if user is tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      if (tenant) {
+        tenantId = tenant.id;
+      }
+    }
+
+    if (!tenantId) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found or user not authorized' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate that all products belong to this tenant
+    const { data: products, error: productsCheckError } = await supabase
+      .from('wholesale_inventory')
+      .select('id, tenant_id')
+      .in('id', product_ids);
+
+    if (productsCheckError) {
+      console.error('Product validation error:', productsCheckError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to validate products' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!products || products.length !== product_ids.length) {
+      return new Response(
+        JSON.stringify({ error: 'Some products not found' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify all products belong to the same tenant
+    const invalidProducts = products.filter(p => p.tenant_id !== tenantId);
+    if (invalidProducts.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Some products do not belong to your tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Creating menu with settings:', {
       name,
       description,
       product_count: product_ids.length,
+      tenant_id: tenantId,
       security_settings,
       min_order_quantity,
       max_order_quantity
@@ -95,6 +158,7 @@ serve(async (req) => {
       .insert({
         name,
         description,
+        tenant_id: tenantId,
         access_code: accessCode,
         access_code_hash: accessCodeHash,
         encrypted_url_token: urlToken,

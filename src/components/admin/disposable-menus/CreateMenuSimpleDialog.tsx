@@ -44,7 +44,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const [accessType, setAccessType] = useState<'specific_customers' | 'public_link'>('specific_customers');
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
-  const { data: inventory } = useWholesaleInventory();
+  const { data: inventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
 
   // Fetch customers for this tenant

@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
+import { menusTutorial } from '@/lib/tutorials/tutorialConfig';
 
 const DisposableMenus = () => {
   const navigate = useTenantNavigate();
@@ -32,7 +34,7 @@ const DisposableMenus = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
-  const { data: menus, isLoading, refetch } = useDisposableMenus();
+  const { data: menus, isLoading, refetch } = useDisposableMenus(tenant?.id);
   const { data: securityEvents } = useMenuSecurityEvents();
 
   const activeMenus = menus?.filter(m => m.status === 'active') || [];
@@ -124,6 +126,7 @@ const DisposableMenus = () => {
             <Button 
               variant="outline"
               onClick={() => setCreateDialogOpen(true)}
+              data-tutorial="create-menu-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               Quick Create
@@ -132,6 +135,12 @@ const DisposableMenus = () => {
               <Plus className="h-4 w-4 mr-2" />
               Create Menu (Wizard)
             </Button>
+            <TakeTourButton
+              tutorialId={menusTutorial.id}
+              steps={menusTutorial.steps}
+              variant="outline"
+              size="sm"
+            />
           </div>
         </div>
       </div>
@@ -173,7 +182,7 @@ const DisposableMenus = () => {
       <Tabs defaultValue="menus" className="w-full">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="menus">Menus</TabsTrigger>
-          <TabsTrigger value="security">
+          <TabsTrigger value="security" data-tutorial="security-settings">
             Security
             {recentAlerts.length > 0 && (
               <span className="ml-2 bg-destructive text-destructive-foreground rounded-full px-2 py-0.5 text-xs">
@@ -238,9 +247,9 @@ const DisposableMenus = () => {
                 </Button>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-tutorial="menu-list">
                 {activeMenus.map(menu => (
-                  <div key={menu.id} className="relative">
+                  <div key={menu.id} className="relative" data-tutorial="menu-actions">
                     <div className="absolute top-4 left-4 z-10">
                       <Checkbox
                         checked={selectedMenuIds.includes(menu.id)}

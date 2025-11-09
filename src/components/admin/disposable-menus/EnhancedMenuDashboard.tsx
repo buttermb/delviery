@@ -20,6 +20,7 @@ import { MenuCard } from './MenuCard';
 import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface Menu {
   id: string;
@@ -40,10 +41,11 @@ interface Menu {
 }
 
 export function EnhancedMenuDashboard() {
+  const { tenant } = useTenantAdminAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedMenuForBurn, setSelectedMenuForBurn] = useState<Menu | null>(null);
   
-  const { data: menus, isLoading } = useDisposableMenus();
+  const { data: menus, isLoading } = useDisposableMenus(tenant?.id);
 
   // Calculate overview stats
   const { data: overviewStats } = useQuery({

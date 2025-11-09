@@ -29,6 +29,55 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Get tenant_id from user
+    let tenantId: string | null = null;
+    
+    // Try to get from tenant_users table
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (tenantUser) {
+      tenantId = tenantUser.tenant_id;
+    } else {
+      // Check if user is tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      if (tenant) {
+        tenantId = tenant.id;
+      }
+    }
+
+    if (!tenantId) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found or user not authorized' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify menu belongs to tenant (for all actions)
+    if (menu_id) {
+      const { data: menu, error: menuError } = await supabase
+        .from('disposable_menus')
+        .select('id, tenant_id')
+        .eq('id', menu_id)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (menuError || !menu) {
+        return new Response(
+          JSON.stringify({ error: 'Menu not found or access denied' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     let response: any = { success: true };
 
     switch (action) {

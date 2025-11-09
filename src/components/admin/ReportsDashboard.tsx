@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, DollarSign, Package, Users, Truck } from "lucide-react";
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from "@/hooks/useWholesaleData";
 import { format, startOfWeek, startOfMonth, subDays } from "date-fns";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export function ReportsDashboard() {
+  const { tenant } = useTenantAdminAuth();
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
   const { data: payments = [] } = useWholesalePayments();
-  const { data: inventory = [] } = useWholesaleInventory();
+  const { data: inventory = [] } = useWholesaleInventory(tenant?.id);
 
   // Date ranges
   const today = new Date();

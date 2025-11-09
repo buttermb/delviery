@@ -7,9 +7,13 @@ import { useWholesaleInventory } from "@/hooks/useWholesaleData";
 import { StockAdjustmentDialog } from "@/components/admin/StockAdjustmentDialog";
 import { InventoryMovementLog } from "@/components/admin/InventoryMovementLog";
 import { BulkImageGenerator } from "@/components/admin/products/BulkImageGenerator";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function InventoryManagement() {
-  const { data: inventory = [], isLoading } = useWholesaleInventory();
+  const { tenant } = useTenantAdminAuth();
+  const { data: inventory = [], isLoading } = useWholesaleInventory(tenant?.id);
   
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -45,14 +49,20 @@ export default function InventoryManagement() {
         </div>
         <div className="flex gap-2">
           <BulkImageGenerator products={inventory} />
-          <Button className="bg-emerald-500 hover:bg-emerald-600">
+          <Button className="bg-emerald-500 hover:bg-emerald-600" data-tutorial="add-product">
             + Add Stock
           </Button>
+          <TakeTourButton
+            tutorialId={inventoryTutorial.id}
+            steps={inventoryTutorial.steps}
+            variant="outline"
+            size="sm"
+          />
         </div>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tutorial="inventory-overview">
         <Card className="p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Total Stock</span>
@@ -112,7 +122,7 @@ export default function InventoryManagement() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full" data-tutorial="product-list">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 text-sm font-semibold text-foreground">Product</th>
@@ -152,6 +162,7 @@ export default function InventoryManagement() {
                                   setSelectedProduct(product);
                                   setAdjustmentDialogOpen(true);
                                 }}
+                                data-tutorial="stock-adjustments"
                               >
                                 <Settings className="h-3 w-3 mr-1" />
                                 Adjust

@@ -12,12 +12,16 @@ import {
   Calendar, TrendingUp, Loader2
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks, subDays } from 'date-fns';
 import { useWholesaleClients, useWholesaleOrders, useWholesalePayments, useWholesaleInventory } from '@/hooks/useWholesaleData';
 import { useExport } from '@/hooks/useExport';
+import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
+import { reportsTutorial } from '@/lib/tutorials/tutorialConfig';
 
 export default function ReportsPage() {
   const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [reportType, setReportType] = useState<string>('business');
   const { exportCSV } = useExport();
@@ -25,7 +29,7 @@ export default function ReportsPage() {
   const { data: clients = [], isLoading: clientsLoading } = useWholesaleClients();
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
   const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();
-  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory();
+  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
 
   const loading = clientsLoading || ordersLoading || paymentsLoading || inventoryLoading;
 
@@ -128,7 +132,7 @@ export default function ReportsPage() {
           <p className="text-muted-foreground">Business intelligence and analytics</p>
         </div>
         <div className="flex gap-2">
-          <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
+          <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)} data-tutorial="date-range">
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -140,15 +144,21 @@ export default function ReportsPage() {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExport}>
+          <Button onClick={handleExport} data-tutorial="export-options">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+          <TakeTourButton
+            tutorialId={reportsTutorial.id}
+            steps={reportsTutorial.steps}
+            variant="outline"
+            size="sm"
+          />
         </div>
       </div>
 
       <Tabs value={reportType} onValueChange={setReportType} className="space-y-6">
-        <TabsList>
+        <TabsList data-tutorial="report-types">
           <TabsTrigger value="business">
             <BarChart3 className="h-4 w-4 mr-2" />
             Business Intelligence

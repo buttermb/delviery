@@ -12,6 +12,8 @@ import { Package, TrendingUp, Clock, XCircle, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { logger } from '@/lib/logger';
+import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
+import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
 
 interface Order {
   id: string;
@@ -102,6 +104,12 @@ export default function Orders() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Orders Management</h1>
+          <TakeTourButton
+            tutorialId={ordersTutorial.id}
+            steps={ordersTutorial.steps}
+            variant="outline"
+            size="sm"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -148,12 +156,12 @@ export default function Orders() {
             </Select>
           </div>
 
-          <Table>
+          <Table data-tutorial="orders-list">
             <TableHeader>
               <TableRow>
                 <TableHead>Order #</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead data-tutorial="order-status">Status</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Date</TableHead>
