@@ -1,5 +1,7 @@
 # 🚀 Premium Delivery Platform - Complete E-Commerce & SAAS Solution
 
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/buttermb/delviery?utm_source=oss&utm_medium=github&utm_campaign=buttermb%2Fdelviery&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 ## Project Overview
 
 A comprehensive full-stack progressive web application combining premium delivery services, wholesale CRM, multi-tenant SAAS platform, and advanced inventory management.
