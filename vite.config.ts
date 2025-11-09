@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => ({
   define: {
     'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString())
   },
+  envPrefix: 'VITE_', // Only expose env vars prefixed with VITE_ to client
   plugins: [
     react(), 
     mode === "development" && componentTagger(),

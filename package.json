@@ -14,6 +14,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "@aikidosec/firewall": "^1.7.18",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.0",
     "@capacitor/cli": "^7.4.3",
