@@ -20,18 +20,24 @@ Deno.serve(withZenProtection(async (req) => {
   }
 
   try {
+    const rawBody = await req.json();
+    
+    // Import validation
+    const { validateTrackAccessInput } = await import('./validation.ts');
+    const body = validateTrackAccessInput(rawBody);
+    
+    const { userId, fingerprint } = body;
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { userId, fingerprint, deviceType, browser, os } = await req.json() as TrackAccessRequest;
 
     // Get IP address from request headers
     const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || 
                       req.headers.get('x-real-ip') || 
                       'unknown';
 
-    console.log('Tracking access:', { userId, fingerprint, ipAddress });
+    console.log('Tracking access:', { userId, fingerprint: fingerprint.substring(0, 10) + '...' });
 
     // Check if IP is blocked
     const { data: ipBlocked } = await supabase

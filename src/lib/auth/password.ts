@@ -1,36 +1,24 @@
 /**
  * Password Utility Functions
- * For hashing and verifying passwords
- * 
- * Note: In production, use proper bcrypt library
- * This is a simplified implementation using Web Crypto API
+ * Using bcrypt for secure password hashing
  */
 
+import bcrypt from 'bcryptjs';
+
+const SALT_ROUNDS = 12;
+
 /**
- * Hash password using SHA-256 (simplified)
- * In production, use bcrypt with proper salt rounds (10-12)
+ * Hash password using bcrypt with proper salt rounds
  */
-export async function hashPassword(password: string, salt?: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const secret = salt || import.meta.env.VITE_PASSWORD_SECRET || 'change-in-production';
-  
-  // Combine password with salt/secret
-  const data = encoder.encode(password + secret);
-  
-  // Hash using Web Crypto API
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  
-  // Convert to hex string
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+export async function hashPassword(password: string): Promise<string> {
+  return await bcrypt.hash(password, SALT_ROUNDS);
 }
 
 /**
- * Verify password against hash
+ * Verify password against bcrypt hash
  */
-export async function comparePassword(password: string, hash: string, salt?: string): Promise<boolean> {
-  const hashedPassword = await hashPassword(password, salt);
-  return hashedPassword === hash;
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return await bcrypt.compare(password, hash);
 }
 
 /**

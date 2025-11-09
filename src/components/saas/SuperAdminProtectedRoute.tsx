@@ -1,6 +1,6 @@
 /**
  * Protected Route for Super Admin / Platform Admin
- * Ensures only platform admins can access SAAS admin pages
+ * Uses server-side role validation via user_roles table
  */
 
 import { Navigate } from 'react-router-dom';
@@ -27,48 +27,20 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       }
 
       try {
-        // Method 1: Check user metadata
-        const metadata = user.user_metadata || {};
-        const isMetadataAdmin = 
-          metadata.role === 'platform_admin' ||
-          metadata.platform_admin === true ||
-          metadata.is_super_admin === true;
-
-        if (isMetadataAdmin) {
-          setIsPlatformAdmin(true);
-          setChecking(false);
-          return;
-        }
-
-        // Method 2: Check tenant_users for super_admin role
-        const { data: tenantUser } = await (supabase as any)
-          .from('tenant_users')
+        // Check user_roles table directly with proper RLS
+        const { data, error } = await supabase
+          .from('user_roles')
           .select('role')
-          .eq('email', user.email)
-          .eq('role', 'super_admin')
+          .eq('user_id', user.id)
+          .eq('role', 'super_admin' as any) // Type will update after migration
           .maybeSingle();
 
-        if (tenantUser) {
-          setIsPlatformAdmin(true);
-          setChecking(false);
-          return;
+        if (error) {
+          console.error('Error checking admin status:', error);
+          setIsPlatformAdmin(false);
+        } else {
+          setIsPlatformAdmin(data !== null);
         }
-
-        // Method 3: Check email whitelist (same as in login)
-        const platformAdminEmails = [
-          'admin@platform.com',
-          'superadmin@platform.com',
-          'sake121211@gmail.com',
-          'sake2605@icloud.com',
-        ];
-
-        if (platformAdminEmails.includes(user.email?.toLowerCase() || '')) {
-          setIsPlatformAdmin(true);
-          setChecking(false);
-          return;
-        }
-
-        setIsPlatformAdmin(false);
       } catch (error) {
         console.error('Error checking platform admin status:', error);
         setIsPlatformAdmin(false);
