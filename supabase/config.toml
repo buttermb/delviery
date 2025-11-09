@@ -41,3 +41,18 @@ verify_jwt = true
 
 [functions.update-subscription]
 verify_jwt = true
+
+[functions.track-access]
+verify_jwt = false
+
+[functions.admin-database-backup]
+verify_jwt = true
+
+[functions.admin-database-maintenance]
+verify_jwt = true
+
+[functions.create-order]
+verify_jwt = false
+
+[functions.update-all-products]
+verify_jwt = true
