@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/select";
 
 export default function ProductManagement() {
-  const navigate = useNavigate();
+  const navigate = useTenantNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -331,7 +331,7 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button onClick={() => navigate("/admin/inventory/barcodes")}>
+          <Button onClick={() => navigate("/admin/generate-barcodes")}>
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes
           </Button>

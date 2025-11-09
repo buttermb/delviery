@@ -143,4 +143,78 @@ export const queryKeys = {
     metrics: () => [...queryKeys.superAdmin.all, 'metrics'] as const,
     monitoring: () => [...queryKeys.superAdmin.all, 'monitoring'] as const,
   },
+
+  // Categories
+  categories: {
+    all: ['categories'] as const,
+    lists: () => [...queryKeys.categories.all, 'list'] as const,
+    list: (tenantId?: string) => 
+      [...queryKeys.categories.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.categories.all, id] as const,
+  },
+
+  // Product Images
+  productImages: {
+    all: ['product-images'] as const,
+    lists: () => [...queryKeys.productImages.all, 'list'] as const,
+    list: (tenantId?: string) => 
+      [...queryKeys.productImages.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.productImages.all, id] as const,
+  },
+
+  // Pricing
+  pricing: {
+    all: ['pricing'] as const,
+    products: (tenantId?: string) => 
+      [...queryKeys.pricing.all, 'products', { tenantId }] as const,
+    tiers: (productId?: string) => 
+      [...queryKeys.pricing.all, 'tiers', { productId }] as const,
+  },
+
+  // Runners
+  runners: {
+    all: ['runners'] as const,
+    lists: () => [...queryKeys.runners.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.runners.lists(), filters] as const,
+    detail: (id: string) => [...queryKeys.runners.all, id] as const,
+    deliveries: (runnerId: string) => 
+      [...queryKeys.runners.detail(runnerId), 'deliveries'] as const,
+  },
+
+  // POS / Cash Register
+  pos: {
+    all: ['pos'] as const,
+    products: (tenantId?: string) => 
+      [...queryKeys.pos.all, 'products', { tenantId }] as const,
+    transactions: (tenantId?: string) => 
+      [...queryKeys.pos.all, 'transactions', { tenantId }] as const,
+  },
+
+  // Batches
+  batches: {
+    all: ['inventory-batches'] as const,
+    lists: () => [...queryKeys.batches.all, 'list'] as const,
+    list: (tenantId?: string) => 
+      [...queryKeys.batches.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.batches.all, id] as const,
+  },
+
+  // Warehouses
+  warehouses: {
+    all: ['warehouses'] as const,
+    lists: () => [...queryKeys.warehouses.all, 'list'] as const,
+    list: (tenantId?: string) => 
+      [...queryKeys.warehouses.lists(), { tenantId }] as const,
+    detail: (id: string) => [...queryKeys.warehouses.all, id] as const,
+  },
+
+  // Receiving
+  receiving: {
+    all: ['receiving'] as const,
+    lists: () => [...queryKeys.receiving.all, 'list'] as const,
+    list: (tenantId?: string, filter?: string) => 
+      [...queryKeys.receiving.lists(), { tenantId, filter }] as const,
+    detail: (id: string) => [...queryKeys.receiving.all, id] as const,
+  },
 } as const;

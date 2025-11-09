@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CategoriesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -60,7 +61,7 @@ export default function CategoriesPage() {
 
   // Fetch categories
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['categories', tenantId],
+    queryKey: queryKeys.categories.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -130,7 +131,7 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Category created successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
       setCreateDialogOpen(false);
       setNewCategory({
         name: '',
@@ -162,7 +163,7 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Category updated successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
       setEditingCategory(null);
     },
     onError: (error: any) => {
@@ -186,7 +187,7 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Category deleted successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
     },
     onError: (error: any) => {
       toast({

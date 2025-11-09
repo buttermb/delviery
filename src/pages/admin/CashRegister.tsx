@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Product {
   id: string;
@@ -42,7 +43,7 @@ export default function CashRegister() {
 
   // Load products
   const { data: products = [] } = useQuery({
-    queryKey: ['pos-products', tenantId],
+    queryKey: queryKeys.pos.products(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase
@@ -59,7 +60,7 @@ export default function CashRegister() {
 
   // Load recent transactions
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ['cash-register-transactions', tenantId],
+    queryKey: queryKeys.pos.transactions(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -122,8 +123,9 @@ export default function CashRegister() {
       toast({ title: 'Payment processed successfully!' });
       setCart([]);
       setPaymentMethod('cash');
-      queryClient.invalidateQueries({ queryKey: ['cash-register-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['pos-products'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.transactions(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: any) => {
       toast({

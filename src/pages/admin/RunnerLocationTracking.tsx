@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LiveDeliveryMap } from '@/components/admin/LiveDeliveryMap';
 import { RouteReplayMap } from '@/components/admin/maps/RouteReplayMap';
 import { useRunnerLocationHistory } from '@/hooks/useRunnerLocationHistory';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function RunnerLocationTracking() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function RunnerLocationTracking() {
 
   // Fetch available runners
   const { data: runners = [] } = useQuery({
-    queryKey: ['wholesale-runners', tenant?.id],
+    queryKey: queryKeys.runners.list({ tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
       
@@ -40,7 +41,7 @@ export default function RunnerLocationTracking() {
 
   // Fetch deliveries for selected runner
   const { data: deliveries = [] } = useQuery({
-    queryKey: ['runner-deliveries', selectedRunnerId],
+    queryKey: queryKeys.runners.deliveries(selectedRunnerId),
     queryFn: async () => {
       if (!selectedRunnerId) return [];
       

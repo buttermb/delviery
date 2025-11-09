@@ -112,6 +112,7 @@ const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuA
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
 const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
+const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
@@ -404,6 +405,7 @@ const App = () => {
                           <Route path="catalog/batches" element={<FeatureProtectedRoute featureId="products"><BatchesPage /></FeatureProtectedRoute>} />
                           <Route path="catalog/categories" element={<FeatureProtectedRoute featureId="products"><CategoriesPage /></FeatureProtectedRoute>} />
                           <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
+                          <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                           <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
                           <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrders /></FeatureProtectedRoute>} />
                           <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />

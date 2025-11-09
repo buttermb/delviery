@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,22 +24,27 @@ import {
   Star,
   AlertCircle
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
+import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
+import { toast } from "sonner";
+import { queryKeys } from "@/lib/queryKeys";
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function WholesaleClients() {
-  const navigate = useNavigate();
+  const navigate = useTenantNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: any }>({ open: false });
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [smsClient, setSmsClient] = useState<any>(null);
+  const [createClientDialogOpen, setCreateClientDialogOpen] = useState(false);
 
   const { data: clients, isLoading } = useQuery({
-    queryKey: ["wholesale-clients", filter],
+    queryKey: queryKeys.wholesaleClients.list({ filter }),
     queryFn: async () => {
       let query = supabase
         .from("wholesale_clients")
@@ -104,11 +110,21 @@ export default function WholesaleClients() {
           <p className="text-sm text-muted-foreground mt-1">B2B Relationships & Credit Management</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              toast.info("Import functionality coming soon", {
+                description: "CSV import for bulk client creation will be available in a future update."
+              });
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Import
           </Button>
-          <Button className="bg-emerald-500 hover:bg-emerald-600">
+          <Button 
+            className="bg-emerald-500 hover:bg-emerald-600"
+            onClick={() => setCreateClientDialogOpen(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Client
           </Button>
@@ -194,7 +210,7 @@ export default function WholesaleClients() {
                 <TableRow 
                   key={client.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/admin/wholesale-clients/${client.id}`)}
+                  onClick={() => navigate(`/admin/big-plug-clients/${client.id}`)}
                 >
                   <TableCell>
                     <div>
@@ -258,7 +274,18 @@ export default function WholesaleClients() {
                       >
                         <MessageSquare className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (client.phone) {
+                            window.location.href = `tel:${client.phone}`;
+                          } else {
+                            toast.error("No phone number available");
+                          }
+                        }}
+                      >
                         <Phone className="h-4 w-4" />
                       </Button>
                       {client.outstanding_balance > 0 && (
@@ -272,7 +299,7 @@ export default function WholesaleClients() {
                       )}
               <Button size="sm" variant="default" onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/admin/wholesale-clients/new-order?client=${client.id}`);
+                navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
               }}>
                 <Package className="h-4 w-4 mr-1" />
                 New Order
@@ -287,7 +314,7 @@ export default function WholesaleClients() {
                   <div className="text-muted-foreground">
                     {searchTerm ? "No clients found matching your search" : "No clients yet"}
                   </div>
-                  <Button className="mt-4" onClick={() => navigate("/admin/wholesale-clients/new")}>
+                  <Button className="mt-4" onClick={() => setCreateClientDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Your First Client
                   </Button>
@@ -323,6 +350,15 @@ export default function WholesaleClients() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Create Client Dialog */}
+      <CreateClientDialog
+        open={createClientDialogOpen}
+        onOpenChange={setCreateClientDialogOpen}
+        onSuccess={() => {
+          // Query will automatically refetch due to cache invalidation
+        }}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { queryKeys } from '@/lib/queryKeys';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -40,7 +41,7 @@ interface WarehouseLocation {
 }
 
 export default function WarehousesPage() {
-  const navigate = useNavigate();
+  const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -54,7 +55,7 @@ export default function WarehousesPage() {
   const [tableMissing, setTableMissing] = useState(false);
 
   const { data: warehouses, isLoading } = useQuery({
-    queryKey: ['warehouses', tenantId],
+    queryKey: queryKeys.warehouses.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -188,7 +189,8 @@ export default function WarehousesPage() {
       toast({ title: `Warehouse "${formData.name}" added successfully` });
       setIsDialogOpen(false);
       setFormData({ name: '', address: '' });
-      queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
     },
     onError: (error: any) => {
       toast({

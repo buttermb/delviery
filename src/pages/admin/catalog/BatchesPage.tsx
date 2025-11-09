@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function BatchesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -56,7 +57,7 @@ export default function BatchesPage() {
 
   // Fetch batches
   const { data: batches, isLoading } = useQuery({
-    queryKey: ['inventory-batches', tenantId],
+    queryKey: queryKeys.batches.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -92,7 +93,7 @@ export default function BatchesPage() {
 
   // Fetch products for dropdown
   const { data: products } = useQuery({
-    queryKey: ['products', tenantId],
+    queryKey: queryKeys.products.list({ tenantId }),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -132,7 +133,8 @@ export default function BatchesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Batch created successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['inventory-batches'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       setCreateDialogOpen(false);
       setNewBatch({
         batch_number: '',

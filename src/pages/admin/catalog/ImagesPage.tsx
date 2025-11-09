@@ -26,6 +26,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ImagesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -41,7 +42,7 @@ export default function ImagesPage() {
 
   // Fetch images from storage
   const { data: images, isLoading } = useQuery({
-    queryKey: ['product-images', tenantId],
+    queryKey: queryKeys.productImages.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -69,7 +70,7 @@ export default function ImagesPage() {
 
   // Load products for assignment
   const { data: products = [] } = useQuery({
-    queryKey: ['products-for-images', tenantId],
+    queryKey: queryKeys.products.list({ tenantId, forImages: true }),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase
@@ -115,7 +116,8 @@ export default function ImagesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Image uploaded and assigned successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['product-images'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setUploadDialogOpen(false);
       setSelectedProductId('');
     },
@@ -144,7 +146,8 @@ export default function ImagesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Image deleted successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['product-images'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setSelectedImage(null);
     },
     onError: (error: any) => {

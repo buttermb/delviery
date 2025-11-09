@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ReceivingPage() {
   const { tenant } = useTenantAdminAuth();
@@ -65,7 +66,7 @@ export default function ReceivingPage() {
 
   // Fetch receiving records
   const { data: receipts, isLoading } = useQuery({
-    queryKey: ['receiving', tenantId, filter],
+    queryKey: queryKeys.receiving.list(tenantId, filter),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -119,7 +120,8 @@ export default function ReceivingPage() {
     },
     onSuccess: () => {
       toast({ title: 'Receiving record created successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['receiving'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.receiving.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       setReceiveDialogOpen(false);
       setNewReceipt({
         shipment_number: '',
@@ -158,7 +160,8 @@ export default function ReceivingPage() {
     },
     onSuccess: () => {
       toast({ title: 'Receiving record updated successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['receiving'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.receiving.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       setQcDialogOpen(false);
       setSelectedReceipt(null);
     },

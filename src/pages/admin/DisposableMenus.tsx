@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Shield, AlertTriangle, Download, ShoppingBag, CheckSquare, Activity, Settings, Bell, MessageSquare } from 'lucide-react';
@@ -23,7 +23,7 @@ import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 const DisposableMenus = () => {
-  const navigate = useNavigate();
+  const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createWizardOpen, setCreateWizardOpen] = useState(false);
@@ -108,7 +108,7 @@ const DisposableMenus = () => {
             )}
             <Button 
               variant="outline"
-              onClick={() => navigate('/admin/disposable-menus/orders')}
+              onClick={() => navigate('/admin/disposable-menu-orders')}
             >
               <ShoppingBag className="h-4 w-4 mr-2" />
               View Orders

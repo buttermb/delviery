@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Product {
   id: string;
@@ -31,7 +32,7 @@ export default function AdminPricingPage() {
 
   // Load products with pricing
   const { data: products = [], isLoading } = useQuery<Product[]>({
-    queryKey: ['products-pricing', tenantId],
+    queryKey: queryKeys.pricing.products(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       
@@ -59,7 +60,8 @@ export default function AdminPricingPage() {
     },
     onSuccess: () => {
       toast({ title: 'Pricing updated successfully!' });
-      queryClient.invalidateQueries({ queryKey: ['products-pricing'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricing.products(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setEditingId(null);
       setEditData({});
     },

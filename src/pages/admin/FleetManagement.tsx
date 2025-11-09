@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { AddRunnerDialog } from "@/components/admin/AddRunnerDialog";
 import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { queryKeys } from "@/lib/queryKeys";
 
 export default function FleetManagement() {
   const { tenant } = useTenantAdminAuth();
@@ -26,7 +27,7 @@ export default function FleetManagement() {
     tables: ['deliveries', 'courier_earnings'],
     enabled: !!tenantId,
   });
-  const navigate = useNavigate();
+  const navigate = useTenantNavigate();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState("");
   const [selectedOrderNumber, setSelectedOrderNumber] = useState("");
@@ -37,7 +38,7 @@ export default function FleetManagement() {
 
   // Fetch active deliveries
   const { data: activeDeliveries } = useQuery({
-    queryKey: ["active-deliveries"],
+    queryKey: queryKeys.deliveries.active(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wholesale_deliveries")
@@ -64,7 +65,7 @@ export default function FleetManagement() {
 
   // Fetch runners
   const { data: runners } = useQuery({
-    queryKey: ["runners"],
+    queryKey: queryKeys.runners.lists(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wholesale_runners")
@@ -234,7 +235,7 @@ export default function FleetManagement() {
                     <Button 
                       size="sm" 
                       className="bg-emerald-500 hover:bg-emerald-600"
-                      onClick={() => navigate(`/admin/delivery-tracking/${delivery.id}`)}
+                      onClick={() => navigate(`/admin/delivery-tracking?id=${delivery.id}`)}
                     >
                       <MapPin className="h-4 w-4 mr-1" />
                       Track Live

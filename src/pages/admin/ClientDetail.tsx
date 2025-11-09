@@ -1,4 +1,5 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -18,8 +19,8 @@ import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 
 export default function ClientDetail() {
-  const { id, tenantSlug } = useParams<{ id: string; tenantSlug?: string }>();
-  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useTenantNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -41,7 +42,7 @@ export default function ClientDetail() {
       <div className="space-y-6 p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Client Not Found</h2>
-          <Button onClick={() => navigate(tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients")} className="mt-4">
+          <Button onClick={() => navigate("/admin/big-plug-clients")} className="mt-4">
             Back to Clients
           </Button>
         </div>
