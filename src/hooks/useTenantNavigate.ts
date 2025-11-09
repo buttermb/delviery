@@ -16,7 +16,7 @@ export function useTenantNavigate() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-  const tenantNavigate = (path: string, options?: Parameters<typeof navigate>[1]) => {
+  const tenantNavigate = (path: string, options?: { replace?: boolean; state?: any }) => {
     // If path starts with /admin, prepend tenant slug
     if (path.startsWith('/admin') && tenantSlug) {
       navigate(`/${tenantSlug}${path}`, options);

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+import { withZenProtection } from '../_shared/zen-firewall.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +14,7 @@ interface TrackAccessRequest {
   os?: string;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withZenProtection(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -102,4 +103,4 @@ Deno.serve(async (req) => {
       }
     );
   }
-});
+}));

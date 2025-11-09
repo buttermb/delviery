@@ -19,7 +19,7 @@ import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 
 export default function ClientDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
   const navigate = useTenantNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
