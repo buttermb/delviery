@@ -109,8 +109,10 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 - [Complete Rules Reference](./docs/COMPLETE_RULES_REFERENCE.md) - All rules in one place
 
 ### Tenant Isolation
+- [Tenant Isolation Quick Start](./docs/TENANT_ISOLATION_QUICK_START.md) - Get started in 5 minutes
 - [Tenant Isolation Guide](./docs/TENANT_ISOLATION.md) - Complete tenant isolation system documentation
 - [Tenant Isolation Migration Guide](./docs/TENANT_ISOLATION_MIGRATION_GUIDE.md) - How to migrate existing code
+- [Tenant Isolation Rules Compliance](./docs/TENANT_ISOLATION_RULES_COMPLIANCE.md) - Rules verification
 
 ### Integration Guides
 - [API Integration Guide](./API_INTEGRATION_AUDIT.md) - API integration patterns
