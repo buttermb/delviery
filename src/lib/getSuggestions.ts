@@ -70,3 +70,12 @@ export const getAllSuggestions = (type: SuggestionType): string[] => {
   return type === "brand" ? popularData.brands : popularData.strains;
 };
 
+/**
+ * Check if a value is a popular/trending item (top 10)
+ */
+export const isPopularItem = (value: string, type: SuggestionType): boolean => {
+  const list = type === "brand" ? popularData.brands : popularData.strains;
+  const topItems = list.slice(0, 10);
+  return topItems.some(item => item.toLowerCase() === value.toLowerCase());
+};
+

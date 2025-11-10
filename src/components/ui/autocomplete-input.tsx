@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { getSuggestions, type SuggestionType } from "@/lib/getSuggestions";
-import { Check, Clock } from "lucide-react";
+import { getSuggestions, isPopularItem, type SuggestionType } from "@/lib/getSuggestions";
+import { Check, Clock, TrendingUp } from "lucide-react";
 
 interface AutocompleteInputProps {
   value: string;
@@ -185,8 +185,11 @@ export function AutocompleteInput({
                     i === activeIndex && "bg-muted"
                   )}
                 >
-                  <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                    <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                   <span className="flex-1">{s}</span>
+                  {isPopularItem(s, type) && (
+                    <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" title="Popular" />
+                  )}
                 </li>
               ))}
               {suggestions.length > 0 && (
@@ -225,9 +228,14 @@ export function AutocompleteInput({
               )}
               >
                 <span className="flex-1">{highlightText(s, value)}</span>
-                {value.toLowerCase() === s.toLowerCase() && (
-                  <Check className="h-4 w-4 text-primary ml-2 flex-shrink-0" />
-                )}
+                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                  {isPopularItem(s, type) && (
+                    <TrendingUp className="h-3 w-3 text-primary" title="Popular" />
+                  )}
+                  {value.toLowerCase() === s.toLowerCase() && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
+                </div>
               </li>
             );
           })}
