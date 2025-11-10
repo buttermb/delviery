@@ -1,26 +1,48 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+/**
+ * Leafly Suggestions Edge Function
+ * Provides strain/brand suggestions from Leafly API (when available)
+ * Falls back to local database
+ */
+
+import { serve, createClient } from '../_shared/deps.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Request validation schema
+const RequestSchema = z.object({
+  query: z.string().min(1).max(255),
+  type: z.enum(["brand", "strain"]),
+});
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query, type } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const validationResult = RequestSchema.safeParse(rawBody);
 
-    if (!query || !type) {
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: "Missing query or type parameter" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          error: "Invalid input", 
+          details: validationResult.error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
       );
     }
+
+    const { query, type } = validationResult.data;
 
     // Leafly doesn't have a public API, so we'll use a web scraping approach
     // Note: This is a fallback - we'll primarily use local database
@@ -34,12 +56,35 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ suggestions: [] }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
     );
   } catch (error) {
+    // Handle validation errors separately
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Validation failed", 
+          details: error.errors 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
+
+    // Handle other errors
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Internal server error" 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
     );
   }
 });
