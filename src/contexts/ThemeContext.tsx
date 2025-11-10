@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { logger } from "@/utils/logger";
 
 type Theme = "light" | "dark";
 
@@ -26,7 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     root.classList.remove("light", "dark");
     root.classList.add(initialTheme);
     
-    console.log('[Theme] Initialized:', initialTheme);
+    logger.debug('Theme initialized', { theme: initialTheme }, 'ThemeContext');
     return initialTheme;
   });
 
@@ -35,7 +36,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     root.classList.remove("light", "dark");
     root.classList.add(theme);
     localStorage.setItem("theme", theme);
-    console.log('[Theme] Applied:', theme);
+    logger.debug('Theme applied', { theme }, 'ThemeContext');
   }, [theme]);
 
   const toggleTheme = () => {

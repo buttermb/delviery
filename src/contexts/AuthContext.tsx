@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
-        console.log('Initial session:', !!session);
+        logger.debug('Initial session', { hasSession: !!session }, 'AuthContext');
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event, 'Session:', !!session);
+        logger.debug('Auth state change', { event, hasSession: !!session }, 'AuthContext');
         
         if (mounted) {
           setSession(session);
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
     } catch (error) {
-      console.error("Error signing out:", error);
+      logger.error("Error signing out", error as Error, 'AuthContext');
     }
   };
 

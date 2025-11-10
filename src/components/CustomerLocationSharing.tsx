@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/utils/logger";
 
 interface CustomerLocationSharingProps {
   orderId: string;
@@ -66,7 +67,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
               .eq("id", orderId);
           },
           (error) => {
-            console.error("Location update failed:", error);
+            logger.error("Location update failed", error, 'CustomerLocationSharing');
           },
           {
             enableHighAccuracy: true,
@@ -78,7 +79,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
       // Store interval ID to clear later
       (window as any).__locationUpdateInterval = updateInterval;
     } catch (error: unknown) {
-      console.error("Failed to share location:", error);
+      logger.error("Failed to share location", error as Error, 'CustomerLocationSharing');
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
         variant: "destructive",
@@ -120,7 +121,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
         description: "Your location is no longer being shared",
       });
     } catch (error) {
-      console.error("Failed to stop location sharing:", error);
+      logger.error("Failed to stop location sharing", error as Error, 'CustomerLocationSharing');
     }
   };
 

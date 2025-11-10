@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface CourierData {
   id: string;
@@ -59,11 +60,11 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         const { latitude, longitude } = position.coords;
         lastLat = latitude;
         lastLng = longitude;
-        console.log('📍 Location update:', { latitude, longitude, accuracy: position.coords.accuracy });
+        logger.debug('Location update', { latitude, longitude, accuracy: position.coords.accuracy }, 'CourierContext');
         updateLocation(latitude, longitude);
       },
       (error) => {
-        console.error('Location error:', error);
+        logger.error('Location error', error, 'CourierContext');
         toast({
           title: "Location Error",
           description: "Unable to track your location. Please enable GPS.",
@@ -80,7 +81,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     // Force location update every 10 seconds even if position hasn't changed much
     const forceUpdateInterval = setInterval(() => {
       if (lastLat !== null && lastLng !== null) {
-        console.log('🔄 Forcing location update:', { lastLat, lastLng });
+        logger.debug('Forcing location update', { lastLat, lastLng }, 'CourierContext');
         updateLocation(lastLat, lastLng);
       } else {
         // Try to get current position if we don't have one
@@ -89,13 +90,13 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
             const { latitude, longitude } = position.coords;
             lastLat = latitude;
             lastLng = longitude;
-            console.log('📍 Got current position:', { latitude, longitude });
+            logger.debug('Got current position', { latitude, longitude }, 'CourierContext');
             updateLocation(latitude, longitude);
           },
           (error) => {
             // Only log geolocation errors once to avoid console spam
             if (!hasLoggedGeoError) {
-              console.warn('Geolocation unavailable. Location tracking disabled.', error.message);
+              logger.warn('Geolocation unavailable. Location tracking disabled', { message: error.message }, 'CourierContext');
               hasLoggedGeoError = true;
             }
           },
@@ -181,7 +182,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       // Not a courier or runner
       setLoading(false);
     } catch (error) {
-      console.log('Not a courier/runner user');
+      logger.debug('Not a courier/runner user', undefined, 'CourierContext');
       setLoading(false);
     }
   };
@@ -195,7 +196,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       // Check if user is still authenticated before making the call
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.log('No active session, skipping status update');
+        logger.debug('No active session, skipping status update', undefined, 'CourierContext');
         return;
       }
 
@@ -216,7 +217,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         description: newStatus ? "You can now receive orders" : "You won't receive new orders"
       });
     } catch (error) {
-      console.error('Failed to toggle status:', error);
+      logger.error('Failed to toggle status', error as Error, 'CourierContext');
       // Only show error if user is still authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -233,7 +234,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     if (!courier) return;
 
     try {
-      console.log('📤 Sending location update to backend:', { lat, lng, role: courier.role });
+      logger.debug('Sending location update to backend', { lat, lng, role: courier.role }, 'CourierContext');
 
       if (courier.role === 'courier') {
         // Update courier location via edge function
@@ -246,10 +247,10 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.error('Courier location update error:', error);
+          logger.error('Courier location update error', error as Error, 'CourierContext');
           throw error;
         } else {
-          console.log('✅ Courier location updated successfully');
+          logger.debug('Courier location updated successfully', undefined, 'CourierContext');
         }
       } else if (courier.role === 'runner') {
         // Update runner location via edge function (includes history logging)
@@ -264,14 +265,14 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          console.error('Runner location update error:', error);
+          logger.error('Runner location update error', error as Error, 'CourierContext');
           throw error;
         } else {
-          console.log('✅ Runner location updated successfully');
+          logger.debug('Runner location updated successfully', undefined, 'CourierContext');
         }
       }
     } catch (error) {
-      console.error('Failed to update location:', error);
+      logger.error('Failed to update location', error as Error, 'CourierContext');
     }
   };
 
