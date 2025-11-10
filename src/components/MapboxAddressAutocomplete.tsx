@@ -5,7 +5,7 @@ import { MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logger } from "@/utils/logger";
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 interface AddressSuggestion {
   id: string;

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { MapPin, AlertCircle } from "lucide-react";
+import { logger } from "@/utils/logger";
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
@@ -41,7 +42,7 @@ export function TerritoryMapView() {
         map.current?.remove();
       };
     } catch (error) {
-      console.error("Mapbox initialization error:", error);
+      logger.error("Mapbox initialization error", error as Error, 'TerritoryMapView');
     }
   }, []);
 

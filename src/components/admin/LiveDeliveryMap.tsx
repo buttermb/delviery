@@ -8,6 +8,7 @@ import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
 import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
+import { logger } from "@/utils/logger";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
@@ -76,7 +77,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         map.current?.remove();
       };
     } catch (error) {
-      console.error("Mapbox error:", error);
+      logger.error("Mapbox error", error as Error, 'LiveDeliveryMap');
     }
   }, []);
 
@@ -92,17 +93,17 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           table: 'wholesale_deliveries'
         },
         (payload) => {
-          console.log('Delivery updated:', payload);
+          logger.debug('Delivery updated', payload, 'LiveDeliveryMap');
           refetch();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to delivery updates');
+          logger.debug('Successfully subscribed to delivery updates', undefined, 'LiveDeliveryMap');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('Channel error - failed to subscribe to delivery updates');
+          logger.error('Channel error - failed to subscribe to delivery updates', undefined, 'LiveDeliveryMap');
         } else if (status === 'TIMED_OUT') {
-          console.error('Subscription timed out - retrying delivery updates');
+          logger.error('Subscription timed out - retrying delivery updates', undefined, 'LiveDeliveryMap');
         }
       });
 
