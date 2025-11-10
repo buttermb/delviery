@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { logger } from '@/lib/logger';
 
 export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({

@@ -4,6 +4,7 @@ import { X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -32,10 +33,11 @@ export function BulkActions({
       await queryClient.refetchQueries({ queryKey: ["admin-products"] });
       onClearSelection();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Bulk update failed', error, { component: 'BulkActions' });
       toast({
         title: "Bulk update failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
     }
@@ -55,10 +57,11 @@ export function BulkActions({
       toast({ title: `✓ ${selectedCount} products deleted` });
       onClearSelection();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Bulk delete failed', error, { component: 'BulkActions' });
       toast({
         title: "Bulk delete failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
     }

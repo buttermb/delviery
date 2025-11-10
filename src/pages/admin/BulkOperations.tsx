@@ -28,6 +28,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -182,10 +183,11 @@ export default function BulkOperations() {
       setSelectedProducts(new Set());
       setSelectedOperation(null);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Bulk operation failed', error, { component: 'BulkOperations' });
       toast({
         title: 'Bulk operation failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive'
       });
     }

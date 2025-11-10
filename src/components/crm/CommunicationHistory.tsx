@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { logger } from '@/lib/logger';
 
 interface Communication {
   id: string;
