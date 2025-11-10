@@ -76,8 +76,8 @@ export default function CashRegister() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error: unknown) {
+        if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },

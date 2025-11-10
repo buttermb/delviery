@@ -356,7 +356,7 @@ export default function TenantAdminDashboardPage() {
           .from("menu_orders")
           .select("total_amount")
           .in("menu_id", menuIds)
-          .eq("status", "confirmed") as { data: { total_amount: number }[] | null; error: any };
+          .eq("status", "confirmed") as { data: { total_amount: number }[] | null; error: unknown | null };
 
         if (ordersError) {
           logger.warn("Failed to fetch orders for revenue stats", ordersError, { component: 'DashboardPage' });

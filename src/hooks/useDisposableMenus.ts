@@ -152,7 +152,7 @@ export const useManageWhitelist = () => {
       
       showSuccessToast('Success', messages[variables.action]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showErrorToast('Action Failed', error.message || 'Could not complete action');
     }
   });
