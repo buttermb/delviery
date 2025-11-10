@@ -1,4 +1,5 @@
 import popularData from "@/data/popular_strains.json";
+import { fetchLeaflySuggestions } from "@/lib/leaflyApi";
 
 export type SuggestionType = "brand" | "strain";
 
@@ -37,11 +38,17 @@ const calculateSimilarity = (str1: string, str2: string): number => {
 
 /**
  * Get autocomplete suggestions for brands or strains with fuzzy matching
+ * Combines local database with Leafly API results (if available)
  * @param input - User input text
  * @param type - Either "brand" or "strain"
+ * @param useLeafly - Whether to fetch from Leafly API (default: false for now)
  * @returns Array of matching suggestions (max 5), sorted by relevance
  */
-export const getSuggestions = (input: string, type: SuggestionType): string[] => {
+export const getSuggestions = async (
+  input: string,
+  type: SuggestionType,
+  useLeafly: boolean = false
+): Promise<string[]> => {
   if (!input || input.trim().length === 0) {
     return [];
   }
@@ -49,14 +56,65 @@ export const getSuggestions = (input: string, type: SuggestionType): string[] =>
   const list = type === "brand" ? popularData.brands : popularData.strains;
   const term = input.toLowerCase().trim();
 
-  // Get matches with similarity scores
-  const matches = list
+  // Get local matches with similarity scores
+  const localMatches = list
     .map(item => ({
       item,
       score: calculateSimilarity(term, item)
     }))
     .filter(match => match.score > 0)
     .sort((a, b) => b.score - a.score) // Sort by relevance
+    .map(match => match.item);
+
+  // If Leafly is enabled and we have few local matches, try API
+  let leaflyMatches: string[] = [];
+  if (useLeafly && localMatches.length < 3 && type === "strain") {
+    try {
+      leaflyMatches = await fetchLeaflySuggestions(input, type);
+    } catch (error) {
+      // Silently fail and use local matches
+    }
+  }
+
+  // Combine and deduplicate, prioritizing local matches
+  const combined = [
+    ...localMatches,
+    ...leaflyMatches.filter(item => 
+      !localMatches.some(local => local.toLowerCase() === item.toLowerCase())
+    )
+  ];
+
+  // Re-sort combined results by relevance
+  const finalMatches = combined
+    .map(item => ({
+      item,
+      score: calculateSimilarity(term, item)
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(match => match.item);
+
+  return finalMatches;
+};
+
+/**
+ * Synchronous version for backward compatibility (uses local database only)
+ */
+export const getSuggestionsSync = (input: string, type: SuggestionType): string[] => {
+  if (!input || input.trim().length === 0) {
+    return [];
+  }
+
+  const list = type === "brand" ? popularData.brands : popularData.strains;
+  const term = input.toLowerCase().trim();
+
+  const matches = list
+    .map(item => ({
+      item,
+      score: calculateSimilarity(term, item)
+    }))
+    .filter(match => match.score > 0)
+    .sort((a, b) => b.score - a.score)
     .slice(0, 5)
     .map(match => match.item);
 

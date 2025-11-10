@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { getSuggestions, isPopularItem, type SuggestionType } from "@/lib/getSuggestions";
+import { getSuggestionsSync, isPopularItem, type SuggestionType } from "@/lib/getSuggestions";
 import { Check, Clock, TrendingUp } from "lucide-react";
 
 interface AutocompleteInputProps {
@@ -52,11 +52,12 @@ export function AutocompleteInput({
     }
 
     const delay = setTimeout(() => {
-      const results = getSuggestions(value, type);
+      // Use sync version for immediate results, async Leafly can be added later
+      const results = getSuggestionsSync(value, type);
       setSuggestions(results);
       setOpen(results.length > 0 && isFocused);
       setActiveIndex(-1);
-    }, 200);
+    }, 150); // Reduced from 200ms for snappier feel
 
     return () => clearTimeout(delay);
   }, [value, type, isFocused, open]);
@@ -136,7 +137,7 @@ export function AutocompleteInput({
   const handleFocus = () => {
     setIsFocused(true);
     if (value.trim().length > 0) {
-      const results = getSuggestions(value, type);
+      const results = getSuggestionsSync(value, type);
       if (results.length > 0) {
         setOpen(true);
       }
