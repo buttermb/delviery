@@ -101,11 +101,18 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 
 ## Documentation
 
+### Core Rules & Best Practices
 - [Admin Panel Rules](./docs/ADMIN_PANEL_RULES.md) - Complete admin panel rules and best practices
 - [Admin Panel Checklist](./docs/ADMIN_PANEL_CHECKLIST.md) - Quick validation checklist
 - [Schema & Edge Function Rules](./docs/SCHEMA_EDGE_FUNCTION_RULES.md) - Database schema and edge function patterns
 - [Supabase Rules](./docs/SUPABASE_RULES.md) - Detailed Supabase rules
 - [Complete Rules Reference](./docs/COMPLETE_RULES_REFERENCE.md) - All rules in one place
+
+### Tenant Isolation
+- [Tenant Isolation Guide](./docs/TENANT_ISOLATION.md) - Complete tenant isolation system documentation
+- [Tenant Isolation Migration Guide](./docs/TENANT_ISOLATION_MIGRATION_GUIDE.md) - How to migrate existing code
+
+### Integration Guides
 - [API Integration Guide](./API_INTEGRATION_AUDIT.md) - API integration patterns
 - [Leafly Integration](./src/lib/LEAFLY_INTEGRATION.md) - Leafly API integration guide
 
