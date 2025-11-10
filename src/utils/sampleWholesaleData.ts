@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export async function createSampleWholesaleData() {
   try {
@@ -16,7 +17,7 @@ export async function createSampleWholesaleData() {
     if (!tenant_id) throw new Error("Tenant not found");
 
     // Clear existing sample data first (in reverse order of dependencies)
-    console.log("🧹 Clearing existing wholesale data...");
+    logger.debug("Clearing existing wholesale data", {}, { component: 'sampleWholesaleData' });
     
     await supabase.from("wholesale_deliveries").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_payments").delete().neq('id', '00000000-0000-0000-0000-000000000000');
@@ -27,7 +28,7 @@ export async function createSampleWholesaleData() {
     await supabase.from("wholesale_runners").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_clients").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     
-    console.log("✅ Cleared existing data");
+    logger.debug("Cleared existing data", {}, { component: 'sampleWholesaleData' });
 
     // Create sample clients with coordinates
     const clients = [
@@ -137,7 +138,7 @@ export async function createSampleWholesaleData() {
       throw new Error("No client data returned");
     }
     
-    console.log("Created clients:", clientData);
+    logger.debug("Created clients", { count: clientData.length }, { component: 'sampleWholesaleData' });
 
     // Create sample runners with coordinates
     const runners = [
@@ -207,7 +208,7 @@ export async function createSampleWholesaleData() {
       throw new Error("No runner data returned");
     }
     
-    console.log("Created runners:", runnerData);
+    logger.debug("Created runners", { count: runnerData.length }, { component: 'sampleWholesaleData' });
 
     // Create sample inventory
     const inventory = [
@@ -346,13 +347,13 @@ export async function createSampleWholesaleData() {
       .insert(samplePayments);
 
     if (paymentError) {
-      console.error("Payment creation error:", paymentError);
+      logger.error("Payment creation error", paymentError, { component: 'sampleWholesaleData' });
       throw new Error(`Failed to create payments: ${paymentError.message}`);
     }
 
     // Create sample active deliveries
     if (!runnerData || runnerData.length === 0 || !orderData || orderData.length === 0) {
-      console.log("Skipping deliveries - no runners or orders available");
+      logger.debug("Skipping deliveries - no runners or orders available", {}, { component: 'sampleWholesaleData' });
     } else {
       const sampleDeliveries = [
         {
@@ -379,21 +380,22 @@ export async function createSampleWholesaleData() {
         .insert(sampleDeliveries.filter(d => d.order_id).map(d => ({ ...d, tenant_id }))); // Only insert if order exists
 
       if (deliveryError) {
-        console.error("Delivery creation error:", deliveryError);
+        logger.error("Delivery creation error", deliveryError, { component: 'sampleWholesaleData' });
         // Don't throw, just log
       }
     }
 
-    console.log("✅ Sample wholesale data created successfully!");
-    console.log(`- ${clientData.length} clients created`);
-    console.log(`- ${runnerData.length} runners created`);
-    console.log(`- ${inventory.length} inventory items created`);
-    console.log(`- ${orderData?.length || 0} orders created`);
-    console.log(`- ${samplePayments.length} payments recorded`);
+    logger.info("Sample wholesale data created successfully", {
+      clients: clientData.length,
+      runners: runnerData.length,
+      inventory: inventory.length,
+      orders: orderData?.length || 0,
+      payments: samplePayments.length,
+    }, { component: 'sampleWholesaleData' });
 
     return { success: true, clients: clientData, runners: runnerData };
   } catch (error) {
-    console.error("❌ Error creating sample data:", error);
+    logger.error("Error creating sample data", error, { component: 'sampleWholesaleData' });
     throw error;
   }
 }

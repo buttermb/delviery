@@ -100,7 +100,7 @@ serve(async (req) => {
         );
       }
 
-      const { email, password, firstName, lastName, phone, tenantSlug } = validationResult.data;
+      const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug } = validationResult.data;
 
       console.log('Customer signup attempt:', { email, tenantSlug });
 
@@ -137,7 +137,56 @@ serve(async (req) => {
       // Hash password
       const passwordHash = await hashPassword(password);
 
-      // Create customer user
+      // Validate age if DOB provided
+      if (dateOfBirth) {
+        const birthDate = new Date(dateOfBirth);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+        
+        const minimumAge = tenant.minimum_age || 21;
+        if (actualAge < minimumAge) {
+          return new Response(
+            JSON.stringify({ error: `You must be at least ${minimumAge} years old to create an account` }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } else if (tenant.age_verification_required) {
+        return new Response(
+          JSON.stringify({ error: "Date of birth is required for age verification" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Validate phone if provided
+      if (phone) {
+        try {
+          const phoneResponse = await fetch(`${supabaseUrl}/functions/v1/validate-phone`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone }),
+          });
+
+          if (phoneResponse.ok) {
+            const phoneResult = await phoneResponse.json();
+            if (!phoneResult.valid) {
+              return new Response(
+                JSON.stringify({ error: phoneResult.reason || "Invalid phone number" }),
+                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+          }
+        } catch (phoneError) {
+          console.error('Phone validation error:', phoneError);
+          // Don't block signup if phone validation service is down
+        }
+      }
+
+      // Create customer user (email not verified initially)
       const { data: customerUser, error: createError } = await supabase
         .from("customer_users")
         .insert({
@@ -146,8 +195,11 @@ serve(async (req) => {
           first_name: firstName || null,
           last_name: lastName || null,
           phone: phone || null,
+          date_of_birth: dateOfBirth || null,
           tenant_id: tenant.id,
           status: 'active',
+          email_verified: false, // Require email verification
+          minimum_age_required: tenant.minimum_age || 21,
         })
         .select()
         .single();
@@ -160,12 +212,32 @@ serve(async (req) => {
         );
       }
 
+      // Send verification email (async, don't wait for it)
+      fetch(`${supabaseUrl}/functions/v1/send-verification-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_user_id: customerUser.id,
+          tenant_id: tenant.id,
+          email: email.toLowerCase(),
+          tenant_name: tenant.business_name,
+        }),
+      }).catch(err => {
+        console.error('Failed to send verification email:', err);
+        // Don't fail signup if email sending fails
+      });
+
       console.log('Customer signup successful:', email);
 
       return new Response(
         JSON.stringify({
           success: true,
-          message: "Account created successfully",
+          message: "Account created successfully. Please check your email to verify your account.",
+          requires_verification: true,
+          customer_user_id: customerUser.id,
         }),
         { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -223,6 +295,19 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ error: "Invalid credentials" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check email verification
+      if (!customerUser.email_verified) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Email not verified",
+            requires_verification: true,
+            customer_user_id: customerUser.id,
+            message: "Please verify your email address before logging in. Check your inbox for the verification code."
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 

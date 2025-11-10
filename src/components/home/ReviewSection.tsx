@@ -48,7 +48,7 @@ export function ReviewSection() {
       
       // Fetch profiles for the reviews
       const userIds = [...new Set(reviewsData?.map(r => r.user_id) || [])];
-      let profilesMap = new Map();
+      const profilesMap = new Map();
       
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase

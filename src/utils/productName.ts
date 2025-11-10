@@ -6,7 +6,7 @@ export function cleanProductName(name: string): string {
   if (!name) return name;
   
   // Remove "THCA" variations from product names
-  let cleaned = name
+  const cleaned = name
     .replace(/\bTHCA\b/gi, '')
     .replace(/\bTHCa\b/gi, '')
     .replace(/\bTHC\b/g, '')

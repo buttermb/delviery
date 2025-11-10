@@ -65,6 +65,7 @@ export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -285,10 +286,6 @@ export default function ProductManagement() {
       resetForm();
       loadProducts();
     } catch (error: unknown) {
-      // Log full error details to console for debugging
-      console.error('Product save error:', error);
-      console.error('Form data:', formData);
-      
       logger.error('Failed to save product', error, { 
         component: 'ProductManagement',
         formData,
@@ -347,28 +344,43 @@ export default function ProductManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    if (!tenant?.id) {
+  const handleDelete = async (id: string) => {
+    const product = products.find((p) => p.id === id);
+    if (product) {
+      setProductToDelete({ id, name: product.name || 'this product' });
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete || !tenant?.id) {
       toast.error("Tenant not found");
       return;
     }
 
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from("products")
         .delete()
-        .eq("id", id)
+        .eq("id", productToDelete.id)
         .eq("tenant_id", tenant.id);
       
       if (error) throw error;
       toast.success("Product deleted");
       loadProducts();
-      setSelectedProducts((prev) => prev.filter((pid) => pid !== id));
+      setSelectedProducts((prev) => prev.filter((pid) => pid !== productToDelete.id));
+      setDeleteDialogOpen(false);
+      setProductToDelete(null);
     } catch (error: unknown) {
-      logger.error('Failed to delete product', error, { component: 'ProductManagement', productId: id });
+      logger.error('Failed to delete product', error, { component: 'ProductManagement', productId: productToDelete.id });
       toast.error("Failed to delete: " + (error instanceof Error ? error.message : "An error occurred"));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -451,9 +463,9 @@ export default function ProductManagement() {
   const filteredProducts = products
     .filter(
       (p) =>
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
+        p.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        p.category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
     )
     .filter((p) => categoryFilter === "all" || p.category === categoryFilter)
     .sort((a, b) => {

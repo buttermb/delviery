@@ -29,6 +29,7 @@ export const AdminNotificationCenter = () => {
   useEffect(() => {
     const cleanup = setupRealtimeNotifications();
     return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

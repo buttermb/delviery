@@ -106,6 +106,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      // console.log OK in edge functions (server-side)
       console.log('SHA-256 comparison - match:', computedHash === hashValue.toLowerCase());
       return computedHash === hashValue.toLowerCase();
     }
@@ -147,6 +148,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
     
     return true;
   } catch (error) {
+    // console.error OK in edge functions (server-side)
     console.error("Password comparison error:", error);
     return false;
   }

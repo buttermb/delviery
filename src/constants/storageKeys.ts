@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   
   // User data
   SUPER_ADMIN_USER: 'super_admin_user',
+  SUPER_ADMIN_TENANT_ID: 'super_admin_tenant_id',
   TENANT_ADMIN_USER: 'tenant_admin_user',
   TENANT_DATA: 'tenant_data',
   CUSTOMER_USER: 'customer_user',
@@ -65,6 +66,9 @@ export const STORAGE_KEYS = {
   // Settings
   NOTIFICATION_SETTINGS: 'notification_settings',
   PRIVACY_SETTINGS: 'privacy_settings',
+  
+  // Beta banner
+  BETA_BANNER_DISMISSED: 'beta_banner_dismissed',
 } as const;
 
 /**

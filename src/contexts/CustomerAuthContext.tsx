@@ -171,6 +171,13 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: "Login failed" }));
+        // Check if email verification is required
+        if (response.status === 403 && error.requires_verification) {
+          const verificationError = new Error(error.message || "Email not verified");
+          (verificationError as any).requires_verification = true;
+          (verificationError as any).customer_user_id = error.customer_user_id;
+          throw verificationError;
+        }
         throw new Error(error.error || "Login failed");
       }
 

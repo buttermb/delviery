@@ -136,7 +136,7 @@ export default function BulkOperations() {
       if (!tenantId) throw new Error('Tenant ID missing');
 
       // Build update object based on operation
-      let updates: any = {};
+      const updates: any = {};
 
       switch (operation) {
         case 'update-price':

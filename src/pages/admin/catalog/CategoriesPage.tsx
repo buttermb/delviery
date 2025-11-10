@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { queryKeys } from '@/lib/queryKeys';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 export default function CategoriesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -47,6 +48,8 @@ export default function CategoriesPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
     slug: '',
@@ -187,6 +190,8 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       toast({ title: 'Category deleted successfully!' });
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
     },
     onError: (error: any) => {
@@ -275,9 +280,8 @@ export default function CategoriesPage() {
               variant="ghost"
               size="icon"
               onClick={() => {
-                if (confirm(`Delete category "${category.name}"?`)) {
-                  deleteCategory.mutate(category.id);
-                }
+                setCategoryToDelete({ id: category.id, name: category.name });
+                setDeleteDialogOpen(true);
               }}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
@@ -545,6 +549,19 @@ export default function CategoriesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (categoryToDelete) {
+            deleteCategory.mutate(categoryToDelete.id);
+          }
+        }}
+        itemName={categoryToDelete?.name}
+        itemType="category"
+        isLoading={deleteCategory.isPending}
+      />
     </div>
   );
 }

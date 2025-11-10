@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
   const [sharing, setSharing] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const { toast } = useToast();
+  const locationIntervalRef = useRef<number | null>(null);
 
   const startLocationSharing = async () => {
     try {
@@ -77,7 +78,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
       }, 30000);
 
       // Store interval ID to clear later
-      (window as any).__locationUpdateInterval = updateInterval;
+      locationIntervalRef.current = updateInterval;
     } catch (error: unknown) {
       logger.error("Failed to share location", error as Error, 'CustomerLocationSharing');
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -94,9 +95,9 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
   const stopLocationSharing = async () => {
     try {
       // Clear interval
-      if ((window as any).__locationUpdateInterval) {
-        clearInterval((window as any).__locationUpdateInterval);
-        delete (window as any).__locationUpdateInterval;
+      if (locationIntervalRef.current !== null) {
+        clearInterval(locationIntervalRef.current);
+        locationIntervalRef.current = null;
       }
 
       // Disable location sharing in database
@@ -128,9 +129,9 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
   useEffect(() => {
     // Cleanup on unmount
     return () => {
-      if ((window as any).__locationUpdateInterval) {
-        clearInterval((window as any).__locationUpdateInterval);
-        delete (window as any).__locationUpdateInterval;
+      if (locationIntervalRef.current !== null) {
+        clearInterval(locationIntervalRef.current);
+        locationIntervalRef.current = null;
       }
     };
   }, []);

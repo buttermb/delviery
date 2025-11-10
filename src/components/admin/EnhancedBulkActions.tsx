@@ -22,13 +22,19 @@ import {
   Edit, Trash2, Eye, EyeOff, Copy, Tag, 
   DollarSign, Package, TrendingUp, TrendingDown 
 } from "lucide-react";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+
+interface Product {
+  id: string;
+  [key: string]: unknown;
+}
 
 interface EnhancedBulkActionsProps {
   selectedCount: number;
   selectedProducts: string[];
-  products: any[];
-  onBulkUpdate: (updates: any) => Promise<void>;
-  onIndividualUpdate: (id: string, updates: any) => Promise<void>;
+  products: Product[];
+  onBulkUpdate: (updates: Record<string, unknown>) => Promise<void>;
+  onIndividualUpdate: (id: string, updates: Record<string, unknown>) => Promise<void>;
   onBulkDelete: () => void;
   onClearSelection: () => void;
 }
@@ -49,6 +55,7 @@ export function EnhancedBulkActions({
   const [adjustmentPercent, setAdjustmentPercent] = useState("");
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [stockDialogOpen, setStockDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const selectedProductsData = products.filter((p) =>
     selectedProducts.includes(p.id)
@@ -231,15 +238,7 @@ export function EnhancedBulkActions({
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => {
-              if (
-                confirm(
-                  `Are you sure you want to delete ${selectedCount} products? This cannot be undone.`
-                )
-              ) {
-                onBulkDelete();
-              }
-            }}
+            onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
@@ -250,6 +249,14 @@ export function EnhancedBulkActions({
           </Button>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={onBulkDelete}
+        itemType="products"
+        description={`Are you sure you want to delete ${selectedCount} product${selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`}
+      />
     </div>
   );
 }

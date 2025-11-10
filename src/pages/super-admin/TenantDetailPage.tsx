@@ -27,12 +27,16 @@ import { toast } from "@/hooks/use-toast";
 import { FeatureList } from "@/components/admin/FeatureList";
 import { TenantDataInspector } from "@/components/super-admin/TenantDataInspector";
 import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
+import { useState } from "react";
 
 export default function TenantDetailPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
   const navigate = useNavigate();
   const { superAdmin } = useSuperAdminAuth();
   const queryClient = useQueryClient();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // Fetch tenant details
   const { data: tenant, isLoading } = useQuery({
@@ -547,54 +551,7 @@ export default function TenantDetailPage() {
                         </Button>
                         <Button
                           variant="destructive"
-                          onClick={async () => {
-                            if (!confirm("Are you sure you want to cancel this subscription? This action cannot be undone.")) {
-                              return;
-                            }
-
-                            try {
-                              // Update tenant subscription status
-                              const { error } = await supabase
-                                .from("tenants")
-                                .update({
-                                  subscription_status: "cancelled",
-                                  cancelled_at: new Date().toISOString(),
-                                  status: "active", // Keep tenant active, just subscription cancelled
-                                  updated_at: new Date().toISOString(),
-                                })
-                                .eq("id", tenant?.id);
-
-                              if (error) throw error;
-
-                              // Log subscription event
-                              await supabase.from("subscription_events").insert({
-                                tenant_id: tenant?.id,
-                                event_type: "cancelled",
-                                from_plan: tenant?.subscription_plan,
-                                to_plan: null,
-                                amount: plan?.price_monthly || 0,
-                                event_data: {
-                                  cancelled_by: "super_admin",
-                                  cancelled_at: new Date().toISOString(),
-                                },
-                              });
-
-                              // Invalidate queries to refresh data
-                              queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-                              queryClient.invalidateQueries({ queryKey: ["subscription-plan", tenant?.subscription_plan] });
-
-                              toast({
-                                title: "Subscription Cancelled",
-                                description: "The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.",
-                              });
-                            } catch (error: any) {
-                              toast({
-                                title: "Error",
-                                description: error.message || "Failed to cancel subscription",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
+                          onClick={() => setCancelDialogOpen(true)}
                           className="flex-1 bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
                         >
                           ❌ CANCEL
@@ -1051,6 +1008,62 @@ export default function TenantDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ConfirmDeleteDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={async () => {
+          if (!tenant) return;
+
+          try {
+            // Update tenant subscription status
+            const { error } = await supabase
+              .from("tenants")
+              .update({
+                subscription_status: "cancelled",
+                cancelled_at: new Date().toISOString(),
+                status: "active", // Keep tenant active, just subscription cancelled
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", tenant.id);
+
+            if (error) throw error;
+
+            // Log subscription event
+            await supabase.from("subscription_events").insert({
+              tenant_id: tenant.id,
+              event_type: "cancelled",
+              from_plan: tenant.subscription_plan,
+              to_plan: null,
+              amount: 0,
+              event_data: {
+                cancelled_by: "super_admin",
+                cancelled_at: new Date().toISOString(),
+              },
+            });
+
+            // Invalidate queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+            queryClient.invalidateQueries({ queryKey: ["subscription-plan", tenant.subscription_plan] });
+
+            toast({
+              title: "Subscription Cancelled",
+              description: "The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.",
+            });
+          } catch (error: unknown) {
+            logger.error("Failed to cancel subscription", error, { component: "TenantDetailPage", tenantId: tenant?.id });
+            toast({
+              title: "Error",
+              description: error instanceof Error ? error.message : "Failed to cancel subscription",
+              variant: "destructive",
+            });
+          }
+        }}
+        itemName={tenant?.name}
+        itemType="subscription"
+        title="Cancel Subscription"
+        description="Are you sure you want to cancel this subscription? This action cannot be undone. The tenant will retain access until the end of the billing period."
+      />
     </div>
   );
 }

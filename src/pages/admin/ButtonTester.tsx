@@ -246,7 +246,7 @@ const ButtonTester = () => {
       const originalXHRSend = XMLHttpRequest.prototype.send;
       let capturedError: string | null = null;
       let is404 = false;
-      let networkErrors: string[] = [];
+      const networkErrors: string[] = [];
       let testCompleted = false;
 
       // Safety timeout to prevent hanging

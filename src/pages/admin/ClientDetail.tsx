@@ -17,6 +17,8 @@ import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
 
 export default function ClientDetail() {
   const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();
@@ -24,6 +26,8 @@ export default function ClientDetail() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
 
   const { data: client, isLoading: clientLoading } = useClientDetail(id || "");
   const { data: orders = [], isLoading: ordersLoading } = useClientOrders(id || "");
@@ -156,13 +160,7 @@ export default function ClientDetail() {
           <Button 
             variant="destructive" 
             size="sm"
-            onClick={() => {
-              if (confirm(`Are you sure you want to remove ${displayClient.business_name}?`)) {
-                showSuccessToast("Client Removed", `${displayClient.business_name} has been removed`);
-                const path = tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients";
-                navigate(path);
-              }
-            }}
+            onClick={() => setRemoveDialogOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Remove
@@ -365,11 +363,7 @@ export default function ClientDetail() {
         </Button>
         <Button 
           variant="destructive"
-          onClick={() => {
-            if (confirm(`Are you sure you want to suspend ${displayClient.business_name}'s account?`)) {
-              showSuccessToast("Account Suspended", `${displayClient.business_name} has been suspended`);
-            }
-          }}
+          onClick={() => setSuspendDialogOpen(true)}
         >
           <AlertCircle className="h-4 w-4 mr-2" />
           Suspend Account
@@ -407,6 +401,41 @@ export default function ClientDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={removeDialogOpen}
+        onOpenChange={setRemoveDialogOpen}
+        onConfirm={async () => {
+          try {
+            showSuccessToast("Client Removed", `${displayClient.business_name} has been removed`);
+            const path = tenantSlug ? `/${tenantSlug}/admin/big-plug-clients` : "/admin/wholesale-clients";
+            navigate(path);
+          } catch (error: unknown) {
+            logger.error("Failed to remove client", error, { component: "ClientDetail", clientId: id });
+          }
+        }}
+        itemName={displayClient.business_name}
+        itemType="client"
+        title="Remove Client"
+        description={`Are you sure you want to remove ${displayClient.business_name}? This action cannot be undone.`}
+      />
+
+      <ConfirmDeleteDialog
+        open={suspendDialogOpen}
+        onOpenChange={setSuspendDialogOpen}
+        onConfirm={async () => {
+          try {
+            showSuccessToast("Account Suspended", `${displayClient.business_name} has been suspended`);
+          } catch (error: unknown) {
+            logger.error("Failed to suspend client", error, { component: "ClientDetail", clientId: id });
+          }
+        }}
+        itemName={displayClient.business_name}
+        itemType="account"
+        title="Suspend Account"
+        description={`Are you sure you want to suspend ${displayClient.business_name}'s account? This action cannot be undone.`}
+        destructive={true}
+      />
     </div>
   );
 }

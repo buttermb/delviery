@@ -22,6 +22,24 @@ export default function CustomerLoginPage() {
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  
+  // Check for email verification success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verified = urlParams.get('verified');
+    const emailParam = urlParams.get('email');
+    
+    if (verified === 'true' && emailParam) {
+      setEmail(emailParam);
+      toast({
+        title: 'Email Verified!',
+        description: 'Please enter your password to complete login.',
+      });
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTenant = async () => {
@@ -67,12 +85,25 @@ export default function CustomerLoginPage() {
       });
 
       navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
-    } catch (error: any) {
-      logger.error("Customer login error", error);
+    } catch (error: unknown) {
+      logger.error("Customer login error", error, { component: "CustomerLoginPage" });
+      
+      // Handle email verification error
+      if (error instanceof Error && (error as any).requires_verification) {
+        toast({
+          variant: "destructive",
+          title: "Email Not Verified",
+          description: error.message || "Please verify your email address before logging in.",
+        });
+        navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(email)}`);
+        setLoading(false);
+        return;
+      }
+      
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || "Invalid credentials",
+        description: error instanceof Error ? error.message : "Invalid credentials",
       });
       setLoading(false);
     }

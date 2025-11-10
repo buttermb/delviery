@@ -78,7 +78,7 @@ serve(async (req) => {
       }
     }
 
-    let response: any = { success: true };
+    const response: any = { success: true };
 
     switch (action) {
       case 'add':

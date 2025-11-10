@@ -58,6 +58,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { CreateTenantDialog } from '@/components/admin/CreateTenantDialog';
 import { NotificationDialog } from '@/components/admin/NotificationDialog';
 
@@ -242,9 +243,9 @@ export default function SuperAdminEnhanced() {
         throw new Error('Tenant not found');
       }
 
-      // Set tenant context via localStorage
-      localStorage.setItem('current_tenant_id', tenantId);
-      localStorage.setItem('super_admin_tenant_id', tenantId);
+      // Set tenant context via localStorage (UI state only, not for auth)
+      // Note: Super admin auth is token-based, this is just for UI context
+      localStorage.setItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID, tenantId);
       localStorage.setItem('impersonating_tenant', 'true');
 
       toast({

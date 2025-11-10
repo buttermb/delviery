@@ -676,6 +676,89 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => window.removeEventListener('popstate', handleTenantChange);
   }, [tenant]);
 
+  // Real-time subscription for tenant subscription changes
+  useEffect(() => {
+    if (!tenant?.id) return;
+
+    const channel = supabase
+      .channel(`tenant-subscription-${tenant.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tenants',
+          filter: `id=eq.${tenant.id}`,
+        },
+        async (payload) => {
+          const updatedTenant = payload.new as any;
+          
+          // Check if subscription plan or status changed
+          if (
+            updatedTenant.subscription_plan !== tenant.subscription_plan ||
+            updatedTenant.subscription_status !== tenant.subscription_status
+          ) {
+            // Refresh tenant data
+            const storedAdmin = localStorage.getItem(ADMIN_KEY);
+            if (storedAdmin) {
+              try {
+                const adminData = JSON.parse(storedAdmin);
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+                  method: "GET",
+                  headers: {
+                    "Authorization": `Bearer ${accessToken || localStorage.getItem(ACCESS_TOKEN_KEY)}`,
+                    "Content-Type": "application/json",
+                  },
+                });
+
+                if (response.ok) {
+                  const data = await response.json();
+                  const tenantWithDefaults = {
+                    ...data.tenant,
+                    limits: data.tenant.limits || {
+                      customers: 50,
+                      menus: 3,
+                      products: 100,
+                      locations: 2,
+                      users: 3,
+                    },
+                    usage: data.tenant.usage || {
+                      customers: 0,
+                      menus: 0,
+                      products: 0,
+                      locations: 0,
+                      users: 0,
+                    },
+                  };
+                  setTenant(tenantWithDefaults);
+                  localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
+                  
+                  // Log subscription change
+                  logger.info('Subscription plan changed', { 
+                    from: tenant.subscription_plan, 
+                    to: updatedTenant.subscription_plan,
+                    component: 'TenantAdminAuthContext'
+                  });
+                }
+              } catch (error) {
+                logger.error('Failed to refresh tenant data after subscription change', error, { component: 'TenantAdminAuthContext' });
+              }
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Subscribed to tenant subscription changes', { tenantId: tenant.id, component: 'TenantAdminAuthContext' });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenant?.id, tenant?.subscription_plan, tenant?.subscription_status, accessToken]);
+
   // Proactive token refresh effect
   useEffect(() => {
     if (accessToken) {

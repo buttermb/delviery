@@ -12,6 +12,7 @@ import { Package, TrendingUp, Clock, XCircle, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { logger } from '@/lib/logger';
+import { useDebounce } from '@/hooks/useDebounce';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
 
@@ -32,6 +33,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     loadOrders();
@@ -70,8 +72,9 @@ export default function Orders() {
     loadOrders();
   }, [statusFilter]);
 
+  // Filter orders with debounced search
   const filteredOrders = orders.filter(order =>
-    order.order_number?.toLowerCase().includes(searchQuery.toLowerCase())
+    order.order_number?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   const getStatusBadge = (status: string) => {

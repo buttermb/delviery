@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface BulkActionsDialogProps {
   open: boolean;
@@ -81,12 +82,12 @@ export function BulkActionsDialog({
 
       onComplete();
       onClose();
-    } catch (error: any) {
-      console.error('Bulk action error:', error);
+    } catch (error: unknown) {
+      logger.error('Bulk action error', error, { component: 'BulkActionsDialog' });
       toast({
         variant: 'destructive',
         title: 'Bulk Action Failed',
-        description: error.message || 'Failed to perform bulk action',
+        description: error instanceof Error ? error.message : 'Failed to perform bulk action',
       });
     } finally {
       setLoading(false);
@@ -106,7 +107,7 @@ export function BulkActionsDialog({
         <div className="space-y-4">
           <div className="space-y-3">
             <Label>Select Action</Label>
-            <RadioGroup value={action} onValueChange={(v) => setAction(v as any)}>
+            <RadioGroup value={action} onValueChange={(v) => setAction(v as 'activate' | 'deactivate' | 'delete')}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="activate" id="activate" />
                 <Label htmlFor="activate" className="font-normal">

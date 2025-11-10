@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Truck, Loader2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { logger } from "@/lib/logger";
 
 interface Courier {
   id: string;
@@ -53,6 +54,7 @@ export const AssignCourierDialog = ({
     if (open) {
       fetchAvailableCouriers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const fetchAvailableCouriers = async () => {
@@ -120,12 +122,12 @@ export const AssignCourierDialog = ({
 
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      console.error("Failed to assign courier:", error);
+    } catch (error: unknown) {
+      logger.error("Failed to assign courier", error, { component: 'AssignCourierDialog', orderId });
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to assign courier",
+        description: error instanceof Error ? error.message : "Failed to assign courier",
       });
     } finally {
       setAssigning(false);
@@ -168,12 +170,12 @@ export const AssignCourierDialog = ({
 
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      console.error("Failed to auto-assign courier:", error);
+    } catch (error: unknown) {
+      logger.error("Failed to auto-assign courier", error, { component: 'AssignCourierDialog', orderId });
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to auto-assign courier",
+        description: error instanceof Error ? error.message : "Failed to auto-assign courier",
       });
     } finally {
       setAssigning(false);

@@ -110,6 +110,10 @@ serve(async (req) => {
         );
       }
 
+      // Set expiration (default 7 days)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
       // Create invitation
       const { data: invitation, error: inviteError } = await supabase
         .from('tenant_invitations')
@@ -118,6 +122,7 @@ serve(async (req) => {
           email: email.toLowerCase(),
           role,
           invited_by: user.id,
+          expires_at: expiresAt.toISOString(),
         })
         .select()
         .single();

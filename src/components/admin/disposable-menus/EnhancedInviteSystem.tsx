@@ -69,6 +69,10 @@ export function EnhancedInviteSystem({
         : whitelist.filter(w => selectedCustomers.includes(w.id));
 
       for (const customer of customersToInvite) {
+        // Set expiration (default 30 days for menu invitations)
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+
         // Create invitation record
         const invitationData = {
           menu_id: menuId,
@@ -79,6 +83,7 @@ export function EnhancedInviteSystem({
           message: message,
           unique_link: `${window.location.origin}/menu/${menu.encrypted_url_token}${customer.unique_access_token ? `?u=${customer.unique_access_token}` : ''}`,
           status: 'sent',
+          expires_at: expiresAt.toISOString(),
         };
 
         // Send via appropriate method

@@ -184,7 +184,7 @@ export const initHoneypotSystem = (formElement: HTMLFormElement) => {
   const mouseMonitor = createMouseMonitor();
   
   // Track interactions
-  let interactions = {
+  const interactions = {
     keystrokes: 0,
     clicks: 0,
     scrolls: 0,

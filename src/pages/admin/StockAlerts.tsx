@@ -16,7 +16,7 @@ export default function StockAlerts() {
 
       try {
         // Try stock_alerts table first
-        let { data, error } = await supabase
+        const { data, error } = await supabase
           .from('stock_alerts' as any)
           .select('*')
           .eq('tenant_id', tenantId)

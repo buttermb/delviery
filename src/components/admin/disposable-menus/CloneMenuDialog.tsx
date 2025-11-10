@@ -80,7 +80,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
             customer_phone: w.customer_phone,
             customer_email: w.customer_email || null,
             unique_access_token: crypto.randomUUID().replace(/-/g, '').substring(0, 16),
-            status: 'pending' as 'pending',
+            status: 'pending' as const,
           }));
 
           const { error: whitelistError } = await supabase

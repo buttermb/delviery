@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +52,7 @@ import {
 
 export default function SuperAdminDashboardPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { superAdmin, logout } = useSuperAdminAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -122,6 +123,51 @@ export default function SuperAdminDashboardPage() {
       return data || [];
     },
   });
+
+  // Real-time subscription for tenants table (super admin analytics)
+  useEffect(() => {
+    const channel = supabase
+      .channel('super-admin-tenants-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tenants',
+        },
+        (payload) => {
+          // Invalidate queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ['super-admin-tenants'] });
+          queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'subscription_events',
+        },
+        (payload) => {
+          // Invalidate when subscription changes
+          queryClient.invalidateQueries({ queryKey: ['super-admin-tenants'] });
+          queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // Realtime subscription active
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['super-admin-tenants'] });
+          queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const handleLogout = async () => {
     await logout();

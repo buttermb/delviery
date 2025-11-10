@@ -24,6 +24,8 @@ import { Users, Plus, Edit, Trash2, Mail, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { PendingInvitations } from '@/components/admin/PendingInvitations';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { logger } from '@/lib/logger';
 
 export default function TeamManagement() {
   const { tenant, loading: authLoading } = useTenantAdminAuth();
@@ -33,6 +35,9 @@ export default function TeamManagement() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     full_name: '',
@@ -156,14 +161,20 @@ export default function TeamManagement() {
     }
   };
 
-  const handleRemove = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this team member?')) return;
+  const handleRemoveClick = (userId: string, name: string) => {
+    setMemberToRemove({ userId, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleRemove = async () => {
+    if (!memberToRemove) return;
 
     try {
+      setIsRemoving(true);
       const { error } = await supabase
         .from('tenant_users')
         .delete()
-        .eq('user_id', userId);
+        .eq('user_id', memberToRemove.userId);
 
       if (error) throw error;
 
@@ -173,12 +184,17 @@ export default function TeamManagement() {
       });
 
       loadTeamMembers();
-    } catch (error: any) {
+      setDeleteDialogOpen(false);
+      setMemberToRemove(null);
+    } catch (error: unknown) {
+      logger.error('Failed to remove team member', error, { component: 'TeamManagement', userId: memberToRemove.userId });
       toast({
         title: 'Error',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to remove team member',
         variant: 'destructive'
       });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -337,7 +353,7 @@ export default function TeamManagement() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleRemove(member.user_id)}
+                      onClick={() => handleRemoveClick(member.user_id, member.full_name || member.email || 'team member')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -364,6 +380,15 @@ export default function TeamManagement() {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleRemove}
+        itemName={memberToRemove?.name}
+        itemType="team member"
+        isLoading={isRemoving}
+      />
     </div>
   );
 }

@@ -16,6 +16,8 @@ import {
 import { Package, Plus, Edit, Trash2, Mail, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { logger } from '@/lib/logger';
 
 export default function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -24,6 +26,9 @@ export default function VendorManagement() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vendorToDelete, setVendorToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     contact_name: '',
@@ -126,14 +131,20 @@ export default function VendorManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this vendor?')) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setVendorToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!vendorToDelete) return;
 
     try {
+      setIsDeleting(true);
       const { error } = await supabase
         .from('vendors')
         .delete()
-        .eq('id', id);
+        .eq('id', vendorToDelete.id);
 
       if (error) throw error;
 
@@ -143,12 +154,17 @@ export default function VendorManagement() {
       });
 
       loadVendors();
-    } catch (error: any) {
+      setDeleteDialogOpen(false);
+      setVendorToDelete(null);
+    } catch (error: unknown) {
+      logger.error('Failed to delete vendor', error, { component: 'VendorManagement', vendorId: vendorToDelete.id });
       toast({
         title: 'Error',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to delete vendor',
         variant: 'destructive'
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -319,7 +335,7 @@ export default function VendorManagement() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(vendor.id)}
+                      onClick={() => handleDeleteClick(vendor.id, vendor.name)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -359,6 +375,15 @@ export default function VendorManagement() {
           ))}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        itemName={vendorToDelete?.name}
+        itemType="vendor"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

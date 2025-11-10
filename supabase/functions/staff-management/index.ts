@@ -170,7 +170,7 @@ serve(async (req) => {
 
       // Get or create auth user
       const { data: authUsers } = await serviceClient.auth.admin.listUsers();
-      let authUserId = authUsers?.users?.find(u => u.email === email.toLowerCase())?.id;
+      const authUserId = authUsers?.users?.find(u => u.email === email.toLowerCase())?.id;
 
       if (!authUserId) {
         // Create auth user (would need to send invitation in real implementation)

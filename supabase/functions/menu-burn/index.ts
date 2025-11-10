@@ -76,7 +76,7 @@ serve(async (req) => {
       );
     }
 
-    let updateData: any = {
+    const updateData: any = {
       status: 'burned',
       burned_at: new Date().toISOString(),
       burned_by: user.id,
@@ -124,7 +124,7 @@ serve(async (req) => {
       event_data: { menu_id, burn_type, reason, burned_by: user.id }
     });
 
-    let response: any = { success: true, burn_type };
+    const response: any = { success: true, burn_type };
 
     // Get whitelist entries for auto-reinvite
     const { data: whitelistEntries } = await supabase

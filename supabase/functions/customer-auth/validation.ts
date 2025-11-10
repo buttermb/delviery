@@ -7,6 +7,7 @@ export const signupSchema = z.object({
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
   phone: z.string().max(20).optional(),
+  dateOfBirth: z.string().optional(), // Format: YYYY-MM-DD
   tenantSlug: z.string().min(1, 'Tenant slug is required').max(100).regex(/^[a-z0-9-]+$/, 'Invalid tenant slug format'),
 });
 

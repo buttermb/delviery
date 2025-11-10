@@ -1,4 +1,9 @@
-import { useState, useEffect } from 'react';
+/**
+ * Debounce hook for search and filter inputs
+ * Prevents excessive API calls while user is typing
+ */
+
+import { useEffect, useState } from 'react';
 
 export function useDebounce<T>(value: T, delay: number = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);

@@ -40,6 +40,7 @@ import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
+import { BetaBanner } from "./components/shared/BetaBanner";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -214,6 +215,9 @@ const ProtectedCourierRoute = lazy(() => import("./components/ProtectedCourierRo
 // Customer Pages
 const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
 const CustomerSignUpPage = lazy(() => import("./pages/customer/SignUpPage"));
+const CustomerVerifyEmailPage = lazy(() => import("./pages/customer/VerifyEmailPage"));
+const CustomerForgotPasswordPage = lazy(() => import("./pages/customer/ForgotPasswordPage"));
+const CustomerResetPasswordPage = lazy(() => import("./pages/customer/ResetPasswordPage"));
 
 // Invitation Pages
 const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
@@ -302,6 +306,7 @@ const App = () => {
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
                     <OfflineBanner />
+                    <BetaBanner />
                     <InstallPWA />
                     <DeviceTracker />
                     
@@ -525,6 +530,9 @@ const App = () => {
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
                         <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
                         <Route path="/:tenantSlug/customer/signup" element={<CustomerSignUpPage />} />
+                        <Route path="/:tenantSlug/customer/verify-email" element={<CustomerVerifyEmailPage />} />
+                        <Route path="/:tenantSlug/customer/forgot-password" element={<CustomerForgotPasswordPage />} />
+                        <Route path="/:tenantSlug/customer/reset-password" element={<CustomerResetPasswordPage />} />
                         <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
                         <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                         <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>

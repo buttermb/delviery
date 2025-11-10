@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus, Pencil, Trash2, Package, Users, TrendingUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { logger } from "@/utils/logger";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface Product {
   id: string;
@@ -33,6 +34,8 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     description: "",
@@ -284,9 +287,8 @@ const Admin = () => {
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          if (confirm("Are you sure you want to delete this product?")) {
-                            deleteProduct.mutate(product.id);
-                          }
+                          setProductToDelete({ id: product.id, name: product.name });
+                          setDeleteDialogOpen(true);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -428,6 +430,21 @@ const Admin = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (productToDelete) {
+            deleteProduct.mutate(productToDelete.id);
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+          }
+        }}
+        itemName={productToDelete?.name}
+        itemType="product"
+        isLoading={deleteProduct.isPending}
+      />
     </div>
   );
 };

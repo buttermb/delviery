@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
@@ -5,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -21,7 +23,7 @@ export function BulkActions({
   const queryClient = useQueryClient();
 
   const bulkUpdate = useMutation({
-    mutationFn: async ({ updates }: { updates: any }) => {
+    mutationFn: async ({ updates }: { updates: Record<string, unknown> }) => {
       const { error } = await supabase
         .from("products")
         .update(updates)
@@ -85,14 +87,28 @@ export function BulkActions({
     );
   };
 
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+
   const handleBulkDelete = () => {
-    if (confirm(`Delete ${selectedCount} products? This cannot be undone.`)) {
-      bulkDelete.mutate();
-    }
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    bulkDelete.mutate();
+    setBulkDeleteDialogOpen(false);
   };
 
   return (
-    <Card className="p-4">
+    <>
+      <ConfirmDeleteDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        onConfirm={confirmBulkDelete}
+        itemName={`${selectedCount} products`}
+        itemType="products"
+        isLoading={bulkDelete.isPending}
+      />
+      <Card className="p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-medium">{selectedCount} products selected</span>
@@ -125,5 +141,6 @@ export function BulkActions({
         </div>
       </div>
     </Card>
+    </>
   );
 }

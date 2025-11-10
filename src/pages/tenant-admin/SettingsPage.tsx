@@ -8,6 +8,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 export default function TenantAdminSettingsPage() {
   const { admin, tenant } = useTenantAdminAuth();
@@ -62,7 +63,7 @@ export default function TenantAdminSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("tenant_admin_access_token")}`,
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN)}`,
         },
         body: JSON.stringify({
           action: "update-password",

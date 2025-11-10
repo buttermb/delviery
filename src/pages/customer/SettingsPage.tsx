@@ -1,24 +1,35 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Key, User, Bell } from "lucide-react";
+import { Settings, Key, User, Bell, Trash2, Download, AlertTriangle } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
+import { apiFetch } from "@/lib/utils/apiClient";
+import { useNavigate, useParams } from "react-router-dom";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { SessionManagement } from "@/components/customer/SessionManagement";
 
 export default function CustomerSettingsPage() {
-  const { customer, tenant } = useCustomerAuth();
+  const { customer, tenant, logout } = useCustomerAuth();
+  const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [loading, setLoading] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,14 +101,108 @@ export default function CustomerSettingsPage() {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      logger.error("Password update error", error, { component: "CustomerSettingsPage" });
       toast({
         title: "Error",
-        description: error.message || "Failed to update password",
+        description: error instanceof Error ? error.message : "Failed to update password",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!customer || !tenant) return;
+
+    setExporting(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/export-customer-data`, {
+        method: 'POST',
+        body: JSON.stringify({
+          customer_user_id: customer.id,
+          tenant_id: tenant.id,
+          format: 'json',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to export data');
+      }
+
+      const result = await response.json();
+
+      if (result.download_url) {
+        window.open(result.download_url, '_blank');
+        toast({
+          title: 'Data Export Ready',
+          description: 'Your data export is ready. The download link will expire in 7 days.',
+        });
+      } else {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `customer-data-export-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast({
+          title: 'Data Export Complete',
+          description: 'Your data has been downloaded.',
+        });
+      }
+    } catch (error: unknown) {
+      logger.error('Data export error', error, { component: 'CustomerSettingsPage' });
+      toast({
+        variant: 'destructive',
+        title: 'Export Failed',
+        description: error instanceof Error ? error.message : 'Failed to export your data. Please try again.',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!customer || !tenant) return;
+
+    setDeleting(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await apiFetch(`${supabaseUrl}/functions/v1/delete-customer-account`, {
+        method: 'POST',
+        body: JSON.stringify({
+          customer_user_id: customer.id,
+          tenant_id: tenant.id,
+          reason: 'User requested account deletion',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete account');
+      }
+
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account has been deleted. You will be logged out.',
+      });
+
+      await logout();
+      navigate(`/${tenantSlug}/customer/login`);
+    } catch (error: unknown) {
+      logger.error('Account deletion error', error, { component: 'CustomerSettingsPage' });
+      toast({
+        variant: 'destructive',
+        title: 'Deletion Failed',
+        description: error instanceof Error ? error.message : 'Failed to delete your account. Please try again.',
+      });
+      setDeleting(false);
     }
   };
 
@@ -200,6 +305,9 @@ export default function CustomerSettingsPage() {
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
                 />
+                {passwordData.newPassword && (
+                  <PasswordStrengthIndicator password={passwordData.newPassword} />
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--customer-text))]">Confirm New Password</Label>
@@ -275,11 +383,105 @@ export default function CustomerSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Session Management */}
+        <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--customer-text))]">
+              <Settings className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
+              Active Sessions
+            </CardTitle>
+            <CardDescription className="text-[hsl(var(--customer-text-light))]">
+              View and manage devices where you're logged in
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SessionManagement />
+          </CardContent>
+        </Card>
+
+        {/* GDPR Compliance */}
+        <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[hsl(var(--customer-text))]">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Data & Privacy
+            </CardTitle>
+            <CardDescription className="text-[hsl(var(--customer-text-light))]">
+              Manage your data and privacy settings in accordance with GDPR
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Export Data */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-[hsl(var(--customer-text))]">Export Your Data</Label>
+                  <p className="text-sm text-[hsl(var(--customer-text-light))]">
+                    Download a copy of all your account data in JSON format
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleExportData}
+                  disabled={exporting}
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
+                >
+                  {exporting ? (
+                    <>
+                      <Settings className="h-4 w-4 mr-2 animate-spin" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Data
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="border-t border-[hsl(var(--customer-border))] pt-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-red-600">Delete Account</Label>
+                    <p className="text-sm text-[hsl(var(--customer-text-light))]">
+                      Permanently delete your account and anonymize your data. This action cannot be undone.
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setDeleteDialogOpen(true)}
+                    disabled={deleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         </div>
       </div>
 
       {/* Mobile Bottom Navigation */}
       <CustomerMobileBottomNav />
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteAccount}
+        itemName={customer?.email}
+        itemType="account"
+        title="Delete Your Account"
+        description="Are you sure you want to delete your account? This will permanently delete your account and anonymize your personal data in accordance with GDPR requirements. Your order history will be preserved for accounting purposes but will be anonymized. This action cannot be undone."
+        isLoading={deleting}
+        destructive={true}
+      />
     </div>
   );
 }

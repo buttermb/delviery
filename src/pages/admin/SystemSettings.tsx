@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 import {
   Settings,
   Shield,
@@ -52,6 +53,19 @@ const SystemSettings = () => {
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
+      // Get tenant context for filtering
+      const { data: { user } } = await supabase.auth.getUser();
+      let tenantId: string | null = null;
+      
+      if (user) {
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        tenantId = tenantUser?.tenant_id || null;
+      }
+
       const [
         ordersLastHour,
         ordersToday,
@@ -59,9 +73,15 @@ const SystemSettings = () => {
         dbSize,
         avgResponseTime
       ] = await Promise.all([
-        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()),
-        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneDayAgo.toISOString()),
-        supabase.from("fraud_flags").select("id", { count: "exact", head: true }).is("resolved_at", null),
+        tenantId 
+          ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString())
+          : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()),
+        tenantId
+          ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString())
+          : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneDayAgo.toISOString()),
+        tenantId
+          ? supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null)
+          : supabase.from("fraud_flags").select("id", { count: "exact", head: true }).is("resolved_at", null),
         // Simulate DB size check
         Promise.resolve({ size_mb: Math.random() * 1000 + 500 }),
         // Simulate response time
@@ -109,7 +129,7 @@ const SystemSettings = () => {
   const saveFraudRules = useMutation({
     mutationFn: async (rules: typeof fraudRules) => {
       // In a real implementation, save to a settings table
-      console.log("Saving fraud rules:", rules);
+      logger.debug("Saving fraud rules", { rules }, { component: 'SystemSettings' });
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       return rules;
@@ -137,7 +157,7 @@ const SystemSettings = () => {
         description: data.message,
       });
     } catch (error) {
-      console.error('Database operation error:', error);
+      logger.error('Database operation error', error, { component: 'SystemSettings' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to perform database operation';
       toast({
         title: "Error",
@@ -161,7 +181,7 @@ const SystemSettings = () => {
         description: data.message,
       });
     } catch (error) {
-      console.error('Database backup error:', error);
+      logger.error('Database backup error', error, { component: 'SystemSettings' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to create database backup';
       toast({
         title: "Error",

@@ -112,7 +112,7 @@ export default function GenerateBarcodes() {
 
     setLoading(true);
     try {
-      let newBarcodes: GeneratedBarcode[] = [];
+      const newBarcodes: GeneratedBarcode[] = [];
 
       if (mode === 'product' && selectedProduct) {
         const product = products?.find(p => p.id === selectedProduct);

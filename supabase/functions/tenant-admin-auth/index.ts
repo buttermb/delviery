@@ -346,6 +346,75 @@ serve(async (req) => {
       );
     }
 
+    if (action === 'impersonate') {
+      // Super admin impersonation - generate tenant admin token
+      const { tenant_id, super_admin_id } = requestBody;
+
+      if (!tenant_id) {
+        return new Response(
+          JSON.stringify({ error: 'tenant_id required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Get tenant
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .select('id, business_name, slug, subscription_plan, subscription_status, limits, usage, features')
+        .eq('id', tenant_id)
+        .single();
+
+      if (tenantError || !tenant) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Get first active admin
+      const { data: tenantAdmin, error: adminError } = await supabase
+        .from('tenant_users')
+        .select('id, email, name, role, tenant_id')
+        .eq('tenant_id', tenant_id)
+        .in('role', ['owner', 'admin'])
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      if (adminError || !tenantAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'No active admin found for tenant' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Generate token for tenant admin (simplified - in production use proper JWT)
+      // For now, return tenant admin email and let frontend handle login
+      return new Response(
+        JSON.stringify({
+          success: true,
+          tenant: {
+            id: tenant.id,
+            business_name: tenant.business_name,
+            slug: tenant.slug,
+            subscription_plan: tenant.subscription_plan,
+            subscription_status: tenant.subscription_status,
+            limits: tenant.limits,
+            usage: tenant.usage,
+            features: tenant.features,
+          },
+          admin: {
+            id: tenantAdmin.id,
+            email: tenantAdmin.email,
+            name: tenantAdmin.name,
+            role: tenantAdmin.role,
+          },
+          message: 'Use tenant admin email to generate token',
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (action === 'verify') {
       const authHeader = req.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {

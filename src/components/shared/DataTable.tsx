@@ -3,7 +3,7 @@
  * Reusable table with filtering, sorting, pagination, and bulk actions
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff } from 'lucide-react';
 import {
@@ -12,6 +12,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -44,7 +46,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VirtualizedTable } from './VirtualizedTable';
-import { useMemo } from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData>[];
@@ -91,7 +92,6 @@ export function DataTable<TData, TValue>({
   virtualizedHeight = 600,
   virtualizedRowHeight = 50,
 }: DataTableProps<TData, TValue>) {
-  const [currentPage, setCurrentPage] = useState(0);
   const [searchValue, setSearchValue] = useState('');
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
@@ -113,15 +113,24 @@ export function DataTable<TData, TValue>({
   const shouldVirtualize = virtualized ?? (filteredData.length > virtualizedThreshold);
   const useVirtual = shouldVirtualize && !pagination; // Don't virtualize if pagination is enabled
 
-  // Paginate data (only if not using virtualization)
-  const paginatedData = useMemo(() => {
-    if (useVirtual) return filteredData;
-    return pagination
-      ? filteredData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-      : filteredData;
-  }, [filteredData, currentPage, pageSize, pagination, useVirtual]);
+  // Use standardized pagination hook
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize: currentPageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredData, {
+    defaultPageSize: pageSize,
+    persistInUrl: true,
+    urlKey: 'table',
+  });
 
-  const totalPages = pagination ? Math.ceil(filteredData.length / pageSize) : 1;
+  // Use paginated data or all filtered data based on virtualization
+  const paginatedData = useVirtual ? filteredData : paginatedItems;
 
   // Filter visible columns
   const visibleColumnsList = columns.filter((col) => {
@@ -354,51 +363,16 @@ export function DataTable<TData, TValue>({
       )}
 
       {/* Pagination */}
-      {!useVirtual && pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t">
-          <div className="text-sm text-muted-foreground">
-            Showing {currentPage * pageSize + 1} to{' '}
-            {Math.min((currentPage + 1) * pageSize, filteredData.length)} of{' '}
-            {filteredData.length} results
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(0)}
-              disabled={currentPage === 0}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-              disabled={currentPage === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="text-sm text-muted-foreground px-2">
-              Page {currentPage + 1} of {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={currentPage >= totalPages - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(totalPages - 1)}
-              disabled={currentPage >= totalPages - 1}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+      {!useVirtual && pagination && (
+        <StandardPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={currentPageSize}
+          totalItems={totalItems}
+          pageSizeOptions={pageSizeOptions}
+          onPageChange={goToPage}
+          onPageSizeChange={changePageSize}
+        />
       )}
     </Card>
   );

@@ -97,10 +97,68 @@ serve(async (req) => {
         message: `Order cancelled by admin: ${reason || "No reason provided"}`,
       });
 
+      // Note: Inventory restoration is handled automatically by database trigger
+      // trigger_restore_inventory_on_cancel will restore inventory when status changes to 'cancelled'
+
+      // Send notifications to customer and courier
+      try {
+        // Get order details for notifications
+        const { data: orderDetails } = await supabase
+          .from("orders")
+          .select("user_id, courier_id, order_number")
+          .eq("id", orderId)
+          .single();
+
+        if (orderDetails) {
+          // Notify customer
+          if (orderDetails.user_id) {
+            await supabase.functions.invoke("send-notification", {
+              body: {
+                user_id: orderDetails.user_id,
+                tenant_id: order.tenant_id,
+                type: "order_cancelled",
+                title: "Order Cancelled",
+                message: `Your order ${orderDetails.order_number || orderId.substring(0, 8)} has been cancelled. ${reason ? `Reason: ${reason}` : ''}`,
+                metadata: {
+                  order_id: orderId,
+                  reason: reason || null,
+                },
+                channels: ["database", "email"],
+              },
+            });
+          }
+
+          // Notify courier if assigned
+          if (orderDetails.courier_id) {
+            await supabase.functions.invoke("send-notification", {
+              body: {
+                user_id: orderDetails.courier_id,
+                tenant_id: order.tenant_id,
+                type: "order_cancelled",
+                title: "Order Assignment Cancelled",
+                message: `Order ${orderDetails.order_number || orderId.substring(0, 8)} has been cancelled and removed from your assignments.`,
+                metadata: {
+                  order_id: orderId,
+                  reason: reason || null,
+                },
+                channels: ["database"],
+              },
+            });
+          }
+        }
+      } catch (notificationError) {
+        // Log but don't fail the cancellation if notifications fail
+        console.error("Failed to send cancellation notifications:", notificationError);
+      }
+
       await logAdminAction(supabase, adminUser.id, "CANCEL_ORDER", "order", orderId, { reason }, req);
 
       return new Response(
-        JSON.stringify({ success: true, order }),
+        JSON.stringify({ 
+          success: true, 
+          order,
+          message: "Order cancelled. Inventory will be automatically restored. Notifications sent to customer and courier."
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

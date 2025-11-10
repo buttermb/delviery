@@ -26,6 +26,10 @@ import {
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
+import { usePagination } from "@/hooks/usePagination";
+import { StandardPagination } from "@/components/shared/StandardPagination";
 
 interface Customer {
   id: string;
@@ -51,6 +55,9 @@ export default function CustomerManagement() {
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (tenant && !accountLoading) {
@@ -92,26 +99,34 @@ export default function CustomerManagement() {
     }
   };
 
-  const handleDelete = async (customerId: string, customerName: string) => {
-    if (!confirm(`Are you sure you want to delete ${customerName}? This cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteClick = (customerId: string, customerName: string) => {
+    setCustomerToDelete({ id: customerId, name: customerName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!customerToDelete) return;
 
     try {
+      setIsDeleting(true);
       const { error } = await supabase
         .from("customers")
         .delete()
-        .eq("id", customerId);
+        .eq("id", customerToDelete.id);
 
       if (error) throw error;
 
       toast.success("Customer deleted successfully");
       loadCustomers(); // Refresh the list
-    } catch (error: any) {
-      console.error("Delete error:", error);
+      setDeleteDialogOpen(false);
+      setCustomerToDelete(null);
+    } catch (error: unknown) {
+      logger.error("Failed to delete customer", error, { component: "CustomerManagement", customerId: customerToDelete.id });
       toast.error("Failed to delete customer", {
-        description: error.message
+        description: error instanceof Error ? error.message : "An error occurred"
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -146,6 +161,22 @@ export default function CustomerManagement() {
       customer.email?.toLowerCase().includes(search) ||
       customer.phone?.includes(search)
     );
+  });
+
+  // Use standardized pagination
+  const {
+    paginatedItems: paginatedCustomers,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredCustomers, {
+    defaultPageSize: 25,
+    persistInUrl: true,
+    urlKey: 'customers',
   });
 
   // Calculate stats
@@ -345,7 +376,7 @@ export default function CustomerManagement() {
                       className="rounded"
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedCustomers(filteredCustomers.map(c => c.id));
+                          setSelectedCustomers(paginatedCustomers.map(c => c.id));
                         } else {
                           setSelectedCustomers([]);
                         }
@@ -376,7 +407,7 @@ export default function CustomerManagement() {
                 </tr>
               </thead>
               <tbody className="bg-background divide-y divide-border">
-                {filteredCustomers.map((customer) => (
+                {paginatedCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
                       <input 
@@ -449,7 +480,7 @@ export default function CustomerManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
-                            onClick={() => handleDelete(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
                           >
                             <Trash className="w-4 h-4 mr-2" />
                             Delete
@@ -526,7 +557,7 @@ export default function CustomerManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
-                            onClick={() => handleDelete(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
                           >
                             <Trash className="w-4 h-4 mr-2" />
                             Delete
@@ -579,19 +610,27 @@ export default function CustomerManagement() {
 
           {/* Pagination */}
           {filteredCustomers.length > 0 && (
-            <div className="px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground text-center sm:text-left">
-                Showing {filteredCustomers.length} of {customers.length} customers
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled className="min-h-[44px]">Previous</Button>
-                <Button variant="outline" size="sm" disabled className="min-h-[44px]">1</Button>
-                <Button variant="outline" size="sm" disabled className="min-h-[44px]">Next</Button>
-              </div>
-            </div>
+            <StandardPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              pageSizeOptions={pageSizeOptions}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+            />
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        itemName={customerToDelete?.name}
+        itemType="customer"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

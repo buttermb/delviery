@@ -16,6 +16,8 @@ import {
 import { MapPin, Plus, Edit, Trash2, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { logger } from '@/lib/logger';
 
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -24,6 +26,9 @@ export default function LocationsManagement() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [locationToDelete, setLocationToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -126,14 +131,20 @@ export default function LocationsManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+  const handleDeleteClick = (id: string, name: string) => {
+    setLocationToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!locationToDelete) return;
 
     try {
+      setIsDeleting(true);
       const { error } = await supabase
         .from('locations')
         .delete()
-        .eq('id', id);
+        .eq('id', locationToDelete.id);
 
       if (error) throw error;
 
@@ -143,12 +154,17 @@ export default function LocationsManagement() {
       });
 
       loadLocations();
-    } catch (error: any) {
+      setDeleteDialogOpen(false);
+      setLocationToDelete(null);
+    } catch (error: unknown) {
+      logger.error('Failed to delete location', error, { component: 'LocationsManagement', locationId: locationToDelete.id });
       toast({
         title: 'Error',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to delete location',
         variant: 'destructive'
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -336,7 +352,7 @@ export default function LocationsManagement() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(location.id)}
+                      onClick={() => handleDeleteClick(location.id, location.name)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -367,6 +383,15 @@ export default function LocationsManagement() {
           ))}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        itemName={locationToDelete?.name}
+        itemType="location"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

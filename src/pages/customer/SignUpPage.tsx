@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { logger } from "@/lib/logger";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
@@ -21,7 +23,11 @@ export default function CustomerSignUpPage() {
     firstName: "",
     lastName: "",
     phone: "",
+    dateOfBirth: "",
   });
+  const [phoneValidating, setPhoneValidating] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [ageError, setAgeError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
@@ -88,7 +94,8 @@ export default function CustomerSignUpPage() {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          phone: formData.phone,
+          phone: formData.phone || null,
+          dateOfBirth: formData.dateOfBirth || null,
           tenantSlug,
         }),
         skipAuth: true,
@@ -99,18 +106,21 @@ export default function CustomerSignUpPage() {
         throw new Error(error.error || "Signup failed");
       }
 
+      const result = await response.json();
+
       toast({
         title: "Account created!",
-        description: "Please log in with your new credentials",
+        description: result.message || "Please check your email to verify your account",
       });
 
-      navigate(`/${tenantSlug}/customer/login`);
-    } catch (error: any) {
-      console.error("Customer signup error:", error);
+      // Redirect to verification page
+      navigate(`/${tenantSlug}/customer/verify-email?email=${encodeURIComponent(formData.email)}`);
+    } catch (error: unknown) {
+      logger.error("Customer signup error", error, { component: "CustomerSignUpPage" });
       toast({
         variant: "destructive",
         title: "Signup failed",
-        description: error.message || "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
       });
     } finally {
       setLoading(false);
@@ -245,19 +255,54 @@ export default function CustomerSignUpPage() {
 
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-[hsl(var(--customer-text))]">
-                Phone Number
+                Phone Number {phoneValidating && <Loader2 className="inline h-3 w-3 animate-spin ml-2" />}
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, phone: e.target.value });
+                  setPhoneError(null);
+                }}
                 required
-                disabled={loading}
-                className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                disabled={loading || phoneValidating}
+                className={`border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 ${phoneError ? 'border-red-500' : ''}`}
               />
+              {phoneError && (
+                <p className="text-sm text-red-500">{phoneError}</p>
+              )}
             </div>
+
+            {(tenant?.age_verification_required || formData.dateOfBirth) && (
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth" className="text-[hsl(var(--customer-text))]">
+                  Date of Birth {tenant?.age_verification_required && <span className="text-red-500">*</span>}
+                </Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => {
+                    setFormData({ ...formData, dateOfBirth: e.target.value });
+                    setAgeError(null);
+                  }}
+                  required={tenant?.age_verification_required}
+                  disabled={loading}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - (tenant?.minimum_age || 21))).toISOString().split('T')[0]}
+                  className={`border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 ${ageError ? 'border-red-500' : ''}`}
+                />
+                {ageError && (
+                  <p className="text-sm text-red-500">{ageError}</p>
+                )}
+                {tenant?.minimum_age && (
+                  <p className="text-xs text-muted-foreground">
+                    You must be at least {tenant.minimum_age} years old to create an account
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-[hsl(var(--customer-text))]">
@@ -273,6 +318,9 @@ export default function CustomerSignUpPage() {
                 disabled={loading}
                 className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
               />
+              {formData.password && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
             </div>
 
             <div className="space-y-2">
