@@ -54,20 +54,32 @@ export function TutorialOverlay({
     if (!isOpen || !currentStepData) return;
 
     const findTarget = () => {
-      // Try data-tutorial attribute first (most reliable)
-      let element = document.querySelector(`[data-tutorial="${currentStepData.target}"]`);
+      let element: HTMLElement | null = null;
       
-      // Fallback to CSS selector if target doesn't start with [data-tutorial=
-      if (!element && !currentStepData.target.startsWith('[data-tutorial=')) {
+      // Check if target is already a full CSS selector (starts with [, #, or .)
+      if (currentStepData.target.startsWith('[') || 
+          currentStepData.target.startsWith('#') || 
+          currentStepData.target.startsWith('.')) {
+        // Use target as-is (already a complete selector)
         try {
-          element = document.querySelector(currentStepData.target);
+          element = document.querySelector(currentStepData.target) as HTMLElement | null;
         } catch (e) {
-          // Invalid selector, return null
-          logger.warn(`Invalid tutorial target selector: ${currentStepData.target}`, { component: 'TutorialOverlay' });
+          logger.warn(`Invalid tutorial target selector: ${currentStepData.target}`, { 
+            component: 'TutorialOverlay' 
+          });
+        }
+      } else {
+        // Wrap with data-tutorial attribute (for simple string targets like "create-menu-button")
+        try {
+          element = document.querySelector(`[data-tutorial="${currentStepData.target}"]`) as HTMLElement | null;
+        } catch (e) {
+          logger.warn(`Invalid tutorial target: ${currentStepData.target}`, { 
+            component: 'TutorialOverlay' 
+          });
         }
       }
-
-      return element as HTMLElement | null;
+      
+      return element;
     };
 
     const updateTarget = () => {
