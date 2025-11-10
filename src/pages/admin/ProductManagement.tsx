@@ -131,7 +131,25 @@ export default function ProductManagement() {
     setIsGenerating(true);
     
     try {
-      const category = formData.category || "Uncategorized";
+      // Validate category
+      if (!formData.category) {
+        toast.error("Category is required", {
+          description: "Please select a product category"
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
+      if (!validCategories.includes(formData.category)) {
+        toast.error("Invalid category", {
+          description: "Please select a valid category from the dropdown"
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      const category = formData.category;
       let sku = formData.sku?.trim() || null;
       let barcodeImageUrl: string | null = null;
 
@@ -139,7 +157,7 @@ export default function ProductManagement() {
       if (!editingProduct && !sku) {
         try {
           sku = await generateProductSKU(category, tenant.id);
-          logger.debug('Auto-generated SKU', { sku, category }, { component: 'ProductManagement' });
+          logger.debug('Auto-generated SKU', { sku, category, component: 'ProductManagement' });
         } catch (error) {
           logger.error('SKU generation failed', error, { component: 'ProductManagement' });
           // Continue without SKU - product can still be created
@@ -151,7 +169,7 @@ export default function ProductManagement() {
         try {
           barcodeImageUrl = await generateAndStoreBarcode(sku, tenant.id);
           if (barcodeImageUrl) {
-            logger.debug('Barcode generated', { sku, barcodeImageUrl }, { component: 'ProductManagement' });
+            logger.debug('Barcode generated', { sku, barcodeImageUrl, component: 'ProductManagement' });
           }
         } catch (error) {
           logger.error('Barcode generation failed', error, { component: 'ProductManagement' });
@@ -242,9 +260,17 @@ export default function ProductManagement() {
         tenantId: tenant?.id,
       });
       const errorMessage = error instanceof Error ? error.message : "An error occurred";
-      const userMessage = errorMessage.includes('null value') || errorMessage.includes('NOT NULL')
-        ? "Missing required fields. Please fill in all required information."
-        : errorMessage;
+      
+      // Check for specific error types
+      let userMessage = errorMessage;
+      
+      if (errorMessage.includes('null value') || errorMessage.includes('NOT NULL')) {
+        userMessage = "Missing required fields. Please fill in all required information.";
+      } else if (errorMessage.includes('violates check constraint') || errorMessage.includes('category')) {
+        userMessage = "Invalid category selected. Please choose: Flower, Edibles, Vapes, or Concentrates.";
+      } else if (errorMessage.includes('duplicate key')) {
+        userMessage = "A product with this SKU already exists.";
+      }
       toast.error("Failed to save product", {
         description: userMessage,
       });
@@ -437,7 +463,7 @@ export default function ProductManagement() {
     setFormData({
       name: "",
       sku: "",
-      category: "",
+      category: "flower", // Default to valid category
       vendor_name: "",
       strain_name: "",
       thc_percent: "",
@@ -522,14 +548,24 @@ export default function ProductManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Input
+                    <Label>Category *</Label>
+                    <Select
                       value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, category: value })
                       }
-                      placeholder="Flower, Concentrate, Edible..."
-                    />
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="flower">Flower</SelectItem>
+                        <SelectItem value="edibles">Edibles</SelectItem>
+                        <SelectItem value="vapes">Vapes</SelectItem>
+                        <SelectItem value="concentrates">Concentrates</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Brand</Label>
