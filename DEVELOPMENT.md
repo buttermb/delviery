@@ -123,7 +123,10 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 
 ## Getting Help
 
-- Check `.cursorrules` for AI assistant rules
-- Review `docs/SUPABASE_RULES.md` for database rules
+- **Start here**: [Ultimate Rulebook](./docs/ULTIMATE_RULEBOOK.md) - Complete error-prevention guide
+- **Quick reference**: [Rules Quick Reference](./docs/RULES_QUICK_REFERENCE.md) - One-page cheat sheet
+- **Check compliance**: `bash scripts/check-rules-compliance.sh` - Automated validation
+- **AI assistant**: `.cursorrules` - Auto-read by Cursor AI
+- **Database rules**: `docs/SUPABASE_RULES.md` - Supabase-specific patterns
 - Run `npm run lint` to see code style issues
 - Check pre-push hook output for validation errors

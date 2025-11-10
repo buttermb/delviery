@@ -172,7 +172,11 @@ Install: `bash scripts/install-hooks.sh`
 - [Development Guide](../DEVELOPMENT.md) - Quick start guide
 - [Leafly Integration](../src/lib/LEAFLY_INTEGRATION.md) - Leafly API integration guide
 
+### Quick Reference
+- [**Rules Quick Reference**](./RULES_QUICK_REFERENCE.md) - ⚡ **One-page cheat sheet** ⚡
+
 ### Configuration
 - [`.cursorrules`](../.cursorrules) - AI assistant rules (used by Cursor AI)
 - [Pre-push Hook](../scripts/pre-push-hook.sh) - Automated validation script
+- [Rules Compliance Checker](../scripts/check-rules-compliance.sh) - Comprehensive validation
 
