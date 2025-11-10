@@ -1,6 +1,5 @@
-import { serve, createClient, hash, compare, corsHeaders } from '../_shared/deps.ts';
+import { serve, createClient, hash, compare, corsHeaders, z } from '../_shared/deps.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
 
 const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key-change-in-production";

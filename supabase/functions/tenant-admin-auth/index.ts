@@ -1,5 +1,4 @@
-import { serve, createClient, hash, compare, corsHeaders } from '../_shared/deps.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { serve, createClient, hash, compare, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 
 // Hash password using bcrypt

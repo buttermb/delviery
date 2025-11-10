@@ -1,5 +1,4 @@
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
 const portabilitySchema = z.object({

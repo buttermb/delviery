@@ -1,6 +1,9 @@
 /**
  * Shared dependencies for all edge functions
  * Single source of truth to prevent version conflicts and reduce build times
+ * 
+ * IMPORTANT: All edge functions MUST use this file for imports.
+ * Do NOT import directly from deno.land or esm.sh in edge functions.
  */
 
 // Standard library
@@ -11,6 +14,9 @@ export { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 // Bcrypt for password hashing
 export { hash, compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+
+// Zod for validation (standardized version)
+export { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // CORS headers (commonly used across all functions)
 export const corsHeaders = {

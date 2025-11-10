@@ -3,8 +3,7 @@
  * Revokes all active sessions for a customer except the current one
  */
 
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 
 const revokeSessionsSchema = z.object({
   customer_user_id: z.string().uuid(),

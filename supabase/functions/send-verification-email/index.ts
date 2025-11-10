@@ -3,8 +3,7 @@
  * Sends verification email to customer after signup
  */
 
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 
 const verificationEmailSchema = z.object({
   customer_user_id: z.string().uuid(),

@@ -3,8 +3,7 @@
  * Generates password reset token and sends reset email
  */
 
-import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
-import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const requestResetSchema = z.object({

@@ -586,18 +586,18 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <span className="font-semibold">Onset Time</span>
-                    <span className="text-primary">{String((effectsTimeline as any).onset || '')}</span>
+                    <span className="text-primary">{String(getStringValue(effectsTimeline.onset) || '')}</span>
                   </div>
-                  {(effectsTimeline as any).peak && (
+                  {getStringValue(effectsTimeline.peak) && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Peak Effects</span>
-                      <span className="text-primary">{String((effectsTimeline as any).peak)}</span>
+                      <span className="text-primary">{String(getStringValue(effectsTimeline.peak))}</span>
                     </div>
                   )}
-                  {(effectsTimeline as any).duration && (
+                  {getStringValue(effectsTimeline.duration) && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Duration</span>
-                      <span className="text-primary">{String((effectsTimeline as any).duration)}</span>
+                      <span className="text-primary">{String(getStringValue(effectsTimeline.duration))}</span>
                     </div>
                   )}
                 </div>
@@ -633,10 +633,16 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   Terpenes are aromatic compounds that contribute to the unique flavor, aroma, and effects of cannabis.
                 </p>
                 <div className="space-y-4">
-                  {(Array.isArray(product.terpenes) ? product.terpenes : Object.entries(product.terpenes)).map((terpene: any, index: number) => {
-                    const name = Array.isArray(product.terpenes) ? terpene.name || terpene : terpene[0];
-                    const percentage = Array.isArray(product.terpenes) ? terpene.percentage : terpene[1];
-                    const description = Array.isArray(product.terpenes) ? terpene.description : "";
+                  {(Array.isArray(product.terpenes) ? product.terpenes : Object.entries(product.terpenes)).map((terpene: unknown, index: number) => {
+                    const name = Array.isArray(product.terpenes) 
+                      ? (typeof terpene === 'object' && terpene !== null && 'name' in terpene ? String(terpene.name) : String(terpene))
+                      : (Array.isArray(terpene) ? String(terpene[0]) : String(terpene));
+                    const percentage = Array.isArray(product.terpenes) 
+                      ? (typeof terpene === 'object' && terpene !== null && 'percentage' in terpene ? terpene.percentage : undefined)
+                      : (Array.isArray(terpene) ? terpene[1] : undefined);
+                    const description = Array.isArray(product.terpenes) 
+                      ? (typeof terpene === 'object' && terpene !== null && 'description' in terpene ? String(terpene.description) : "")
+                      : "";
                     
                     return (
                       <div key={index} className="space-y-2">
@@ -669,7 +675,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Growing Method</h4>
                     <p className="text-2xl font-bold capitalize text-primary">
-                      {(growingInfo as any).method || "Indoor"}
+                      {getStringValue(growingInfo.method) || "Indoor"}
                     </p>
                   </CardContent>
                 </Card>
@@ -677,15 +683,15 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Organic</h4>
                     <p className="text-2xl font-bold text-primary">
-                      {(growingInfo as any).organic ? "Yes" : "Standard"}
+                      {growingInfo.organic ? "Yes" : "Standard"}
                     </p>
                   </CardContent>
                 </Card>
               </div>
-              {(growingInfo as any).location && (
+              {getStringValue(growingInfo.location) && (
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-semibold mb-2">Location</h4>
-                  <p className="text-muted-foreground">{String((growingInfo as any).location)}</p>
+                  <p className="text-muted-foreground">{String(getStringValue(growingInfo.location))}</p>
                 </div>
               )}
               {getStringValue(product.strain_lineage) && (
