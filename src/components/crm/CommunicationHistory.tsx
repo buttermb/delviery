@@ -153,10 +153,11 @@ export function CommunicationHistory({
       setSendDialogOpen(false);
       setNewMessage({ type: 'email', subject: '', body: '' });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Failed to send message', error, { component: 'CommunicationHistory' });
       toast({
         title: 'Failed to send message',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       });
     },

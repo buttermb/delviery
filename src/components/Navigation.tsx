@@ -269,7 +269,6 @@ const Navigation = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <button onClick={() => {
-                        console.log("Navigating to /account/settings");
                         navigate("/account/settings");
                       }} className="w-full text-left cursor-pointer">
                         Profile Settings

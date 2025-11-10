@@ -57,9 +57,9 @@ export const useCreateDisposableMenu = () => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
       showSuccessToast('Menu Created', 'Encrypted menu generated successfully');
     },
-    onError: (error: any) => {
-      console.error('Menu creation error:', error);
-      showErrorToast('Creation Failed', error.message || 'Could not create menu');
+    onError: (error: unknown) => {
+      logger.error('Menu creation error', error, { component: 'useDisposableMenus' });
+      showErrorToast('Creation Failed', error instanceof Error ? error.message : 'Could not create menu');
     }
   });
 };

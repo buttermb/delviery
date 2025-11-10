@@ -359,7 +359,7 @@ export default function TenantAdminDashboardPage() {
           .eq("status", "confirmed") as { data: { total_amount: number }[] | null; error: any };
 
         if (ordersError) {
-          console.warn("Failed to fetch orders for revenue stats:", ordersError);
+          logger.warn("Failed to fetch orders for revenue stats", ordersError, { component: 'DashboardPage' });
           return { total: 0, commission: 0 };
         }
 
@@ -389,7 +389,7 @@ export default function TenantAdminDashboardPage() {
 
       return { total, commission };
       } catch (error) {
-        console.error("Error fetching revenue stats:", error);
+        logger.error("Error fetching revenue stats", error, { component: 'DashboardPage' });
         return { total: 0, commission: 0 };
       }
     },

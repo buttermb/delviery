@@ -233,7 +233,7 @@ export function TenantAdminSidebar() {
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
-    console.error('TenantAdminSidebar rendered without tenantSlug');
+    logger.error('TenantAdminSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'TenantAdminSidebar' });
     return null;
   }
 
