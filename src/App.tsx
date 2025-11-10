@@ -235,17 +235,22 @@ const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: true,
-      retry: 2,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 60 * 1000, // 1 minute
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnMount: false, // Don't refetch on mount if data is fresh
+      refetchOnReconnect: true, // Refetch when network reconnects
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      // Performance optimizations
+      structuralSharing: true, // Enable structural sharing to prevent unnecessary re-renders
+      notifyOnChangeProps: 'tracked', // Only notify on tracked props
     },
     mutations: {
       retry: 1,
       onError: handleMutationError,
+      // Optimize mutation performance
+      networkMode: 'online', // Only run mutations when online
     },
   },
 });

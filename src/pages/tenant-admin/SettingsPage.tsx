@@ -100,77 +100,80 @@ export default function TenantAdminSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">⚙️ Settings</h1>
-          <p className="text-muted-foreground">Manage your account and business settings</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">⚙️ Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your account and business settings</p>
         </div>
 
         {/* Account Settings */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Account Settings
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label className="text-sm sm:text-base">Email</Label>
               <Input 
                 value={admin?.email || ""} 
                 disabled 
-                className="bg-muted"
+                className="bg-muted min-h-[44px] text-sm sm:text-base"
               />
-              <p className="text-sm text-muted-foreground">Email cannot be changed</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Email cannot be changed</p>
             </div>
 
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label className="text-sm sm:text-base">Name</Label>
               <Input 
                 placeholder="Full Name" 
                 defaultValue={admin?.name || ""}
+                className="min-h-[44px] text-sm sm:text-base"
               />
             </div>
 
-            <Button>
-              Save Changes
+            <Button className="w-full sm:w-auto min-h-[44px] touch-manipulation">
+              <span className="text-sm sm:text-base">Save Changes</span>
             </Button>
           </CardContent>
         </Card>
 
         {/* Business Information */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Business Information
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
             <div className="space-y-2">
-              <Label>Business Name</Label>
+              <Label className="text-sm sm:text-base">Business Name</Label>
               <Input 
                 value={tenant?.business_name || ""} 
                 disabled 
-                className="bg-muted"
+                className="bg-muted min-h-[44px] text-sm sm:text-base"
               />
-              <p className="text-sm text-muted-foreground">Contact support to change business name</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Contact support to change business name</p>
             </div>
             <div className="space-y-2">
-              <Label>Phone</Label>
+              <Label className="text-sm sm:text-base">Phone</Label>
               <Input 
                 placeholder="Phone Number" 
                 defaultValue={(tenant as any)?.phone || ""}
+                className="min-h-[44px] text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label>Address</Label>
+              <Label className="text-sm sm:text-base">Address</Label>
               <Input 
                 placeholder="Business Address" 
                 defaultValue={(tenant as any)?.address || ""}
+                className="min-h-[44px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -178,50 +181,54 @@ export default function TenantAdminSettingsPage() {
 
         {/* Security */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="h-5 w-5 text-primary" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+              <Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Security
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label>Current Password</Label>
+                <Label className="text-sm sm:text-base">Current Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Current Password" 
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  className="min-h-[44px] text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label>New Password</Label>
+                <Label className="text-sm sm:text-base">New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="New Password (min. 8 characters)" 
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  className="min-h-[44px] text-sm sm:text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Confirm New Password</Label>
+                <Label className="text-sm sm:text-base">Confirm New Password</Label>
                 <Input 
                   type="password" 
                   placeholder="Confirm New Password" 
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                  className="min-h-[44px] text-sm sm:text-base"
                 />
               </div>
               <Button 
                 type="submit" 
                 disabled={loading}
+                className="w-full sm:w-auto min-h-[44px] touch-manipulation"
               >
                 <Key className="h-4 w-4 mr-2" />
-                {loading ? "Updating..." : "Update Password"}
+                <span className="text-sm sm:text-base">{loading ? "Updating..." : "Update Password"}</span>
               </Button>
             </form>
           </CardContent>
@@ -229,40 +236,40 @@ export default function TenantAdminSettingsPage() {
 
         {/* Notifications */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Notifications
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Order Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive alerts for new orders</p>
+          <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm sm:text-base text-foreground">Order Notifications</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Receive alerts for new orders</p>
               </div>
-              <Switch defaultChecked />
+              <Switch defaultChecked className="flex-shrink-0" />
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Low Stock Alerts</p>
-                <p className="text-sm text-muted-foreground">Notify when inventory is low</p>
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm sm:text-base text-foreground">Low Stock Alerts</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Notify when inventory is low</p>
               </div>
-              <Switch defaultChecked />
+              <Switch defaultChecked className="flex-shrink-0" />
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Payment Reminders</p>
-                <p className="text-sm text-muted-foreground">Reminders for outstanding payments</p>
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm sm:text-base text-foreground">Payment Reminders</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Reminders for outstanding payments</p>
               </div>
-              <Switch defaultChecked />
+              <Switch defaultChecked className="flex-shrink-0" />
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Weekly Reports</p>
-                <p className="text-sm text-muted-foreground">Receive weekly performance summaries</p>
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm sm:text-base text-foreground">Weekly Reports</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Receive weekly performance summaries</p>
               </div>
-              <Switch defaultChecked />
+              <Switch defaultChecked className="flex-shrink-0" />
             </div>
           </CardContent>
         </Card>

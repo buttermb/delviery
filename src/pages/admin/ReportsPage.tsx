@@ -125,15 +125,15 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">📊 Reports</h1>
-          <p className="text-muted-foreground">Business intelligence and analytics</p>
+    <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">📊 Reports</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Business intelligence and analytics</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)} data-tutorial="date-range">
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation text-sm sm:text-base">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -144,61 +144,67 @@ export default function ReportsPage() {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExport} data-tutorial="export-options">
-            <Download className="h-4 w-4 mr-2" />
-            Export
+          <Button onClick={handleExport} data-tutorial="export-options" className="min-h-[44px] touch-manipulation text-sm sm:text-base flex-1 sm:flex-initial">
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export</span>
+            <span className="sm:hidden">Export</span>
           </Button>
           <TakeTourButton
             tutorialId={reportsTutorial.id}
             steps={reportsTutorial.steps}
             variant="outline"
             size="sm"
+            className="min-h-[44px]"
           />
         </div>
       </div>
 
-      <Tabs value={reportType} onValueChange={setReportType} className="space-y-6">
-        <TabsList data-tutorial="report-types">
-          <TabsTrigger value="business">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Business Intelligence
+      <Tabs value={reportType} onValueChange={setReportType} className="space-y-4 sm:space-y-6">
+        <TabsList data-tutorial="report-types" className="grid grid-cols-2 sm:grid-cols-4 h-auto w-full">
+          <TabsTrigger value="business" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Business Intelligence</span>
+            <span className="sm:hidden">Business</span>
           </TabsTrigger>
-          <TabsTrigger value="custody">
-            <FileText className="h-4 w-4 mr-2" />
-            Chain of Custody
+          <TabsTrigger value="custody" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Chain of Custody</span>
+            <span className="sm:hidden">Custody</span>
           </TabsTrigger>
-          <TabsTrigger value="inventory">
-            <Package className="h-4 w-4 mr-2" />
-            Inventory
+          <TabsTrigger value="inventory" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <Package className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Inventory</span>
+            <span className="sm:hidden">Stock</span>
           </TabsTrigger>
-          <TabsTrigger value="financial">
-            <DollarSign className="h-4 w-4 mr-2" />
-            Financial
+          <TabsTrigger value="financial" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Financial</span>
+            <span className="sm:hidden">Finance</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Business Intelligence */}
         <TabsContent value="business">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-1">Total Revenue</div>
-              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-              <div className={`text-sm flex items-center gap-1 mt-1 ${revenueGrowth >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
+            <Card className="p-3 sm:p-4 md:p-6">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Total Revenue</div>
+              <div className="text-xl sm:text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+              <div className={`text-xs sm:text-sm flex items-center gap-1 mt-1 ${revenueGrowth >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
                 <TrendingUp className="h-3 w-3" />
                 {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth.toFixed(1)}% vs last period
               </div>
             </Card>
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-1">Orders</div>
-              <div className="text-2xl font-bold">{totalOrders}</div>
-              <div className="text-sm text-muted-foreground mt-1">
+            <Card className="p-3 sm:p-4 md:p-6">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Orders</div>
+              <div className="text-xl sm:text-2xl font-bold">{totalOrders}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 In selected period
               </div>
             </Card>
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-1">Avg Order Value</div>
-              <div className="text-2xl font-bold">${Math.round(avgOrderValue).toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground mt-1">
+            <Card className="p-3 sm:p-4 md:p-6 sm:col-span-2 md:col-span-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Avg Order Value</div>
+              <div className="text-xl sm:text-2xl font-bold">${Math.round(avgOrderValue).toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Per order
               </div>
             </Card>

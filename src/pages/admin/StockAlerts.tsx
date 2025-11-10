@@ -70,66 +70,66 @@ export default function StockAlerts() {
   const warningAlerts = alerts?.filter((a: any) => a.severity === 'warning').length || 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Stock Alerts</h1>
-        <p className="text-muted-foreground">Monitor low stock levels and inventory warnings</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Stock Alerts</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">Monitor low stock levels and inventory warnings</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2" data-tutorial="low-stock-alerts">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critical Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2" data-tutorial="low-stock-alerts">
+        <Card className="p-3 sm:p-4 md:p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0 mb-2 sm:mb-0">
+            <CardTitle className="text-xs sm:text-sm font-medium">Critical Alerts</CardTitle>
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">{criticalAlerts}</div>
+          <CardContent className="p-0 pt-2 sm:pt-0">
+            <div className="text-2xl sm:text-3xl font-bold text-red-500">{criticalAlerts}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Warnings</CardTitle>
-            <TrendingDown className="h-4 w-4 text-yellow-500" />
+        <Card className="p-3 sm:p-4 md:p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-0 mb-2 sm:mb-0">
+            <CardTitle className="text-xs sm:text-sm font-medium">Warnings</CardTitle>
+            <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">{warningAlerts}</div>
+          <CardContent className="p-0 pt-2 sm:pt-0">
+            <div className="text-2xl sm:text-3xl font-bold text-yellow-500">{warningAlerts}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Alerts</CardTitle>
-          <CardDescription>Products requiring immediate attention</CardDescription>
+      <Card className="p-3 sm:p-4 md:p-6">
+        <CardHeader className="p-0 mb-3 sm:mb-4">
+          <CardTitle className="text-base sm:text-lg md:text-xl">Active Alerts</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Products requiring immediate attention</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {alerts && alerts.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
               {alerts.map((alert: any) => (
                 <div
                   key={alert.id}
-                  className={`flex items-center justify-between p-4 border rounded-lg ${
+                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 border rounded-lg touch-manipulation ${
                     alert.severity === 'critical' ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <AlertTriangle className={`h-5 w-5 ${alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'}`} />
-                    <div>
-                      <div className="font-medium">{alert.product_name || 'Unknown Product'}</div>
-                      <div className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'}`} />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base truncate">{alert.product_name || 'Unknown Product'}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         Current: {alert.current_quantity || 0} | Threshold: {alert.threshold || 10}
                       </div>
                     </div>
                   </div>
-                  <Badge variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}>
+                  <Badge variant={alert.severity === 'critical' ? 'destructive' : 'secondary'} className="text-xs sm:text-sm flex-shrink-0">
                     {alert.severity || 'warning'}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-6 sm:py-8 text-xs sm:text-sm text-muted-foreground">
               No stock alerts at this time. All inventory levels are healthy.
             </div>
           )}

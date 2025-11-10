@@ -273,14 +273,14 @@ export function TenantAdminSidebar() {
   return (
     <>
       <Sidebar data-tutorial="navigation-sidebar">
-        <SidebarHeader className="p-4 border-b">
+        <SidebarHeader className="p-3 sm:p-4 border-b">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
               {tenant?.slug?.charAt(0).toUpperCase() || "T"}
             </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm">{tenant?.slug || "Tenant Admin"}</span>
-              <span className="text-xs text-muted-foreground">Admin Panel</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+              <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
             </div>
           </div>
         </SidebarHeader>
@@ -328,14 +328,14 @@ export function TenantAdminSidebar() {
           })}
         </SidebarContent>
 
-        <SidebarFooter className="p-4 border-t">
+        <SidebarFooter className="p-3 sm:p-4 border-t">
           <Button
             variant="ghost"
-            className="w-full justify-start"
+            className="w-full justify-start min-h-[44px] touch-manipulation"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            <span className="text-sm sm:text-base">Logout</span>
           </Button>
         </SidebarFooter>
       </Sidebar>

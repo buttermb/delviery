@@ -225,32 +225,32 @@ export default function TenantAdminBillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">💳 Billing & Subscription</h1>
-          <p className="text-muted-foreground">Manage your subscription and view billing history</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">💳 Billing & Subscription</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
 
         <Tabs defaultValue="current" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="current">Current Plan</TabsTrigger>
-            <TabsTrigger value="plans">Compare Plans</TabsTrigger>
-            <TabsTrigger value="billing">Billing History</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="current" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Current Plan</TabsTrigger>
+            <TabsTrigger value="plans" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Compare Plans</TabsTrigger>
+            <TabsTrigger value="billing" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Billing History</TabsTrigger>
           </TabsList>
 
           {/* CURRENT PLAN TAB */}
           <TabsContent value="current" className="space-y-6">
             {/* Current Plan */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+              <CardHeader className="p-3 sm:p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Current Plan
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-bold">

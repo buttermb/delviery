@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -61,11 +61,8 @@ const Navigation = () => {
     refetchOnWindowFocus: false,
   });
 
-  const dbCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const guestCartCount = user ? 0 : getGuestCartCount();
-  const cartCount = user ? dbCartCount : guestCartCount;
-  
-  const getItemPrice = (item: DbCartItem): number => {
+  // Memoize cart calculations to prevent recalculation on every render
+  const getItemPrice = useCallback((item: DbCartItem): number => {
     const product = item.products;
     const selectedWeight = item.selected_weight || "unit";
     if (product?.prices && typeof product.prices === 'object') {
@@ -73,13 +70,28 @@ const Navigation = () => {
       return priceValue ? toNumber(priceValue) : 0;
     }
     return product?.price ? toNumber(product.price) : 0;
-  };
+  }, []);
 
+  const dbCartCount = useMemo(() => 
+    cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItems]
+  );
+  
+  const guestCartCount = useMemo(() => 
+    user ? 0 : getGuestCartCount(),
+    [user, getGuestCartCount]
+  );
+  
+  const cartCount = user ? dbCartCount : guestCartCount;
+  
   // Cart total only for authenticated users (guest total not shown in nav to simplify)
-  const cartTotal = user ? cartItems.reduce(
-    (sum, item) => sum + getItemPrice(item) * item.quantity,
-    0
-  ) : 0;
+  const cartTotal = useMemo(() => 
+    user ? cartItems.reduce(
+      (sum, item) => sum + getItemPrice(item) * item.quantity,
+      0
+    ) : 0,
+    [user, cartItems, getItemPrice]
+  );
 
 
   const openAuth = (mode: "signin" | "signup") => {

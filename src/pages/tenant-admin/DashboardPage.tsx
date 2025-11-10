@@ -402,14 +402,14 @@ export default function TenantAdminDashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm safe-area-top">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <div className="container mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
+            <h1 className="text-base sm:text-xl md:text-2xl font-bold text-foreground truncate">
               🎛️ {tenant?.business_name || "Dashboard"}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Admin Panel</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
             <TakeTourButton
               tutorialId={dashboardTutorial.id}
               steps={dashboardTutorial.steps}
@@ -417,7 +417,7 @@ export default function TenantAdminDashboardPage() {
               size="sm"
             />
             {admin && (
-              <div className="text-xs sm:text-sm text-muted-foreground hidden sm:block truncate max-w-[120px]">
+              <div className="text-xs sm:text-sm text-muted-foreground hidden md:block truncate max-w-[120px]">
                 {admin.email}
               </div>
             )}
@@ -425,7 +425,7 @@ export default function TenantAdminDashboardPage() {
               variant="ghost" 
               size="sm"
               asChild 
-              className="min-h-[44px] px-2 sm:px-3"
+              className="min-h-[44px] px-2 sm:px-3 touch-manipulation"
               data-tutorial="settings-access"
             >
               <Link to={`/${tenant?.slug}/admin/settings`}>
@@ -437,7 +437,7 @@ export default function TenantAdminDashboardPage() {
               variant="outline" 
               size="sm"
               onClick={handleLogout} 
-              className="min-h-[44px] px-2 sm:px-3"
+              className="min-h-[44px] px-2 sm:px-3 touch-manipulation"
             >
               <span className="hidden sm:inline">Logout</span>
               <span className="sm:hidden">Out</span>
@@ -446,7 +446,7 @@ export default function TenantAdminDashboardPage() {
         </div>
       </header>
 
-      <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="container mx-auto p-2 sm:p-3 md:p-4 lg:p-6 space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
         {/* Trial Countdown Banner */}
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${
@@ -456,14 +456,14 @@ export default function TenantAdminDashboardPage() {
               ? "border-yellow-400 bg-yellow-50" 
               : "border-blue-400 bg-blue-50"
           }`}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className={`h-5 w-5 ${
+            <CardContent className="pt-4 sm:pt-6 p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5 sm:mt-0 ${
                     trialInfo.trialDaysRemaining <= 3 ? "text-red-600" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-600" : "text-blue-600"
                   }`} />
-                  <div>
-                    <p className={`font-semibold ${
+                  <div className="min-w-0 flex-1">
+                    <p className={`font-semibold text-sm sm:text-base ${
                       trialInfo.trialDaysRemaining <= 3 ? "text-red-900" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-900" : "text-blue-900"
                     }`}>
                       {trialInfo.trialDaysRemaining <= 0 
@@ -472,7 +472,7 @@ export default function TenantAdminDashboardPage() {
                         ? "⚠️ Trial Ending in " + trialInfo.trialDaysRemaining + " days"
                         : "⏰ Trial Ending in " + trialInfo.trialDaysRemaining + " days"}
                     </p>
-                    <p className={`text-sm ${
+                    <p className={`text-xs sm:text-sm ${
                       trialInfo.trialDaysRemaining <= 3 ? "text-red-700" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-700" : "text-blue-700"
                     }`}>
                       {trialInfo.trialDaysRemaining <= 0 
@@ -482,7 +482,7 @@ export default function TenantAdminDashboardPage() {
                   </div>
                 </div>
                   <Button
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap min-h-[44px] px-3 sm:px-4 text-sm sm:text-base touch-manipulation"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap min-h-[44px] px-3 sm:px-4 text-sm sm:text-base touch-manipulation w-full sm:w-auto flex-shrink-0"
                   asChild
                 >
                   <Link to={`/${tenant?.slug}/admin/billing`}>
@@ -564,28 +564,28 @@ export default function TenantAdminDashboardPage() {
         )} */}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">⚡ Quick Actions</CardTitle>
+            <CardHeader className="p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-sm sm:text-base md:text-lg">⚡ Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
+            <CardContent className="space-y-2 p-3 sm:p-4 md:p-6 pt-0">
+              <Button variant="outline" className="w-full justify-start min-h-[44px] touch-manipulation" asChild>
                 <Link to={`/${tenant?.slug}/admin/inventory/products`}>
                   <Package className="h-4 w-4 mr-2" />
-                  Add Product
+                  <span className="text-sm sm:text-base">Add Product</span>
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button variant="outline" className="w-full justify-start min-h-[44px] touch-manipulation" asChild>
                 <Link to={`/${tenant?.slug}/admin/disposable-menus`}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Create Menu
+                  <span className="text-sm sm:text-base">Create Menu</span>
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button variant="outline" className="w-full justify-start min-h-[44px] touch-manipulation" asChild>
                 <Link to={`/${tenant?.slug}/admin/big-plug-clients`}>
                   <Users className="h-4 w-4 mr-2" />
-                  Add Customer
+                  <span className="text-sm sm:text-base">Add Customer</span>
                 </Link>
               </Button>
             </CardContent>
@@ -593,29 +593,29 @@ export default function TenantAdminDashboardPage() {
         </div>
 
         {/* Usage Limit Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tutorial="dashboard-stats">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4" data-tutorial="dashboard-stats">
           <Card 
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
             onClick={() => navigate(`/${tenant?.slug}/admin/inventory/products`)}
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">📦 Products</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Package className="h-5 w-5 text-primary" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">📦 Products</CardTitle>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold">
                 {tenantUsage.products || 0}/{getDisplayLimit('products')}
               </div>
               {!isUnlimited('products') && (
                 <>
                   <Progress 
                     value={getUsagePercentage('products')} 
-                    className="mt-2 h-2"
+                    className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('products') >= 80 && (
-                    <p className="text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('products'))}% capacity. 
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
                     </p>
@@ -623,7 +623,7 @@ export default function TenantAdminDashboardPage() {
                 </>
               )}
               {isUnlimited('products') && (
-                <p className="text-sm text-green-600 mt-2">
+                <p className="text-xs sm:text-sm text-green-600 mt-2">
                   ✓ Unlimited products on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
@@ -631,27 +631,27 @@ export default function TenantAdminDashboardPage() {
           </Card>
 
           <Card 
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
             onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">👥 Customers</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-secondary" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">👥 Customers</CardTitle>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold">
                 {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
               </div>
               {!isUnlimited('customers') && (
                 <>
                   <Progress 
                     value={getUsagePercentage('customers')} 
-                    className="mt-2 h-2"
+                    className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('customers') >= 80 && (
-                    <p className="text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('customers'))}% capacity. 
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
                     </p>
@@ -659,7 +659,7 @@ export default function TenantAdminDashboardPage() {
                 </>
               )}
               {isUnlimited('customers') && (
-                <p className="text-sm text-green-600 mt-2">
+                <p className="text-xs sm:text-sm text-green-600 mt-2">
                   ✓ Unlimited customers on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
@@ -667,27 +667,27 @@ export default function TenantAdminDashboardPage() {
           </Card>
 
           <Card 
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
             onClick={() => navigate(`/${tenant?.slug}/admin/disposable-menus`)}
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">📱 Menus</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Smartphone className="h-5 w-5 text-accent" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">📱 Menus</CardTitle>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
                 {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
               </div>
               {!isUnlimited('menus') && (
                 <>
                   <Progress 
                     value={getUsagePercentage('menus')} 
-                    className="mt-2 h-2"
+                    className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('menus') >= 80 && (
-                    <p className="text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity. 
                       Upgrade to Professional for unlimited menus.
                     </p>
@@ -695,7 +695,7 @@ export default function TenantAdminDashboardPage() {
                 </>
               )}
               {isUnlimited('menus') && (
-                <p className="text-sm text-green-600 mt-2">
+                <p className="text-xs sm:text-sm text-green-600 mt-2">
                   ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
@@ -703,20 +703,20 @@ export default function TenantAdminDashboardPage() {
           </Card>
 
           <Card 
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
             onClick={() => navigate(`/${tenant?.slug}/admin/financial-center`)}
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">💰 Revenue</CardTitle>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-primary" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">💰 Revenue</CardTitle>
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[hsl(var(--tenant-text))]">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
                 {formatCurrency(revenueData?.total || 0)}
               </div>
-              <p className="text-sm text-[hsl(var(--tenant-text-light))] mt-1">
+              <p className="text-xs sm:text-sm text-[hsl(var(--tenant-text-light))] mt-1">
                 Platform fee: {formatCurrency(revenueData?.commission || 0)} (2%)
               </p>
             </CardContent>
@@ -725,11 +725,11 @@ export default function TenantAdminDashboardPage() {
 
         {/* Quick Actions */}
         <Card data-tutorial="quick-actions">
-          <CardHeader>
-            <CardTitle>🚀 Quick Actions</CardTitle>
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="text-sm sm:text-base md:text-lg">🚀 Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               <LimitGuard resource="products">
                 <Button
                   variant="outline"
@@ -766,18 +766,18 @@ export default function TenantAdminDashboardPage() {
 
         {/* Recent Activity Feed */}
         <Card data-tutorial="activity-feed">
-          <CardHeader>
+          <CardHeader className="p-3 sm:p-4 md:p-6">
             <div className="flex items-center justify-between">
-              <CardTitle>📋 Recent Activity</CardTitle>
+              <CardTitle className="text-sm sm:text-base md:text-lg">📋 Recent Activity</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
             {recentActivity && recentActivity.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {recentActivity.map((activity: any, index: number) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"
+                    className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"
                   >
                     <div className="mt-0.5">
                       {activity.type === "order_placed" ? (
@@ -788,8 +788,8 @@ export default function TenantAdminDashboardPage() {
                         <Activity className="h-4 w-4 text-purple-600" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-[hsl(var(--tenant-text))]">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-[hsl(var(--tenant-text))] break-words">
                         • {activity.message}
                       </p>
                       <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-1">
@@ -800,9 +800,9 @@ export default function TenantAdminDashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No recent activity</p>
+              <div className="text-center py-6 sm:py-8">
+                <Activity className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+                <p className="text-sm sm:text-base text-muted-foreground">No recent activity</p>
                 <p className="text-xs text-muted-foreground mt-2">
                   Activity will appear here as you use the platform
                 </p>
@@ -814,29 +814,29 @@ export default function TenantAdminDashboardPage() {
         {/* Low Stock Alerts */}
         {todayMetrics?.lowStock && todayMetrics.lowStock.length > 0 && (
           <Card className="border-yellow-300 border-2" data-tutorial="low-stock-alerts">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            <CardHeader className="p-3 sm:p-4 md:p-6">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
                 Low Stock Alerts
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <div className="space-y-2 sm:space-y-3">
                 {todayMetrics.lowStock.map((item: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-yellow-200 rounded-lg bg-yellow-50">
-                    <div>
-                      <p className="font-medium text-[hsl(var(--tenant-text))]">{item.strain || item.product_name || 'Unknown'}</p>
-                      <p className="text-sm text-[hsl(var(--tenant-text-light))]">
+                  <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-yellow-200 rounded-lg bg-yellow-50 gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>
+                      <p className="text-xs text-[hsl(var(--tenant-text-light))]">
                         {Number(item.weight_lbs || 0).toFixed(2)} lbs remaining
                       </p>
                     </div>
-                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Low Stock</Badge>
+                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs flex-shrink-0">Low Stock</Badge>
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4" asChild>
+              <Button variant="outline" className="w-full mt-3 sm:mt-4 min-h-[44px] touch-manipulation" asChild>
                 <Link to={`/${tenant?.slug}/admin/inventory`}>
-                  Manage Inventory <ArrowRight className="h-4 w-4 ml-2" />
+                  <span className="text-sm sm:text-base">Manage Inventory</span> <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
             </CardContent>

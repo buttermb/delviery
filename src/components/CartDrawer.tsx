@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,9 +49,15 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     refetchOnWindowFocus: false,
   });
 
+  // Memoize product IDs to prevent unnecessary query key changes
+  const guestProductIds = useMemo(() => 
+    guestCart.map(i => i.product_id).sort().join(","),
+    [guestCart]
+  );
+
   // Fetch product details for guest cart items
   const { data: guestProducts = [] } = useQuery<Product[]>({
-    queryKey: ["guest-cart-products", guestCart.map(i => i.product_id).sort().join(",")],
+    queryKey: ["guest-cart-products", guestProductIds],
     queryFn: async () => {
       if (guestCart.length === 0) return [];
       const productIds = guestCart.map(item => item.product_id);
@@ -63,6 +69,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       return data as Product[];
     },
     enabled: !user && guestCart.length > 0,
+    staleTime: 30 * 1000, // Cache for 30 seconds
   });
 
   // Type guard to filter out nulls
@@ -70,25 +77,29 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     item: GuestCartItemWithProduct | null
   ): item is GuestCartItemWithProduct => item !== null;
 
-  // Combine guest cart items with product data (only items with valid products)
-  const guestCartItems: GuestCartItemWithProduct[] = user ? [] : guestCart
-    .map(item => {
-      const product = guestProducts.find(p => p.id === item.product_id);
-      if (!product) return null;
-      return {
-        ...item,
-        id: `${item.product_id}-${item.selected_weight ?? "unit"}`,
-        products: product
-      };
-    })
-    .filter(isGuestItemWithProduct);
-
+  // Memoize guest cart items to prevent recalculation
+  const guestCartItems: GuestCartItemWithProduct[] = useMemo(() => {
+    if (user) return [];
+    return guestCart
+      .map(item => {
+        const product = guestProducts.find(p => p.id === item.product_id);
+        if (!product) return null;
+        return {
+          ...item,
+          id: `${item.product_id}-${item.selected_weight ?? "unit"}`,
+          products: product
+        };
+      })
+      .filter(isGuestItemWithProduct);
+  }, [user, guestCart, guestProducts]);
+  
   const cartItems: RenderCartItem[] = user ? dbCartItems : guestCartItems;
   
   // Show loading state when products are still loading
   const isLoading = !user && guestCart.length > 0 && guestCartItems.length === 0 && guestProducts.length === 0;
 
-  const getItemPrice = (item: RenderCartItem) => {
+  // Memoize price calculation function
+  const getItemPrice = useCallback((item: RenderCartItem) => {
     const product = item.products;
     if (!product) return 0;
     
@@ -97,11 +108,15 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     const value = (product.prices && product.prices[selectedWeight]) ?? product.price;
     const asNumber = typeof value === "string" ? parseFloat(value) : value ?? 0;
     return Number.isFinite(asNumber) ? Number(asNumber) : 0;
-  };
+  }, []);
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + getItemPrice(item) * item.quantity,
-    0
+  // Memoize subtotal calculation
+  const subtotal = useMemo(() => 
+    cartItems.reduce(
+      (sum, item) => sum + getItemPrice(item) * item.quantity,
+      0
+    ),
+    [cartItems, getItemPrice]
   );
 
   const updateQuantity = async (itemId: string, productId: string, selectedWeight: string, newQuantity: number) => {

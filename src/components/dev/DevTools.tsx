@@ -242,43 +242,63 @@ export const DevTools = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isPinned]);
 
-  // Sync global stores to local state every 500ms
+  // Sync global stores to local state every 500ms (only when DevTools is open)
   useEffect(() => {
+    if (!isOpen) return; // Don't run interval when closed
+    
+    let lastLogsLength = 0;
+    let lastNetworkLength = 0;
+    
     const interval = setInterval(() => {
-      setLogs([...globalLogs]);
-      setNetwork([...globalNetwork]);
+      // Only update if there are new logs/network entries (optimization)
+      if (globalLogs.length !== lastLogsLength) {
+        setLogs([...globalLogs]);
+        lastLogsLength = globalLogs.length;
+      }
       
-      // Update storage
-      const storageData: Record<string, any> = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-          try {
-            storageData[key] = JSON.parse(localStorage.getItem(key) || '');
-          } catch {
-            storageData[key] = localStorage.getItem(key);
+      if (globalNetwork.length !== lastNetworkLength) {
+        setNetwork([...globalNetwork]);
+        lastNetworkLength = globalNetwork.length;
+      }
+      
+      // Update storage (throttled - only every 2 seconds)
+      const now = Date.now();
+      if (!(window as any).__devToolsLastStorageUpdate || now - (window as any).__devToolsLastStorageUpdate > 2000) {
+        const storageData: Record<string, any> = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            try {
+              storageData[key] = JSON.parse(localStorage.getItem(key) || '');
+            } catch {
+              storageData[key] = localStorage.getItem(key);
+            }
           }
         }
+        setStorage(storageData);
+        (window as any).__devToolsLastStorageUpdate = now;
       }
-      setStorage(storageData);
       
-      // Update performance metrics
-      if (window.performance) {
-        const perf = window.performance;
-        const timing = perf.timing;
-        const navigation = perf.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        setPerformance({
-          loadTime: timing.loadEventEnd - timing.navigationStart,
-          domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
-          memory: (perf as any).memory,
-          resources: perf.getEntriesByType('resource').length,
-          navigation,
-        });
+      // Update performance metrics (throttled - only every 2 seconds)
+      if (!(window as any).__devToolsLastPerfUpdate || now - (window as any).__devToolsLastPerfUpdate > 2000) {
+        if (window.performance) {
+          const perf = window.performance;
+          const timing = perf.timing;
+          const navigation = perf.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+          setPerformance({
+            loadTime: timing.loadEventEnd - timing.navigationStart,
+            domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
+            memory: (perf as any).memory,
+            resources: perf.getEntriesByType('resource').length,
+            navigation,
+          });
+          (window as any).__devToolsLastPerfUpdate = now;
+        }
       }
     }, 500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isOpen]);
   
   // Auto scroll to bottom
   useEffect(() => {

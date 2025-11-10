@@ -97,8 +97,8 @@ const AdminLayout = () => {
           <TenantAdminSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <AccountSwitcher />
-            <header className="h-14 border-b border-border flex items-center px-2 md:px-4 lg:px-6 gap-2 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
-              <SidebarTrigger className="h-10 w-10 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform" />
+            <header className="h-12 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
+              <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform" />
               
               {/* Breadcrumbs */}
               <nav className="hidden md:flex items-center gap-2 text-xs md:text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
@@ -120,7 +120,7 @@ const AdminLayout = () => {
               </nav>
               
               {/* Header Actions */}
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -137,8 +137,8 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-6 safe-area-bottom">
-              <div className="container mx-auto p-3 sm:p-4 lg:p-6 max-w-full">
+            <main className="flex-1 overflow-auto bg-muted/30 pb-20 sm:pb-6 safe-area-bottom">
+              <div className="container mx-auto p-2 sm:p-3 md:p-4 lg:p-6 max-w-full">
                 <AdminErrorBoundary>
                   <Suspense fallback={<LoadingFallback />}>
                     <Outlet />

@@ -104,45 +104,48 @@ export default function WholesaleClients() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">💼 Wholesale Clients</h1>
-          <p className="text-sm text-muted-foreground mt-1">B2B Relationships & Credit Management</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">💼 Wholesale Clients</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">B2B Relationships & Credit Management</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <Button 
             variant="outline"
+            size="sm"
+            className="min-h-[44px] touch-manipulation flex-1 sm:flex-initial"
             onClick={() => {
               toast.info("Import functionality coming soon", {
                 description: "CSV import for bulk client creation will be available in a future update."
               });
             }}
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Import
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Import</span>
           </Button>
           <Button 
-            className="bg-emerald-500 hover:bg-emerald-600"
+            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial"
             onClick={() => setCreateClientDialogOpen(true)}
             data-tutorial="add-customer"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Client
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="text-sm sm:text-base">New Client</span>
           </Button>
           <TakeTourButton
             tutorialId={customersTutorial.id}
             steps={customersTutorial.steps}
             variant="outline"
             size="sm"
+            className="min-h-[44px]"
           />
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <Card className="p-3 sm:p-4">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
@@ -151,7 +154,7 @@ export default function WholesaleClients() {
                 placeholder="Search clients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px] text-sm sm:text-base"
               />
             </div>
           </div>
@@ -161,6 +164,7 @@ export default function WholesaleClients() {
             <Button
               variant={filter === "all" ? "default" : "outline"}
               size="sm"
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
               onClick={() => setFilter("all")}
             >
               All
@@ -168,6 +172,7 @@ export default function WholesaleClients() {
             <Button
               variant={filter === "active" ? "default" : "outline"}
               size="sm"
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
               onClick={() => setFilter("active")}
             >
               Active
@@ -175,6 +180,7 @@ export default function WholesaleClients() {
             <Button
               variant={filter === "credit_approved" ? "default" : "outline"}
               size="sm"
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
               onClick={() => setFilter("credit_approved")}
             >
               Credit Approved
@@ -182,8 +188,8 @@ export default function WholesaleClients() {
             <Button
               variant={filter === "overdue" ? "default" : "outline"}
               size="sm"
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
               onClick={() => setFilter("overdue")}
-              className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               Overdue
             </Button>
@@ -192,17 +198,19 @@ export default function WholesaleClients() {
       </Card>
 
       {/* Clients Table */}
-      <Card>
-        <Table data-tutorial="customer-list">
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <div className="inline-block min-w-full align-middle px-2 sm:px-0">
+            <Table data-tutorial="customer-list" className="min-w-[800px] sm:min-w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Client</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Credit Status</TableHead>
-              <TableHead>Reliability</TableHead>
-              <TableHead>This Month</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-xs sm:text-sm">Client</TableHead>
+              <TableHead className="text-xs sm:text-sm">Type</TableHead>
+              <TableHead className="text-xs sm:text-sm">Contact</TableHead>
+              <TableHead className="text-xs sm:text-sm">Credit Status</TableHead>
+              <TableHead className="text-xs sm:text-sm">Reliability</TableHead>
+              <TableHead className="text-xs sm:text-sm">This Month</TableHead>
+              <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -218,30 +226,30 @@ export default function WholesaleClients() {
               filteredClients.map((client) => (
                 <TableRow 
                   key={client.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-muted/50 touch-manipulation"
                   onClick={() => navigate(`/admin/big-plug-clients/${client.id}`)}
                 >
-                  <TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-2">
                         {getStatusIcon(client.outstanding_balance)}
-                        {client.business_name}
+                        <span className="truncate">{client.business_name}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">{client.territory}</div>
+                      <div className="text-xs text-muted-foreground truncate">{client.territory}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{getClientTypeLabel(client.client_type)}</Badge>
+                  <TableCell className="text-xs sm:text-sm">
+                    <Badge variant="outline" className="text-xs">{getClientTypeLabel(client.client_type)}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <div>
-                      <div className="text-sm text-foreground">{client.contact_name}</div>
-                      <div className="text-xs text-muted-foreground">{client.phone}</div>
+                      <div className="text-xs sm:text-sm text-foreground truncate">{client.contact_name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{client.phone}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <div>
-                      <div className={`font-mono font-semibold ${getStatusColor(client.outstanding_balance)}`}>
+                      <div className={`font-mono font-semibold text-xs sm:text-sm ${getStatusColor(client.outstanding_balance)}`}>
                         ${Number(client.outstanding_balance).toLocaleString()}
                       </div>
                       {client.outstanding_balance > 0 ? (
@@ -254,15 +262,15 @@ export default function WholesaleClients() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <CustomerRiskBadge 
                       score={(client as any).risk_score ?? client.reliability_score ?? null} 
                       showLabel={true}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <div>
-                      <div className="text-sm font-mono text-foreground">
+                      <div className="text-xs sm:text-sm font-mono text-foreground">
                         {Number(client.monthly_volume_lbs).toFixed(0)} lbs
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -275,6 +283,7 @@ export default function WholesaleClients() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
+                        className="min-h-[44px] min-w-[44px] touch-manipulation"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSmsClient(client);
@@ -286,6 +295,7 @@ export default function WholesaleClients() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
+                        className="min-h-[44px] min-w-[44px] touch-manipulation"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (client.phone) {
@@ -298,21 +308,32 @@ export default function WholesaleClients() {
                         <Phone className="h-4 w-4" />
                       </Button>
                       {client.outstanding_balance > 0 && (
-                        <Button size="sm" variant="destructive" onClick={(e) => {
-                          e.stopPropagation();
-                          setPaymentDialog({ open: true, client });
-                        }}>
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          Collect
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          className="min-h-[44px] min-w-[44px] touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPaymentDialog({ open: true, client });
+                          }}
+                        >
+                          <DollarSign className="h-4 w-4 sm:mr-1" />
+                          <span className="hidden sm:inline">Collect</span>
                         </Button>
                       )}
-              <Button size="sm" variant="default" onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
-              }}>
-                <Package className="h-4 w-4 mr-1" />
-                New Order
-              </Button>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="min-h-[44px] touch-manipulation"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
+                        }}
+                      >
+                        <Package className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">New Order</span>
+                        <span className="sm:hidden">Order</span>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -323,15 +344,17 @@ export default function WholesaleClients() {
                   <div className="text-muted-foreground">
                     {searchTerm ? "No clients found matching your search" : "No clients yet"}
                   </div>
-                  <Button className="mt-4" onClick={() => setCreateClientDialogOpen(true)}>
+                  <Button className="mt-4 min-h-[44px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Client
+                    <span className="text-sm sm:text-base">Add Your First Client</span>
                   </Button>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+          </div>
+        </div>
       </Card>
 
       {/* Payment Dialog */}

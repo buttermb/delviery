@@ -77,13 +77,13 @@ const DisposableMenus = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">Disposable Encrypted Menus</h1>
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Disposable Encrypted Menus</h1>
               {tenant && (
                 <TooltipGuide
                   title="💡 What are disposable menus?"
@@ -94,70 +94,83 @@ const DisposableMenus = () => {
                 />
               )}
             </div>
-            <p className="text-muted-foreground text-sm sm:text-base">
+            <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
               Create secure, self-destructing catalogs with advanced access control
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
             {selectedMenuIds.length > 0 && (
               <Button 
                 variant="secondary"
                 onClick={() => setBulkActionsOpen(true)}
+                className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
               >
-                <CheckSquare className="h-4 w-4 mr-2" />
-                Bulk Actions ({selectedMenuIds.length})
+                <CheckSquare className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Bulk Actions ({selectedMenuIds.length})</span>
+                <span className="sm:hidden">Bulk ({selectedMenuIds.length})</span>
               </Button>
             )}
             <Button 
               variant="outline"
               onClick={() => navigate('/admin/disposable-menu-orders')}
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
             >
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              View Orders
+              <ShoppingBag className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">View Orders</span>
+              <span className="sm:hidden">Orders</span>
             </Button>
             <PanicModeButton />
             <Button 
               variant="outline"
               onClick={() => navigate('../help')}
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
             >
-              <Shield className="h-4 w-4 mr-2" />
-              Help & Guide
+              <Shield className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Help & Guide</span>
+              <span className="sm:hidden">Help</span>
             </Button>
             <Button 
               variant="outline"
               onClick={() => setCreateDialogOpen(true)}
               data-tutorial="create-menu-button"
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Quick Create
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Quick Create</span>
+              <span className="sm:hidden">Quick</span>
             </Button>
-            <Button onClick={() => setCreateWizardOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Menu (Wizard)
+            <Button 
+              onClick={() => setCreateWizardOpen(true)}
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
+            >
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Create Menu (Wizard)</span>
+              <span className="sm:hidden">Wizard</span>
             </Button>
             <TakeTourButton
               tutorialId={menusTutorial.id}
               steps={menusTutorial.steps}
               variant="outline"
               size="sm"
+              className="min-h-[44px]"
             />
           </div>
         </div>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Active Menus</div>
-          <div className="text-3xl font-bold mt-2">{activeMenus.length}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+        <Card className="p-3 sm:p-4 md:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">Active Menus</div>
+          <div className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{activeMenus.length}</div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total Views</div>
-          <div className="text-3xl font-bold mt-2">{totalViews}</div>
+        <Card className="p-3 sm:p-4 md:p-6">
+          <div className="text-xs sm:text-sm text-muted-foreground">Total Views</div>
+          <div className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{totalViews}</div>
         </Card>
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Orders Today</div>
-          <div className="text-3xl font-bold mt-2">{todayOrders}</div>
+        <Card className="p-3 sm:p-4 md:p-6 sm:col-span-2 md:col-span-1">
+          <div className="text-xs sm:text-sm text-muted-foreground">Orders Today</div>
+          <div className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{todayOrders}</div>
         </Card>
       </div>
 
@@ -180,31 +193,36 @@ const DisposableMenus = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="menus" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="menus">Menus</TabsTrigger>
-          <TabsTrigger value="security" data-tutorial="security-settings">
-            Security
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto overflow-x-auto">
+          <TabsTrigger value="menus" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Menus</TabsTrigger>
+          <TabsTrigger value="security" data-tutorial="security-settings" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <span className="hidden sm:inline">Security</span>
+            <span className="sm:hidden">Sec</span>
             {recentAlerts.length > 0 && (
-              <span className="ml-2 bg-destructive text-destructive-foreground rounded-full px-2 py-0.5 text-xs">
+              <span className="ml-1 sm:ml-2 bg-destructive text-destructive-foreground rounded-full px-1.5 sm:px-2 py-0.5 text-xs">
                 {recentAlerts.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="monitoring">
-            <Activity className="h-4 w-4 mr-2" />
-            Live Monitor
+          <TabsTrigger value="monitoring" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <Activity className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Live Monitor</span>
+            <span className="sm:hidden">Monitor</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="h-4 w-4 mr-2" />
-            Notifications
+          <TabsTrigger value="notifications" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <Bell className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Notifications</span>
+            <span className="sm:hidden">Alerts</span>
           </TabsTrigger>
-          <TabsTrigger value="messaging">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Messaging
+          <TabsTrigger value="messaging" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Messaging</span>
+            <span className="sm:hidden">Msg</span>
           </TabsTrigger>
-          <TabsTrigger value="settings">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
+          <TabsTrigger value="settings" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Settings</span>
+            <span className="sm:hidden">Config</span>
           </TabsTrigger>
         </TabsList>
 

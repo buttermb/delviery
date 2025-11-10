@@ -1,5 +1,5 @@
 import { useSwipeable } from 'react-swipeable';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { Trash2 } from 'lucide-react';
 import { haptics } from '@/utils/haptics';
 
@@ -8,7 +8,7 @@ interface SwipeableCartItemProps {
   onDelete: () => void;
 }
 
-export function SwipeableCartItem({ children, onDelete }: SwipeableCartItemProps) {
+export const SwipeableCartItem = memo(function SwipeableCartItem({ children, onDelete }: SwipeableCartItemProps) {
   const [offset, setOffset] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -32,13 +32,13 @@ export function SwipeableCartItem({ children, onDelete }: SwipeableCartItemProps
     trackTouch: true,
   });
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setIsDeleting(true);
     haptics.medium();
     setTimeout(() => {
       onDelete();
     }, 200);
-  };
+  }, [onDelete]);
 
   return (
     <div className="relative overflow-hidden">
@@ -57,4 +57,4 @@ export function SwipeableCartItem({ children, onDelete }: SwipeableCartItemProps
       </div>
     </div>
   );
-}
+});

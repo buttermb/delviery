@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { logger } from "@/lib/logger";
 import type { Product } from "@/types/product";
 
 const INITIAL_CATEGORIES_TO_SHOW = 2;
@@ -36,7 +37,7 @@ const ProductCatalog = () => {
           table: 'products'
         },
         (payload) => {
-          console.log('Product updated:', payload);
+          logger.debug('Product updated', { payload, component: 'ProductCatalog' });
           queryClient.invalidateQueries({ queryKey: ["products"] });
         }
       )
@@ -81,35 +82,41 @@ const ProductCatalog = () => {
     return () => window.removeEventListener('setProductFilter', handleFilterEvent as EventListener);
   }, []);
 
-  // Filter products by search and premium
-  let filteredProducts = searchQuery
-    ? allProducts.filter((p) => {
-        const query = searchQuery.toLowerCase();
+  // Memoize filtered products to prevent recalculation on every render
+  const filteredProducts = useMemo(() => {
+    let result = allProducts;
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((p) => {
         return (
           p.name.toLowerCase().includes(query) ||
           p.description?.toLowerCase().includes(query) ||
           p.vendor_name?.toLowerCase().includes(query)
         );
-      })
-    : allProducts;
-  
-  // Apply premium filter (products with higher price or premium indicator)
-  if (premiumFilter) {
-    filteredProducts = filteredProducts.filter((p) => {
-      const price = typeof p.price === 'number' ? p.price : parseFloat(p.price);
-      // Consider products over $40 as premium
-      return price >= 40 || p.description?.toLowerCase().includes('premium') || p.vendor_name?.toLowerCase().includes('premium');
-    });
-  }
+      });
+    }
+    
+    // Apply premium filter
+    if (premiumFilter) {
+      result = result.filter((p) => {
+        const price = typeof p.price === 'number' ? p.price : parseFloat(p.price);
+        return price >= 40 || p.description?.toLowerCase().includes('premium') || p.vendor_name?.toLowerCase().includes('premium');
+      });
+    }
+    
+    return result;
+  }, [allProducts, searchQuery, premiumFilter]);
 
-  // Group products by category
-  const productsByCategory = {
+  // Memoize category grouping to prevent recalculation
+  const productsByCategory = useMemo(() => ({
     flower: filteredProducts.filter((p) => p.category === "flower"),
     edibles: filteredProducts.filter((p) => p.category === "edibles"),
     "pre-rolls": filteredProducts.filter((p) => p.category === "pre-rolls"),
     concentrates: filteredProducts.filter((p) => p.category === "concentrates"),
     vapes: filteredProducts.filter((p) => p.category === "vapes"),
-  };
+  }), [filteredProducts]);
 
   const categories = [
     { key: "flower", label: "Flower", icon: Leaf, desc: "Premium indoor-grown flower" },

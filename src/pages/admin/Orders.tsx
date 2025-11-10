@@ -101,47 +101,48 @@ export default function Orders() {
         description="Manage customer orders and deliveries"
       />
       
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Orders Management</h1>
+      <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
           <TakeTourButton
             tutorialId={ordersTutorial.id}
             steps={ordersTutorial.steps}
             variant="outline"
             size="sm"
+            className="min-h-[44px]"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.label} className="p-4">
+              <Card key={stat.label} className="p-3 sm:p-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
+                    <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
                   </div>
-                  <Icon className={`h-8 w-8 ${stat.color}`} />
+                  <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} flex-shrink-0`} />
                 </div>
               </Card>
             );
           })}
         </div>
 
-        <Card className="p-4">
-          <div className="flex gap-4 mb-4">
+        <Card className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by order number or customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px] text-sm sm:text-base"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -156,42 +157,45 @@ export default function Orders() {
             </Select>
           </div>
 
-          <Table data-tutorial="orders-list">
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <div className="inline-block min-w-full align-middle px-2 sm:px-0">
+              <Table data-tutorial="orders-list" className="min-w-[700px] sm:min-w-full">
             <TableHeader>
               <TableRow>
-                <TableHead>Order #</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead data-tutorial="order-status">Status</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-xs sm:text-sm">Order #</TableHead>
+                <TableHead className="text-xs sm:text-sm">Customer</TableHead>
+                <TableHead className="text-xs sm:text-sm" data-tutorial="order-status">Status</TableHead>
+                <TableHead className="text-xs sm:text-sm">Method</TableHead>
+                <TableHead className="text-xs sm:text-sm">Total</TableHead>
+                <TableHead className="text-xs sm:text-sm">Date</TableHead>
+                <TableHead className="text-xs sm:text-sm">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">Loading...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-sm sm:text-base">Loading...</TableCell>
                 </TableRow>
               ) : filteredOrders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">No orders found</TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-sm sm:text-base">No orders found</TableCell>
                 </TableRow>
               ) : (
                 filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.order_number || order.id.slice(0, 8)}</TableCell>
-                    <TableCell>
+                  <TableRow key={order.id} className="touch-manipulation">
+                    <TableCell className="font-medium text-xs sm:text-sm">{order.order_number || order.id.slice(0, 8)}</TableCell>
+                    <TableCell className="text-xs sm:text-sm">
                       <p className="font-medium">Customer</p>
                     </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell className="capitalize">{order.delivery_method}</TableCell>
-                    <TableCell>${order.total_amount?.toFixed(2)}</TableCell>
-                    <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-xs sm:text-sm">{getStatusBadge(order.status)}</TableCell>
+                    <TableCell className="capitalize text-xs sm:text-sm">{order.delivery_method || 'N/A'}</TableCell>
+                    <TableCell className="text-xs sm:text-sm font-mono">${order.total_amount?.toFixed(2)}</TableCell>
+                    <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="min-h-[44px] min-w-[44px] touch-manipulation"
                         onMouseEnter={() => prefetchOnHover(`/admin/orders/${order.id}`)}
                         onClick={() => navigate(`/admin/orders/${order.id}`)}
                       >
@@ -203,6 +207,8 @@ export default function Orders() {
               )}
             </TableBody>
           </Table>
+            </div>
+          </div>
         </Card>
       </div>
     </>

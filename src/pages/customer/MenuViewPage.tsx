@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,12 +121,13 @@ export default function CustomerMenuViewPage() {
     });
   };
 
-  const getTotalItems = () => {
+  // Memoize total items calculation
+  const getTotalItems = useMemo(() => {
     return Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
-  };
+  }, [quantities]);
 
-  // Calculate cart total
-  const calculateCartTotal = () => {
+  // Memoize cart total calculation
+  const calculateCartTotal = useMemo(() => {
     if (!products || !Array.isArray(products)) return 0;
     
     let total = 0;
@@ -139,15 +140,21 @@ export default function CustomerMenuViewPage() {
     });
     
     return total;
-  };
+  }, [products, quantities]);
 
-  const filteredProducts = products?.filter((item: any) => {
-    const product = item.products;
-    if (!product) return false;
-    if (!searchTerm) return true;
-    return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-  }) || [];
+  // Memoize filtered products
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    if (!searchTerm) return products;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return products.filter((item: any) => {
+      const product = item.products;
+      if (!product) return false;
+      return product.name.toLowerCase().includes(searchLower) ||
+             product.description?.toLowerCase().includes(searchLower);
+    });
+  }, [products, searchTerm]);
 
   if (menuLoading) {
     return (
@@ -442,22 +449,22 @@ export default function CustomerMenuViewPage() {
         )}
 
         {/* Sticky Cart Footer */}
-        {getTotalItems() > 0 && (
+        {getTotalItems > 0 && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4 z-50">
             <div className="container mx-auto flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <ShoppingCart className="h-6 w-6 text-[hsl(var(--customer-primary))]" />
-                  {getTotalItems() > 0 && (
+                  {getTotalItems > 0 && (
                     <Badge className="absolute -top-2 -right-2 bg-[hsl(var(--customer-accent))] text-white border-0 min-w-[20px] h-5 flex items-center justify-center">
-                      {getTotalItems()}
+                      {getTotalItems}
                     </Badge>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-[hsl(var(--customer-text-light))]">{getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''} in cart</p>
+                  <p className="text-sm text-[hsl(var(--customer-text-light))]">{getTotalItems} item{getTotalItems !== 1 ? 's' : ''} in cart</p>
                   <p className="text-lg font-bold text-[hsl(var(--customer-text))]">
-                    {formatCurrency(calculateCartTotal())}
+                    {formatCurrency(calculateCartTotal)}
                   </p>
                 </div>
               </div>

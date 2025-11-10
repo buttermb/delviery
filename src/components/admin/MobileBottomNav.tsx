@@ -54,8 +54,8 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t lg:hidden safe-area-bottom">
-      <div className="grid grid-cols-5 gap-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t lg:hidden safe-area-bottom shadow-lg">
+      <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           const fullPath = getFullPath(link.href);
@@ -66,14 +66,14 @@ export function MobileBottomNav() {
               key={link.href}
               to={fullPath}
               className={cn(
-                'flex flex-col items-center justify-center py-3 text-xs transition-colors min-h-[60px] touch-manipulation',
+                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[60px] touch-manipulation active:bg-muted/50',
                 active
-                  ? 'text-primary font-medium'
+                  ? 'text-primary font-medium bg-primary/5'
                   : 'text-muted-foreground'
               )}
             >
-              <Icon className="h-5 w-5 mb-1" />
-              <span>{link.title}</span>
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <span className="truncate max-w-full px-1">{link.title}</span>
             </Link>
           );
         })}
@@ -81,9 +81,9 @@ export function MobileBottomNav() {
         {/* More menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center py-3 text-xs text-muted-foreground min-h-[60px] touch-manipulation w-full">
-              <Menu className="h-5 w-5 mb-1" />
-              <span>More</span>
+            <button className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[60px] touch-manipulation w-full active:bg-muted/50">
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <span className="truncate max-w-full px-1">More</span>
             </button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-[85vw] max-w-sm">

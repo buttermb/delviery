@@ -128,36 +128,36 @@ export default function TenantAdminLoginPage() {
       {/* Card Container with Glow Effect */}
       <div className="relative z-10 w-full max-w-md">
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--tenant-primary))]/20 to-[hsl(var(--tenant-secondary))]/20 rounded-2xl blur-xl" />
-        <div className="relative bg-card rounded-2xl shadow-2xl border border-border backdrop-blur-sm p-8">
+        <div className="relative bg-card rounded-2xl shadow-2xl border border-border backdrop-blur-sm p-4 sm:p-6 md:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="flex justify-center mb-3 sm:mb-4">
               {logo ? (
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/30 to-[hsl(var(--tenant-secondary))]/30 rounded-2xl blur-xl" />
-                  <img src={logo} alt={businessName} className="relative h-16 object-contain" />
+                  <img src={logo} alt={businessName} className="relative h-12 sm:h-16 object-contain" />
                 </div>
               ) : (
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] rounded-full blur-lg opacity-50" />
-                  <div className="relative rounded-full bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] p-4 shadow-2xl">
-                    <Building2 className="h-8 w-8 text-white" />
+                  <div className="relative rounded-full bg-gradient-to-br from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] p-3 sm:p-4 shadow-2xl">
+                    <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                   </div>
                 </div>
               )}
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2 break-words">
               {businessName}
             </h1>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--tenant-primary))]/10 border border-[hsl(var(--tenant-primary))]/20">
-              <span className="text-sm font-medium text-[hsl(var(--tenant-primary))]">Admin Panel</span>
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[hsl(var(--tenant-primary))]/10 border border-[hsl(var(--tenant-primary))]/20">
+              <span className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-primary))]">Admin Panel</span>
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
+              <Label htmlFor="email" className="text-sm sm:text-base font-medium">
                 Email Address
               </Label>
               <Input
@@ -168,12 +168,12 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="h-12 bg-background/50 backdrop-blur-sm transition-all"
+                className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
+              <Label htmlFor="password" className="text-sm sm:text-base font-medium">
                 Password
               </Label>
               <Input
@@ -184,36 +184,36 @@ export default function TenantAdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
-                className="h-12 bg-background/50 backdrop-blur-sm transition-all"
+                className="min-h-[44px] sm:h-12 bg-background/50 backdrop-blur-sm transition-all text-sm sm:text-base touch-manipulation"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-white h-12 font-semibold shadow-md"
+              className="w-full bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-white min-h-[44px] sm:h-12 font-semibold shadow-md touch-manipulation text-sm sm:text-base"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Signing in...
+                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  <span>Signing in...</span>
                 </>
               ) : (
-                "Sign In to Dashboard"
+                <span>Sign In to Dashboard</span>
               )}
             </Button>
           </form>
 
           {/* Links */}
-          <div className="mt-6 space-y-3 text-center text-sm">
+          <div className="mt-4 sm:mt-6 space-y-3 text-center text-xs sm:text-sm">
             <ForgotPasswordDialog userType="tenant_admin" tenantSlug={tenantSlug} />
-            <div className="pt-4 border-t border-border">
+            <div className="pt-3 sm:pt-4 border-t border-border">
               <p className="text-muted-foreground mb-2">Not an admin?</p>
             <Link 
               to={`/${tenantSlug}/shop`} 
-              className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors"
+              className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors touch-manipulation min-h-[44px]"
             >
-              Go to Customer Portal →
+              <span className="text-xs sm:text-sm">Go to Customer Portal →</span>
             </Link>
             </div>
           </div>

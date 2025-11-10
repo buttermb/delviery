@@ -36,10 +36,17 @@ export function TutorialOverlay({
   const [contentPosition, setContentPosition] = useState<{ top: number; left: number } | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const retryCountRef = useRef(0);
+  const MAX_RETRIES = 10; // Prevent infinite retries
 
   const currentStepData = steps[currentStep];
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
+
+  // Reset retry count when step changes
+  useEffect(() => {
+    retryCountRef.current = 0;
+  }, [currentStep]);
 
   // Find and highlight target element
   useEffect(() => {
@@ -107,10 +114,13 @@ export function TutorialOverlay({
 
         setContentPosition({ top, left });
         
-        // Scroll target into view if needed (with delay to ensure element is stable)
-        setTimeout(() => {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        }, 100);
+        // Scroll target into view if needed (only once, with debounce)
+        if (!target.dataset.tutorialScrolled) {
+          target.dataset.tutorialScrolled = 'true';
+          requestAnimationFrame(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          });
+        }
       } else {
         // If target not found, center the content and show a helpful message
         setTargetRect(null);
@@ -118,42 +128,120 @@ export function TutorialOverlay({
           top: window.innerHeight / 2 - 100,
           left: window.innerWidth / 2 - 160,
         });
-        // Log warning for debugging (only in dev)
-        if (process.env.NODE_ENV === 'development') {
+        // Log warning for debugging (only in dev, and only once per step)
+        if (process.env.NODE_ENV === 'development' && !(window as any).__tutorialWarned) {
           console.warn(`Tutorial target not found: ${currentStepData.target}. Centering content.`);
+          (window as any).__tutorialWarned = true;
+          setTimeout(() => {
+            (window as any).__tutorialWarned = false;
+          }, 1000);
         }
       }
     };
 
+    // Throttle function to prevent excessive updates
+    let updateTimeout: NodeJS.Timeout | null = null;
+    const throttledUpdate = () => {
+      if (updateTimeout) return;
+      updateTimeout = setTimeout(() => {
+        updateTarget();
+        updateTimeout = null;
+      }, 100);
+    };
+
     // Initial update with delay to ensure DOM is ready
-    const timeout = setTimeout(() => {
+    const initialTimeout = setTimeout(() => {
       updateTarget();
-      // Also try after a longer delay in case of lazy-loaded content
-      setTimeout(updateTarget, 300);
     }, 100);
 
-    // Update on scroll/resize
-    const handleUpdate = () => updateTarget();
-    window.addEventListener('scroll', handleUpdate, true);
-    window.addEventListener('resize', handleUpdate);
+    // Throttled scroll/resize handlers
+    let scrollTimeout: NodeJS.Timeout | null = null;
+    const handleScroll = () => {
+      if (scrollTimeout) return;
+      scrollTimeout = setTimeout(() => {
+        updateTarget();
+        scrollTimeout = null;
+      }, 50);
+    };
 
-    // Use MutationObserver to watch for DOM changes (for dynamic content)
-    const observer = new MutationObserver(() => {
-      updateTarget();
-    });
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    const handleResize = () => {
+      if (resizeTimeout) return;
+      resizeTimeout = setTimeout(() => {
+        updateTarget();
+        resizeTimeout = null;
+      }, 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    // Only use MutationObserver if target not found initially (much more efficient)
+    let observer: MutationObserver | null = null;
+    const target = findTarget();
     
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['data-tutorial', 'class', 'style']
-    });
+    if (!target && retryCountRef.current < MAX_RETRIES) {
+      // Only observe if we need to wait for the element to appear
+      observer = new MutationObserver(() => {
+        retryCountRef.current++;
+        if (retryCountRef.current >= MAX_RETRIES) {
+          // Stop observing if we've retried too many times
+          if (observer) {
+            observer.disconnect();
+            observer = null;
+          }
+          return;
+        }
+        throttledUpdate();
+      });
+      
+      // Only observe a limited scope - try to find a container, but limit to main content area
+      let container: Element = document.body;
+      try {
+        const tutorialElement = document.querySelector('[data-tutorial]');
+        if (tutorialElement) {
+          container = tutorialElement.closest('main, [role="main"], .container, [class*="container"]') || tutorialElement.parentElement || document.body;
+        }
+      } catch (e) {
+        // Fallback to body if anything fails
+        container = document.body;
+      }
+      
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-tutorial']
+      });
+
+      // Stop observing after 5 seconds to prevent infinite watching
+      const observerTimeout = setTimeout(() => {
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+      }, 5000);
+
+      // Store timeout for cleanup
+      (observer as any)._timeout = observerTimeout;
+    }
 
     return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('scroll', handleUpdate, true);
-      window.removeEventListener('resize', handleUpdate);
-      observer.disconnect();
+      clearTimeout(initialTimeout);
+      if (updateTimeout) clearTimeout(updateTimeout);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (observer) {
+        observer.disconnect();
+        // Clear observer timeout if it exists
+        if ((observer as any)._timeout) {
+          clearTimeout((observer as any)._timeout);
+        }
+      }
+      // Reset retry count on cleanup
+      retryCountRef.current = 0;
     };
   }, [isOpen, currentStep, currentStepData]);
 
@@ -177,21 +265,34 @@ export function TutorialOverlay({
 
   if (!isOpen || !currentStepData) return null;
 
+  // Prevent rendering if already mounted elsewhere (safety check)
+  if (typeof document !== 'undefined' && document.querySelector('[data-tutorial-overlay]')) {
+    return null;
+  }
+
+  // Prevent rendering if document is not ready
+  if (typeof document !== 'undefined' && document.readyState === 'loading') {
+    return null;
+  }
+
   return (
-    <AnimatePresence>
-      <div
-        ref={overlayRef}
-        className="fixed inset-0 z-[9999] pointer-events-auto"
-        aria-modal="true"
-        aria-labelledby="tutorial-title"
-        role="dialog"
-      >
-        {/* Dark overlay with cutout */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/75"
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <div
+          key="tutorial-overlay"
+          ref={overlayRef}
+          data-tutorial-overlay
+          className="fixed inset-0 z-[9999] pointer-events-auto"
+          aria-modal="true"
+          aria-labelledby="tutorial-title"
+          role="dialog"
+        >
+          {/* Dark overlay with cutout */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/75"
           style={{
             clipPath: targetRect
               ? `polygon(
@@ -327,7 +428,8 @@ export function TutorialOverlay({
             </div>
           </motion.div>
         )}
-      </div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }

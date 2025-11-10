@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,15 +18,17 @@ export default function InventoryManagement() {
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  // Group inventory by warehouse
-  const groupedInventory = inventory.reduce((acc, item) => {
-    const warehouse = item.warehouse_location || "Warehouse A";
-    if (!acc[warehouse]) {
-      acc[warehouse] = [];
-    }
-    acc[warehouse].push(item);
-    return acc;
-  }, {} as Record<string, typeof inventory>);
+  // Memoize grouped inventory to prevent recalculation
+  const groupedInventory = useMemo(() => {
+    return inventory.reduce((acc, item) => {
+      const warehouse = item.warehouse_location || "Warehouse A";
+      if (!acc[warehouse]) {
+        acc[warehouse] = [];
+      }
+      acc[warehouse].push(item);
+      return acc;
+    }, {} as Record<string, typeof inventory>);
+  }, [inventory]);
 
   const totalStock = inventory.reduce((sum, item) => sum + Number(item.quantity_lbs || 0), 0);
   // Calculate estimated value at $3000/lb average
@@ -40,16 +42,16 @@ export default function InventoryManagement() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">📦 Inventory Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">📦 Inventory Management</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Wholesale scale inventory across multiple warehouses</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <BulkImageGenerator products={inventory} />
-          <Button className="bg-emerald-500 hover:bg-emerald-600" data-tutorial="add-product">
+          <Button className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base" data-tutorial="add-product">
             + Add Stock
           </Button>
           <TakeTourButton
@@ -57,37 +59,38 @@ export default function InventoryManagement() {
             steps={inventoryTutorial.steps}
             variant="outline"
             size="sm"
+            className="min-h-[44px]"
           />
         </div>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tutorial="inventory-overview">
-        <Card className="p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4" data-tutorial="inventory-overview">
+        <Card className="p-3 sm:p-4 md:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">Total Stock</span>
-            <Package className="h-5 w-5 text-muted-foreground" />
+            <span className="text-xs sm:text-sm text-muted-foreground">Total Stock</span>
+            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </div>
-          <div className="text-3xl font-bold font-mono text-foreground">{totalStock.toFixed(0)} lbs</div>
-          <div className="text-sm text-muted-foreground mt-1">{(totalStock * 0.453592).toFixed(0)} kg</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">{totalStock.toFixed(0)} lbs</div>
+          <div className="text-xs sm:text-sm text-muted-foreground mt-1">{(totalStock * 0.453592).toFixed(0)} kg</div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-3 sm:p-4 md:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">Total Value</span>
-            <TrendingUp className="h-5 w-5 text-emerald-500" />
+            <span className="text-xs sm:text-sm text-muted-foreground">Total Value</span>
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
           </div>
-          <div className="text-3xl font-bold font-mono text-foreground">${(totalValue / 1000).toFixed(0)}k</div>
-          <div className="text-sm text-muted-foreground mt-1">at cost</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">${(totalValue / 1000).toFixed(0)}k</div>
+          <div className="text-xs sm:text-sm text-muted-foreground mt-1">at cost</div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-3 sm:p-4 md:p-5 sm:col-span-2 md:col-span-1">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">Avg Cost/lb</span>
-            <ArrowUpDown className="h-5 w-5 text-muted-foreground" />
+            <span className="text-xs sm:text-sm text-muted-foreground">Avg Cost/lb</span>
+            <ArrowUpDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </div>
-          <div className="text-3xl font-bold font-mono text-foreground">${avgCostPerLb.toFixed(0)}</div>
-          <div className="text-sm text-muted-foreground mt-1">average</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">${avgCostPerLb.toFixed(0)}</div>
+          <div className="text-xs sm:text-sm text-muted-foreground mt-1">average</div>
         </Card>
       </div>
 
@@ -103,77 +106,80 @@ export default function InventoryManagement() {
         </Card>
       ) : (
         Object.entries(groupedInventory).map(([warehouseName, products]) => {
+          // Calculate warehouse totals (memoized at component level via groupedInventory)
           const warehouseTotal = products.reduce((sum, p) => sum + Number(p.quantity_lbs || 0), 0);
           const warehouseValue = warehouseTotal * avgCostPerLb;
           const capacity = 500; // Default capacity
 
           return (
-            <Card key={warehouseName} className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">🏢 {warehouseName}</h3>
-                  <p className="text-sm text-muted-foreground">
+            <Card key={warehouseName} className="p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground">🏢 {warehouseName}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Capacity: {capacity} lbs | Current: {warehouseTotal.toFixed(0)} lbs ({((warehouseTotal / capacity) * 100).toFixed(0)}%) | Value: ${(warehouseValue / 1000).toFixed(0)}k
                   </p>
                 </div>
-                <Badge variant={warehouseTotal / capacity > 0.5 ? "default" : "secondary"}>
+                <Badge variant={warehouseTotal / capacity > 0.5 ? "default" : "secondary"} className="text-xs sm:text-sm flex-shrink-0">
                   {warehouseTotal / capacity > 0.5 ? "🟢 GOOD" : "🟡 LOW"}
                 </Badge>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full" data-tutorial="product-list">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 text-sm font-semibold text-foreground">Product</th>
-                      <th className="text-right py-3 text-sm font-semibold text-foreground">Weight</th>
-                      <th className="text-right py-3 text-sm font-semibold text-foreground">Cost/lb</th>
-                      <th className="text-right py-3 text-sm font-semibold text-foreground">Total Value</th>
-                      <th className="text-center py-3 text-sm font-semibold text-foreground">Status</th>
-                      <th className="text-center py-3 text-sm font-semibold text-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((product) => {
-                      const qty = Number(product.quantity_lbs || 0);
-                      const estimatedCost = avgCostPerLb;
-                      const stockStatus = getStockStatus(qty, product.reorder_point || 20);
-                      
-                      return (
-                        <tr key={product.id} className="border-b last:border-0">
-                          <td className="py-3 text-sm font-medium text-foreground">{product.product_name}</td>
-                          <td className="py-3 text-right text-sm font-mono text-foreground">{qty.toFixed(1)} lbs</td>
-                          <td className="py-3 text-right text-sm font-mono text-foreground">${estimatedCost.toLocaleString()}</td>
-                          <td className="py-3 text-right text-sm font-mono text-foreground">${(qty * estimatedCost).toLocaleString()}</td>
-                          <td className="py-3 text-center">
-                            <Badge variant={stockStatus.color as any} className="text-xs">
-                              {stockStatus.status === "critical" && "🔴 CRITICAL"}
-                              {stockStatus.status === "low" && "🟡 LOW"}
-                              {stockStatus.status === "good" && "🟢 GOOD"}
-                            </Badge>
-                          </td>
-                          <td className="py-3">
-                            <div className="flex items-center justify-center gap-1">
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-7 px-2 text-xs"
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  setAdjustmentDialogOpen(true);
-                                }}
-                                data-tutorial="stock-adjustments"
-                              >
-                                <Settings className="h-3 w-3 mr-1" />
-                                Adjust
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <div className="inline-block min-w-full align-middle px-2 sm:px-0">
+                  <table className="w-full min-w-[600px] sm:min-w-full" data-tutorial="product-list">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Product</th>
+                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Weight</th>
+                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Cost/lb</th>
+                        <th className="text-right py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Total Value</th>
+                        <th className="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Status</th>
+                        <th className="text-center py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((product) => {
+                        const qty = Number(product.quantity_lbs || 0);
+                        const estimatedCost = avgCostPerLb;
+                        const stockStatus = getStockStatus(qty, product.reorder_point || 20);
+                        
+                        return (
+                          <tr key={product.id} className="border-b last:border-0 touch-manipulation">
+                            <td className="py-2 sm:py-3 text-xs sm:text-sm font-medium text-foreground truncate max-w-[150px] sm:max-w-none">{product.product_name}</td>
+                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">{qty.toFixed(1)} lbs</td>
+                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">${estimatedCost.toLocaleString()}</td>
+                            <td className="py-2 sm:py-3 text-right text-xs sm:text-sm font-mono text-foreground">${(qty * estimatedCost).toLocaleString()}</td>
+                            <td className="py-2 sm:py-3 text-center">
+                              <Badge variant={stockStatus.color as any} className="text-xs">
+                                {stockStatus.status === "critical" && "🔴 CRITICAL"}
+                                {stockStatus.status === "low" && "🟡 LOW"}
+                                {stockStatus.status === "good" && "🟢 GOOD"}
+                              </Badge>
+                            </td>
+                            <td className="py-2 sm:py-3">
+                              <div className="flex items-center justify-center gap-1">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="min-h-[44px] min-w-[44px] px-2 text-xs sm:text-sm touch-manipulation"
+                                  onClick={() => {
+                                    setSelectedProduct(product);
+                                    setAdjustmentDialogOpen(true);
+                                  }}
+                                  data-tutorial="stock-adjustments"
+                                >
+                                  <Settings className="h-3 w-3 sm:mr-1" />
+                                  <span className="hidden sm:inline">Adjust</span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </Card>
           );

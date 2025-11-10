@@ -56,7 +56,10 @@ export function RouteReplayMap({
         map.current?.remove();
       };
     } catch (error) {
-      console.error('Mapbox error:', error);
+      // Mapbox errors are handled silently - map just won't render
+      if (import.meta.env.DEV) {
+        console.error('Mapbox error:', error);
+      }
     }
   }, []);
 

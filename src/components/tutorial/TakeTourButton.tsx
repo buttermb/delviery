@@ -61,8 +61,16 @@ export function TakeTourButton({
   }, [isActive]);
 
   const handleStart = () => {
-    startTutorial(tutorialId, true);
-    wasActiveRef.current = true;
+    // Prevent starting if another tutorial is already active
+    if (state.isActive && state.tutorialId !== tutorialId) {
+      toast.info('Please complete the current tour first');
+      return;
+    }
+    
+    const started = startTutorial(tutorialId, true);
+    if (started) {
+      wasActiveRef.current = true;
+    }
   };
 
   return (
