@@ -129,6 +129,11 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 - [Migration Template](./docs/templates/MigrationTemplate.sql) - Database migration template
 - [VS Code Snippets](./.vscode/snippets.code-snippets) - Code snippets for faster development
 
+### Help & Support
+- [Documentation Index](./docs/INDEX.md) - Complete navigation guide
+- [Troubleshooting Guide](./docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [FAQ](./docs/FAQ.md) - Frequently asked questions
+
 ## Getting Help
 
 - **Start here**: [Ultimate Rulebook](./docs/ULTIMATE_RULEBOOK.md) - Complete error-prevention guide
