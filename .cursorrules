@@ -1,0 +1,44 @@
+# BigMike Wholesale Platform - Cursor AI Rules
+
+## CRITICAL RULES - ALWAYS FOLLOW
+
+### Auto-Generated Files (NEVER EDIT)
+- ❌ src/integrations/supabase/client.ts
+- ❌ src/integrations/supabase/types.ts
+- ❌ supabase/config.toml (project_id line)
+- ❌ .env
+
+### Logging
+- ✅ ALWAYS use `logger` from `@/lib/logger`
+- ❌ NEVER use `console.log`, `console.error`, etc.
+
+### Edge Functions
+- ✅ Import from `_shared/deps.ts`: `serve`, `createClient`, `corsHeaders`
+- ✅ ALWAYS use Zod validation for `req.json()`
+- ✅ ALWAYS handle OPTIONS requests
+- ✅ ALWAYS return CORS headers in responses
+
+### Database
+- ✅ SECURITY DEFINER functions MUST have `SET search_path = public`
+- ✅ All tables MUST have RLS enabled
+- ✅ Multi-tenant tables MUST filter by tenant_id in RLS
+- ✅ NEVER reference `auth.users` directly (use `public.profiles`)
+
+### TypeScript
+- ✅ Use types from `src/types/`, never inline types
+- ✅ Use `@/` alias for all imports
+- ✅ Group imports: React → Third-party → Types → Components → Utils
+
+### TanStack Query
+- ✅ Use `queryKeys` factory from `@/lib/queryKeys`
+- ✅ Invalidate queries on mutations
+
+### Error Handling
+- ✅ Use try-catch with `logger.error()`
+- ✅ Show user-friendly toast messages
+
+### Security
+- ✅ NEVER hardcode secrets
+- ✅ Use environment variables
+- ✅ Sanitize user input before rendering HTML
+

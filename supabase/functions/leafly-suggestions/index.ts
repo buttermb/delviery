@@ -4,13 +4,8 @@
  * Falls back to local database
  */
 
-import { serve, createClient } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // Request validation schema
 const RequestSchema = z.object({
