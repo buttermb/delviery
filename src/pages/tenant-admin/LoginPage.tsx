@@ -23,6 +23,19 @@ export default function TenantAdminLoginPage() {
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
 
+  // Check for signup success message
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('signup') === 'success') {
+      toast({
+        title: "Account Created Successfully!",
+        description: "Please log in with your credentials to access your dashboard.",
+      });
+      // Clear the query param
+      window.history.replaceState({}, '', `/${tenantSlug}/admin/login`);
+    }
+  }, [tenantSlug]);
+
   useEffect(() => {
     const fetchTenant = async () => {
       if (tenantSlug) {

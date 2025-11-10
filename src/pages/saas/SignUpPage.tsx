@@ -202,11 +202,12 @@ export default function SignUpPage() {
 
       toast({
         title: 'Account Created!',
-        description: 'Your account has been created successfully. Please sign in to continue.',
+        description: 'Welcome to your new dashboard! Logging you in...',
       });
 
-      // Redirect to login page with success message
-      navigate(`/saas/login?signup=success&tenant=${tenant.slug}`);
+      // Redirect to tenant-specific login page with tenant slug
+      // User will need to log in with the credentials they just created
+      navigate(`/${tenant.slug}/admin/login?signup=success`, { replace: true });
     } catch (error: any) {
       logger.error('Signup error', error);
       
