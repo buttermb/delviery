@@ -110,20 +110,20 @@ export default function CustomerVerifyEmailPage() {
 
       // Auto-login after verification
       try {
-        // Get customer user to find tenant
-        const { data: customerUser } = await supabase
-          .from('customer_users')
-          .select('tenant_id')
-          .eq('email', email.toLowerCase())
-          .maybeSingle();
+      // Get customer user to find tenant
+      const { data: customerUser } = await supabase
+        .from('customer_users' as any)
+        .select('tenant_id')
+        .eq('email', email.toLowerCase())
+        .maybeSingle();
 
-        if (customerUser && tenantSlug) {
-          // Get tenant slug for navigation
-          const { data: tenantData } = await supabase
-            .from('tenants')
-            .select('slug')
-            .eq('id', customerUser.tenant_id)
-            .maybeSingle();
+      if (customerUser && tenantSlug) {
+        // Get tenant slug for navigation
+        const { data: tenantData } = await supabase
+          .from('tenants')
+          .select('slug')
+          .eq('id', (customerUser as any).tenant_id)
+          .maybeSingle();
 
           if (tenantData) {
             // Redirect to login page with auto-login hint
@@ -171,7 +171,7 @@ export default function CustomerVerifyEmailPage() {
     try {
       // Get customer user ID
       const { data: customerUser } = await supabase
-        .from('customer_users')
+        .from('customer_users' as any)
         .select('id, tenant_id')
         .eq('email', email.toLowerCase())
         .maybeSingle();
@@ -188,9 +188,12 @@ export default function CustomerVerifyEmailPage() {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await apiFetch(`${supabaseUrl}/functions/v1/send-verification-email`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          customer_user_id: customerUser.id,
-          tenant_id: customerUser.tenant_id,
+          customer_user_id: (customerUser as any).id,
+          tenant_id: (customerUser as any).tenant_id,
           email: email.toLowerCase(),
           tenant_name: tenant?.business_name,
         }),

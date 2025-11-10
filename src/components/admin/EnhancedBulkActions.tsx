@@ -71,7 +71,8 @@ export function EnhancedBulkActions({
     for (const id of selectedProducts) {
       const product = products.find((p) => p.id === id);
       if (product) {
-        const newPrice = Math.max(0.01, product.price * multiplier);
+        const price = Number(product.price) || 0;
+        const newPrice = Math.max(0.01, price * multiplier);
         await onIndividualUpdate(id, { price: parseFloat(newPrice.toFixed(2)) });
       }
     }
@@ -82,7 +83,7 @@ export function EnhancedBulkActions({
   };
 
   const totalValue = selectedProductsData.reduce(
-    (sum, p) => sum + (p.price || 0) * (p.stock_quantity || 0),
+    (sum, p) => sum + ((p.price || 0) as number) * ((p.stock_quantity || 0) as number),
     0
   );
 
@@ -171,10 +172,11 @@ export function EnhancedBulkActions({
                       priceAdjustment === "increase"
                         ? 1 + percent / 100
                         : 1 - percent / 100;
-                    const newPrice = (product.price * multiplier).toFixed(2);
+                    const currentPrice = Number(product.price) || 0;
+                    const newPrice = (currentPrice * multiplier).toFixed(2);
                     return (
                       <div key={product.id} className="text-sm mb-1">
-                        {product.name}: ${product.price} → ${newPrice}
+                        {String(product.name)}: ${String(currentPrice)} → ${String(newPrice)}
                       </div>
                     );
                   })}

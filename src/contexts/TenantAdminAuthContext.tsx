@@ -742,7 +742,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   });
                 }
               } catch (error) {
-                logger.error('Failed to refresh tenant data after subscription change', error, { component: 'TenantAdminAuthContext' });
+                logger.error('Failed to refresh tenant data after subscription change', error);
               }
             }
           }

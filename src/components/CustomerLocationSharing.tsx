@@ -78,9 +78,9 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
       }, 30000);
 
       // Store interval ID to clear later
-      locationIntervalRef.current = updateInterval;
+      locationIntervalRef.current = updateInterval as unknown as number;
     } catch (error: unknown) {
-      logger.error("Failed to share location", error as Error, 'CustomerLocationSharing');
+      logger.error("Failed to share location", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
         variant: "destructive",

@@ -66,6 +66,24 @@ const SystemSettings = () => {
         tenantId = tenantUser?.tenant_id || null;
       }
 
+      // Execute queries with explicit typing to avoid type instantiation depth issues
+      const ordersLastHourQuery = tenantId 
+        ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString())
+        : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString());
+      
+      const ordersTodayQuery = tenantId
+        ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString())
+        : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneDayAgo.toISOString());
+      
+      // Execute fraud flags query with type casting to avoid depth issues
+      const errorCountPromise = (async () => {
+        if (tenantId) {
+          return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
+        } else {
+          return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).is("resolved_at", null);
+        }
+      })();
+
       const [
         ordersLastHour,
         ordersToday,
@@ -73,15 +91,9 @@ const SystemSettings = () => {
         dbSize,
         avgResponseTime
       ] = await Promise.all([
-        tenantId 
-          ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString())
-          : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString()),
-        tenantId
-          ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString())
-          : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneDayAgo.toISOString()),
-        tenantId
-          ? supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null)
-          : supabase.from("fraud_flags").select("id", { count: "exact", head: true }).is("resolved_at", null),
+        ordersLastHourQuery,
+        ordersTodayQuery,
+        errorCountPromise,
         // Simulate DB size check
         Promise.resolve({ size_mb: Math.random() * 1000 + 500 }),
         // Simulate response time
@@ -129,7 +141,7 @@ const SystemSettings = () => {
   const saveFraudRules = useMutation({
     mutationFn: async (rules: typeof fraudRules) => {
       // In a real implementation, save to a settings table
-      logger.debug("Saving fraud rules", { rules }, { component: 'SystemSettings' });
+      logger.debug("Saving fraud rules", { rules, component: 'SystemSettings' });
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       return rules;

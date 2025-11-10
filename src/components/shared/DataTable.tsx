@@ -3,7 +3,7 @@
  * Reusable table with filtering, sorting, pagination, and bulk actions
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff } from 'lucide-react';
 import {
@@ -194,7 +194,7 @@ export function DataTable<TData, TValue>({
               value={searchValue}
               onChange={(e) => {
                 setSearchValue(e.target.value);
-                setCurrentPage(0); // Reset to first page on search
+                goToPage(0); // Reset to first page on search
               }}
               className="pl-9"
             />

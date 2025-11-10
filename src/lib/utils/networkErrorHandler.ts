@@ -91,7 +91,7 @@ export async function withRetry<T>(
       // Check if error is retryable
       if (attempt < opts.maxRetries && isRetryableError(error, opts.retryableErrors)) {
         const delay = opts.retryDelay * Math.pow(2, attempt); // Exponential backoff
-        logger.debug(`Retrying in ${delay}ms (attempt ${attempt + 1}/${opts.maxRetries})`, undefined, {
+        logger.debug(`Retrying in ${delay}ms (attempt ${attempt + 1}/${opts.maxRetries})`, {
           component: context?.component || 'networkErrorHandler',
         });
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -195,7 +195,7 @@ export function setupOfflineMonitor(
   onOffline?: () => void
 ): () => void {
   const handleOnline = () => {
-    logger.info('Device came online', undefined, { component: 'networkErrorHandler' });
+    logger.info('Device came online', { component: 'networkErrorHandler' });
     processOfflineQueue();
     onOnline?.();
     toast.success('You are back online', { duration: 3000 });

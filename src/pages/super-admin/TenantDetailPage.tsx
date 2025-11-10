@@ -1059,7 +1059,7 @@ export default function TenantDetailPage() {
             });
           }
         }}
-        itemName={tenant?.name}
+        itemName={tenant?.business_name}
         itemType="subscription"
         title="Cancel Subscription"
         description="Are you sure you want to cancel this subscription? This action cannot be undone. The tenant will retain access until the end of the billing period."

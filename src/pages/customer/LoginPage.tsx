@@ -86,7 +86,7 @@ export default function CustomerLoginPage() {
 
       navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
     } catch (error: unknown) {
-      logger.error("Customer login error", error, { component: "CustomerLoginPage" });
+      logger.error("Customer login error", error);
       
       // Handle email verification error
       if (error instanceof Error && (error as any).requires_verification) {
