@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import {
   GripVertical, Edit, Copy, Trash2, Eye, EyeOff,
   Check, X, DollarSign, ArrowUpDown, ChevronLeft, ChevronRight,
-  ChevronsLeft, ChevronsRight, Search
+  ChevronsLeft, ChevronsRight, Search, Printer
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -62,6 +62,7 @@ interface EnhancedProductTableProps {
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;
+  onPrintLabel?: (product: Product) => void;
 }
 
 export function EnhancedProductTable({
@@ -73,6 +74,7 @@ export function EnhancedProductTable({
   onDelete,
   onEdit,
   onDuplicate,
+  onPrintLabel,
 }: EnhancedProductTableProps) {
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -340,6 +342,12 @@ export function EnhancedProductTable({
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
+              {onPrintLabel && (row.original as any).sku && (
+                <DropdownMenuItem onClick={() => onPrintLabel(row.original)}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print Label
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => onDelete(row.original.id)}
                 className="text-destructive"
@@ -354,7 +362,7 @@ export function EnhancedProductTable({
         enableHiding: false,
       },
     ],
-    [editingCell, editValue, selectedProducts, onToggleSelect, onSelectAll, onUpdate, onEdit, onDuplicate, onDelete]
+    [editingCell, editValue, selectedProducts, onToggleSelect, onSelectAll, onUpdate, onEdit, onDuplicate, onDelete, onPrintLabel]
   );
 
   const table = useReactTable({

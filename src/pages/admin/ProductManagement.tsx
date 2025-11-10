@@ -50,19 +50,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { generateProductSKU } from "@/lib/utils/skuGenerator";
+import { generateAndStoreBarcode } from "@/lib/utils/barcodeStorage";
+import { syncProductToMenus } from "@/lib/utils/menuSync";
+import { ProductLabel } from "@/components/admin/ProductLabel";
+import { logger } from "@/lib/logger";
+import type { Database } from "@/integrations/supabase/types";
+
+type Product = Database['public']['Tables']['products']['Row'];
 
 export default function ProductManagement() {
   const navigate = useTenantNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [labelProduct, setLabelProduct] = useState<Product | null>(null);
+  const [labelDialogOpen, setLabelDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -92,16 +103,18 @@ export default function ProductManagement() {
     
     try {
       setLoading(true);
-      // Load all products - tenant filtering will be added when products table has tenant_id column
+      // Load products filtered by tenant
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       setProducts(data || []);
-    } catch (error: any) {
-      toast.error("Failed to load products: " + error.message);
+    } catch (error: unknown) {
+      logger.error('Failed to load products', error, { component: 'ProductManagement' });
+      toast.error("Failed to load products: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
       setLoading(false);
     }
@@ -110,13 +123,51 @@ export default function ProductManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!tenant?.id) {
+      toast.error("Tenant not found");
+      return;
+    }
+
+    setIsGenerating(true);
+    
     try {
+      const category = formData.category || "Uncategorized";
+      let sku = formData.sku?.trim() || null;
+      let barcodeImageUrl: string | null = null;
+
+      // Auto-generate SKU if not provided (for new products only)
+      if (!editingProduct && !sku) {
+        try {
+          sku = await generateProductSKU(category, tenant.id);
+          logger.debug('Auto-generated SKU', { sku, category }, { component: 'ProductManagement' });
+        } catch (error) {
+          logger.error('SKU generation failed', error, { component: 'ProductManagement' });
+          // Continue without SKU - product can still be created
+        }
+      }
+
+      // Generate barcode if SKU exists (for new products only)
+      if (!editingProduct && sku) {
+        try {
+          barcodeImageUrl = await generateAndStoreBarcode(sku, tenant.id);
+          if (barcodeImageUrl) {
+            logger.debug('Barcode generated', { sku, barcodeImageUrl }, { component: 'ProductManagement' });
+          }
+        } catch (error) {
+          logger.error('Barcode generation failed', error, { component: 'ProductManagement' });
+          // Continue without barcode - product can still be created
+        }
+      }
+
+      const availableQuantity = formData.available_quantity ? parseInt(formData.available_quantity) : 0;
       const productData = {
         name: formData.name,
-        sku: formData.sku || null,
-        category: formData.category || "Uncategorized",
+        sku: sku,
+        category: category,
         vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
+        strain_type: formData.strain_name ? (formData.strain_name.toLowerCase().includes('hybrid') ? 'Hybrid' : 
+          formData.strain_name.toLowerCase().includes('indica') ? 'Indica' : 'Sativa') : null,
         thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
         cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
         batch_number: formData.batch_number || null,
@@ -125,17 +176,28 @@ export default function ProductManagement() {
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
         price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : 0,
         thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
-        available_quantity: formData.available_quantity ? parseInt(formData.available_quantity) : 0,
-        total_quantity: formData.available_quantity ? parseInt(formData.available_quantity) : 0,
+        available_quantity: availableQuantity,
+        total_quantity: availableQuantity,
+        barcode_image_url: barcodeImageUrl,
+        tenant_id: tenant.id,
+        // menu_visibility will be set by trigger based on available_quantity
       };
 
       if (editingProduct) {
-        const { error } = await supabase
+        const { data: updatedProduct, error } = await supabase
           .from("products")
           .update(productData)
-          .eq("id", editingProduct.id);
+          .eq("id", editingProduct.id)
+          .select()
+          .single();
 
         if (error) throw error;
+        
+        // Sync to menus if stock changed
+        if (availableQuantity > 0) {
+          await syncProductToMenus(updatedProduct.id, tenant.id);
+        }
+        
         toast.success("Product updated successfully");
       } else {
         // Check tenant limits before creating
@@ -152,23 +214,36 @@ export default function ProductManagement() {
           }
         }
 
-        const { error } = await supabase
+        const { data: newProduct, error } = await supabase
           .from("products")
-          .insert([productData]);
+          .insert([productData])
+          .select()
+          .single();
 
         if (error) throw error;
-        toast.success("Product created successfully");
+        
+        // Auto-sync to menus if stock > 0
+        if (availableQuantity > 0 && newProduct) {
+          await syncProductToMenus(newProduct.id, tenant.id);
+        }
+        
+        toast.success("Product created successfully", {
+          description: sku ? `SKU: ${sku}` : undefined,
+        });
       }
 
       setIsDialogOpen(false);
       resetForm();
       loadProducts();
-    } catch (error: any) {
-      toast.error("Failed to save product: " + error.message);
+    } catch (error: unknown) {
+      logger.error('Failed to save product', error, { component: 'ProductManagement' });
+      toast.error("Failed to save product: " + (error instanceof Error ? error.message : "An error occurred"));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setFormData({
       name: product.name || "",
@@ -190,18 +265,34 @@ export default function ProductManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
+    if (!tenant?.id) {
+      toast.error("Tenant not found");
+      return;
+    }
+
     try {
-      const { error } = await supabase.from("products").delete().eq("id", id);
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .eq("tenant_id", tenant.id);
+      
       if (error) throw error;
       toast.success("Product deleted");
       loadProducts();
       setSelectedProducts((prev) => prev.filter((pid) => pid !== id));
-    } catch (error: any) {
-      toast.error("Failed to delete: " + error.message);
+    } catch (error: unknown) {
+      logger.error('Failed to delete product', error, { component: 'ProductManagement', productId: id });
+      toast.error("Failed to delete: " + (error instanceof Error ? error.message : "An error occurred"));
     }
   };
 
   const handleDuplicate = async (id: string) => {
+    if (!tenant?.id) {
+      toast.error("Tenant not found");
+      return;
+    }
+
     const productToDuplicate = products.find((p) => p.id === id);
     if (!productToDuplicate) return;
 
@@ -210,16 +301,49 @@ export default function ProductManagement() {
       const duplicatedProduct = {
         ...productData,
         name: `${productData.name} (Copy)`,
-        sku: productData.sku ? `${productData.sku}-COPY` : null,
+        sku: null, // Clear SKU so new one is auto-generated
+        barcode_image_url: null, // Clear barcode so new one is generated
+        tenant_id: tenant.id,
       };
 
-      const { error } = await supabase.from("products").insert([duplicatedProduct]);
+      const { data: newProduct, error } = await supabase
+        .from("products")
+        .insert([duplicatedProduct])
+        .select()
+        .single();
+      
       if (error) throw error;
+      
+      // Auto-generate SKU and barcode for duplicated product
+      if (newProduct) {
+        const category = productData.category || "Uncategorized";
+        try {
+          const newSku = await generateProductSKU(category, tenant.id);
+          const barcodeUrl = await generateAndStoreBarcode(newSku, tenant.id);
+          
+          await supabase
+            .from("products")
+            .update({ sku: newSku, barcode_image_url: barcodeUrl })
+            .eq("id", newProduct.id);
+        } catch (error) {
+          logger.warn('Failed to generate SKU/barcode for duplicated product', error, {
+            component: 'ProductManagement',
+            productId: newProduct.id,
+          });
+          // Continue - product is created even without SKU/barcode
+        }
+        
+        // Sync to menus if stock > 0
+        if ((productData.available_quantity ?? 0) > 0) {
+          await syncProductToMenus(newProduct.id, tenant.id);
+        }
+      }
       
       toast.success("Product duplicated successfully");
       loadProducts();
-    } catch (error: any) {
-      toast.error("Failed to duplicate product: " + error.message);
+    } catch (error: unknown) {
+      logger.error('Failed to duplicate product', error, { component: 'ProductManagement', productId: id });
+      toast.error("Failed to duplicate product: " + (error instanceof Error ? error.message : "An error occurred"));
     }
   };
 
@@ -271,18 +395,31 @@ export default function ProductManagement() {
     }
   };
 
-  const handleUpdate = async (id: string, updates: any) => {
+  const handleUpdate = async (id: string, updates: Partial<Product>) => {
+    if (!tenant?.id) {
+      toast.error("Tenant not found");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("products")
         .update(updates)
-        .eq("id", id);
+        .eq("id", id)
+        .eq("tenant_id", tenant.id);
 
       if (error) throw error;
+      
+      // Sync to menus if stock changed
+      if ('available_quantity' in updates && updates.available_quantity > 0) {
+        await syncProductToMenus(id, tenant.id);
+      }
+      
       toast.success("Product updated");
       loadProducts();
-    } catch (error: any) {
-      toast.error("Failed to update: " + error.message);
+    } catch (error: unknown) {
+      logger.error('Failed to update product', error, { component: 'ProductManagement', productId: id });
+      toast.error("Failed to update: " + (error instanceof Error ? error.message : "An error occurred"));
     }
   };
 
@@ -363,13 +500,15 @@ export default function ProductManagement() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>SKU</Label>
+                    <Label>SKU {!editingProduct && <span className="text-muted-foreground text-xs">(Auto-generated)</span>}</Label>
                     <Input
                       value={formData.sku}
                       onChange={(e) =>
                         setFormData({ ...formData, sku: e.target.value })
                       }
-                      placeholder="Auto-generated if empty"
+                      placeholder={editingProduct ? "SKU" : "Auto-generated if empty"}
+                      readOnly={!editingProduct}
+                      className={!editingProduct ? "bg-muted cursor-not-allowed" : ""}
                     />
                   </div>
                   <div className="space-y-2">
@@ -518,8 +657,15 @@ export default function ProductManagement() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    {editingProduct ? "Update" : "Create"} Product
+                  <Button type="submit" disabled={isGenerating}>
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {editingProduct ? "Updating..." : "Creating..."}
+                      </>
+                    ) : (
+                      editingProduct ? "Update Product" : "Create Product"
+                    )}
                   </Button>
                 </div>
               </form>
@@ -675,6 +821,10 @@ export default function ProductManagement() {
                     product={product}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onPrintLabel={() => {
+                      setLabelProduct(product);
+                      setLabelDialogOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -688,6 +838,10 @@ export default function ProductManagement() {
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onDuplicate={handleDuplicate}
+                onPrintLabel={(product) => {
+                  setLabelProduct(product);
+                  setLabelDialogOpen(true);
+                }}
               />
             )
           ) : (
@@ -716,6 +870,15 @@ export default function ProductManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Product Label Dialog */}
+      {labelProduct && (
+        <ProductLabel
+          product={labelProduct}
+          open={labelDialogOpen}
+          onOpenChange={setLabelDialogOpen}
+        />
+      )}
     </div>
   );
 }
