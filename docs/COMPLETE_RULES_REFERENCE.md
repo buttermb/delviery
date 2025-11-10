@@ -154,7 +154,17 @@ Install: `bash scripts/install-hooks.sh`
 
 ## 📚 Additional Resources
 
-- [Supabase Rules](./SUPABASE_RULES.md) - Detailed database rules
+### Core Documentation
+- [Admin Panel Rules](./ADMIN_PANEL_RULES.md) - Complete admin panel rules and best practices
+- [Admin Panel Checklist](./ADMIN_PANEL_CHECKLIST.md) - Quick validation checklist
+- [Schema & Edge Function Rules](./SCHEMA_EDGE_FUNCTION_RULES.md) - Database schema and edge function patterns
+- [Supabase Rules](./SUPABASE_RULES.md) - Detailed Supabase rules
+
+### Guides
 - [Development Guide](../DEVELOPMENT.md) - Quick start guide
-- [`.cursorrules`](../.cursorrules) - AI assistant rules
+- [Leafly Integration](../src/lib/LEAFLY_INTEGRATION.md) - Leafly API integration guide
+
+### Configuration
+- [`.cursorrules`](../.cursorrules) - AI assistant rules (used by Cursor AI)
+- [Pre-push Hook](../scripts/pre-push-hook.sh) - Automated validation script
 
