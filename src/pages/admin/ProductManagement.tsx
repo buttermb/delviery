@@ -254,25 +254,43 @@ export default function ProductManagement() {
       resetForm();
       loadProducts();
     } catch (error: unknown) {
+      // Log full error details to console for debugging
+      console.error('Product save error:', error);
+      console.error('Form data:', formData);
+      
       logger.error('Failed to save product', error, { 
         component: 'ProductManagement',
         formData,
         tenantId: tenant?.id,
       });
+      
       const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      const errorCode = (error as any)?.code;
+      const errorDetails = (error as any)?.details;
       
       // Check for specific error types
       let userMessage = errorMessage;
+      let errorTitle = "Failed to save product";
       
       if (errorMessage.includes('null value') || errorMessage.includes('NOT NULL')) {
         userMessage = "Missing required fields. Please fill in all required information.";
+        errorTitle = "Required Field Missing";
       } else if (errorMessage.includes('violates check constraint') || errorMessage.includes('category')) {
         userMessage = "Invalid category selected. Please choose: Flower, Edibles, Vapes, or Concentrates.";
-      } else if (errorMessage.includes('duplicate key')) {
+        errorTitle = "Invalid Category";
+      } else if (errorMessage.includes('duplicate key') || errorCode === '23505') {
         userMessage = "A product with this SKU already exists.";
+        errorTitle = "Duplicate Product";
+      } else if (errorCode === '42703') {
+        userMessage = "Database column not found. Please contact support.";
+        errorTitle = "Database Error";
+      } else if (errorDetails) {
+        userMessage = `${errorMessage} (Details: ${errorDetails})`;
       }
-      toast.error("Failed to save product", {
+      
+      toast.error(errorTitle, {
         description: userMessage,
+        duration: 5000,
       });
     } finally {
       setIsGenerating(false);
