@@ -63,7 +63,7 @@ export default function SuperAdminSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TOKEN)}`,
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN)}`,
         },
         body: JSON.stringify({
           action: "update-password",

@@ -64,7 +64,7 @@ export default function CustomerSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.CUSTOMER_TOKEN)}`,
+          Authorization: `Bearer ${localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN)}`,
         },
         body: JSON.stringify({
           action: "update-password",
