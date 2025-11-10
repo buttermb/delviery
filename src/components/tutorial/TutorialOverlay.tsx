@@ -263,6 +263,7 @@ export function TutorialOverlay({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isFirstStep, isLastStep, onNext, onPrevious, onSkip]);
 
+  // Early return for performance - check conditions before any rendering
   if (!isOpen || !currentStepData) return null;
 
   // Prevent rendering if already mounted elsewhere (safety check)
