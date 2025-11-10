@@ -210,7 +210,7 @@ export default function ReportsPage() {
             </Card>
           </div>
 
-          <Card className="p-6">
+          <Card className="p-6" data-tutorial="analytics-dashboard">
             <h3 className="text-lg font-semibold mb-4">Performance Overview</h3>
             <div className="grid grid-cols-2 gap-6">
               <div>
@@ -235,7 +235,7 @@ export default function ReportsPage() {
 
         {/* Chain of Custody */}
         <TabsContent value="custody">
-          <Card className="p-6">
+          <Card className="p-6" data-tutorial="custom-reports">
             <h3 className="text-lg font-semibold mb-4">Chain of Custody Reports</h3>
             <div className="space-y-4">
               <div className="p-4 border rounded-lg">

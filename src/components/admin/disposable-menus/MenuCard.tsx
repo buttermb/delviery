@@ -198,6 +198,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                   size="sm" 
                   className="flex-1"
                   onClick={() => setAnalyticsOpen(true)}
+                  data-tutorial="analytics"
                 >
                   <BarChart3 className="h-4 w-4 mr-1" />
                   Analytics

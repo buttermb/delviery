@@ -104,13 +104,22 @@ export default function Orders() {
       <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
-          <TakeTourButton
-            tutorialId={ordersTutorial.id}
-            steps={ordersTutorial.steps}
-            variant="outline"
-            size="sm"
-            className="min-h-[44px]"
-          />
+          <div className="flex gap-2">
+            <Button 
+              variant="default"
+              className="min-h-[44px] touch-manipulation"
+              data-tutorial="create-order"
+            >
+              + New Order
+            </Button>
+            <TakeTourButton
+              tutorialId={ordersTutorial.id}
+              steps={ordersTutorial.steps}
+              variant="outline"
+              size="sm"
+              className="min-h-[44px]"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">

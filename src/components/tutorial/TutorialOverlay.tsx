@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 export interface TutorialStep {
   id: string;
@@ -62,7 +63,7 @@ export function TutorialOverlay({
           element = document.querySelector(currentStepData.target);
         } catch (e) {
           // Invalid selector, return null
-          console.warn(`Invalid tutorial target selector: ${currentStepData.target}`);
+          logger.warn(`Invalid tutorial target selector: ${currentStepData.target}`, { component: 'TutorialOverlay' });
         }
       }
 
@@ -130,7 +131,7 @@ export function TutorialOverlay({
         });
         // Log warning for debugging (only in dev, and only once per step)
         if (process.env.NODE_ENV === 'development' && !(window as any).__tutorialWarned) {
-          console.warn(`Tutorial target not found: ${currentStepData.target}. Centering content.`);
+          logger.warn(`Tutorial target not found: ${currentStepData.target}. Centering content.`, { component: 'TutorialOverlay', step: currentStepData.id });
           (window as any).__tutorialWarned = true;
           setTimeout(() => {
             (window as any).__tutorialWarned = false;
