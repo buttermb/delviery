@@ -34,13 +34,15 @@ export async function generateProductSKU(
   tenantId: string
 ): Promise<string> {
   try {
-    const { data, error } = await supabase.rpc('generate_product_sku', {
-      p_category: category,
-      p_tenant_id: tenantId,
-    });
+    // Get count of products in this category for this tenant
+    const { count, error } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('category', category);
 
     if (error) {
-      logger.error('Failed to generate SKU', error, {
+      logger.error('Failed to count products for SKU generation', error, {
         component: 'skuGenerator',
         category,
         tenantId,
@@ -48,11 +50,10 @@ export async function generateProductSKU(
       throw error;
     }
 
-    if (!data) {
-      throw new Error('SKU generation returned no data');
-    }
-
-    return data;
+    // Generate SKU with category prefix and sequential number
+    const prefix = getCategoryPrefix(category);
+    const number = String((count || 0) + 1).padStart(4, '0');
+    return `${prefix}-${number}`;
   } catch (error) {
     logger.error('SKU generation error', error, {
       component: 'skuGenerator',

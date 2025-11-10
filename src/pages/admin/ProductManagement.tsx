@@ -862,16 +862,16 @@ export default function ProductManagement() {
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onPrintLabel={() => {
-                      setLabelProduct(product);
-                      setLabelDialogOpen(true);
-                    }}
-                  />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={() => handleEdit(product)}
+                  onDelete={() => handleDelete(product.id)}
+                  onPrintLabel={() => {
+                    setLabelProduct(product as any);
+                    setLabelDialogOpen(true);
+                  }}
+                />
                 ))}
               </div>
             ) : (
@@ -882,10 +882,13 @@ export default function ProductManagement() {
                 onSelectAll={handleSelectAll}
                 onUpdate={handleUpdate}
                 onDelete={handleDelete}
-                onEdit={handleEdit}
+                onEdit={(id) => {
+                  const product = products.find(p => p.id === id);
+                  if (product) handleEdit(product);
+                }}
                 onDuplicate={handleDuplicate}
                 onPrintLabel={(product) => {
-                  setLabelProduct(product);
+                  setLabelProduct(product as any);
                   setLabelDialogOpen(true);
                 }}
               />
@@ -920,7 +923,7 @@ export default function ProductManagement() {
       {/* Product Label Dialog */}
       {labelProduct && (
         <ProductLabel
-          product={labelProduct}
+          product={labelProduct as any}
           open={labelDialogOpen}
           onOpenChange={setLabelDialogOpen}
         />

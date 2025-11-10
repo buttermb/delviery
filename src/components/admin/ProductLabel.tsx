@@ -21,7 +21,9 @@ import type { Database } from '@/integrations/supabase/types';
 type Product = Database['public']['Tables']['products']['Row'];
 
 interface ProductLabelProps {
-  product: Pick<Product, 'id' | 'name' | 'sku' | 'strain_name' | 'strain_type' | 'barcode_image_url' | 'barcode'>;
+  product: Pick<Product, 'id' | 'name' | 'sku' | 'strain_name' | 'strain_type' | 'barcode'> & {
+    barcode_image_url?: string | null;
+  };
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -34,12 +36,12 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   }
 
   const labelData: ProductLabelData = {
-    productName: product.name,
+    productName: product.name || '',
     strainName: product.strain_name || undefined,
-    strainType: product.strain_type as 'Sativa' | 'Indica' | 'Hybrid' | undefined,
-    sku: product.sku,
+    strainType: (product.strain_type as 'Sativa' | 'Indica' | 'Hybrid') || undefined,
+    sku: product.sku || '',
     barcodeImageUrl: product.barcode_image_url || undefined,
-    barcodeValue: product.barcode || product.sku,
+    barcodeValue: (product.barcode as string) || product.sku || '',
   };
 
   const handleDownload = async () => {
@@ -104,7 +106,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               )}
               {product.barcode_image_url ? (
                 <img
-                  src={product.barcode_image_url}
+                  src={product.barcode_image_url as string}
                   alt="Barcode"
                   className="mx-auto h-16 object-contain"
                 />
