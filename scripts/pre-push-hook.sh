@@ -121,6 +121,15 @@ if [ -n "$MIGRATION_FILES" ]; then
     done
 fi
 
+# 4b. Check for auth.users references in migrations
+echo ""
+echo "🔒 Checking for forbidden auth.users references..."
+AUTH_USERS_REF=$(git diff --cached -G "REFERENCES auth\.users\|REFERENCES auth\.users" --name-only | grep "\.sql$" || true)
+if [ -n "$AUTH_USERS_REF" ]; then
+    error "Found references to auth.users in migrations (use public.profiles instead)"
+    echo "$AUTH_USERS_REF"
+fi
+
 # 5. Check for forbidden schema modifications
 echo ""
 echo "🚫 Checking for forbidden schema modifications..."

@@ -101,7 +101,11 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 
 ## Documentation
 
-- [Supabase Rules](./docs/SUPABASE_RULES.md) - Detailed database and edge function rules
+- [Admin Panel Rules](./docs/ADMIN_PANEL_RULES.md) - Complete admin panel rules and best practices
+- [Admin Panel Checklist](./docs/ADMIN_PANEL_CHECKLIST.md) - Quick validation checklist
+- [Schema & Edge Function Rules](./docs/SCHEMA_EDGE_FUNCTION_RULES.md) - Database schema and edge function patterns
+- [Supabase Rules](./docs/SUPABASE_RULES.md) - Detailed Supabase rules
+- [Complete Rules Reference](./docs/COMPLETE_RULES_REFERENCE.md) - All rules in one place
 - [API Integration Guide](./API_INTEGRATION_AUDIT.md) - API integration patterns
 - [Leafly Integration](./src/lib/LEAFLY_INTEGRATION.md) - Leafly API integration guide
 

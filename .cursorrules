@@ -81,3 +81,15 @@
 - ✅ NEVER access DOM directly (use refs)
 - ✅ Use `useCallback` for event handlers passed to children
 
+### Admin Panel Specific
+- ✅ ALWAYS use `useTenantAdminAuth()` for admin/tenant context
+- ✅ ALWAYS use `usePermissions()` for role checks
+- ✅ ALWAYS use `useFeatureAccess()` for tier checks
+- ✅ ALWAYS use `useTenantLimits()` for limit checks
+- ✅ ALWAYS filter queries by `tenant.id`
+- ✅ ALWAYS use `TenantAdminProtectedRoute` for admin routes
+- ✅ ALWAYS use `FeatureProtectedRoute` for tier-locked features
+- ✅ ALWAYS use `PermissionGuard` for role-restricted UI
+- ❌ NEVER check admin status with localStorage
+- ❌ NEVER skip tenant_id filter in queries
+
