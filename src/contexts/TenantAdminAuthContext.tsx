@@ -216,6 +216,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         setAdmin(JSON.parse(storedAdmin));
         setTenant(tenantWithDefaults);
         
+        // Restore Supabase session on page load
+        supabase.auth.setSession({
+          access_token: storedAccessToken,
+          refresh_token: storedRefreshToken,
+        }).catch(error => {
+          logger.warn('Failed to restore Supabase session', error, 'TenantAdminAuthContext');
+        });
+        
         // Verify token and clear timeout when done
         verifyToken(storedAccessToken).finally(() => {
           clearTimeout(safetyTimeout);
@@ -342,6 +350,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
               const refreshData = await refreshResponse.json();
               
+              // Sync refreshed tokens with Supabase client
+              await supabase.auth.setSession({
+                access_token: refreshData.access_token,
+                refresh_token: refreshData.refresh_token,
+              });
+              
               setAccessToken(refreshData.access_token);
               setRefreshToken(refreshData.refresh_token);
               setToken(refreshData.access_token);
@@ -375,6 +389,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       const data = await response.json();
       
       if (data.admin && data.tenant) {
+        // Ensure Supabase client has the session
+        const currentToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const currentRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        
+        if (currentToken && currentRefreshToken) {
+          await supabase.auth.setSession({
+            access_token: currentToken,
+            refresh_token: currentRefreshToken,
+          }).catch(error => {
+            logger.warn('Failed to set Supabase session during verification', error, 'TenantAdminAuthContext');
+          });
+        }
+        
         // Ensure tenant has limits and usage (fallback to defaults if missing)
         const tenantWithDefaults = {
           ...data.tenant,
@@ -512,6 +539,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         },
       };
       
+      // Sync tokens with Supabase client for RLS
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
+      
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
@@ -552,6 +585,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } catch (error) {
       logger.error("Logout error", error);
     } finally {
+      // Clear Supabase session
+      await supabase.auth.signOut();
+      
       setToken(null);
       setAccessToken(null);
       setRefreshToken(null);
@@ -595,6 +631,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       const data = await response.json();
+      
+      // Sync refreshed tokens with Supabase client
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
       
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
