@@ -100,9 +100,9 @@ export const useBurnMenu = () => {
         showSuccessToast('Menu Burned', 'Menu burned and all access revoked');
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       logger.error('Burn error', error, { component: 'useDisposableMenus' });
-      showErrorToast('Burn Failed', error.message || 'Could not burn menu');
+      showErrorToast('Burn Failed', error instanceof Error ? error.message : 'Could not burn menu');
     }
   });
 };
