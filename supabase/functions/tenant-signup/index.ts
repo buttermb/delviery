@@ -1,6 +1,32 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+// JWT Token generation (simplified for Edge Functions)
+function base64UrlEncode(data: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode(...data));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function encodeJWT(payload: any, secret: string, expiresIn: number = 7 * 24 * 60 * 60): string {
+  const encoder = new TextEncoder();
+  const now = Math.floor(Date.now() / 1000);
+  
+  const jwtPayload = {
+    ...payload,
+    exp: now + expiresIn,
+    iat: now,
+  };
+
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const encodedHeader = base64UrlEncode(encoder.encode(JSON.stringify(header)));
+  const encodedPayload = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
+  
+  // Simple signature (in production, use proper HMAC)
+  const signature = base64UrlEncode(encoder.encode(`${encodedHeader}.${encodedPayload}.${secret}`));
+  
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
 // Generate slug from business name
 function generateSlug(businessName: string): string {
   return businessName
@@ -209,7 +235,33 @@ serve(async (req) => {
       amount: 0,
     });
 
-    // Return success response
+    // Generate JWT tokens for auto-login
+    const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
+    
+    const accessToken = encodeJWT(
+      {
+        user_id: tenantUser.id,
+        email: tenantUser.email,
+        name: tenantUser.name,
+        role: tenantUser.role,
+        tenant_id: tenant.id,
+        tenant_slug: tenant.slug,
+      },
+      jwtSecret,
+      7 * 24 * 60 * 60 // 7 days
+    );
+
+    const refreshToken = encodeJWT(
+      {
+        user_id: tenantUser.id,
+        tenant_id: tenant.id,
+        type: 'refresh',
+      },
+      jwtSecret,
+      30 * 24 * 60 * 60 // 30 days
+    );
+
+    // Return success response with tokens
     return new Response(
       JSON.stringify({
         success: true,
@@ -220,6 +272,9 @@ serve(async (req) => {
           owner_email: tenant.owner_email,
           subscription_plan: tenant.subscription_plan,
           subscription_status: tenant.subscription_status,
+          limits: tenant.limits,
+          usage: tenant.usage,
+          features: tenant.features,
         },
         user: {
           id: tenantUser.id,
@@ -227,6 +282,10 @@ serve(async (req) => {
           name: tenantUser.name,
           role: tenantUser.role,
           tenant_id: tenantUser.tenant_id,
+        },
+        tokens: {
+          access_token: accessToken,
+          refresh_token: refreshToken,
         },
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

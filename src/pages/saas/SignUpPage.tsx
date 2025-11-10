@@ -200,14 +200,21 @@ export default function SignUpPage() {
 
       const tenant = result.tenant;
 
+      // Store tokens and user data for auto-login
+      if (result.tokens) {
+        localStorage.setItem('tenant_admin_access_token', result.tokens.access_token);
+        localStorage.setItem('tenant_admin_refresh_token', result.tokens.refresh_token);
+        localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
+        localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
+      }
+
       toast({
         title: 'Account Created!',
-        description: 'Welcome to your new dashboard! Logging you in...',
+        description: 'Welcome to your new dashboard! Redirecting...',
       });
 
-      // Redirect to tenant-specific login page with tenant slug
-      // User will need to log in with the credentials they just created
-      navigate(`/${tenant.slug}/admin/login?signup=success`, { replace: true });
+      // Redirect to dashboard with auto-login
+      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
     } catch (error: any) {
       logger.error('Signup error', error);
       
