@@ -75,7 +75,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       p.product_name?.toLowerCase().includes(query) ||
       p.strain?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query) ||
-      p.brand?.toLowerCase().includes(query)
+      p.vendor_name?.toLowerCase().includes(query)
     );
   }, [inventory, searchQuery]);
 
