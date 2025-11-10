@@ -224,7 +224,7 @@ serve(async (req) => {
           email: email.toLowerCase(),
           tenant_name: tenant.business_name,
         }),
-      }).catch(err => {
+      }).catch((err: unknown) => {
         console.error('Failed to send verification email:', err);
         // Don't fail signup if email sending fails
       });

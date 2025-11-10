@@ -44,7 +44,18 @@ serve(
       const targetUserId = user_id || user.id;
 
       // Collect portable data (machine-readable format)
-      const portableData = {
+      interface PortableData {
+        user: {
+          id: string;
+          email: string | undefined;
+          created_at: string;
+        };
+        profile: Record<string, unknown> | null;
+        orders: Array<Record<string, unknown>>;
+        addresses: Array<Record<string, unknown>>;
+      }
+
+      const portableData: PortableData = {
         user: {
           id: targetUserId,
           email: user.email,
@@ -89,13 +100,18 @@ serve(
         csvRows.push('Type,ID,Data');
         csvRows.push(`User,${portableData.user.id},"${JSON.stringify(portableData.user).replace(/"/g, '""')}"`);
         if (portableData.profile) {
-          csvRows.push(`Profile,${portableData.profile.id},"${JSON.stringify(portableData.profile).replace(/"/g, '""')}"`);
+          const profileId = typeof portableData.profile === 'object' && portableData.profile !== null && 'id' in portableData.profile 
+            ? String(portableData.profile.id) 
+            : 'unknown';
+          csvRows.push(`Profile,${profileId},"${JSON.stringify(portableData.profile).replace(/"/g, '""')}"`);
         }
-        portableData.orders.forEach((order: any) => {
-          csvRows.push(`Order,${order.id},"${JSON.stringify(order).replace(/"/g, '""')}"`);
+        portableData.orders.forEach((order) => {
+          const orderId = typeof order === 'object' && order !== null && 'id' in order ? String(order.id) : 'unknown';
+          csvRows.push(`Order,${orderId},"${JSON.stringify(order).replace(/"/g, '""')}"`);
         });
-        portableData.addresses.forEach((addr: any) => {
-          csvRows.push(`Address,${addr.id},"${JSON.stringify(addr).replace(/"/g, '""')}"`);
+        portableData.addresses.forEach((addr) => {
+          const addrId = typeof addr === 'object' && addr !== null && 'id' in addr ? String(addr.id) : 'unknown';
+          csvRows.push(`Address,${addrId},"${JSON.stringify(addr).replace(/"/g, '""')}"`);
         });
         responseBody = csvRows.join('\n');
         contentType = 'text/csv';

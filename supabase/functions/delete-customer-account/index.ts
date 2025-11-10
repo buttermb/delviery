@@ -76,8 +76,8 @@ serve(async (req) => {
       .eq('customer_user_id', customer_user_id)
       .gt('expires_at', new Date().toISOString());
 
-    // Log deletion in audit trail
-    await supabase.from('activity_logs').insert({
+    // Log deletion in audit trail (don't fail if logging fails)
+    const { error: logError } = await supabase.from('activity_logs').insert({
       user_id: null, // System action
       tenant_id: tenant_id,
       action: 'customer_account_deleted',
@@ -87,10 +87,11 @@ serve(async (req) => {
         reason: reason || 'No reason provided',
         deleted_at: new Date().toISOString(),
       },
-    }).catch(err => {
-      console.error('Failed to log deletion:', err);
-      // Don't fail if logging fails
     });
+    if (logError) {
+      console.error('Failed to log deletion:', logError);
+      // Don't fail if logging fails
+    }
 
     return new Response(
       JSON.stringify({

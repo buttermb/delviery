@@ -29,7 +29,14 @@ serve(
       
       // Verify super admin token (using super-admin-auth function logic)
       // For now, we'll verify by checking super_admin_users table
-      const { data: { user } } = await supabase.auth.getUser(token).catch(() => ({ data: { user: null } }));
+      let user = null;
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser(token);
+        user = authUser;
+      } catch {
+        // If getUser fails, user remains null
+        user = null;
+      }
       
       if (!user) {
         // Try custom JWT verification for super admin

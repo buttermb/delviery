@@ -47,7 +47,20 @@ serve(
       const targetUserId = user_id || user.id;
 
       // Collect all user data
-      const userData: any = {
+      interface UserData {
+        profile: Record<string, unknown> | null;
+        orders: Array<Record<string, unknown>>;
+        order_items: Array<Record<string, unknown>>;
+        addresses: Array<Record<string, unknown>>;
+        payments: Array<Record<string, unknown>>;
+        activity_logs: Array<Record<string, unknown>>;
+        audit_logs: Array<Record<string, unknown>>;
+        cart_items: Array<Record<string, unknown>>;
+        reviews: Array<Record<string, unknown>>;
+        notifications: Array<Record<string, unknown>>;
+      }
+
+      const userData: UserData = {
         profile: null,
         orders: [],
         order_items: [],
@@ -77,7 +90,9 @@ serve(
 
       // Get order items
       if (userData.orders.length > 0) {
-        const orderIds = userData.orders.map((o: any) => o.id);
+        const orderIds = userData.orders
+          .map((o) => typeof o === 'object' && o !== null && 'id' in o ? String(o.id) : null)
+          .filter((id): id is string => id !== null);
         const { data: orderItems } = await supabase
           .from('order_items')
           .select('*')
