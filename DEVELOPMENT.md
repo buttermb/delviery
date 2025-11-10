@@ -101,8 +101,9 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 
 ## Documentation
 
-### ⭐ Ultimate Guide
-- [**Ultimate Rulebook**](./docs/ULTIMATE_RULEBOOK.md) - **COMPLETE ERROR-PREVENTION GUIDE** - Start here!
+### ⭐ Getting Started
+- [**Getting Started Guide**](./docs/GETTING_STARTED.md) - 🚀 **NEW DEVELOPER? START HERE!**
+- [**Ultimate Rulebook**](./docs/ULTIMATE_RULEBOOK.md) - **COMPLETE ERROR-PREVENTION GUIDE**
 
 ### Core Rules & Best Practices
 - [Admin Panel Rules](./docs/ADMIN_PANEL_RULES.md) - Complete admin panel rules and best practices
