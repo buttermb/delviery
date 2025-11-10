@@ -9,8 +9,17 @@ export const STORAGE_KEYS = {
   // Authentication tokens
   SUPER_ADMIN_ACCESS_TOKEN: 'super_admin_access_token',
   TENANT_ADMIN_ACCESS_TOKEN: 'tenant_admin_access_token',
+  TENANT_ADMIN_REFRESH_TOKEN: 'tenant_admin_refresh_token',
   CUSTOMER_ACCESS_TOKEN: 'customer_access_token',
   COURIER_ACCESS_TOKEN: 'courier_access_token',
+  
+  // User data
+  SUPER_ADMIN_USER: 'super_admin_user',
+  TENANT_ADMIN_USER: 'tenant_admin_user',
+  TENANT_DATA: 'tenant_data',
+  CUSTOMER_USER: 'customer_user',
+  CUSTOMER_TENANT_DATA: 'customer_tenant_data',
+  COURIER_PIN_SESSION: 'courier_pin_session',
   
   // User preferences
   THEME: 'theme',

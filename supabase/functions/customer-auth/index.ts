@@ -22,10 +22,11 @@ function encodeJWT(payload: Omit<JWTPayload, "exp" | "iat">): string {
     iat: now,
   };
 
+  const encoder = new TextEncoder();
   const header = { alg: "HS256", typ: "JWT" };
-  const encodedHeader = base64Encode(JSON.stringify(header)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const encodedPayload = base64Encode(JSON.stringify(jwtPayload)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const signature = base64Encode(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const encodedHeader = base64Encode(encoder.encode(JSON.stringify(header)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const encodedPayload = base64Encode(encoder.encode(JSON.stringify(jwtPayload)).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const signature = base64Encode(encoder.encode(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`).buffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }

@@ -46,7 +46,7 @@ interface CustomerAuthContextType {
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = STORAGE_KEYS.CUSTOMER_TOKEN;
+const TOKEN_KEY = STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN;
 const CUSTOMER_KEY = STORAGE_KEYS.CUSTOMER_USER;
 const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 

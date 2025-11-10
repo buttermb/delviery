@@ -23,7 +23,7 @@ interface SuperAdminAuthContextType {
 
 const SuperAdminAuthContext = createContext<SuperAdminAuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_TOKEN;
+const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN;
 const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
 
 // Bound fetch to prevent "Illegal invocation" error in production builds

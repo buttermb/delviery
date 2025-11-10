@@ -39,9 +39,9 @@ export function JWTDecoder() {
     const tokens: TokenInfo[] = [];
     
     try {
-      const customerToken = localStorage.getItem(STORAGE_KEYS.CUSTOMER_TOKEN);
+      const customerToken = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
       const tenantAdminAccessToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
-      const superAdminToken = localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TOKEN);
+      const superAdminToken = localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
       
       if (customerToken) {
         tokens.push({ name: 'Customer Token', token: customerToken, icon: User });

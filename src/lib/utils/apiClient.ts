@@ -10,11 +10,11 @@ import { STORAGE_KEYS } from "@/constants/storageKeys";
 const getToken = (): string | null => {
   const userType = getCurrentUserType();
   if (userType === "super_admin") {
-    return localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TOKEN);
+    return localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
   } else if (userType === "tenant_admin") {
     return localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
   } else if (userType === "customer") {
-    return localStorage.getItem(STORAGE_KEYS.CUSTOMER_TOKEN);
+    return localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
   }
   return null;
 };
