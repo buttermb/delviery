@@ -93,3 +93,40 @@
 - ❌ NEVER check admin status with localStorage
 - ❌ NEVER skip tenant_id filter in queries
 
+### File & Folder Structure
+- ✅ Components: PascalCase (ProductCard.tsx)
+- ✅ Hooks: camelCase with 'use' prefix (useLocalStorage.ts)
+- ✅ Utilities: camelCase (formatCurrency.ts)
+- ✅ Constants: UPPER_SNAKE_CASE (STORAGE_KEYS.ts)
+- ✅ Types: PascalCase (UserProfile.ts)
+- ✅ ALWAYS use `@/` alias for imports (never relative paths)
+- ✅ Import order: React → Third-party → Types → Components → Hooks → Utils
+
+### React Component Patterns
+- ✅ ALWAYS define props interface
+- ✅ ALWAYS use named exports (not default)
+- ✅ ALWAYS handle errors in async operations
+- ✅ ALWAYS show loading states for async actions
+- ✅ ALWAYS cleanup subscriptions in useEffect
+- ✅ ALWAYS use useCallback for event handlers passed to children
+- ✅ ALWAYS use useMemo for expensive calculations
+- ❌ NEVER use console.log (use logger)
+- ❌ NEVER use default exports for components
+- ❌ NEVER skip error handling
+
+### Navigation & Routing
+- ✅ ALWAYS use `useNavigate()` or `<Link>` (never window.location)
+- ✅ ALWAYS include tenant slug in admin routes: `/:tenantSlug/admin/*`
+- ✅ ALWAYS wrap admin routes with `TenantAdminProtectedRoute`
+- ✅ ALWAYS validate tenantSlug matches logged-in tenant
+- ❌ NEVER use hardcoded routes without tenant slug
+- ❌ NEVER use <a> tags for internal navigation
+
+### Button & Event Handlers
+- ✅ ALWAYS show loading state during async operations
+- ✅ ALWAYS handle errors with try-catch
+- ✅ ALWAYS use toast notifications for user feedback
+- ✅ ALWAYS disable buttons during loading
+- ❌ NEVER skip error handling
+- ❌ NEVER skip loading states
+

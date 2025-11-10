@@ -155,10 +155,18 @@ Install: `bash scripts/install-hooks.sh`
 ## 📚 Additional Resources
 
 ### Core Documentation
+- [**Ultimate Rulebook**](./ULTIMATE_RULEBOOK.md) - ⭐ **COMPLETE ERROR-PREVENTION GUIDE** ⭐
 - [Admin Panel Rules](./ADMIN_PANEL_RULES.md) - Complete admin panel rules and best practices
 - [Admin Panel Checklist](./ADMIN_PANEL_CHECKLIST.md) - Quick validation checklist
 - [Schema & Edge Function Rules](./SCHEMA_EDGE_FUNCTION_RULES.md) - Database schema and edge function patterns
 - [Supabase Rules](./SUPABASE_RULES.md) - Detailed Supabase rules
+
+### Tenant Isolation
+- [Tenant Isolation Quick Start](./TENANT_ISOLATION_QUICK_START.md) - Get started in 5 minutes
+- [Tenant Isolation Guide](./TENANT_ISOLATION.md) - Complete tenant isolation system
+- [Tenant Isolation Migration Guide](./TENANT_ISOLATION_MIGRATION_GUIDE.md) - How to migrate existing code
+- [Tenant Isolation Rules Compliance](./TENANT_ISOLATION_RULES_COMPLIANCE.md) - Rules verification
+- [Tenant Isolation Summary](./TENANT_ISOLATION_SUMMARY.md) - Complete system summary
 
 ### Guides
 - [Development Guide](../DEVELOPMENT.md) - Quick start guide
