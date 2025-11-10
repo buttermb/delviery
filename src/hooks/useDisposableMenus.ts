@@ -153,7 +153,8 @@ export const useManageWhitelist = () => {
       showSuccessToast('Success', messages[variables.action]);
     },
     onError: (error: unknown) => {
-      showErrorToast('Action Failed', error.message || 'Could not complete action');
+      logger.error('Menu action failed', error, { component: 'useDisposableMenus' });
+      showErrorToast('Action Failed', error instanceof Error ? error.message : 'Could not complete action');
     }
   });
 };
