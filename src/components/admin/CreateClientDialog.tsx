@@ -11,6 +11,7 @@ import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -104,9 +105,9 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       
       onOpenChange(false);
       if (onSuccess) onSuccess();
-    } catch (error: any) {
-      console.error("Error creating client:", error);
-      showErrorToast("Failed to create client", error.message || "An error occurred");
+    } catch (error: unknown) {
+      logger.error("Error creating client", error, { component: 'CreateClientDialog' });
+      showErrorToast("Failed to create client", error instanceof Error ? error.message : "An error occurred");
     } finally {
       setLoading(false);
     }

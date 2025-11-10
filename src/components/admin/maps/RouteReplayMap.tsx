@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Navigation, TrendingUp } from 'lucide-react';
 import { LocationPoint, RouteStatistics } from '@/hooks/useRunnerLocationHistory';
 import { RouteReplayControls } from './RouteReplayControls';
+import { logger } from '@/lib/logger';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
@@ -58,7 +59,7 @@ export function RouteReplayMap({
     } catch (error) {
       // Mapbox errors are handled silently - map just won't render
       if (import.meta.env.DEV) {
-        console.error('Mapbox error:', error);
+        logger.error('Mapbox error', error, { component: 'RouteReplayMap' });
       }
     }
   }, []);

@@ -52,7 +52,7 @@ export default function Orders() {
       const { data, error } = await query;
       
       if (error) {
-        console.error('Error loading orders:', error);
+        logger.error('Error loading orders', error, { component: 'Orders' });
         toast.error(`Failed to load orders: ${error.message}`);
         return;
       }

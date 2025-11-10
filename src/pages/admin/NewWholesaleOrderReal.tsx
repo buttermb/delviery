@@ -12,6 +12,7 @@ import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus,
 import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners, useCreateWholesaleOrder } from "@/hooks/useWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from "@/lib/logger";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -140,7 +141,7 @@ export default function NewWholesaleOrderReal() {
 
       navigate('/admin/wholesale-dashboard');
     } catch (error) {
-      console.error('Order creation error:', error);
+      logger.error('Order creation error', error, { component: 'NewWholesaleOrderReal' });
     }
   };
 
