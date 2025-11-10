@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { logger } from "@/utils/logger";
 
 interface QuickReorderButtonProps {
   orderId: string;
@@ -92,7 +93,7 @@ export function QuickReorderButton({ orderId, orderItems, disabled }: QuickReord
         navigate("/cart");
       }
     } catch (error: unknown) {
-      console.error("Reorder error:", error);
+      logger.error("Reorder error", error as Error, 'QuickReorderButton');
       toast.error(error instanceof Error ? error.message : "Failed to reorder");
     }
   };

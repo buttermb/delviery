@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { logger } from '@/utils/logger';
 import {
   Dialog,
   DialogContent,
@@ -106,7 +107,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
       setOpen(false);
       onSuccess?.();
     } catch (error: unknown) {
-      console.error('Error adding runner:', error);
+      logger.error('Error adding runner', error as Error, 'AddRunnerDialog');
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to add runner',

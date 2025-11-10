@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/utils/logger";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
 
@@ -74,7 +75,7 @@ export default function MapboxAddressAutocomplete({
       setSuggestions(data.features || []);
       setShowSuggestions(true);
     } catch (error) {
-      console.error("Error fetching address suggestions:", error);
+      logger.error("Error fetching address suggestions", error as Error, 'MapboxAddressAutocomplete');
       setSuggestions([]);
     } finally {
       setIsLoading(false);

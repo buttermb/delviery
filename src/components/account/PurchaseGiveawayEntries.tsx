@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ShoppingBag, Gift, Trophy, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { logger } from '@/utils/logger';
 
 interface GiveawayEntry {
   id: string;
@@ -46,10 +47,10 @@ export default function PurchaseGiveawayEntries() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to giveaway entries');
+          logger.debug('Successfully subscribed to giveaway entries', undefined, 'PurchaseGiveawayEntries');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to giveaway entries:', status);
+          logger.error('Failed to subscribe to giveaway entries', { status }, 'PurchaseGiveawayEntries');
         }
       });
 
@@ -84,7 +85,7 @@ export default function PurchaseGiveawayEntries() {
       setStats(stats);
 
     } catch (error) {
-      console.error('Failed to fetch entries:', error);
+      logger.error('Failed to fetch entries', error as Error, 'PurchaseGiveawayEntries');
     } finally {
       setLoading(false);
     }

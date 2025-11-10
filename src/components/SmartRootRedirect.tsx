@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { LoadingFallback } from "./LoadingFallback";
 import { getCurrentUserType } from "@/lib/utils/authHelpers";
+import { logger } from "@/utils/logger";
 
 export function SmartRootRedirect() {
   const [checking, setChecking] = useState(true);
@@ -76,7 +77,7 @@ export function SmartRootRedirect() {
         setRedirectPath("/marketing");
         setChecking(false);
       } catch (error) {
-        console.error("Error checking auth:", error);
+        logger.error("Error checking auth", error as Error, 'SmartRootRedirect');
         setRedirectPath("/marketing");
         setChecking(false);
       }

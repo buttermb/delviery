@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 interface ActivityItem {
   id: string;
@@ -88,7 +89,7 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
       setActivities(combinedActivities.slice(0, 15));
     } catch (error) {
-      console.error('Error fetching activity:', error);
+      logger.error('Error fetching activity', error as Error, 'UserActivityFeed');
     } finally {
       setLoading(false);
     }

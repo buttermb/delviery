@@ -6,6 +6,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface Message {
   id: string;
@@ -47,7 +48,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           .single();
 
         if (error) {
-          console.error('Error creating session:', error);
+          logger.error('Error creating session', error as Error, 'LiveChatWidget');
           toast({
             title: "Error",
             description: "Failed to start chat session",
@@ -105,10 +106,10 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to chat messages');
+          logger.debug('Successfully subscribed to chat messages', undefined, 'LiveChatWidget');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to chat messages:', status);
+          logger.error('Failed to subscribe to chat messages', { status }, 'LiveChatWidget');
         }
       });
 
@@ -139,7 +140,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       if (error) throw error;
 
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message', error as Error, 'LiveChatWidget');
       toast({
         title: "Error",
         description: "Failed to send message",

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface Account {
   id: string;
@@ -40,7 +41,7 @@ export function AccountSwitcher() {
       if (error) throw error;
       setAccounts(data || []);
     } catch (error) {
-      console.error('Error loading accounts:', error);
+      logger.error('Error loading accounts', error as Error, 'AccountSwitcher');
     }
   };
 

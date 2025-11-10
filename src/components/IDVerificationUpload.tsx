@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Shield, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/utils/logger";
 
 export default function IDVerificationUpload() {
   const { user } = useAuth();
@@ -86,7 +87,7 @@ export default function IDVerificationUpload() {
       toast.success("ID verification submitted! We'll review it within 24 hours.");
       setSubmitted(true);
     } catch (error: unknown) {
-      console.error("Verification error:", error instanceof Error ? error.message : error);
+      logger.error("Verification error", error, 'IDVerificationUpload');
       toast.error("Failed to submit verification");
     } finally {
       setLoading(false);

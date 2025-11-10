@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 interface FraudCheckWrapperProps {
   children: React.ReactNode;
@@ -31,7 +32,7 @@ export function FraudCheckWrapper({
         });
 
         if (error) {
-          console.error("Fraud check function error:", error);
+          logger.error("Fraud check function error", error, 'FraudCheckWrapper');
           // Continue processing if fraud check fails - don't block legitimate orders
           return;
         }
@@ -47,7 +48,7 @@ export function FraudCheckWrapper({
           toast.warning("Your order has been flagged for review");
         }
       } catch (error: unknown) {
-        console.error("Fraud check error:", error instanceof Error ? error.message : error);
+        logger.error("Fraud check error", error, 'FraudCheckWrapper');
         // Continue processing if fraud check fails
       }
     };

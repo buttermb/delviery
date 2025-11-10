@@ -31,6 +31,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { logger } from "@/utils/logger";
 
 interface Review {
   id: string;
@@ -243,7 +244,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
       setReviewComment("");
       queryClient.invalidateQueries({ queryKey: ["product-reviews", product.id] });
     } catch (error) {
-      console.error("Error submitting review:", error);
+      logger.error("Error submitting review", error as Error, 'ProductDetailModal');
       toast({
         title: "Failed to Submit Review",
         description: "Please try again later.",
