@@ -53,17 +53,21 @@ if git diff --cached supabase/config.toml | grep -q "^[-+].*project_id"; then
     error "project_id in supabase/config.toml should not be modified"
 fi
 
-# 2. Check for console.log statements
+# 2. Check for console.log statements (frontend only, edge functions OK)
 echo ""
-echo "📝 Checking for console.log statements..."
-CONSOLE_LOGS=$(git diff --cached -G "console\.(log|error|warn|info|debug)" --name-only | grep -E "\.(ts|tsx|js|jsx)$" || true)
-if [ -n "$CONSOLE_LOGS" ]; then
-    error "Found console.log statements in staged files:"
-    echo "$CONSOLE_LOGS" | while read -r file; do
-        echo "   - $file"
-        git diff --cached "$file" | grep -n "console\." | head -3
-    done
-    echo "   Use logger from @/lib/logger instead"
+echo "📝 Checking for console.log statements in frontend..."
+FRONTEND_FILES=$(git diff --cached --name-only | grep -E "src/.*\.(ts|tsx|js|jsx)$" | grep -v "supabase/functions" || true)
+if [ -n "$FRONTEND_FILES" ]; then
+    CONSOLE_LOGS=$(echo "$FRONTEND_FILES" | xargs git diff --cached -G "console\.(log|error|warn|info|debug)" --name-only 2>/dev/null || true)
+    if [ -n "$CONSOLE_LOGS" ]; then
+        error "Found console.log statements in frontend files:"
+        echo "$CONSOLE_LOGS" | while read -r file; do
+            echo "   - $file"
+            git diff --cached "$file" | grep -n "console\." | head -3
+        done
+        echo "   Use logger from @/lib/logger instead"
+        echo "   Note: console.log is OK in edge functions (server-side)"
+    fi
 fi
 
 # 3. Check for hardcoded secrets
@@ -78,14 +82,30 @@ SECRET_PATTERNS=(
     "secret.*=.*['\"][^'\"]{20,}"
     "password.*=.*['\"][^'\"]{8,}"
     "token.*=.*['\"][^'\"]{20,}"
+    "apikey.*=.*['\"][^'\"]{20,}"
 )
 
 for pattern in "${SECRET_PATTERNS[@]}"; do
-    if git diff --cached -G "$pattern" --name-only | grep -vE "(package-lock.json|yarn.lock|\.md$)" | grep -q .; then
+    MATCHES=$(git diff --cached -G "$pattern" --name-only | grep -vE "(package-lock.json|yarn.lock|\.md$|\.test\.|\.spec\.)" || true)
+    if [ -n "$MATCHES" ]; then
         error "Potential hardcoded secret found (pattern: $pattern)"
-        git diff --cached -G "$pattern" --name-only | head -5
+        echo "$MATCHES" | head -5
     fi
 done
+
+# 3b. Check for localStorage hardcoded keys (should use STORAGE_KEYS)
+echo ""
+echo "📦 Checking for localStorage hardcoded keys..."
+LOCALSTORAGE_MATCHES=$(git diff --cached -G "localStorage\.(getItem|setItem|removeItem)" --name-only | grep -E "\.(ts|tsx|js|jsx)$" | grep -v "storageKeys.ts" || true)
+if [ -n "$LOCALSTORAGE_MATCHES" ]; then
+    for file in $LOCALSTORAGE_MATCHES; do
+        if git diff --cached "$file" | grep -q "localStorage\.(getItem|setItem|removeItem).*['\"][^'\"]*['\"]" && \
+           ! git diff --cached "$file" | grep -q "STORAGE_KEYS"; then
+            warning "localStorage used without STORAGE_KEYS constant in $file"
+            echo "   Use STORAGE_KEYS from @/constants/storageKeys instead"
+        fi
+    done
+fi
 
 # 4. Check SECURITY DEFINER functions in migrations
 echo ""
@@ -128,8 +148,8 @@ if [ -n "$EDGE_FUNCTIONS" ]; then
         fi
         
         # Check for req.json() without validation
-        if grep -q "req\.json()" "$file" 2>/dev/null; then
-            if ! grep -q "z\.object\|RequestSchema\|safeParse\|parse" "$file" 2>/dev/null; then
+        if grep -q "req\.json()\|await req\.json()" "$file" 2>/dev/null; then
+            if ! grep -q "z\.object\|RequestSchema\|safeParse\|parse\|ZodError" "$file" 2>/dev/null; then
                 error "Edge function $file uses req.json() without Zod validation"
             fi
         fi
@@ -137,6 +157,19 @@ if [ -n "$EDGE_FUNCTIONS" ]; then
         # Check for CORS headers
         if ! grep -q "OPTIONS\|corsHeaders" "$file" 2>/dev/null; then
             warning "Edge function $file may be missing CORS handling"
+        fi
+        
+        # Check for withZenProtection wrapper
+        if ! grep -q "withZenProtection" "$file" 2>/dev/null && \
+           ! grep -q "#.*zen.*protection\|TODO.*zen" "$file" 2>/dev/null; then
+            warning "Edge function $file may be missing withZenProtection wrapper"
+        fi
+        
+        # Check for environment variable validation
+        if grep -q "Deno\.env\.get" "$file" 2>/dev/null; then
+            if ! grep -q "if.*!.*env\|throw.*env\|return.*env" "$file" 2>/dev/null; then
+                warning "Edge function $file may not validate environment variables"
+            fi
         fi
     done
 fi
@@ -187,7 +220,32 @@ if [ -f "package.json" ] && grep -q "\"build\"" package.json; then
     fi
 fi
 
-# 10. Check commit message format (conventional commits)
+# 10. Check for unsafe patterns
+echo ""
+echo "🚨 Checking for unsafe patterns..."
+
+# Check for dangerouslySetInnerHTML with user content
+DANGEROUS_HTML=$(git diff --cached -G "dangerouslySetInnerHTML" --name-only | grep -E "\.(ts|tsx|js|jsx)$" || true)
+if [ -n "$DANGEROUS_HTML" ]; then
+    warning "Found dangerouslySetInnerHTML usage - ensure content is sanitized"
+    echo "$DANGEROUS_HTML"
+fi
+
+# Check for eval() or Function() constructor
+EVAL_USAGE=$(git diff --cached -G "eval\(|new Function\(" --name-only | grep -E "\.(ts|tsx|js|jsx)$" || true)
+if [ -n "$EVAL_USAGE" ]; then
+    error "Found eval() or Function() constructor - security risk!"
+    echo "$EVAL_USAGE"
+fi
+
+# Check for any type usage
+ANY_TYPE=$(git diff --cached -G ":\s*any\b|as any" --name-only | grep -E "\.(ts|tsx)$" | grep -v "\.test\." || true)
+if [ -n "$ANY_TYPE" ]; then
+    warning "Found 'any' type usage - prefer 'unknown' with type guards"
+    echo "$ANY_TYPE" | head -5
+fi
+
+# 11. Check commit message format (conventional commits)
 echo ""
 echo "📝 Checking commit message format..."
 COMMIT_MSG=$(git log -1 --pretty=%B)

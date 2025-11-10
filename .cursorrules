@@ -10,35 +10,74 @@
 
 ### Logging
 - ✅ ALWAYS use `logger` from `@/lib/logger`
-- ❌ NEVER use `console.log`, `console.error`, etc.
+- ❌ NEVER use `console.log`, `console.error`, etc. in frontend
+- ✅ console.log OK in edge functions (server-side)
+
+### Storage (localStorage/sessionStorage)
+- ✅ ALWAYS use `STORAGE_KEYS` from `@/constants/storageKeys`
+- ✅ ALWAYS wrap in try-catch (fails in incognito)
+- ✅ ALWAYS parse JSON safely with error handling
+- ✅ Use `useLocalStorage` hook for React components
+- ❌ NEVER store sensitive data (passwords, credit cards, SSN)
 
 ### Edge Functions
 - ✅ Import from `_shared/deps.ts`: `serve`, `createClient`, `corsHeaders`
 - ✅ ALWAYS use Zod validation for `req.json()`
 - ✅ ALWAYS handle OPTIONS requests
-- ✅ ALWAYS return CORS headers in responses
+- ✅ ALWAYS return CORS headers in ALL responses
+- ✅ Wrap with `withZenProtection` from `_shared/zen-firewall.ts`
+- ✅ Validate environment variables before use
+- ✅ Return proper Content-Type headers
 
 ### Database
 - ✅ SECURITY DEFINER functions MUST have `SET search_path = public`
 - ✅ All tables MUST have RLS enabled
 - ✅ Multi-tenant tables MUST filter by tenant_id in RLS
 - ✅ NEVER reference `auth.users` directly (use `public.profiles`)
+- ✅ Use `.maybeSingle()` instead of `.single()` for optional data
+- ✅ ALWAYS check for errors after database operations
+- ✅ Use transactions for multi-step operations
 
 ### TypeScript
 - ✅ Use types from `src/types/`, never inline types
 - ✅ Use `@/` alias for all imports
 - ✅ Group imports: React → Third-party → Types → Components → Utils
+- ✅ ALWAYS define interfaces for component props
+- ✅ NEVER use `any` type (use `unknown` if necessary)
+- ✅ Use enums or const objects for fixed values
 
 ### TanStack Query
 - ✅ Use `queryKeys` factory from `@/lib/queryKeys`
 - ✅ Invalidate queries on mutations
+- ✅ ALWAYS use TanStack Query for data fetching (not direct fetch)
+- ✅ Set appropriate `staleTime` and `gcTime`
 
 ### Error Handling
-- ✅ Use try-catch with `logger.error()`
-- ✅ Show user-friendly toast messages
+- ✅ Use try-catch with `logger.error()` and typed errors (`error: unknown`)
+- ✅ ALWAYS log errors with context (userId, component, etc.)
+- ✅ Show user-friendly toast messages (not technical errors)
+- ✅ Edge functions MUST return proper error responses with CORS
+
+### Input Validation
+- ✅ ALL user inputs MUST be validated (client and server)
+- ✅ Use validation helpers from `_shared/validation.ts` in edge functions
+- ✅ ALWAYS sanitize strings before database insertion
+- ✅ NEVER trust client-side data in edge functions (extract from JWT)
+- ✅ Implement rate limiting on sensitive operations
 
 ### Security
 - ✅ NEVER hardcode secrets
 - ✅ Use environment variables
 - ✅ Sanitize user input before rendering HTML
+- ✅ NEVER expose API keys in frontend code (use edge functions)
+- ✅ NEVER trust user roles from localStorage (use server-side RLS)
+- ✅ NEVER use `dangerouslySetInnerHTML` with user content
+- ✅ NEVER log sensitive data (passwords, tokens, etc.)
+- ✅ NEVER use `eval()` or `Function()` constructor
+
+### React Patterns
+- ✅ ALWAYS memoize expensive computations with `useMemo`
+- ✅ ALWAYS cleanup subscriptions and timers in `useEffect`
+- ✅ NEVER access DOM directly (use refs)
+- ✅ Use `useCallback` for event handlers passed to children
 
