@@ -49,6 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
 export default function ProductManagement() {
   const navigate = useTenantNavigate();
@@ -383,21 +384,24 @@ export default function ProductManagement() {
                   </div>
                   <div className="space-y-2">
                     <Label>Brand</Label>
-                    <Input
+                    <AutocompleteInput
                       value={formData.vendor_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, vendor_name: e.target.value })
+                      onChange={(value) =>
+                        setFormData({ ...formData, vendor_name: value })
                       }
-                      placeholder="Vendor/Brand name"
+                      type="brand"
+                      placeholder="Vendor/Brand name (e.g., Cookies, Jungle Boys)"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Strain Name</Label>
-                    <Input
+                    <AutocompleteInput
                       value={formData.strain_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, strain_name: e.target.value })
+                      onChange={(value) =>
+                        setFormData({ ...formData, strain_name: value })
                       }
+                      type="strain"
+                      placeholder="Strain name (e.g., Gelato, Runtz, OG Kush)"
                     />
                   </div>
                   <div className="space-y-2">

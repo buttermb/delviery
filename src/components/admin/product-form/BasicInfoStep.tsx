@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
 interface BasicInfoStepProps {
   formData: any;
@@ -165,11 +166,11 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
 
         <div>
           <Label htmlFor="vendor">Vendor Name (Optional)</Label>
-          <Input
-            id="vendor"
+          <AutocompleteInput
             value={formData.vendor_name || ""}
-            onChange={(e) => updateFormData({ vendor_name: e.target.value })}
-            placeholder="Vendor/Brand name"
+            onChange={(value) => updateFormData({ vendor_name: value })}
+            type="brand"
+            placeholder="Vendor/Brand name (e.g., Cookies, Jungle Boys)"
             className="mt-1.5"
           />
         </div>
