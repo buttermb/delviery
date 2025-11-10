@@ -185,6 +185,7 @@ export default function ProductManagement() {
       const productData = {
         name: formData.name,
         sku: sku,
+        barcode: sku || null, // Set barcode to SKU (database column exists and is UNIQUE)
         category: category,
         vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
@@ -197,10 +198,13 @@ export default function ProductManagement() {
         wholesale_price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
         price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : 0,
-        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : 0,
-        barcode: barcodeImageUrl,
+        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : 0, // Default to 0 instead of null (database requires NOT NULL)
+        available_quantity: availableQuantity,
+        total_quantity: availableQuantity,
         tenant_id: tenant.id,
-      };
+        // menu_visibility will be set by trigger based on available_quantity
+        // barcode_image_url will be set via direct SQL update since it's not in types yet
+      } as Database['public']['Tables']['products']['Insert'] & { barcode_image_url?: string | null };
 
       if (editingProduct) {
         const { data: updatedProduct, error } = await supabase
@@ -211,6 +215,19 @@ export default function ProductManagement() {
           .single();
 
         if (error) throw error;
+        
+        // Update barcode_image_url separately if it was generated
+        if (barcodeImageUrl && updatedProduct) {
+          const { error: updateError } = await supabase
+            .from("products")
+            .update({ barcode_image_url: barcodeImageUrl } as any)
+            .eq("id", updatedProduct.id);
+          
+          if (updateError) {
+            logger.warn('Failed to update barcode_image_url', updateError, { component: 'ProductManagement' });
+            // Don't throw - product was updated successfully
+          }
+        }
         
         // Sync to menus if stock changed
         if (availableQuantity > 0) {
@@ -240,6 +257,19 @@ export default function ProductManagement() {
           .single();
 
         if (error) throw error;
+        
+        // Update barcode_image_url separately since it's not in types yet
+        if (barcodeImageUrl && newProduct) {
+          const { error: updateError } = await supabase
+            .from("products")
+            .update({ barcode_image_url: barcodeImageUrl } as any)
+            .eq("id", newProduct.id);
+          
+          if (updateError) {
+            logger.warn('Failed to update barcode_image_url', updateError, { component: 'ProductManagement' });
+            // Don't throw - product was created successfully
+          }
+        }
         
         // Auto-sync to menus if stock > 0
         if (availableQuantity > 0 && newProduct) {
@@ -357,7 +387,8 @@ export default function ProductManagement() {
         ...productData,
         name: `${productData.name} (Copy)`,
         sku: null, // Clear SKU so new one is auto-generated
-        barcode_image_url: null, // Clear barcode so new one is generated
+        barcode: null, // Clear barcode so new one is generated
+        barcode_image_url: null, // Clear barcode image so new one is generated
         tenant_id: tenant.id,
       };
 
@@ -378,7 +409,11 @@ export default function ProductManagement() {
           
           await supabase
             .from("products")
-            .update({ sku: newSku, barcode_image_url: barcodeUrl })
+            .update({ 
+              sku: newSku, 
+              barcode: newSku, // Set barcode to SKU
+              barcode_image_url: barcodeUrl 
+            } as any)
             .eq("id", newProduct.id);
         } catch (error) {
           logger.warn('Failed to generate SKU/barcode for duplicated product', error, {
