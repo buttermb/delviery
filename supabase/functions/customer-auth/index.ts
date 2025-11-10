@@ -1,5 +1,7 @@
 import { serve, createClient, hash, compare, corsHeaders } from '../_shared/deps.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
 
 const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key-change-in-production";
 
@@ -85,23 +87,21 @@ serve(async (req) => {
     }
 
     if (action === "signup") {
-      const { email, password, firstName, lastName, phone, tenantSlug } = requestBody;
+      // Validate input with Zod
+      const validationResult = signupSchema.safeParse(requestBody);
+      if (!validationResult.success) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { email, password, firstName, lastName, phone, tenantSlug } = validationResult.data;
 
       console.log('Customer signup attempt:', { email, tenantSlug });
-
-      if (!email || !password || !tenantSlug) {
-        return new Response(
-          JSON.stringify({ error: "Email, password, and tenant slug are required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      if (password.length < 8) {
-        return new Response(
-          JSON.stringify({ error: "Password must be at least 8 characters" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
 
       // Find tenant by slug
       const { data: tenant, error: tenantError } = await supabase
@@ -171,14 +171,19 @@ serve(async (req) => {
     }
 
     if (action === "login") {
-      const { email, password, tenantSlug } = requestBody;
-
-      if (!email || !password || !tenantSlug) {
+      // Validate input with Zod
+      const validationResult = loginSchema.safeParse(requestBody);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: "Email, password, and tenant slug are required" }),
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      const { email, password, tenantSlug } = validationResult.data;
 
       // Find tenant by slug
       const { data: tenant, error: tenantError } = await supabase
@@ -383,21 +388,21 @@ serve(async (req) => {
         );
       }
 
-      const { currentPassword, newPassword } = await req.json();
-
-      if (!currentPassword || !newPassword) {
+      const rawBody = await req.json();
+      
+      // Validate input with Zod
+      const validationResult = updatePasswordSchema.safeParse(rawBody);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: "Current password and new password are required" }),
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      if (newPassword.length < 8) {
-        return new Response(
-          JSON.stringify({ error: "New password must be at least 8 characters long" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const { currentPassword, newPassword } = validationResult.data;
 
       const token = authHeader.replace("Bearer ", "");
       const payload = verifyJWT(token);

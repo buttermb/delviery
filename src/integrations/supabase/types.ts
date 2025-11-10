@@ -6241,7 +6241,6 @@ export type Database = {
           referral_code: string | null
           reported_issues: number | null
           risk_score: number | null
-          role: string | null
           selfie_verified: boolean | null
           total_orders: number | null
           total_spent: number | null
@@ -6285,7 +6284,6 @@ export type Database = {
           referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
-          role?: string | null
           selfie_verified?: boolean | null
           total_orders?: number | null
           total_spent?: number | null
@@ -6329,7 +6327,6 @@ export type Database = {
           referral_code?: string | null
           reported_issues?: number | null
           risk_score?: number | null
-          role?: string | null
           selfie_verified?: boolean | null
           total_orders?: number | null
           total_spent?: number | null

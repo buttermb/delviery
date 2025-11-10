@@ -1,4 +1,6 @@
 import { serve, createClient, hash, compare, corsHeaders } from '../_shared/deps.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 
 // Hash password using bcrypt
 async function hashPassword(password: string): Promise<string> {
@@ -36,16 +38,21 @@ serve(async (req) => {
     }
 
     if (action === 'login') {
-      const { email, password, tenantSlug } = requestBody;
-
-      console.log('Tenant admin login attempt:', { email, tenantSlug });
-
-      if (!email || !password || !tenantSlug) {
+      // Validate input with Zod
+      const validationResult = loginSchema.safeParse(requestBody);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: 'Email, password, and tenant slug are required' }),
+          JSON.stringify({ 
+            error: 'Validation failed', 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      const { email, password, tenantSlug } = validationResult.data;
+
+      console.log('Tenant admin login attempt:', { email, tenantSlug });
 
       // Create a separate service role client for tenant lookup (bypasses RLS)
       const serviceClient = createClient(
@@ -209,14 +216,19 @@ serve(async (req) => {
     }
 
     if (action === 'refresh') {
-      const { refresh_token } = requestBody;
-
-      if (!refresh_token) {
+      // Validate input with Zod
+      const validationResult = refreshSchema.safeParse(requestBody);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: 'Refresh token required' }),
+          JSON.stringify({ 
+            error: 'Validation failed', 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      const { refresh_token } = validationResult.data;
 
       const { data, error } = await supabase.auth.refreshSession({
         refresh_token,
@@ -256,21 +268,21 @@ serve(async (req) => {
 
     if (action === "setup-password") {
       // Setup password for newly created tenant user (during signup)
-      const { email, password, tenantSlug } = await req.json();
-
-      if (!email || !password || !tenantSlug) {
+      const rawBody = await req.json();
+      
+      // Validate input with Zod
+      const validationResult = setupPasswordSchema.safeParse(rawBody);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: "Email, password, and tenant slug are required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            error: 'Validation failed', 
+            details: validationResult.error.errors 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      if (password.length < 8) {
-        return new Response(
-          JSON.stringify({ error: "Password must be at least 8 characters long" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const { email, password, tenantSlug } = validationResult.data;
 
       // Find tenant by slug
       const { data: tenant, error: tenantError } = await supabase

@@ -1,5 +1,7 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { loginSchema, refreshSchema, updatePasswordSchema } from './validation.ts';
 
 // JWT Secret (should be in environment variable)
 const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key-change-in-production";
@@ -169,17 +171,21 @@ serve(async (req) => {
     }
 
     if (action === "login") {
-      const { email, password } = body;
-
-      console.log('Login attempt for email:', email);
-
-      if (!email || !password) {
-        console.log('Missing email or password');
+      // Validate input with Zod
+      const validationResult = loginSchema.safeParse(body);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: "Email and password are required" }),
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      const { email, password } = validationResult.data;
+
+      console.log('Login attempt for email:', email);
 
       // Find super admin user
       const { data: superAdmin, error: findError } = await supabase
@@ -330,7 +336,19 @@ serve(async (req) => {
     }
 
     if (action === "refresh") {
-      const { token } = body;
+      // Validate input with Zod
+      const validationResult = refreshSchema.safeParse(body);
+      if (!validationResult.success) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { token } = validationResult.data;
 
       const payload = verifyJWT(token);
       if (!payload || payload.type !== "super_admin") {
@@ -374,21 +392,19 @@ serve(async (req) => {
         );
       }
 
-      const { currentPassword, newPassword } = body;
-
-      if (!currentPassword || !newPassword) {
+      // Validate input with Zod
+      const validationResult = updatePasswordSchema.safeParse(body);
+      if (!validationResult.success) {
         return new Response(
-          JSON.stringify({ error: "Current password and new password are required" }),
+          JSON.stringify({ 
+            error: "Validation failed", 
+            details: validationResult.error.errors 
+          }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      if (newPassword.length < 8) {
-        return new Response(
-          JSON.stringify({ error: "New password must be at least 8 characters long" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const { currentPassword, newPassword } = validationResult.data;
 
       const token = authHeader.replace("Bearer ", "");
       const payload = verifyJWT(token);
