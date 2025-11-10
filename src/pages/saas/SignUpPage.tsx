@@ -213,8 +213,11 @@ export default function SignUpPage() {
         description: 'Welcome to your new dashboard! Redirecting...',
       });
 
-      // Redirect to dashboard with auto-login
-      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+      // Force page reload to re-initialize auth context with new tokens
+      // Small delay to ensure localStorage write completes
+      setTimeout(() => {
+        window.location.href = `/${tenant.slug}/admin/dashboard`;
+      }, 100);
     } catch (error: any) {
       logger.error('Signup error', error);
       
