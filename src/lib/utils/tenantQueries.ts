@@ -16,7 +16,7 @@ import { logger } from "@/lib/logger";
  *   .select('*')
  *   .eq('status', 'active');
  */
-export function tenantQuery<T = any>(
+export function tenantQuery<T = unknown>(
   supabase: SupabaseClient<T>,
   table: string,
   tenantId: string
@@ -35,7 +35,7 @@ export function tenantQuery<T = any>(
 /**
  * Get tenant-scoped insert builder
  */
-export function tenantInsert<T = any>(
+export function tenantInsert<T = unknown>(
   supabase: SupabaseClient<T>,
   table: string,
   tenantId: string
@@ -48,13 +48,13 @@ export function tenantInsert<T = any>(
     throw new Error("tenantId is required for tenant-scoped inserts");
   }
 
-  return supabase.from(table).insert({ tenant_id: tenantId } as any);
+  return supabase.from(table).insert({ tenant_id: tenantId } as Record<string, unknown>);
 }
 
 /**
  * Get tenant-scoped update builder
  */
-export function tenantUpdate<T = any>(
+export function tenantUpdate<T = unknown>(
   supabase: SupabaseClient<T>,
   table: string,
   tenantId: string
@@ -67,13 +67,13 @@ export function tenantUpdate<T = any>(
     throw new Error("tenantId is required for tenant-scoped updates");
   }
 
-  return supabase.from(table).update({} as any).eq("tenant_id", tenantId);
+  return supabase.from(table).update({} as Record<string, unknown>).eq("tenant_id", tenantId);
 }
 
 /**
  * Get tenant-scoped delete builder
  */
-export function tenantDelete<T = any>(
+export function tenantDelete<T = unknown>(
   supabase: SupabaseClient<T>,
   table: string,
   tenantId: string
@@ -93,7 +93,7 @@ export function tenantDelete<T = any>(
  * Validate tenant_id matches user's tenant
  * Use this in Edge Functions to prevent cross-tenant access
  */
-export async function validateTenantAccess<T = any>(
+export async function validateTenantAccess<T = unknown>(
   supabase: SupabaseClient<T>,
   userId: string,
   tenantId: string
@@ -130,7 +130,7 @@ export async function validateTenantAccess<T = any>(
 /**
  * Get user's tenant IDs
  */
-export async function getUserTenantIds<T = any>(
+export async function getUserTenantIds<T = unknown>(
   supabase: SupabaseClient<T>,
   userId: string
 ): Promise<string[]> {
