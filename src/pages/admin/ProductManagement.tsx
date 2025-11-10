@@ -175,7 +175,7 @@ export default function ProductManagement() {
         wholesale_price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
         price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : 0,
-        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
+        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : 0, // Default to 0 instead of null (database requires NOT NULL)
         available_quantity: availableQuantity,
         total_quantity: availableQuantity,
         barcode_image_url: barcodeImageUrl,
@@ -236,8 +236,18 @@ export default function ProductManagement() {
       resetForm();
       loadProducts();
     } catch (error: unknown) {
-      logger.error('Failed to save product', error, { component: 'ProductManagement' });
-      toast.error("Failed to save product: " + (error instanceof Error ? error.message : "An error occurred"));
+      logger.error('Failed to save product', error, { 
+        component: 'ProductManagement',
+        formData,
+        tenantId: tenant?.id,
+      });
+      const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      const userMessage = errorMessage.includes('null value') || errorMessage.includes('NOT NULL')
+        ? "Missing required fields. Please fill in all required information."
+        : errorMessage;
+      toast.error("Failed to save product", {
+        description: userMessage,
+      });
     } finally {
       setIsGenerating(false);
     }
