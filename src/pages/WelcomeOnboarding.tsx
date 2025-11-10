@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateDemoData } from "@/lib/demoData";
 import { OnboardingCompletionModal } from "@/components/onboarding/OnboardingCompletionModal";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { logger } from "@/utils/logger";
 
 export default function WelcomeOnboarding() {
   const location = useLocation();
@@ -69,7 +70,7 @@ export default function WelcomeOnboarding() {
         };
       } catch (error: any) {
         // If query fails, return defaults
-        console.warn("Error fetching tenant data:", error);
+        logger.warn("Error fetching tenant data", error, 'WelcomeOnboarding');
         return {
           usage: {},
           limits: {},
@@ -165,7 +166,7 @@ export default function WelcomeOnboarding() {
       // Refetch tenant data to update usage counts
       await refetchTenant();
     } catch (error: any) {
-      console.error("Error generating demo data:", error);
+      logger.error("Error generating demo data", error, 'WelcomeOnboarding');
       toast({
         title: "Error",
         description: error.message || "Failed to generate demo data",

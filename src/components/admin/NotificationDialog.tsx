@@ -39,6 +39,7 @@ import { Bell, Mail, MessageSquare, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { logger } from '@/utils/logger';
 
 const notificationSchema = z.object({
   recipients: z.enum(['all', 'active', 'trial', 'past_due', 'custom']),
@@ -107,13 +108,12 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
       }
 
       // In production, send notifications via email/SMS service
-      // For now, log to console
-      console.log('Sending notifications:', {
+      logger.debug('Sending notifications', {
         recipients: targetTenants.length,
         subject: data.subject,
         message: data.message,
         type: data.type,
-      });
+      }, 'NotificationDialog');
 
       toast({
         title: 'Notifications sent',

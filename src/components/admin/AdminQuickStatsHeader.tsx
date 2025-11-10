@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/utils/logger';
 
 interface QuickStats {
   activeOrders: number;
@@ -49,7 +50,7 @@ export const AdminQuickStatsHeader = () => {
         });
       } catch (error) {
         if (isMounted) {
-          console.error('Failed to fetch quick stats:', error);
+          logger.error('Failed to fetch quick stats', error, 'AdminQuickStatsHeader');
         }
       } finally {
         if (isMounted) {

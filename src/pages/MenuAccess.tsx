@@ -15,6 +15,7 @@ import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
 import type { GeofenceRule } from '@/utils/geofencing';
+import { logger } from '@/utils/logger';
 
 interface MenuData {
   id: string;
@@ -119,18 +120,17 @@ export default function MenuAccess() {
           };
         }
       } catch (err) {
-        console.log('Geolocation not available:', err);
+        logger.debug('Geolocation not available', err, 'MenuAccess');
       }
 
       // Call validation edge function
-      console.log('=== MenuAccess calling menu-access-validate ===');
-      console.log('Payload:', {
+      logger.debug('MenuAccess calling menu-access-validate', {
         encrypted_url_token: token,
         access_code: accessCode,
         location: userLocation,
         device_fingerprint: localStorage.getItem('device_fingerprint'),
         user_agent: navigator.userAgent,
-      });
+      }, 'MenuAccess');
 
       const { data, error: validationError } = await supabase.functions.invoke('menu-access-validate', {
         body: {
@@ -144,8 +144,10 @@ export default function MenuAccess() {
 
       if (validationError) throw validationError;
 
-      console.log('=== Validation response ===', data);
-      console.log('Products count:', data?.menu_data?.products?.length);
+      logger.debug('Validation response', {
+        access_granted: data?.access_granted,
+        products_count: data?.menu_data?.products?.length
+      }, 'MenuAccess');
 
       setValidation(data);
 
@@ -153,7 +155,7 @@ export default function MenuAccess() {
         setError(data.violations?.join(', ') || 'Access denied');
       }
     } catch (err: any) {
-      console.error('Access validation error:', err);
+      logger.error('Access validation error', err, 'MenuAccess');
       setError(err.message || 'Failed to validate access');
       toast({
         variant: 'destructive',

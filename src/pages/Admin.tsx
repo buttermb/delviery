@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus, Pencil, Trash2, Package, Users, TrendingUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { logger } from "@/utils/logger";
 
 interface Product {
   id: string;
@@ -57,7 +58,7 @@ const Admin = () => {
       });
 
       if (error) {
-        console.error('Admin verification error:', error);
+        logger.error('Admin verification error', error, 'Admin');
         setIsAdmin(false);
       } else {
         setIsAdmin(isAdminUser === true);

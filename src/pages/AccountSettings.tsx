@@ -12,6 +12,7 @@ import CopyButton from "@/components/CopyButton";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArrowLeft, Home } from "lucide-react";
 import CustomerLayout from "@/layouts/CustomerLayout";
+import { logger } from "@/utils/logger";
 
 interface Profile {
   user_id: string;
@@ -86,16 +87,16 @@ export default function AccountSettings() {
           table: 'profiles',
         },
         () => {
-          console.log('Profile updated, refreshing settings...');
+          logger.debug('Profile updated, refreshing settings', undefined, 'AccountSettings');
           init();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to account settings');
+          logger.debug('Successfully subscribed to account settings', undefined, 'AccountSettings');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to account settings updates:', status);
+          logger.error('Failed to subscribe to account settings updates', { status }, 'AccountSettings');
         }
       });
 

@@ -28,6 +28,7 @@ import UserActivityFeed from "@/components/account/UserActivityFeed";
 import AddressBook from "@/components/account/AddressBook";
 import PaymentMethods from "@/components/account/PaymentMethods";
 import NotificationPreferences from "@/components/account/NotificationPreferences";
+import { logger } from "@/utils/logger";
 
 export default function UserAccount() {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export default function UserAccount() {
           table: 'profiles',
         },
         () => {
-          console.log('Profile updated, refreshing...');
+          logger.debug('Profile updated, refreshing', undefined, 'UserAccount');
           fetchUserData();
         }
       )
@@ -61,16 +62,16 @@ export default function UserAccount() {
           table: 'orders',
         },
         () => {
-          console.log('Order updated, refreshing orders...');
+          logger.debug('Order updated, refreshing orders', undefined, 'UserAccount');
           fetchUserData();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to user account updates');
+          logger.debug('Successfully subscribed to user account updates', undefined, 'UserAccount');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to user account updates:', status);
+          logger.error('Failed to subscribe to user account updates', { status }, 'UserAccount');
         }
       });
 
@@ -110,7 +111,7 @@ export default function UserAccount() {
       setProfile(profileData);
       setOrders(ordersData || []);
     } catch (error: any) {
-      console.error("Error fetching user data:", error);
+      logger.error("Error fetching user data", error, 'UserAccount');
       toast.error("Failed to load account data");
     } finally {
       setLoading(false);

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Mail, Eye, EyeOff, Package, Users, Settings } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { logger } from "@/utils/logger";
 
 export default function AccountSignup() {
   const [step, setStep] = useState(1);
@@ -164,7 +165,7 @@ export default function AccountSignup() {
         state: { tenantSlug: urlSlug, name: yourName },
       });
     } catch (error: any) {
-      console.error("Signup error:", error);
+      logger.error("Signup error", error, 'AccountSignup');
       toast({
         title: "Signup failed",
         description: error.message || "An error occurred. Please try again.",

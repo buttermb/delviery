@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
+import { logger } from '@/utils/logger';
 
 interface InvitationDetails {
   email: string;
@@ -58,7 +59,7 @@ export default function InvitationAcceptPage() {
         }
       });
     } catch (err) {
-      console.error('Error validating invitation:', err);
+      logger.error('Error validating invitation', err, 'InvitationAcceptPage');
       setError('Failed to validate invitation');
     } finally {
       setLoading(false);
@@ -101,7 +102,7 @@ export default function InvitationAcceptPage() {
       // Redirect to tenant admin panel
       navigate(`/${invitation?.tenant.slug}/admin`);
     } catch (error: any) {
-      console.error('Error accepting invitation:', error);
+      logger.error('Error accepting invitation', error, 'InvitationAcceptPage');
       toast({
         title: 'Error',
         description: error.message || 'Failed to accept invitation',
