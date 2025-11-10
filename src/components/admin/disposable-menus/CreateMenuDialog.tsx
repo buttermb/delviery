@@ -283,10 +283,13 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                           .filter(p => !((p as any).image_url || (p as any).images?.[0]))
                           .map(p => {
                             const category = (p as any).category?.toLowerCase() || 'flower';
-                            logger.debug('Product to generate', { product: { 
-                              name: p.product_name, 
-                              category,
-                              hasCategory: !!(p as any).category 
+                            logger.debug('Product to generate', { 
+                              product: {
+                                name: p.product_name, 
+                                category,
+                                hasCategory: !!(p as any).category 
+                              },
+                              component: 'CreateMenuDialog'
                             });
                             return {
                               id: p.id,
@@ -296,7 +299,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                             };
                           });
                         
-                        console.log(`Found ${productsWithoutImages.length} products without images`);
+                        logger.debug(`Found ${productsWithoutImages.length} products without images`, { component: 'CreateMenuDialog' });
                         
                         if (productsWithoutImages.length === 0) {
                           toast.error('No products need images');
