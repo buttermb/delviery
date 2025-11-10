@@ -130,21 +130,38 @@ export function AutocompleteInput({
       />
       {open && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full bg-background shadow-lg rounded-xl border border-border max-h-60 overflow-auto">
-          {suggestions.map((s, i) => (
-            <li
-              key={s}
-              onClick={() => handleSelect(s)}
-              className={cn(
-                "px-3 py-2 cursor-pointer hover:bg-muted transition-colors flex items-center justify-between",
-                i === activeIndex && "bg-muted"
-              )}
-            >
-              <span>{s}</span>
-              {value.toLowerCase() === s.toLowerCase() && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
-            </li>
-          ))}
+          {suggestions.map((s, i) => {
+            // Highlight matching text
+            const highlightText = (text: string, query: string) => {
+              if (!query.trim()) return text;
+              const parts = text.split(new RegExp(`(${query})`, 'gi'));
+              return parts.map((part, idx) => 
+                part.toLowerCase() === query.toLowerCase() ? (
+                  <mark key={idx} className="bg-primary/20 text-primary font-medium">
+                    {part}
+                  </mark>
+                ) : (
+                  part
+                )
+              );
+            };
+
+            return (
+              <li
+                key={s}
+                onClick={() => handleSelect(s)}
+                className={cn(
+                  "px-3 py-2 cursor-pointer hover:bg-muted transition-colors flex items-center justify-between",
+                  i === activeIndex && "bg-muted"
+                )}
+              >
+                <span className="flex-1">{highlightText(s, value)}</span>
+                {value.toLowerCase() === s.toLowerCase() && (
+                  <Check className="h-4 w-4 text-primary ml-2 flex-shrink-0" />
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
       {open && suggestions.length === 0 && value.trim().length > 0 && (

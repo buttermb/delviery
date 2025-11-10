@@ -36,11 +36,14 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
 
         <div>
           <Label htmlFor="strain">Strain Name (Optional)</Label>
-          <Input
-            id="strain"
-            value={formData.strain_lineage || ""}
-            onChange={(e) => updateFormData({ strain_lineage: e.target.value })}
-            placeholder="Example: Purple Haze"
+          <AutocompleteInput
+            value={formData.strain_lineage || formData.strain_name || ""}
+            onChange={(value) => updateFormData({ 
+              strain_lineage: value,
+              strain_name: value 
+            })}
+            type="strain"
+            placeholder="Strain name (e.g., Gelato, Runtz, OG Kush)"
             className="mt-1.5"
           />
           <p className="text-xs text-muted-foreground mt-1">
