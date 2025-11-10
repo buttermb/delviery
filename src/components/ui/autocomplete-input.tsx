@@ -75,6 +75,21 @@ export function AutocompleteInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSelect = useCallback((suggestion: string) => {
+    onChange(suggestion);
+    setOpen(false);
+    setIsFocused(false);
+    inputRef.current?.blur();
+    
+    // Save to recent selections
+    const key = `autocomplete_recent_${type}`;
+    const stored = localStorage.getItem(key);
+    const recent = stored ? JSON.parse(stored) : [];
+    const updated = [suggestion, ...recent.filter((s: string) => s !== suggestion)].slice(0, 5);
+    localStorage.setItem(key, JSON.stringify(updated));
+    setRecentSelections(updated);
+  }, [onChange, type]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     const hasRecent = value.trim().length === 0 && recentSelections.length > 0;
     const hasSuggestions = suggestions.length > 0;
@@ -83,6 +98,7 @@ export function AutocompleteInput({
       if (e.key === "Escape") {
         setOpen(false);
         setIsFocused(false);
+        inputRef.current?.blur();
       }
       return;
     }
@@ -118,21 +134,6 @@ export function AutocompleteInput({
       inputRef.current?.blur();
     }
   }, [open, suggestions, recentSelections, activeIndex, value, handleSelect]);
-
-  const handleSelect = useCallback((suggestion: string) => {
-    onChange(suggestion);
-    setOpen(false);
-    setIsFocused(false);
-    inputRef.current?.blur();
-    
-    // Save to recent selections
-    const key = `autocomplete_recent_${type}`;
-    const stored = localStorage.getItem(key);
-    let recent: string[] = stored ? JSON.parse(stored) : [];
-    recent = [suggestion, ...recent.filter(s => s !== suggestion)].slice(0, 5);
-    localStorage.setItem(key, JSON.stringify(recent));
-    setRecentSelections(recent.slice(0, 3));
-  }, [onChange, type]);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -189,7 +190,7 @@ export function AutocompleteInput({
                     <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                   <span className="flex-1">{s}</span>
                   {isPopularItem(s, type) && (
-                    <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" title="Popular" />
+                    <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" aria-label="Popular" />
                   )}
                 </li>
               ))}
@@ -231,7 +232,7 @@ export function AutocompleteInput({
                 <span className="flex-1">{highlightText(s, value)}</span>
                 <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                   {isPopularItem(s, type) && (
-                    <TrendingUp className="h-3 w-3 text-primary" title="Popular" />
+                    <TrendingUp className="h-3 w-3 text-primary" aria-label="Popular" />
                   )}
                   {value.toLowerCase() === s.toLowerCase() && (
                     <Check className="h-4 w-4 text-primary" />

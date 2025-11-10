@@ -229,6 +229,40 @@ export default function ProductManagement() {
     );
   };
 
+  const profitMargin = (cost: number, price: number) => {
+    if (!cost || !price) return 0;
+    return (((price - cost) / price) * 100).toFixed(1);
+  };
+
+  const filteredProducts = products
+    .filter(
+      (p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter((p) => categoryFilter === "all" || p.category === categoryFilter)
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return (a.name || "").localeCompare(b.name || "");
+        case "price":
+          return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+        case "stock":
+          return (b.available_quantity || 0) - (a.available_quantity || 0);
+        case "margin":
+          const marginA = profitMargin(a.cost_per_unit, a.wholesale_price);
+          const marginB = profitMargin(b.cost_per_unit, b.wholesale_price);
+          return Number(marginB) - Number(marginA);
+        default:
+          return 0;
+      }
+    });
+
+  const categories = Array.from(
+    new Set(products.map((p) => p.category).filter(Boolean))
+  );
+
   const handleSelectAll = () => {
     if (selectedProducts.length === filteredProducts.length) {
       setSelectedProducts([]);
@@ -269,40 +303,6 @@ export default function ProductManagement() {
     });
     setEditingProduct(null);
   };
-
-  const filteredProducts = products
-    .filter(
-      (p) =>
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter((p) => categoryFilter === "all" || p.category === categoryFilter)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return (a.name || "").localeCompare(b.name || "");
-        case "price":
-          return (b.wholesale_price || 0) - (a.wholesale_price || 0);
-        case "stock":
-          return (b.available_quantity || 0) - (a.available_quantity || 0);
-        case "margin":
-          const marginA = profitMargin(a.cost_per_unit, a.wholesale_price);
-          const marginB = profitMargin(b.cost_per_unit, b.wholesale_price);
-          return Number(marginB) - Number(marginA);
-        default:
-          return 0;
-      }
-    });
-
-  const profitMargin = (cost: number, price: number) => {
-    if (!cost || !price) return 0;
-    return (((price - cost) / price) * 100).toFixed(1);
-  };
-
-  const categories = Array.from(
-    new Set(products.map((p) => p.category).filter(Boolean))
-  );
 
   if (tenantLoading) {
     return (
