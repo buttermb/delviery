@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { PackageCheck, Plus, X } from 'lucide-react';
+import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ReceivingItem {
   product_id: string;
@@ -110,8 +111,9 @@ export function QuickReceiving() {
       toast.success(`Successfully received ${items.length} items`);
       setItems([]);
     },
-    onError: (error: Error) => {
-      toast.error(`Failed to receive items: ${error.message}`);
+    onError: (error: unknown) => {
+      logger.error('Failed to receive items', error, { component: 'QuickReceiving' });
+      toast.error(`Failed to receive items: ${error instanceof Error ? error.message : 'An error occurred'}`);
     },
   });
 
@@ -181,12 +183,25 @@ export function QuickReceiving() {
           </div>
 
           <Button
-            onClick={() => receiveMutation.mutate()}
-            disabled={receiveMutation.isPending}
+            onClick={() => {
+              try {
+                receiveMutation.mutate();
+              } catch (error) {
+                logger.error('Button click error', error, { component: 'QuickReceiving' });
+              }
+            }}
+            disabled={items.length === 0 || receiveMutation.isPending}
             className="w-full"
             size="lg"
           >
-            {receiveMutation.isPending ? 'Processing...' : `Receive ${items.length} Items`}
+            {receiveMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              `Receive ${items.length} Items`
+            )}
           </Button>
         </div>
       )}

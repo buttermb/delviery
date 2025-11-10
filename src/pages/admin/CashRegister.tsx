@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 
 interface Product {
   id: string;
@@ -127,10 +128,11 @@ export default function CashRegister() {
       queryClient.invalidateQueries({ queryKey: queryKeys.pos.products(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Payment processing failed', error, { component: 'CashRegister' });
       toast({
         title: 'Payment failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive'
       });
     }

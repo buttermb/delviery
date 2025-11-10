@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
+import { Loader2 } from 'lucide-react';
 
 export default function ImagesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -121,10 +123,11 @@ export default function ImagesPage() {
       setUploadDialogOpen(false);
       setSelectedProductId('');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Image upload failed', error, { component: 'ImagesPage' });
       toast({ 
         title: 'Upload failed', 
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive'
       });
     }
@@ -150,10 +153,11 @@ export default function ImagesPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setSelectedImage(null);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Image deletion failed', error, { component: 'ImagesPage' });
       toast({
         title: 'Delete failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive'
       });
     }
@@ -432,11 +436,27 @@ export default function ImagesPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => selectedImage && deleteImage.mutate(selectedImage.image_url)}
-              disabled={deleteImage.isPending}
+              onClick={() => {
+                if (!selectedImage) return;
+                try {
+                  deleteImage.mutate(selectedImage.image_url);
+                } catch (error) {
+                  logger.error('Button click error', error, { component: 'ImagesPage' });
+                }
+              }}
+              disabled={!selectedImage || deleteImage.isPending}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {deleteImage.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

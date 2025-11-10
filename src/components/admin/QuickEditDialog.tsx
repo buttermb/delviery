@@ -18,6 +18,8 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
+import { Loader2 } from "lucide-react";
 
 interface QuickEditDialogProps {
   product: any;
@@ -50,10 +52,11 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
       toast({ title: "✓ Product updated successfully" });
       onOpenChange(false);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Failed to update product', error, { component: 'QuickEditDialog' });
       toast({
         title: "Failed to update product",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
     }
@@ -108,8 +111,25 @@ export function QuickEditDialog({ product, open, onOpenChange }: QuickEditDialog
             <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={() => updateProduct.mutate()} className="flex-1">
-              Save Changes
+            <Button 
+              onClick={() => {
+                try {
+                  updateProduct.mutate();
+                } catch (error) {
+                  logger.error('Button click error', error, { component: 'QuickEditDialog' });
+                }
+              }}
+              disabled={updateProduct.isPending}
+              className="flex-1"
+            >
+              {updateProduct.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
             </Button>
           </div>
         </div>

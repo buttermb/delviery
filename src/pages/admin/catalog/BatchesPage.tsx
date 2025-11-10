@@ -34,6 +34,8 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
+import { Loader2 } from 'lucide-react';
 
 export default function BatchesPage() {
   const { tenant } = useTenantAdminAuth();
@@ -146,10 +148,11 @@ export default function BatchesPage() {
         notes: ''
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      logger.error('Failed to create batch', error, { component: 'BatchesPage' });
       toast({
         title: 'Failed to create batch',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive'
       });
     }
@@ -467,10 +470,23 @@ export default function BatchesPage() {
               Cancel
             </Button>
             <Button
-              onClick={() => createBatch.mutate(newBatch)}
+              onClick={() => {
+                try {
+                  createBatch.mutate(newBatch);
+                } catch (error) {
+                  logger.error('Button click error', error, { component: 'BatchesPage' });
+                }
+              }}
               disabled={!newBatch.batch_number || !newBatch.product_id || !newBatch.quantity_lbs || createBatch.isPending}
             >
-              Create Batch
+              {createBatch.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Batch'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

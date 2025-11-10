@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 interface CreateMenuDialogProps {
   open: boolean;
@@ -277,12 +278,12 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                     size="sm"
                     onClick={async () => {
                       try {
-                        console.log('Generate images button clicked');
+                        logger.debug('Generate images button clicked', { component: 'CreateMenuDialog' });
                         const productsWithoutImages = inventory
                           .filter(p => !((p as any).image_url || (p as any).images?.[0]))
                           .map(p => {
                             const category = (p as any).category?.toLowerCase() || 'flower';
-                            console.log('Product to generate:', { 
+                            logger.debug('Product to generate', { product: { 
                               name: p.product_name, 
                               category,
                               hasCategory: !!(p as any).category 
@@ -305,7 +306,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         toast.info(`Generating images for ${productsWithoutImages.length} product(s)...`);
                         await bulkGenerateImages.mutateAsync(productsWithoutImages);
                       } catch (error) {
-                        console.error('Button click error:', error);
+                        logger.error('Button click error', error, { component: 'CreateMenuDialog' });
                         toast.error('Failed to start image generation');
                       }
                     }}
