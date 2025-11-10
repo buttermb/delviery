@@ -101,7 +101,7 @@ export const useBurnMenu = () => {
       }
     },
     onError: (error: any) => {
-      console.error('Burn error:', error);
+      logger.error('Burn error', error, { component: 'useDisposableMenus' });
       showErrorToast('Burn Failed', error.message || 'Could not burn menu');
     }
   });
