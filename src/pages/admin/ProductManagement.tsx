@@ -67,7 +67,7 @@ export default function ProductManagement() {
     name: "",
     sku: "",
     category: "",
-    brand: "",
+    vendor_name: "",
     strain_name: "",
     thc_percent: "",
     cbd_percent: "",
@@ -114,7 +114,7 @@ export default function ProductManagement() {
         name: formData.name,
         sku: formData.sku || null,
         category: formData.category || "Uncategorized",
-        brand: formData.brand || null,
+        vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
         thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
         cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
@@ -173,7 +173,7 @@ export default function ProductManagement() {
       name: product.name || "",
       sku: product.sku || "",
       category: product.category || "",
-      brand: product.brand || "",
+      vendor_name: product.vendor_name || "",
       strain_name: product.strain_name || "",
       thc_percent: product.thc_percent?.toString() || "",
       cbd_percent: product.cbd_percent?.toString() || "",
@@ -256,7 +256,7 @@ export default function ProductManagement() {
       name: "",
       sku: "",
       category: "",
-      brand: "",
+      vendor_name: "",
       strain_name: "",
       thc_percent: "",
       cbd_percent: "",
@@ -384,10 +384,11 @@ export default function ProductManagement() {
                   <div className="space-y-2">
                     <Label>Brand</Label>
                     <Input
-                      value={formData.brand}
+                      value={formData.vendor_name}
                       onChange={(e) =>
-                        setFormData({ ...formData, brand: e.target.value })
+                        setFormData({ ...formData, vendor_name: e.target.value })
                       }
+                      placeholder="Vendor/Brand name"
                     />
                   </div>
                   <div className="space-y-2">
