@@ -113,7 +113,7 @@ serve(async (req) => {
     }
 
     // Validate that all products belong to this tenant
-    const { data: products, error: productsCheckError } = await supabase
+    const { data: productsCheck, error: productsCheckError } = await supabase
       .from('wholesale_inventory')
       .select('id, tenant_id')
       .in('id', product_ids);
@@ -126,7 +126,7 @@ serve(async (req) => {
       );
     }
 
-    if (!products || products.length !== product_ids.length) {
+    if (!productsCheck || productsCheck.length !== product_ids.length) {
       return new Response(
         JSON.stringify({ error: 'Some products not found' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -134,7 +134,7 @@ serve(async (req) => {
     }
 
     // Verify all products belong to the same tenant
-    const invalidProducts = products.filter(p => p.tenant_id !== tenantId);
+    const invalidProducts = productsCheck.filter(p => p.tenant_id !== tenantId);
     if (invalidProducts.length > 0) {
       return new Response(
         JSON.stringify({ error: 'Some products do not belong to your tenant' }),

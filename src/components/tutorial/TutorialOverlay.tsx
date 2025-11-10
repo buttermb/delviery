@@ -428,7 +428,7 @@ export function TutorialOverlay({
             </div>
           </motion.div>
         )}
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
