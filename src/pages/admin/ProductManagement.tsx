@@ -172,8 +172,12 @@ export default function ProductManagement() {
             logger.debug('Barcode generated', { sku, barcodeImageUrl, component: 'ProductManagement' });
           }
         } catch (error) {
-          logger.error('Barcode generation failed', error, { component: 'ProductManagement' });
-          // Continue without barcode - product can still be created
+          logger.warn('Barcode generation failed, continuing without barcode', { 
+            error, 
+            sku,
+            component: 'ProductManagement' 
+          });
+          barcodeImageUrl = null;
         }
       }
 
@@ -193,12 +197,9 @@ export default function ProductManagement() {
         wholesale_price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
         price: formData.wholesale_price ? parseFloat(formData.wholesale_price) : 0,
-        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : 0, // Default to 0 instead of null (database requires NOT NULL)
-        available_quantity: availableQuantity,
-        total_quantity: availableQuantity,
-        barcode_image_url: barcodeImageUrl,
+        thca_percentage: formData.thc_percent ? parseFloat(formData.thc_percent) : 0,
+        barcode: barcodeImageUrl,
         tenant_id: tenant.id,
-        // menu_visibility will be set by trigger based on available_quantity
       };
 
       if (editingProduct) {

@@ -37,17 +37,13 @@ export async function generateProductSKU(
     // Get count of products in this category for this tenant
     const { count, error } = await supabase
       .from('products')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('category', category);
 
     if (error) {
-      logger.error('Failed to count products for SKU generation', error, {
-        component: 'skuGenerator',
-        category,
-        tenantId,
-      });
-      throw error;
+      logger.warn('Product count failed, using timestamp SKU', { error, component: 'skuGenerator' });
+      return generateTimestampBasedSKU(category);
     }
 
     // Generate SKU with category prefix and sequential number
@@ -58,11 +54,18 @@ export async function generateProductSKU(
     logger.error('SKU generation error', error, {
       component: 'skuGenerator',
     });
-    // Fallback: timestamp-based SKU
-    const prefix = getCategoryPrefix(category);
-    const timestamp = Date.now().toString().slice(-8);
-    return `${prefix}-${timestamp}`;
+    return generateTimestampBasedSKU(category);
   }
+}
+
+/**
+ * Generate timestamp-based SKU as fallback
+ */
+function generateTimestampBasedSKU(category: string): string {
+  const prefix = getCategoryPrefix(category);
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  return `${prefix}-${timestamp}${random}`;
 }
 
 /**
