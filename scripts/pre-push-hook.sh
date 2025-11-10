@@ -130,6 +130,26 @@ if [ -n "$AUTH_USERS_REF" ]; then
     echo "$AUTH_USERS_REF"
 fi
 
+# 4c. Check for queries missing tenant_id filter (frontend only)
+echo ""
+echo "🔒 Checking for queries missing tenant_id filter..."
+FRONTEND_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "src/.*\.(ts|tsx)$" | grep -v "\.test\.\|\.spec\.\|node_modules" || true)
+if [ -n "$FRONTEND_FILES" ]; then
+    for file in $FRONTEND_FILES; do
+        # Check for .from() calls without .eq('tenant_id')
+        # This is a heuristic - it won't catch all cases but will flag obvious issues
+        if grep -q "\.from(" "$file" 2>/dev/null; then
+            # Skip if file uses tenantQuery helper (good pattern)
+            if ! grep -q "tenantQuery\|tenant\.id\|tenantId" "$file" 2>/dev/null; then
+                # Check for .from() followed by .select() without .eq('tenant_id')
+                if grep -Pzo "\.from\([^)]+\)[^}]*\.select\([^)]+\)(?!.*\.eq\(['\"]tenant_id)" "$file" 2>/dev/null | grep -q "\.from("; then
+                    warning "Potential missing tenant_id filter in $file (consider using tenantQuery helper)"
+                fi
+            fi
+        fi
+    done
+fi
+
 # 5. Check for forbidden schema modifications
 echo ""
 echo "🚫 Checking for forbidden schema modifications..."

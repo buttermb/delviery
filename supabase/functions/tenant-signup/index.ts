@@ -1,10 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Generate slug from business name
 function generateSlug(businessName: string): string {
@@ -15,34 +10,38 @@ function generateSlug(businessName: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+// Request validation schema
+const TenantSignupSchema = z.object({
+  email: z.string().email().min(1).max(255),
+  password: z.string().min(8).max(255),
+  business_name: z.string().min(1).max(255),
+  owner_name: z.string().min(1).max(255),
+  phone: z.string().max(20).optional(),
+  state: z.string().max(100).optional(),
+  industry: z.string().max(100).optional(),
+  company_size: z.string().max(50).optional(),
+});
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Validate environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    const requestBody = await req.json();
-    const { email, password, business_name, owner_name, phone, state, industry, company_size } = requestBody;
-
-    // Validate required fields
-    if (!email || !password || !business_name || !owner_name) {
-      return new Response(
-        JSON.stringify({ error: 'Email, password, business name, and owner name are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing environment variables');
     }
 
-    if (password.length < 8) {
-      return new Response(
-        JSON.stringify({ error: 'Password must be at least 8 characters long' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const body = TenantSignupSchema.parse(rawBody);
+    const { email, password, business_name, owner_name, phone, state, industry, company_size } = body;
 
     // Check if email already exists in Supabase Auth
     const { data: existingAuthUser } = await supabase.auth.admin.listUsers();
@@ -233,11 +232,32 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in tenant-signup:', error);
+
+    // Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: 'Validation failed',
+          details: error.errors,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Generic error
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Internal server error',
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });
