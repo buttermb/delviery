@@ -121,6 +121,13 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`, `ci`
 - [API Integration Guide](./API_INTEGRATION_AUDIT.md) - API integration patterns
 - [Leafly Integration](./src/lib/LEAFLY_INTEGRATION.md) - Leafly API integration guide
 
+### Code Templates
+- [Component Template](./docs/templates/ComponentTemplate.tsx) - React component template
+- [Edge Function Template](./docs/templates/EdgeFunctionTemplate.ts) - Edge function template
+- [React Query Hook Template](./docs/templates/ReactQueryHookTemplate.ts) - Query hook template
+- [Migration Template](./docs/templates/MigrationTemplate.sql) - Database migration template
+- [VS Code Snippets](./.vscode/snippets.code-snippets) - Code snippets for faster development
+
 ## Getting Help
 
 - **Start here**: [Ultimate Rulebook](./docs/ULTIMATE_RULEBOOK.md) - Complete error-prevention guide
