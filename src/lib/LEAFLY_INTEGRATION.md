@@ -27,22 +27,24 @@ The integration is **prepared but not active** by default. Leafly's API requires
 
 ## How to Enable Leafly Integration
 
-### Option 1: Get Leafly API Access
+### Option 1: Get Leafly API Access (Recommended)
 1. Contact Leafly at **api@leafly.com**
 2. Request API partnership for strain data
 3. Update `supabase/functions/leafly-suggestions/index.ts` with API credentials
 4. Enable in `getSuggestions()` by setting `useLeafly: true`
 
-### Option 2: Use Web Scraping (Not Recommended)
-- Leafly's website doesn't allow direct scraping
-- Would require CORS proxy (not reliable)
-- Violates Leafly's Terms of Use
-
-### Option 3: Use Alternative APIs
+### Option 2: Use Alternative APIs
 Consider these cannabis data APIs:
 - **Cannabis Reports API** (free, open)
 - **Weedmaps API** (requires partnership)
 - **Dutchie API** (for dispensaries)
+
+### Option 3: Manual Data Sync
+Since Leafly doesn't have a public API:
+1. Visit https://www.leafly.com/strains
+2. Manually curate popular strains
+3. Add to `popular_strains.json`
+4. Use `updateStrainsFromLeafly.ts` utility to merge lists
 
 ## Implementation Details
 
@@ -72,16 +74,24 @@ const suggestions = await getSuggestions(query, "strain", true); // Enable Leafl
 
 ## Next Steps
 
-1. Contact Leafly for API access: api@leafly.com
+1. **Contact Leafly for API access**: api@leafly.com
 2. Once approved, update Edge Function with API credentials
 3. Enable `useLeafly` flag in production
 4. Monitor API usage and cache hit rates
 
-## Alternative: Expand Local Database
+## Manual Data Sync
 
-Instead of API integration, you can:
-- Manually add more strains to `popular_strains.json`
-- Import from public strain databases
-- Allow users to suggest additions
-- Crowdsource popular strains
+Since Leafly doesn't have a public API, you can:
 
+1. **Visit Leafly's strain directory**: https://www.leafly.com/strains
+2. **Manually curate** the most popular strains
+3. **Add to** `popular_strains.json`
+4. **Use** `mergeLeaflyStrains()` function to combine lists
+
+## Current Database Status
+
+- **200+ strains** in local database
+- **60+ brands** in local database
+- **Fuzzy matching** for intelligent search
+- **Recent selections** for quick access
+- **Ready for Leafly API** when partnership is obtained
