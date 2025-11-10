@@ -201,7 +201,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     setAccessCode(generateAccessCode());
     onOpenChange(false);
     } catch (error) {
-      console.error('Error creating menu:', error);
+      logger.error('Error creating menu', error, { component: 'CreateMenuDialog' });
       toast.error('Failed to create menu');
     }
   };
