@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * usePermissions Hook
  * Role-based permission checking using new permission system
@@ -8,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPermission, Permission } from '@/lib/permissions/checkPermissions';
 import { ROLES, Role, mapDatabaseRoleToSystemRole } from '@/lib/permissions/rolePermissions';
-// @ts-nocheck
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 

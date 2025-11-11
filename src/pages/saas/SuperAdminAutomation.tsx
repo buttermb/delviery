@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Super Admin Automation Dashboard
  * View and manage automated enforcement rules

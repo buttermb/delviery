@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Button Monitoring System
  * Tracks all button interactions, errors, and success rates

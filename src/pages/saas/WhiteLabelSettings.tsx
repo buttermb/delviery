@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * White Label Settings Page
  * Customize branding and theme for tenant

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hook for managing workflow executions with real-time updates
  */

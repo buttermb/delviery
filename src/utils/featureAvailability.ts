@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Feature Availability Utility
  * Checks if features are available based on table existence

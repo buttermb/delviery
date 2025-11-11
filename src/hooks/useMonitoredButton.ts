@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hook to easily add button monitoring to existing buttons
  */

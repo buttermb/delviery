@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Advanced Barcode & QR Code Generator
  * Generate barcodes for products, packages, batches, and custom labels

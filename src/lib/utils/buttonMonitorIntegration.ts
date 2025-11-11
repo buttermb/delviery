@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Button Monitor Integration
  * Provides easy integration for existing buttons

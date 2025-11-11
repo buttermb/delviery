@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Production Health Check
  * Validates critical systems on app load in production

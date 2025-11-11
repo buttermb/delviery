@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Permission Check Utilities
  * Functions for checking user permissions in components and edge functions

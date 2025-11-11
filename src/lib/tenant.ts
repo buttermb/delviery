@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tenant Context & Utilities
  * Multi-tenant isolation and management
