@@ -164,8 +164,16 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
 
     const bounds = new mapboxgl.LngLatBounds();
     let hasValidCoordinates = false;
-    const routeFeatures: any[] = [];
-    const heatmapPoints: any[] = [];
+    interface GeoJSONFeature {
+      type: 'Feature';
+      geometry: {
+        type: string;
+        coordinates: number[][];
+      };
+      properties?: Record<string, unknown>;
+    }
+    const routeFeatures: GeoJSONFeature[] = [];
+    const heatmapPoints: GeoJSONFeature[] = [];
 
     orders.forEach(order => {
       const statusColor = getStatusColor(order.status);

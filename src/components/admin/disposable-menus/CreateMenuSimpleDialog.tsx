@@ -143,8 +143,8 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
       setSelectedProducts([]);
       setSelectedCustomers([]);
       setAccessType('specific_customers');
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create menu");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to create menu");
     }
   };
 
@@ -224,7 +224,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
 
               <div>
                 <Label>Menu Type</Label>
-                <RadioGroup value={menuType} onValueChange={(val: any) => setMenuType(val)} className="mt-2">
+                <RadioGroup value={menuType} onValueChange={(val: string) => setMenuType(val as 'time_limited' | 'encrypted_link')} className="mt-2">
                   <div className="flex items-center space-x-2 p-4 border rounded-lg">
                     <RadioGroupItem value="encrypted_link" id="encrypted" />
                     <Label htmlFor="encrypted" className="flex-1 cursor-pointer">
@@ -289,16 +289,16 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                             onClick={(e) => e.stopPropagation()}
                           />
                           <div className="flex-1">
-                            <h4 className="font-medium">{(product as any).strain_name || (product as any).name || 'Product'}</h4>
+                            <h4 className="font-medium">{(product as { strain_name?: string; name?: string }).strain_name || (product as { strain_name?: string; name?: string }).name || 'Product'}</h4>
                             <p className="text-sm text-muted-foreground">
                               {product.category || 'Product'}
                             </p>
                             <p className="text-sm font-semibold mt-1">
                               {formatCurrency(product.base_price || 0)}/unit
                             </p>
-                            {(product as any).available_weight && (
+                            {(product as { available_weight?: number }).available_weight && (
                               <p className="text-xs text-muted-foreground mt-1">
-                                Stock: {Number((product as any).available_weight).toFixed(2)} lbs
+                                Stock: {Number((product as { available_weight?: number }).available_weight).toFixed(2)} lbs
                               </p>
                             )}
                           </div>
@@ -316,7 +316,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
             <div className="space-y-4">
               <div>
                 <Label>Who can access this menu?</Label>
-                <RadioGroup value={accessType} onValueChange={(val: any) => setAccessType(val)} className="mt-2">
+                <RadioGroup value={accessType} onValueChange={(val: string) => setAccessType(val as 'specific_customers' | 'public_link')} className="mt-2">
                   <div className="flex items-center space-x-2 p-4 border rounded-lg">
                     <RadioGroupItem value="specific_customers" id="specific" />
                     <Label htmlFor="specific" className="flex-1 cursor-pointer">
@@ -341,7 +341,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                   </div>
                   <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-2">
                     {customers && customers.length > 0 ? (
-                      customers.map((customer: any) => {
+                      customers.map((customer: { id: string; name?: string; business_name?: string; email?: string }) => {
                         const isSelected = selectedCustomers.includes(customer.id);
                         return (
                           <div
