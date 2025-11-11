@@ -228,10 +228,81 @@ serve(async (req) => {
         );
       }
 
-      // Generate JWT token
+      // ============================================================================
+      // PHASE 2: HYBRID AUTH - Create Supabase auth user for RLS access
+      // ============================================================================
+      let supabaseSession = null;
+      
+      try {
+        // Check if Supabase auth user exists
+        const { data: existingAuthUsers } = await supabase.auth.admin.listUsers();
+        const existingAuthUser = existingAuthUsers?.users?.find(
+          (u) => u.email?.toLowerCase() === email.toLowerCase()
+        );
+
+        if (existingAuthUser) {
+          // User exists, create session for them
+          console.log('Existing Supabase auth user found, creating session');
+          const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email.toLowerCase(),
+          });
+
+          if (!sessionError && sessionData) {
+            // Use the generated access token
+            supabaseSession = {
+              access_token: sessionData.properties.action_link.split('#')[1]?.split('&')[0]?.split('=')[1] || '',
+              refresh_token: '', // Not needed for super admin
+              expires_in: 7 * 24 * 60 * 60, // 7 days
+              user: existingAuthUser,
+            };
+          }
+        } else {
+          // Create new Supabase auth user
+          console.log('Creating new Supabase auth user for super admin');
+          const { data: newAuthUser, error: createError } = await supabase.auth.admin.createUser({
+            email: email.toLowerCase(),
+            email_confirm: true,
+            user_metadata: {
+              first_name: superAdmin.first_name,
+              last_name: superAdmin.last_name,
+              is_super_admin: true,
+            },
+          });
+
+          if (createError) {
+            console.error('Failed to create Supabase auth user:', createError);
+          } else if (newAuthUser.user) {
+            console.log('Supabase auth user created successfully');
+            
+            // Generate session for the new user
+            const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+              type: 'magiclink',
+              email: email.toLowerCase(),
+            });
+
+            if (!sessionError && sessionData) {
+              supabaseSession = {
+                access_token: sessionData.properties.action_link.split('#')[1]?.split('&')[0]?.split('=')[1] || '',
+                refresh_token: '',
+                expires_in: 7 * 24 * 60 * 60,
+                user: newAuthUser.user,
+              };
+            }
+
+            // Role will be auto-assigned via trigger from Phase 1
+            console.log('Super admin role will be auto-assigned via trigger');
+          }
+        }
+      } catch (authError) {
+        console.error('Supabase auth integration error (non-fatal):', authError);
+        // Continue with custom JWT even if Supabase auth fails
+      }
+
+      // Generate custom JWT token (for super admin specific operations)
       const token = encodeJWT({
         super_admin_id: superAdmin.id,
-        role: superAdmin.role,
+        role: "super_admin",
         type: "super_admin",
       });
 
@@ -259,17 +330,27 @@ serve(async (req) => {
         })
         .eq("id", superAdmin.id);
 
+      // Return both custom JWT and Supabase session
+      const response: any = {
+        token,
+        superAdmin: {
+          id: superAdmin.id,
+          email: superAdmin.email,
+          first_name: superAdmin.first_name,
+          last_name: superAdmin.last_name,
+          role: "super_admin",
+        },
+      };
+
+      // Include Supabase session if available
+      if (supabaseSession) {
+        response.supabaseSession = supabaseSession;
+      }
+
+      console.log('Login successful, returning hybrid auth response');
+
       return new Response(
-        JSON.stringify({
-          token,
-          superAdmin: {
-            id: superAdmin.id,
-            email: superAdmin.email,
-            first_name: superAdmin.first_name,
-            last_name: superAdmin.last_name,
-            role: superAdmin.role,
-          },
-        }),
+        JSON.stringify(response),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

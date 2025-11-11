@@ -3,6 +3,8 @@ import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 
 interface SuperAdmin {
   id: string;
@@ -15,6 +17,7 @@ interface SuperAdmin {
 interface SuperAdminAuthContextType {
   superAdmin: SuperAdmin | null;
   token: string | null;
+  supabaseSession: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -25,6 +28,7 @@ const SuperAdminAuthContext = createContext<SuperAdminAuthContextType | undefine
 
 const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN;
 const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
+const SUPABASE_SESSION_KEY = 'superadmin_supabase_session';
 
 // Bound fetch to prevent "Illegal invocation" error in production builds
 const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
@@ -32,25 +36,46 @@ const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fe
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
 
-  // Initialize from localStorage
+  // Initialize from localStorage and restore Supabase session
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
     const storedAdmin = localStorage.getItem(SUPER_ADMIN_KEY);
+    const storedSupabaseSession = localStorage.getItem(SUPABASE_SESSION_KEY);
 
     if (storedToken && storedAdmin) {
       setToken(storedToken);
       try {
         setSuperAdmin(JSON.parse(storedAdmin));
+        
+        // Restore Supabase session if available
+        if (storedSupabaseSession) {
+          const session = JSON.parse(storedSupabaseSession);
+          setSupabaseSession(session);
+          // Set the session in Supabase client for RLS access
+          supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token || '',
+          }).then(({ data, error }) => {
+            if (error) {
+              logger.error('Failed to restore Supabase session', error);
+            } else {
+              logger.info('Supabase session restored successfully', undefined, 'SuperAdminAuth');
+            }
+          });
+        }
+        
         // Verify token is still valid
         verifyToken(storedToken);
       } catch (e) {
         // Invalid stored data, clear it
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(SUPER_ADMIN_KEY);
+        localStorage.removeItem(SUPABASE_SESSION_KEY);
         setLoading(false);
       }
     } else {
@@ -104,10 +129,33 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       }
 
       const data = await response.json();
+      
+      // Store custom JWT token
       setToken(data.token);
       setSuperAdmin(data.superAdmin);
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
+
+      // ============================================================================
+      // PHASE 2: HYBRID AUTH - Store and set Supabase session for RLS access
+      // ============================================================================
+      if (data.supabaseSession) {
+        logger.info('Setting Supabase session for super admin RLS access', undefined, 'SuperAdminAuth');
+        setSupabaseSession(data.supabaseSession);
+        localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.supabaseSession));
+        
+        // Set the session in Supabase client - this enables RLS access
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.supabaseSession.access_token,
+          refresh_token: data.supabaseSession.refresh_token || '',
+        });
+
+        if (sessionError) {
+          logger.error('Failed to set Supabase session', sessionError);
+        } else {
+          logger.info('Super admin can now access tenant data via RLS', undefined, 'SuperAdminAuth');
+        }
+      }
     } catch (error) {
       logger.error("Login error", error);
       throw error;
@@ -126,13 +174,18 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
           },
         });
       }
+
+      // Sign out from Supabase session as well
+      await supabase.auth.signOut();
     } catch (error) {
       logger.error("Logout error", error);
     } finally {
       setToken(null);
       setSuperAdmin(null);
+      setSupabaseSession(null);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(SUPER_ADMIN_KEY);
+      localStorage.removeItem(SUPABASE_SESSION_KEY);
     }
   };
 
@@ -223,7 +276,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   };
 
   return (
-    <SuperAdminAuthContext.Provider value={{ superAdmin, token, loading, login, logout, refreshToken }}>
+    <SuperAdminAuthContext.Provider value={{ superAdmin, token, supabaseSession, loading, login, logout, refreshToken }}>
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}
