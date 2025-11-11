@@ -8,9 +8,25 @@ import { Flame, AlertTriangle, Clock, Shield } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
+interface AutoBurnConfig {
+  enabled: boolean;
+  triggers: {
+    view_limit_exceeded: { enabled: boolean; threshold: number };
+    failed_access_attempts: { enabled: boolean; threshold: number };
+    screenshot_detected: { enabled: boolean; threshold: number };
+    geofence_violations: { enabled: boolean; threshold: number };
+    time_expired: { enabled: boolean };
+    suspicious_activity: { enabled: boolean };
+  };
+  burn_type: 'soft' | 'hard';
+  notify_on_burn: boolean;
+  auto_regenerate: boolean;
+  migrate_customers: boolean;
+}
+
 interface AutoBurnSettingsProps {
-  settings: any;
-  onChange: (settings: any) => void;
+  settings: AutoBurnConfig;
+  onChange: (settings: AutoBurnConfig) => void;
 }
 
 export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) => {
@@ -30,13 +46,13 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
     migrate_customers: false
   });
 
-  const updateConfig = (updates: any) => {
+  const updateConfig = (updates: Partial<AutoBurnConfig>) => {
     const newConfig = { ...config, ...updates };
     setConfig(newConfig);
     onChange(newConfig);
   };
 
-  const updateTrigger = (trigger: string, updates: any) => {
+  const updateTrigger = (trigger: string, updates: Partial<AutoBurnConfig['triggers'][keyof AutoBurnConfig['triggers']]>) => {
     const newTriggers = {
       ...config.triggers,
       [trigger]: { ...config.triggers[trigger], ...updates }

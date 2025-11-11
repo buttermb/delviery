@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
 interface AnalyticsExportButtonProps {
-  data: any;
+  data: Record<string, unknown> | unknown[];
   filename: string;
 }
 
@@ -37,7 +37,7 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
 
   const exportToExcel = () => {
     try {
-      let worksheetData: any[];
+      let worksheetData: Record<string, unknown>[];
       
       if (Array.isArray(data)) {
         worksheetData = data;
@@ -70,7 +70,7 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
     }
   };
 
-  const convertToCSV = (obj: any): string => {
+  const convertToCSV = (obj: Record<string, unknown> | unknown[]): string => {
     if (Array.isArray(obj)) {
       const headers = Object.keys(obj[0]).join(',');
       const rows = obj.map(row => Object.values(row).join(',')).join('\n');

@@ -60,11 +60,11 @@ export const AutomatedSecuritySettings = () => {
         title: 'Settings Saved',
         description: 'Security automation settings have been updated',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: 'destructive',
         title: 'Failed to save settings',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setSaving(false);

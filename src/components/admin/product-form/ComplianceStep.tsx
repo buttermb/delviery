@@ -8,9 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface ProductFormData {
+  name?: string;
+  coa_url?: string;
+  [key: string]: unknown; // Allow additional form fields
+}
+
 interface ComplianceStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps) {
@@ -36,10 +42,10 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
 
       updateFormData({ coa_url: publicUrl });
       toast({ title: "COA uploaded successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       });
     } finally {
