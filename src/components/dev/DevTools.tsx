@@ -121,8 +121,12 @@ if (!intercepted) {
         responseBody = await clonedResponse.text();
         try {
           responseBody = JSON.parse(responseBody);
-        } catch {}
-      } catch {}
+        } catch {
+          // Not valid JSON, keep as string
+        }
+      } catch {
+        // Failed to read response body
+      }
 
       globalNetwork.push({
         ...networkEntry,
