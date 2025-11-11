@@ -249,7 +249,7 @@ export const AutomatedSecuritySettings = () => {
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      geofence_violation_action: e.target.value as any
+                      geofence_violation_action: e.target.value as 'log' | 'block' | 'burn'
                     })
                   }
                   className="w-full p-2 border rounded-md bg-background"
@@ -267,7 +267,7 @@ export const AutomatedSecuritySettings = () => {
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      screenshot_attempt_action: e.target.value as any
+                      screenshot_attempt_action: e.target.value as 'log' | 'block' | 'burn'
                     })
                   }
                   className="w-full p-2 border rounded-md bg-background"

@@ -400,7 +400,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               
               <div className="space-y-3">
                 <Label>Access Type</Label>
-                <RadioGroup value={accessType} onValueChange={(value: any) => setAccessType(value)}>
+                <RadioGroup value={accessType} onValueChange={(value: string) => setAccessType(value as 'invite_only' | 'shared' | 'hybrid')}>
                   <div className="flex items-start space-x-2 border rounded p-3">
                     <RadioGroupItem value="invite_only" id="invite_only" />
                     <div className="flex-1">
@@ -663,7 +663,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
               <div className="space-y-3">
                 <Label>Menu Style</Label>
-                <RadioGroup value={appearanceStyle} onValueChange={(value: any) => setAppearanceStyle(value)}>
+                <RadioGroup value={appearanceStyle} onValueChange={(value: string) => setAppearanceStyle(value as 'professional' | 'minimal' | 'modern')}>
                   <div className="flex items-start space-x-2 border rounded p-3">
                     <RadioGroupItem value="professional" id="professional" />
                     <div className="flex-1">

@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Flame, Loader2 } from 'lucide-react';
 import { useBurnMenu } from '@/hooks/useDisposableMenus';
+import type { DisposableMenu } from '@/types/admin';
 
 interface BurnMenuDialogProps {
-  menu: any;
+  menu: DisposableMenu;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

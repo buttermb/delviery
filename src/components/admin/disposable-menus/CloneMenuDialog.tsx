@@ -15,11 +15,12 @@ import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import type { DisposableMenu } from '@/types/admin';
 
 interface CloneMenuDialogProps {
   open: boolean;
   onClose: () => void;
-  menu: any;
+  menu: DisposableMenu;
   onComplete: () => void;
 }
 
@@ -73,8 +74,14 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
           .select('*')
           .eq('menu_id', menu.id);
 
+        interface WhitelistRow {
+          customer_name: string;
+          customer_phone: string;
+          customer_email: string | null;
+        }
+
         if (whitelist && whitelist.length > 0) {
-          const whitelistToClone = whitelist.map((w: any) => ({
+          const whitelistToClone = (whitelist as WhitelistRow[]).map((w) => ({
             menu_id: newMenu.id,
             customer_name: w.customer_name,
             customer_phone: w.customer_phone,
@@ -98,12 +105,12 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
 
       onComplete();
       onClose();
-    } catch (error: any) {
-      console.error('Clone menu error:', error);
+    } catch (error: unknown) {
+      logger.error('Clone menu error', error instanceof Error ? error : new Error(String(error)), { component: 'CloneMenuDialog', menuId: menu.id });
       toast({
         variant: 'destructive',
         title: 'Failed to Clone Menu',
-        description: error.message || 'Could not clone menu',
+        description: error instanceof Error ? error.message : 'Could not clone menu',
       });
     } finally {
       setLoading(false);
