@@ -8,24 +8,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-interface Column {
+interface Column<T = Record<string, unknown>> {
   key: string;
   label: string;
-  render?: (value: any, row: any) => ReactNode;
+  render?: (value: unknown, row: T) => ReactNode;
   className?: string;
   mobileLabel?: string;
 }
 
-interface ResponsiveTableProps {
-  columns: Column[];
-  data: any[];
+interface ResponsiveTableProps<T = Record<string, unknown>> {
+  columns: Column<T>[];
+  data: T[];
   emptyMessage?: string;
   loading?: boolean;
   className?: string;
   mobileCardClassName?: string;
 }
 
-export function ResponsiveTable({
+export function ResponsiveTable<T = Record<string, unknown>>({
   columns,
   data,
   emptyMessage = 'No data available',

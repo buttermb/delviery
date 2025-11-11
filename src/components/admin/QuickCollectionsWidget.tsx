@@ -7,13 +7,14 @@ import { differenceInDays } from "date-fns";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PaymentDialog } from "./PaymentDialog";
+import type { WholesaleClient } from "@/types/admin";
 
 export function QuickCollectionsWidget() {
   const navigate = useNavigate();
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<WholesaleClient | null>(null);
 
   // Find clients with overdue balances
   const overdueClients = clients

@@ -9,7 +9,7 @@ interface ActivityItem {
   type: string;
   message: string;
   timestamp: Date;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 interface RealtimeActivityFeedProps {

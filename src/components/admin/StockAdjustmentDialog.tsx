@@ -32,8 +32,15 @@ export function StockAdjustmentDialog({
   const [notes, setNotes] = useState("");
   const queryClient = useQueryClient();
 
+  interface AdjustmentData {
+    type: 'add' | 'subtract';
+    quantity: string;
+    reason: string;
+    notes: string;
+  }
+
   const adjustmentMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: AdjustmentData) => {
       const adjustedQuantity = data.type === "add" 
         ? currentQuantity + parseFloat(data.quantity)
         : currentQuantity - parseFloat(data.quantity);
@@ -66,8 +73,8 @@ export function StockAdjustmentDialog({
       setReason("");
       setNotes("");
     },
-    onError: (error: any) => {
-      showErrorToast("Adjustment Failed", error.message);
+    onError: (error: unknown) => {
+      showErrorToast("Adjustment Failed", error instanceof Error ? error.message : "Unknown error");
     }
   });
 
