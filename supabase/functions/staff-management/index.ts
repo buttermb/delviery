@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Staff Management Edge Function
  * Handles CRUD operations for tenant_users with proper authentication

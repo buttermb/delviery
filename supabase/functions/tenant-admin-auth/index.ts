@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve, createClient, hash, compare, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 

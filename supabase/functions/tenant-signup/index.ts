@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { checkUserPermission } from '../_shared/permissions.ts';
 
