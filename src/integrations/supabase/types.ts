@@ -2218,6 +2218,7 @@ export type Database = {
           account_id: string
           address: string | null
           allergies: string[] | null
+          business_name: string | null
           caregiver_name: string | null
           caregiver_phone: string | null
           cbd_preference: string | null
@@ -2260,6 +2261,7 @@ export type Database = {
           account_id: string
           address?: string | null
           allergies?: string[] | null
+          business_name?: string | null
           caregiver_name?: string | null
           caregiver_phone?: string | null
           cbd_preference?: string | null
@@ -2302,6 +2304,7 @@ export type Database = {
           account_id?: string
           address?: string | null
           allergies?: string[] | null
+          business_name?: string | null
           caregiver_name?: string | null
           caregiver_phone?: string | null
           cbd_preference?: string | null
@@ -2567,6 +2570,7 @@ export type Database = {
           show_product_images: boolean | null
           status: Database["public"]["Enums"]["menu_status"]
           tenant_id: string
+          title: string | null
           view_limit_per_customer: number | null
           view_limit_period: string | null
         }
@@ -2602,6 +2606,7 @@ export type Database = {
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
           tenant_id: string
+          title?: string | null
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
@@ -2637,6 +2642,7 @@ export type Database = {
           show_product_images?: boolean | null
           status?: Database["public"]["Enums"]["menu_status"]
           tenant_id?: string
+          title?: string | null
           view_limit_per_customer?: number | null
           view_limit_period?: string | null
         }
@@ -3893,6 +3899,56 @@ export type Database = {
             columns: ["to_location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          menu_id: string | null
+          message: string | null
+          method: string
+          phone: string | null
+          status: string | null
+          unique_link: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          menu_id?: string | null
+          message?: string | null
+          method: string
+          phone?: string | null
+          status?: string | null
+          unique_link?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          menu_id?: string | null
+          message?: string | null
+          method?: string
+          phone?: string | null
+          status?: string | null
+          unique_link?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
             referencedColumns: ["id"]
           },
         ]

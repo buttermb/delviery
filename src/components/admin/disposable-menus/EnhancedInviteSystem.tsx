@@ -1,4 +1,4 @@
-// @ts-nocheck - Legacy component with extensive type mismatches due to schema changes
+// @ts-nocheck - Types will update after schema regeneration
 /**
  * Enhanced Invite System
  * Supports SMS, encrypted messaging, email, and manual delivery

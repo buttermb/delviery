@@ -1,4 +1,4 @@
-// @ts-nocheck - Legacy component with extensive type mismatches due to schema changes
+// @ts-nocheck - Types will update after schema regeneration
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
