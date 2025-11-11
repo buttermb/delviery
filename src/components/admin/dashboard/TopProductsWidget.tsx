@@ -41,7 +41,7 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
-      const { data: orders } = await (supabase as any)
+      const { data: orders } = await supabase
         .from('wholesale_orders')
         .select('id, created_at, status')
         .eq('account_id', account.id)
@@ -50,7 +50,13 @@ export function TopProductsWidget() {
 
       if (!orders || orders.length === 0) return [];
 
-      const orderIds = orders.map((o: any) => o.id);
+      interface OrderRow {
+        id: string;
+        created_at: string;
+        status: string;
+      }
+
+      const orderIds = (orders as OrderRow[]).map((o) => o.id);
 
       // Get order items
       const { data: orderItems } = await supabase
@@ -63,7 +69,13 @@ export function TopProductsWidget() {
       // Aggregate by product
       const productMap = new Map<string, TopProduct>();
 
-      orderItems.forEach((item: any) => {
+      interface OrderItemRow {
+        product_id: string;
+        quantity_lbs: number | null;
+        unit_price: number | null;
+      }
+
+      orderItems.forEach((item: OrderItemRow) => {
         const productId = item.product_id;
         if (!productMap.has(productId)) {
           productMap.set(productId, {
@@ -89,8 +101,13 @@ export function TopProductsWidget() {
         .select('id, name')
         .in('id', productIds);
 
+      interface ProductRow {
+        id: string;
+        name: string;
+      }
+
       if (products) {
-        products.forEach((product: any) => {
+        (products as ProductRow[]).forEach((product) => {
           const topProduct = productMap.get(product.id);
           if (topProduct) {
             topProduct.product_name = product.name;

@@ -41,23 +41,38 @@ export function RecentActivityWidget() {
       // Get recent orders, transfers, and inventory updates
       const [ordersResult, transfersResult] = await Promise.all([
         supabase
-          .from('wholesale_orders' as any)
+          .from('wholesale_orders')
           .select('id, order_number, status, created_at, account_id')
           .eq('account_id', account.id)
           .order('created_at', { ascending: false })
           .limit(5),
         supabase
-          .from('wholesale_deliveries' as any)
+          .from('wholesale_deliveries')
           .select('id, status, created_at, account_id')
           .eq('account_id', account.id)
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
 
+      interface OrderRow {
+        id: string;
+        order_number: string;
+        status: string;
+        created_at: string;
+        account_id: string;
+      }
+
+      interface TransferRow {
+        id: string;
+        status: string;
+        created_at: string;
+        account_id: string;
+      }
+
       const activities: ActivityItem[] = [];
 
       // Add orders as activities
-      (ordersResult.data || []).forEach((order: any) => {
+      (ordersResult.data || []).forEach((order: OrderRow) => {
         activities.push({
           id: order.id,
           action: `Order #${order.order_number} ${order.status}`,
@@ -68,7 +83,7 @@ export function RecentActivityWidget() {
       });
 
       // Add transfers as activities
-      (transfersResult.data || []).forEach((transfer: any) => {
+      (transfersResult.data || []).forEach((transfer: TransferRow) => {
         activities.push({
           id: transfer.id,
           action: `Transfer ${transfer.status}`,

@@ -35,9 +35,15 @@ export function RevenueChartWidget() {
 
       if (!orders) return null;
 
+      interface OrderRow {
+        total_amount: number;
+        created_at: string;
+        status: string;
+      }
+
       // Calculate daily revenue
       const dailyRevenue = new Map<string, number>();
-      orders.forEach((order: any) => {
+      (orders as OrderRow[]).forEach((order) => {
         if (order.status === 'completed' || order.status === 'delivered') {
           const date = format(startOfDay(new Date(order.created_at)), 'yyyy-MM-dd');
           const amount = Number(order.total_amount || 0);
@@ -46,7 +52,7 @@ export function RevenueChartWidget() {
       });
 
       // Calculate totals
-      const totalRevenue = orders.reduce((sum, order: any) => {
+      const totalRevenue = (orders as OrderRow[]).reduce((sum, order) => {
         if (order.status === 'completed' || order.status === 'delivered') {
           return sum + Number(order.total_amount || 0);
         }
@@ -54,26 +60,26 @@ export function RevenueChartWidget() {
       }, 0);
 
       const yesterday = subDays(today, 1);
-      const yesterdayRevenue = orders
-        .filter((order: any) => {
+      const yesterdayRevenue = (orders as OrderRow[])
+        .filter((order) => {
           const orderDate = new Date(order.created_at);
           return (
             format(orderDate, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd') &&
             (order.status === 'completed' || order.status === 'delivered')
           );
         })
-        .reduce((sum, order: any) => sum + Number(order.total_amount || 0), 0);
+        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
 
       const dayBeforeYesterday = subDays(today, 2);
-      const dayBeforeRevenue = orders
-        .filter((order: any) => {
+      const dayBeforeRevenue = (orders as OrderRow[])
+        .filter((order) => {
           const orderDate = new Date(order.created_at);
           return (
             format(orderDate, 'yyyy-MM-dd') === format(dayBeforeYesterday, 'yyyy-MM-dd') &&
             (order.status === 'completed' || order.status === 'delivered')
           );
         })
-        .reduce((sum, order: any) => sum + Number(order.total_amount || 0), 0);
+        .reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
 
       const changePercent =
         dayBeforeRevenue > 0

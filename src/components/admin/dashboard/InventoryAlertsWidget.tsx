@@ -37,7 +37,13 @@ export function InventoryAlertsWidget() {
         .order('quantity_lbs', { ascending: true })
         .limit(5);
 
-      return data || [];
+      interface AlertRow {
+        product_name: string | null;
+        quantity_lbs: number | null;
+        warehouse_location: string | null;
+      }
+
+      return (data || []) as AlertRow[];
     },
     enabled: !!account?.id,
     // Use real-time updates via useRealtimeSync instead of polling
@@ -58,7 +64,7 @@ export function InventoryAlertsWidget() {
 
       <div className="space-y-2">
         {alerts && alerts.length > 0 ? (
-          alerts.map((alert: any, index: number) => (
+          alerts.map((alert, index: number) => (
             <div
               key={index}
               className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"

@@ -29,7 +29,7 @@ export function PendingTransfersWidget() {
     queryFn: async () => {
       if (!account?.id) return [];
 
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('wholesale_deliveries')
         .select(`
           id,
@@ -47,7 +47,19 @@ export function PendingTransfersWidget() {
         .order('scheduled_pickup_time', { ascending: true })
         .limit(5);
 
-      return data || [];
+      interface Transfer {
+        id: string;
+        status: string;
+        scheduled_pickup_time: string | null;
+        total_weight: number | null;
+        total_value: number | null;
+        orders?: {
+          order_number: string;
+          wholesale_clients?: { business_name: string } | null;
+        } | null;
+      }
+
+      return (data || []) as Transfer[];
     },
     enabled: !!account?.id,
     refetchInterval: 30000,
@@ -72,7 +84,7 @@ export function PendingTransfersWidget() {
 
       <div className="space-y-3">
         {transfers && transfers.length > 0 ? (
-          transfers.map((transfer: any) => (
+          transfers.map((transfer) => (
             <div
               key={transfer.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"

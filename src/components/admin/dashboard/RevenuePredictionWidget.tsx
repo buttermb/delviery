@@ -83,7 +83,6 @@ export function RevenuePredictionWidget() {
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      // @ts-ignore - Simplified type handling for wholesale_orders query
       const { data: orders, error: ordersError } = await supabase
         .from('wholesale_orders')
         .select('created_at, total_amount, client_id')
@@ -93,7 +92,13 @@ export function RevenuePredictionWidget() {
 
       if (ordersError || !orders) return [];
 
-      const dailyData = groupOrdersByDate(orders as any);
+      interface OrderRow {
+        created_at: string;
+        total_amount: number;
+        client_id: string;
+      }
+
+      const dailyData = groupOrdersByDate(orders as OrderRow[]);
       return dailyData.slice(-7); // Last 7 days for chart
     },
     enabled: !!tenantId,
@@ -198,7 +203,7 @@ export function RevenuePredictionWidget() {
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
-                  formatter={(value: any) => value ? [`$${value.toLocaleString()}`, ''] : ['', '']}
+                  formatter={(value: number | undefined) => value ? [`$${value.toLocaleString()}`, ''] : ['', '']}
                   labelStyle={{ color: '#000' }}
                   contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '6px' }}
                 />

@@ -49,12 +49,12 @@ export function TremorMetricsWidget({ metrics, title = 'Key Metrics' }: TremorMe
                 <div className="mt-4">
                   <CategoryBar
                     values={metric.categories.map(c => c.value)}
-                    colors={metric.categories.map(c => c.color as any)}
+                    colors={metric.categories.map(c => c.color) as string[]}
                     className="mt-2"
                   />
                   <Legend
                     categories={metric.categories.map(c => c.name)}
-                    colors={metric.categories.map(c => c.color as any)}
+                    colors={metric.categories.map(c => c.color) as string[]}
                     className="mt-3"
                   />
                 </div>

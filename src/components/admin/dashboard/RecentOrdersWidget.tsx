@@ -45,7 +45,16 @@ export function RecentOrdersWidget() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      return data || [];
+      interface OrderRow {
+        id: string;
+        order_number: string;
+        total_amount: number;
+        status: string;
+        created_at: string;
+        wholesale_clients: { business_name: string } | null;
+      }
+
+      return (data || []) as OrderRow[];
     },
     enabled: !!account?.id,
     // Use real-time updates via useRealtimeSync instead of polling
@@ -86,7 +95,7 @@ export function RecentOrdersWidget() {
 
       <div className="space-y-3">
         {orders && orders.length > 0 ? (
-          orders.map((order: any) => (
+          orders.map((order) => (
             <div
               key={order.id}
               className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
