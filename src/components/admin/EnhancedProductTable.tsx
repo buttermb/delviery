@@ -342,7 +342,7 @@ export function EnhancedProductTable({
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
-              {onPrintLabel && (row.original as any).sku && (
+              {onPrintLabel && 'sku' in row.original && row.original.sku && (
                 <DropdownMenuItem onClick={() => onPrintLabel(row.original)}>
                   <Printer className="mr-2 h-4 w-4" />
                   Print Label

@@ -93,18 +93,18 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
       let targetTenants: string[] = [];
 
       if (data.recipients === 'all') {
-        const { data: allTenants } = await (supabase as any)
+        const { data: allTenants } = await supabase
           .from('tenants')
           .select('id');
-        targetTenants = (allTenants as any[])?.map((t: any) => t.id) || [];
+        targetTenants = (allTenants || []).map((t) => t.id);
       } else if (data.recipients === 'custom') {
         targetTenants = data.tenant_ids || [];
       } else {
-        const { data: filteredTenants } = await (supabase as any)
+        const { data: filteredTenants } = await supabase
           .from('tenants')
           .select('id')
           .eq('subscription_status', data.recipients);
-        targetTenants = (filteredTenants as any[])?.map((t: any) => t.id) || [];
+        targetTenants = (filteredTenants || []).map((t) => t.id);
       }
 
       // In production, send notifications via email/SMS service
@@ -122,10 +122,11 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
 
       setOpen(false);
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      logger.error('Failed to send notifications', error instanceof Error ? error : new Error(String(error)), { component: 'NotificationDialog' });
       toast({
         title: 'Failed to send notifications',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
     }

@@ -12,9 +12,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+interface Product {
+  id: string;
+  name: string;
+  category?: string;
+  price?: number;
+  stock_quantity?: number;
+  in_stock?: boolean;
+  image_url?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 interface InlineProductEditProps {
-  product: any;
-  onUpdate: (id: string, updates: any) => void;
+  product: Product;
+  onUpdate: (id: string, updates: Partial<Product>) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;

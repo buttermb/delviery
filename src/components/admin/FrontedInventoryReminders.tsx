@@ -15,9 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { logger } from "@/lib/logger";
+
+interface FrontedInventoryItem {
+  id: string;
+  fronted_to_customer_name: string;
+  payment_due_date: string | null;
+  expected_revenue: number | null;
+  payment_received: number | null;
+  status: string;
+  products?: { name: string } | null;
+  fronted_payments?: { amount: number }[] | null;
+}
 
 export default function FrontedInventoryReminders() {
-  const [reminders, setReminders] = useState<any[]>([]);
+  const [reminders, setReminders] = useState<FrontedInventoryItem[]>([]);
   const [autoRemindersEnabled, setAutoRemindersEnabled] = useState(true);
   const [reminderDays, setReminderDays] = useState("3");
 
@@ -52,12 +64,13 @@ export default function FrontedInventoryReminders() {
       });
 
       setReminders(frontsNeedingReminder || []);
-    } catch (error: any) {
-      toast.error("Failed to load reminders: " + error.message);
+    } catch (error: unknown) {
+      logger.error("Failed to load reminders", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders' });
+      toast.error("Failed to load reminders: " + (error instanceof Error ? error.message : "Unknown error"));
     }
   };
 
-  const sendReminder = async (front: any) => {
+  const sendReminder = async (front: FrontedInventoryItem) => {
     try {
       // In production, this would trigger an SMS/email via edge function
       toast.success(`Reminder sent to ${front.fronted_to_customer_name}`);
@@ -73,8 +86,9 @@ export default function FrontedInventoryReminders() {
           due_date: front.payment_due_date,
         },
       });
-    } catch (error: any) {
-      toast.error("Failed to send reminder: " + error.message);
+    } catch (error: unknown) {
+      logger.error("Failed to send reminder", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders', frontId: front.id });
+      toast.error("Failed to send reminder: " + (error instanceof Error ? error.message : "Unknown error"));
     }
   };
 
@@ -89,8 +103,9 @@ export default function FrontedInventoryReminders() {
         await sendReminder(front);
       }
       toast.success(`Sent ${reminders.length} reminders`);
-    } catch (error: any) {
-      toast.error("Failed to send bulk reminders: " + error.message);
+    } catch (error: unknown) {
+      logger.error("Failed to send bulk reminders", error instanceof Error ? error : new Error(String(error)), { component: 'FrontedInventoryReminders' });
+      toast.error("Failed to send bulk reminders: " + (error instanceof Error ? error.message : "Unknown error"));
     }
   };
 

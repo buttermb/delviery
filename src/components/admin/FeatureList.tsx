@@ -47,7 +47,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
       toast({
         variant: "destructive",
         title: "Failed to update features",
-        description: error.message || "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred",
       });
     },
   });
