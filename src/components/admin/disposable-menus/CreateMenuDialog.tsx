@@ -272,22 +272,31 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Select Products</h3>
-                {inventory && inventory.filter(p => !((p as any).image_url || (p as any).images?.[0])).length > 0 && (
+                {inventory && inventory.filter((p: { image_url?: string | null; images?: string[] | null }) => !(p.image_url || p.images?.[0])).length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={async () => {
                       try {
                         logger.debug('Generate images button clicked', { component: 'CreateMenuDialog' });
-                        const productsWithoutImages = inventory
-                          .filter(p => !((p as any).image_url || (p as any).images?.[0]))
-                          .map(p => {
-                            const category = (p as any).category?.toLowerCase() || 'flower';
+                        interface InventoryProduct {
+                          id: string;
+                          product_name: string;
+                          category?: string | null;
+                          strain_type?: string | null;
+                          image_url?: string | null;
+                          images?: string[] | null;
+                        }
+
+                        const productsWithoutImages = (inventory as InventoryProduct[])
+                          .filter((p) => !(p.image_url || p.images?.[0]))
+                          .map((p) => {
+                            const category = p.category?.toLowerCase() || 'flower';
                             logger.debug('Product to generate', { 
                               product: {
                                 name: p.product_name, 
                                 category,
-                                hasCategory: !!(p as any).category 
+                                hasCategory: !!p.category 
                               },
                               component: 'CreateMenuDialog'
                             });
@@ -295,7 +304,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                               id: p.id,
                               name: p.product_name,
                               category: category,
-                              strain_type: (p as any).strain_type
+                              strain_type: p.strain_type || undefined
                             };
                           });
                         
@@ -331,8 +340,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               </div>
               <div className="space-y-4">
                 <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
-                  {inventory?.map(product => {
-                    const imageUrl = (product as any).image_url || (product as any).images?.[0];
+                  {inventory?.map((product: { id: string; product_name: string; image_url?: string | null; images?: string[] | null }) => {
+                    const imageUrl = product.image_url || product.images?.[0];
                     return (
                       <div 
                         key={product.id} 
