@@ -1,8 +1,20 @@
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, Eye, Lock, Shield } from 'lucide-react';
 
+interface SecuritySettings {
+  require_geofence?: boolean;
+  geofence_radius?: number;
+  time_restrictions?: boolean;
+  allowed_hours?: { start?: number; end?: number };
+  max_views?: number;
+  require_whitelist?: boolean;
+  invite_only?: boolean;
+  single_use?: boolean;
+  [key: string]: unknown;
+}
+
 interface SecuritySettingsBadgesProps {
-  settings: any;
+  settings: SecuritySettings | null;
   compact?: boolean;
 }
 

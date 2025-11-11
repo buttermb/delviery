@@ -48,7 +48,7 @@ export interface Tenant {
     enabled: boolean;
     domain?: string;
     logo?: string;
-    theme?: Record<string, any>;
+    theme?: Record<string, unknown>;
   };
   status: 'active' | 'suspended' | 'cancelled';
   suspended_reason?: string;
@@ -72,7 +72,7 @@ export interface TenantUser {
   email: string;
   name?: string;
   role: 'owner' | 'admin' | 'manager' | 'runner' | 'viewer';
-  permissions?: Record<string, any>;
+  permissions?: Record<string, unknown>;
   status: 'pending' | 'active' | 'suspended';
   email_verified: boolean;
   invited_by?: string;
@@ -298,7 +298,7 @@ export async function trackUsage(
   tenantId: string,
   eventType: string,
   quantity: number = 1,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const { error } = await supabase.from('usage_events' as any).insert({
     tenant_id: tenantId,

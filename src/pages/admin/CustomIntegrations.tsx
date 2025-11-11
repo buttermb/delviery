@@ -51,16 +51,16 @@ export default function CustomIntegrations() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_integrations' as any)
+          .from('custom_integrations')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+        return (data || []) as Integration[];
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -72,7 +72,7 @@ export default function CustomIntegrations() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_integrations' as any)
+        .from('custom_integrations')
         .insert({
           tenant_id: tenantId,
           name: integration.name,
@@ -100,10 +100,11 @@ export default function CustomIntegrations() {
       toast({ title: 'Integration created', description: 'Custom integration has been created.' });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create integration';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create integration',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
@@ -161,7 +162,7 @@ export default function CustomIntegrations() {
 
       {integrations && integrations.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {integrations.map((integration: any) => (
+          {integrations.map((integration: Integration) => (
             <Card key={integration.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

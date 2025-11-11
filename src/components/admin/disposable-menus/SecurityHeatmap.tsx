@@ -3,14 +3,38 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Shield, Eye, Lock, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+interface SecurityEvent {
+  id?: string;
+  severity?: string;
+  event_type?: string;
+  description?: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+interface AccessLog {
+  ip_address?: string;
+  violations?: unknown[];
+  [key: string]: unknown;
+}
+
+interface EventsBySeverity {
+  [key: string]: SecurityEvent[];
+}
+
+interface SuspiciousIP {
+  ip: string;
+  count: number;
+}
+
 interface SecurityHeatmapProps {
-  securityEvents: any[];
-  accessLogs: any[];
+  securityEvents: SecurityEvent[];
+  accessLogs: AccessLog[];
 }
 
 export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapProps) => {
   // Group events by severity
-  const eventsBySeverity = securityEvents.reduce((acc: any, event: any) => {
+  const eventsBySeverity = securityEvents.reduce((acc: EventsBySeverity, event: SecurityEvent) => {
     const severity = event.severity || 'low';
     if (!acc[severity]) acc[severity] = [];
     acc[severity].push(event);
@@ -44,17 +68,17 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
   );
 
   // Suspicious IPs (multiple failed attempts)
-  const suspiciousIPs = accessLogs.reduce((acc: any, log: any) => {
-    if (log.violations && log.violations.length > 0) {
+  const suspiciousIPs = accessLogs.reduce((acc: Record<string, number>, log: AccessLog) => {
+    if (log.violations && Array.isArray(log.violations) && log.violations.length > 0) {
       const ip = log.ip_address || 'Unknown';
       acc[ip] = (acc[ip] || 0) + 1;
     }
     return acc;
   }, {});
 
-  const suspiciousIPList = Object.entries(suspiciousIPs)
-    .map(([ip, count]) => ({ ip, count }))
-    .sort((a: any, b: any) => b.count - a.count)
+  const suspiciousIPList: SuspiciousIP[] = Object.entries(suspiciousIPs)
+    .map(([ip, count]) => ({ ip, count: count as number }))
+    .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
   const getSeverityColor = (severity: string) => {
@@ -161,7 +185,7 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
       <Card className="p-6">
         <h3 className="font-semibold mb-4">Recent Security Events</h3>
         <div className="space-y-3">
-          {securityEvents.slice(0, 10).map((event: any) => {
+          {securityEvents.slice(0, 10).map((event: SecurityEvent) => {
             const Icon = getEventIcon(event.event_type);
             return (
               <div key={event.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
@@ -199,7 +223,7 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
         <Card className="p-6">
           <h3 className="font-semibold mb-4">Suspicious IP Addresses</h3>
           <div className="space-y-2">
-            {suspiciousIPList.map((item: any, idx: number) => (
+            {suspiciousIPList.map((item: SuspiciousIP, idx: number) => (
               <div key={idx} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-5 w-5 text-destructive" />

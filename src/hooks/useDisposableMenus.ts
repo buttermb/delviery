@@ -41,8 +41,8 @@ export const useCreateDisposableMenu = () => {
       name: string;
       description?: string;
       product_ids: string[];
-      security_settings?: any;
-      appearance_settings?: any;
+      security_settings?: Record<string, unknown>;
+      appearance_settings?: Record<string, unknown>;
       min_order_quantity?: number;
       max_order_quantity?: number;
       custom_prices?: Record<string, number>;
@@ -145,7 +145,7 @@ export const useManageWhitelist = () => {
     mutationFn: async (whitelistData: {
       menu_id: string;
       action: 'add' | 'revoke' | 'regenerate_token';
-      customer_data?: any;
+      customer_data?: Record<string, unknown>;
       whitelist_id?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('menu-whitelist-manage', {

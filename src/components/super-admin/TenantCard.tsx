@@ -22,8 +22,15 @@ import {
 import { Link } from "react-router-dom";
 import { memo } from "react";
 
+interface Tenant {
+  id: string;
+  business_name?: string;
+  subscription_status?: string;
+  [key: string]: unknown;
+}
+
 interface TenantCardProps {
-  tenant: any;
+  tenant: Tenant;
   onView?: (tenantId: string) => void;
   onLoginAs?: (tenantId: string) => void;
   onViewBilling?: (tenantId: string) => void;
@@ -35,7 +42,7 @@ export const TenantCard = memo(function TenantCard({
   onLoginAs,
   onViewBilling 
 }: TenantCardProps) {
-  const health = calculateHealthScore(tenant as any);
+  const health = calculateHealthScore(tenant);
   const healthScore = health.score;
   const healthColor = 
     healthScore >= 80 ? "text-green-400" :

@@ -24,7 +24,7 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
           schema: 'public',
           table: 'orders',
         },
-        (payload: any) => {
+        (payload: { new: { status?: string; courier_id?: string | null; order_number?: string; total_amount?: number | string; id?: string } }) => {
           // Only show notification for pending orders without courier
           if (payload.new.status === 'pending' && !payload.new.courier_id) {
             // Play sound

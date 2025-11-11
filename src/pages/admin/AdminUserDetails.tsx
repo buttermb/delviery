@@ -26,13 +26,86 @@ import { logger } from "@/lib/logger";
 export default function AdminUserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  interface UserProfile {
+    user_id?: string;
+    user_id_code?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+    risk_score?: number;
+    trust_level?: string;
+    account_status?: string;
+    total_spent?: number;
+    total_orders?: number;
+    average_order_value?: number;
+    lifetime_value?: number;
+    chargebacks?: number;
+    failed_payments?: number;
+    cancelled_orders?: number;
+    reported_issues?: number;
+    daily_limit?: number;
+    weekly_limit?: number;
+    order_limit?: number;
+    addresses?: unknown[];
+    orders?: unknown[];
+    [key: string]: unknown;
+  }
+
+  interface RiskAssessment {
+    score?: number;
+    level?: string;
+    factors?: unknown[];
+  }
+
+  interface FraudFlag {
+    id: string;
+    flag_type?: string;
+    severity?: string;
+    description?: string;
+    created_at?: string;
+    [key: string]: unknown;
+  }
+
+  interface Device {
+    id: string;
+    fingerprint: string;
+    device_type?: string;
+    browser?: string;
+    os?: string;
+    created_at?: string;
+    last_seen?: string;
+    is_blocked?: boolean;
+    multiple_accounts?: boolean;
+    [key: string]: unknown;
+  }
+
+  interface IPAddress {
+    id: string;
+    ip_address: string;
+    first_seen?: string;
+    last_seen?: string;
+    times_used?: number;
+    is_blocked?: boolean;
+    [key: string]: unknown;
+  }
+
+  interface AccountLog {
+    id: string;
+    action_type?: string;
+    description?: string;
+    created_at?: string;
+    ip_address?: string;
+    [key: string]: unknown;
+  }
+
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [riskAssessment, setRiskAssessment] = useState<any>(null);
-  const [fraudFlags, setFraudFlags] = useState<any[]>([]);
-  const [devices, setDevices] = useState<any[]>([]);
-  const [ipAddresses, setIpAddresses] = useState<any[]>([]);
-  const [accountLogs, setAccountLogs] = useState<any[]>([]);
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
+  const [fraudFlags, setFraudFlags] = useState<FraudFlag[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [ipAddresses, setIpAddresses] = useState<IPAddress[]>([]);
+  const [accountLogs, setAccountLogs] = useState<AccountLog[]>([]);
 
   useEffect(() => {
     fetchUserDetails();
@@ -163,7 +236,7 @@ export default function AdminUserDetails() {
 
   const updateLimit = async (limitType: string, value: string) => {
     try {
-      const updates: any = {};
+      const updates: Record<string, number> = {};
       if (limitType === "daily") updates.daily_limit = parseFloat(value);
       if (limitType === "weekly") updates.weekly_limit = parseFloat(value);
       if (limitType === "order") updates.order_limit = parseInt(value);
@@ -278,7 +351,7 @@ export default function AdminUserDetails() {
           blocked_by: adminId,
           reason,
           expires_at: expiresAt,
-        } as any);
+        });
 
       if (error) throw error;
 

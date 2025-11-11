@@ -238,7 +238,7 @@ export const OrderDetailsDialog = ({
                     No items in this order
                   </div>
                 ) : (
-                  orderItems.map((item: any, idx: number) => (
+                  orderItems.map((item: OrderItem, idx: number) => (
                     <div key={idx} className="border rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">

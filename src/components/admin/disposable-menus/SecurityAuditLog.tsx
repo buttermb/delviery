@@ -22,8 +22,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+interface SecurityEvent {
+  event_type: string;
+  severity?: string;
+  details?: {
+    customer_name?: string;
+  } | null;
+  [key: string]: unknown;
+}
+
 interface SecurityAuditLogProps {
-  events: any[];
+  events: SecurityEvent[];
   onRefresh: () => void;
 }
 

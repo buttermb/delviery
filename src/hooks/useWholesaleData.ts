@@ -8,7 +8,7 @@ export const useWholesaleClients = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wholesale_clients')
-        .select('*') as any;
+        .select('*');
       
       if (error) throw error;
       return data || [];
@@ -39,7 +39,7 @@ export const useCreateWholesaleOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (orderData: any) => {
+    mutationFn: async (orderData: Record<string, unknown>) => {
       const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
         body: orderData
       });
@@ -69,7 +69,7 @@ export const useProcessPayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (paymentData: any) => {
+    mutationFn: async (paymentData: Record<string, unknown>) => {
       const { data, error } = await supabase.functions.invoke('wholesale-payment-process', {
         body: paymentData
       });
@@ -130,7 +130,7 @@ export const useUpdateDeliveryStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { delivery_id: string; status: string; location?: any; notes?: string }) => {
+    mutationFn: async (data: { delivery_id: string; status: string; location?: { lat?: number; lng?: number; [key: string]: unknown } | null; notes?: string }) => {
       const { data: result, error } = await supabase.functions.invoke('wholesale-delivery-update', {
         body: data
       });

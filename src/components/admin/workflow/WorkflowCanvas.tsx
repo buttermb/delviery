@@ -48,11 +48,12 @@ import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
 import { useWorkflowVersionStats } from '@/hooks/useWorkflowVersions';
 import { Node, Edge } from 'reactflow';
+import { logger } from '@/lib/logger';
 
 interface WorkflowAction {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 interface Workflow {
@@ -60,7 +61,7 @@ interface Workflow {
   name: string;
   description: string;
   trigger_type: 'database_event' | 'schedule' | 'webhook' | 'manual';
-  trigger_config: Record<string, any>;
+  trigger_config: Record<string, unknown>;
   actions: WorkflowAction[];
   is_active: boolean;
   tenant_id?: string;
@@ -75,7 +76,7 @@ export function WorkflowCanvas() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<Workflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
-  const [actionTemplates, setActionTemplates] = useState<any[]>([]);
+  const [actionTemplates, setActionTemplates] = useState<Array<{ name: string; category?: string; [key: string]: unknown }>>([]);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [configuringAction, setConfiguringAction] = useState<WorkflowAction | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,11 +103,12 @@ export function WorkflowCanvas() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setWorkflows((data as any) || []);
-    } catch (error: any) {
+      setWorkflows((data as Workflow[]) || []);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error loading workflows';
       toast({
         title: 'Error loading workflows',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -128,9 +130,9 @@ export function WorkflowCanvas() {
         ]);
 
       if (error) throw error;
-      setTemplates((data as any) || []);
-    } catch (error: any) {
-      console.error('Error loading templates:', error);
+      setTemplates((data as Workflow[]) || []);
+    } catch (error: unknown) {
+      logger.error('Error loading templates', error, { component: 'WorkflowCanvas' });
     }
   };
 
@@ -143,8 +145,8 @@ export function WorkflowCanvas() {
 
       if (error) throw error;
       setActionTemplates(data || []);
-    } catch (error: any) {
-      console.error('Error loading templates:', error);
+    } catch (error: unknown) {
+      logger.error('Error loading action templates', error, { component: 'WorkflowCanvas' });
     }
   };
 
@@ -175,11 +177,11 @@ export function WorkflowCanvas() {
     if (!selectedWorkflow || !tenant?.id) return;
 
     try {
-      const workflowData: any = {
+      const workflowData: Omit<Workflow, 'id'> & { tenant_id: string } = {
         ...selectedWorkflow,
         tenant_id: tenant.id,
-        actions: selectedWorkflow.actions as any,
-        trigger_config: selectedWorkflow.trigger_config as any,
+        actions: selectedWorkflow.actions,
+        trigger_config: selectedWorkflow.trigger_config,
       };
 
       if (selectedWorkflow.id) {
@@ -199,7 +201,7 @@ export function WorkflowCanvas() {
           .single();
 
         if (error) throw error;
-        setSelectedWorkflow(data as any);
+        setSelectedWorkflow(data as Workflow);
       }
 
       // If trigger is database_event, create trigger record
@@ -221,16 +223,17 @@ export function WorkflowCanvas() {
       });
 
       loadWorkflows();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error saving workflow';
       toast({
         title: 'Error saving workflow',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }
   };
 
-  const handleAddAction = (template: any) => {
+  const handleAddAction = (template: { name: string; [key: string]: unknown }) => {
     if (!selectedWorkflow) return;
 
     const newAction: WorkflowAction = {
@@ -316,10 +319,11 @@ export function WorkflowCanvas() {
         title: 'Workflow executed',
         description: `Status: ${result?.status || 'completed'}`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Execution failed';
       toast({
         title: 'Execution failed',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -351,16 +355,17 @@ export function WorkflowCanvas() {
         title: 'Visual workflow updated',
         description: 'Click Save to persist changes to database',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Update failed';
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     }
   }, [selectedWorkflow, toast]);
 
-  const handleNodeDragStart = (event: React.DragEvent, nodeType: string, config: any) => {
+  const handleNodeDragStart = (event: React.DragEvent, nodeType: string, config: Record<string, unknown>) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify({ 
       type: nodeType, 
       label: config.label || nodeType.replace('_', ' '),
@@ -550,7 +555,7 @@ export function WorkflowCanvas() {
                     <Label>Trigger Type</Label>
                     <Select
                       value={selectedWorkflow.trigger_type}
-                      onValueChange={(value: any) =>
+                      onValueChange={(value: 'database_event' | 'schedule' | 'webhook' | 'manual') =>
                         setSelectedWorkflow({
                           ...selectedWorkflow,
                           trigger_type: value,

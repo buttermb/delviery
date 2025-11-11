@@ -10,7 +10,7 @@ interface SecurityEvent {
   event_type: string;
   severity: 'low' | 'medium' | 'high';
   created_at: string;
-  event_data: any;
+  event_data: Record<string, unknown>;
   menu?: { name: string };
   whitelist?: { customer_name: string };
   acknowledged: boolean;

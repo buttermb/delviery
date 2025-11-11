@@ -13,7 +13,8 @@ import {
   MapPin,
   Clock,
   User,
-  Eye
+  Eye,
+  type LucideIcon
 } from 'lucide-react';
 
 const severityConfig = {
@@ -39,7 +40,7 @@ const severityConfig = {
   }
 };
 
-const eventTypeIcons: Record<string, any> = {
+const eventTypeIcons: Record<string, LucideIcon> = {
   failed_access_code: Shield,
   geofence_violation: MapPin,
   time_restriction: Clock,

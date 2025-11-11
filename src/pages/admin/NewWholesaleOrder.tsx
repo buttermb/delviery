@@ -26,7 +26,7 @@ export default function NewWholesaleOrder() {
     notes: ''
   });
 
-  const steps: { key: OrderStep; label: string; icon: any }[] = [
+  const steps: { key: OrderStep; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { key: 'client', label: 'Select Client', icon: Package },
     { key: 'products', label: 'Products', icon: Package },
     { key: 'payment', label: 'Payment Terms', icon: DollarSign },

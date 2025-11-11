@@ -85,7 +85,7 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
     }
   }, [formData]);
 
-  const steps: { id: CheckoutStep; label: string; icon: any }[] = [
+  const steps: { id: CheckoutStep; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'review', label: 'Review', icon: ShoppingBag },
     { id: 'contact', label: 'Contact', icon: FileCheck },
     { id: 'delivery', label: 'Delivery', icon: Truck },

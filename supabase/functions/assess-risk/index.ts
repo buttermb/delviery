@@ -114,16 +114,46 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Risk assessment error:", error);
     return new Response(
-      JSON.stringify({ error: error?.message || "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
 
-function assessNameRisk(profile: any): number {
+interface Profile {
+  first_name?: string;
+  last_name?: string;
+  name_change_count?: number;
+  total_orders?: number;
+  cancelled_orders?: number;
+  reported_issues?: number;
+  chargebacks?: number;
+  failed_payments?: number;
+  [key: string]: unknown;
+}
+
+interface Address {
+  neighborhood?: string;
+  risk_zone?: string;
+  street?: string;
+  issue_count?: number;
+  [key: string]: unknown;
+}
+
+interface Order {
+  created_at: string;
+  [key: string]: unknown;
+}
+
+interface Device {
+  multiple_accounts?: boolean;
+  [key: string]: unknown;
+}
+
+function assessNameRisk(profile: Profile): number {
   let risk = 0;
 
   const suspiciousPatterns = [
@@ -153,14 +183,14 @@ function assessNameRisk(profile: any): number {
   return Math.min(risk, 100);
 }
 
-async function assessAddressRisk(address: any, supabase: any): Promise<number> {
+async function assessAddressRisk(address: Address | null, supabaseClient: ReturnType<typeof createClient>): Promise<number> {
   if (!address) return 50;
 
   let risk = 0;
 
   // Check neighborhood risk level
   if (address.neighborhood) {
-    const { data: riskFactor } = await supabase
+    const { data: riskFactor } = await supabaseClient
       .from("risk_factors")
       .select("risk_level")
       .eq("neighborhood", address.neighborhood)
@@ -192,7 +222,7 @@ async function assessAddressRisk(address: any, supabase: any): Promise<number> {
   return Math.min(risk, 100);
 }
 
-function assessBehaviorRisk(profile: any, orders: any[]): number {
+function assessBehaviorRisk(profile: Profile, orders: Order[]): number {
   let risk = 0;
 
   // New user
@@ -227,7 +257,7 @@ function assessBehaviorRisk(profile: any, orders: any[]): number {
   return Math.min(risk, 100);
 }
 
-function assessPaymentRisk(profile: any): number {
+function assessPaymentRisk(profile: Profile): number {
   let risk = 0;
 
   // Chargebacks
@@ -243,7 +273,7 @@ function assessPaymentRisk(profile: any): number {
   return Math.min(risk, 100);
 }
 
-function assessDeviceRisk(devices: any[]): number {
+function assessDeviceRisk(devices: Device[]): number {
   let risk = 0;
 
   // Multiple accounts on same device

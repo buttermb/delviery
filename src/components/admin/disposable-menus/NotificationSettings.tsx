@@ -72,18 +72,19 @@ export const NotificationSettings = () => {
         title: 'Settings Saved',
         description: 'Notification settings have been updated successfully.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Save failed';
       toast({
         variant: 'destructive',
         title: 'Save Failed',
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setSaving(false);
     }
   };
 
-  const updateTemplate = (index: number, field: keyof NotificationTemplate, value: any) => {
+  const updateTemplate = (index: number, field: keyof NotificationTemplate, value: string | boolean) => {
     const updated = [...templates];
     updated[index] = { ...updated[index], [field]: value };
     setTemplates(updated);

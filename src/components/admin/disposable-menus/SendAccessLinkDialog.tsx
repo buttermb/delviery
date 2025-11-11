@@ -15,6 +15,7 @@ import { Mail, MessageSquare, Loader2, Copy, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { logger } from '@/lib/logger';
 
 interface SendAccessLinkDialogProps {
   open: boolean;
@@ -37,7 +38,7 @@ export function SendAccessLinkDialog({
 }: SendAccessLinkDialogProps) {
   const [method, setMethod] = useState<'email' | 'sms'>('email');
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<any>(null);
+  const [preview, setPreview] = useState<{ message?: string; [key: string]: unknown } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const accessUrl = `${window.location.origin}/menu/${whitelistEntry.unique_access_token}`;
@@ -66,12 +67,13 @@ export function SendAccessLinkDialog({
         title: 'Access Link Sent',
         description: `Link sent via ${method} to ${whitelistEntry.customer_name}`,
       });
-    } catch (error: any) {
-      console.error('Error sending access link:', error);
+    } catch (error: unknown) {
+      logger.error('Error sending access link', error, { component: 'SendAccessLinkDialog' });
+      const errorMessage = error instanceof Error ? error.message : 'Could not send access link';
       toast({
         variant: 'destructive',
         title: 'Failed to Send',
-        description: error.message || 'Could not send access link',
+        description: errorMessage,
       });
     } finally {
       setLoading(false);

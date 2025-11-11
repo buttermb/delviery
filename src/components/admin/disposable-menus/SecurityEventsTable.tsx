@@ -11,7 +11,7 @@ interface SecurityEvent {
   id: string;
   event_type: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  event_data: any;
+  event_data: Record<string, unknown>;
   acknowledged: boolean;
   created_at: string;
   menu?: {
@@ -105,7 +105,7 @@ export const SecurityEventsTable = ({ events, onRefresh }: SecurityEventsTablePr
                   <span className="font-medium">{event.menu?.name || 'Unknown'}</span>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={config.color as any}>
+                  <Badge variant={config.color as 'default' | 'secondary' | 'destructive' | 'outline'}>
                     {event.severity.toUpperCase()}
                   </Badge>
                 </TableCell>

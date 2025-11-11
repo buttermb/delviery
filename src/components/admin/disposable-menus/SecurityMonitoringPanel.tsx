@@ -21,8 +21,23 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 export const SecurityMonitoringPanel = () => {
-  const [activeThreats, setActiveThreats] = useState<any[]>([]);
-  const [blockedIPs, setBlockedIPs] = useState<any[]>([]);
+  interface SecurityThreat {
+    id: string;
+    type: string;
+    severity: string;
+    description?: string;
+    [key: string]: unknown;
+  }
+
+  interface BlockedIP {
+    id: string;
+    ip_address: string;
+    reason?: string;
+    [key: string]: unknown;
+  }
+
+  const [activeThreats, setActiveThreats] = useState<SecurityThreat[]>([]);
+  const [blockedIPs, setBlockedIPs] = useState<BlockedIP[]>([]);
   const { data: recentEvents, refetch } = useMenuSecurityEvents();
 
   // Real-time monitoring
@@ -45,7 +60,7 @@ export const SecurityMonitoringPanel = () => {
             return;
           }
 
-          const newEvent = payload.new as any;
+          const newEvent = payload.new as { event_type?: string; severity?: string; description?: string; [key: string]: unknown };
           
           // Show toast for critical events
           if (newEvent.severity === 'critical' || newEvent.severity === 'high') {
