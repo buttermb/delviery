@@ -35,6 +35,8 @@ export const AdvancedReportsCard = ({ menuId, stats }: AdvancedReportsCardProps)
         generatedAt: string;
         stats: typeof stats;
         reportType: string;
+        title?: string;
+        description?: string;
       }
 
       const reportData: ReportData = {

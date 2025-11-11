@@ -40,8 +40,8 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       let worksheetData: Record<string, unknown>[];
       
       if (Array.isArray(data)) {
-        worksheetData = data;
-      } else if (typeof data === 'object') {
+        worksheetData = data as Record<string, unknown>[];
+      } else if (typeof data === 'object' && data !== null) {
         // Convert object to array of key-value pairs
         worksheetData = Object.entries(data).map(([key, value]) => ({
           Metric: key,

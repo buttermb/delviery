@@ -96,9 +96,11 @@ export function RevenuePredictionWidget() {
         created_at: string;
         total_amount: number;
         client_id: string;
+        customer_id: string;
+        tenant_id: string;
       }
 
-      const dailyData = groupOrdersByDate(orders as OrderRow[]);
+      const dailyData = groupOrdersByDate(orders as unknown as OrderRow[]);
       return dailyData.slice(-7); // Last 7 days for chart
     },
     enabled: !!tenantId,

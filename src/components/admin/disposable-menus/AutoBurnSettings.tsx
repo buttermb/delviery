@@ -88,10 +88,10 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
             <div className="space-y-6">
               {/* Burn Type */}
               <div>
-                <Label>Burn Type</Label>
+              <Label>Burn Type</Label>
                 <Select
                   value={config.burn_type}
-                  onValueChange={(value) => updateConfig({ burn_type: value })}
+                  onValueChange={(value) => updateConfig({ burn_type: value as 'soft' | 'hard' })}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue />
