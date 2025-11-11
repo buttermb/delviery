@@ -75,10 +75,10 @@ export function ModernDashboard() {
         .lt('quantity_lbs', 30);
 
       // Revenue calculation
-      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o) => 
+      const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 
         sum + Number(o.total_amount || 0), 0);
 
-      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o) => 
+      const lastWeekRevenue = (lastWeekOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 
         sum + Number(o.total_amount || 0), 0);
 
       return {
