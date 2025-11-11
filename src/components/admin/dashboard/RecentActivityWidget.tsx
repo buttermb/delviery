@@ -42,14 +42,14 @@ export function RecentActivityWidget() {
       const [ordersResult, transfersResult] = await Promise.all([
         supabase
           .from('wholesale_orders')
-          .select('id, order_number, status, created_at, account_id')
-          .eq('account_id', account.id)
+          .select('id, order_number, status, created_at, tenant_id')
+          .eq('tenant_id', account.id)
           .order('created_at', { ascending: false })
           .limit(5),
         supabase
           .from('wholesale_deliveries')
-          .select('id, status, created_at, account_id')
-          .eq('account_id', account.id)
+          .select('id, status, created_at, tenant_id')
+          .eq('tenant_id', account.id)
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
@@ -59,14 +59,14 @@ export function RecentActivityWidget() {
         order_number: string;
         status: string;
         created_at: string;
-        account_id: string;
+        tenant_id: string;
       }
 
       interface TransferRow {
         id: string;
         status: string;
         created_at: string;
-        account_id: string;
+        tenant_id: string;
       }
 
       const activities: ActivityItem[] = [];

@@ -167,8 +167,8 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
     interface GeoJSONFeature {
       type: 'Feature';
       geometry: {
-        type: string;
-        coordinates: number[][];
+        type: 'Point' | 'LineString' | 'Polygon';
+        coordinates: [number, number] | [number, number][] | [number, number][][];
       };
       properties?: Record<string, unknown>;
     }
@@ -253,7 +253,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: [order.dropoff_lng, order.dropoff_lat]
+            coordinates: [order.dropoff_lng, order.dropoff_lat] as [number, number]
           }
         });
       }
@@ -410,7 +410,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: routeFeatures
+          features: routeFeatures as unknown as GeoJSON.Feature[]
         }
       });
 
@@ -433,7 +433,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: heatmapPoints
+          features: heatmapPoints as unknown as GeoJSON.Feature[]
         }
       });
 

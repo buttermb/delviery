@@ -67,6 +67,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
       setLoading(true);
       
       const clientData: WholesaleClientInsert = {
+        tenant_id: tenant.id,
         business_name: formData.business_name,
         contact_name: formData.contact_name,
         email: formData.email || null,

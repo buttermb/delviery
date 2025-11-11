@@ -277,7 +277,7 @@ const App = () => {
           const result = await runProductionHealthCheck();
           
           if (result.issues.length > 0) {
-            productionLogger.warning('Production health check found issues', result);
+            productionLogger.warning('Production health check found issues', result as unknown as Record<string, unknown>);
             
             // Show toast for critical issues
             if (!result.supabase || !result.realtime) {

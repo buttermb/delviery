@@ -119,7 +119,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         subject: data.subject,
         message: data.message,
         type: data.type,
-      }, 'NotificationDialog');
+      });
 
       toast({
         title: 'Notifications sent',

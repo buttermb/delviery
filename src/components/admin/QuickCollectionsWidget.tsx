@@ -71,7 +71,7 @@ export function QuickCollectionsWidget() {
                   size="sm" 
                   variant="outline"
                   onClick={() => {
-                    setSelectedClient(client);
+                    setSelectedClient(client as WholesaleClient);
                     setPaymentDialogOpen(true);
                   }}
                 >

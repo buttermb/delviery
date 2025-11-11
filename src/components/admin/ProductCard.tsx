@@ -45,16 +45,19 @@ export function ProductCard({
   onAddToMenu,
   onPrintLabel
 }: ProductCardProps) {
-  const isInStock = (product.available_quantity || 0) > 0;
-  const isLowStock = isInStock && product.available_quantity < 10;
-  const stockQuantity = product.available_quantity || 0;
+  const availableQty = Number(product.available_quantity || 0);
+  const isInStock = availableQty > 0;
+  const isLowStock = isInStock && availableQty < 10;
+  const stockQuantity = availableQty;
 
   const profitMargin = (cost: number, price: number) => {
     if (!cost || !price) return 0;
     return (((price - cost) / price) * 100).toFixed(1);
   };
 
-  const margin = profitMargin(product.cost_per_unit, product.wholesale_price);
+  const costPerUnit = Number(product.cost_per_unit || 0);
+  const wholesalePrice = Number(product.wholesale_price || 0);
+  const margin = profitMargin(costPerUnit, wholesalePrice);
 
   return (
     <Card 
@@ -99,16 +102,16 @@ export function ProductCard({
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <h3 className="font-bold text-lg text-[hsl(var(--tenant-text))] group-hover:text-[hsl(var(--tenant-primary))] transition-colors mb-1">
-              {product.name}
+              {String(product.name || '')}
             </h3>
             {product.strain_name && (
               <p className="text-sm text-[hsl(var(--tenant-text-light))] mb-2">
-                {product.strain_name}
+                {String(product.strain_name)}
               </p>
             )}
             {product.sku && (
               <code className="text-xs text-[hsl(var(--tenant-text-light))] bg-[hsl(var(--tenant-surface))] px-2 py-1 rounded">
-                {product.sku}
+                {String(product.sku)}
               </code>
             )}
           </div>
@@ -159,14 +162,14 @@ export function ProductCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--tenant-text-light))]">Wholesale Price</span>
             <span className="text-lg font-bold text-[hsl(var(--tenant-primary))]">
-              {formatCurrency(product.wholesale_price || 0)}
+              {formatCurrency(wholesalePrice)}
             </span>
           </div>
-          {product.cost_per_unit && (
+          {costPerUnit > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-[hsl(var(--tenant-text-light))]">Cost</span>
               <span className="text-[hsl(var(--tenant-text-light))]">
-                {formatCurrency(product.cost_per_unit)}
+                {formatCurrency(costPerUnit)}
               </span>
             </div>
           )}
@@ -186,7 +189,7 @@ export function ProductCard({
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
             <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
-              Stock: {stockQuantity} units
+              Stock: {String(stockQuantity)} units
             </span>
           </div>
           {isLowStock && (

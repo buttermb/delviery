@@ -63,12 +63,12 @@ export function ResponsiveTable<T = Record<string, unknown>>({
                 </TableRow>
               ) : (
                 data.map((row, rowIndex) => (
-                  <TableRow key={row.id || rowIndex}>
+                  <TableRow key={(row as Record<string, unknown>).id as string || rowIndex}>
                     {columns.map((column) => (
-                      <TableCell key={column.key} className={column.className}>
+                    <TableCell key={column.key} className={column.className}>
                         {column.render
-                          ? column.render(row[column.key], row)
-                          : row[column.key] ?? '-'}
+                          ? (column.render((row as Record<string, unknown>)[column.key], row) as React.ReactNode)
+                          : ((row as Record<string, unknown>)[column.key] ?? '-') as React.ReactNode}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -95,20 +95,20 @@ export function ResponsiveTable<T = Record<string, unknown>>({
           </Card>
         ) : (
           data.map((row, rowIndex) => (
-            <Card key={row.id || rowIndex} className={mobileCardClassName}>
+            <Card key={(row as Record<string, unknown>).id as string || rowIndex} className={mobileCardClassName}>
               <CardContent className="p-4 space-y-3">
                 {columns.map((column) => {
                   const label = column.mobileLabel || column.label;
                   const value = column.render
-                    ? column.render(row[column.key], row)
-                    : row[column.key] ?? '-';
+                    ? column.render((row as Record<string, unknown>)[column.key], row)
+                    : (row as Record<string, unknown>)[column.key] ?? '-';
 
                   return (
                     <div key={column.key} className="flex flex-col gap-1">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         {label}
                       </div>
-                      <div className={cn('text-sm', column.className)}>{value}</div>
+                      <div className={cn('text-sm', column.className)}>{value as React.ReactNode}</div>
                     </div>
                   );
                 })}

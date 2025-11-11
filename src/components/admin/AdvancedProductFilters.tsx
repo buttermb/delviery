@@ -171,7 +171,7 @@ export function AdvancedProductFilters({
             <Label>Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</Label>
             <Slider
               value={filters.priceRange}
-              onValueChange={(value) => updateFilter("priceRange", value)}
+              onValueChange={(value) => updateFilter("priceRange", value as [number, number])}
               max={1000}
               step={10}
               className="mt-2"
@@ -183,7 +183,7 @@ export function AdvancedProductFilters({
             <Label>Stock Range: {filters.stockRange[0]} - {filters.stockRange[1]} units</Label>
             <Slider
               value={filters.stockRange}
-              onValueChange={(value) => updateFilter("stockRange", value)}
+              onValueChange={(value) => updateFilter("stockRange", value as [number, number])}
               max={1000}
               step={5}
               className="mt-2"

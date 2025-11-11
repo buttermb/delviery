@@ -124,7 +124,7 @@ export function CollectionsDashboard() {
                           size="sm" 
                           variant="destructive"
                           onClick={() => {
-                            setSelectedClient(client);
+                            setSelectedClient(client as WholesaleClient);
                             setPaymentDialogOpen(true);
                           }}
                         >
@@ -135,7 +135,7 @@ export function CollectionsDashboard() {
                           size="sm" 
                           variant="outline"
                           onClick={() => {
-                            setSmsClient(client);
+                            setSmsClient(client as WholesaleClient);
                             setSmsDialogOpen(true);
                           }}
                         >

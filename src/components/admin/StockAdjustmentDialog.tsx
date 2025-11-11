@@ -33,6 +33,7 @@ export function StockAdjustmentDialog({
   const queryClient = useQueryClient();
 
   interface AdjustmentData {
+    warehouse: string;
     type: 'add' | 'subtract';
     quantity: string;
     reason: string;
@@ -81,7 +82,6 @@ export function StockAdjustmentDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     adjustmentMutation.mutate({
-      product_id: productId,
       warehouse,
       type: adjustmentType,
       quantity,
