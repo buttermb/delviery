@@ -3,7 +3,7 @@
  * Supports multiple images with thumbnails, zoom, and swipe
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
@@ -30,6 +30,7 @@ interface ProductImageGalleryProps {
 export function ProductImageGallery({ images, productName, onZoom }: ProductImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Filter and process images
   const processedImages = images
@@ -77,13 +78,13 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
   // Swipe support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
-    (e.currentTarget as any).touchStartX = touch.clientX;
+    touchStartXRef.current = touch.clientX;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touch = e.changedTouches[0];
-    const touchStartX = (e.currentTarget as any).touchStartX;
-    if (!touchStartX) return;
+    const touchStartX = touchStartXRef.current;
+    if (touchStartX === null) return;
 
     const diff = touchStartX - touch.clientX;
     const threshold = 50;
@@ -91,12 +92,13 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
     if (Math.abs(diff) > threshold) {
       if (diff > 0) {
         // Swipe left - next image
-        handleNext(e as any);
+        setSelectedIndex((prev) => (prev === processedImages.length - 1 ? 0 : prev + 1));
       } else {
         // Swipe right - previous image
-        handlePrevious(e as any);
+        setSelectedIndex((prev) => (prev === 0 ? processedImages.length - 1 : prev - 1));
       }
     }
+    touchStartXRef.current = null;
   };
 
   return (
