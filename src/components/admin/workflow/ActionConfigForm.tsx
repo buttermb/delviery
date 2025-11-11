@@ -15,8 +15,8 @@ import { Badge } from '@/components/ui/badge';
 interface ActionConfigFormProps {
   actionType: string;
   actionName: string;
-  config: Record<string, any>;
-  onSave: (name: string, config: Record<string, any>) => void;
+  config: Record<string, unknown>;
+  onSave: (name: string, config: Record<string, unknown>) => void;
   onCancel: () => void;
 }
 

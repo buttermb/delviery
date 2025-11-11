@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Package,
@@ -67,7 +68,7 @@ import {
 export interface NavItem {
   title: string;
   href: string;
-  icon: any;
+  icon: LucideIcon;
   badge?: string | number;
   tier?: 'free' | 'professional' | 'enterprise' | 'ultimate';
 }

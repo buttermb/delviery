@@ -69,7 +69,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
       console.error("Image upload error:", error);
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
     } finally {

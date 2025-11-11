@@ -383,11 +383,11 @@ export function AdvancedInvoice() {
             </CardHeader>
             <CardContent className="space-y-2">
               <InvoiceDownloadButton invoice={invoice} />
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => { /* TODO: Implement PDF preview */ }}>
                 <Eye className="h-4 w-4 mr-2" />
                 Preview PDF
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => { /* TODO: Implement email invoice */ }}>
                 <Send className="h-4 w-4 mr-2" />
                 Email Invoice
               </Button>
