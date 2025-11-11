@@ -53,7 +53,8 @@ const RecentPurchaseNotification = () => {
         },
         (payload) => {
           // Show notification for new purchase
-          setVisiblePurchase(payload.new as any);
+          const newPurchase = payload.new as RecentPurchase;
+          setVisiblePurchase(newPurchase);
           setShowNotification(true);
           
           const timeoutId = setTimeout(() => {

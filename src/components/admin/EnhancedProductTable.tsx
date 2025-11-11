@@ -58,7 +58,7 @@ interface EnhancedProductTableProps {
   selectedProducts: string[];
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
-  onUpdate: (id: string, updates: any) => void;
+  onUpdate: (id: string, updates: Partial<Product>) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -83,13 +83,13 @@ export function EnhancedProductTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState("");
 
-  const startEdit = (id: string, field: string, currentValue: any) => {
+  const startEdit = (id: string, field: string, currentValue: string | number | boolean | undefined) => {
     setEditingCell({ id, field });
     setEditValue(currentValue?.toString() || "");
   };
 
   const saveEdit = (id: string, field: string) => {
-    let value: any = editValue;
+    let value: string | number = editValue;
 
     if (field === "price" || field === "stock_quantity") {
       value = parseFloat(editValue);

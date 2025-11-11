@@ -28,7 +28,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
       if (!tenantId) throw new Error("Tenant ID is required");
 
       const { error } = await supabase
-        .from("tenants" as any)
+        .from("tenants")
         .update({ features: newFeatures })
         .eq("id", tenantId);
 
@@ -43,7 +43,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
         description: "Tenant features have been updated successfully",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         variant: "destructive",
         title: "Failed to update features",
