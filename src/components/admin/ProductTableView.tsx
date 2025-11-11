@@ -22,12 +22,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+interface Product {
+  id: string;
+  name: string;
+  category?: string;
+  price?: number;
+  stock_quantity?: number;
+  in_stock?: boolean;
+  image_url?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 interface ProductTableViewProps {
-  products: any[];
+  products: Product[];
   selectedProducts: string[];
   onToggleSelect: (id: string) => void;
   onSelectAll: () => void;
-  onUpdate: (id: string, updates: any) => void;
+  onUpdate: (id: string, updates: Partial<Product>) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -48,13 +59,13 @@ export function ProductTableView({
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState("");
 
-  const startEdit = (id: string, field: string, currentValue: any) => {
+  const startEdit = (id: string, field: string, currentValue: string | number | boolean | undefined) => {
     setEditingCell({ id, field });
     setEditValue(currentValue?.toString() || "");
   };
 
   const saveEdit = (id: string, field: string) => {
-    let value: any = editValue;
+    let value: string | number = editValue;
     
     if (field === "price" || field === "stock_quantity") {
       value = parseFloat(editValue);
@@ -70,7 +81,7 @@ export function ProductTableView({
     setEditValue("");
   };
 
-  const getCellContent = (product: any, field: string) => {
+  const getCellContent = (product: Product, field: string) => {
     const isEditing = editingCell?.id === product.id && editingCell?.field === field;
 
     if (isEditing) {
