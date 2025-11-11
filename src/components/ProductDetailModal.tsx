@@ -588,16 +588,16 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                     <span className="font-semibold">Onset Time</span>
                     <span className="text-primary">{String(getStringValue(effectsTimeline.onset) || '')}</span>
                   </div>
-                  {getStringValue((effectsTimeline as any).peak) && (
+                  {getStringValue('peak' in effectsTimeline ? effectsTimeline.peak : undefined) && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Peak Effects</span>
-                      <span className="text-primary">{String(getStringValue((effectsTimeline as any).peak))}</span>
+                      <span className="text-primary">{String(getStringValue('peak' in effectsTimeline ? effectsTimeline.peak : undefined))}</span>
                     </div>
                   )}
-                  {getStringValue((effectsTimeline as any).duration) && (
+                  {getStringValue('duration' in effectsTimeline ? effectsTimeline.duration : undefined) && (
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <span className="font-semibold">Duration</span>
-                      <span className="text-primary">{String(getStringValue((effectsTimeline as any).duration))}</span>
+                      <span className="text-primary">{String(getStringValue('duration' in effectsTimeline ? effectsTimeline.duration : undefined))}</span>
                     </div>
                   )}
                 </div>
@@ -675,7 +675,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Growing Method</h4>
                     <p className="text-2xl font-bold capitalize text-primary">
-                      {getStringValue((growingInfo as any).method) || "Indoor"}
+                      {getStringValue('method' in growingInfo ? growingInfo.method : undefined) || "Indoor"}
                     </p>
                   </CardContent>
                 </Card>
@@ -683,15 +683,15 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                   <CardContent className="p-6">
                     <h4 className="font-semibold mb-2">Organic</h4>
                     <p className="text-2xl font-bold text-primary">
-                      {(growingInfo as any).organic ? "Yes" : "Standard"}
+                      {('organic' in growingInfo && growingInfo.organic) ? "Yes" : "Standard"}
                     </p>
                   </CardContent>
                 </Card>
               </div>
-              {getStringValue((growingInfo as any).location) && (
+              {getStringValue('location' in growingInfo ? growingInfo.location : undefined) && (
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-semibold mb-2">Location</h4>
-                  <p className="text-muted-foreground">{String(getStringValue((growingInfo as any).location))}</p>
+                  <p className="text-muted-foreground">{String(getStringValue('location' in growingInfo ? growingInfo.location : undefined))}</p>
                 </div>
               )}
               {getStringValue(product.strain_lineage) && (

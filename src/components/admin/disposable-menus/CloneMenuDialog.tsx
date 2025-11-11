@@ -41,8 +41,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
     setLoading(true);
     try {
       // Clone menu - using security_settings JSONB for flexible configuration
-      const menuData = menu as any;
-      const securitySettings = cloneSettings.security ? (menuData.security_settings || {}) : {};
+      const securitySettings = cloneSettings.security ? (menu.security_settings || {}) : {};
       
       const { data: newMenu, error: menuError } = await supabase
         .from('disposable_menus')
@@ -52,15 +51,15 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
           title: newTitle.trim(),
           description: menu.description,
           encrypted_url_token: crypto.randomUUID().replace(/-/g, '').substring(0, 24),
-          access_code_hash: menuData.access_code_hash || '',
+          access_code_hash: menu.access_code_hash || '',
           expiration_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           status: 'active',
-          screenshot_protection_enabled: cloneSettings.security ? (menuData.screenshot_protection_enabled || false) : false,
-          screenshot_watermark_enabled: cloneSettings.security ? (menuData.screenshot_watermark_enabled || false) : false,
-          device_locking_enabled: cloneSettings.security ? (menuData.device_locking_enabled || false) : false,
-          view_limit_per_customer: menuData.view_limit_per_customer || 5,
+          screenshot_protection_enabled: cloneSettings.security ? (menu.screenshot_protection_enabled || false) : false,
+          screenshot_watermark_enabled: cloneSettings.security ? (menu.screenshot_watermark_enabled || false) : false,
+          device_locking_enabled: cloneSettings.security ? (menu.device_locking_enabled || false) : false,
+          view_limit_per_customer: menu.view_limit_per_customer || 5,
           security_settings: securitySettings,
-          appearance_settings: menuData.appearance_settings || {},
+          appearance_settings: menu.appearance_settings || {},
           menu_access_whitelist: [],
         })
         .select()
@@ -127,7 +126,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
         <DialogHeader>
           <DialogTitle>Clone Menu</DialogTitle>
           <DialogDescription>
-            Create a copy of "{(menu as any)?.title || menu?.name}"
+            Create a copy of "{menu.title || menu.name}"
           </DialogDescription>
         </DialogHeader>
 

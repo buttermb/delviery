@@ -364,7 +364,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         <div className="flex-1">
                           <div className="font-medium">{product.product_name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {(product as any).quantity_lbs || 0} lbs • {(product as any).quantity_units || 0} units available
+                            {('quantity_lbs' in product ? product.quantity_lbs : 0) || 0} lbs • {('quantity_units' in product ? product.quantity_units : 0) || 0} units available
                           </div>
                           {!imageUrl && (
                             <Badge variant="outline" className="text-xs mt-1">No image</Badge>
