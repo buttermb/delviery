@@ -1,10 +1,11 @@
-import { Camera } from 'react-camera-pro';
+import { Camera, CameraType } from 'react-camera-pro';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera as CameraIcon, RotateCcw, CheckCircle, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface PhotoProofProps {
   orderId: string;
@@ -12,7 +13,7 @@ interface PhotoProofProps {
 }
 
 export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
-  const camera = useRef<any>(null);
+  const camera = useRef<CameraType | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -55,8 +56,8 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
       onPhotoUploaded(publicUrl);
       toast.success('Photo uploaded successfully!');
     } catch (error) {
+      logger.error('Failed to upload photo', error, { component: 'PhotoProof', orderId });
       toast.error('Failed to upload photo');
-      console.error('Upload error:', error);
     } finally {
       setUploading(false);
     }
@@ -78,6 +79,12 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
                 ref={camera}
                 aspectRatio={16 / 9}
                 facingMode="environment"
+                errorMessages={{
+                  noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
+                  permissionDenied: 'Permission denied. Please refresh and give camera permission.',
+                  switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
+                  canvas: 'Canvas is not supported.'
+                }}
               />
             </div>
             <Button
