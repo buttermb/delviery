@@ -126,8 +126,8 @@ export function ReviewSection() {
       setShowForm(false);
       queryClient.invalidateQueries({ queryKey: ['home-reviews'] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to submit review');
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit review');
     },
   });
 

@@ -2,8 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export interface MobileOptimizedInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+export type MobileOptimizedInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const MobileOptimizedInput = React.forwardRef<HTMLInputElement, MobileOptimizedInputProps>(
   ({ className, type, ...props }, ref) => {

@@ -13,8 +13,15 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { getDefaultWeight } from "@/utils/productHelpers";
 
+interface Product {
+  id: string;
+  name: string;
+  prices?: Record<string, number> | null;
+  [key: string]: unknown;
+}
+
 interface QuickViewDrawerProps {
-  product: any;
+  product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onViewFull?: () => void;
@@ -59,9 +66,9 @@ export function QuickViewDrawer({ product, open, onOpenChange, onViewFull }: Qui
         });
         onOpenChange(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       haptics.error();
-      toast.error(error.message || "Failed to add to cart");
+      toast.error(error instanceof Error ? error.message : "Failed to add to cart");
     } finally {
       setLoading(false);
     }
