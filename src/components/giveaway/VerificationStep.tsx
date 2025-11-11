@@ -6,11 +6,16 @@ import { Input } from '@/components/ui/input';
 import { ShieldCheck, Mail, Phone, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Entry {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface VerificationStepProps {
   entryId: string;
   email: string;
   phone: string;
-  onSuccess: (entry: any) => void;
+  onSuccess: (entry: Entry) => void;
 }
 
 export default function VerificationStep({
@@ -76,11 +81,11 @@ export default function VerificationStep({
 
       onSuccess(data.entry);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Verification error:', error);
       toast({
         title: "Verification Failed",
-        description: error.message || "Please check your codes and try again",
+        description: error instanceof Error ? error.message : "Please check your codes and try again",
         variant: "destructive"
       });
     } finally {
@@ -117,10 +122,10 @@ export default function VerificationStep({
         description: "Check your email and phone for new codes"
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Resend Failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to resend codes",
         variant: "destructive"
       });
     } finally {

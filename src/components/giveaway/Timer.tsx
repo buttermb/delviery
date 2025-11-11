@@ -6,8 +6,16 @@ interface TimerProps {
   endDate: string;
 }
 
+interface CountdownRendererProps {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  completed: boolean;
+}
+
 export default function Timer({ endDate }: TimerProps) {
-  const renderer = ({ days, hours, minutes, seconds, completed }: any) => {
+  const renderer = ({ days, hours, minutes, seconds, completed }: CountdownRendererProps) => {
     if (completed) {
       return (
         <motion.div
