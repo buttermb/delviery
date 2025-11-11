@@ -240,11 +240,10 @@ export const DevTools = () => {
   const logScrollRef = useRef<HTMLDivElement>(null);
   const networkScrollRef = useRef<HTMLDivElement>(null);
   
-  // Only show in development - disable in production to prevent errors
-  if (import.meta.env.PROD) return null;
-
   // Keyboard shortcuts
   useEffect(() => {
+    // Only run in development
+    if (import.meta.env.PROD) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl/Cmd + Shift + D to toggle
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
@@ -268,6 +267,8 @@ export const DevTools = () => {
 
   // Sync global stores to local state every 500ms (only when DevTools is open)
   useEffect(() => {
+    // Only run in development
+    if (import.meta.env.PROD) return;
     if (!isOpen) return; // Don't run interval when closed
     
     let lastLogsLength = 0;
