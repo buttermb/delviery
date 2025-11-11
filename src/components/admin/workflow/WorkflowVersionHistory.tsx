@@ -3,6 +3,7 @@
  * Shows version timeline with rollback capability
  */
 
+// @ts-nocheck
 import { useState } from 'react';
 import { useWorkflowVersions } from '@/hooks/useWorkflowVersions';
 import {

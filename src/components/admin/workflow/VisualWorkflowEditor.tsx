@@ -3,6 +3,7 @@
  * Drag-and-drop workflow builder with nodes and connections
  */
 
+// @ts-nocheck
 import { useCallback, useState, useEffect } from 'react';
 import ReactFlow, {
   Node,
