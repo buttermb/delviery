@@ -37,6 +37,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type TenantLimits = {
+  customers: number;
+  menus: number;
+  products: number;
+  locations: number;
+  users: number;
+};
+
+type TenantFeatures = {
+  api_access: boolean;
+  custom_branding: boolean;
+  white_label: boolean;
+  advanced_analytics: boolean;
+  sms_enabled: boolean;
+};
+
+type TenantUsage = {
+  customers: number;
+  menus: number;
+  products: number;
+  locations: number;
+  users: number;
+};
 
 const createTenantSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
@@ -81,7 +106,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         .replace(/(^-|-$)/g, '');
 
       // Get plan limits
-      const planLimits: Record<string, any> = {
+      const planLimits: Record<string, TenantLimits> = {
         starter: {
           customers: 50,
           menus: 3,
@@ -105,7 +130,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         },
       };
 
-      const planFeatures: Record<string, any> = {
+      const planFeatures: Record<string, TenantFeatures> = {
         starter: {
           api_access: false,
           custom_branding: false,
@@ -139,7 +164,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           : null;
 
       // Create tenant
-      const { data: tenant, error } = await (supabase as any)
+      const { data: tenant, error } = await supabase
         .from('tenants')
         .insert({
           business_name: data.business_name,
@@ -158,7 +183,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
             products: 0,
             locations: 0,
             users: 0,
-          },
+          } as TenantUsage,
           compliance_verified: false,
           onboarded: false,
         })
@@ -180,7 +205,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         console.warn('Failed to create user:', userError);
       } else if (userData.user && tenant) {
         // Add user to tenant_users table
-        await (supabase as any).from('tenant_users').insert({
+        await supabase.from('tenant_users').insert({
           tenant_id: tenant.id,
           email: data.owner_email,
           name: data.owner_name,

@@ -73,7 +73,18 @@ export default function PurchaseGiveawayEntries() {
 
       if (error) throw error;
 
-      setEntries(data as any || []);
+      // Type assertion is safe here since we control the query structure
+      const typedEntries: GiveawayEntry[] = (data || []).map((entry) => ({
+        id: entry.id,
+        user_id: entry.user_id || '',
+        entry_type: (entry.entry_type === 'purchase' ? 'purchase' : 'manual') as 'manual' | 'purchase',
+        total_entries: entry.total_entries || 0,
+        entry_number_start: entry.entry_number_start || 0,
+        entry_number_end: entry.entry_number_end || 0,
+        status: (entry.status === 'verified' ? 'verified' : 'pending') as 'pending' | 'verified',
+        entered_at: entry.entered_at || new Date().toISOString(),
+      }));
+      setEntries(typedEntries);
 
       // Calculate stats
       const stats = {
