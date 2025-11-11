@@ -22,8 +22,8 @@ export interface FilterOption {
 
 interface FilterPanelProps {
   filters: FilterOption[];
-  values: Record<string, any>;
-  onChange: (values: Record<string, any>) => void;
+  values: Record<string, unknown>;
+  onChange: (values: Record<string, unknown>) => void;
   onReset: () => void;
   className?: string;
 }
@@ -39,7 +39,7 @@ export function FilterPanel({
 
   const activeFilters = Object.keys(values).filter(key => values[key] !== '' && values[key] !== null);
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: unknown) => {
     onChange({
       ...values,
       [key]: value,
