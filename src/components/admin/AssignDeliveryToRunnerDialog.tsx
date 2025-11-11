@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MapPin, DollarSign, Package, Loader2 } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { logger } from "@/lib/logger";
 
 interface AssignDeliveryToRunnerDialogProps {
   open: boolean;
@@ -87,11 +88,11 @@ export const AssignDeliveryToRunnerDialog = ({
 
       onOpenChange(false);
       setSelectedOrderId("");
-    } catch (error: any) {
-      console.error("Assignment error:", error);
+    } catch (error: unknown) {
+      logger.error("Assignment error", error instanceof Error ? error : new Error(String(error)), { component: 'AssignDeliveryToRunnerDialog', runnerId, orderId: selectedOrderId });
       showErrorToast(
         "Assignment Failed",
-        error?.message || "Unable to assign delivery to runner"
+        error instanceof Error ? error.message : "Unable to assign delivery to runner"
       );
     } finally {
       setAssigning(false);

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Truck, MapPin, Clock, DollarSign } from 'lucide-react';
 import { calculateDistance } from '@/utils/geofenceHelper';
+import { logger } from '@/lib/logger';
 
 interface Courier {
   id: string;
@@ -97,11 +98,11 @@ export const CourierDispatchPanel = ({
       });
 
       onAssigned?.();
-    } catch (error: any) {
-      console.error('Assign courier error:', error);
+    } catch (error: unknown) {
+      logger.error('Assign courier error', error instanceof Error ? error : new Error(String(error)), { component: 'CourierDispatchPanel', orderId, courierId });
       toast({
         title: 'Assignment Failed',
-        description: error?.message || 'Unable to assign courier',
+        description: error instanceof Error ? error.message : 'Unable to assign courier',
         variant: 'destructive'
       });
     } finally {
