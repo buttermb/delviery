@@ -99,7 +99,7 @@ export function AdvancedInvoice() {
     }
   };
 
-  const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
+  const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
     const updatedItems = invoice.lineItems.map(item => {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
@@ -198,7 +198,7 @@ export function AdvancedInvoice() {
                   <Label>Status</Label>
                   <Select
                     value={invoice.status}
-                    onValueChange={(value: any) => setInvoice({ ...invoice, status: value })}
+                    onValueChange={(value: string) => setInvoice({ ...invoice, status: value as 'draft' | 'sent' | 'paid' | 'overdue' })}
                   >
                     <SelectTrigger>
                       <SelectValue />

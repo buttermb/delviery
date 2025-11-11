@@ -301,7 +301,7 @@ export const SecurityMonitoringPanel = () => {
                               <p className="font-medium text-sm truncate">
                                 {event.event_type.replace(/_/g, ' ').toUpperCase()}
                               </p>
-                              <Badge variant={getSeverityColor(event.severity) as any}>
+                              <Badge variant={getSeverityColor(event.severity) as 'default' | 'secondary' | 'destructive' | 'outline'}>
                                 {event.severity}
                               </Badge>
                             </div>

@@ -42,7 +42,7 @@ class ProductionLogger {
     }
   }
 
-  error(message: string, context?: any, error?: Error) {
+  error(message: string, context?: Record<string, unknown>, error?: Error) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       type: 'error',
@@ -60,7 +60,7 @@ class ProductionLogger {
     }
   }
 
-  warning(message: string, context?: any) {
+  warning(message: string, context?: Record<string, unknown>) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       type: 'warning',
@@ -72,7 +72,7 @@ class ProductionLogger {
     this.saveLogs();
   }
 
-  info(message: string, context?: any) {
+  info(message: string, context?: Record<string, unknown>) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       type: 'info',

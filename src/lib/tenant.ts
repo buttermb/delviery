@@ -300,12 +300,12 @@ export async function trackUsage(
   quantity: number = 1,
   metadata?: Record<string, unknown>
 ): Promise<void> {
-  const { error } = await supabase.from('usage_events' as any).insert({
+  const { error } = await supabase.from('usage_events').insert({
     tenant_id: tenantId,
     event_type: eventType,
     quantity,
     metadata: metadata || {},
-  } as any);
+  });
 
   if (error) {
     console.error('Failed to track usage:', error);

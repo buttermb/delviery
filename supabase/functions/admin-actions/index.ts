@@ -7,12 +7,12 @@ const corsHeaders = {
 };
 
 async function logAdminAction(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   adminId: string,
   action: string,
   entityType?: string,
   entityId?: string,
-  details?: any,
+  details?: Record<string, unknown>,
   req?: Request
 ) {
   await supabase.from("admin_audit_logs").insert({

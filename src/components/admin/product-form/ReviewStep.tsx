@@ -5,9 +5,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Check, AlertCircle } from "lucide-react";
 
+interface ProductFormData {
+  [key: string]: unknown;
+}
+
 interface ReviewStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {

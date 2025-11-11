@@ -5,13 +5,20 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, Clock } from 'lucide-react';
 
+interface ViewLimitConfig {
+  enabled: boolean;
+  max_views?: number;
+  reset_period?: string;
+  [key: string]: unknown;
+}
+
 interface ViewLimitSettingsProps {
-  settings: any;
-  onChange: (settings: any) => void;
+  settings: ViewLimitConfig;
+  onChange: (settings: ViewLimitConfig) => void;
 }
 
 export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps) => {
-  const updateSetting = (key: string, value: any) => {
+  const updateSetting = (key: string, value: string | number | boolean) => {
     onChange({ ...settings, [key]: value });
   };
 

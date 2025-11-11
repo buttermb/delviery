@@ -5,9 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+interface ProductFormData {
+  description?: string;
+  [key: string]: unknown;
+}
+
 interface DetailsStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 const EFFECTS = [

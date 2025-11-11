@@ -4,9 +4,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
 
+interface ProductFormData {
+  name?: string;
+  category?: string;
+  [key: string]: unknown;
+}
+
 interface BasicInfoStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) {

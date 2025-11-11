@@ -5,9 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 
+interface ProductFormData {
+  price?: number;
+  [key: string]: unknown;
+}
+
 interface PricingStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 export function PricingStep({ formData, updateFormData }: PricingStepProps) {

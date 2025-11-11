@@ -6,9 +6,14 @@ import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface ProductFormData {
+  images?: string[];
+  [key: string]: unknown;
+}
+
 interface ImagesStepProps {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ProductFormData;
+  updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
 export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
@@ -60,7 +65,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
       }
 
       toast({ title: "✓ Image uploaded successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Image upload error:", error);
       toast({
         title: "Upload failed",

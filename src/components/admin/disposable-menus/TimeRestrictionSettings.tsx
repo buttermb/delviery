@@ -6,9 +6,20 @@ import { Switch } from '@/components/ui/switch';
 import { Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
+interface TimeRestrictionConfig {
+  enabled: boolean;
+  allowed_hours: {
+    start: string;
+    end: string;
+  };
+  allowed_days: Record<string, boolean>;
+  timezone: string;
+  [key: string]: unknown;
+}
+
 interface TimeRestrictionSettingsProps {
-  settings: any;
-  onChange: (settings: any) => void;
+  settings: TimeRestrictionConfig;
+  onChange: (settings: TimeRestrictionConfig) => void;
 }
 
 export const TimeRestrictionSettings = ({ settings, onChange }: TimeRestrictionSettingsProps) => {
@@ -30,7 +41,7 @@ export const TimeRestrictionSettings = ({ settings, onChange }: TimeRestrictionS
     timezone: 'America/New_York'
   });
 
-  const updateConfig = (updates: any) => {
+  const updateConfig = (updates: Partial<TimeRestrictionConfig>) => {
     const newConfig = { ...config, ...updates };
     setConfig(newConfig);
     onChange(newConfig);
