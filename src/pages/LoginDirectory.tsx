@@ -37,7 +37,7 @@ export default function LoginDirectory() {
         "Business analytics",
         "Customer management"
       ],
-      loginUrl: "/willysbo/admin/login",
+      loginUrl: "/saas/login",
       buttonText: "Business Admin Login",
       color: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
       iconColor: "text-blue-600",
