@@ -173,6 +173,8 @@ export default function SignUpPage() {
   const onSubmit = async (data: SignupFormData) => {
     setIsSubmitting(true);
     try {
+      logger.info('[SIGNUP] Starting tenant signup', { email: data.email, business_name: data.business_name });
+      
       // Clear saved form data
       localStorage.removeItem(STORAGE_KEY);
 
@@ -190,21 +192,36 @@ export default function SignUpPage() {
         },
       });
 
+      logger.info('[SIGNUP] Response received', { 
+        hasError: !!error, 
+        hasResult: !!result,
+        resultKeys: result ? Object.keys(result) : [],
+        errorMessage: error?.message
+      });
+
       if (error) {
+        logger.error('[SIGNUP] Edge function error', error);
         throw new Error(error.message || 'Failed to create account');
       }
 
       // Check for error in response body (some edge functions return 200 with error)
       if (result && typeof result === 'object' && 'error' in result && result.error) {
+        logger.error('[SIGNUP] Error in response body', result);
         const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to create account';
         throw new Error(errorMessage);
       }
 
       if (!result || !result.success) {
+        logger.error('[SIGNUP] Validation failed', result);
         throw new Error(result?.error || 'Failed to create account. Please try again.');
       }
 
       const tenant = result.tenant;
+      logger.info('[SIGNUP] Tenant created', { 
+        tenantId: tenant.id, 
+        slug: tenant.slug,
+        hasTokens: !!result.tokens 
+      });
 
       // Store tokens and user data for auto-login
       if (result.tokens) {
@@ -212,6 +229,9 @@ export default function SignUpPage() {
         localStorage.setItem('tenant_admin_refresh_token', result.tokens.refresh_token);
         localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
         localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
+        logger.info('[SIGNUP] Tokens stored', { slug: tenant.slug });
+      } else {
+        logger.warn('[SIGNUP] No tokens returned');
       }
 
       toast({
@@ -220,12 +240,12 @@ export default function SignUpPage() {
       });
 
       // Force page reload to re-initialize auth context with new tokens
-      // Small delay to ensure localStorage write completes
+      logger.info('[SIGNUP] Redirecting to dashboard', { path: `/${tenant.slug}/admin/dashboard` });
       setTimeout(() => {
         window.location.href = `/${tenant.slug}/admin/dashboard`;
       }, 100);
     } catch (error: any) {
-      logger.error('Signup error', error);
+      logger.error('[SIGNUP] Fatal error', error);
       
       // Provide user-friendly error messages
       let errorMessage = 'Failed to create account. Please try again.';
