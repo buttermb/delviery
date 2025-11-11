@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Revenue Chart Widget
  * Displays revenue trends and analytics
