@@ -10,8 +10,18 @@ import VerificationStep from './VerificationStep';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+interface Giveaway {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface EntryResult {
+  entry_id?: string;
+  [key: string]: unknown;
+}
+
 interface EntryFormProps {
-  giveaway: any;
+  giveaway: Giveaway;
   referralCode?: string;
   onSuccess: () => void;
 }
@@ -20,7 +30,7 @@ export default function EntryForm({ giveaway, referralCode, onSuccess }: EntryFo
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const [entryResult, setEntryResult] = useState<any>(null);
+  const [entryResult, setEntryResult] = useState<EntryResult | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);

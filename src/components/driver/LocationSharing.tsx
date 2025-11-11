@@ -84,9 +84,9 @@ export function DriverLocationSharing({ driverId, className }: LocationSharingPr
 
           setError(null);
           setLastUpdate(new Date());
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('Error updating location:', err);
-          setError(err.message || 'Failed to update location');
+          setError(err instanceof Error ? err.message : 'Failed to update location');
         }
       },
       (err) => {
