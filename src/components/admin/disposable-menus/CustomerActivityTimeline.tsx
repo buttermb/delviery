@@ -93,7 +93,16 @@ export const CustomerActivityTimeline = ({
 
   const isLoading = logsLoading || ordersLoading || eventsLoading;
 
-  const getActivityIcon = (type: string, data: any) => {
+  interface ActivityData {
+    access_code_correct?: boolean;
+    ip_address?: string;
+    location?: string;
+    total_amount?: number | string | null;
+    event_type?: string;
+    [key: string]: unknown;
+  }
+
+  const getActivityIcon = (type: string, data: ActivityData) => {
     switch (type) {
       case 'access':
         return data.access_code_correct ? (
@@ -110,7 +119,7 @@ export const CustomerActivityTimeline = ({
     }
   };
 
-  const getActivityDescription = (type: string, data: any) => {
+  const getActivityDescription = (type: string, data: ActivityData) => {
     switch (type) {
       case 'access':
         return data.access_code_correct
@@ -125,7 +134,7 @@ export const CustomerActivityTimeline = ({
     }
   };
 
-  const getActivityColor = (type: string, data: any) => {
+  const getActivityColor = (type: string, data: ActivityData) => {
     if (type === 'access' && !data.access_code_correct) return 'border-red-600/50';
     if (type === 'security') return 'border-amber-600/50';
     return 'border-border';
@@ -214,13 +223,13 @@ export const CustomerActivityTimeline = ({
                         <Clock className="h-3 w-3" />
                         {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                       </span>
-                      {activity.type === 'access' && (activity.data as any).ip_address && (
-                        <span>IP: {(activity.data as any).ip_address}</span>
+                      {activity.type === 'access' && (activity.data as ActivityData).ip_address && (
+                        <span>IP: {(activity.data as ActivityData).ip_address}</span>
                       )}
-                      {activity.type === 'access' && (activity.data as any).location && (
+                      {activity.type === 'access' && (activity.data as ActivityData).location && (
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
-                          {(activity.data as any).location}
+                          {(activity.data as ActivityData).location}
                         </span>
                       )}
                     </div>

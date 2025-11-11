@@ -35,8 +35,27 @@ export const CustomerMessaging = () => {
   const [subject, setSubject] = useState('');
   const [channel, setChannel] = useState<'email' | 'sms'>('email');
 
+  interface Customer {
+    name: string;
+    phone: string;
+    email?: string | null;
+    orderCount: number;
+    lastOrder: string;
+    status: string;
+  }
+
+  interface OrderWithWhitelist {
+    whitelist?: {
+      customer_name: string;
+      customer_phone: string;
+      customer_email?: string | null;
+    } | null;
+    created_at: string;
+    status: string;
+  }
+
   // Get unique customers from orders
-  const customers = orders?.reduce((acc: any[], order: any) => {
+  const customers = orders?.reduce((acc: Customer[], order: OrderWithWhitelist) => {
     if (order.whitelist && !acc.find(c => c.phone === order.whitelist.customer_phone)) {
       acc.push({
         name: order.whitelist.customer_name,
@@ -54,7 +73,7 @@ export const CustomerMessaging = () => {
 
   const filteredCustomers = filterStatus === 'all' 
     ? customers 
-    : customers.filter((c: any) => c.status === filterStatus);
+    : customers.filter((c: Customer) => c.status === filterStatus);
 
   const handleSendMessage = async () => {
     if (!message.trim()) {
@@ -87,11 +106,11 @@ export const CustomerMessaging = () => {
 
       setMessage('');
       setSubject('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: 'destructive',
         title: 'Send Failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to send message',
       });
     } finally {
       setSending(false);
@@ -114,7 +133,7 @@ export const CustomerMessaging = () => {
           {/* Channel Selection */}
           <div className="space-y-2">
             <Label>Notification Channel</Label>
-            <Select value={channel} onValueChange={(value: any) => setChannel(value)}>
+            <Select value={channel} onValueChange={(value: string) => setChannel(value as 'email' | 'sms')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -218,7 +237,7 @@ export const CustomerMessaging = () => {
                   No customers match the selected filter
                 </div>
               ) : (
-                filteredCustomers.map((customer: any, idx: number) => (
+                filteredCustomers.map((customer: Customer, idx: number) => (
                   <div key={idx} className="border rounded-lg p-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
