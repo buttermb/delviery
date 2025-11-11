@@ -28,6 +28,8 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { toast } from "@/hooks/use-toast";
 import { SuccessState } from "@/components/shared/SuccessState";
+import type { RenderCartItem } from "@/types/cart";
+import type { LucideIcon } from "lucide-react";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 
@@ -127,7 +129,7 @@ export default function CheckoutPage() {
         products: product
       };
     })
-    .filter(item => item !== null) as any[];
+    .filter((item): item is RenderCartItem => item !== null);
 
   const cartItems = user ? dbCartItems : guestCartItems;
   const isLoading = (user && dbLoading) || (!user && false);
@@ -136,7 +138,7 @@ export default function CheckoutPage() {
   const orderNotes = typeof window !== "undefined" ? sessionStorage.getItem("orderNotes") || "" : "";
 
   // Calculate totals
-  const getItemPrice = (item: any) => {
+  const getItemPrice = (item: RenderCartItem) => {
     const product = item?.products;
     if (!product) return 0;
     const selectedWeight = item?.selected_weight || "unit";
@@ -217,10 +219,10 @@ export default function CheckoutPage() {
         title: "Order placed successfully!",
         description: `Order #${orderNum} has been placed.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error placing order",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
     }
@@ -245,7 +247,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const steps: { id: CheckoutStep; label: string; icon: any }[] = [
+  const steps: { id: CheckoutStep; label: string; icon: LucideIcon }[] = [
     { id: "delivery", label: "Delivery", icon: Truck },
     { id: "payment", label: "Payment", icon: CreditCard },
     { id: "review", label: "Review", icon: CheckCircle2 },
@@ -678,7 +680,7 @@ export default function CheckoutPage() {
                   <div>
                     <h3 className="font-semibold text-[hsl(var(--customer-text))] mb-3">Order Items</h3>
                     <div className="space-y-3">
-                      {cartItems.map((item: any) => {
+                      {cartItems.map((item: RenderCartItem) => {
                         const product = item.products;
                         const price = getItemPrice(item);
                         return (

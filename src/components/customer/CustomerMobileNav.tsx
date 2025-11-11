@@ -39,7 +39,7 @@ export function CustomerMobileNav() {
   }, []);
 
   // Get current user session for cart query
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -63,8 +63,13 @@ export function CustomerMobileNav() {
     refetchOnWindowFocus: false,
   });
 
+  interface CartItem {
+    quantity: number;
+    [key: string]: unknown;
+  }
+
   // Calculate cart count (authenticated or guest)
-  const dbCartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  const dbCartCount = cartItems.reduce((sum: number, item: CartItem) => sum + (item.quantity || 0), 0);
   const guestCartCount = user ? 0 : getGuestCartCount();
   const cartCount = user ? dbCartCount : guestCartCount;
 
