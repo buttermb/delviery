@@ -25,14 +25,14 @@ import { useToast } from '@/hooks/use-toast';
 interface WorkflowAction {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 interface WorkflowConfig {
   name: string;
   description: string;
   triggerType: 'event' | 'schedule' | 'manual';
-  triggerConfig: Record<string, any>;
+  triggerConfig: Record<string, unknown>;
   actions: WorkflowAction[];
   enabled: boolean;
 }
@@ -145,8 +145,8 @@ export function WorkflowBuilder() {
               <Label>Trigger Type</Label>
               <Select
                 value={workflow.triggerType}
-                onValueChange={(value: any) =>
-                  setWorkflow({ ...workflow, triggerType: value })
+                onValueChange={(value: string) =>
+                  setWorkflow({ ...workflow, triggerType: value as 'event' | 'schedule' | 'manual' })
                 }
               >
                 <SelectTrigger>

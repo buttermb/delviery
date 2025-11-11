@@ -197,7 +197,7 @@ export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
                 </tr>
               </thead>
               <tbody>
-                {tableData.data.map((row: any, idx: number) => (
+                {tableData.data.map((row: Record<string, unknown>, idx: number) => (
                   <tr key={idx} className="border-t hover:bg-muted/50">
                     {tableData.columns.map((column) => (
                       <td key={column} className="px-4 py-2 max-w-xs truncate">
