@@ -42,7 +42,7 @@ export function AdvancedProductFilters({
   const [filters, setFilters] = useState<FilterConfig>(activeFilters);
   const [savedFilters, setSavedFilters] = useState<{ name: string; config: FilterConfig }[]>([]);
 
-  const updateFilter = (key: keyof FilterConfig, value: any) => {
+  const updateFilter = (key: keyof FilterConfig, value: FilterConfig[keyof FilterConfig]) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);

@@ -200,10 +200,10 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
       queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
       setOpen(false);
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to create tenant',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
     }

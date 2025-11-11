@@ -13,13 +13,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
 
+import type { LucideIcon } from 'lucide-react';
+
 interface ActivityItem {
   id: string;
   type: 'order' | 'update';
   title: string;
   description: string;
   timestamp: string;
-  icon: any;
+  icon: LucideIcon;
   color: string;
 }
 
@@ -54,7 +56,7 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
       // Add orders
       if (ordersResult.data) {
-        ordersResult.data.forEach((order: any) => {
+        ordersResult.data.forEach((order) => {
           combinedActivities.push({
             id: order.id,
             type: 'order',
@@ -69,7 +71,7 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
       // Add account logs
       if (logsResult.data) {
-        logsResult.data.forEach((log: any) => {
+        logsResult.data.forEach((log) => {
           combinedActivities.push({
             id: log.id,
             type: 'update',
