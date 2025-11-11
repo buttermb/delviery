@@ -153,7 +153,9 @@ export function ActionConfigForm({
                   try {
                     const headers = JSON.parse(e.target.value);
                     setFormData({...formData, headers});
-                  } catch {}
+                  } catch {
+                    // Invalid JSON, ignore
+                  }
                 }}
                 rows={3}
               />
@@ -168,7 +170,9 @@ export function ActionConfigForm({
                   try {
                     const body = JSON.parse(e.target.value);
                     setFormData({...formData, body});
-                  } catch {}
+                  } catch {
+                    // Invalid JSON, ignore
+                  }
                 }}
                 rows={4}
               />

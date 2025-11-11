@@ -36,9 +36,19 @@ import {
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
 import { formatDistanceToNow } from 'date-fns';
 
+interface DLQEntry {
+  id: string;
+  status: string;
+  workflow: {
+    name: string;
+  };
+  error_type?: string;
+  [key: string]: unknown;
+}
+
 export function DeadLetterQueue() {
   const { entries, isLoading, stats, retryExecution, resolveEntry, ignoreEntry, deleteEntry } = useDeadLetterQueue();
-  const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [selectedEntry, setSelectedEntry] = useState<DLQEntry | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,12 +60,12 @@ export function DeadLetterQueue() {
     return true;
   });
 
-  const handleViewDetails = (entry: any) => {
+  const handleViewDetails = (entry: DLQEntry) => {
     setSelectedEntry(entry);
     setShowDetails(true);
   };
 
-  const handleRetry = async (entry: any) => {
+  const handleRetry = async (entry: DLQEntry) => {
     await retryExecution.mutateAsync(entry.id);
   };
 
@@ -174,7 +184,7 @@ export function DeadLetterQueue() {
                       <div className="flex items-center gap-2 mb-2">
                         {getStatusIcon(entry.status)}
                         <span className="font-medium">{entry.workflow.name}</span>
-                        <Badge variant={getStatusVariant(entry.status) as any}>
+                        <Badge variant={getStatusVariant(entry.status) as 'default' | 'secondary' | 'destructive' | 'outline'}>
                           {entry.status}
                         </Badge>
                         <Badge variant="outline">

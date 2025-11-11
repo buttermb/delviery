@@ -38,7 +38,15 @@ export default function ImagesPage() {
   
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedImage, setSelectedImage] = useState<any>(null);
+  interface ProductImage {
+    id: string;
+    name?: string;
+    image_url?: string | null;
+    created_at?: string;
+    [key: string]: unknown;
+  }
+
+  const [selectedImage, setSelectedImage] = useState<ProductImage | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
 

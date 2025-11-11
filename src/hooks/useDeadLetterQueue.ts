@@ -13,12 +13,12 @@ export interface DeadLetterEntry {
   workflow_execution_id: string;
   workflow_id: string;
   tenant_id: string;
-  trigger_data: any;
-  execution_log: any[];
+  trigger_data: Record<string, unknown>;
+  execution_log: Array<Record<string, unknown>>;
   error_type: string;
   error_message: string;
   error_stack?: string;
-  error_details?: any;
+  error_details?: Record<string, unknown>;
   total_attempts: number;
   first_failed_at: string;
   last_attempt_at: string;
@@ -75,8 +75,8 @@ export function useDeadLetterQueue() {
       queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
       toast.success('Workflow execution queued for retry');
     },
-    onError: (error: any) => {
-      toast.error('Failed to retry execution: ' + error.message);
+    onError: (error: unknown) => {
+      toast.error('Failed to retry execution: ' + (error instanceof Error ? error.message : 'Unknown error'));
     },
   });
 
@@ -117,8 +117,8 @@ export function useDeadLetterQueue() {
       queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
       toast.success('Entry ignored');
     },
-    onError: (error: any) => {
-      toast.error('Failed to ignore entry: ' + error.message);
+    onError: (error: unknown) => {
+      toast.error('Failed to ignore entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
     },
   });
 
@@ -135,8 +135,8 @@ export function useDeadLetterQueue() {
       queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
       toast.success('Entry deleted');
     },
-    onError: (error: any) => {
-      toast.error('Failed to delete entry: ' + error.message);
+    onError: (error: unknown) => {
+      toast.error('Failed to delete entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
     },
   });
 
