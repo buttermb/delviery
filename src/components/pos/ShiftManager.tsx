@@ -95,6 +95,15 @@ export function ShiftManager() {
     mutationFn: async () => {
       if (!tenantId) throw new Error('Tenant ID required');
 
+      interface PosShiftInsert {
+        tenant_id: string;
+        terminal_id: string;
+        cashier_id: string;
+        cashier_name: string;
+        opening_cash: number;
+        status: 'open' | 'closed';
+      }
+
       const { data, error } = await supabase
         .from('pos_shifts')
         .insert([{
@@ -104,7 +113,7 @@ export function ShiftManager() {
           cashier_name: cashierName,
           opening_cash: parseFloat(openingCash),
           status: 'open',
-        }] as any)
+        }] as PosShiftInsert[])
         .select()
         .single();
 

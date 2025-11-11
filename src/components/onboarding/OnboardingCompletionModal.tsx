@@ -71,7 +71,7 @@ export function OnboardingCompletionModal({
       // Mark onboarding as complete in database (safely handle missing columns)
       if (tenantId) {
         try {
-          const updateData: any = {
+          const updateData: { onboarding_completed: boolean; onboarding_completed_at?: string } = {
             onboarding_completed: true,
           };
           

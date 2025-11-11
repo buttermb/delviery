@@ -58,7 +58,7 @@ export function OnboardingProgress({
       // Move async code into IIFE to avoid await in useEffect
       (async () => {
         try {
-          const updateData: any = {
+          const updateData: { onboarding_completed: boolean; onboarding_completed_at: string } = {
             onboarding_completed: true,
             onboarding_completed_at: new Date().toISOString(),
           };
