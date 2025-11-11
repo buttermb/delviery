@@ -64,7 +64,7 @@ export const CourierDispatchPanel = ({
 
       setCouriers(couriersWithDistance);
     } catch (error) {
-      console.error('Error fetching couriers:', error);
+      logger.error('Error fetching couriers', error instanceof Error ? error : new Error(String(error)), { component: 'CourierDispatchPanel' });
     } finally {
       setLoading(false);
     }
