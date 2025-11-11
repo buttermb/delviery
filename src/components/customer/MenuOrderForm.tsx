@@ -110,7 +110,7 @@ export const MenuOrderForm = ({
             <Label className="text-base font-semibold mb-4 block">Delivery Method</Label>
             <RadioGroup
               value={formData.delivery_method}
-              onValueChange={(value: any) => setFormData({ ...formData, delivery_method: value })}
+              onValueChange={(value: string) => setFormData({ ...formData, delivery_method: value as 'delivery' | 'pickup' })}
             >
               <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                 <RadioGroupItem value="delivery" id="delivery" />
@@ -139,7 +139,7 @@ export const MenuOrderForm = ({
             <Label className="text-base font-semibold mb-4 block">Payment Method</Label>
             <RadioGroup
               value={formData.payment_method}
-              onValueChange={(value: any) => setFormData({ ...formData, payment_method: value })}
+              onValueChange={(value: string) => setFormData({ ...formData, payment_method: value as 'cash' | 'credit' | 'crypto' })}
             >
               <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                 <RadioGroupItem value="cash" id="cash" />
@@ -170,7 +170,7 @@ export const MenuOrderForm = ({
             <Label className="text-base font-semibold mb-4 block">When do you need it?</Label>
             <RadioGroup
               value={formData.urgency}
-              onValueChange={(value: any) => setFormData({ ...formData, urgency: value })}
+              onValueChange={(value: string) => setFormData({ ...formData, urgency: value as 'asap' | 'this_week' | 'specific_date' })}
             >
               <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                 <RadioGroupItem value="asap" id="asap" />
