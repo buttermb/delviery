@@ -2,8 +2,14 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
+interface ProductFilters {
+  categories: string[];
+  inStock: boolean | null;
+  [key: string]: unknown; // Allow additional filter properties
+}
+
 interface ProductFiltersProps {
-  onFilterChange: (filters: any) => void;
+  onFilterChange: (filters: ProductFilters) => void;
 }
 
 export function ProductFilters({ onFilterChange }: ProductFiltersProps) {

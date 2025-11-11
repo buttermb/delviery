@@ -52,10 +52,10 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
       });
 
       onInvitationsChange();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to cancel invitation',
+        description: error instanceof Error ? error.message : 'Failed to cancel invitation',
         variant: 'destructive'
       });
     } finally {
@@ -74,7 +74,7 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
         title: 'Invitation Link Copied',
         description: 'Share this link with the invitee to join your team'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Error',
         description: 'Failed to copy invitation link',

@@ -18,8 +18,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Printer } from "lucide-react";
 
+interface Product {
+  id: string;
+  name: string;
+  category?: string;
+  price?: number;
+  stock_quantity?: number;
+  in_stock?: boolean;
+  image_url?: string;
+  sku?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 interface ProductCardProps {
-  product: any;
+  product: Product;
   onEdit?: (productId: string) => void;
   onDelete?: (productId: string) => void;
   onAddToMenu?: (productId: string) => void;

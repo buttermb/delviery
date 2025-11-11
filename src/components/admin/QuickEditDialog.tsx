@@ -21,8 +21,17 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import { Loader2 } from "lucide-react";
 
+interface Product {
+  id: string;
+  name: string;
+  price?: number;
+  stock_quantity?: number;
+  in_stock?: boolean;
+  [key: string]: unknown; // Allow additional properties
+}
+
 interface QuickEditDialogProps {
-  product: any;
+  product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
