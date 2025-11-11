@@ -128,7 +128,7 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
-                <Link to="/willysbo/admin/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
+                <Link to="/saas/login" className="hover:text-[hsl(var(--marketing-primary))] transition-colors">
                   Business Login
                 </Link>
               </li>

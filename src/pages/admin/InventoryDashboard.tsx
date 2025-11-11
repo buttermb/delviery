@@ -131,7 +131,7 @@ export default function InventoryDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/willysbo/login')}>
+            <Button onClick={() => navigate('/saas/login')}>
               Go to Login
             </Button>
           </CardContent>
