@@ -68,12 +68,13 @@ export default function TenantAdminLoginPage() {
       });
 
       navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
-    } catch (error: any) {
-      logger.error("Tenant admin login error", error);
+    } catch (error: unknown) {
+      logger.error("Tenant admin login error", error, { component: 'TenantAdminLoginPage' });
+      const errorMessage = error instanceof Error ? error.message : "Invalid credentials";
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || "Invalid credentials",
+        description: errorMessage,
       });
       setLoading(false);
     }

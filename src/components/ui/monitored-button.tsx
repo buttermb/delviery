@@ -50,8 +50,7 @@ export function MonitoredButton({
           setIsLoading(false);
           logger.warn(
             `Button timeout: ${component}.${action}`,
-            { timeout, buttonId },
-            'MonitoredButton'
+            { timeout, buttonId, component: 'MonitoredButton' }
           );
         }, timeout);
       }

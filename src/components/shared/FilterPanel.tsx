@@ -83,7 +83,7 @@ export function FilterPanel({
                     variant="secondary"
                     className="gap-1"
                   >
-                    {filter.label}: {values[key]}
+                    {filter.label as React.ReactNode}: {values[key]}
                     <button
                       onClick={() => removeFilter(key)}
                       className="ml-1 hover:bg-muted rounded-full p-0.5"
@@ -113,14 +113,14 @@ export function FilterPanel({
                 <Label className="mb-2">{filter.label}</Label>
                 {filter.type === 'text' && (
                   <Input
-                    value={values[filter.key] || ''}
+                    value={(values[filter.key] as string) || ''}
                     onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                     placeholder={`Filter by ${filter.label.toLowerCase()}...`}
                   />
                 )}
                 {filter.type === 'select' && filter.options && (
                   <Select
-                    value={values[filter.key] || ''}
+                    value={(values[filter.key] as string) || ''}
                     onValueChange={(value) => handleFilterChange(filter.key, value)}
                   >
                     <SelectTrigger>
@@ -139,14 +139,14 @@ export function FilterPanel({
                 {filter.type === 'date' && (
                   <Input
                     type="date"
-                    value={values[filter.key] || ''}
+                    value={(values[filter.key] as string) || ''}
                     onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                   />
                 )}
                 {filter.type === 'number' && (
                   <Input
                     type="number"
-                    value={values[filter.key] || ''}
+                    value={(values[filter.key] as string) || ''}
                     onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                     placeholder={`Filter by ${filter.label.toLowerCase()}...`}
                   />

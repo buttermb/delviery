@@ -30,6 +30,23 @@ import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { logger } from "@/lib/logger";
 import { useState } from "react";
+import type { Database } from "@/integrations/supabase/types";
+
+type Invoice = Database['public']['Tables']['invoices']['Row'];
+type InvoiceLineItem = {
+  description?: string;
+  name?: string;
+  quantity?: number;
+  amount?: number;
+  total?: number;
+};
+type TenantUser = {
+  id: string;
+  email: string;
+  full_name?: string | null;
+  role?: string | null;
+  [key: string]: unknown;
+};
 
 export default function TenantDetailPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
@@ -138,11 +155,12 @@ export default function TenantDetailPage() {
         description: `Tenant ${suspendMutation.variables ? "suspended" : "activated"}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     },
   });
@@ -175,11 +193,12 @@ export default function TenantDetailPage() {
         description: "Subscription plan updated successfully",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     },
   });
@@ -417,8 +436,8 @@ export default function TenantDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {Object.entries((tenant.usage as any) || {}).map(([key, value]: [string, any]) => {
-                    const limit = (tenant.limits as any)?.[key] || 0;
+                  {Object.entries((tenant.usage as Record<string, number>) || {}).map(([key, value]) => {
+                    const limit = ((tenant.limits as Record<string, number>) || {})[key] || 0;
                     const percentage = limit > 0 ? (Number(value) / limit) * 100 : 0;
                     return (
                       <div key={key} className="space-y-1">
@@ -446,7 +465,7 @@ export default function TenantDetailPage() {
             {tenantId && (
               <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
                 <CardContent className="pt-6">
-                  <FeatureList features={(tenant.features as any) || {}} tenantId={tenantId} readOnly={false} />
+                  <FeatureList features={(tenant.features as Record<string, boolean>) || {}} tenantId={tenantId} readOnly={false} />
                 </CardContent>
               </Card>
             )}
@@ -657,7 +676,7 @@ export default function TenantDetailPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {invoices.map((invoice: any) => (
+                          {invoices.map((invoice: Invoice) => (
                             <tr key={invoice.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                               <td className="py-3 px-4 text-sm text-[hsl(var(--super-admin-text))]">
                                 {formatSmartDate(invoice.issue_date)}
@@ -733,7 +752,7 @@ export default function TenantDetailPage() {
                                                 </thead>
                                                 <tbody>
                                                   ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
-                                                    ? invoice.line_items.map((item: any) => `
+                                                    ? (invoice.line_items as InvoiceLineItem[]).map((item) => `
                                                       <tr>
                                                         <td>${item.description || item.name || 'N/A'}</td>
                                                         <td>${item.quantity || 1}</td>
@@ -907,7 +926,7 @@ export default function TenantDetailPage() {
                         Lifetime Value:{" "}
                         <span className="font-bold text-[hsl(var(--super-admin-text))]">
                           {formatCurrency(
-                            invoices.reduce((sum: number, inv: any) => sum + (Number(inv.total) || 0), 0)
+                            invoices.reduce((sum: number, inv: Invoice) => sum + (Number(inv.total) || 0), 0)
                           )}
                         </span>
                       </p>
@@ -977,11 +996,11 @@ export default function TenantDetailPage() {
               <CardContent>
                 {tenantUsers && tenantUsers.length > 0 ? (
                   <div className="space-y-2">
-                    {tenantUsers.map((user: any) => (
+                    {tenantUsers.map((user: TenantUser) => (
                       <div key={user.id} className="flex items-center justify-between p-3 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
                         <div>
                           <p className="font-medium text-[hsl(var(--super-admin-text))]">{user.email}</p>
-                          <p className="text-sm text-[hsl(var(--super-admin-text))]/60">{user.name || "No name"}</p>
+                          <p className="text-sm text-[hsl(var(--super-admin-text))]/60">{user.full_name || "No name"}</p>
                         </div>
                         <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">{user.role}</Badge>
                       </div>

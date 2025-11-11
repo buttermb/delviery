@@ -90,10 +90,9 @@ export default function CustomerManagement() {
       if (error) throw error;
       setCustomers(data || []);
       toast.success("Customers loaded");
-    } catch (error: any) {
-      toast.error("Failed to load customers", {
-        description: error.message
-      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to load customers";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -224,7 +223,7 @@ export default function CustomerManagement() {
                 content="Import customers from your existing spreadsheet. Add contact info, preferences, and track purchase history."
                 placement="right"
                 tenantId={tenant.id}
-                tenantCreatedAt={(tenant as any).created_at}
+                tenantCreatedAt={(tenant.created_at as string) || new Date().toISOString()}
               />
             )}
           </div>

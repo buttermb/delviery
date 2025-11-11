@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Lock, MapPin, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 const SecureMenuAccess = () => {
   const { token } = useParams();
@@ -121,9 +122,10 @@ const SecureMenuAccess = () => {
 
       // Fallback error
       setError('Access denied');
-    } catch (err: any) {
-      console.error('Access validation error:', err);
-      setError(err.message || 'Failed to validate access. Please try again.');
+    } catch (err: unknown) {
+      logger.error('Access validation error', err, { component: 'SecureMenuAccess' });
+      const errorMessage = err instanceof Error ? err.message : 'Failed to validate access. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

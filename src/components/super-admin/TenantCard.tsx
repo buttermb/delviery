@@ -93,9 +93,9 @@ export const TenantCard = memo(function TenantCard({
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg text-[hsl(var(--super-admin-text))] group-hover:text-[hsl(var(--super-admin-primary))] transition-colors">
-                  {tenant.business_name}
+                  {(tenant.business_name as string) || 'Unknown'}
                 </h3>
-                <p className="text-sm text-[hsl(var(--super-admin-text))]/60">{tenant.slug}</p>
+                <p className="text-sm text-[hsl(var(--super-admin-text))]/60">{tenant.slug as string}</p>
               </div>
             </div>
           </div>
@@ -150,9 +150,9 @@ export const TenantCard = memo(function TenantCard({
         {/* Plan & Status */}
         <div className="flex items-center gap-2 mb-4">
           <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">
-            💼 {tenant.subscription_plan?.charAt(0).toUpperCase() + tenant.subscription_plan?.slice(1)}
+            💼 {((tenant.subscription_plan as string) || '').charAt(0).toUpperCase() + ((tenant.subscription_plan as string) || '').slice(1)}
           </Badge>
-          {getStatusBadge(tenant.subscription_status)}
+          {getStatusBadge(tenant.subscription_status as React.ReactNode)}
         </div>
 
         {/* Health Score Ring */}
@@ -203,20 +203,20 @@ export const TenantCard = memo(function TenantCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--super-admin-text))]/60">💰 MRR</span>
             <span className="text-sm font-semibold text-[hsl(var(--super-admin-text))]">
-              {formatCurrency(tenant.mrr || 0)}
+              {formatCurrency((tenant.mrr as number) || 0)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--super-admin-text))]/60">📅 Joined</span>
             <span className="text-sm text-[hsl(var(--super-admin-text))]/60">
-              {formatSmartDate(tenant.created_at)}
+              {formatSmartDate(tenant.created_at as string)}
             </span>
           </div>
           {tenant.last_activity_at && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-[hsl(var(--super-admin-text))]/60">Last login</span>
               <span className="text-sm text-[hsl(var(--super-admin-text))]/60">
-                {formatSmartDate(tenant.last_activity_at)}
+                {formatSmartDate(tenant.last_activity_at as string)}
               </span>
             </div>
           )}

@@ -86,8 +86,7 @@ class ButtonMonitor {
       } else if (status === 'timeout') {
         logger.warn(
           `Button timeout: ${component}.${action}`,
-          { buttonId, duration, url },
-          'ButtonMonitor'
+          { buttonId, duration, url, component: 'ButtonMonitor' }
         );
       }
     };

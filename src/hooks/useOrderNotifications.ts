@@ -38,10 +38,10 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
             // Show browser notification if permission granted
             if (Notification.permission === 'granted') {
               const notification = new Notification('🚀 New Delivery Order!', {
-                body: `Order #${payload.new.order_number} - $${parseFloat(payload.new.total_amount).toFixed(2)}`,
+                body: `Order #${payload.new.order_number || 'N/A'} - $${parseFloat(String(payload.new.total_amount || 0)).toFixed(2)}`,
                 icon: '/logo.svg',
                 badge: '/logo.svg',
-                tag: `order-${payload.new.id}`,
+                tag: `order-${String(payload.new.id || '')}`,
                 requireInteraction: true,
               });
 
@@ -54,7 +54,7 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
             // Show toast notification
             toast({
               title: '🚀 New Order Available!',
-              description: `Order #${payload.new.order_number} is ready for pickup`,
+              description: `Order #${payload.new.order_number || 'N/A'} is ready for pickup`,
               duration: 5000,
             });
 

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Send, Mail, MessageSquare, Loader2 } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 const AdminNotifications = () => {
   const [smsLoading, setSmsLoading] = useState(false);
@@ -58,10 +59,11 @@ const AdminNotifications = () => {
       
       // Clear form
       setSmsData({ phone: "", message: "" });
-    } catch (error: any) {
-      console.error("SMS send error:", error);
+    } catch (error: unknown) {
+      logger.error("SMS send error", error, { component: 'AdminNotifications' });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       toast.error("Failed to send SMS", {
-        description: error.message || "Unknown error occurred"
+        description: errorMessage
       });
     } finally {
       setSmsLoading(false);
@@ -105,10 +107,11 @@ const AdminNotifications = () => {
       
       // Clear form
       setEmailData({ to: "", subject: "", html: "", text: "" });
-    } catch (error: any) {
-      console.error("Email send error:", error);
+    } catch (error: unknown) {
+      logger.error("Email send error", error, { component: 'AdminNotifications' });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       toast.error("Failed to send email", {
-        description: error.message || "Unknown error occurred"
+        description: errorMessage
       });
     } finally {
       setEmailLoading(false);

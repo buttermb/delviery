@@ -160,9 +160,10 @@ export default function MenuAccess() {
       if (!data.access_granted) {
         setError(data.violations?.join(', ') || 'Access denied');
       }
-    } catch (err: any) {
-      logger.error('Access validation error', err, 'MenuAccess');
-      setError(err.message || 'Failed to validate access');
+    } catch (err: unknown) {
+      logger.error('Access validation error', err, { component: 'MenuAccess' });
+      const errorMessage = err instanceof Error ? err.message : 'Failed to validate access';
+      setError(errorMessage);
       toast({
         variant: 'destructive',
         title: 'Access Error',

@@ -15,7 +15,7 @@ let isInitialized = false;
  */
 export function initializeGlobalButtonMonitoring() {
   if (isInitialized) {
-    logger.warn('Global button monitoring already initialized', undefined, 'globalButtonInterceptor');
+    logger.warn('Global button monitoring already initialized', { component: 'globalButtonInterceptor' });
     return;
   }
 
@@ -43,7 +43,7 @@ export function initializeGlobalButtonMonitoring() {
         logger.error(
           'Unhandled promise rejection from button action',
           event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
-          'globalButtonInterceptor'
+          { component: 'globalButtonInterceptor' }
         );
         break;
       }
@@ -90,8 +90,7 @@ export function initializeGlobalButtonMonitoring() {
       activeClicks.delete(clickKey);
       logger.warn(
         `Button timeout detected: ${component}.${action}`,
-        { buttonId, duration: Date.now() - startTime },
-        'globalButtonInterceptor'
+        { buttonId, duration: Date.now() - startTime, component: 'globalButtonInterceptor' }
       );
     }, 30000);
 
@@ -191,7 +190,7 @@ export function initializeGlobalButtonMonitoring() {
   });
 
   isInitialized = true;
-  logger.info('Global button monitoring initialized', undefined, 'globalButtonInterceptor');
+  logger.info('Global button monitoring initialized', { component: 'globalButtonInterceptor' });
 
   // Expose to window for console access (development only)
   if (import.meta.env.DEV && typeof window !== 'undefined') {
@@ -206,7 +205,7 @@ export function initializeGlobalButtonMonitoring() {
     setInterval(() => {
       const report = buttonMonitor.getHealthReport();
       if (report.errorRate > 0.1 || report.brokenButtons > 0) {
-        logger.warn('Button health check', report, 'globalButtonInterceptor');
+        logger.warn('Button health check', { ...report, component: 'globalButtonInterceptor' });
         console.warn('⚠️ Button Health Alert:', {
           brokenButtons: report.brokenButtons,
           errorRate: `${Math.round(report.errorRate * 100)}%`,

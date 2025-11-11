@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
+import { logger } from '@/lib/logger';
 import { 
   ArrowLeft, 
   Download, 
@@ -97,7 +98,7 @@ export default function GenerateBarcodes() {
 
   // Fetch batches
   // Temporarily disabled - inventory_batches table not yet created
-  const batches: any[] = [];
+  const batches: Array<{ id: string; [key: string]: unknown }> = [];
 
   // Generate barcodes based on mode
   const handleGenerate = async () => {
@@ -147,7 +148,7 @@ export default function GenerateBarcodes() {
             packageId: `temp-${i}`,
             packageNumber,
             productId: batch.product_id,
-            productName: (batch.products as any)?.name || 'Unknown',
+            productName: ((batch.products as { name?: string })?.name) || 'Unknown',
             batchId: batch.id,
             batchNumber: batch.batch_number,
             weight: sizes[i],
@@ -162,7 +163,7 @@ export default function GenerateBarcodes() {
             id: `package-${i}`,
             value: packageNumber,
             type: barcodeType,
-            label: `${(batch.products as any)?.name || 'Product'} - ${sizes[i]} lbs`,
+            label: `${((batch.products as { name?: string })?.name) || 'Product'} - ${sizes[i]} lbs`,
             qrData,
           });
         }
@@ -187,11 +188,12 @@ export default function GenerateBarcodes() {
         title: 'Success!',
         description: `Generated ${newBarcodes.length} ${mode === 'package' ? 'packages' : 'barcodes'}`
       });
-    } catch (error: any) {
-      console.error('Error generating barcodes:', error);
+    } catch (error: unknown) {
+      logger.error('Error generating barcodes', error, { component: 'GenerateBarcodes' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to generate barcodes',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -207,10 +209,11 @@ export default function GenerateBarcodes() {
       // For now, use print sheet for all labels
       // Individual label printing can be added later with proper QR code rendering
       await handlePrintSheet();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to generate PDFs',
+        description: errorMessage,
         variant: 'destructive'
       });
     }
@@ -430,7 +433,7 @@ export default function GenerateBarcodes() {
                     <SelectContent>
                       {batches?.map(batch => (
                         <SelectItem key={batch.id} value={batch.id}>
-                          {batch.batch_number} - {(batch.products as any)?.name} ({batch.remaining_quantity_lbs} lbs remaining)
+                          {batch.batch_number} - {((batch.products as { name?: string })?.name) || 'Unknown'} ({batch.remaining_quantity_lbs} lbs remaining)
                         </SelectItem>
                       ))}
                     </SelectContent>

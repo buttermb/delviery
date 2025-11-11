@@ -50,8 +50,8 @@ export default function StockAlerts() {
         }
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } f
 import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn, Leaf, Sparkles, Wind, Coffee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { logger } from '@/lib/logger';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 // import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
@@ -226,9 +227,10 @@ const SecureMenuView = () => {
         sessionStorage.removeItem(`menu_${token}`);
         navigate('/');
       }, 2000);
-    } catch (err: any) {
-      console.error('Order error:', err);
-      showErrorToast('Order Failed', err.message || 'Could not place order');
+    } catch (err: unknown) {
+      logger.error('Order error', err, { component: 'SecureMenuView' });
+      const errorMessage = err instanceof Error ? err.message : 'Could not place order';
+      showErrorToast('Order Failed', errorMessage);
     } finally {
       setPlacingOrder(false);
     }

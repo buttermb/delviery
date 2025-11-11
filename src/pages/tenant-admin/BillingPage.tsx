@@ -24,7 +24,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import type { Database } from "@/integrations/supabase/types";
+
+type Invoice = Database['public']['Tables']['invoices']['Row'];
+type InvoiceLineItem = {
+  description?: string;
+  name?: string;
+  quantity?: number;
+  amount?: number;
+  total?: number;
+};
 
 export default function TenantAdminBillingPage() {
   const { tenant, admin } = useTenantAdminAuth();
@@ -84,7 +94,7 @@ export default function TenantAdminBillingPage() {
   const { data: subscriptionPlans = [] } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -112,8 +122,8 @@ export default function TenantAdminBillingPage() {
     enabled: !!tenant?.subscription_plan,
   });
 
-  const limits = (tenant as any)?.limits || {};
-  const usage = (tenant as any)?.usage || {};
+  const limits = (tenant?.limits as Record<string, number>) || {};
+  const usage = (tenant?.usage as Record<string, number>) || {};
 
   const getUsagePercentage = (resource: string) => {
     const limit = limits[resource] === -1 ? Infinity : (limits[resource] || 0);
@@ -152,11 +162,12 @@ export default function TenantAdminBillingPage() {
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
-    onError: (error: any) => {
-      logger.error('Subscription update error', error, { component: 'BillingPage' } as any);
+    onError: (error: unknown) => {
+      logger.error('Subscription update error', error, { component: 'BillingPage' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update subscription';
       toast({
         title: 'Update Failed',
-        description: error.message || 'Failed to update subscription',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -238,10 +249,11 @@ export default function TenantAdminBillingPage() {
           description: 'Opening Stripe Customer Portal...',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to open payment method management. Please ensure Stripe is configured.';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to open payment method management. Please ensure Stripe is configured.',
+        description: errorMessage,
         variant: 'destructive',
       });
       setUpgradeLoading(false);
@@ -281,7 +293,7 @@ export default function TenantAdminBillingPage() {
                       {plan?.display_name || (tenant?.subscription_plan as string)?.toUpperCase() || "No Plan"}
                     </span>
                     <Badge variant="outline">
-                      {formatCurrency((tenant as any)?.mrr || 0)}/month
+                      {formatCurrency((tenant?.mrr as number) || 0)}/month
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
@@ -291,7 +303,7 @@ export default function TenantAdminBillingPage() {
                   {/* Platform Fee Notice */}
                   <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-purple-900 dark:text-purple-100">
-                      💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant as any)?.mrr || 0) * 0.02)}/month (2% of subscription)
+                      💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant?.mrr as number) || 0) * 0.02)}/month (2% of subscription)
                     </p>
                     <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
                       This fee covers platform hosting, maintenance, and support
@@ -395,7 +407,7 @@ export default function TenantAdminBillingPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {(tenant as any)?.payment_method_added ? (
+                {(tenant?.payment_method_added as boolean) ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-muted">
@@ -639,7 +651,7 @@ export default function TenantAdminBillingPage() {
               <CardContent>
                 {invoices && invoices.length > 0 ? (
                   <div className="space-y-2">
-                    {invoices.map((invoice: any) => (
+                    {invoices.map((invoice: Invoice) => (
                       <div
                         key={invoice.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"

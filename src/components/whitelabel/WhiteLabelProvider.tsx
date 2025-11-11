@@ -24,31 +24,31 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     const whiteLabel = tenant.white_label;
     if (!whiteLabel?.enabled) return;
 
-    const theme = whiteLabel.theme || {};
+    const theme = (whiteLabel.theme || {}) as Record<string, unknown>;
 
     // Apply CSS custom properties
     if (theme.primaryColor) {
-      document.documentElement.style.setProperty('--wl-primary', theme.primaryColor);
-      document.documentElement.style.setProperty('--color-primary', theme.primaryColor);
+      document.documentElement.style.setProperty('--wl-primary', theme.primaryColor as string);
+      document.documentElement.style.setProperty('--color-primary', theme.primaryColor as string);
     }
 
     if (theme.secondaryColor) {
-      document.documentElement.style.setProperty('--wl-secondary', theme.secondaryColor);
-      document.documentElement.style.setProperty('--color-secondary', theme.secondaryColor);
+      document.documentElement.style.setProperty('--wl-secondary', theme.secondaryColor as string);
+      document.documentElement.style.setProperty('--color-secondary', theme.secondaryColor as string);
     }
 
     if (theme.backgroundColor) {
-      document.documentElement.style.setProperty('--wl-background', theme.backgroundColor);
-      document.documentElement.style.setProperty('--color-background', theme.backgroundColor);
+      document.documentElement.style.setProperty('--wl-background', theme.backgroundColor as string);
+      document.documentElement.style.setProperty('--color-background', theme.backgroundColor as string);
     }
 
     if (theme.textColor) {
-      document.documentElement.style.setProperty('--wl-text', theme.textColor);
-      document.documentElement.style.setProperty('--color-foreground', theme.textColor);
+      document.documentElement.style.setProperty('--wl-text', theme.textColor as string);
+      document.documentElement.style.setProperty('--color-foreground', theme.textColor as string);
     }
 
     if (theme.accentColor) {
-      document.documentElement.style.setProperty('--wl-accent', theme.accentColor);
+      document.documentElement.style.setProperty('--wl-accent', theme.accentColor as string);
     }
 
     // Apply custom CSS if provided
@@ -62,7 +62,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
       // Add new custom CSS
       const style = document.createElement('style');
       style.id = 'whitelabel-custom-css';
-      style.innerHTML = theme.customCSS;
+      style.innerHTML = theme.customCSS as string;
       document.head.appendChild(style);
     }
 

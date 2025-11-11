@@ -57,13 +57,12 @@ export function logButtonHealthReport() {
   const report = buttonMonitor.getHealthReport();
   const broken = buttonMonitor.getBrokenButtons(0.3);
 
-  logger.info('Button Health Report', report, 'ButtonMonitor');
+  logger.info('Button Health Report', { ...report, component: 'ButtonMonitor' });
 
   if (broken.length > 0) {
     logger.warn(
       `Found ${broken.length} broken buttons`,
-      { brokenButtons: broken.map((b) => `${b.component}.${b.action}`) },
-      'ButtonMonitor'
+      { brokenButtons: broken.map((b) => `${b.component}.${b.action}`), component: 'ButtonMonitor' }
     );
   }
 

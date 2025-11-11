@@ -118,11 +118,12 @@ export default function InvitationAcceptPage() {
 
       // Redirect to tenant admin panel
       navigate(`/${invitation?.tenant.slug}/admin`);
-    } catch (error: any) {
-      logger.error('Error accepting invitation', error, 'InvitationAcceptPage');
+    } catch (error: unknown) {
+      logger.error('Error accepting invitation', error, { component: 'InvitationAcceptPage' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to accept invitation';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to accept invitation',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

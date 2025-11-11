@@ -57,7 +57,7 @@ export function ButtonHealthPanel() {
     if (confirm('Clear all button monitoring data?')) {
       buttonMonitor.clear();
       refresh();
-      logger.info('Button monitor data cleared', 'ButtonHealthPanel');
+      logger.info('Button monitor data cleared', { component: 'ButtonHealthPanel' });
     }
   };
 

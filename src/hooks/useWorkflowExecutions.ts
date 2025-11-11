@@ -75,7 +75,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
         .limit(limit);
 
       if (error) throw error;
-      return (data as WorkflowExecution[]) || [];
+      return (data || []) as WorkflowExecution[];
     },
     enabled: !!tenant?.id,
     refetchInterval: autoRefresh ? 5000 : false,
@@ -130,7 +130,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
           filter: `tenant_id=eq.${tenant.id}`,
         },
         (payload) => {
-          logger.debug('Workflow execution change', { payload }, 'useWorkflowExecutions');
+          logger.debug('Workflow execution change', { payload, component: 'useWorkflowExecutions' });
           refetch();
 
           // Show toast for status changes

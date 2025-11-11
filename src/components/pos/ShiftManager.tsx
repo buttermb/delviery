@@ -95,6 +95,12 @@ export function ShiftManager() {
     mutationFn: async () => {
       if (!tenantId) throw new Error('Tenant ID required');
 
+      // Generate shift number: SHIFT-YYYYMMDD-HHMMSS
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+      const shiftNumber = `SHIFT-${dateStr}-${timeStr}`;
+
       interface PosShiftInsert {
         tenant_id: string;
         terminal_id: string;
@@ -102,6 +108,7 @@ export function ShiftManager() {
         cashier_name: string;
         opening_cash: number;
         status: 'open' | 'closed';
+        shift_number: string;
       }
 
       const { data, error } = await supabase
@@ -113,6 +120,7 @@ export function ShiftManager() {
           cashier_name: cashierName,
           opening_cash: parseFloat(openingCash),
           status: 'open',
+          shift_number: shiftNumber,
         }] as PosShiftInsert[])
         .select()
         .single();

@@ -140,12 +140,13 @@ export default function SuperAdminAutomation() {
             : r
         )
       );
-    } catch (error: any) {
-      console.error('Rule execution error:', error);
+    } catch (error: unknown) {
+      logger.error('Rule execution error', error, { component: 'SuperAdminAutomation' });
       
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: 'Failed to run rule',
-        description: error.message || 'An unexpected error occurred',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

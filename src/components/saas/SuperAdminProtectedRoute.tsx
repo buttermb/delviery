@@ -32,7 +32,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .eq('role', 'super_admin')
+          .eq('role', 'super_admin' as any)
           .maybeSingle();
 
         if (error) {

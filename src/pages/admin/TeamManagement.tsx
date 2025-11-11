@@ -115,10 +115,11 @@ export default function TeamManagement() {
       setFormData({ email: '', full_name: '', role: 'team_member' });
       loadTeamMembers();
       loadPendingInvitations();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to send invitation',
+        description: errorMessage,
         variant: 'destructive'
       });
     }
@@ -164,10 +165,11 @@ export default function TeamManagement() {
       });
 
       loadTeamMembers();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove team member';
       toast({
         title: 'Error',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     }

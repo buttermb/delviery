@@ -149,7 +149,7 @@ export function AlertConfig() {
             <div className="space-y-2">
               <Label>Condition</Label>
               <Select
-                value={newAlert.condition}
+                value={newAlert.condition as string}
                 onValueChange={(value: string) =>
                   setNewAlert({ ...newAlert, condition: value as 'above' | 'below' | 'equals' })
                 }
@@ -180,7 +180,7 @@ export function AlertConfig() {
             <div className="space-y-2">
               <Label>Notification Channel</Label>
               <Select
-                value={newAlert.channel}
+                value={newAlert.channel as string}
                 onValueChange={(value: string) =>
                   setNewAlert({ ...newAlert, channel: value as 'email' | 'webhook' | 'sms' })
                 }

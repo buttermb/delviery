@@ -42,8 +42,7 @@ export function useMonitoredButton<T extends (...args: any[]) => Promise<any>>(
             setIsLoading(false);
             logger.warn(
               `Button timeout: ${component}.${action}`,
-              { timeout, buttonId },
-              'useMonitoredButton'
+              { timeout, buttonId, component: 'useMonitoredButton' }
             );
             throw new Error(`Action timed out after ${timeout}ms`);
           }, timeout);
