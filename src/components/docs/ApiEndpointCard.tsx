@@ -115,12 +115,12 @@ data = response.json()`
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-foreground">Code Example</h4>
               <div className="flex gap-2">
-                {["curl", "js", "python"].map((lang) => (
+                {(["curl", "js", "python"] as const).map((lang) => (
                   <Button
                     key={lang}
                     variant={activeTab === lang ? "default" : "ghost"}
                     size="sm"
-                    onClick={() => setActiveTab(lang as any)}
+                    onClick={() => setActiveTab(lang)}
                   >
                     {lang === "js" ? "JavaScript" : lang === "curl" ? "cURL" : "Python"}
                   </Button>

@@ -63,8 +63,8 @@ export function DriverLocationSharing({ driverId, className }: LocationSharingPr
 
         try {
           // Update driver location in database
-          const { error: updateError } = await (supabase
-            .from('wholesale_runners') as any)
+          const { error: updateError } = await supabase
+            .from('wholesale_runners')
             .update({
               current_lat: latitude,
               current_lng: longitude,
