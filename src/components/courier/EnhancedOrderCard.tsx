@@ -10,8 +10,20 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
 
+interface OrderItem {
+  quantity: number;
+  [key: string]: unknown;
+}
+
+interface Order {
+  total_amount: number;
+  tip_amount?: number;
+  order_items?: OrderItem[];
+  [key: string]: unknown;
+}
+
 interface EnhancedOrderCardProps {
-  order: any;
+  order: Order;
   onAccept: () => void;
   onReject: () => void;
   estimatedDistance?: number;
@@ -49,7 +61,7 @@ export default function EnhancedOrderCard({
   });
 
   const potentialEarnings = order.total_amount * 0.15 + (order.tip_amount || 0);
-  const itemCount = order.order_items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
+  const itemCount = order.order_items?.reduce((acc: number, item: OrderItem) => acc + item.quantity, 0) || 0;
 
   return (
     <motion.div

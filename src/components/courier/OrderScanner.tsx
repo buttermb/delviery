@@ -11,11 +11,20 @@ interface OrderScannerProps {
   description?: string;
 }
 
+interface ScanResult {
+  text?: string;
+  [key: string]: unknown;
+}
+
 export function OrderScanner({ onScan, title = "Scan Order QR Code", description }: OrderScannerProps) {
   const [scanning, setScanning] = useState(false);
   const [scannedId, setScannedId] = useState<string | null>(null);
 
-  const handleUpdate = (err: any, result: any) => {
+  const handleUpdate = (err: unknown, result: ScanResult | null) => {
+    if (err) {
+      toast.error('Scan error occurred');
+      return;
+    }
     if (result?.text) {
       const orderId = result.text;
       setScannedId(orderId);
