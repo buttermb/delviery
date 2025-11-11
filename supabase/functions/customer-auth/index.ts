@@ -133,6 +133,29 @@ serve(async (req) => {
         );
       }
 
+      // Cross-table check: Verify email is not registered as a staff account
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: tenantUserExists } = await serviceClient
+        .from('tenant_users')
+        .select('id, role')
+        .eq('email', email.toLowerCase())
+        .eq('tenant_id', tenant.id)
+        .maybeSingle();
+
+      if (tenantUserExists) {
+        return new Response(
+          JSON.stringify({ 
+            error: "This email is registered as a staff account",
+            message: `This email is registered as a staff account. Please use the staff login at /${tenant.slug}/admin/login instead.`
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Hash password
       const passwordHash = await hashPassword(password);
 

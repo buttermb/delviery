@@ -387,6 +387,35 @@ serve(async (req) => {
         );
       }
 
+      // Log impersonation start in audit_logs
+      const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+
+      await supabase
+        .from('audit_logs')
+        .insert({
+          actor_id: super_admin_id || '00000000-0000-0000-0000-000000000000',
+          actor_type: 'super_admin',
+          action: 'impersonate_started',
+          resource_type: 'tenant',
+          resource_id: tenant_id,
+          tenant_id: tenant_id,
+          changes: {
+            tenant_slug: tenant.slug,
+            tenant_name: tenant.business_name,
+            admin_email: tenantAdmin.email,
+            admin_id: tenantAdmin.id,
+            admin_role: tenantAdmin.role,
+            timestamp: new Date().toISOString(),
+          },
+          ip_address: ipAddress,
+          user_agent: userAgent,
+        })
+        .catch((logError) => {
+          // Log error but don't fail impersonation
+          console.error('Failed to log impersonation:', logError);
+        });
+
       // Generate token for tenant admin (simplified - in production use proper JWT)
       // For now, return tenant admin email and let frontend handle login
       return new Response(

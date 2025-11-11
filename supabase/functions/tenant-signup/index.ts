@@ -98,6 +98,23 @@ serve(async (req) => {
       );
     }
 
+    // Cross-table check: Verify email is not registered as a customer account
+    const { data: customerUserExists } = await supabase
+      .from('customer_users')
+      .select('id, tenant_id')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    if (customerUserExists) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'This email is registered as a customer account',
+          message: 'This email is registered as a customer account. Please use the customer login or use a different email for tenant signup.'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate unique slug
     let slug = generateSlug(business_name);
     let slugExists = true;
@@ -116,11 +133,20 @@ serve(async (req) => {
       }
     }
 
+    // If still exists after 10 attempts, use UUID fallback to ensure uniqueness
     if (slugExists) {
-      return new Response(
-        JSON.stringify({ error: 'Unable to generate unique slug. Please try a different business name.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const baseSlug = generateSlug(business_name);
+      // Generate UUID and take first 8 characters for uniqueness
+      const uuidSuffix = crypto.randomUUID().split('-')[0];
+      slug = `${baseSlug}-${uuidSuffix}`;
+      
+      // Log fallback usage for monitoring
+      console.warn('Slug generation fallback used:', {
+        business_name,
+        original_slug: baseSlug,
+        final_slug: slug,
+        attempts,
+      });
     }
 
     // Create Supabase Auth user

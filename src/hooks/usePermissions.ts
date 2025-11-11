@@ -1,63 +1,67 @@
 /**
  * usePermissions Hook
- * Role-based permission checking
+ * Role-based permission checking using new permission system
  */
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { hasPermission, Permission, Role } from '@/lib/constants/permissions';
+import { hasPermission, Permission } from '@/lib/permissions/checkPermissions';
+import { ROLES, Role, mapDatabaseRoleToSystemRole } from '@/lib/permissions/rolePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 /**
- * Get user role from database
+ * Get user role from tenant_users table
  * Falls back to 'owner' if role not found (tenant admin always has owner permissions)
  */
 export function usePermissions() {
   const { admin, tenant } = useTenantAdminAuth();
   
-  // Fetch user role from database
+  // Fetch user role from tenant_users table
   const { data: userRole } = useQuery<Role>({
     queryKey: ['user-role', admin?.id, tenant?.id],
     queryFn: async () => {
-      if (!admin?.id || !tenant?.id) return 'owner' as Role;
+      if (!admin?.id || !tenant?.id) return ROLES.OWNER;
 
       try {
-        // Check if user_roles table exists and has role for this tenant
-        // Note: Using type assertion here because user_roles table may not exist in all deployments
-        // This is a defensive approach to handle missing tables gracefully
-        interface UserRoleRow {
-          role: string;
-        }
-        interface UserRoleResult {
-          role: string;
-        }
-        // @ts-expect-error - Supabase complex query types cause TS2589
-        const result = await supabase.from('user_roles').select('role').eq('user_id', admin.id).eq('tenant_id', tenant.id).single<UserRoleResult>();
-        
-        const { data, error } = result;
-
-        if (error && error.code === '42P01') {
-          // Table doesn't exist, default to owner
-          return 'owner' as Role;
-        }
-
-        if (error && error.code === 'PGRST116') {
-          // No role found, default to owner (tenant admin)
-          return 'owner' as Role;
-        }
+        // Get role from tenant_users table
+        // admin.id could be either tenant_users.id or auth.users.id (for owners)
+        // So we query by email and tenant_id for reliability
+        const { data, error } = await supabase
+          .from('tenant_users')
+          .select('role')
+          .eq('email', admin.email)
+          .eq('tenant_id', tenant.id)
+          .maybeSingle();
 
         if (error) {
-          console.warn('Error fetching user role:', error);
-          return 'owner' as Role;
+          logger.warn('Error fetching user role from tenant_users', error, { component: 'usePermissions' });
+          return ROLES.OWNER;
         }
 
-        // Validate role exists in our ROLES enum
-        const validRoles: Role[] = ['owner', 'manager', 'runner', 'warehouse', 'viewer'];
-        return validRoles.includes(data?.role as Role) ? (data.role as Role) : 'owner';
+        if (!data || !data.role) {
+          // No role found in tenant_users - check if user is tenant owner
+          // If owner_email matches, they're owner
+          const { data: tenantData } = await supabase
+            .from('tenants')
+            .select('owner_email')
+            .eq('id', tenant.id)
+            .maybeSingle();
+
+          if (tenantData?.owner_email?.toLowerCase() === admin.email?.toLowerCase()) {
+            return ROLES.OWNER;
+          }
+
+          // Default to owner if no role found (tenant admin always has owner permissions)
+          return ROLES.OWNER;
+        }
+
+        // Map database role to system role
+        return mapDatabaseRoleToSystemRole(data.role);
       } catch (error) {
-        console.warn('Error fetching user role:', error);
-        return 'owner' as Role;
+        logger.warn('Error fetching user role', error, { component: 'usePermissions' });
+        return ROLES.OWNER;
       }
     },
     enabled: !!admin?.id && !!tenant?.id,
@@ -66,7 +70,7 @@ export function usePermissions() {
   });
 
   // Default to 'owner' for tenant admins if role not yet loaded
-  const role: Role = userRole || 'owner';
+  const role: Role = userRole || ROLES.OWNER;
 
   const checkPermission = useMemo(() => {
     return (permission: Permission): boolean => {

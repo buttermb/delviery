@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { checkUserPermission } from '../_shared/permissions.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -72,17 +73,29 @@ serve(async (req) => {
       // Check if user is tenant owner
       const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
       
-      // Check if user is tenant admin
-      const { data: tenantUser } = await serviceClient
-        .from('tenant_users')
-        .select('role')
-        .eq('tenant_id', tenantId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      const isAdmin = tenantUser?.role === 'admin' || tenantUser?.role === 'owner';
+      // Check if user has permission to invite team members
+      // Use permission system if available, fallback to role check
+      let hasInvitePermission = false;
+      try {
+        hasInvitePermission = await checkUserPermission(
+          serviceClient,
+          user.id,
+          tenantId,
+          'team:invite',
+          user.email
+        );
+      } catch (error) {
+        // Fallback to role check if permission system not available
+        const { data: tenantUser } = await serviceClient
+          .from('tenant_users')
+          .select('role')
+          .eq('tenant_id', tenantId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        hasInvitePermission = tenantUser?.role === 'admin' || tenantUser?.role === 'owner' || isOwner;
+      }
       
-      if (!isOwner && !isAdmin) {
+      if (!hasInvitePermission) {
         return new Response(
           JSON.stringify({ error: 'Only tenant owners and admins can send invitations' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -102,6 +115,66 @@ serve(async (req) => {
           JSON.stringify({ error: 'User is already a member of this tenant' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+
+      // Cross-table check: Verify email is not registered as a customer account
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: customerUserExists } = await serviceClient
+        .from('customer_users')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (customerUserExists) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'This email is registered as a customer account',
+            message: 'This email is registered as a customer account. Please use the customer login or invite a different email address.'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check user limit before creating invitation
+      // Enterprise plan has unlimited users (skip check)
+      if (tenant.subscription_plan !== 'enterprise') {
+        const serviceClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        // Count active users (excluding pending invitations)
+        const { count: activeUsers, error: countError } = await serviceClient
+          .from('tenant_users')
+          .select('id', { count: 'exact', head: true })
+          .eq('tenant_id', tenantId)
+          .eq('status', 'active');
+
+        if (countError) {
+          console.error('Error counting users:', countError);
+          // Don't block on count error, but log it
+        } else {
+          // Get user limit from tenant.limits (supports both 'users' and 'team_members')
+          const userLimit = (tenant.limits as any)?.users || (tenant.limits as any)?.team_members || 3;
+          
+          if (activeUsers !== null && activeUsers >= userLimit) {
+            return new Response(
+              JSON.stringify({ 
+                error: 'User limit reached',
+                message: `You have reached your plan's user limit of ${userLimit} users. Please upgrade your plan to invite more team members.`,
+                current_users: activeUsers,
+                limit: userLimit,
+                upgrade_required: true
+              }),
+              { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
       }
 
       // Set expiration (default 7 days)
@@ -130,9 +203,34 @@ serve(async (req) => {
 
       // Invitation created successfully
 
-      // TODO: Send email with invitation link
-      // For now, we'll return the invitation details
-      const inviteLink = `${Deno.env.get('SUPABASE_URL')}/invite/${invitation.token}`;
+      // Send email with invitation link
+      const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || 'https://app.example.com';
+      const inviteLink = `${siteUrl}/${tenant.slug}/invite/accept?token=${invitation.token}`;
+
+      // Call send-invitation-email edge function (non-blocking)
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      
+      // Send email asynchronously (don't wait for response)
+      fetch(`${supabaseUrl}/functions/v1/send-invitation-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: email.toLowerCase(),
+          tenant_name: tenant.business_name,
+          tenant_slug: tenant.slug,
+          role,
+          invite_link: inviteLink,
+          expires_at: expiresAt.toISOString(),
+          invited_by: user.email,
+        }),
+      }).catch((emailError) => {
+        // Log error but don't fail the invitation creation
+        console.error('Failed to send invitation email:', emailError);
+      });
 
       return new Response(
         JSON.stringify({

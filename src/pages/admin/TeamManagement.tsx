@@ -59,6 +59,7 @@ export default function TeamManagement() {
         .from('tenant_users')
         .select('*')
         .eq('tenant_id', tenant.id)
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (tenantUsersError) throw tenantUsersError;
@@ -73,7 +74,7 @@ export default function TeamManagement() {
 
       setTeamMembers([ownerData, ...(tenantUsers || [])]);
     } catch (error) {
-      console.error('Error loading team members:', error);
+      logger.error('Error loading team members', error, { component: 'TeamManagement' });
       toast({
         title: 'Error',
         description: 'Failed to load team members',
@@ -237,6 +238,13 @@ export default function TeamManagement() {
 
   const canManageTeam = true; // Tenant admins can always manage team
 
+  // Calculate user limit and usage
+  const activeUserCount = teamMembers.filter(m => m.status !== 'deleted' && m.status !== 'suspended').length;
+  const userLimit = tenant?.limits?.users || tenant?.limits?.team_members || 3;
+  const isEnterprise = tenant?.subscription_plan === 'enterprise';
+  const isLimitReached = !isEnterprise && activeUserCount >= userLimit;
+  const remainingUsers = isEnterprise ? Infinity : Math.max(0, userLimit - activeUserCount);
+
   return (
     <div className="space-y-6">
       <SEOHead 
@@ -247,13 +255,25 @@ export default function TeamManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Team</h1>
-          <p className="text-muted-foreground">Manage your team members and roles</p>
+          <p className="text-muted-foreground">
+            Manage your team members and roles
+            {!isEnterprise && (
+              <span className="ml-2 text-sm">
+                ({activeUserCount}/{userLimit} users)
+              </span>
+            )}
+          </p>
+          {isLimitReached && (
+            <p className="text-sm text-amber-600 mt-1">
+              User limit reached. Upgrade your plan to invite more team members.
+            </p>
+          )}
         </div>
 
         {canManageTeam && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={isLimitReached}>
                 <Plus className="w-4 h-4 mr-2" />
                 Invite Member
               </Button>
