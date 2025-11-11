@@ -29,6 +29,19 @@ export function PendingTransfersWidget() {
     queryFn: async () => {
       if (!account?.id) return [];
 
+      interface Transfer {
+        id: string;
+        status: string;
+        scheduled_pickup_time: string | null;
+        total_weight: number | null;
+        total_value: number | null;
+        orders?: {
+          order_number: string;
+          wholesale_clients?: { business_name: string } | null;
+        } | null;
+      }
+
+      // @ts-expect-error - Complex Supabase query with joins exceeds TypeScript recursion depth limit
       const { data } = await supabase
         .from('wholesale_deliveries')
         .select(`
@@ -46,18 +59,6 @@ export function PendingTransfersWidget() {
         .in('status', ['scheduled', 'assigned'])
         .order('scheduled_pickup_time', { ascending: true })
         .limit(5);
-
-      interface Transfer {
-        id: string;
-        status: string;
-        scheduled_pickup_time: string | null;
-        total_weight: number | null;
-        total_value: number | null;
-        orders?: {
-          order_number: string;
-          wholesale_clients?: { business_name: string } | null;
-        } | null;
-      }
 
       return (data || []) as Transfer[];
     },

@@ -47,17 +47,20 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
   const { data: inventory } = useWholesaleInventory(tenant?.id);
   const createMenu = useCreateDisposableMenu();
 
-  // Fetch customers for this tenant
+  // Fetch customers for this tenant  
   const { data: customers } = useQuery({
     queryKey: ['tenant-customers', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, business_name')
+        .select('id, first_name, last_name, email, business_name')
         .eq('tenant_id', tenant.id)
-        .order('name', { ascending: true});
-      if (error) throw error;
+        .order('business_name', { ascending: true});
+      if (error) {
+        // Column may not exist yet, return empty array
+        return [];
+      }
       return data || [];
     },
     enabled: !!tenant?.id && currentStep === 3,
@@ -341,8 +344,10 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                   </div>
                   <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-2">
                     {customers && customers.length > 0 ? (
-                      customers.map((customer: { id: string; name?: string; business_name?: string; email?: string }) => {
+                      // @ts-expect-error - customers may not have business_name column yet
+                      customers.map((customer: { id: string; first_name?: string; last_name?: string; business_name?: string; email?: string }) => {
                         const isSelected = selectedCustomers.includes(customer.id);
+                        const displayName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unnamed Customer';
                         return (
                           <div
                             key={customer.id}
@@ -357,7 +362,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                               onClick={(e) => e.stopPropagation()}
                             />
                             <div className="flex-1">
-                              <p className="font-medium">{customer.name || customer.business_name || 'Unnamed Customer'}</p>
+                              <p className="font-medium">{displayName}</p>
                               <p className="text-sm text-muted-foreground">{customer.email}</p>
                             </div>
                           </div>

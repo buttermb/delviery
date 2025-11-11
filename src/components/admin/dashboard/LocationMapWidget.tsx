@@ -18,16 +18,17 @@ export function LocationMapWidget() {
     queryFn: async () => {
       if (!account?.id) return null;
 
-      // Get warehouses from inventory
-      const { data: inventory } = await supabase
-        .from('wholesale_inventory')
-        .select('warehouse_location, quantity_lbs')
-        .eq('account_id', account.id);
-
       interface InventoryItem {
         warehouse_location: string | null;
         quantity_lbs: number | null;
       }
+
+      // Get warehouses from inventory
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      const { data: inventory } = await supabase
+        .from('wholesale_inventory')
+        .select('warehouse_location, quantity_lbs')
+        .eq('account_id', account.id);
 
       const warehouses = (inventory || []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
         const wh = item.warehouse_location || 'Unknown';
@@ -39,18 +40,19 @@ export function LocationMapWidget() {
         return acc;
       }, {});
 
-      // Get active runners
-      const { data: runners } = await supabase
-        .from('wholesale_runners')
-        .select('id, full_name, status')
-        .eq('account_id', account.id)
-        .eq('status', 'active');
-
       interface RunnerRow {
         id: string;
         full_name: string;
         status: string;
       }
+
+      // Get active runners
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      const { data: runners } = await supabase
+        .from('wholesale_runners')
+        .select('id, full_name, status')
+        .eq('account_id', account.id)
+        .eq('status', 'active');
 
       return {
         warehouses: Object.entries(warehouses).map(([name, stats]) => ({

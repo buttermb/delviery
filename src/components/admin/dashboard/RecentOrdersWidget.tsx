@@ -30,6 +30,16 @@ export function RecentOrdersWidget() {
     queryFn: async () => {
       if (!account?.id) return [];
 
+      interface OrderRow {
+        id: string;
+        order_number: string;
+        total_amount: number;
+        status: string;
+        created_at: string;
+        wholesale_clients: { business_name: string } | null;
+      }
+
+      // @ts-expect-error - Complex Supabase query with joins exceeds TypeScript recursion depth limit
       const { data } = await supabase
         .from('wholesale_orders')
         .select(`
@@ -43,15 +53,6 @@ export function RecentOrdersWidget() {
         .eq('account_id', account.id)
         .order('created_at', { ascending: false })
         .limit(5);
-
-      interface OrderRow {
-        id: string;
-        order_number: string;
-        total_amount: number;
-        status: string;
-        created_at: string;
-        wholesale_clients: { business_name: string } | null;
-      }
 
       return (data || []) as OrderRow[];
     },

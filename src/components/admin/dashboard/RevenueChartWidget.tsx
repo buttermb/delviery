@@ -24,21 +24,22 @@ export function RevenueChartWidget() {
       const today = new Date();
       const last30Days = subDays(today, 30);
 
-      // Get orders from last 30 days
-      const { data: orders } = await supabase
-        .from('wholesale_orders')
-        .select('total_amount, created_at, status')
-        .eq('account_id', account.id)
-        .gte('created_at', last30Days.toISOString())
-        .order('created_at', { ascending: true });
-
-      if (!orders) return null;
-
       interface OrderRow {
         total_amount: number;
         created_at: string;
         status: string;
       }
+
+      // Get orders from last 30 days
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      const { data: orders } = await supabase
+        .from('wholesale_orders')
+        .select('total_amount, created_at, status')
+        .eq('account_id', account.id)
+        .gte('created_at', last30Days.toISOString())
+        .order('created_at', { ascending: true});
+
+      if (!orders) return null;
 
       // Calculate daily revenue
       const dailyRevenue = new Map<string, number>();

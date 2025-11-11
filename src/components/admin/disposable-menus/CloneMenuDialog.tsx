@@ -28,7 +28,7 @@ interface CloneMenuDialogProps {
 export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(false);
-  const [newTitle, setNewTitle] = useState(`${menu?.title || menu?.name || ''} (Copy)`);
+  const [newTitle, setNewTitle] = useState(menu?.name ? `${menu.name} (Copy)` : '');
   const [cloneSettings, setCloneSettings] = useState({
     products: true,
     whitelist: false,

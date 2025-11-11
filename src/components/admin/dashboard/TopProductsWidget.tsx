@@ -41,6 +41,7 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
       const { data: orders } = await supabase
         .from('wholesale_orders')
         .select('id, created_at, status')

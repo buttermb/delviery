@@ -28,6 +28,13 @@ export function InventoryAlertsWidget() {
     queryFn: async () => {
       if (!account?.id) return [];
 
+      interface AlertRow {
+        product_name: string | null;
+        quantity_lbs: number | null;
+        warehouse_location: string | null;
+      }
+
+      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
       const { data } = await supabase
         .from('wholesale_inventory')
         .select('product_name, quantity_lbs, warehouse_location')
@@ -35,12 +42,6 @@ export function InventoryAlertsWidget() {
         .lt('quantity_lbs', 30)
         .order('quantity_lbs', { ascending: true })
         .limit(5);
-
-      interface AlertRow {
-        product_name: string | null;
-        quantity_lbs: number | null;
-        warehouse_location: string | null;
-      }
 
       return (data || []) as AlertRow[];
     },
