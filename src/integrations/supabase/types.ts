@@ -8804,7 +8804,14 @@ export type Database = {
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "compliance_officer" | "support"
-      app_role: "admin" | "courier" | "user"
+      app_role:
+        | "admin"
+        | "courier"
+        | "user"
+        | "super_admin"
+        | "owner"
+        | "member"
+        | "viewer"
       burn_type: "soft" | "hard"
       event_severity: "low" | "medium" | "high" | "critical"
       menu_access_type: "invite_only" | "shared_link" | "hybrid"
@@ -8965,7 +8972,15 @@ export const Constants = {
   public: {
     Enums: {
       admin_role: ["super_admin", "admin", "compliance_officer", "support"],
-      app_role: ["admin", "courier", "user"],
+      app_role: [
+        "admin",
+        "courier",
+        "user",
+        "super_admin",
+        "owner",
+        "member",
+        "viewer",
+      ],
       burn_type: ["soft", "hard"],
       event_severity: ["low", "medium", "high", "critical"],
       menu_access_type: ["invite_only", "shared_link", "hybrid"],
