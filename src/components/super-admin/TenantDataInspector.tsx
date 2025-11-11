@@ -63,7 +63,7 @@ export function TenantDataInspector({ tenantId }: TenantDataInspectorProps) {
 
     if (format === 'csv') {
       const headers = tableData.columns.join(',');
-      const rows = tableData.data.map((row: any) =>
+      const rows = tableData.data.map((row: Record<string, unknown>) =>
         tableData.columns.map((col) => {
           const value = row[col];
           if (value === null || value === undefined) return '';

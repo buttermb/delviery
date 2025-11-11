@@ -150,8 +150,8 @@ export function AlertConfig() {
               <Label>Condition</Label>
               <Select
                 value={newAlert.condition}
-                onValueChange={(value: any) =>
-                  setNewAlert({ ...newAlert, condition: value })
+                onValueChange={(value: string) =>
+                  setNewAlert({ ...newAlert, condition: value as 'above' | 'below' | 'equals' })
                 }
               >
                 <SelectTrigger>
@@ -181,8 +181,8 @@ export function AlertConfig() {
               <Label>Notification Channel</Label>
               <Select
                 value={newAlert.channel}
-                onValueChange={(value: any) =>
-                  setNewAlert({ ...newAlert, channel: value })
+                onValueChange={(value: string) =>
+                  setNewAlert({ ...newAlert, channel: value as 'email' | 'webhook' | 'sms' })
                 }
               >
                 <SelectTrigger>

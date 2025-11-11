@@ -82,10 +82,12 @@ export function RevenueForecastChart() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: any, name: string) => {
-                if (name === 'actual') return [`$${value.toLocaleString()}`, 'Actual'];
-                if (name === 'predicted') return [`$${value.toLocaleString()}`, 'Predicted'];
-                return value;
+              formatter={(value: number | string | undefined, name: string) => {
+                if (typeof value === 'number') {
+                  if (name === 'actual') return [`$${value.toLocaleString()}`, 'Actual'];
+                  if (name === 'predicted') return [`$${value.toLocaleString()}`, 'Predicted'];
+                }
+                return [value, name];
               }}
               labelFormatter={(label) => format(new Date(label), 'MMM dd, yyyy')}
             />
