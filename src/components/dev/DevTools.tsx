@@ -234,14 +234,14 @@ export const DevTools = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const [storage, setStorage] = useState<Record<string, unknown>>({});
   const [performance, setPerformance] = useState<PerformanceData | null>(null);
-  
-  // Only show in development - disable in production to prevent errors
-  if (import.meta.env.PROD) return null;
   const [isPinned, setIsPinned] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkEntry | null>(null);
   const logScrollRef = useRef<HTMLDivElement>(null);
   const networkScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Only show in development - disable in production to prevent errors
+  if (import.meta.env.PROD) return null;
 
   // Keyboard shortcuts
   useEffect(() => {
