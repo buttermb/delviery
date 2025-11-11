@@ -1,4 +1,4 @@
-import SignatureCanvas from 'react-signature-canvas';
+import SignatureCanvasLib from 'react-signature-canvas';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,14 +10,8 @@ interface SignatureCaptureProps {
   customerName?: string;
 }
 
-interface SignatureCanvas {
-  clear: () => void;
-  isEmpty: () => boolean;
-  toDataURL: () => string;
-}
-
 export function SignatureCapture({ orderId, onComplete, customerName }: SignatureCaptureProps) {
-  const sigCanvas = useRef<SignatureCanvas | null>(null);
+  const sigCanvas = useRef<SignatureCanvasLib | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
 
   const clear = () => {
@@ -30,7 +24,7 @@ export function SignatureCapture({ orderId, onComplete, customerName }: Signatur
       return;
     }
     
-    const signatureData = sigCanvas.current.toDataURL('image/png');
+    const signatureData = sigCanvas.current.toDataURL();
     onComplete(signatureData);
   };
 
@@ -53,7 +47,7 @@ export function SignatureCapture({ orderId, onComplete, customerName }: Signatur
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="border-2 border-dashed border-muted rounded-lg overflow-hidden bg-white">
-          <SignatureCanvas
+          <SignatureCanvasLib
             ref={sigCanvas}
             onBegin={handleBegin}
             canvasProps={{

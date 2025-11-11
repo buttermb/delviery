@@ -46,7 +46,7 @@ export function AnimatedProductCard({ product, onAddToCart, onQuickView }: Anima
         isHovered && "border-primary shadow-2xl shadow-primary/20"
       )}>
         {/* Trending Badge */}
-        {product.average_rating >= 4.5 && (
+        {Number(product.average_rating) >= 4.5 && (
           <motion.div
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -66,7 +66,7 @@ export function AnimatedProductCard({ product, onAddToCart, onQuickView }: Anima
         >
           <motion.img
             src={product.image_url || "/placeholder.svg"}
-            alt={product.name}
+            alt={String(product.name)}
             className="w-full h-full object-cover"
             animate={{
               scale: isHovered ? 1.1 : 1,
@@ -99,21 +99,21 @@ export function AnimatedProductCard({ product, onAddToCart, onQuickView }: Anima
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-primary text-primary" />
-              <span className="text-sm font-semibold">{product.average_rating?.toFixed(1) || "5.0"}</span>
+              <span className="text-sm font-semibold">{Number(product.average_rating)?.toFixed(1) || "5.0"}</span>
             </div>
             <span className="text-xs text-muted-foreground">
-              ({product.review_count || 0} reviews)
+              ({Number(product.review_count) || 0} reviews)
             </span>
           </div>
 
           {/* Title */}
           <h3 className="font-bold text-lg line-clamp-2 min-h-[3.5rem]">
-            {product.name}
+            {String(product.name)}
           </h3>
 
           {/* Category */}
           <Badge variant="outline" className="text-xs">
-            {product.category}
+            {String(product.category)}
           </Badge>
 
           {/* Price and CTA */}

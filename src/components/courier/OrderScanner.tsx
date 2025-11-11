@@ -49,7 +49,7 @@ export function OrderScanner({ onScan, title = "Scan Order QR Code", description
         {scanning ? (
           <div className="relative">
             <BarcodeScanner
-              onUpdate={handleUpdate}
+              onUpdate={(err: unknown, result?: any) => handleUpdate(err, result)}
               width="100%"
               height={400}
             />

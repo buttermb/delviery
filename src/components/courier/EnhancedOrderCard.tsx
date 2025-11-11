@@ -105,11 +105,11 @@ export default function EnhancedOrderCard({
           {/* Header with Order Number and Earnings */}
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-bold text-lg">{order.order_number}</h3>
+              <h3 className="font-bold text-lg">{String(order.order_number || 'N/A')}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className="text-xs">
                   <Package className="w-3 h-3 mr-1" />
-                  {itemCount} items
+                  {String(itemCount)} items
                 </Badge>
                 {order.special_instructions && (
                   <Badge variant="secondary" className="text-xs">
@@ -155,10 +155,10 @@ export default function EnhancedOrderCard({
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">Pickup</p>
                 <p className="text-sm font-medium truncate">
-                  {order.merchants?.business_name || 'Merchant'}
+                  {(order.merchants as any)?.business_name || 'Merchant'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {order.merchants?.address}
+                  {(order.merchants as any)?.address || 'N/A'}
                 </p>
               </div>
             </div>
@@ -166,9 +166,9 @@ export default function EnhancedOrderCard({
               <MapPin className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">Delivery</p>
-                <p className="text-sm font-medium truncate">{order.delivery_address}</p>
+                <p className="text-sm font-medium truncate">{String(order.delivery_address || 'N/A')}</p>
                 <p className="text-xs text-muted-foreground">
-                  {order.delivery_borough}
+                  {String(order.delivery_borough || 'N/A')}
                 </p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function EnhancedOrderCard({
           {order.customer_name && (
             <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
               <User className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm">{order.customer_name}</span>
+              <span className="text-sm">{String(order.customer_name)}</span>
               {order.customer_phone && (
                 <Phone className="w-3 h-3 ml-auto text-muted-foreground" />
               )}

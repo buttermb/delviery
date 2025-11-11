@@ -112,23 +112,6 @@ serve(async (req) => {
           payment_status: "completed"
         })
         .eq("id", orderId);
-      
-      // Automatically create giveaway entries (5 entries per purchase)
-      try {
-        console.log('Creating giveaway entries for order:', orderId);
-        const giveawayResponse = await supabase.functions.invoke('process-order-giveaway', {
-          body: { orderId }
-        });
-        
-        if (giveawayResponse.data?.success) {
-          console.log('Giveaway entries created successfully');
-          // Notify customer via localStorage for UI update
-          // This will be picked up by FloatingGiveawayButton
-        }
-      } catch (giveawayError) {
-        console.error('Failed to create giveaway entries:', giveawayError);
-        // Don't fail order delivery if giveaway fails
-      }
     }
 
     // Create audit log

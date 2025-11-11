@@ -97,8 +97,8 @@ export function QuickViewDrawer({ product, open, onOpenChange, onViewFull }: Qui
           {/* Image */}
           <div className="relative h-64 flex-shrink-0">
             <OptimizedProductImage
-              src={product.image_url}
-              alt={product.name}
+              src={String(product.image_url)}
+              alt={String(product.name)}
               className="w-full h-full object-cover"
               priority
             />
@@ -115,9 +115,9 @@ export function QuickViewDrawer({ product, open, onOpenChange, onViewFull }: Qui
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <SheetHeader>
-              <SheetTitle className="text-2xl">{cleanProductName(product.name)}</SheetTitle>
+              <SheetTitle className="text-2xl">{cleanProductName(String(product.name))}</SheetTitle>
               {product.strain_type && (
-                <p className="text-muted-foreground capitalize">{product.strain_type}</p>
+                <p className="text-muted-foreground capitalize">{String(product.strain_type)}</p>
               )}
             </SheetHeader>
 
@@ -132,16 +132,16 @@ export function QuickViewDrawer({ product, open, onOpenChange, onViewFull }: Qui
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{product.average_rating || 4.8}</span>
+                <span className="font-semibold">{Number(product.average_rating) || 4.8}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                ({product.review_count || 127} reviews)
+                ({Number(product.review_count) || 127} reviews)
               </span>
             </div>
 
             {/* Description */}
             {product.description && (
-              <p className="text-muted-foreground line-clamp-3">{product.description}</p>
+              <p className="text-muted-foreground line-clamp-3">{String(product.description)}</p>
             )}
 
             {/* View Full Button */}

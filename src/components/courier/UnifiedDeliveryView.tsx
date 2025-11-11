@@ -63,7 +63,7 @@ export function UnifiedDeliveryView({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <AvailableOrderCard order={order} onAccept={onAcceptOrder} disabled={false} />
+            <AvailableOrderCard order={order as any} onAccept={onAcceptOrder} disabled={false} />
           </motion.div>
         ))}
       </AnimatePresence>

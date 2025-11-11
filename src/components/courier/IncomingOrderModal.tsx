@@ -140,8 +140,8 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground">PICKUP</p>
-                <p className="font-medium">{order.merchant_name || 'Merchant Location'}</p>
-                <p className="text-sm text-muted-foreground">{order.pickup_address || 'Address loading...'}</p>
+                <p className="font-medium">{String(order.merchant_name || 'Merchant Location')}</p>
+                <p className="text-sm text-muted-foreground">{String(order.pickup_address || 'Address loading...')}</p>
               </div>
             </div>
           </div>
@@ -154,9 +154,9 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground">DELIVERY</p>
-                <p className="font-medium">{order.customer_name || 'Customer'}</p>
-                <p className="text-sm text-muted-foreground">{order.delivery_address}</p>
-                <p className="text-sm text-muted-foreground">{order.delivery_borough}</p>
+                <p className="font-medium">{String(order.customer_name || 'Customer')}</p>
+                <p className="text-sm text-muted-foreground">{String(order.delivery_address)}</p>
+                <p className="text-sm text-muted-foreground">{String(order.delivery_borough)}</p>
               </div>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
           {order.distance_miles && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Navigation className="h-4 w-4" />
-              <span>{order.distance_miles} mi</span>
+              <span>{String(order.distance_miles)} mi</span>
             </div>
           )}
 

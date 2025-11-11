@@ -71,8 +71,8 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
 
       // Filter out expired menus and inactive menus
       const now = new Date();
-      return (accessRecords as AccessRecord[])
-        .filter((record: AccessRecord) => {
+      return (accessRecords as any[])
+        .filter((record: any) => {
           const menu = record.menus;
           if (!menu || !menu.is_active) return false;
           if (record.expires_at && new Date(record.expires_at) < now) return false;

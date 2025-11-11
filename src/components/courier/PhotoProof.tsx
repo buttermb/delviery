@@ -12,7 +12,7 @@ interface PhotoProofProps {
 }
 
 export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
-  const camera = useRef<HTMLVideoElement | null>(null);
+  const camera = useRef<any>(null);
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -52,12 +52,11 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
         .from('delivery-photos')
         .getPublicUrl(fileName);
 
-      toast.success('Photo uploaded successfully!');
       onPhotoUploaded(publicUrl);
-      
+      toast.success('Photo uploaded successfully!');
     } catch (error) {
-      console.error('Upload error:', error);
       toast.error('Failed to upload photo');
+      console.error('Upload error:', error);
     } finally {
       setUploading(false);
     }
@@ -68,79 +67,60 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CameraIcon className="w-5 h-5" />
-          Delivery Photo Proof
+          Photo Proof of Delivery
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Take a photo of the delivered package
-        </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative aspect-[9/16] bg-muted rounded-lg overflow-hidden">
-          {!image ? (
-            <Camera 
-              ref={camera} 
-              aspectRatio={9 / 16}
-              facingMode="environment"
-              errorMessages={{
-                noCameraAccessible: 'No camera accessible. Please allow camera access.',
-                permissionDenied: 'Permission denied. Please allow camera access.',
-                switchCamera: 'Unable to switch camera.',
-                canvas: 'Canvas not supported.'
-              }}
-            />
-          ) : (
-            <img 
-              src={image} 
-              alt="Delivery proof" 
-              className="w-full h-full object-cover"
-            />
-          )}
-        </div>
-
         {!image ? (
-          <Button
-            onClick={takePhoto}
-            className="w-full"
-            size="lg"
-          >
-            <CameraIcon className="w-4 h-4 mr-2" />
-            Take Photo
-          </Button>
+          <>
+            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+              <Camera
+                ref={camera}
+                aspectRatio={16 / 9}
+                facingMode="environment"
+              />
+            </div>
+            <Button
+              onClick={takePhoto}
+              className="w-full"
+              size="lg"
+            >
+              <CameraIcon className="w-4 h-4 mr-2" />
+              Take Photo
+            </Button>
+          </>
         ) : (
-          <div className="flex gap-3">
-            <Button
-              onClick={retake}
-              variant="outline"
-              className="flex-1"
-              disabled={uploading}
-            >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Retake
-            </Button>
-            <Button
-              onClick={uploadPhoto}
-              className="flex-1"
-              disabled={uploading}
-            >
-              {uploading ? (
-                <>
-                  <Upload className="w-4 h-4 mr-2 animate-pulse" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Confirm
-                </>
-              )}
-            </Button>
-          </div>
+          <>
+            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+              <img
+                src={image}
+                alt="Delivery proof"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={retake}
+                variant="outline"
+                className="flex-1"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Retake
+              </Button>
+              <Button
+                onClick={uploadPhoto}
+                className="flex-1"
+                disabled={uploading}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {uploading ? 'Uploading...' : 'Upload'}
+              </Button>
+            </div>
+          </>
         )}
 
-        <div className="p-3 bg-muted/50 rounded-lg">
-          <p className="text-xs text-muted-foreground">
-            This photo will be saved as proof of delivery
-          </p>
+        <div className="text-xs text-center text-muted-foreground">
+          Photo will be attached to order #{orderId.slice(0, 8).toUpperCase()}
         </div>
       </CardContent>
     </Card>

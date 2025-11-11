@@ -154,17 +154,6 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6 flex-1 justify-center" aria-label="Primary navigation">
-            <Link 
-              to="/giveaway/nyc-biggest-flower" 
-              className="relative text-sm font-semibold transition-colors group"
-            >
-              <span className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30 group-hover:border-primary/50 group-hover:shadow-glow transition-all">
-                <span className="relative">
-                  LIVE GIVEAWAY
-                  <span className="absolute -top-1 -right-2 w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--accent))]"></span>
-                </span>
-              </span>
-            </Link>
             {navLinks.map((link) => (
               link.scroll ? (
                 <a
@@ -263,11 +252,6 @@ const Navigation = () => {
                     <DropdownMenuItem asChild>
                       <button onClick={() => navigate("/my-orders")} className="w-full text-left cursor-pointer">
                         My Orders
-                      </button>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <button onClick={() => navigate("/account/giveaway-entries")} className="w-full text-left cursor-pointer">
-                        My Entries
                       </button>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
