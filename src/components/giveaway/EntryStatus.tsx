@@ -17,9 +17,19 @@ import {
 } from 'react-share';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+interface Entry {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface Giveaway {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface EntryStatusProps {
-  entry: any;
-  giveaway: any;
+  entry: Entry;
+  giveaway: Giveaway;
   onUpdate: () => void;
 }
 

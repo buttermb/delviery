@@ -107,7 +107,7 @@ export function CommunicationHistory({
         sent_at: item.sent_at,
         delivered_at: null,
         read_at: null,
-        metadata: item.metadata as Record<string, any> | null,
+        metadata: item.metadata as Record<string, unknown> | null,
         created_by: item.created_by,
         profiles: null
       })) as Communication[];
