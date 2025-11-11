@@ -74,15 +74,21 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
 
   const recipients = form.watch('recipients');
 
+  interface TenantRow {
+    id: string;
+    business_name: string;
+    subscription_status: string;
+  }
+
   // Fetch tenants for custom selection
-  const { data: tenants } = useQuery<any[]>({
+  const { data: tenants } = useQuery<TenantRow[]>({
     queryKey: ['all-tenants-for-notification'],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('tenants')
         .select('id, business_name, subscription_status')
         .order('business_name');
-      return (data as any[]) || [];
+      return (data || []) as TenantRow[];
     },
     enabled: recipients === 'custom',
   });

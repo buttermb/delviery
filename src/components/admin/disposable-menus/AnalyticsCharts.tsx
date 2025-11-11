@@ -19,15 +19,61 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign, Users } from 'lucide-react';
 
+interface AccessLog {
+  accessed_at: string;
+  customer_name?: string | null;
+}
+
+interface OrderItem {
+  product_name: string;
+  quantity: number;
+  price_per_unit: number;
+}
+
+interface Order {
+  created_at: string;
+  total_amount: number;
+  contact_name?: string | null;
+  order_items?: OrderItem[];
+}
+
+interface SecurityEvent {
+  event_type: string;
+}
+
 interface AnalyticsChartsProps {
-  accessLogs: any[];
-  orders: any[];
-  securityEvents: any[];
+  accessLogs: AccessLog[];
+  orders: Order[];
+  securityEvents: SecurityEvent[];
+}
+
+interface DateViews {
+  [date: string]: number;
+}
+
+interface OrderByDate {
+  [date: string]: { date: string; orders: number; revenue: number };
+}
+
+interface HourlyViews {
+  [hour: number]: number;
+}
+
+interface ProductPerformance {
+  [productName: string]: { name: string; quantity: number; revenue: number };
+}
+
+interface CustomerActivity {
+  [name: string]: { name: string; views: number; orders: number };
+}
+
+interface EventsByType {
+  [type: string]: number;
 }
 
 export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: AnalyticsChartsProps) => {
   // Process access logs by date
-  const viewsByDate = accessLogs.reduce((acc: any, log: any) => {
+  const viewsByDate = accessLogs.reduce((acc: DateViews, log) => {
     const date = new Date(log.accessed_at).toLocaleDateString();
     acc[date] = (acc[date] || 0) + 1;
     return acc;
@@ -39,7 +85,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   })).slice(-14); // Last 14 days
 
   // Process orders by date
-  const ordersByDate = orders.reduce((acc: any, order: any) => {
+  const ordersByDate = orders.reduce((acc: OrderByDate, order) => {
     const date = new Date(order.created_at).toLocaleDateString();
     if (!acc[date]) {
       acc[date] = { date, orders: 0, revenue: 0 };
@@ -52,7 +98,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   const ordersData = Object.values(ordersByDate).slice(-14);
 
   // Peak hours analysis
-  const hourlyViews = accessLogs.reduce((acc: any, log: any) => {
+  const hourlyViews = accessLogs.reduce((acc: HourlyViews, log) => {
     const hour = new Date(log.accessed_at).getHours();
     acc[hour] = (acc[hour] || 0) + 1;
     return acc;
@@ -64,8 +110,8 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   }));
 
   // Product performance
-  const productPerformance = orders.reduce((acc: any, order: any) => {
-    order.order_items?.forEach((item: any) => {
+  const productPerformance = orders.reduce((acc: ProductPerformance, order) => {
+    order.order_items?.forEach((item) => {
       if (!acc[item.product_name]) {
         acc[item.product_name] = { name: item.product_name, quantity: 0, revenue: 0 };
       }
@@ -76,11 +122,11 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   }, {});
 
   const productData = Object.values(productPerformance)
-    .sort((a: any, b: any) => b.revenue - a.revenue)
+    .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
   // Customer activity (top customers by orders)
-  const customerActivity = accessLogs.reduce((acc: any, log: any) => {
+  const customerActivity = accessLogs.reduce((acc: CustomerActivity, log) => {
     const name = log.customer_name || 'Anonymous';
     if (!acc[name]) {
       acc[name] = { name, views: 0, orders: 0 };
@@ -89,7 +135,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
     return acc;
   }, {});
 
-  orders.forEach((order: any) => {
+  orders.forEach((order) => {
     const name = order.contact_name || 'Anonymous';
     if (customerActivity[name]) {
       customerActivity[name].orders += 1;
@@ -97,11 +143,11 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   });
 
   const customerData = Object.values(customerActivity)
-    .sort((a: any, b: any) => b.orders - a.orders)
+    .sort((a, b) => b.orders - a.orders)
     .slice(0, 5);
 
   // Security events by type
-  const eventsByType = securityEvents.reduce((acc: any, event: any) => {
+  const eventsByType = securityEvents.reduce((acc: EventsByType, event) => {
     const type = event.event_type.replace(/_/g, ' ');
     acc[type] = (acc[type] || 0) + 1;
     return acc;
@@ -243,7 +289,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: any) => `$${value.toLocaleString()}`} />
+                <Tooltip formatter={(value: number | undefined) => value ? `$${value.toLocaleString()}` : ''} />
               </PieChart>
             </ResponsiveContainer>
           </Card>
@@ -254,7 +300,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Top Customers by Activity</h3>
             <div className="space-y-3">
-              {customerData.map((customer: any, idx: number) => (
+              {customerData.map((customer, idx: number) => (
                 <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
