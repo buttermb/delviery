@@ -13,8 +13,20 @@ import { ImportCustomersDialog } from './ImportCustomersDialog';
 import { CustomerActivityTimeline } from './CustomerActivityTimeline';
 import { SendAccessLinkDialog } from './SendAccessLinkDialog';
 
+interface Menu {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface WhitelistEntry {
+  id: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
 interface ManageAccessDialogProps {
-  menu: any;
+  menu: Menu;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -24,8 +36,8 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [sendLinkCustomer, setSendLinkCustomer] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<WhitelistEntry | null>(null);
+  const [sendLinkCustomer, setSendLinkCustomer] = useState<WhitelistEntry | null>(null);
 
   const { data: whitelist, refetch } = useMenuWhitelist(menu.id);
   const manageWhitelist = useManageWhitelist();

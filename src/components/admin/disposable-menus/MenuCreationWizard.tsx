@@ -65,13 +65,25 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
   const [accessCode, setAccessCode] = useState(generateAccessCode());
 
+  interface InventoryProduct {
+    id: string;
+    product_name?: string;
+    strain?: string;
+    category?: string;
+    vendor_name?: string;
+    image_url?: string | null;
+    images?: string[] | null;
+    weight_lbs?: number;
+    [key: string]: unknown;
+  }
+
   // Filter products based on search
   const filteredProducts = useMemo(() => {
     if (!inventory) return [];
     if (!searchQuery.trim()) return inventory;
     
     const query = searchQuery.toLowerCase();
-    return inventory.filter((p: any) =>
+    return (inventory as InventoryProduct[]).filter((p) =>
       p.product_name?.toLowerCase().includes(query) ||
       p.strain?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query) ||
@@ -164,7 +176,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
       toast.success('Menu Created', {
         description: 'Your disposable menu has been created successfully',
-      } as any);
+      });
       onOpenChange(false);
       // Reset form
       setCurrentStep(1);
@@ -181,8 +193,10 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       setRequirePassword(false);
       setPassword('');
       setAccessCode(generateAccessCode());
-    } catch (error: any) {
-      toast.error('Failed to create menu', error.message || 'An error occurred');
+    } catch (error: unknown) {
+      toast.error('Failed to create menu', {
+        description: error instanceof Error ? error.message : 'An error occurred'
+      });
     }
   };
 
@@ -307,7 +321,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                         {searchQuery ? 'No products found' : 'No products available'}
                       </div>
                     ) : (
-                      filteredProducts.map((product: any) => {
+                      filteredProducts.map((product: InventoryProduct) => {
                         const isSelected = selectedProducts.includes(product.id);
                         const imageUrl = product.image_url || product.images?.[0];
                         
@@ -380,7 +394,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
               {/* Access Type */}
               <div className="space-y-3">
                 <Label>Access Type</Label>
-                <RadioGroup value={accessType} onValueChange={(value: any) => setAccessType(value)}>
+                <RadioGroup value={accessType} onValueChange={(value: string) => setAccessType(value as 'invite_only' | 'shared' | 'hybrid')}>
                   <div className="flex items-start space-x-2 border rounded p-3">
                     <RadioGroupItem value="invite_only" id="invite_only" className="mt-1" />
                     <div className="flex-1">

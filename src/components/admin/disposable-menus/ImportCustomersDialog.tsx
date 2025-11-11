@@ -126,9 +126,9 @@ export const ImportCustomersDialog = ({
       onImportComplete();
       onOpenChange(false);
       setSelectedCustomers(new Set());
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to import customers', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
       });
     } finally {
       setIsImporting(false);

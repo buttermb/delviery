@@ -13,8 +13,14 @@ import { AnalyticsCharts } from './AnalyticsCharts';
 import { SecurityHeatmap } from './SecurityHeatmap';
 import { MenuImageAnalytics } from './MenuImageAnalytics';
 
+interface Menu {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface MenuAnalyticsDialogProps {
-  menu: any;
+  menu: Menu;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

@@ -14,8 +14,24 @@ import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 
+interface MenuOrder {
+  total_amount?: number | string | null;
+  [key: string]: unknown;
+}
+
+interface Menu {
+  id: string;
+  name?: string;
+  status?: string;
+  encrypted_url_token?: string;
+  menu_access_logs?: Array<{ count?: number; [key: string]: unknown }>;
+  menu_access_whitelist?: Array<{ count?: number; [key: string]: unknown }>;
+  menu_orders?: MenuOrder[];
+  [key: string]: unknown;
+}
+
 interface MenuCardProps {
-  menu: any;
+  menu: Menu;
 }
 
 export const MenuCard = ({ menu }: MenuCardProps) => {
@@ -31,8 +47,8 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
   const orderCount = menu.menu_orders?.length || 0;
   
-  const totalRevenue = menu.menu_orders?.reduce((sum: number, order: any) => {
-    return sum + parseFloat(order.total_amount || 0);
+  const totalRevenue = menu.menu_orders?.reduce((sum: number, order: MenuOrder) => {
+    return sum + parseFloat(String(order.total_amount || 0));
   }, 0) || 0;
 
   const statusColors = {
