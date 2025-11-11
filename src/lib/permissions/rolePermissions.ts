@@ -155,6 +155,7 @@ export function mapDatabaseRoleToSystemRole(dbRole: string): Role {
 
 /**
  * Map system role to database role
+ * Note: database uses 'member' for team_member, and includes 'super_admin'
  */
 export function mapSystemRoleToDatabaseRole(systemRole: Role): string {
   const roleMap: Record<Role, string> = {

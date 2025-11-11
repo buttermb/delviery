@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { hasPermission, Permission } from '@/lib/permissions/checkPermissions';
-import { ROLES, Role, mapDatabaseRoleToSystemRole } from '@/lib/permissions/rolePermissions';
+import { ROLES, Role, mapDatabaseRoleToSystemRole, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 
@@ -19,47 +19,62 @@ import { logger } from '@/lib/logger';
 export function usePermissions() {
   const { admin, tenant } = useTenantAdminAuth();
   
-  // Fetch user role from tenant_users table
+  // Fetch user roles from user_roles table
   const { data: userRole } = useQuery<Role>({
     queryKey: ['user-role', admin?.id, tenant?.id],
     queryFn: async () => {
       if (!admin?.id || !tenant?.id) return ROLES.OWNER;
 
       try {
-        // Get role from tenant_users table
-        // admin.id could be either tenant_users.id or auth.users.id (for owners)
-        // So we query by email and tenant_id for reliability
-        const { data, error } = await supabase
-          .from('tenant_users')
+        // Check if user is super admin first (highest privilege)
+        const { data: superAdminRole } = await supabase
+          .from('user_roles')
           .select('role')
-          .eq('email', admin.email)
-          .eq('tenant_id', tenant.id)
+          .eq('user_id', admin.id)
+          .eq('role', 'super_admin')
           .maybeSingle();
 
+        if (superAdminRole) {
+          return ROLES.OWNER; // Super admins have owner-level permissions
+        }
+
+        // Check if user is tenant owner
+        const { data: tenantData } = await supabase
+          .from('tenants')
+          .select('owner_email')
+          .eq('id', tenant.id)
+          .maybeSingle();
+
+        if (tenantData?.owner_email?.toLowerCase() === admin.email?.toLowerCase()) {
+          return ROLES.OWNER;
+        }
+
+        // Get role from user_roles table for tenant context
+        const { data: userRoles, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', admin.id);
+
         if (error) {
-          logger.warn('Error fetching user role from tenant_users', error, { component: 'usePermissions' });
+          logger.warn('Error fetching user roles', error, { component: 'usePermissions' });
           return ROLES.OWNER;
         }
 
-        if (!data || !data.role) {
-          // No role found in tenant_users - check if user is tenant owner
-          // If owner_email matches, they're owner
-          const { data: tenantData } = await supabase
-            .from('tenants')
-            .select('owner_email')
-            .eq('id', tenant.id)
-            .maybeSingle();
+        if (!userRoles || userRoles.length === 0) {
+          // Default to owner if no roles found
+          return ROLES.OWNER;
+        }
 
-          if (tenantData?.owner_email?.toLowerCase() === admin.email?.toLowerCase()) {
-            return ROLES.OWNER;
+        // Get highest privilege role
+        const rolePriority = [ROLES.OWNER, ROLES.ADMIN, ROLES.TEAM_MEMBER, ROLES.VIEWER];
+        for (const priorityRole of rolePriority) {
+          const dbRole = mapSystemRoleToDatabaseRole(priorityRole);
+          if (userRoles.some((r: any) => r.role === dbRole)) {
+            return priorityRole;
           }
-
-          // Default to owner if no role found (tenant admin always has owner permissions)
-          return ROLES.OWNER;
         }
 
-        // Map database role to system role
-        return mapDatabaseRoleToSystemRole(data.role);
+        return ROLES.VIEWER; // Default to viewer if no matching role
       } catch (error) {
         logger.warn('Error fetching user role', error, { component: 'usePermissions' });
         return ROLES.OWNER;
