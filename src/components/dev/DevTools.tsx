@@ -16,7 +16,7 @@ interface LogEntry {
   timestamp: Date;
   type: 'log' | 'warn' | 'error' | 'info';
   message: string;
-  args: any[];
+  args: unknown[];
   stack?: string;
 }
 
@@ -28,8 +28,8 @@ interface NetworkEntry {
   status?: number;
   duration?: number;
   error?: string;
-  requestBody?: any;
-  responseBody?: any;
+  requestBody?: unknown;
+  responseBody?: unknown;
 }
 
 // Global stores for logs and network requests
@@ -48,7 +48,7 @@ if (!intercepted) {
   const originalError = console.error;
   const originalInfo = console.info;
 
-  const addLog = (type: LogEntry['type'], args: any[]) => {
+  const addLog = (type: LogEntry['type'], args: unknown[]) => {
     const message = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
     ).join(' ');
@@ -95,12 +95,19 @@ if (!intercepted) {
     const startTime = Date.now();
     const id = networkId++;
 
+    interface FetchOptions {
+      method?: string;
+      body?: unknown;
+      [key: string]: unknown;
+    }
+
+    const fetchOptions = (options as FetchOptions | undefined);
     const networkEntry: NetworkEntry = {
       id,
       timestamp: new Date(),
-      method: (options as any)?.method || 'GET',
+      method: fetchOptions?.method || 'GET',
       url: typeof url === 'string' ? url : url.toString(),
-      requestBody: (options as any)?.body,
+      requestBody: fetchOptions?.body,
     };
 
     try {
@@ -261,10 +268,24 @@ export const DevTools = () => {
         lastNetworkLength = globalNetwork.length;
       }
       
+      interface WindowWithDevTools extends Window {
+        __devToolsLastStorageUpdate?: number;
+        __devToolsLastPerfUpdate?: number;
+      }
+
+      interface PerformanceWithMemory extends Performance {
+        memory?: {
+          usedJSHeapSize: number;
+          totalJSHeapSize: number;
+          jsHeapSizeLimit: number;
+        };
+      }
+
       // Update storage (throttled - only every 2 seconds)
       const now = Date.now();
-      if (!(window as any).__devToolsLastStorageUpdate || now - (window as any).__devToolsLastStorageUpdate > 2000) {
-        const storageData: Record<string, any> = {};
+      const win = window as WindowWithDevTools;
+      if (!win.__devToolsLastStorageUpdate || now - win.__devToolsLastStorageUpdate > 2000) {
+        const storageData: Record<string, unknown> = {};
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key) {
@@ -276,23 +297,23 @@ export const DevTools = () => {
           }
         }
         setStorage(storageData);
-        (window as any).__devToolsLastStorageUpdate = now;
+        win.__devToolsLastStorageUpdate = now;
       }
       
       // Update performance metrics (throttled - only every 2 seconds)
-      if (!(window as any).__devToolsLastPerfUpdate || now - (window as any).__devToolsLastPerfUpdate > 2000) {
+      if (!win.__devToolsLastPerfUpdate || now - win.__devToolsLastPerfUpdate > 2000) {
         if (window.performance) {
-          const perf = window.performance;
+          const perf = window.performance as PerformanceWithMemory;
           const timing = perf.timing;
           const navigation = perf.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
           setPerformance({
             loadTime: timing.loadEventEnd - timing.navigationStart,
             domReady: timing.domContentLoadedEventEnd - timing.navigationStart,
-            memory: (perf as any).memory,
+            memory: perf.memory,
             resources: perf.getEntriesByType('resource').length,
             navigation,
           });
-          (window as any).__devToolsLastPerfUpdate = now;
+          win.__devToolsLastPerfUpdate = now;
         }
       }
     }, 500);
