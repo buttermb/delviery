@@ -5,8 +5,26 @@ import { MapPin, Clock, Package, Navigation } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface OrderItem {
+  product_name?: string;
+  quantity?: number;
+  products?: {
+    name?: string;
+  } | null;
+  [key: string]: unknown;
+}
+
+interface Order {
+  total_amount?: number;
+  commission_rate?: number;
+  tip_amount?: number;
+  eta_minutes?: number;
+  order_items?: OrderItem[];
+  [key: string]: unknown;
+}
+
 interface IncomingOrderModalProps {
-  order: any;
+  order: Order | null;
   open: boolean;
   onAccept: () => void;
   onReject: () => void;
@@ -91,7 +109,7 @@ export default function IncomingOrderModal({ order, open, onAccept, onReject }: 
                 <p className="font-semibold text-blue-900 dark:text-blue-100">Items to Deliver ({order.order_items.length})</p>
               </div>
               <div className="space-y-2">
-                {order.order_items.map((item: any, index: number) => (
+                {order.order_items.map((item: OrderItem, index: number) => (
                   <div key={index} className="flex justify-between text-sm bg-white dark:bg-gray-900 p-2 rounded">
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {item.product_name || item.products?.name || 'Product'}

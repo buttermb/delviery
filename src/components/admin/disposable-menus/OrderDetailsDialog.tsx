@@ -32,8 +32,30 @@ import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
 
+interface OrderItem {
+  product_name?: string;
+  quantity?: number;
+  price?: number;
+  price_per_unit?: number;
+  [key: string]: unknown;
+}
+
+interface OrderData {
+  items?: OrderItem[];
+  [key: string]: unknown;
+}
+
+interface Order {
+  id: string;
+  status: string;
+  created_at: string;
+  total_amount?: number | string | null;
+  order_data?: OrderData | string | null;
+  [key: string]: unknown;
+}
+
 interface OrderDetailsDialogProps {
-  order: any;
+  order: Order;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
@@ -65,7 +87,7 @@ export const OrderDetailsDialog = ({
 
       // Send notification if status changed
       if (newStatus !== order.status) {
-        const eventMap: any = {
+        const eventMap: Record<string, string> = {
           'pending': 'order_placed',
           'processing': 'order_processing',
           'completed': 'order_completed',
@@ -85,11 +107,11 @@ export const OrderDetailsDialog = ({
 
       onUpdate();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: 'destructive',
         title: 'Update Failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
       });
     } finally {
       setUpdating(false);
@@ -99,12 +121,12 @@ export const OrderDetailsDialog = ({
   const totalAmount = parseFloat(String(order.total_amount || 0));
   
   // Extract items from order_data JSON
-  const orderItems = order.order_data && typeof order.order_data === 'object' && 'items' in order.order_data 
-    ? (order.order_data as any).items 
+  const orderItems: OrderItem[] = order.order_data && typeof order.order_data === 'object' && 'items' in order.order_data 
+    ? (order.order_data as OrderData).items || []
     : [];
   
-  const itemsTotal = orderItems.reduce((sum: number, item: any) => 
-    sum + (parseFloat(item.price || item.price_per_unit || 0) * (item.quantity || 0)), 0
+  const itemsTotal = orderItems.reduce((sum: number, item: OrderItem) => 
+    sum + (parseFloat(String(item.price || item.price_per_unit || 0)) * (item.quantity || 0)), 0
   );
 
   return (

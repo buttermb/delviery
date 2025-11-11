@@ -5,8 +5,29 @@ import { User, Phone, MapPin, Package, Calendar, DollarSign, Eye } from 'lucide-
 import { formatDistanceToNow } from 'date-fns';
 import { cleanProductName } from '@/utils/productName';
 
+interface OrderItem {
+  product_name?: string;
+  quantity?: number;
+  price_per_unit?: number;
+  [key: string]: unknown;
+}
+
+interface Order {
+  id: string;
+  status: string;
+  created_at: string;
+  contact_name?: string;
+  contact_phone?: string;
+  delivery_address?: string;
+  total_amount?: number;
+  urgency?: string;
+  specific_date?: string;
+  order_items?: OrderItem[];
+  [key: string]: unknown;
+}
+
 interface OrderReviewCardProps {
-  order: any;
+  order: Order;
   onReview: () => void;
 }
 
@@ -38,7 +59,7 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
   };
 
   const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
-  const totalQuantity = orderItems.reduce((sum: number, item: any) => 
+  const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) => 
     sum + (item.quantity || 0), 0
   );
 
@@ -108,7 +129,7 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
         <div className="border-t pt-4">
           <p className="text-sm font-medium mb-2">Order Items:</p>
           <div className="space-y-1">
-            {orderItems.slice(0, 3).map((item: any, idx: number) => (
+            {orderItems.slice(0, 3).map((item: OrderItem, idx: number) => (
               <div key={idx} className="flex justify-between text-sm text-muted-foreground">
                 <span>
                   {cleanProductName(item.product_name || 'Product')} × {item.quantity} lbs
