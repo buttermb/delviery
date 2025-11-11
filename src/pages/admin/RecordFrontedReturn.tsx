@@ -24,10 +24,15 @@ interface ScannedReturn {
   reason?: string;
 }
 
+interface FrontedInventory {
+  id: string;
+  [key: string]: unknown;
+}
+
 export default function RecordFrontedReturn() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [front, setFront] = useState<any>(null);
+  const [front, setFront] = useState<FrontedInventory | null>(null);
   const [scannedReturns, setScannedReturns] = useState<ScannedReturn[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [notes, setNotes] = useState("");
@@ -136,8 +141,8 @@ export default function RecordFrontedReturn() {
         `Return processed: ${goodReturns} returned to inventory, ${damagedReturns} marked as damaged`
       );
       navigate(`/admin/inventory/fronted/${id}`);
-    } catch (error: any) {
-      toast.error("Failed to process return: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Failed to process return: " + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setProcessing(false);
     }

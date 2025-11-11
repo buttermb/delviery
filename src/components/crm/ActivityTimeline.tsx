@@ -48,7 +48,7 @@ interface Activity {
   activity_type: 'call' | 'email' | 'meeting' | 'note' | 'order' | 'payment' | 'task';
   title: string;
   description: string | null;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
   created_by: string;
   profiles?: {
@@ -175,10 +175,10 @@ export function ActivityTimeline({ customerId, tenantId }: ActivityTimelineProps
       setNewActivity({ activity_type: 'note', title: '', description: '' });
       setCreateDialogOpen(false);
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to create activity',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     }

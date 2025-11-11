@@ -12,7 +12,7 @@ interface PhotoProofProps {
 }
 
 export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
-  const camera = useRef<any>(null);
+  const camera = useRef<HTMLVideoElement | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 

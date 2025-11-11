@@ -4,8 +4,13 @@ import { RunnerDeliveryCard } from './RunnerDeliveryCard';
 import AvailableOrderCard from './AvailableOrderCard';
 import { AnimatePresence, motion } from 'framer-motion';
 
+interface CourierOrder {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface UnifiedDeliveryViewProps {
-  courierOrders: any[];
+  courierOrders: CourierOrder[];
   onAcceptOrder: (orderId: string) => void;
   onCompleteDelivery: (deliveryId: string) => void;
 }

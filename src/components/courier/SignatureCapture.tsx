@@ -10,8 +10,14 @@ interface SignatureCaptureProps {
   customerName?: string;
 }
 
+interface SignatureCanvas {
+  clear: () => void;
+  isEmpty: () => boolean;
+  toDataURL: () => string;
+}
+
 export function SignatureCapture({ orderId, onComplete, customerName }: SignatureCaptureProps) {
-  const sigCanvas = useRef<any>(null);
+  const sigCanvas = useRef<SignatureCanvas | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
 
   const clear = () => {

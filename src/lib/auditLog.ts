@@ -11,8 +11,8 @@ export interface AuditLogEvent {
   resourceType?: string;
   resourceId?: string;
   tenantId?: string;
-  changes?: Record<string, any>;
-  metadata?: Record<string, any>;
+  changes?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
