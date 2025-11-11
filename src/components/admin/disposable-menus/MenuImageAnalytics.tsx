@@ -30,29 +30,10 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 
-  if (isLoading) {
-    return (
-      <div className="grid gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-muted rounded w-1/4" />
-              <div className="h-8 bg-muted rounded w-1/2" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!analytics) return null;
-
-  const imageCompletionRate = analytics.products_with_images + analytics.products_without_images > 0
-    ? (analytics.products_with_images / (analytics.products_with_images + analytics.products_without_images)) * 100
-    : 0;
-
   // Generate mock comparison data (in real implementation, fetch from backend)
-  const comparisonMetrics = useMemo(() => [
+  const comparisonMetrics = useMemo(() => {
+    if (!analytics) return [];
+    return [
     {
       label: 'Total Views',
       currentValue: analytics.image_views,
@@ -70,11 +51,12 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
       currentValue: analytics.conversion_rate,
       previousValue: analytics.conversion_rate * 0.9,
       format: 'percentage' as const
-    },
-  ], [analytics]);
+    }];
+  }, [analytics]);
 
   // Generate mock trend data (in real implementation, fetch from backend)
   const trendData = useMemo(() => {
+    if (!analytics) return [];
     const days = 7;
     return Array.from({ length: days }, (_, i) => ({
       date: format(subDays(new Date(), days - i - 1), 'MMM dd'),
@@ -100,6 +82,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
   // Generate engagement insights
   const insights = useMemo(() => {
+    if (!analytics) return [];
     const result = [];
     
     if (analytics.conversion_rate > 5) {
@@ -139,7 +122,28 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     }
 
     return result;
-  }, [analytics, imageCompletionRate, topProducts]);
+  }, [analytics, productAnalytics]);
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/4" />
+              <div className="h-8 bg-muted rounded w-1/2" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!analytics) return null;
+
+  const imageCompletionRate = analytics.products_with_images + analytics.products_without_images > 0
+    ? (analytics.products_with_images / (analytics.products_with_images + analytics.products_without_images)) * 100
+    : 0;
 
   return (
     <div className="space-y-4">

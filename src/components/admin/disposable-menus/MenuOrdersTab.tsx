@@ -4,8 +4,21 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, DollarSign, Package, Clock, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface Order {
+  id: string;
+  status: string;
+  total_amount: number | string;
+  created_at: string;
+  customer_notes?: string | null;
+  order_data?: string | null;
+  whitelist?: {
+    customer_name?: string;
+    customer_phone?: string;
+  } | null;
+}
+
 interface MenuOrdersTabProps {
-  orders: any[];
+  orders: Order[];
   isLoading: boolean;
 }
 

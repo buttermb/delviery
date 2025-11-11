@@ -15,7 +15,7 @@ interface Integration {
   id: string;
   name: string;
   type: string;
-  config: any;
+  config: Record<string, unknown>;
   status: string;
   created_at: string;
 }

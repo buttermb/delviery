@@ -1,11 +1,25 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+interface RouteData {
+  coordinates?: number[][];
+  distance?: number;
+  duration?: number;
+  [key: string]: unknown;
+}
+
 interface ETAData {
   eta_minutes: number;
   distance_miles: number;
   last_updated: string;
-  route?: any;
+  route?: RouteData | null;
+}
+
+interface OrderUpdate {
+  eta_minutes?: number;
+  eta_updated_at?: string;
+  distance_miles?: number;
+  [key: string]: unknown;
 }
 
 export const useETATracking = (orderId: string | null) => {
@@ -87,7 +101,7 @@ export const useETATracking = (orderId: string | null) => {
           filter: `id=eq.${orderId}`
         },
         (payload) => {
-          const updated = payload.new as any;
+          const updated = payload.new as OrderUpdate;
           if (updated.eta_minutes) {
             setEta(prev => ({
               ...prev,

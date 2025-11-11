@@ -14,11 +14,26 @@ import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
+interface Menu {
+  encrypted_url_token: string;
+  access_code?: string | null;
+  name?: string;
+  expiration_date?: string | null;
+  [key: string]: unknown;
+}
+
+interface WhitelistEntry {
+  unique_access_token?: string;
+  customer_name?: string;
+  customer_email?: string | null;
+  [key: string]: unknown;
+}
+
 interface MenuShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  menu: any;
-  whitelistEntry?: any;
+  menu: Menu;
+  whitelistEntry?: WhitelistEntry;
 }
 
 export const MenuShareDialog = ({

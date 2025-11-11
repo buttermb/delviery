@@ -22,11 +22,32 @@ import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
+interface Menu {
+  id?: string;
+  encrypted_url_token?: string;
+  access_code?: string | null;
+  name?: string;
+  expiration_date?: string | null;
+  [key: string]: unknown;
+}
+
+interface WhitelistEntry {
+  unique_access_token?: string;
+  customer_name?: string;
+  customer_email?: string | null;
+  [key: string]: unknown;
+}
+
+interface Customer {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface MenuShareDialogEnhancedProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  menu: any;
-  whitelistEntry?: any;
+  menu: Menu;
+  whitelistEntry?: WhitelistEntry;
 }
 
 export const MenuShareDialogEnhanced = ({
@@ -110,7 +131,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
     if (selectedCustomers.length === customers.length) {
       setSelectedCustomers([]);
     } else {
-      setSelectedCustomers(customers.map((c: any) => c.id));
+      setSelectedCustomers(customers.map((c: Customer) => c.id));
     }
   };
 
