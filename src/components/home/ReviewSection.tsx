@@ -47,8 +47,13 @@ export function ReviewSection() {
       if (error) throw error;
       
       // Fetch profiles for the reviews
+      interface Profile {
+        user_id: string;
+        full_name: string | null;
+      }
+
       const userIds = [...new Set(reviewsData?.map(r => r.user_id) || [])];
-      const profilesMap = new Map();
+      const profilesMap = new Map<string, Profile>();
       
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
@@ -56,7 +61,7 @@ export function ReviewSection() {
           .select('user_id, full_name')
           .in('user_id', userIds);
         
-        profilesData?.forEach(profile => {
+        profilesData?.forEach((profile: Profile) => {
           profilesMap.set(profile.user_id, profile);
         });
       }

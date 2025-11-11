@@ -110,7 +110,9 @@ export function PlatformCapabilities() {
       className="py-20 bg-gradient-to-b from-background to-muted/30" 
       ref={(node) => {
         ref(node);
-        (scrollRef as any).current = node;
+        if (node) {
+          scrollRef.current = node;
+        }
       }}
     >
       <div className="container mx-auto px-4">

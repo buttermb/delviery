@@ -52,7 +52,7 @@ export function PendingTransfersPreview() {
                     <div className="font-medium">Order #{transfer.id}</div>
                     <div className="text-sm text-muted-foreground">{transfer.customer}</div>
                   </div>
-                  <Badge variant={statusConfig.variant as any} className="text-xs capitalize">
+                  <Badge variant={statusConfig.variant as 'default' | 'secondary' | 'destructive' | 'outline'} className="text-xs capitalize">
                     {transfer.status}
                   </Badge>
                 </div>
