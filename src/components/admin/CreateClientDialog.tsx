@@ -12,6 +12,9 @@ import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import type { Database } from "@/integrations/supabase/types";
+
+type WholesaleClientInsert = Database['public']['Tables']['wholesale_clients']['Insert'];
 
 interface CreateClientDialogProps {
   open: boolean;
@@ -63,7 +66,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
     try {
       setLoading(true);
       
-      const clientData: any = {
+      const clientData: WholesaleClientInsert = {
         business_name: formData.business_name,
         contact_name: formData.contact_name,
         email: formData.email || null,

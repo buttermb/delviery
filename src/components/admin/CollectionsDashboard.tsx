@@ -9,12 +9,13 @@ import { PaymentDialog } from "./PaymentDialog";
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { showInfoToast } from "@/utils/toastHelpers";
+import type { WholesaleClient } from "@/types/admin";
 
 export function CollectionsDashboard() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<WholesaleClient | null>(null);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
-  const [smsClient, setSmsClient] = useState<any>(null);
+  const [smsClient, setSmsClient] = useState<WholesaleClient | null>(null);
   const { data: clients = [] } = useWholesaleClients();
   const { data: orders = [] } = useWholesaleOrders();
 
