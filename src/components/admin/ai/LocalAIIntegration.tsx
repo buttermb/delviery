@@ -111,10 +111,10 @@ export function LocalAIIntegration() {
         title: 'AI processing complete',
         description: 'Text processed successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Processing failed',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
     } finally {

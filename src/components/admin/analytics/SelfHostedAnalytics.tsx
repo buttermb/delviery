@@ -57,7 +57,6 @@ export function SelfHostedAnalytics() {
       // Get last 30 days of analytics
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      // @ts-ignore - Simplified type handling for wholesale_orders query
       const { data: events } = await supabase
         .from('wholesale_orders')
         .select('created_at, client_id')
@@ -66,13 +65,18 @@ export function SelfHostedAnalytics() {
 
       if (!events) return null;
 
+      interface EventRow {
+        created_at: string;
+        client_id: string;
+      }
+
       // Calculate metrics
-      const uniqueVisitors = new Set(events.map((e: any) => e.client_id)).size;
+      const uniqueVisitors = new Set((events as EventRow[]).map((e) => e.client_id)).size;
       const totalViews = events.length;
       
       // Group by date
       const dailyMap = new Map<string, { views: number; visitors: Set<string> }>();
-      events.forEach((event: any) => {
+      (events as EventRow[]).forEach((event) => {
         const date = new Date(event.created_at).toISOString().split('T')[0];
         if (!dailyMap.has(date)) {
           dailyMap.set(date, { views: 0, visitors: new Set() });

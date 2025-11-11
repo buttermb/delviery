@@ -30,7 +30,14 @@ export const AdvancedReportsCard = ({ menuId, stats }: AdvancedReportsCardProps)
       console.log(`Generating ${reportType} report for menu ${menuId}`);
       
       // Generate report data based on type
-      const reportData: any = {
+      interface ReportData {
+        menuId: string;
+        generatedAt: string;
+        stats: typeof stats;
+        reportType: string;
+      }
+
+      const reportData: ReportData = {
         menuId,
         generatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         stats,

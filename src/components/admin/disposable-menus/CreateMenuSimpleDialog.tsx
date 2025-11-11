@@ -52,13 +52,11 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
     queryKey: ['tenant-customers', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
-      // @ts-ignore - Complex Supabase query type
-      const result = await supabase
+      const { data, error } = await supabase
         .from('customers')
         .select('id, name, email, business_name')
         .eq('tenant_id', tenant.id)
         .order('name', { ascending: true});
-      const { data, error } = result;
       if (error) throw error;
       return data || [];
     },
