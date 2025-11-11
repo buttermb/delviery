@@ -27,15 +27,20 @@ export function CustomerMobileBottomNav() {
   }, []);
 
   // Get current user session for cart query
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
   }, []);
 
+  interface CartItem {
+    quantity: number;
+    [key: string]: unknown;
+  }
+
   // Fetch cart items for authenticated users
-  const { data: cartItems = [] } = useQuery({
+  const { data: cartItems = [] } = useQuery<CartItem[]>({
     queryKey: ["cart", user?.id, cartUpdateKey],
     queryFn: async () => {
       if (!user) return [];
@@ -44,7 +49,7 @@ export function CustomerMobileBottomNav() {
         .select("*, products(*)")
         .eq("user_id", user.id);
       if (error) throw error;
-      return data;
+      return (data || []) as CartItem[];
     },
     enabled: !!user,
     refetchOnMount: true,
@@ -52,7 +57,7 @@ export function CustomerMobileBottomNav() {
   });
 
   // Calculate cart count (authenticated or guest)
-  const dbCartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  const dbCartCount = cartItems.reduce((sum: number, item: CartItem) => sum + (item.quantity || 0), 0);
   const guestCartCount = user ? 0 : getGuestCartCount();
   const cartCount = user ? dbCartCount : guestCartCount;
 

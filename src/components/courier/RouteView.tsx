@@ -1,4 +1,4 @@
-// @ts-ignore - react-map-gl type definitions
+// @ts-expect-error - react-map-gl type definitions
 import Map, { Marker, Source, Layer } from 'react-map-gl';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';

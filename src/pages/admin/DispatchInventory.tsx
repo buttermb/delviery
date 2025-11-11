@@ -208,11 +208,15 @@ export default function DispatchInventory() {
         });
 
         // Update product fronted quantity
-        const { data: currentProduct }: any = await supabase
+        interface ProductQuantity {
+          fronted_quantity?: number | null;
+          available_quantity?: number | null;
+        }
+        const { data: currentProduct } = await supabase
           .from('products')
           .select('fronted_quantity, available_quantity')
           .eq('id', product.product_id)
-          .single();
+          .single<ProductQuantity>();
 
         if (currentProduct) {
           await supabase

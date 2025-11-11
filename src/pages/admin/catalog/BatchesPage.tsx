@@ -172,7 +172,12 @@ export default function BatchesPage() {
     return new Date(expirationDate) < new Date();
   };
 
-  const getStatusBadge = (batch: any) => {
+  interface Batch {
+    expiration_date?: string | null;
+    [key: string]: unknown;
+  }
+
+  const getStatusBadge = (batch: Batch) => {
     if (isExpired(batch.expiration_date)) {
       return (
         <Badge variant="destructive" className="gap-1">

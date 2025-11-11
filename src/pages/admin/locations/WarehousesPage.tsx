@@ -75,9 +75,15 @@ export default function WarehousesPage() {
         if (error) throw error;
         setTableMissing(false);
 
+        interface InventoryItem {
+          warehouse_location?: string | null;
+          quantity_lbs?: number | null;
+          cost_per_lb?: number | null;
+        }
+
         const warehouseMap = new Map<string, WarehouseLocation>();
 
-        (inventory || []).forEach((item: any) => {
+        (inventory || []).forEach((item: InventoryItem) => {
           const loc = item.warehouse_location || 'Unknown';
           if (!warehouseMap.has(loc)) {
             warehouseMap.set(loc, {
@@ -96,8 +102,8 @@ export default function WarehousesPage() {
         return Array.from(warehouseMap.values()).sort((a, b) =>
           a.location.localeCompare(b.location)
         );
-      } catch (error: any) {
-        if (error.code === '42P01') {
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
           setTableMissing(true);
           return [];
         }
@@ -192,10 +198,10 @@ export default function WarehousesPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Failed to add warehouse',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive'
       });
     }

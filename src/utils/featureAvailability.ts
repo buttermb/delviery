@@ -21,9 +21,9 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
 
   try {
     // Try to query the table (with limit 0 to minimize data transfer)
-    // @ts-ignore - Dynamic table name, types will regenerate after migration
+    // @ts-expect-error - Dynamic table name, types will regenerate after migration
     const { error } = await supabase
-      .from(tableName as any)
+      .from(tableName as string)
       .select('id')
       .limit(0);
 
@@ -34,9 +34,9 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
     tableExistenceCache.set(tableName, exists);
     
     return exists;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // If we get a 42P01 error, table doesn't exist
-    if (error.code === '42P01') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
       tableExistenceCache.set(tableName, false);
       return false;
     }

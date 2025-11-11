@@ -49,20 +49,40 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
 
       if (!accessRecords) return [];
 
+      interface AccessRecord {
+        menu_id: string;
+        expires_at?: string | null;
+        access_code?: string | null;
+        menus?: {
+          id: string;
+          name?: string;
+          description?: string | null;
+          is_active?: boolean;
+        } | null;
+      }
+
+      interface MenuItem {
+        id: string;
+        name: string;
+        description?: string | null;
+        expires_at?: string | null;
+        requiresAccessCode: boolean;
+      }
+
       // Filter out expired menus and inactive menus
       const now = new Date();
-      return accessRecords
-        .filter((record: any) => {
+      return (accessRecords as AccessRecord[])
+        .filter((record: AccessRecord) => {
           const menu = record.menus;
           if (!menu || !menu.is_active) return false;
           if (record.expires_at && new Date(record.expires_at) < now) return false;
           return true;
         })
-        .map((record: any) => ({
+        .map((record: AccessRecord): MenuItem => ({
           id: record.menu_id,
           name: record.menus?.name || "Unnamed Menu",
           description: record.menus?.description,
-          expires_at: record.expires_at,
+          expires_at: record.expires_at || undefined,
           requiresAccessCode: !!record.access_code,
         }));
     },
@@ -97,7 +117,7 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
 
   return (
     <div className="space-y-3">
-      {menus.map((menu: any) => (
+      {menus.map((menu) => (
         <Card
           key={menu.id}
           className="p-4 hover:shadow-md transition-shadow cursor-pointer border-[hsl(var(--customer-border))] bg-[hsl(var(--customer-bg))]"
