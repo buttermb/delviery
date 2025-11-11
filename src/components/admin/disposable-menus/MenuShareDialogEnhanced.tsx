@@ -155,7 +155,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
     try {
       // TODO: Integrate with SMS provider (Twilio, Plivo, Novu, etc.)
       // For now, show a placeholder
-      const selectedCustomersData = customers?.filter((c: any) =>
+      const selectedCustomersData = customers?.filter((c: Customer) =>
         selectedCustomers.includes(c.id)
       );
 
@@ -178,8 +178,8 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
         `SMS sent to ${selectedCustomers.length} customer${selectedCustomers.length > 1 ? 's' : ''}`
       );
       setSelectedCustomers([]);
-    } catch (error: any) {
-      showErrorToast('SMS Failed', error.message || 'Failed to send SMS');
+    } catch (error: unknown) {
+      showErrorToast('SMS Failed', error instanceof Error ? error.message : 'Failed to send SMS');
     } finally {
       setSendingSms(false);
     }
@@ -381,7 +381,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                       </Badge>
                     </div>
                     <div className="space-y-1 mt-2">
-                      {customers.map((customer: any) => (
+                      {customers.map((customer: Customer) => (
                         <div
                           key={customer.id}
                           className={cn(
@@ -479,9 +479,9 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
             <div className="space-y-2">
               <Label>Menu Access List</Label>
               <div className="border rounded-lg">
-                {whitelist && whitelist.length > 0 ? (
+                    {whitelist && whitelist.length > 0 ? (
                   <div className="divide-y">
-                    {whitelist.map((entry: any) => (
+                    {whitelist.map((entry: WhitelistEntry) => (
                       <div key={entry.id} className="p-3 flex items-center justify-between">
                         <div>
                           <div className="font-medium">

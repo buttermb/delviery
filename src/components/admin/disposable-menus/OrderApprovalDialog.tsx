@@ -31,8 +31,29 @@ import { toast } from 'sonner';
 import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
 
+interface OrderItem {
+  product_name?: string;
+  quantity?: number;
+  price_per_unit?: number;
+  [key: string]: unknown;
+}
+
+interface Order {
+  id: string;
+  status: string;
+  created_at: string;
+  contact_name?: string;
+  contact_phone?: string;
+  delivery_address?: string;
+  delivery_method?: string;
+  payment_method?: string;
+  customer_notes?: string | null;
+  order_items?: OrderItem[];
+  [key: string]: unknown;
+}
+
 interface OrderApprovalDialogProps {
-  order: any;
+  order: Order;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -44,7 +65,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
   const queryClient = useQueryClient();
 
   const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
-  const totalQuantity = orderItems.reduce((sum: number, item: any) => 
+  const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) => 
     sum + (item.quantity || 0), 0
   );
 
@@ -63,7 +84,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
       if (updateError) throw updateError;
 
       // Create wholesale_order and deduct from inventory
-      const orderItemsData = orderItems.map((item: any) => ({
+      const orderItemsData = orderItems.map((item: OrderItem) => ({
         product_name: item.product_name,
         quantity_lbs: item.quantity,
         price_per_lb: item.price_per_unit
@@ -97,9 +118,9 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
       queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
       queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to approve order', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
       });
     } finally {
       setIsProcessing(false);
@@ -128,9 +149,9 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
       toast.success('Order rejected');
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to reject order', {
-        description: error.message
+        description: error instanceof Error ? error.message : 'Unknown error occurred'
       });
     } finally {
       setIsProcessing(false);
@@ -187,7 +208,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
           <div>
             <h3 className="font-semibold mb-3">Order Details</h3>
             <div className="space-y-3">
-              {orderItems.map((item: any, idx: number) => (
+              {orderItems.map((item: OrderItem, idx: number) => (
                 <div key={idx} className="flex justify-between items-center bg-muted/30 rounded-lg p-3">
                   <div>
                     <p className="font-medium">{cleanProductName(item.product_name || 'Product')}</p>

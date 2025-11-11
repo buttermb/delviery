@@ -10,10 +10,25 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useManageWhitelist } from '@/hooks/useDisposableMenus';
 import { formatMenuUrl } from '@/utils/menuHelpers';
 
+interface Menu {
+  access_code?: string | null;
+  [key: string]: unknown;
+}
+
+interface WhitelistEntry {
+  id: string;
+  customer_name?: string;
+  unique_access_token?: string;
+  customer?: {
+    business_name?: string;
+  } | null;
+  [key: string]: unknown;
+}
+
 interface MenuWhitelistTabProps {
   menuId: string;
-  menu: any;
-  whitelist: any[];
+  menu: Menu;
+  whitelist: WhitelistEntry[];
   isLoading: boolean;
   encryptedToken: string;
 }
@@ -91,7 +106,7 @@ export const MenuWhitelistTab = ({
     showSuccessToast('URL Copied', 'Access URL copied to clipboard');
   };
 
-  const shareViaWhatsApp = (entry: any) => {
+  const shareViaWhatsApp = (entry: WhitelistEntry) => {
     const url = formatMenuUrl(encryptedToken, entry.unique_access_token);
     const accessCode = menu?.access_code || 'N/A';
     const message = encodeURIComponent(

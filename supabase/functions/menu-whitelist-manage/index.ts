@@ -72,7 +72,7 @@ serve(async (req) => {
       }
     }
 
-    const response: any = { success: true };
+    const response: { success: boolean; whitelist_id?: string; [key: string]: unknown } = { success: true };
 
     switch (action) {
       case 'add':
@@ -182,7 +182,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in menu-whitelist-manage:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
