@@ -364,7 +364,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         <div className="flex-1">
                           <div className="font-medium">{product.product_name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {product.quantity_lbs} lbs • {product.quantity_units} units available
+                            {(product as any).quantity_lbs || 0} lbs • {(product as any).quantity_units || 0} units available
                           </div>
                           {!imageUrl && (
                             <Badge variant="outline" className="text-xs mt-1">No image</Badge>
@@ -672,7 +672,11 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
               <div className="space-y-3">
                 <Label>Menu Style</Label>
-                <RadioGroup value={appearanceStyle} onValueChange={(value: string) => setAppearanceStyle(value as 'professional' | 'minimal' | 'modern')}>
+                <RadioGroup value={appearanceStyle} onValueChange={(value) => {
+                  if (value === 'professional' || value === 'minimal' || value === 'anonymous') {
+                    setAppearanceStyle(value);
+                  }
+                }}>
                   <div className="flex items-start space-x-2 border rounded p-3">
                     <RadioGroupItem value="professional" id="professional" />
                     <div className="flex-1">

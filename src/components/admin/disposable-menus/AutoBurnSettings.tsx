@@ -30,7 +30,7 @@ interface AutoBurnSettingsProps {
 }
 
 export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) => {
-  const [config, setConfig] = useState(settings || {
+  const [config, setConfig] = useState<AutoBurnConfig>(settings || {
     enabled: false,
     triggers: {
       view_limit_exceeded: { enabled: false, threshold: 10 },
@@ -40,14 +40,14 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
       time_expired: { enabled: false },
       suspicious_activity: { enabled: false }
     },
-    burn_type: 'soft',
+    burn_type: 'soft' as const,
     notify_on_burn: true,
     auto_regenerate: false,
     migrate_customers: false
   });
 
   const updateConfig = (updates: Partial<AutoBurnConfig>) => {
-    const newConfig = { ...config, ...updates };
+    const newConfig = { ...config, ...updates } as AutoBurnConfig;
     setConfig(newConfig);
     onChange(newConfig);
   };

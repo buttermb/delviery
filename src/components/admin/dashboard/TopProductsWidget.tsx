@@ -64,7 +64,7 @@ export function TopProductsWidget() {
         .select('product_id, quantity_lbs, unit_price')
         .in('order_id', orderIds);
 
-      if (!orderItems) return [];
+      if (!orderItems || orderItems.length === 0) return [];
 
       // Aggregate by product
       const productMap = new Map<string, TopProduct>();
@@ -75,7 +75,7 @@ export function TopProductsWidget() {
         unit_price: number | null;
       }
 
-      orderItems.forEach((item: OrderItemRow) => {
+      (orderItems as unknown as OrderItemRow[]).forEach((item: OrderItemRow) => {
         const productId = item.product_id;
         if (!productMap.has(productId)) {
           productMap.set(productId, {

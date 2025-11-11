@@ -125,7 +125,7 @@ export const BurnMenuDialog = ({ menu, open, onOpenChange }: BurnMenuDialogProps
                   onCheckedChange={(checked) => setMigrateCustomers(checked as boolean)}
                 />
                 <Label htmlFor="migrate" className="cursor-pointer">
-                  Re-invite whitelisted customers ({menu.menu_access_whitelist?.[0]?.count || 0} customers)
+                  Re-invite whitelisted customers ({(menu as any).menu_access_whitelist?.[0]?.count || 0} customers)
                 </Label>
               </div>
             )}
