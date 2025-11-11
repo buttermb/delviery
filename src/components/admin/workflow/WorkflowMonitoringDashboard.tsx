@@ -29,10 +29,35 @@ import {
   Timer,
 } from 'lucide-react';
 
+interface ExecutionLog {
+  status: 'success' | 'error';
+  action_type: string;
+  duration_ms?: number;
+  error?: string;
+  result?: Record<string, unknown>;
+}
+
+interface WorkflowExecution {
+  id: string;
+  workflow_id: string;
+  tenant_id: string;
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+  started_at: string;
+  completed_at?: string;
+  duration_ms?: number;
+  execution_log?: ExecutionLog[];
+  error_message?: string;
+  trigger_data?: Record<string, unknown>;
+  workflow?: {
+    name: string;
+    description?: string;
+  };
+}
+
 export function WorkflowMonitoringDashboard() {
   const { executions, metrics, isLoading, refetch } = useWorkflowExecutions(100, true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedExecution, setSelectedExecution] = useState<any>(null);
+  const [selectedExecution, setSelectedExecution] = useState<WorkflowExecution | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const getStatusIcon = (status: string) => {
@@ -334,7 +359,7 @@ export function WorkflowMonitoringDashboard() {
                     <p className="text-sm font-medium mb-2">Execution Log</p>
                     <div className="space-y-2">
                       {selectedExecution.execution_log.map(
-                        (log: any, index: number) => (
+                        (log: ExecutionLog, index: number) => (
                           <div
                             key={index}
                             className="p-3 border rounded-lg bg-background"

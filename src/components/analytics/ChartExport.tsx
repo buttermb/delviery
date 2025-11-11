@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface ChartExportProps {
-  data: any[];
+  data: Record<string, unknown>[];
   filename: string;
   title: string;
 }

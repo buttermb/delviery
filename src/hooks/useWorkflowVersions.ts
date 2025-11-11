@@ -7,6 +7,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface WorkflowAction {
+  id?: string;
+  name?: string;
+  type?: string;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface WorkflowCondition {
+  id?: string;
+  type?: string;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface WorkflowVersion {
   id: string;
   workflow_id: string;
@@ -15,14 +30,14 @@ interface WorkflowVersion {
   name: string;
   description?: string;
   trigger_type: string;
-  trigger_config?: any;
-  actions: any[];
-  conditions?: any[];
+  trigger_config?: Record<string, unknown>;
+  actions: WorkflowAction[];
+  conditions?: WorkflowCondition[];
   is_active: boolean;
   created_by?: string;
   created_at: string;
   change_summary?: string;
-  change_details?: any;
+  change_details?: Record<string, unknown>;
   restored_from_version?: number;
 }
 
@@ -43,7 +58,7 @@ export function useWorkflowVersions(workflowId: string | null) {
         .order('version_number', { ascending: false });
 
       if (error) throw error;
-      return (data as any) || [];
+      return (data as WorkflowVersion[]) || [];
     },
     enabled: !!workflowId,
   });
@@ -63,8 +78,13 @@ export function useWorkflowVersions(workflowId: string | null) {
 
       if (error) throw error;
       
-      if (data && !(data as any).success) {
-        throw new Error((data as any).error || 'Failed to restore version');
+      interface RestoreResponse {
+        success?: boolean;
+        error?: string;
+      }
+      
+      if (data && !(data as RestoreResponse).success) {
+        throw new Error((data as RestoreResponse).error || 'Failed to restore version');
       }
 
       return data;
@@ -77,10 +97,10 @@ export function useWorkflowVersions(workflowId: string | null) {
         description: `Successfully restored to version ${variables.versionNumber}`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: 'Restore Failed',
-        description: error.message || 'Failed to restore version',
+        description: error instanceof Error ? error.message : 'Failed to restore version',
         variant: 'destructive',
       });
     },
@@ -128,7 +148,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
         .order('version_number', { ascending: false });
 
       if (error) throw error;
-      return (data as any) || [];
+      return (data as WorkflowVersion[]) || [];
     },
     enabled: !!workflowId,
   });
@@ -137,7 +157,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
     totalVersions: versions?.length || 0,
     latestVersion: versions?.[0]?.version_number || 0,
     lastUpdated: versions?.[0]?.created_at,
-    restoredCount: versions?.filter((v: any) => v.restored_from_version).length || 0,
+    restoredCount: versions?.filter((v) => v.restored_from_version).length || 0,
   };
 
   return stats;

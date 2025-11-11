@@ -6,9 +6,10 @@ import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import type { RenderCartItem } from "@/types/cart";
 
 interface StickyOrderSummaryProps {
-  cartItems: any[];
+  cartItems: RenderCartItem[];
   subtotal: number;
   deliveryFee: number;
   discount: number;

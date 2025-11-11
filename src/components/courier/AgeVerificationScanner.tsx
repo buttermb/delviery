@@ -6,10 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Camera, Keyboard, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface AgeData {
+  age: number;
+  dateOfBirth?: string;
+  verificationMethod?: 'scan' | 'manual';
+  [key: string]: unknown;
+}
+
 interface AgeVerificationScannerProps {
   open: boolean;
   onClose: () => void;
-  onVerified: (isOver21: boolean, ageData: any) => void;
+  onVerified: (isOver21: boolean, ageData: AgeData) => void;
 }
 
 export default function AgeVerificationScanner({ open, onClose, onVerified }: AgeVerificationScannerProps) {

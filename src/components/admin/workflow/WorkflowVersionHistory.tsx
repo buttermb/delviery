@@ -34,6 +34,40 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+interface WorkflowAction {
+  id?: string;
+  name?: string;
+  type?: string;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface WorkflowCondition {
+  id?: string;
+  type?: string;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface WorkflowVersion {
+  id: string;
+  workflow_id: string;
+  tenant_id: string;
+  version_number: number;
+  name: string;
+  description?: string;
+  trigger_type: string;
+  trigger_config?: Record<string, unknown>;
+  actions: WorkflowAction[];
+  conditions?: WorkflowCondition[];
+  is_active: boolean;
+  created_by?: string;
+  created_at: string;
+  change_summary?: string;
+  change_details?: Record<string, unknown>;
+  restored_from_version?: number;
+}
+
 interface WorkflowVersionHistoryProps {
   workflowId: string;
   workflowName: string;
@@ -44,7 +78,7 @@ export function WorkflowVersionHistory({
   workflowName,
 }: WorkflowVersionHistoryProps) {
   const { versions, isLoading, restoreVersion } = useWorkflowVersions(workflowId);
-  const [selectedVersion, setSelectedVersion] = useState<any>(null);
+  const [selectedVersion, setSelectedVersion] = useState<WorkflowVersion | null>(null);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
@@ -60,12 +94,12 @@ export function WorkflowVersionHistory({
     setSelectedVersion(null);
   };
 
-  const handleViewDetails = (version: any) => {
+  const handleViewDetails = (version: WorkflowVersion) => {
     setSelectedVersion(version);
     setDetailsDialogOpen(true);
   };
 
-  const handleRestoreClick = (version: any) => {
+  const handleRestoreClick = (version: WorkflowVersion) => {
     setSelectedVersion(version);
     setRestoreDialogOpen(true);
   };
@@ -110,7 +144,7 @@ export function WorkflowVersionHistory({
                 {/* Timeline line */}
                 <div className="absolute left-[21px] top-2 bottom-2 w-0.5 bg-border" />
 
-                {versions && versions.map((version: any, index: number) => (
+                {versions && versions.map((version: WorkflowVersion, index: number) => (
                   <div key={version.id} className="relative flex gap-4">
                     {/* Timeline node */}
                     <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-background">

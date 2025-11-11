@@ -31,7 +31,7 @@ interface WorkflowNode {
   id: string;
   type: 'trigger' | 'action' | 'condition';
   name: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   position: { x: number; y: number };
 }
 

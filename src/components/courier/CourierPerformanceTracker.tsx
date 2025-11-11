@@ -77,7 +77,7 @@ export default function CourierPerformanceTracker() {
             <Target className="w-5 h-5" />
             Performance Tracker
           </CardTitle>
-          <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
+          <Select value={period} onValueChange={(v: string) => setPeriod(v)}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>

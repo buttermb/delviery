@@ -7,6 +7,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
+
+interface ExecutionLog {
+  status: 'success' | 'error';
+  action_type: string;
+  duration_ms?: number;
+  error?: string;
+  result?: Record<string, unknown>;
+}
 
 interface WorkflowExecution {
   id: string;
@@ -16,9 +25,9 @@ interface WorkflowExecution {
   started_at: string;
   completed_at?: string;
   duration_ms?: number;
-  execution_log?: any[];
+  execution_log?: ExecutionLog[];
   error_message?: string;
-  trigger_data?: any;
+  trigger_data?: Record<string, unknown>;
   workflow?: {
     name: string;
     description?: string;
@@ -66,7 +75,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
         .limit(limit);
 
       if (error) throw error;
-      return (data as any[]) || [];
+      return (data as WorkflowExecution[]) || [];
     },
     enabled: !!tenant?.id,
     refetchInterval: autoRefresh ? 5000 : false,
@@ -121,7 +130,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
           filter: `tenant_id=eq.${tenant.id}`,
         },
         (payload) => {
-          console.log('Workflow execution change:', payload);
+          logger.debug('Workflow execution change', { payload }, 'useWorkflowExecutions');
           refetch();
 
           // Show toast for status changes

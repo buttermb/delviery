@@ -10,19 +10,41 @@ export default function DeviceStatusBar() {
 
   useEffect(() => {
     // Battery status
+    interface BatteryManager {
+      level: number;
+      charging: boolean;
+      addEventListener: (event: string, handler: () => void) => void;
+    }
+
+    interface NavigatorWithBattery extends Navigator {
+      getBattery?: () => Promise<BatteryManager>;
+    }
+
+    interface NetworkInformation {
+      effectiveType?: '4g' | '3g' | 'slow' | 'offline';
+      addEventListener?: (event: string, handler: () => void) => void;
+    }
+
+    interface NavigatorWithConnection extends Navigator {
+      connection?: NetworkInformation;
+    }
+
     if ('getBattery' in navigator) {
-      (navigator as any).getBattery().then((battery: any) => {
-        const updateBattery = () => {
-          setBattery({
-            level: battery.level * 100,
-            charging: battery.charging
-          });
-        };
-        
-        updateBattery();
-        battery.addEventListener('levelchange', updateBattery);
-        battery.addEventListener('chargingchange', updateBattery);
-      });
+      const nav = navigator as NavigatorWithBattery;
+      if (nav.getBattery) {
+        nav.getBattery().then((battery: BatteryManager) => {
+          const updateBattery = () => {
+            setBattery({
+              level: battery.level * 100,
+              charging: battery.charging
+            });
+          };
+          
+          updateBattery();
+          battery.addEventListener('levelchange', updateBattery);
+          battery.addEventListener('chargingchange', updateBattery);
+        });
+      }
     }
 
     // Network status
@@ -32,16 +54,19 @@ export default function DeviceStatusBar() {
 
     // Connection speed estimate
     const updateConnection = () => {
-      const conn = (navigator as any).connection;
-      if (conn) {
-        const speed = conn.effectiveType;
-        setConnection(speed);
+      const nav = navigator as NavigatorWithConnection;
+      const conn = nav.connection;
+      if (conn && conn.effectiveType) {
+        setConnection(conn.effectiveType);
       }
     };
     
     if ('connection' in navigator) {
       updateConnection();
-      (navigator as any).connection.addEventListener('change', updateConnection);
+      const nav = navigator as NavigatorWithConnection;
+      if (nav.connection && nav.connection.addEventListener) {
+        nav.connection.addEventListener('change', updateConnection);
+      }
     }
 
     return () => {
@@ -110,7 +135,12 @@ export default function DeviceStatusBar() {
   );
 }
 
-const AlertCircle = (props: any) => (
+interface SVGProps {
+  className?: string;
+  [key: string]: unknown;
+}
+
+const AlertCircle = (props: SVGProps) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="8" x2="12" y2="12" />
