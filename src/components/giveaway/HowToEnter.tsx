@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
 import { UserPlus, Instagram, Mail, Users, CheckCircle2, ShoppingBag } from 'lucide-react';
 
+interface Giveaway {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface HowToEnterProps {
-  giveaway: any;
+  giveaway: Giveaway;
 }
 
 export default function HowToEnter({ giveaway }: HowToEnterProps) {

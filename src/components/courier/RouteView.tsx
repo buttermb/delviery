@@ -26,8 +26,18 @@ interface RouteViewProps {
   currentLng?: number;
 }
 
+interface MapboxRoute {
+  geometry?: {
+    coordinates?: number[][];
+    type?: string;
+  };
+  distance?: number;
+  duration?: number;
+  [key: string]: unknown;
+}
+
 export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps) {
-  const [route, setRoute] = useState<any>(null);
+  const [route, setRoute] = useState<MapboxRoute | null>(null);
   const [mapboxToken] = useState(import.meta.env.VITE_MAPBOX_TOKEN || '');
 
   useEffect(() => {

@@ -84,8 +84,8 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
       await claimBonusEntry(giveaway.id, 'instagram_story', storyUrl);
       toast.success(`+${giveaway.instagram_story_bonus_entries} bonus entries added!`);
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to claim bonus entry');
     } finally {
       setClaimingStory(false);
     }
@@ -102,8 +102,8 @@ export default function EntryStatus({ entry, giveaway, onUpdate }: EntryStatusPr
       await claimBonusEntry(giveaway.id, 'instagram_post', postUrl);
       toast.success(`+${giveaway.instagram_post_bonus_entries} bonus entries added!`);
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to claim bonus entry');
     } finally {
       setClaimingPost(false);
     }

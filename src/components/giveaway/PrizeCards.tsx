@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
 import { Trophy, DollarSign, Gift } from 'lucide-react';
 
+interface Giveaway {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface PrizeCardsProps {
-  giveaway: any;
+  giveaway: Giveaway;
 }
 
 export default function PrizeCards({ giveaway }: PrizeCardsProps) {
