@@ -229,6 +229,7 @@ export default function SignUpPage() {
         localStorage.setItem('tenant_admin_refresh_token', result.tokens.refresh_token);
         localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
         localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
+        localStorage.setItem('lastTenantSlug', tenant.slug); // Store for LoginDirectory redirect
         logger.info('[SIGNUP] Tokens stored', { slug: tenant.slug });
       } else {
         logger.warn('[SIGNUP] No tokens returned');
