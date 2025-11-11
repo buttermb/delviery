@@ -22,6 +22,28 @@ import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
+interface WhitelistEntry {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface AccessLog {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface MenuOrder {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface SecurityAlert {
+  id: string;
+  event_type?: string;
+  created_at: string;
+  [key: string]: unknown;
+}
+
 interface Menu {
   id: string;
   name: string;
@@ -35,9 +57,9 @@ interface Menu {
   max_order_quantity?: number;
   expiration_date?: string;
   never_expires?: boolean;
-  menu_access_whitelist?: any[];
-  menu_access_logs?: any[];
-  menu_orders?: any[];
+  menu_access_whitelist?: WhitelistEntry[];
+  menu_access_logs?: AccessLog[];
+  menu_orders?: MenuOrder[];
 }
 
 export function EnhancedMenuDashboard() {
@@ -186,7 +208,7 @@ export function EnhancedMenuDashboard() {
           <AlertDescription>
             <div className="space-y-2">
               <strong>🚨 Recent Security Alerts:</strong>
-              {recentAlerts.slice(0, 3).map((alert: any) => (
+              {recentAlerts.slice(0, 3).map((alert: SecurityAlert) => (
                 <div key={alert.id} className="text-sm">
                   • {alert.event_type?.replace(/_/g, ' ')} - {format(new Date(alert.created_at), 'MMM d, h:mm a')}
                 </div>

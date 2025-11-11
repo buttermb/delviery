@@ -19,6 +19,13 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface WhitelistEntry {
+  id: string;
+  unique_access_token?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
 interface EnhancedInviteSystemProps {
   menuId: string;
   menu: {
@@ -26,7 +33,7 @@ interface EnhancedInviteSystemProps {
     encrypted_url_token: string;
     access_code?: string;
   };
-  whitelist: any[];
+  whitelist: WhitelistEntry[];
   onInviteSent: () => void;
 }
 
@@ -104,13 +111,13 @@ export function EnhancedInviteSystem({
           }
 
           // Log invitation
-          await (supabase as any).from('invitations').insert(invitationData);
+          await supabase.from('invitations').insert(invitationData);
         } else if (inviteMethod === 'email' && customer.email) {
           // Email sending would go here (via edge function)
-          await (supabase as any).from('invitations').insert(invitationData);
+          await supabase.from('invitations').insert(invitationData);
         } else if (inviteMethod === 'signal' || inviteMethod === 'telegram') {
           // Encrypted messaging integration would go here
-          await (supabase as any).from('invitations').insert(invitationData);
+          await supabase.from('invitations').insert(invitationData);
           toast.info(`${inviteMethod === 'signal' ? 'Signal' : 'Telegram'} integration coming soon`);
         }
 
@@ -128,9 +135,9 @@ export function EnhancedInviteSystem({
       setManualCustomer({ name: '', phone: '', email: '' });
       setCustomMessage('');
       onInviteSent();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Invite error:', error);
-      toast.error(error.message || 'Failed to send invites');
+      toast.error(error instanceof Error ? error.message : 'Failed to send invites');
     } finally {
       setSending(false);
     }
@@ -153,7 +160,7 @@ export function EnhancedInviteSystem({
       {/* Invite Method Selection */}
       <div className="space-y-3">
         <Label>Invitation Method</Label>
-        <RadioGroup value={inviteMethod} onValueChange={(v: any) => setInviteMethod(v)}>
+        <RadioGroup value={inviteMethod} onValueChange={(v: string) => setInviteMethod(v as 'sms' | 'signal' | 'telegram' | 'email' | 'manual')}>
           <div className="flex items-start space-x-2 rounded-lg border p-3">
             <RadioGroupItem value="sms" id="sms" />
             <div className="flex-1">
