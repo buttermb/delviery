@@ -8,7 +8,7 @@ export async function showServiceWorkerNotification(
     tag?: string;
     icon?: string;
     badge?: string;
-    data?: any;
+    data?: unknown;
     requireInteraction?: boolean;
   }
 ) {

@@ -7,8 +7,16 @@ import { cn } from "@/lib/utils";
 import { haptics } from "@/utils/haptics";
 import { motion } from "framer-motion";
 
+interface Product {
+  id: string;
+  name: string;
+  price?: number;
+  image_url?: string | null;
+  [key: string]: unknown;
+}
+
 interface AnimatedProductCardProps {
-  product: any;
+  product: Product;
   onAddToCart: () => void;
   onQuickView: () => void;
 }

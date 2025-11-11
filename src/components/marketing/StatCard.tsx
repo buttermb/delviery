@@ -9,7 +9,9 @@ interface StatCardProps {
   icon?: string;
 }
 
-const iconMap: { [key: string]: any } = {
+import type { LucideIcon } from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
   'Distributors': Users,
   'Orders/Month': DollarSign,
   'Saved/Week': Clock,
