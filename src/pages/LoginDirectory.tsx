@@ -148,7 +148,19 @@ export default function LoginDirectory() {
 
                     {/* Action Button */}
                     <div className="flex flex-col gap-3">
-                      <Link to={portal.loginUrl}>
+                      <Link 
+                        to={portal.loginUrl} 
+                        onClick={(e) => {
+                          // For business owner login, check if we have a saved tenant
+                          if (portal.title === "Business Owner") {
+                            const lastTenant = localStorage.getItem('lastTenantSlug');
+                            if (lastTenant) {
+                              e.preventDefault();
+                              window.location.href = `/${lastTenant}/admin/login`;
+                            }
+                          }
+                        }}
+                      >
                         <Button size="lg" className="w-full">
                           {portal.buttonText}
                           <ArrowRight className="ml-2 h-4 w-4" />

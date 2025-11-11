@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { logger } from '@/utils/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import {
   Form,
   FormControl,
@@ -60,7 +61,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      // Sign in with Supabase Auth
+      // Sign in with Supabase Auth first to validate credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -92,13 +93,41 @@ export default function LoginPage() {
         throw new Error('Invalid tenant configuration');
       }
 
+      // Call tenant-admin-auth to set up complete authentication
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          tenantSlug: tenant.slug,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Login failed');
+      }
+
+      const authResponse = await response.json();
+
+      // Store authentication data
+      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
+      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN, authResponse.refresh_token);
+      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(authResponse.admin));
+      localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(authResponse.tenant));
+      localStorage.setItem('lastTenantSlug', tenant.slug);
+
       toast({
         title: 'Welcome back!',
         description: 'Redirecting to your dashboard...',
       });
 
       // Redirect to tenant admin dashboard
-      navigate(`/${tenant.slug}/admin/dashboard`);
+      window.location.href = `/${tenant.slug}/admin/dashboard`;
     } catch (error: any) {
       logger.error('Login error', error);
       toast({
