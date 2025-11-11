@@ -40,6 +40,15 @@ export async function generateAndStoreBarcode(
       throw error;
     }
 
+    // Check for error in response body (some edge functions return 200 with error)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'Barcode generation failed';
+      logger.error('Barcode generation returned error in response', { error: errorMessage, sku, tenantId }, {
+        component: 'barcodeStorage',
+      });
+      throw new Error(errorMessage);
+    }
+
     if (!data?.barcode_url) {
       throw new Error('Barcode generation returned no URL');
     }

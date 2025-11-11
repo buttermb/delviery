@@ -20,9 +20,11 @@ import {
 } from "@/components/ui/select";
 import { 
   Edit, Trash2, Eye, EyeOff, Copy, Tag, 
-  DollarSign, Package, TrendingUp, TrendingDown 
+  DollarSign, Package, TrendingUp, TrendingDown, Loader2
 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -56,30 +58,46 @@ export function EnhancedBulkActions({
   const [priceDialogOpen, setPriceDialogOpen] = useState(false);
   const [stockDialogOpen, setStockDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isAdjustingPrice, setIsAdjustingPrice] = useState(false);
+  const [isSettingStock, setIsSettingStock] = useState(false);
 
   const selectedProductsData = products.filter((p) =>
     selectedProducts.includes(p.id)
   );
 
   const handleBulkPriceAdjustment = async () => {
-    const percent = parseFloat(adjustmentPercent);
-    if (isNaN(percent)) return;
+    if (isAdjustingPrice) return;
 
-    const multiplier = priceAdjustment === "increase" ? 1 + percent / 100 : 1 - percent / 100;
-    
-    // Update each product individually with their calculated price
-    for (const id of selectedProducts) {
-      const product = products.find((p) => p.id === id);
-      if (product) {
-        const price = Number(product.price) || 0;
-        const newPrice = Math.max(0.01, price * multiplier);
-        await onIndividualUpdate(id, { price: parseFloat(newPrice.toFixed(2)) });
-      }
+    const percent = parseFloat(adjustmentPercent);
+    if (isNaN(percent)) {
+      toast.error("Please enter a valid percentage");
+      return;
     }
-    
-    // Close dialog and reset
-    setPriceDialogOpen(false);
-    setAdjustmentPercent("");
+
+    setIsAdjustingPrice(true);
+    try {
+      const multiplier = priceAdjustment === "increase" ? 1 + percent / 100 : 1 - percent / 100;
+      
+      // Update each product individually with their calculated price
+      for (const id of selectedProducts) {
+        const product = products.find((p) => p.id === id);
+        if (product) {
+          const price = Number(product.price) || 0;
+          const newPrice = Math.max(0.01, price * multiplier);
+          await onIndividualUpdate(id, { price: parseFloat(newPrice.toFixed(2)) });
+        }
+      }
+      
+      toast.success(`Price adjustment applied to ${selectedProducts.length} product(s)`);
+      setPriceDialogOpen(false);
+      setAdjustmentPercent("");
+    } catch (error: unknown) {
+      logger.error('Bulk price adjustment failed', error, { component: 'EnhancedBulkActions' });
+      toast.error(error instanceof Error ? error.message : 'Failed to adjust prices');
+    } finally {
+      setIsAdjustingPrice(false);
+    }
   };
 
   const totalValue = selectedProductsData.reduce(
@@ -105,18 +123,62 @@ export function EnhancedBulkActions({
           <Button
             size="sm"
             variant="secondary"
-            onClick={async () => await onBulkUpdate({ in_stock: true })}
+            disabled={isUpdating}
+            onClick={async () => {
+              if (isUpdating) return;
+              setIsUpdating(true);
+              try {
+                await onBulkUpdate({ in_stock: true });
+                toast.success(`${selectedCount} product(s) are now visible`);
+              } catch (error: unknown) {
+                logger.error('Bulk show failed', error, { component: 'EnhancedBulkActions' });
+                toast.error(error instanceof Error ? error.message : 'Failed to show products');
+              } finally {
+                setIsUpdating(false);
+              }
+            }}
           >
-            <Eye className="mr-2 h-4 w-4" />
-            Show All
+            {isUpdating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Show All
+              </>
+            )}
           </Button>
           <Button
             size="sm"
             variant="secondary"
-            onClick={async () => await onBulkUpdate({ in_stock: false })}
+            disabled={isUpdating}
+            onClick={async () => {
+              if (isUpdating) return;
+              setIsUpdating(true);
+              try {
+                await onBulkUpdate({ in_stock: false });
+                toast.success(`${selectedCount} product(s) are now hidden`);
+              } catch (error: unknown) {
+                logger.error('Bulk hide failed', error, { component: 'EnhancedBulkActions' });
+                toast.error(error instanceof Error ? error.message : 'Failed to hide products');
+              } finally {
+                setIsUpdating(false);
+              }
+            }}
           >
-            <EyeOff className="mr-2 h-4 w-4" />
-            Hide All
+            {isUpdating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Hide All
+              </>
+            )}
           </Button>
 
           {/* Bulk Price Adjustment */}
@@ -187,8 +249,19 @@ export function EnhancedBulkActions({
                   )}
                 </div>
 
-                <Button onClick={handleBulkPriceAdjustment} className="w-full">
-                  Apply to {selectedCount} Products
+                <Button 
+                  onClick={handleBulkPriceAdjustment} 
+                  className="w-full"
+                  disabled={isAdjustingPrice}
+                >
+                  {isAdjustingPrice ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Applying...
+                    </>
+                  ) : (
+                    `Apply to ${selectedCount} Products`
+                  )}
                 </Button>
               </div>
             </DialogContent>
@@ -221,16 +294,38 @@ export function EnhancedBulkActions({
                 </div>
                 <Button
                   onClick={async () => {
+                    if (isSettingStock) return;
+                    
                     const stock = parseInt(bulkStock);
-                    if (!isNaN(stock) && stock >= 0) {
+                    if (isNaN(stock) || stock < 0) {
+                      toast.error("Please enter a valid stock quantity");
+                      return;
+                    }
+
+                    setIsSettingStock(true);
+                    try {
                       await onBulkUpdate({ stock_quantity: stock, in_stock: stock > 0 });
+                      toast.success(`Stock updated for ${selectedCount} product(s)`);
                       setBulkStock("");
                       setStockDialogOpen(false);
+                    } catch (error: unknown) {
+                      logger.error('Bulk stock update failed', error, { component: 'EnhancedBulkActions' });
+                      toast.error(error instanceof Error ? error.message : 'Failed to update stock');
+                    } finally {
+                      setIsSettingStock(false);
                     }
                   }}
                   className="w-full"
+                  disabled={isSettingStock}
                 >
-                  Apply to All
+                  {isSettingStock ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Apply to All"
+                  )}
                 </Button>
               </div>
             </DialogContent>

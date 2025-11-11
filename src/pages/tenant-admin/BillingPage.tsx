@@ -49,8 +49,19 @@ export default function TenantAdminBillingPage() {
           body: { action: 'list', tenant_id: tenantId },
         });
 
+        // Check for error in response body (some edge functions return 200 with error)
+        if (edgeData && typeof edgeData === 'object' && 'error' in edgeData && edgeData.error) {
+          const errorMessage = typeof edgeData.error === 'string' ? edgeData.error : 'Failed to load invoices';
+          logger.error('Edge function returned error in response', { error: errorMessage, functionName: 'invoice-management' }, 'BillingPage');
+          throw new Error(errorMessage);
+        }
+
         if (!edgeError && edgeData?.invoices) {
           return edgeData.invoices;
+        }
+
+        if (edgeError) {
+          throw edgeError;
         }
       } catch (error) {
         logger.debug('Edge function call failed, falling back to direct query', { error }, 'BillingPage');
@@ -122,6 +133,13 @@ export default function TenantAdminBillingPage() {
       });
       
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update subscription';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: (data) => {
@@ -206,6 +224,12 @@ export default function TenantAdminBillingPage() {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to open customer portal';
+        throw new Error(errorMessage);
+      }
       
       if (data?.url) {
         window.open(data.url, '_blank');

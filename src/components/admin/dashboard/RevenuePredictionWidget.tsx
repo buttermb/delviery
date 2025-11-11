@@ -59,6 +59,13 @@ export function RevenuePredictionWidget() {
       });
 
       if (fnError) throw fnError;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to get revenue predictions';
+        throw new Error(errorMessage);
+      }
+
       if (!data) throw new Error('No prediction data returned');
 
       return data;

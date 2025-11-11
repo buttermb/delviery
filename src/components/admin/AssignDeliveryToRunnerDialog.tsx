@@ -69,6 +69,12 @@ export const AssignDeliveryToRunnerDialog = ({
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to assign delivery';
+        throw new Error(errorMessage);
+      }
+
       showSuccessToast(
         "Delivery Assigned",
         `Order has been assigned to ${runnerName}`

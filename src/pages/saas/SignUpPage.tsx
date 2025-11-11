@@ -194,6 +194,12 @@ export default function SignUpPage() {
         throw new Error(error.message || 'Failed to create account');
       }
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to create account';
+        throw new Error(errorMessage);
+      }
+
       if (!result || !result.success) {
         throw new Error(result?.error || 'Failed to create account. Please try again.');
       }

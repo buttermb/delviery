@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ShoppingCart, Lock, Plus, Minus, Search, Filter, Package } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Lock, Plus, Minus, Search, Filter, Package, Loader2 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "@/hooks/use-toast";
@@ -27,6 +27,7 @@ export default function CustomerMenuViewPage() {
   const { addToGuestCart } = useGuestCart();
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
+  const [addingToCart, setAddingToCart] = useState<Record<string, boolean>>({});
 
   // Get current user session
   useEffect(() => {
@@ -336,6 +337,9 @@ export default function CustomerMenuViewPage() {
                             <Button
                               size="sm"
                               onClick={async () => {
+                                if (addingToCart[product.id]) return;
+
+                                setAddingToCart(prev => ({ ...prev, [product.id]: true }));
                                 try {
                                   const selectedWeight = "unit"; // Default weight, can be enhanced later
                                   
@@ -371,24 +375,39 @@ export default function CustomerMenuViewPage() {
                                     const { [product.id]: _, ...rest } = prev;
                                     return rest;
                                   });
-                                } catch (error: any) {
+                                } catch (error: unknown) {
                                   toast({
                                     title: "Error",
-                                    description: error.message || "Failed to add item to cart",
+                                    description: error instanceof Error ? error.message : "Failed to add item to cart",
                                     variant: "destructive",
                                   });
+                                } finally {
+                                  setAddingToCart(prev => ({ ...prev, [product.id]: false }));
                                 }
                               }}
+                              disabled={addingToCart[product.id]}
                               className="flex-1 bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                             >
-                              <ShoppingCart className="h-4 w-4 mr-2" />
-                              Add to Cart
+                              {addingToCart[product.id] ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Adding...
+                                </>
+                              ) : (
+                                <>
+                                  <ShoppingCart className="h-4 w-4 mr-2" />
+                                  Add to Cart
+                                </>
+                              )}
                             </Button>
                           </>
                         ) : (
                           <Button
                             size="sm"
                             onClick={async () => {
+                              if (addingToCart[product.id]) return;
+
+                              setAddingToCart(prev => ({ ...prev, [product.id]: true }));
                               try {
                                 const selectedWeight = "unit";
                                 const quantity = 1;
@@ -415,18 +434,30 @@ export default function CustomerMenuViewPage() {
                                   title: "Added to cart",
                                   description: `${product.name} added to your cart`,
                                 });
-                              } catch (error: any) {
+                              } catch (error: unknown) {
                                 toast({
                                   title: "Error",
-                                  description: error.message || "Failed to add item to cart",
+                                  description: error instanceof Error ? error.message : "Failed to add item to cart",
                                   variant: "destructive",
                                 });
+                              } finally {
+                                setAddingToCart(prev => ({ ...prev, [product.id]: false }));
                               }
                             }}
+                            disabled={addingToCart[product.id]}
                             className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white"
                           >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            Add to Cart
+                            {addingToCart[product.id] ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Adding...
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                Add to Cart
+                              </>
+                            )}
                           </Button>
                         )}
                       </div>

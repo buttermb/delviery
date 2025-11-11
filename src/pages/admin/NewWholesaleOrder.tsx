@@ -73,6 +73,12 @@ export default function NewWholesaleOrder() {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to create wholesale order';
+        throw new Error(errorMessage);
+      }
+
       showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
       navigate('/admin/wholesale-dashboard');
     } catch (error) {

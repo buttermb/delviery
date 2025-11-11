@@ -61,6 +61,11 @@ export async function submitGiveawayEntry(
     if (emailError) {
       throw new Error('Email validation failed');
     }
+
+    // Check for error in response body (some edge functions return 200 with error)
+    if (emailResult && typeof emailResult === 'object' && 'error' in emailResult && emailResult.error) {
+      throw new Error(typeof emailResult.error === 'string' ? emailResult.error : 'Email validation failed');
+    }
     
     if (!emailResult?.valid) {
       throw new Error(emailResult?.reason || 'Invalid email address');
@@ -73,6 +78,11 @@ export async function submitGiveawayEntry(
     
     if (phoneError) {
       throw new Error('Phone validation failed');
+    }
+
+    // Check for error in response body (some edge functions return 200 with error)
+    if (phoneResult && typeof phoneResult === 'object' && 'error' in phoneResult && phoneResult.error) {
+      throw new Error(typeof phoneResult.error === 'string' ? phoneResult.error : 'Phone validation failed');
     }
     
     if (!phoneResult?.valid) {

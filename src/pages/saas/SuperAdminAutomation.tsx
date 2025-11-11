@@ -121,6 +121,12 @@ export default function SuperAdminAutomation() {
         throw new Error(error.message || 'Failed to execute rule');
       }
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to execute rule';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: '✅ Rule executed',
         description: data?.message || 'Automation rule completed successfully',

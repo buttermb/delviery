@@ -133,11 +133,17 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke('customer-chat', {
+      const { data, error } = await supabase.functions.invoke('customer-chat', {
         body: { sessionId, message: userMessage, mode }
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send message';
+        throw new Error(errorMessage);
+      }
 
     } catch (error) {
       logger.error('Error sending message', error as Error, 'LiveChatWidget');

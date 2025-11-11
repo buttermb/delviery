@@ -70,6 +70,38 @@ export async function callAdminFunction<T = any>({
       return { data: null, error };
     }
 
+    // Check if response contains an error message (some edge functions return 200 with error in body)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'Operation failed';
+      const errorObj = new Error(errorMessage);
+      
+      // Check if it's an auth error
+      if (errorMessage.toLowerCase().includes('unauthorized') || 
+          errorMessage.toLowerCase().includes('forbidden') ||
+          errorMessage.toLowerCase().includes('invalid token') ||
+          errorMessage.toLowerCase().includes('missing authorization') ||
+          errorMessage.toLowerCase().includes('no token')) {
+        errorObj.name = 'AuthError';
+        logger.error(`Auth error in ${functionName} response`, errorObj, 'adminFunctionHelper');
+      } else {
+        logger.error(`Error in ${functionName} response`, errorObj, 'adminFunctionHelper');
+      }
+      
+      bugFinder.reportEdgeFunctionError(
+        functionName,
+        errorObj,
+        { body, response: data, errorType: 'response_error' }
+      );
+      
+      if (showToast) {
+        toast.error(errorMessage, {
+          description: 'Please check your authentication and try again',
+        });
+      }
+      
+      return { data: null, error: errorObj };
+    }
+
     return { data: data as T, error: null };
   } catch (error: any) {
     logger.error(`Exception calling ${functionName}`, error, 'adminFunctionHelper');

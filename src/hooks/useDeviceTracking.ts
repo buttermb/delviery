@@ -39,6 +39,13 @@ export function useDeviceTracking() {
             return;
           }
 
+          // Check for error in response body (some edge functions return 200 with error)
+          if (data && typeof data === 'object' && 'error' in data && data.error) {
+            const errorMessage = typeof data.error === 'string' ? data.error : 'Device tracking failed';
+            console.error('Device tracking returned error in response:', errorMessage);
+            return;
+          }
+
           // If blocked, sign out and redirect
           if (data?.blocked) {
             await supabase.auth.signOut();

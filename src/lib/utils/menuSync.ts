@@ -50,6 +50,19 @@ export async function syncProductToMenus(
       };
     }
 
+    // Check for error in response body (some edge functions return 200 with error)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'Menu sync failed';
+      logger.error('Menu sync returned error in response', { error: errorMessage, productId, tenantId }, {
+        component: 'menuSync',
+      });
+      // Don't throw - allow product creation to succeed even if menu sync fails
+      return {
+        message: 'Menu sync failed (product created successfully)',
+        synced: false,
+      };
+    }
+
     return data || { message: 'Menu sync completed', synced: true };
   } catch (error) {
     logger.error('Menu sync error', error, {

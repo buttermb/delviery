@@ -34,6 +34,7 @@ export const STORAGE_KEYS = {
   // Cart
   GUEST_CART: 'guest_cart',
   CART_ITEMS: 'cart_items',
+  GUEST_CHECKOUT_DATA: 'guestCheckoutData',
   
   // Product catalog
   PRODUCT_CATALOG_SEARCH: 'product_catalog_search',

@@ -25,7 +25,7 @@ export function useDeliveryStatus() {
   };
 
   const updateRunnerDeliveryStatus = async (deliveryId: string, newStatus: string) => {
-    const { error } = await supabase.functions.invoke('wholesale-delivery-update', {
+    const { data, error } = await supabase.functions.invoke('wholesale-delivery-update', {
       body: {
         delivery_id: deliveryId,
         status: newStatus,
@@ -33,6 +33,12 @@ export function useDeliveryStatus() {
     });
 
     if (error) throw error;
+
+    // Check for error in response body (some edge functions return 200 with error)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update delivery status';
+      throw new Error(errorMessage);
+    }
   };
 
   const updateStatus = async (

@@ -1,0 +1,110 @@
+/**
+ * Button Monitor Integration
+ * Provides easy integration for existing buttons
+ */
+
+import { buttonMonitor } from './buttonMonitor';
+import { logger } from '@/lib/logger';
+
+/**
+ * Wrap an async function with button monitoring
+ */
+export function monitorButtonAction<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  component: string,
+  action: string,
+  buttonId?: string
+): T {
+  return (async (...args: Parameters<T>) => {
+    const id = buttonId || `${component}-${action}-${Date.now()}`;
+    const startTime = Date.now();
+    const complete = buttonMonitor.trackClick(id, component, action, startTime);
+
+    try {
+      const result = await fn(...args);
+      complete('success');
+      return result;
+    } catch (error) {
+      complete('error', error);
+      throw error;
+    }
+  }) as T;
+}
+
+/**
+ * Create a monitored button handler
+ */
+export function createMonitoredHandler(
+  handler: () => void | Promise<void>,
+  component: string,
+  action: string,
+  buttonId?: string
+): () => Promise<void> {
+  return monitorButtonAction(
+    async () => {
+      await handler();
+    },
+    component,
+    action,
+    buttonId
+  );
+}
+
+/**
+ * Log button health report to console (for debugging)
+ */
+export function logButtonHealthReport() {
+  const report = buttonMonitor.getHealthReport();
+  const broken = buttonMonitor.getBrokenButtons(0.3);
+
+  logger.info('Button Health Report', report, 'ButtonMonitor');
+
+  if (broken.length > 0) {
+    logger.warn(
+      `Found ${broken.length} broken buttons`,
+      { brokenButtons: broken.map((b) => `${b.component}.${b.action}`) },
+      'ButtonMonitor'
+    );
+  }
+
+  // Also log to console in development
+  if (import.meta.env.DEV) {
+    console.group('🔍 Button Health Report');
+    console.log('Total Buttons:', report.totalButtons);
+    console.log('Total Clicks:', report.totalClicks);
+    console.log('Success Rate:', `${Math.round(report.successRate * 100)}%`);
+    console.log('Error Rate:', `${Math.round(report.errorRate * 100)}%`);
+    console.log('Broken Buttons:', report.brokenButtons);
+    if (broken.length > 0) {
+      console.group('Broken Buttons');
+      broken.forEach((b) => {
+        const errorRate = b.totalClicks > 0 ? b.errorCount / b.totalClicks : 0;
+        console.error(
+          `${b.component}.${b.action}: ${Math.round(errorRate * 100)}% error rate (${b.errorCount}/${b.totalClicks})`
+        );
+        if (b.lastError) {
+          console.error('  Last Error:', b.lastError);
+        }
+      });
+      console.groupEnd();
+    }
+    console.groupEnd();
+  }
+
+  return report;
+}
+
+/**
+ * Auto-log button health on errors (call this in error boundaries)
+ */
+export function autoLogButtonHealth() {
+  // Log health report every 5 minutes
+  setInterval(() => {
+    const report = buttonMonitor.getHealthReport();
+    if (report.errorRate > 0.1) {
+      // Only log if error rate is significant
+      logButtonHealthReport();
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+}
+

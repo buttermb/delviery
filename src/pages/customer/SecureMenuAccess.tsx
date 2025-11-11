@@ -87,6 +87,14 @@ const SecureMenuAccess = () => {
         }
       });
 
+      if (validateError) throw validateError;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Menu access validation failed';
+        throw new Error(errorMessage);
+      }
+
       // Handle response (including 403 errors with violation details)
       if (data) {
         if (data.access_granted) {

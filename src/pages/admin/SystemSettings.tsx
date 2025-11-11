@@ -164,9 +164,15 @@ const SystemSettings = () => {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Database operation failed';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: "Success",
-        description: data.message,
+        description: data?.message || 'Operation completed successfully',
       });
     } catch (error) {
       logger.error('Database operation error', error, { component: 'SystemSettings' });
@@ -188,9 +194,15 @@ const SystemSettings = () => {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Database backup failed';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: "Backup Initiated",
-        description: data.message,
+        description: data?.message || 'Backup started successfully',
       });
     } catch (error) {
       logger.error('Database backup error', error, { component: 'SystemSettings' });

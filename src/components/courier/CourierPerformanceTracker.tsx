@@ -26,6 +26,13 @@ export default function CourierPerformanceTracker() {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to get performance stats';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     refetchInterval: 60000, // Update every minute

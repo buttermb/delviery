@@ -45,7 +45,18 @@ export default function InvitationAcceptPage() {
         }
       });
 
-      if (inviteError || !data?.invitation) {
+      if (inviteError) {
+        setError('This invitation is invalid or has expired');
+        return;
+      }
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        setError(typeof data.error === 'string' ? data.error : 'This invitation is invalid or has expired');
+        return;
+      }
+
+      if (!data?.invitation) {
         setError('This invitation is invalid or has expired');
         return;
       }
@@ -93,6 +104,12 @@ export default function InvitationAcceptPage() {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to accept invitation';
+        throw new Error(errorMessage);
+      }
 
       toast({
         title: 'Success!',

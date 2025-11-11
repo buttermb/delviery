@@ -45,6 +45,13 @@ export const useCreateWholesaleOrder = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to create wholesale order';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -68,6 +75,13 @@ export const useProcessPayment = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to process payment';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -91,6 +105,13 @@ export const useAssignDelivery = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to assign delivery';
+        throw new Error(errorMessage);
+      }
+
       return result;
     },
     onSuccess: () => {
@@ -115,6 +136,13 @@ export const useUpdateDeliveryStatus = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to update delivery';
+        throw new Error(errorMessage);
+      }
+
       return result;
     },
     onSuccess: () => {

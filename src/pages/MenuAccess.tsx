@@ -144,6 +144,12 @@ export default function MenuAccess() {
 
       if (validationError) throw validationError;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Menu access validation failed';
+        throw new Error(errorMessage);
+      }
+
       logger.debug('Validation response', {
         access_granted: data?.access_granted,
         products_count: data?.menu_data?.products?.length

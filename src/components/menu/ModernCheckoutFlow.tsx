@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Check, ChevronRight, ChevronLeft, ShoppingBag, Truck, CreditCard, FileCheck, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { logger } from '@/lib/logger';
+import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 
 interface ModernCheckoutFlowProps {
   open: boolean;
@@ -57,13 +59,11 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
 
   // Load saved data from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('guestCheckoutData');
+    const saved = safeStorage.getItem(STORAGE_KEYS.GUEST_CHECKOUT_DATA);
     if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
+      const parsed = safeJsonParse(saved, {});
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         setFormData(prev => ({ ...prev, ...parsed }));
-      } catch (e) {
-        console.error('Failed to parse saved checkout data');
       }
     }
   }, []);
@@ -79,7 +79,10 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
       deliveryState: formData.deliveryState,
       deliveryZip: formData.deliveryZip,
     };
-    localStorage.setItem('guestCheckoutData', JSON.stringify(dataToSave));
+    const jsonData = safeJsonStringify(dataToSave);
+    if (jsonData) {
+      safeStorage.setItem(STORAGE_KEYS.GUEST_CHECKOUT_DATA, jsonData);
+    }
   }, [formData]);
 
   const steps: { id: CheckoutStep; label: string; icon: any }[] = [
@@ -188,21 +191,32 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
       setOrderConfirmed(true);
       clearCart();
 
-      // Send notification
+      // Send notification (fire-and-forget, but still check for errors)
       supabase.functions.invoke('notify-order-placed', {
         body: { orderId: order.id },
-      }).catch(err => console.error('Notification error:', err));
+      }).then(({ data, error }) => {
+        if (error) {
+          logger.error('Notification error', error, { component: 'ModernCheckoutFlow', orderId: order.id });
+          return;
+        }
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          logger.error('Notification returned error in response', new Error(String(data.error)), { component: 'ModernCheckoutFlow', orderId: order.id });
+        }
+      }).catch((err: unknown) => {
+        logger.error('Notification error', err instanceof Error ? err : new Error(String(err)), { component: 'ModernCheckoutFlow', orderId: order.id });
+      });
 
       toast({
         title: 'Order Placed Successfully! 🎉',
         description: `Order #${order.id.slice(0, 8)} has been confirmed`,
       });
-    } catch (error: any) {
-      console.error('Order submission error:', error);
+    } catch (error: unknown) {
+      logger.error('Order submission error', error instanceof Error ? error : new Error(String(error)), { component: 'ModernCheckoutFlow', menuId });
       toast({
         variant: 'destructive',
         title: 'Order Failed',
-        description: error.message || 'Failed to place order',
+        description: error instanceof Error ? error.message : 'Failed to place order',
       });
     } finally {
       setLoading(false);

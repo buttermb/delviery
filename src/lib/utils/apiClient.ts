@@ -96,6 +96,29 @@ export async function edgeFunctionRequest(
     throw new Error(error.error || error.message || "Request failed");
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // Check if response contains an error message (some edge functions return 200 with error in body)
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    const errorMessage = typeof data.error === 'string' ? data.error : 'Request failed';
+    const errorObj = new Error(errorMessage);
+    
+    // Check if it's an auth error
+    if (errorMessage.toLowerCase().includes('unauthorized') || 
+        errorMessage.toLowerCase().includes('forbidden') ||
+        errorMessage.toLowerCase().includes('invalid token') ||
+        errorMessage.toLowerCase().includes('missing authorization') ||
+        errorMessage.toLowerCase().includes('no token')) {
+      errorObj.name = 'AuthError';
+      emitAuthError({
+        message: errorMessage,
+        code: errorMessage.toLowerCase().includes('forbidden') ? 'FORBIDDEN' : 'UNAUTHORIZED',
+      });
+    }
+    
+    throw errorObj;
+  }
+
+  return data;
 }
 

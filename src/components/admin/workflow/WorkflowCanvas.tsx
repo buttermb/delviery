@@ -306,9 +306,15 @@ export function WorkflowCanvas() {
 
       if (execError) throw execError;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (result && typeof result === 'object' && 'error' in result && result.error) {
+        const errorMessage = typeof result.error === 'string' ? result.error : 'Workflow execution failed';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: 'Workflow executed',
-        description: `Status: ${result.status}`,
+        description: `Status: ${result?.status || 'completed'}`,
       });
     } catch (error: any) {
       toast({

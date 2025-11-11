@@ -41,9 +41,11 @@ import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { BetaBanner } from "./components/shared/BetaBanner";
+import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
+const ButtonMonitorPage = lazy(() => import("./pages/debug/ButtonMonitorPage"));
 
 // Marketing & Public Pages
 const MarketingHome = lazy(() => import("./pages/MarketingHome"));
@@ -262,6 +264,11 @@ const queryClient = new QueryClient({
 setupGlobalErrorHandlers();
 
 const App = () => {
+  // Initialize global button monitoring
+  useEffect(() => {
+    initializeGlobalButtonMonitoring();
+  }, []);
+
   // Run production health check on mount
   useEffect(() => {
     if (import.meta.env.PROD) {
@@ -356,6 +363,9 @@ const App = () => {
                         <Route path="/m/:token" element={<SecureMenuAccess />} />
                         <Route path="/m/:token/view" element={<SecureMenuView />} />
                         <Route path="/menu/:token" element={<MenuAccess />} />
+                        
+                        {/* Debug Routes */}
+                        <Route path="/debug/button-monitor" element={<ButtonMonitorPage />} />
                         
                         {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                         <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />

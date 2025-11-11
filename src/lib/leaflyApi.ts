@@ -56,6 +56,12 @@ export async function fetchLeaflySuggestions(
       return [];
     }
 
+    // Check for error in response body (some edge functions return 200 with error)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      logger.warn("Leafly API returned error in response (using local fallback)", { error: data.error, query, type }, { component: "leaflyApi" });
+      return [];
+    }
+
     const suggestions = data?.suggestions?.map(s => s.name) || [];
     
     // Cache the results

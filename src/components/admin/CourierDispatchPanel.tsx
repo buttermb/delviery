@@ -85,6 +85,12 @@ export const CourierDispatchPanel = ({
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to assign courier';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: '✓ Courier Assigned',
         description: `${data?.courier?.full_name || 'Courier'} has been assigned to this order`

@@ -100,6 +100,12 @@ export default function TeamManagement() {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send invitation';
+        throw new Error(errorMessage);
+      }
+
       toast({
         title: 'Invitation Sent',
         description: `Invitation sent to ${formData.email}. They can accept it to join your team.`
@@ -130,6 +136,12 @@ export default function TeamManagement() {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to load invitations';
+        throw new Error(errorMessage);
+      }
 
       setPendingInvitations(data?.invitations || []);
     } catch (error) {

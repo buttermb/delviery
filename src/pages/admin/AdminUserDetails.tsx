@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { ArrowLeft, AlertTriangle, Ban, Lock, CheckCircle, Monitor, Globe, History, ShieldAlert } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 export default function AdminUserDetails() {
   const { id } = useParams();
@@ -71,8 +72,8 @@ export default function AdminUserDetails() {
         addresses: addresses || [],
         orders: orders || [],
       });
-    } catch (error: any) {
-      console.error("Error fetching user:", error);
+    } catch (error: unknown) {
+      logger.error("Error fetching user", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
       toast.error("Failed to load user details");
     } finally {
       setLoading(false);
@@ -86,7 +87,7 @@ export default function AdminUserDetails() {
       });
 
       if (error) {
-        console.error("Error assessing risk:", error);
+        logger.error("Error assessing risk", error, { component: 'AdminUserDetails', userId: id });
         // Use profile risk_score as fallback
         setRiskAssessment({
           score: user?.risk_score || 50,
@@ -95,9 +96,22 @@ export default function AdminUserDetails() {
         });
         return;
       }
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        logger.error("Risk assessment returned error in response", new Error(String(data.error)), { component: 'AdminUserDetails', userId: id });
+        // Use profile risk_score as fallback
+        setRiskAssessment({
+          score: user?.risk_score || 50,
+          level: user?.trust_level || 'new',
+          factors: [],
+        });
+        return;
+      }
+
       setRiskAssessment(data);
-    } catch (error: any) {
-      console.error("Exception assessing risk:", error);
+    } catch (error: unknown) {
+      logger.error("Exception assessing risk", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
       setRiskAssessment({
         score: user?.risk_score || 50,
         level: user?.trust_level || 'new',
@@ -117,8 +131,8 @@ export default function AdminUserDetails() {
 
       if (error) throw error;
       setFraudFlags(data || []);
-    } catch (error: any) {
-      console.error("Error fetching fraud flags:", error);
+    } catch (error: unknown) {
+      logger.error("Error fetching fraud flags", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
     }
   };
 
@@ -141,8 +155,8 @@ export default function AdminUserDetails() {
 
       toast.success(`Account ${status} successfully`);
       fetchUserDetails();
-    } catch (error: any) {
-      console.error("Error updating account:", error);
+    } catch (error: unknown) {
+      logger.error("Error updating account", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, status });
       toast.error("Failed to update account status");
     }
   };
@@ -163,8 +177,8 @@ export default function AdminUserDetails() {
 
       toast.success("Limit updated successfully");
       fetchUserDetails();
-    } catch (error: any) {
-      console.error("Error updating limit:", error);
+    } catch (error: unknown) {
+      logger.error("Error updating limit", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, limitType });
       toast.error("Failed to update limit");
     }
   };
@@ -179,8 +193,8 @@ export default function AdminUserDetails() {
 
       if (error) throw error;
       setDevices(data || []);
-    } catch (error: any) {
-      console.error("Error fetching devices:", error);
+    } catch (error: unknown) {
+      logger.error("Error fetching devices", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
     }
   };
 
@@ -194,8 +208,8 @@ export default function AdminUserDetails() {
 
       if (error) throw error;
       setIpAddresses(data || []);
-    } catch (error: any) {
-      console.error("Error fetching IP addresses:", error);
+    } catch (error: unknown) {
+      logger.error("Error fetching IP addresses", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
     }
   };
 
@@ -210,8 +224,8 @@ export default function AdminUserDetails() {
 
       if (error) throw error;
       setAccountLogs(data || []);
-    } catch (error: any) {
-      console.error("Error fetching account logs:", error);
+    } catch (error: unknown) {
+      logger.error("Error fetching account logs", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id });
     }
   };
 
@@ -246,8 +260,8 @@ export default function AdminUserDetails() {
 
       toast.success("Device blocked successfully");
       fetchDevices();
-    } catch (error: any) {
-      console.error("Error blocking device:", error);
+    } catch (error: unknown) {
+      logger.error("Error blocking device", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, fingerprint });
       toast.error("Failed to block device");
     }
   };
@@ -282,8 +296,8 @@ export default function AdminUserDetails() {
 
       toast.success("IP address blocked successfully");
       fetchIpAddresses();
-    } catch (error: any) {
-      console.error("Error blocking IP:", error);
+    } catch (error: unknown) {
+      logger.error("Error blocking IP", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, ipAddress });
       toast.error("Failed to block IP address");
     }
   };
@@ -309,8 +323,8 @@ export default function AdminUserDetails() {
 
       toast.success("Device unblocked");
       fetchDevices();
-    } catch (error: any) {
-      console.error("Error unblocking device:", error);
+    } catch (error: unknown) {
+      logger.error("Error unblocking device", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, fingerprint });
       toast.error("Failed to unblock device");
     }
   };
@@ -334,8 +348,8 @@ export default function AdminUserDetails() {
 
       toast.success("IP address unblocked");
       fetchIpAddresses();
-    } catch (error: any) {
-      console.error("Error unblocking IP:", error);
+    } catch (error: unknown) {
+      logger.error("Error unblocking IP", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, ipAddress });
       toast.error("Failed to unblock IP");
     }
   };
@@ -355,8 +369,8 @@ export default function AdminUserDetails() {
       toast.success("Fraud flag resolved");
       fetchFraudFlags();
       fetchRiskAssessment();
-    } catch (error: any) {
-      console.error("Error resolving flag:", error);
+    } catch (error: unknown) {
+      logger.error("Error resolving flag", error instanceof Error ? error : new Error(String(error)), { component: 'AdminUserDetails', userId: id, flagId });
       toast.error("Failed to resolve fraud flag");
     }
   };

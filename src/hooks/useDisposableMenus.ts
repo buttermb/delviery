@@ -52,6 +52,13 @@ export const useCreateDisposableMenu = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to create menu';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -81,6 +88,13 @@ export const useBurnMenu = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to burn menu';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: (data) => {
@@ -139,6 +153,13 @@ export const useManageWhitelist = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to manage whitelist';
+        throw new Error(errorMessage);
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {

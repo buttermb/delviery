@@ -46,8 +46,14 @@ const AdminNotifications = () => {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send SMS';
+        throw new Error(errorMessage);
+      }
+
       toast.success("SMS sent successfully!", {
-        description: `Message ID: ${data.messageId || 'N/A'}`
+        description: `Message ID: ${data?.messageId || 'N/A'}`
       });
       
       // Clear form
@@ -86,6 +92,12 @@ const AdminNotifications = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send email';
+        throw new Error(errorMessage);
+      }
 
       toast.success("Email sent successfully!", {
         description: `Message ID: ${data.messageId || 'N/A'}`

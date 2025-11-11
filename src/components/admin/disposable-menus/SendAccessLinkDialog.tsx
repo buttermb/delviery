@@ -54,6 +54,12 @@ export function SendAccessLinkDialog({
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send access link';
+        throw new Error(errorMessage);
+      }
+
       setPreview(data.preview);
       
       toast({

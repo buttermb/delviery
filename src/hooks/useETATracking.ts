@@ -27,6 +27,12 @@ export const useETATracking = (orderId: string | null) => {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        // Fall through to fallback logic
+        throw new Error(typeof data.error === 'string' ? data.error : 'ETA calculation failed');
+      }
+
       setEta({
         eta_minutes: data.eta_minutes,
         distance_miles: parseFloat(data.distance_miles),

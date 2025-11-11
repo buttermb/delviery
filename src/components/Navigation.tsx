@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, ShoppingCart, User } from "lucide-react";
+import { Menu, ShoppingCart, User, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,8 @@ import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
 import type { Numeric } from "@/types/money";
 import { toNumber } from "@/utils/productTypeGuards";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -35,6 +37,7 @@ const Navigation = () => {
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [showCart, setShowCart] = useState(false);
   const [cartUpdateKey, setCartUpdateKey] = useState(0);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Force re-render when cart updates
   useEffect(() => {
@@ -275,11 +278,31 @@ const Navigation = () => {
                       </button>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={async () => {
-                      await signOut();
-                      navigate("/");
-                    }}>
-                      Sign Out
+                    <DropdownMenuItem 
+                      onClick={async () => {
+                        if (isSigningOut) return;
+                        setIsSigningOut(true);
+                        try {
+                          await signOut();
+                          navigate("/");
+                          toast.success("Signed out successfully");
+                        } catch (error: unknown) {
+                          logger.error('Sign out failed', error, { component: 'Navigation' });
+                          toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                        } finally {
+                          setIsSigningOut(false);
+                        }
+                      }}
+                      disabled={isSigningOut}
+                    >
+                      {isSigningOut ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing Out...
+                        </>
+                      ) : (
+                        "Sign Out"
+                      )}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -370,11 +393,29 @@ const Navigation = () => {
                         variant="outline" 
                         className="h-12 text-base touch-manipulation active:scale-95"
                         onClick={async () => {
-                          await signOut();
-                          navigate("/");
+                          if (isSigningOut) return;
+                          setIsSigningOut(true);
+                          try {
+                            await signOut();
+                            navigate("/");
+                            toast.success("Signed out successfully");
+                          } catch (error: unknown) {
+                            logger.error('Sign out failed', error, { component: 'Navigation' });
+                            toast.error(error instanceof Error ? error.message : 'Failed to sign out');
+                          } finally {
+                            setIsSigningOut(false);
+                          }
                         }}
+                        disabled={isSigningOut}
                       >
-                        Sign Out
+                        {isSigningOut ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Signing Out...
+                          </>
+                        ) : (
+                          "Sign Out"
+                        )}
                       </Button>
                     </>
                   ) : (

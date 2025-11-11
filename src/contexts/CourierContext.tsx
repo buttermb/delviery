@@ -209,6 +209,12 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update status';
+        throw new Error(errorMessage);
+      }
+
       setIsOnline(newStatus);
       setCourier(data.courier);
       
@@ -249,12 +255,19 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           logger.error('Courier location update error', error as Error, 'CourierContext');
           throw error;
-        } else {
-          logger.debug('Courier location updated successfully', undefined, 'CourierContext');
         }
+
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update location';
+          logger.error('Courier location update returned error in response', { error: errorMessage }, 'CourierContext');
+          throw new Error(errorMessage);
+        }
+
+        logger.debug('Courier location updated successfully', undefined, 'CourierContext');
       } else if (courier.role === 'runner') {
         // Update runner location via edge function (includes history logging)
-        const { error } = await supabase.functions.invoke('runner-location-update', {
+        const { data, error } = await supabase.functions.invoke('runner-location-update', {
           body: {
             runner_id: courier.id,
             latitude: lat,
@@ -267,6 +280,13 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           logger.error('Runner location update error', error as Error, 'CourierContext');
           throw error;
+        }
+
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update runner location';
+          logger.error('Runner location update returned error in response', { error: errorMessage }, 'CourierContext');
+          throw new Error(errorMessage);
         } else {
           logger.debug('Runner location updated successfully', undefined, 'CourierContext');
         }

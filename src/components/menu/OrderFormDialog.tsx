@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface OrderFormDialogProps {
   open: boolean;
@@ -73,10 +74,21 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
 
       if (orderError) throw orderError;
 
-      // Send order notifications
+      // Send order notifications (fire-and-forget, but still check for errors)
       supabase.functions.invoke('notify-order-placed', {
         body: { orderId: order.id },
-      }).catch(err => console.error('Notification error:', err));
+      }).then(({ data, error }) => {
+        if (error) {
+          logger.error('Notification error', error, { component: 'OrderFormDialog', orderId: order.id });
+          return;
+        }
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          logger.error('Notification returned error in response', new Error(String(data.error)), { component: 'OrderFormDialog', orderId: order.id });
+        }
+      }).catch((err: unknown) => {
+        logger.error('Notification error', err instanceof Error ? err : new Error(String(err)), { component: 'OrderFormDialog', orderId: order.id });
+      });
 
       // Clear cart and close
       clearCart();
@@ -86,12 +98,12 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
         title: 'Order Placed Successfully',
         description: 'Your order has been submitted. We\'ll contact you shortly.',
       });
-    } catch (error: any) {
-      console.error('Order submission error:', error);
+    } catch (error: unknown) {
+      logger.error('Order submission error', error instanceof Error ? error : new Error(String(error)), { component: 'OrderFormDialog', menuId });
       toast({
         variant: 'destructive',
         title: 'Order Failed',
-        description: error.message || 'Failed to place order. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to place order. Please try again.',
       });
     } finally {
       setLoading(false);

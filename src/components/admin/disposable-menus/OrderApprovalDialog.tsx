@@ -86,6 +86,12 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
 
       if (wholesaleError) throw wholesaleError;
 
+      // Check for error in response body (some edge functions return 200 with error)
+      if (wholesaleOrder && typeof wholesaleOrder === 'object' && 'error' in wholesaleOrder && wholesaleOrder.error) {
+        const errorMessage = typeof wholesaleOrder.error === 'string' ? wholesaleOrder.error : 'Failed to create wholesale order';
+        throw new Error(errorMessage);
+      }
+
       toast.success('Order approved and created in wholesale system');
       queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
       queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });

@@ -88,7 +88,7 @@ export function EnhancedInviteSystem({
 
         // Send via appropriate method
         if (inviteMethod === 'sms' && customer.phone) {
-          const { error } = await supabase.functions.invoke('send-sms', {
+          const { data, error } = await supabase.functions.invoke('send-sms', {
             body: {
               phone: customer.phone,
               message: message,
@@ -96,6 +96,12 @@ export function EnhancedInviteSystem({
           });
 
           if (error) throw error;
+
+          // Check for error in response body (some edge functions return 200 with error)
+          if (data && typeof data === 'object' && 'error' in data && data.error) {
+            const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to send SMS';
+            throw new Error(errorMessage);
+          }
 
           // Log invitation
           await (supabase as any).from('invitations').insert(invitationData);

@@ -39,6 +39,13 @@ export async function checkGeofence(
     });
 
     if (error) throw error;
+
+    // Check for error in response body (some edge functions return 200 with error)
+    if (data && typeof data === 'object' && 'error' in data && data.error) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'Geofence check failed';
+      throw new Error(errorMessage);
+    }
+
     return data;
   } catch (error) {
     console.error("Geofence check error:", error);

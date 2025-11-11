@@ -37,6 +37,14 @@ export function FraudCheckWrapper({
           return;
         }
 
+        // Check for error in response body (some edge functions return 200 with error)
+        if (data && typeof data === 'object' && 'error' in data && data.error) {
+          const errorMessage = typeof data.error === 'string' ? data.error : 'Fraud check failed';
+          logger.error("Fraud check returned error in response", { error: errorMessage }, 'FraudCheckWrapper');
+          // Continue processing if fraud check fails - don't block legitimate orders
+          return;
+        }
+
         if (data && !data.allowed) {
           toast.error(data.message || "Order blocked due to fraud risk");
           if (onFraudDetected) {

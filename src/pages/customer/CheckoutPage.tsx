@@ -20,7 +20,8 @@ import {
   MapPin,
   Calendar,
   MessageSquare,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -59,6 +60,7 @@ export default function CheckoutPage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<"card" | "terms" | "cod">("card");
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
 
   // Get current user session
   useEffect(() => {
@@ -458,6 +460,8 @@ export default function CheckoutPage() {
                             </Button>
                             <Button
                               onClick={async () => {
+                                if (isAddingAddress) return;
+
                                 if (!newAddress.street || !newAddress.city || !newAddress.zip) {
                                   toast({
                                     title: "Missing Information",
@@ -467,44 +471,56 @@ export default function CheckoutPage() {
                                   return;
                                 }
                                 
-                                if (user) {
-                                  // Save to database
-                                  const { error } = await supabase
-                                    .from("addresses")
-                                    .insert({
-                                      user_id: user.id,
-                                      street: newAddress.street,
-                                      city: newAddress.city,
-                                      state: newAddress.state,
-                                      zip_code: newAddress.zip,
-                                      borough: newAddress.borough,
-                                      is_default: savedAddresses.length === 0,
-                                    });
-                                  
-                                  if (error) {
-                                    toast({
-                                      title: "Error",
-                                      description: error.message || "Failed to save address",
-                                      variant: "destructive",
-                                    });
-                                    return;
+                                setIsAddingAddress(true);
+                                try {
+                                  if (user) {
+                                    // Save to database
+                                    const { error } = await supabase
+                                      .from("addresses")
+                                      .insert({
+                                        user_id: user.id,
+                                        street: newAddress.street,
+                                        city: newAddress.city,
+                                        state: newAddress.state,
+                                        zip_code: newAddress.zip,
+                                        borough: newAddress.borough,
+                                        is_default: savedAddresses.length === 0,
+                                      });
+                                    
+                                    if (error) throw error;
+                                    
+                                    // Refresh addresses
+                                    queryClient.invalidateQueries({ queryKey: ["customer-addresses", user.id] });
                                   }
                                   
-                                  // Refresh addresses
-                                  queryClient.invalidateQueries({ queryKey: ["customer-addresses", user.id] });
+                                  toast({
+                                    title: "Address Added",
+                                    description: "New address has been saved",
+                                  });
+                                  
+                                  setNewAddress({ street: "", city: "", state: "NY", zip: "", borough: "" });
+                                  setShowAddAddressDialog(false);
+                                } catch (error: unknown) {
+                                  toast({
+                                    title: "Error",
+                                    description: error instanceof Error ? error.message : "Failed to save address",
+                                    variant: "destructive",
+                                  });
+                                } finally {
+                                  setIsAddingAddress(false);
                                 }
-                                
-                                toast({
-                                  title: "Address Added",
-                                  description: "New address has been saved",
-                                });
-                                
-                                setNewAddress({ street: "", city: "", state: "NY", zip: "", borough: "" });
-                                setShowAddAddressDialog(false);
                               }}
+                              disabled={isAddingAddress}
                               className="bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white"
                             >
-                              Save Address
+                              {isAddingAddress ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Adding...
+                                </>
+                              ) : (
+                                "Add Address"
+                              )}
                             </Button>
                           </DialogFooter>
                         </DialogContent>

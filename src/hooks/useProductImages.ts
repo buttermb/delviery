@@ -23,6 +23,13 @@ export const useGenerateProductImage = () => {
       });
 
       if (error) throw error;
+
+      // Check for error in response body (some edge functions return 200 with error)
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to generate product image';
+        throw new Error(errorMessage);
+      }
+
       if (!data?.imageUrl) throw new Error('No image URL returned');
 
       // Convert base64 to blob
@@ -103,6 +110,12 @@ export const useBulkGenerateImages = () => {
           console.log('Edge function response:', { data, error });
 
           if (error) throw error;
+
+          // Check for error in response body (some edge functions return 200 with error)
+          if (data && typeof data === 'object' && 'error' in data && data.error) {
+            const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to generate product image';
+            throw new Error(errorMessage);
+          }
           if (!data?.imageUrl) throw new Error('No image URL returned');
 
           // Convert base64 to blob
