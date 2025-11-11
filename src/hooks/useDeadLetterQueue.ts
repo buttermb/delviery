@@ -94,8 +94,8 @@ export function useDeadLetterQueue() {
       queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
       toast.success('Entry marked as resolved');
     },
-    onError: (error: any) => {
-      toast.error('Failed to resolve entry: ' + error.message);
+    onError: (error: unknown) => {
+      toast.error('Failed to resolve entry: ' + (error instanceof Error ? error.message : 'Unknown error'));
     },
   });
 

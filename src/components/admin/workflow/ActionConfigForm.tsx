@@ -219,7 +219,9 @@ export function ActionConfigForm({
                   try {
                     const data = JSON.parse(e.target.value);
                     setFormData({...formData, data});
-                  } catch {}
+                  } catch {
+                    // Invalid JSON, ignore
+                  }
                 }}
                 rows={6}
               />
@@ -235,7 +237,9 @@ export function ActionConfigForm({
                     try {
                       const filter = JSON.parse(e.target.value);
                       setFormData({...formData, filter});
-                    } catch {}
+                    } catch {
+                      // Invalid JSON, ignore
+                    }
                   }}
                   rows={3}
                 />
@@ -340,7 +344,9 @@ export function ActionConfigForm({
                 onChange={(e) => {
                   try {
                     setFormData(JSON.parse(e.target.value));
-                  } catch {}
+                  } catch {
+                    // Invalid JSON, ignore
+                  }
                 }}
                 rows={10}
               />

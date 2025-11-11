@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 interface NodePaletteProps {
-  onNodeDragStart: (event: React.DragEvent, nodeType: string, config: any) => void;
+  onNodeDragStart: (event: React.DragEvent, nodeType: string, config: Record<string, unknown>) => void;
 }
 
 const nodeTypes = [

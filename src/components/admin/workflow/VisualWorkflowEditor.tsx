@@ -37,8 +37,20 @@ import {
   Trash2,
 } from 'lucide-react';
 
+interface NodeData {
+  label?: string;
+  event?: string;
+  actionType?: string;
+  description?: string;
+  status?: string;
+  condition?: string;
+  config?: Record<string, unknown>;
+  onDelete?: () => void;
+  [key: string]: unknown;
+}
+
 // Custom Node Components
-function TriggerNode({ data }: { data: any }) {
+function TriggerNode({ data }: { data: NodeData }) {
   return (
     <Card className="p-4 border-2 border-primary min-w-[200px]">
       <div className="flex items-center gap-2 mb-2">
@@ -55,7 +67,7 @@ function TriggerNode({ data }: { data: any }) {
   );
 }
 
-function ActionNode({ data }: { data: any }) {
+function ActionNode({ data }: { data: NodeData }) {
   const getIcon = () => {
     switch (data.actionType) {
       case 'send_email': return <Mail className="h-4 w-4" />;
@@ -98,7 +110,7 @@ function ActionNode({ data }: { data: any }) {
   );
 }
 
-function ConditionNode({ data }: { data: any }) {
+function ConditionNode({ data }: { data: NodeData }) {
   return (
     <Card className="p-4 border-2 border-warning min-w-[200px]">
       <div className="flex items-center gap-2 mb-2">
@@ -114,7 +126,7 @@ function ConditionNode({ data }: { data: any }) {
   );
 }
 
-function CompletionNode({ data }: { data: any }) {
+function CompletionNode({ data }: { data: NodeData }) {
   const isSuccess = data.status === 'success';
   return (
     <Card className={`p-4 border-2 ${isSuccess ? 'border-green-500' : 'border-red-500'} min-w-[200px]`}>
@@ -137,8 +149,19 @@ const nodeTypes: NodeTypes = {
   completion: CompletionNode,
 };
 
+interface Workflow {
+  trigger_type?: string;
+  actions?: Array<{
+    id?: string;
+    name?: string;
+    type?: string;
+    config?: Record<string, unknown>;
+  }>;
+  [key: string]: unknown;
+}
+
 interface VisualWorkflowEditorProps {
-  workflow?: any;
+  workflow?: Workflow;
   onSave?: (nodes: Node[], edges: Edge[]) => void;
   readOnly?: boolean;
 }
@@ -382,7 +405,7 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
 }
 
 // Helper functions to convert workflow data to nodes/edges
-function convertWorkflowToNodes(workflow: any): Node[] {
+function convertWorkflowToNodes(workflow: Workflow): Node[] {
   const nodes: Node[] = [];
   let yOffset = 50;
 
@@ -401,7 +424,7 @@ function convertWorkflowToNodes(workflow: any): Node[] {
 
   // Action nodes
   if (workflow.actions && Array.isArray(workflow.actions)) {
-    workflow.actions.forEach((action: any, index: number) => {
+    workflow.actions.forEach((action, index: number) => {
       nodes.push({
         id: action.id || `action-${index + 1}`,
         type: 'action',
@@ -432,7 +455,7 @@ function convertWorkflowToNodes(workflow: any): Node[] {
   return nodes;
 }
 
-function convertWorkflowToEdges(workflow: any): Edge[] {
+function convertWorkflowToEdges(workflow: Workflow): Edge[] {
   const edges: Edge[] = [];
 
   if (!workflow.actions || workflow.actions.length === 0) {
