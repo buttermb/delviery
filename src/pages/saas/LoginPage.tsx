@@ -29,6 +29,9 @@ import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
 
+// Bound fetch to prevent "Illegal invocation" error
+const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -105,7 +108,7 @@ export default function LoginPage() {
 
       // Call tenant-admin-auth to set up complete authentication
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
