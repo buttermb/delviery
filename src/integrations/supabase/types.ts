@@ -5774,6 +5774,7 @@ export type Database = {
           lab_results_url: string | null
           low_stock_alert: number | null
           medical_benefits: string[] | null
+          menu_visibility: boolean
           merchant_id: string | null
           name: string
           price: number
@@ -5829,6 +5830,7 @@ export type Database = {
           lab_results_url?: string | null
           low_stock_alert?: number | null
           medical_benefits?: string[] | null
+          menu_visibility?: boolean
           merchant_id?: string | null
           name: string
           price: number
@@ -5884,6 +5886,7 @@ export type Database = {
           lab_results_url?: string | null
           low_stock_alert?: number | null
           medical_benefits?: string[] | null
+          menu_visibility?: boolean
           merchant_id?: string | null
           name?: string
           price?: number

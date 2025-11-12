@@ -58,8 +58,12 @@ serve(withZenProtection(async (req) => {
       .single();
 
     if (productError || !product) {
+      console.error('Product query failed:', productError);
       return new Response(
-        JSON.stringify({ error: 'Product not found' }),
+        JSON.stringify({ 
+          error: 'Product not found',
+          details: productError?.message || 'No product found with given ID and tenant'
+        }),
         {
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
