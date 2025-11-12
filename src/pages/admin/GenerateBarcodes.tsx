@@ -81,6 +81,7 @@ export default function GenerateBarcodes() {
   // Generated barcodes
   const [generatedBarcodes, setGeneratedBarcodes] = useState<GeneratedBarcode[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   const [previewMode, setPreviewMode] = useState<'grid' | 'list'>('grid');
 
   // Fetch products
@@ -205,8 +206,17 @@ export default function GenerateBarcodes() {
   // Print all labels as PDF
   const handlePrintAll = async () => {
     if (generatedBarcodes.length === 0) return;
+    
+    setPdfGenerating(true);
+    toast({
+      title: 'Generating PDF...',
+      description: 'Please wait while we create your label sheet',
+    });
 
     try {
+      // Defer heavy operation to avoid blocking UI
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // For now, use print sheet for all labels
       // Individual label printing can be added later with proper QR code rendering
       await handlePrintSheet();
@@ -217,6 +227,8 @@ export default function GenerateBarcodes() {
         description: errorMessage,
         variant: 'destructive'
       });
+    } finally {
+      setPdfGenerating(false);
     }
   };
 
@@ -224,53 +236,86 @@ export default function GenerateBarcodes() {
   const handlePrintSheet = async () => {
     if (generatedBarcodes.length === 0) return;
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'in',
-      format: [8.5, 11] // US Letter
-    });
+    setPdfGenerating(true);
+    
+    try {
+      // Process in chunks to avoid blocking
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'in',
+        format: [8.5, 11] // US Letter
+      });
 
-    const cols = 3;
-    const rows = 10;
-    const cardWidth = 2.5;
-    const cardHeight = 1;
-    const margin = 0.25;
-    const spacing = 0.2;
+      const cols = 3;
+      const rows = 10;
+      const cardWidth = 2.5;
+      const cardHeight = 1;
+      const margin = 0.25;
+      const spacing = 0.2;
 
-    let index = 0;
-    let page = 0;
+      let index = 0;
+      let page = 0;
 
-    for (const barcode of generatedBarcodes) {
-      if (index >= rows * cols) {
-        pdf.addPage();
-        index = 0;
-        page++;
+      // Process in batches to keep UI responsive
+      const chunkSize = 10;
+      for (let i = 0; i < generatedBarcodes.length; i += chunkSize) {
+        const chunk = generatedBarcodes.slice(i, i + chunkSize);
+        
+        // Yield to browser between chunks
+        await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
+        
+        for (const barcode of chunk) {
+          if (index >= rows * cols) {
+            pdf.addPage();
+            index = 0;
+            page++;
+          }
+
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          
+          const x = margin + col * (cardWidth + spacing);
+          const y = margin + row * (cardHeight + spacing) + (page * 11);
+
+          // Draw border
+          pdf.setDrawColor(200, 200, 200);
+          pdf.rect(x, y, cardWidth, cardHeight);
+
+          // Add barcode data
+          pdf.setFontSize(8);
+          pdf.text(barcode.label || barcode.value, x + 0.1, y + 0.15, { maxWidth: cardWidth - 0.2 });
+          pdf.setFontSize(7);
+          pdf.text(barcode.value, x + 0.1, y + 0.8, { maxWidth: cardWidth - 0.2 });
+
+          index++;
+        }
       }
 
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-      
-      const x = margin + col * (cardWidth + spacing);
-      const y = margin + row * (cardHeight + spacing) + (page * 11);
-
-      // Draw border
-      pdf.setDrawColor(200, 200, 200);
-      pdf.rect(x, y, cardWidth, cardHeight);
-
-      // Add barcode data
-      pdf.setFontSize(8);
-      pdf.text(barcode.label || barcode.value, x + 0.1, y + 0.15, { maxWidth: cardWidth - 0.2 });
-      pdf.setFontSize(7);
-      pdf.text(barcode.value, x + 0.1, y + 0.8, { maxWidth: cardWidth - 0.2 });
-
-      index++;
+      pdf.save(`barcode_sheet_${Date.now()}.pdf`);
+      toast({
+        title: 'Success',
+        description: 'Barcode sheet downloaded'
+      });
+    } finally {
+      setPdfGenerating(false);
     }
-
-    pdf.save(`barcode_sheet_${Date.now()}.pdf`);
+  };
+  
+  // Handle print preview with async loading
+  const handlePrintPreview = async () => {
+    setPdfGenerating(true);
     toast({
-      title: 'Success',
-      description: 'Barcode sheet downloaded'
+      title: 'Preparing preview...',
+      description: 'Please wait',
     });
+    
+    try {
+      // Small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.print();
+    } finally {
+      setPdfGenerating(false);
+    }
   };
 
   if (tenantLoading) {
@@ -559,20 +604,59 @@ export default function GenerateBarcodes() {
                   variant="outline"
                   size="sm"
                   onClick={() => setPreviewMode(previewMode === 'grid' ? 'list' : 'grid')}
+                  disabled={pdfGenerating}
                 >
                   {previewMode === 'grid' ? <Grid3x3 className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button variant="outline" onClick={handlePrintSheet}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Sheet
+                <Button 
+                  variant="outline" 
+                  onClick={handlePrintSheet}
+                  disabled={pdfGenerating}
+                >
+                  {pdfGenerating ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Sheet
+                    </>
+                  )}
                 </Button>
-                <Button variant="outline" onClick={handlePrintAll}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  Print All Labels
+                <Button 
+                  variant="outline" 
+                  onClick={handlePrintAll}
+                  disabled={pdfGenerating}
+                >
+                  {pdfGenerating ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Printer className="h-4 w-4 mr-2" />
+                      Print All Labels
+                    </>
+                  )}
                 </Button>
-                <Button onClick={() => window.print()}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  Print Preview
+                <Button 
+                  onClick={handlePrintPreview}
+                  disabled={pdfGenerating}
+                >
+                  {pdfGenerating ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Preparing...
+                    </>
+                  ) : (
+                    <>
+                      <Printer className="h-4 w-4 mr-2" />
+                      Print Preview
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
