@@ -105,8 +105,7 @@ export default function LoginPage() {
       }
 
       // Call tenant-admin-auth to set up complete authentication
-      const authResponse = await edgeFunctionRequest('tenant-admin-auth', {
-        action: 'login',
+      const authResponse = await edgeFunctionRequest('tenant-admin-auth?action=login', {
         email: data.email,
         password: data.password,
         tenantSlug: tenant.slug,
