@@ -48,8 +48,7 @@ export function ConfirmDeleteDialog({
   const handleConfirm = async () => {
     try {
       await onConfirm();
-      // Close dialog on success (parent will reset loading state)
-      onOpenChange(false);
+      // Parent controls dialog closing via setDeleteDialogOpen
     } catch (error) {
       // Error is handled by parent, keep dialog open
       logger.error('Confirm action failed', error, { component: 'ConfirmDeleteDialog' });
