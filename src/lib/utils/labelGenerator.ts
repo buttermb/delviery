@@ -5,6 +5,10 @@
 
 import jsPDF from 'jspdf';
 import { logger } from '@/lib/logger';
+import { generateBarcodeSVG } from '@/utils/barcodeService';
+import QRCode from 'qrcode';
+
+export type LabelSize = 'small' | 'standard' | 'large' | 'sheet';
 
 export interface ProductLabelData {
   productName: string;
@@ -23,157 +27,242 @@ export interface ProductLabelData {
 
 /**
  * Generate PDF label for product
- * Label size: 4" x 2" (standard product label)
+ * Supports multiple label sizes
  */
 export async function generateProductLabelPDF(
-  data: ProductLabelData
+  data: ProductLabelData,
+  size: LabelSize = 'standard'
 ): Promise<Blob> {
   try {
-    // Create PDF with label dimensions (4" x 2" at 72 DPI)
-    // 4 inches = 288 points, 2 inches = 144 points
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'pt',
-      format: [288, 144], // 4" x 2"
-    });
+    // Define dimensions for each size (width x height in points at 72 DPI)
+    const dimensions = {
+      small: [144, 72],    // 2" x 1"
+      standard: [288, 144], // 4" x 2"
+      large: [288, 216],    // 4" x 3"
+      sheet: [288, 432],    // 4" x 6"
+    };
 
-    const width = 288;
-    const height = 144;
+    const [width, height] = dimensions[size];
+
+    // Create PDF with label dimensions
+    const pdf = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'pt',
+      format: [width, height],
+    });
     const margin = 10;
+    const fontSize = size === 'small' ? 8 : size === 'standard' ? 10 : 12;
 
     // Background (white)
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, width, height, 'F');
 
+    // Add border for professional look
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(1);
+    pdf.rect(2, 2, width - 4, height - 4);
+
+    let currentY = margin + 15;
+
     // Product Name (large, bold, top)
-    pdf.setFontSize(16);
+    pdf.setFontSize(size === 'small' ? 12 : size === 'standard' ? 16 : 18);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(0, 0, 0);
-    const productNameY = margin + 18;
-    pdf.text(data.productName, width / 2, productNameY, {
+    pdf.text(data.productName, width / 2, currentY, {
       align: 'center',
       maxWidth: width - 2 * margin,
     });
+    currentY += size === 'small' ? 12 : 18;
 
-    let currentY = productNameY + 20;
+    // Strain Name (if available)
+    if (data.strainName) {
+      pdf.setFontSize(fontSize + 1);
+      pdf.setFont('helvetica', 'italic');
+      pdf.setTextColor(60, 60, 60);
+      pdf.text(data.strainName, width / 2, currentY, { align: 'center' });
+      currentY += 12;
+    }
 
-    // Category and Vendor (if available)
-    if (data.category || data.vendorName) {
-      pdf.setFontSize(9);
+    // Category, Vendor, Strain Type (horizontal layout)
+    if (size !== 'small') {
+      const topInfo = [];
+      if (data.category) topInfo.push(`${data.category.toUpperCase()}`);
+      if (data.strainType) topInfo.push(`${data.strainType}`);
+      if (data.vendorName) topInfo.push(data.vendorName);
+      
+      if (topInfo.length > 0) {
+        pdf.setFontSize(fontSize - 1);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(topInfo.join(' • '), width / 2, currentY, { align: 'center' });
+        currentY += 10;
+      }
+    }
+
+    // THC/CBD Percentages (highlighted)
+    if (data.thcPercent !== undefined || data.cbdPercent !== undefined) {
+      pdf.setFontSize(fontSize + 2);
+      pdf.setFont('helvetica', 'bold');
+      
+      const cannabinoids = [];
+      if (data.thcPercent !== undefined) {
+        pdf.setTextColor(34, 197, 94); // Green
+        cannabinoids.push(`THC: ${data.thcPercent}%`);
+      }
+      if (data.cbdPercent !== undefined && data.thcPercent !== undefined) {
+        cannabinoids.push(' | ');
+      }
+      if (data.cbdPercent !== undefined) {
+        pdf.setTextColor(59, 130, 246); // Blue
+        if (data.thcPercent === undefined) cannabinoids.push(`CBD: ${data.cbdPercent}%`);
+      }
+      
+      pdf.setTextColor(0, 0, 0);
+      const thcCbd = [];
+      if (data.thcPercent !== undefined) thcCbd.push(`THC: ${data.thcPercent}%`);
+      if (data.cbdPercent !== undefined) thcCbd.push(`CBD: ${data.cbdPercent}%`);
+      pdf.text(thcCbd.join(' | '), width / 2, currentY, { align: 'center' });
+      currentY += 14;
+    }
+
+    // Batch Number and Price (if available)
+    if (size !== 'small' && (data.batchNumber || data.price !== undefined)) {
+      pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(80, 80, 80);
-      const info = [
-        data.category ? `Category: ${data.category}` : null,
-        data.vendorName ? `Vendor: ${data.vendorName}` : null,
-      ].filter(Boolean).join(' | ');
-      pdf.text(info, width / 2, currentY, { align: 'center' });
-      currentY += 12;
+      const extraInfo = [];
+      if (data.batchNumber) extraInfo.push(`Batch: ${data.batchNumber}`);
+      if (data.price !== undefined) extraInfo.push(`$${data.price.toFixed(2)}`);
+      if (extraInfo.length > 0) {
+        pdf.text(extraInfo.join(' | '), width / 2, currentY, { align: 'center' });
+        currentY += 12;
+      }
     }
 
-    // Strain Name and Type
-    if (data.strainName || data.strainType) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
+    // Generate barcode using barcodeService
+    const barcodeValue = data.barcodeValue || data.sku;
+    let barcodeHeight = size === 'small' ? 30 : size === 'standard' ? 45 : 55;
+    let barcodeWidth = size === 'small' ? 100 : size === 'standard' ? 180 : 220;
+    
+    try {
+      const barcodeSvg = generateBarcodeSVG(barcodeValue, {
+        width: 2,
+        height: barcodeHeight,
+        displayValue: true,
+        format: 'CODE128',
+      });
       
-      if (data.strainType) {
-        // Color coding: Indica = Red, Sativa = Blue, Hybrid = Purple
-        const colorMap: Record<string, [number, number, number]> = {
-          Indica: [220, 38, 38], // Red
-          Sativa: [37, 99, 235], // Blue
-          Hybrid: [147, 51, 234], // Purple
-        };
-        const color = colorMap[data.strainType] || [0, 0, 0];
-        pdf.setTextColor(color[0], color[1], color[2]);
-      } else {
-        pdf.setTextColor(0, 0, 0);
+      // Convert SVG to data URL
+      const svgBlob = new Blob([barcodeSvg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      
+      // Draw barcode on canvas to get PNG
+      const canvas = document.createElement('canvas');
+      canvas.width = barcodeWidth * 2; // Higher resolution
+      canvas.height = barcodeHeight * 2;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       }
       
-      const strainInfo = [
-        data.strainName ? `Strain: ${data.strainName}` : null,
-        data.strainType ? `(${data.strainType})` : null,
-      ].filter(Boolean).join(' ');
-      pdf.text(strainInfo, width / 2, currentY, { align: 'center' });
-      currentY += 14;
-    }
-
-    // THC/CBD and Batch Number
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(0, 0, 0);
-    const details = [];
-    if (data.thcPercent !== undefined) details.push(`THC: ${data.thcPercent}%`);
-    if (data.cbdPercent !== undefined) details.push(`CBD: ${data.cbdPercent}%`);
-    if (data.batchNumber) details.push(`Batch: ${data.batchNumber}`);
-    if (details.length > 0) {
-      pdf.text(details.join(' | '), width / 2, currentY, { align: 'center' });
-      currentY += 12;
-    }
-
-    // Price (if available)
-    if (data.price !== undefined) {
-      pdf.setFontSize(11);
+      const barcodeDataUrl = canvas.toDataURL('image/png');
+      URL.revokeObjectURL(url);
+      
+      // Add barcode to PDF
+      const barcodeY = currentY + 8;
+      pdf.addImage(
+        barcodeDataUrl,
+        'PNG',
+        (width - barcodeWidth) / 2,
+        barcodeY,
+        barcodeWidth,
+        barcodeHeight
+      );
+      currentY = barcodeY + barcodeHeight + 10;
+    } catch (error) {
+      logger.warn('Failed to generate barcode, using text fallback', error, {
+        component: 'labelGenerator',
+      });
+      // Fallback: Show as text
+      pdf.setFontSize(fontSize + 2);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(0, 0, 0);
-      pdf.text(`Price: $${data.price}`, width / 2, currentY, { align: 'center' });
-      currentY += 14;
+      pdf.text(barcodeValue, width / 2, currentY + 20, { align: 'center' });
+      currentY += 35;
     }
 
-    // Barcode (centered, below text)
-    const barcodeY = currentY + 10;
-    const barcodeHeight = 40;
-    const barcodeWidth = 150;
-
-    if (data.barcodeImageUrl) {
+    // Add QR Code for larger labels
+    if (size === 'large' || size === 'sheet') {
       try {
-        // Load barcode image using fetch to handle CORS
-        const response = await fetch(data.barcodeImageUrl);
-        if (!response.ok) {
-          throw new Error('Failed to fetch barcode image');
-        }
-        const blob = await response.blob();
-        const reader = new FileReader();
-        
-        const imageDataUrl = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
+        const qrData = JSON.stringify({
+          sku: data.sku,
+          name: data.productName,
+          category: data.category,
+          strain: data.strainName,
+          thc: data.thcPercent,
+          cbd: data.cbdPercent,
+          batch: data.batchNumber,
         });
-
-        // Add image to PDF
+        
+        const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+          width: 60,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        });
+        
+        // Add QR code to bottom right
         pdf.addImage(
-          imageDataUrl,
+          qrCodeDataUrl,
           'PNG',
-          (width - barcodeWidth) / 2,
-          barcodeY,
-          barcodeWidth,
-          barcodeHeight
+          width - 70,
+          height - 70,
+          60,
+          60
         );
+        
+        pdf.setFontSize(6);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text('Scan for details', width - 40, height - 8, { align: 'center' });
       } catch (error) {
-        logger.warn('Failed to load barcode image, using text fallback', error, {
+        logger.warn('Failed to generate QR code', error, {
           component: 'labelGenerator',
         });
-        // Fallback: Show SKU as text
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'monospace');
-        pdf.setTextColor(0, 0, 0);
-        pdf.text(data.barcodeValue || data.sku, width / 2, barcodeY + barcodeHeight / 2, {
-          align: 'center',
-        });
       }
-    } else if (data.barcodeValue) {
-      // Show barcode value as text if no image
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'monospace');
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(data.barcodeValue, width / 2, barcodeY + barcodeHeight / 2, {
-        align: 'center',
+    }
+
+    // Compliance warnings for larger labels
+    if (size === 'large' || size === 'sheet') {
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(150, 150, 150);
+      const warnings = [
+        '⚠ For adult use only (21+)',
+        '🚫 Keep out of reach of children',
+        `📅 Packaged: ${new Date().toLocaleDateString()}`,
+      ];
+      let warningY = height - 35;
+      warnings.forEach(warning => {
+        pdf.text(warning, margin, warningY);
+        warningY += 8;
       });
     }
 
-    // SKU (bottom)
-    pdf.setFontSize(10);
+    // SKU at bottom
+    pdf.setFontSize(fontSize - 1);
     pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(100, 100, 100);
+    pdf.setTextColor(120, 120, 120);
     pdf.text(`SKU: ${data.sku}`, width / 2, height - margin, {
       align: 'center',
     });
@@ -192,13 +281,16 @@ export async function generateProductLabelPDF(
 /**
  * Download label PDF
  */
-export async function downloadProductLabel(data: ProductLabelData): Promise<void> {
+export async function downloadProductLabel(
+  data: ProductLabelData,
+  size: LabelSize = 'standard'
+): Promise<void> {
   try {
-    const pdfBlob = await generateProductLabelPDF(data);
+    const pdfBlob = await generateProductLabelPDF(data, size);
     const url = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `label-${data.sku}.pdf`;
+    link.download = `label-${data.sku}-${size}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
