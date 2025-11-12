@@ -53,13 +53,13 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     if (open && product.sku) {
       try {
         const barcodeValue = (product.barcode as string) || product.sku || '';
-        const svgString = generateBarcodeSVG(barcodeValue, {
-          width: 1,
+        const dataUrl = generateBarcodeSVG(barcodeValue, {
+          width: 3,
           height: 50,
           displayValue: true,
           format: 'CODE128',
         });
-        setBarcodeDataUrl(svgString);
+        setBarcodeDataUrl(dataUrl);
       } catch (error) {
         logger.error('Failed to generate barcode preview', error, {
           component: 'ProductLabel',
@@ -251,10 +251,11 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                     className="flex justify-center p-2 bg-white rounded w-full max-w-[300px]"
                     style={{ overflow: 'hidden' }}
                   >
-                    <div 
-                      className="w-full flex justify-center"
-                      style={{ maxWidth: '100%', transform: 'scale(0.9)' }}
-                      dangerouslySetInnerHTML={{ __html: barcodeDataUrl }}
+                    <img 
+                      src={barcodeDataUrl}
+                      alt="Product Barcode"
+                      className="max-w-full h-auto"
+                      style={{ maxHeight: '60px' }}
                     />
                   </div>
                 ) : product.barcode_image_url ? (

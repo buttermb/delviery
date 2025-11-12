@@ -146,8 +146,9 @@ export async function generateProductLabelPDF(
     
     try {
       // generateBarcodeSVG actually returns a PNG data URL, not SVG
+      // Using width:3 for high-resolution barcode that scales well in PDF
       const barcodeDataUrl = generateBarcodeSVG(barcodeValue, {
-        width: 1.5,
+        width: 3,
         height: barcodeHeight,
         displayValue: true,
         format: 'CODE128',
