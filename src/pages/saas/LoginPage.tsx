@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import ThemeToggle from '@/components/ThemeToggle';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -37,6 +39,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
@@ -143,101 +146,133 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Dynamic gradient background with animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 transition-colors duration-700" />
       
-      {/* Large floating orbs with complex movement */}
+      {/* Large floating orbs with complex movement - theme aware */}
       <div 
-        className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-3xl opacity-60"
+        className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0) 70%)',
+          background: theme === 'dark' 
+            ? 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%)'
+            : 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%)',
+          opacity: theme === 'dark' ? 0.5 : 0.7,
           animation: 'float-complex 20s ease-in-out infinite'
         }} 
       />
       <div 
-        className="absolute -bottom-40 -right-40 w-[700px] h-[700px] rounded-full blur-3xl opacity-60"
+        className="absolute -bottom-40 -right-40 w-[700px] h-[700px] rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%)',
+          background: theme === 'dark'
+            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0) 70%)'
+            : 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%)',
+          opacity: theme === 'dark' ? 0.5 : 0.7,
           animation: 'float-complex-reverse 25s ease-in-out infinite'
         }} 
       />
       <div 
-        className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl opacity-50"
+        className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%)',
+          background: theme === 'dark'
+            ? 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%)'
+            : 'radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%)',
+          opacity: theme === 'dark' ? 0.4 : 0.6,
           animation: 'float-diagonal-complex 30s ease-in-out infinite'
         }} 
       />
       
-      {/* Medium accent orbs */}
+      {/* Medium accent orbs - theme aware */}
       <div 
-        className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl opacity-40"
+        className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, rgba(236, 72, 153, 0) 70%)',
+          background: theme === 'dark'
+            ? 'radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(236, 72, 153, 0) 70%)'
+            : 'radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0) 70%)',
+          opacity: theme === 'dark' ? 0.35 : 0.5,
           animation: 'float-small 12s ease-in-out infinite'
         }} 
       />
       <div 
-        className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl opacity-40"
+        className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, rgba(251, 191, 36, 0) 70%)',
+          background: theme === 'dark'
+            ? 'radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0) 70%)'
+            : 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%)',
+          opacity: theme === 'dark' ? 0.35 : 0.5,
           animation: 'float-small-reverse 14s ease-in-out infinite'
         }} 
       />
       <div 
-        className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl opacity-30"
+        className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl transition-all duration-700"
         style={{ 
-          background: 'radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, rgba(34, 211, 238, 0) 70%)',
+          background: theme === 'dark'
+            ? 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 70%)'
+            : 'radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0) 70%)',
+          opacity: theme === 'dark' ? 0.3 : 0.4,
           animation: 'float-medium 16s ease-in-out infinite'
         }} 
       />
       
-      {/* Animated gradient waves */}
-      <div className="absolute inset-0 opacity-40">
+      {/* Animated gradient waves - theme aware */}
+      <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: theme === 'dark' ? 0.3 : 0.5 }}>
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 transition-all duration-700"
           style={{
-            background: 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)',
+            background: theme === 'dark'
+              ? 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 50%)'
+              : 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.18) 0%, transparent 50%)',
             animation: 'wave-movement 20s ease-in-out infinite'
           }}
         />
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 transition-all duration-700"
           style={{
-            background: 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 50%)',
+            background: theme === 'dark'
+              ? 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)'
+              : 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)',
             animation: 'wave-movement-reverse 25s ease-in-out infinite'
           }}
         />
       </div>
       
-      {/* Floating sparkle particles */}
+      {/* Floating sparkle particles - theme aware */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={`particle-${i}`}
-            className="absolute rounded-full"
-            style={{
-              width: `${Math.random() * 6 + 2}px`,
-              height: `${Math.random() * 6 + 2}px`,
-              background: `radial-gradient(circle, ${
-                ['rgba(59, 130, 246, 0.6)', 'rgba(168, 85, 247, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(236, 72, 153, 0.6)'][i % 4]
-              } 0%, transparent 70%)`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `sparkle-float ${Math.random() * 15 + 20}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 10}s`,
-              filter: 'blur(1px)'
-            }}
-          />
-        ))}
+        {[...Array(30)].map((_, i) => {
+          const colors = theme === 'dark'
+            ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(16, 185, 129, 0.5)', 'rgba(236, 72, 153, 0.5)']
+            : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(236, 72, 153, 0.7)'];
+          
+          return (
+            <div
+              key={`particle-${i}`}
+              className="absolute rounded-full transition-all duration-700"
+              style={{
+                width: `${Math.random() * 6 + 2}px`,
+                height: `${Math.random() * 6 + 2}px`,
+                background: `radial-gradient(circle, ${colors[i % 4]} 0%, transparent 70%)`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `sparkle-float ${Math.random() * 15 + 20}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 10}s`,
+                filter: 'blur(1px)'
+              }}
+            />
+          );
+        })}
       </div>
       
-      {/* Subtle grid overlay with shimmer */}
+      {/* Subtle grid overlay with shimmer - theme aware */}
       <div 
-        className="absolute inset-0 opacity-[0.015] dark:opacity-[0.04]" 
+        className="absolute inset-0 transition-opacity duration-700" 
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
           backgroundSize: '50px 50px',
+          opacity: theme === 'dark' ? 0.04 : 0.015,
           animation: 'shimmer 10s ease-in-out infinite'
         }} 
       />
@@ -359,7 +394,7 @@ export default function LoginPage() {
         }
       `}} />
 
-      <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-xl bg-card/90 shadow-2xl border-2 animate-fade-in">
+      <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-xl bg-card/90 shadow-2xl border-2 animate-fade-in transition-colors duration-700">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-4 animate-scale-in">
             <Sparkles className="h-8 w-8 text-primary" />
