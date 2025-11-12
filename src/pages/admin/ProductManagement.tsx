@@ -83,6 +83,7 @@ export default function ProductManagement() {
     category: "",
     vendor_name: "",
     strain_name: "",
+    strain_type: "",
     thc_percent: "",
     cbd_percent: "",
     batch_number: "",
@@ -191,8 +192,13 @@ export default function ProductManagement() {
         category: category,
         vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
-        strain_type: formData.strain_name ? (formData.strain_name.toLowerCase().includes('hybrid') ? 'Hybrid' : 
-          formData.strain_name.toLowerCase().includes('indica') ? 'Indica' : 'Sativa') : null,
+        strain_type: formData.strain_type || 
+          (formData.strain_name ? (
+            formData.strain_name.toLowerCase().includes('hybrid') ? 'hybrid' : 
+            formData.strain_name.toLowerCase().includes('indica') ? 'indica' : 
+            formData.strain_name.toLowerCase().includes('cbd') ? 'cbd' :
+            'sativa'
+          ) : null),
         thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
         cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
         batch_number: formData.batch_number || null,
@@ -304,6 +310,9 @@ export default function ProductManagement() {
       if (errorMessage.includes('null value') || errorMessage.includes('NOT NULL')) {
         userMessage = "Missing required fields. Please fill in all required information.";
         errorTitle = "Required Field Missing";
+      } else if (errorMessage.includes('strain_type_check') || (errorMessage.includes('violates check constraint') && errorMessage.includes('strain_type'))) {
+        userMessage = "Invalid strain type. Please select: Indica, Sativa, Hybrid, or CBD.";
+        errorTitle = "Invalid Strain Type";
       } else if (errorMessage.includes('violates check constraint') || errorMessage.includes('category')) {
         userMessage = "Invalid category selected. Please choose: Flower, Edibles, Vapes, or Concentrates.";
         errorTitle = "Invalid Category";
@@ -334,6 +343,7 @@ export default function ProductManagement() {
       category: product.category || "",
       vendor_name: product.vendor_name || "",
       strain_name: product.strain_name || "",
+      strain_type: product.strain_type || "",
       thc_percent: product.thc_percent?.toString() || "",
       cbd_percent: product.cbd_percent?.toString() || "",
       batch_number: product.batch_number || "",
@@ -533,6 +543,7 @@ export default function ProductManagement() {
       category: "flower", // Default to valid category
       vendor_name: "",
       strain_name: "",
+      strain_type: "",
       thc_percent: "",
       cbd_percent: "",
       batch_number: "",
@@ -655,6 +666,25 @@ export default function ProductManagement() {
                       type="strain"
                       placeholder="Strain name (e.g., Gelato, Runtz, OG Kush)"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Strain Type</Label>
+                    <Select
+                      value={formData.strain_type}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, strain_type: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select strain type (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indica">Indica</SelectItem>
+                        <SelectItem value="sativa">Sativa</SelectItem>
+                        <SelectItem value="hybrid">Hybrid</SelectItem>
+                        <SelectItem value="cbd">CBD</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Batch Number</Label>
