@@ -30,11 +30,6 @@ export function AdminKeyboardShortcutsDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Keyboard className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
