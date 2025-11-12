@@ -57,6 +57,7 @@ import { generateAndStoreBarcode } from "@/lib/utils/barcodeStorage";
 import { syncProductToMenus } from "@/lib/utils/menuSync";
 import { ProductLabel } from "@/components/admin/ProductLabel";
 import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
+import { BatchPanel } from "@/components/admin/BatchPanel";
 import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -363,6 +364,9 @@ export default function ProductManagement() {
   
   // Barcode scanner state
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [batchScanMode, setBatchScanMode] = useState(false);
+  const [batchProducts, setBatchProducts] = useState<Product[]>([]);
+  const [batchPanelOpen, setBatchPanelOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
     const product = products.find((p) => p.id === id);
@@ -409,18 +413,83 @@ export default function ProductManagement() {
     );
 
     if (matchingProduct) {
-      // Set search term to highlight the product
-      setSearchTerm(matchingProduct.name || barcode);
-      toast.success(`Product found: ${matchingProduct.name}`, {
-        description: `SKU: ${matchingProduct.sku}`,
-      });
+      if (batchScanMode) {
+        // Add to batch if not already added
+        if (!batchProducts.find(p => p.id === matchingProduct.id)) {
+          setBatchProducts(prev => [...prev, matchingProduct]);
+          setBatchPanelOpen(true);
+          toast.success(`Added: ${matchingProduct.name}`, {
+            description: `${batchProducts.length + 1} items in batch`,
+          });
+        } else {
+          toast.info('Product already in batch', {
+            description: matchingProduct.name,
+          });
+        }
+      } else {
+        // Single scan mode - highlight product
+        setSearchTerm(matchingProduct.name || barcode);
+        toast.success(`Product found: ${matchingProduct.name}`, {
+          description: `SKU: ${matchingProduct.sku}`,
+        });
+      }
     } else {
       toast.error('Product not found', {
         description: `No product found with barcode: ${barcode}`,
       });
-      // Still set the search term so user can see what was scanned
-      setSearchTerm(barcode);
+      if (!batchScanMode) {
+        setSearchTerm(barcode);
+      }
     }
+  };
+
+  const startBatchScan = () => {
+    setBatchScanMode(true);
+    setBatchProducts([]);
+    setBatchPanelOpen(false);
+    setScannerOpen(true);
+  };
+
+  const handleBatchDelete = async () => {
+    if (!tenant?.id || batchProducts.length === 0) return;
+
+    const confirmDelete = window.confirm(
+      `Delete ${batchProducts.length} product${batchProducts.length !== 1 ? 's' : ''}? This cannot be undone.`
+    );
+    
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const productIds = batchProducts.map(p => p.id);
+      
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .in("id", productIds)
+        .eq("tenant_id", tenant.id);
+      
+      if (error) throw error;
+      
+      toast.success(`${batchProducts.length} products deleted`);
+      loadProducts();
+      setBatchProducts([]);
+      setBatchPanelOpen(false);
+    } catch (error: unknown) {
+      logger.error('Batch delete failed', error, { component: 'ProductManagement' });
+      toast.error("Failed to delete products: " + (error instanceof Error ? error.message : "An error occurred"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const removeBatchProduct = (productId: string) => {
+    setBatchProducts(prev => prev.filter(p => p.id !== productId));
+  };
+
+  const clearBatch = () => {
+    setBatchProducts([]);
+    setBatchPanelOpen(false);
   };
 
   const handleDuplicate = async (id: string) => {
@@ -920,14 +989,27 @@ export default function ProductManagement() {
                 className="pl-9 min-h-[44px]"
               />
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setScannerOpen(true)}
-              className="min-h-[44px] gap-2"
-            >
-              <Barcode className="h-4 w-4" />
-              <span className="hidden sm:inline">Scan Barcode</span>
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBatchScanMode(false);
+                  setScannerOpen(true);
+                }}
+                className="min-h-[44px] gap-2"
+              >
+                <Barcode className="h-4 w-4" />
+                <span className="hidden sm:inline">Scan</span>
+              </Button>
+              <Button
+                variant="default"
+                onClick={startBatchScan}
+                className="min-h-[44px] gap-2"
+              >
+                <Barcode className="h-4 w-4" />
+                <span className="hidden sm:inline">Batch Scan</span>
+              </Button>
+            </div>
             <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
@@ -1075,9 +1157,27 @@ export default function ProductManagement() {
       {/* Barcode Scanner */}
       <BarcodeScanner
         open={scannerOpen}
-        onOpenChange={setScannerOpen}
+        onOpenChange={(open) => {
+          setScannerOpen(open);
+          if (!open) {
+            setBatchScanMode(false);
+          }
+        }}
         onScanSuccess={handleScanSuccess}
+        batchMode={batchScanMode}
+        scannedCount={batchProducts.length}
       />
+
+      {/* Batch Operations Panel */}
+      {batchPanelOpen && (
+        <BatchPanel
+          products={batchProducts}
+          onRemove={removeBatchProduct}
+          onClear={clearBatch}
+          onBatchDelete={handleBatchDelete}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 }

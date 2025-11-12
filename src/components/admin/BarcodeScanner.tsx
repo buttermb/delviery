@@ -21,9 +21,11 @@ interface BarcodeScannerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onScanSuccess: (barcode: string) => void;
+  batchMode?: boolean; // If true, keeps scanner open after each scan
+  scannedCount?: number; // Number of items scanned in batch mode
 }
 
-export function BarcodeScanner({ open, onOpenChange, onScanSuccess }: BarcodeScannerProps) {
+export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = false, scannedCount = 0 }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -74,7 +76,11 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess }: BarcodeSca
           logger.info('Barcode scanned successfully', { barcode: decodedText });
           toast.success(`Barcode detected: ${decodedText}`);
           onScanSuccess(decodedText);
-          handleClose();
+          
+          // Only close if not in batch mode
+          if (!batchMode) {
+            handleClose();
+          }
         },
         (errorMessage) => {
           // Error callback (fires continuously, so we don't log it)
@@ -127,7 +133,10 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess }: BarcodeSca
             </Button>
           </div>
           <DialogDescription>
-            Position the barcode within the frame to scan
+            {batchMode 
+              ? `Batch scanning mode - ${scannedCount} item${scannedCount !== 1 ? 's' : ''} scanned`
+              : 'Position the barcode within the frame to scan'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +166,16 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess }: BarcodeSca
             <p>📱 Hold your device steady</p>
             <p>🔍 Center the barcode in the frame</p>
             <p>💡 Ensure good lighting for best results</p>
+            {batchMode && <p className="text-primary font-medium">✨ Scanner stays open - scan multiple items!</p>}
           </div>
+          
+          {batchMode && scannedCount > 0 && (
+            <div className="flex justify-center">
+              <Button onClick={handleClose} variant="default">
+                Done Scanning ({scannedCount} items)
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
