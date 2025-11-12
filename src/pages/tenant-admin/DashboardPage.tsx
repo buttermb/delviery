@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,6 @@ import { logger } from "@/utils/logger";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
-import { useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();

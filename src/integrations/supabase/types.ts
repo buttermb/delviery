@@ -7027,6 +7027,8 @@ export type Database = {
           accepted_at: string | null
           created_at: string | null
           email: string
+          email_verification_sent_at: string | null
+          email_verification_token_expires_at: string | null
           email_verified: boolean | null
           id: string
           invited_at: string | null
@@ -7036,11 +7038,14 @@ export type Database = {
           tenant_id: string
           updated_at: string | null
           user_id: string | null
+          verification_reminder_sent: boolean | null
         }
         Insert: {
           accepted_at?: string | null
           created_at?: string | null
           email: string
+          email_verification_sent_at?: string | null
+          email_verification_token_expires_at?: string | null
           email_verified?: boolean | null
           id?: string
           invited_at?: string | null
@@ -7050,11 +7055,14 @@ export type Database = {
           tenant_id: string
           updated_at?: string | null
           user_id?: string | null
+          verification_reminder_sent?: boolean | null
         }
         Update: {
           accepted_at?: string | null
           created_at?: string | null
           email?: string
+          email_verification_sent_at?: string | null
+          email_verification_token_expires_at?: string | null
           email_verified?: boolean | null
           id?: string
           invited_at?: string | null
@@ -7064,6 +7072,7 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
           user_id?: string | null
+          verification_reminder_sent?: boolean | null
         }
         Relationships: [
           {
@@ -8601,6 +8610,20 @@ export type Database = {
           p_password: string
         }
         Returns: string
+      }
+      create_tenant_atomic: {
+        Args: {
+          p_auth_user_id: string
+          p_business_name: string
+          p_company_size?: string
+          p_email: string
+          p_industry?: string
+          p_owner_name: string
+          p_phone?: string
+          p_slug?: string
+          p_state?: string
+        }
+        Returns: Json
       }
       decrement_giveaway_entries: {
         Args: { p_entries: number; p_giveaway_id: string; p_user_id: string }
