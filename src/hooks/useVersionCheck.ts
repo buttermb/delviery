@@ -55,7 +55,8 @@ async function checkVersion(): Promise<boolean> {
     localStorage.setItem(LAST_CHECK_KEY, now.toString());
     
     // Fetch version.json with cache-busting
-    const response = await fetch(`/version.json?t=${now}`, {
+    const safeFetch = fetch.bind(window);
+    const response = await safeFetch(`/version.json?t=${now}`, {
       cache: 'no-cache',
       headers: { 'Cache-Control': 'no-cache' }
     });

@@ -48,7 +48,8 @@ export default function LinkChecker() {
           if (check.url.startsWith('http') && !check.url.includes(window.location.host)) {
             checks[i].status = 'external';
           } else {
-            const response = await fetch(check.url, { method: 'HEAD' });
+            const safeFetch = fetch.bind(window);
+            const response = await safeFetch(check.url, { method: 'HEAD' });
             checks[i].statusCode = response.status;
             checks[i].status = response.ok ? 'valid' : 'broken';
           }
