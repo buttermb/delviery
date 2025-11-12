@@ -141,12 +141,12 @@ export async function generateProductLabelPDF(
 
     // Generate barcode using barcodeService
     const barcodeValue = data.barcodeValue || data.sku;
-    let barcodeHeight = size === 'small' ? 30 : size === 'standard' ? 45 : 55;
-    let barcodeWidth = size === 'small' ? 100 : size === 'standard' ? 180 : 220;
+    let barcodeHeight = size === 'small' ? 35 : size === 'standard' ? 50 : 60;
+    let barcodeWidth = size === 'small' ? 120 : size === 'standard' ? 200 : 240;
     
     try {
       const barcodeSvg = generateBarcodeSVG(barcodeValue, {
-        width: 2,
+        width: 1.5,
         height: barcodeHeight,
         displayValue: true,
         format: 'CODE128',
@@ -165,8 +165,8 @@ export async function generateProductLabelPDF(
       
       // Draw barcode on canvas to get PNG
       const canvas = document.createElement('canvas');
-      canvas.width = barcodeWidth * 2; // Higher resolution
-      canvas.height = barcodeHeight * 2;
+      canvas.width = barcodeWidth * 3; // Higher resolution for clarity
+      canvas.height = barcodeHeight * 3;
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.fillStyle = 'white';
@@ -174,20 +174,22 @@ export async function generateProductLabelPDF(
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       }
       
-      const barcodeDataUrl = canvas.toDataURL('image/png');
+      const barcodeDataUrl = canvas.toDataURL('image/png', 1.0);
       URL.revokeObjectURL(url);
       
-      // Add barcode to PDF
-      const barcodeY = currentY + 8;
+      // Add barcode to PDF centered
+      const barcodeY = currentY + 5;
+      const barcodeX = (width - barcodeWidth) / 2;
+      
       pdf.addImage(
         barcodeDataUrl,
         'PNG',
-        (width - barcodeWidth) / 2,
+        barcodeX,
         barcodeY,
         barcodeWidth,
         barcodeHeight
       );
-      currentY = barcodeY + barcodeHeight + 10;
+      currentY = barcodeY + barcodeHeight + 8;
     } catch (error) {
       logger.warn('Failed to generate barcode, using text fallback', error, {
         component: 'labelGenerator',
