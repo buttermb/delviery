@@ -9,7 +9,7 @@ interface CreditStatusBadgeProps {
 export function CreditStatusBadge({ balance, threshold = 20000 }: CreditStatusBadgeProps) {
   if (balance === 0) {
     return (
-      <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+      <Badge className="bg-success/10 text-success border-success/20">
         🟢 Paid in Full
       </Badge>
     );
@@ -25,7 +25,7 @@ export function CreditStatusBadge({ balance, threshold = 20000 }: CreditStatusBa
   }
 
   return (
-    <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+    <Badge className="bg-warning/10 text-warning border-warning/20">
       🟡 Outstanding
     </Badge>
   );

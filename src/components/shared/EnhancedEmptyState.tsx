@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export type EmptyStateType = 
   | "no_tenants" 
@@ -84,6 +85,7 @@ export function EnhancedEmptyState({
   className,
   designSystem = "tenant-admin",
 }: EnhancedEmptyStateProps) {
+  const { theme } = useTheme();
   const config = emptyStateConfig[type];
   const finalTitle = title || config.defaultTitle;
   const finalDescription = description || config.defaultDescription;
@@ -93,34 +95,17 @@ export function EnhancedEmptyState({
     </div>
   );
 
-  // Design system-specific styling
+  // Design system-specific styling using semantic tokens
   const bgColor = {
-    marketing: "bg-white",
-    "super-admin": "bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10",
-    "tenant-admin": "bg-white",
-    customer: "bg-white",
+    marketing: "bg-card",
+    "super-admin": "bg-card/80 backdrop-blur-xl",
+    "tenant-admin": "bg-card",
+    customer: "bg-card",
   }[designSystem];
 
-  const borderColor = {
-    marketing: "border-[hsl(var(--marketing-border))]",
-    "super-admin": "border-white/10",
-    "tenant-admin": "border-[hsl(var(--tenant-border))]",
-    customer: "border-[hsl(var(--customer-border))]",
-  }[designSystem];
-
-  const textColor = {
-    marketing: "text-[hsl(var(--marketing-text))]",
-    "super-admin": "text-[hsl(var(--super-admin-text))]",
-    "tenant-admin": "text-[hsl(var(--tenant-text))]",
-    customer: "text-[hsl(var(--customer-text))]",
-  }[designSystem];
-
-  const textLightColor = {
-    marketing: "text-[hsl(var(--marketing-text-light))]",
-    "super-admin": "text-[hsl(var(--super-admin-text-light))]",
-    "tenant-admin": "text-[hsl(var(--tenant-text-light))]",
-    customer: "text-[hsl(var(--customer-text-light))]",
-  }[designSystem];
+  const borderColor = "border-border";
+  const textColor = "text-card-foreground";
+  const textLightColor = "text-muted-foreground";
 
   const primaryButtonClass = {
     marketing: "bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] hover:opacity-90 text-white",
@@ -129,12 +114,7 @@ export function EnhancedEmptyState({
     customer: "bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white",
   }[designSystem];
 
-  const secondaryButtonClass = {
-    marketing: "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg-subtle))]",
-    "super-admin": "border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10",
-    "tenant-admin": "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]",
-    customer: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]",
-  }[designSystem];
+  const secondaryButtonClass = "border-border text-foreground hover:bg-muted";
 
   return (
     <Card 
@@ -165,7 +145,7 @@ export function EnhancedEmptyState({
               <Button
                 variant="outline"
                 onClick={secondaryAction.onClick}
-                className={cn("flex-1", secondaryButtonClass)}
+                className="flex-1"
               >
                 {secondaryAction.label}
               </Button>

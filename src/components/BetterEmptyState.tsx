@@ -32,12 +32,12 @@ export function BetterEmptyState({
       className
     )}>
       {Icon && (
-        <div className="rounded-full bg-muted p-6 mb-4">
+        <div className="rounded-full bg-muted/50 p-6 mb-4 border border-border">
           <Icon className="h-10 w-10 text-muted-foreground" />
         </div>
       )}
       
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
       
       {description && (
         <p className="text-muted-foreground text-sm max-w-md mb-6">

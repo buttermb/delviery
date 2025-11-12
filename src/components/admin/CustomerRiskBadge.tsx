@@ -26,11 +26,11 @@ export function CustomerRiskBadge({
   }
 
   const getRiskLevel = (score: number) => {
-    if (score >= 80) return { label: 'Excellent', variant: 'default' as const, color: 'bg-green-500' };
-    if (score >= 60) return { label: 'Good', variant: 'default' as const, color: 'bg-blue-500' };
-    if (score >= 40) return { label: 'Fair', variant: 'secondary' as const, color: 'bg-yellow-500' };
-    if (score >= 20) return { label: 'Poor', variant: 'secondary' as const, color: 'bg-orange-500' };
-    return { label: 'High Risk', variant: 'destructive' as const, color: 'bg-red-500' };
+    if (score >= 80) return { label: 'Excellent', variant: 'default' as const, color: 'bg-success' };
+    if (score >= 60) return { label: 'Good', variant: 'default' as const, color: 'bg-info' };
+    if (score >= 40) return { label: 'Fair', variant: 'secondary' as const, color: 'bg-warning' };
+    if (score >= 20) return { label: 'Poor', variant: 'secondary' as const, color: 'bg-warning' };
+    return { label: 'High Risk', variant: 'destructive' as const, color: 'bg-destructive' };
   };
 
   const risk = getRiskLevel(score);

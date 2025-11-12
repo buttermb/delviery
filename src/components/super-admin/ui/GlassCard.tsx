@@ -18,13 +18,13 @@ export function GlassCard({ children, className, title, header }: GlassCardProps
   return (
     <Card
       className={cn(
-        'bg-background/80 backdrop-blur-xl border-white/10 shadow-lg',
+        'bg-card/80 backdrop-blur-xl border-border shadow-lg',
         className
       )}
     >
       {title && (
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <CardTitle className="text-card-foreground">{title}</CardTitle>
         </CardHeader>
       )}
       {header && <CardHeader>{header}</CardHeader>}

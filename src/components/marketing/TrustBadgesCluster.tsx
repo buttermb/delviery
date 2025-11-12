@@ -50,7 +50,7 @@ export function TrustBadgesCluster() {
         return (
           <motion.div
             key={badge.label}
-            className="flex items-center gap-3 px-4 py-3 glass-card rounded-lg group"
+            className="flex items-center gap-3 px-4 py-3 bg-card/50 backdrop-blur-sm border border-border rounded-lg group hover:bg-card/80 transition-colors"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -61,7 +61,7 @@ export function TrustBadgesCluster() {
               <Icon weight="fill" className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
             </AnimatedIcon>
             <div>
-              <div className="font-semibold text-foreground text-sm">{badge.label}</div>
+              <div className="font-semibold text-card-foreground text-sm">{badge.label}</div>
               <div className="text-xs text-muted-foreground">{badge.description}</div>
             </div>
           </motion.div>
