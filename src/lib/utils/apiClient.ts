@@ -6,6 +6,7 @@
 import { getCurrentUserType } from "./authHelpers";
 import { emitAuthError } from "@/hooks/useAuthError";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { safeFetch } from "@/utils/safeFetch";
 
 const getToken = (): string | null => {
   const userType = getCurrentUserType();
@@ -42,9 +43,8 @@ export async function apiFetch(
   }
 
   try {
-    // Get bound fetch dynamically at call time to ensure proper context
-    const getBoundFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
-    const response = await getBoundFetch()(url, {
+    // Use safeFetch to prevent "illegal invocation" errors
+    const response = await safeFetch(url, {
       ...restOptions,
       headers: {
         "Content-Type": "application/json",
