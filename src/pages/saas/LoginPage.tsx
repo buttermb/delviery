@@ -23,8 +23,9 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -141,11 +142,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
+      
+      {/* Floating orbs */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
+      
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
+        backgroundSize: '40px 40px'
+      }} />
+
+      <Card className="w-full max-w-md p-8 relative z-10 backdrop-blur-sm bg-card/95 shadow-2xl border-2">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-4">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </div>
+          <Badge className="mb-4" variant="outline">Business Admin Portal</Badge>
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent">
+            Welcome Back
+          </h1>
+          <p className="text-muted-foreground">Sign in to your business dashboard</p>
         </div>
 
         {signupSuccess && (
@@ -164,9 +185,17 @@ export default function LoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    Email
+                  </FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@business.com" {...field} />
+                    <Input 
+                      type="email" 
+                      placeholder="you@business.com" 
+                      className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -178,18 +207,33 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Password
+                  </FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••" 
+                      className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all" 
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
-                'Signing in...'
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </span>
               ) : (
                 <>
                   Sign In <ArrowRight className="ml-2 h-4 w-4" />
@@ -199,12 +243,15 @@ export default function LoginPage() {
           </form>
         </Form>
 
-        <div className="mt-6 text-center text-sm">
+        <div className="mt-6 text-center text-sm space-y-2">
           <p className="text-muted-foreground">
             Don't have an account?{' '}
-            <a href="/signup" className="text-primary underline">
+            <a href="/signup" className="text-primary font-semibold hover:underline transition-all">
               Start free trial
             </a>
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Secure authentication powered by DevPanel
           </p>
         </div>
       </Card>
