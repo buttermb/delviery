@@ -468,20 +468,20 @@ export default function TenantAdminDashboardPage() {
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${
             trialInfo.trialDaysRemaining <= 3 
-              ? "border-red-400 bg-red-50" 
+              ? "border-destructive bg-destructive/5" 
               : trialInfo.trialDaysRemaining <= 10 
-              ? "border-yellow-400 bg-yellow-50" 
-              : "border-blue-400 bg-blue-50"
+              ? "border-orange-400 bg-orange-50/50 dark:bg-orange-950/20" 
+              : "border-primary bg-primary/5"
           }`}>
             <CardContent className="pt-4 sm:pt-6 p-3 sm:p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5 sm:mt-0 ${
-                    trialInfo.trialDaysRemaining <= 3 ? "text-red-600" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-600" : "text-blue-600"
+                    trialInfo.trialDaysRemaining <= 3 ? "text-destructive" : trialInfo.trialDaysRemaining <= 10 ? "text-orange-600 dark:text-orange-400" : "text-primary"
                   }`} />
                   <div className="min-w-0 flex-1">
                     <p className={`font-semibold text-sm sm:text-base ${
-                      trialInfo.trialDaysRemaining <= 3 ? "text-red-900" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-900" : "text-blue-900"
+                      trialInfo.trialDaysRemaining <= 3 ? "text-destructive" : trialInfo.trialDaysRemaining <= 10 ? "text-orange-700 dark:text-orange-300" : "text-primary"
                     }`}>
                       {trialInfo.trialDaysRemaining <= 0 
                         ? "⚠️ Trial Expired" 
@@ -490,7 +490,7 @@ export default function TenantAdminDashboardPage() {
                         : "⏰ Trial Ending in " + trialInfo.trialDaysRemaining + " days"}
                     </p>
                     <p className={`text-xs sm:text-sm ${
-                      trialInfo.trialDaysRemaining <= 3 ? "text-red-700" : trialInfo.trialDaysRemaining <= 10 ? "text-yellow-700" : "text-blue-700"
+                      trialInfo.trialDaysRemaining <= 3 ? "text-destructive/90" : trialInfo.trialDaysRemaining <= 10 ? "text-orange-600 dark:text-orange-400" : "text-primary/90"
                     }`}>
                       {trialInfo.trialDaysRemaining <= 0 
                         ? "Upgrade to continue using the platform"
@@ -632,7 +632,7 @@ export default function TenantAdminDashboardPage() {
                     className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('products') >= 80 && (
-                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('products'))}% capacity. 
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited products.
                     </p>
@@ -668,7 +668,7 @@ export default function TenantAdminDashboardPage() {
                     className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('customers') >= 80 && (
-                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('customers'))}% capacity. 
                       Upgrade to {tenant?.subscription_plan === 'starter' ? 'Professional' : 'Enterprise'} for unlimited customers.
                     </p>
@@ -704,7 +704,7 @@ export default function TenantAdminDashboardPage() {
                     className="mt-2 h-1.5 sm:h-2"
                   />
                   {getUsagePercentage('menus') >= 80 && (
-                    <p className="text-xs sm:text-sm text-yellow-600 mt-2">
+                    <p className="text-xs sm:text-sm text-orange-600 dark:text-orange-400 mt-2">
                       ⚠️ You're at {Math.round(getUsagePercentage('menus'))}% capacity. 
                       Upgrade to Professional for unlimited menus.
                     </p>
@@ -830,24 +830,24 @@ export default function TenantAdminDashboardPage() {
 
         {/* Low Stock Alerts */}
         {todayMetrics?.lowStock && todayMetrics.lowStock.length > 0 && (
-          <Card className="border-yellow-300 border-2" data-tutorial="low-stock-alerts">
+          <Card className="border-orange-300 dark:border-orange-600 border-2" data-tutorial="low-stock-alerts">
             <CardHeader className="p-3 sm:p-4 md:p-6">
               <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
                 Low Stock Alerts
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
               <div className="space-y-2 sm:space-y-3">
                 {todayMetrics.lowStock.map((item: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-yellow-200 rounded-lg bg-yellow-50 gap-2">
+                  <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50/50 dark:bg-orange-950/20 gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>
                       <p className="text-xs text-[hsl(var(--tenant-text-light))]">
                         {Number(item.weight_lbs || 0).toFixed(2)} lbs remaining
                       </p>
                     </div>
-                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs flex-shrink-0">Low Stock</Badge>
+                    <Badge className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700 text-xs flex-shrink-0">Low Stock</Badge>
                   </div>
                 ))}
               </div>
