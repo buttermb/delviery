@@ -43,8 +43,8 @@ const navigation: NavItem[] = [
     icon: <Package className="h-5 w-5" />,
     children: [
       { name: 'Orders', href: '/admin/wholesale-orders', icon: <FileText className="h-4 w-4" /> },
+      { name: 'Inventory Alerts', href: '/admin/inventory-monitoring', icon: <Package className="h-4 w-4" /> },
       { name: 'Transfers & Delivery', href: '/admin/dispatch-inventory', icon: <Truck className="h-4 w-4" /> },
-      { name: 'Inventory', href: '/admin/inventory-dashboard', icon: <Package className="h-4 w-4" /> },
       { name: 'Receiving & Packaging', href: '/admin/operations/receiving', icon: <Warehouse className="h-4 w-4" /> },
     ],
   },
