@@ -53,6 +53,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     if (open && product.sku) {
       try {
         const barcodeValue = (product.barcode as string) || product.sku || '';
+        // Use exact same parameters as PDF generation for consistency
         const dataUrl = generateBarcodeSVG(barcodeValue, {
           width: 3,
           height: 50,

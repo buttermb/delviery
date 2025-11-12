@@ -141,32 +141,38 @@ export async function generateProductLabelPDF(
 
     // Generate barcode using barcodeService
     const barcodeValue = data.barcodeValue || data.sku;
-    let barcodeHeight = size === 'small' ? 35 : size === 'standard' ? 50 : 60;
-    let barcodeWidth = size === 'small' ? 120 : size === 'standard' ? 200 : 240;
+    // Use fixed height of 50 for consistent appearance across preview and PDF
+    const barcodeGenerationHeight = 50;
     
     try {
-      // generateBarcodeSVG actually returns a PNG data URL, not SVG
-      // Using width:3 for high-resolution barcode that scales well in PDF
+      // Generate high-resolution barcode with consistent parameters
+      // width:3 creates thick, scannable bars
       const barcodeDataUrl = generateBarcodeSVG(barcodeValue, {
         width: 3,
-        height: barcodeHeight,
+        height: barcodeGenerationHeight,
         displayValue: true,
         format: 'CODE128',
       });
       
-      // Add barcode directly to PDF
+      // Calculate natural barcode dimensions
+      // Standard CODE128 barcode is approximately 200px wide for typical SKUs
+      // We'll use a consistent size that works well for labels without stretching
+      const naturalBarcodeWidth = size === 'small' ? 120 : size === 'standard' ? 200 : 240;
+      const naturalBarcodeHeight = barcodeGenerationHeight;
+      
+      // Center the barcode without distortion
       const barcodeY = currentY + 5;
-      const barcodeX = (width - barcodeWidth) / 2;
+      const barcodeX = (width - naturalBarcodeWidth) / 2;
       
       pdf.addImage(
         barcodeDataUrl,
         'PNG',
         barcodeX,
         barcodeY,
-        barcodeWidth,
-        barcodeHeight
+        naturalBarcodeWidth,
+        naturalBarcodeHeight
       );
-      currentY = barcodeY + barcodeHeight + 8;
+      currentY = barcodeY + naturalBarcodeHeight + 8;
     } catch (error) {
       logger.error('Failed to generate barcode for PDF', error, {
         component: 'labelGenerator',
