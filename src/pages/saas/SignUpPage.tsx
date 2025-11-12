@@ -337,6 +337,14 @@ export default function SignUpPage() {
         hasTokens: !!result.tokens 
       });
 
+      // Always set lastTenantSlug immediately after tenant creation
+      try {
+        localStorage.setItem('lastTenantSlug', tenant.slug);
+        logger.info('[SIGNUP] Saved lastTenantSlug', { slug: tenant.slug });
+      } catch (error) {
+        logger.error('[SIGNUP] Failed to save lastTenantSlug', error);
+      }
+
       // Update auth context (handles localStorage and state)
       if (handleSignupSuccess) {
         await handleSignupSuccess(result);
@@ -345,7 +353,6 @@ export default function SignUpPage() {
         try {
           localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
           localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
-          localStorage.setItem('lastTenantSlug', tenant.slug); // Store for LoginDirectory redirect
         } catch (error) {
           logger.error('Failed to store auth data in localStorage', error);
           // Continue anyway as tokens are in httpOnly cookies

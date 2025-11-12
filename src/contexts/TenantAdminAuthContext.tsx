@@ -193,6 +193,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Set state from localStorage (for quick UI rendering)
         setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
+        // Sync lastTenantSlug
+        localStorage.setItem('lastTenantSlug', tenantWithDefaults.slug);
         
         // Verify authentication via API (cookies sent automatically)
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -265,6 +267,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     setIsAuthenticated(false);
     localStorage.removeItem(ADMIN_KEY);
     localStorage.removeItem(TENANT_KEY);
+    localStorage.removeItem('lastTenantSlug'); // Clear tenant slug cache
     // Note: We don't remove ACCESS_TOKEN_KEY/REFRESH_TOKEN_KEY here
     // as they may not exist if using cookies
   };
