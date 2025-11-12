@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { EnhancedProductTable } from "@/components/admin/EnhancedProductTable";
 import {
   Select,
@@ -1025,6 +1026,16 @@ export default function ProductManagement() {
           onOpenChange={setLabelDialogOpen}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        itemName={productToDelete?.name}
+        itemType="product"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

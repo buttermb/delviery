@@ -8,8 +8,14 @@ import { logger } from '@/lib/logger';
 
 export interface ProductLabelData {
   productName: string;
+  category?: string;
   strainName?: string;
   strainType?: 'Sativa' | 'Indica' | 'Hybrid';
+  vendorName?: string;
+  batchNumber?: string;
+  thcPercent?: number;
+  cbdPercent?: number;
+  price?: number;
   sku: string;
   barcodeImageUrl?: string;
   barcodeValue?: string;
@@ -40,44 +46,76 @@ export async function generateProductLabelPDF(
     pdf.rect(0, 0, width, height, 'F');
 
     // Product Name (large, bold, top)
-    pdf.setFontSize(18);
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(0, 0, 0);
-    const productNameY = margin + 20;
+    const productNameY = margin + 18;
     pdf.text(data.productName, width / 2, productNameY, {
       align: 'center',
       maxWidth: width - 2 * margin,
     });
 
-    // Strain Name (if available)
-    let currentY = productNameY + 25;
-    if (data.strainName) {
-      pdf.setFontSize(14);
+    let currentY = productNameY + 20;
+
+    // Category and Vendor (if available)
+    if (data.category || data.vendorName) {
+      pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Strain: ${data.strainName}`, width / 2, currentY, {
-        align: 'center',
-      });
-      currentY += 18;
+      pdf.setTextColor(80, 80, 80);
+      const info = [
+        data.category ? `Category: ${data.category}` : null,
+        data.vendorName ? `Vendor: ${data.vendorName}` : null,
+      ].filter(Boolean).join(' | ');
+      pdf.text(info, width / 2, currentY, { align: 'center' });
+      currentY += 12;
     }
 
-    // Strain Type with color coding
-    if (data.strainType) {
-      pdf.setFontSize(12);
+    // Strain Name and Type
+    if (data.strainName || data.strainType) {
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
       
-      // Color coding: Indica = Red, Sativa = Blue, Hybrid = Purple
-      const colorMap: Record<string, [number, number, number]> = {
-        Indica: [220, 38, 38], // Red
-        Sativa: [37, 99, 235], // Blue
-        Hybrid: [147, 51, 234], // Purple
-      };
+      if (data.strainType) {
+        // Color coding: Indica = Red, Sativa = Blue, Hybrid = Purple
+        const colorMap: Record<string, [number, number, number]> = {
+          Indica: [220, 38, 38], // Red
+          Sativa: [37, 99, 235], // Blue
+          Hybrid: [147, 51, 234], // Purple
+        };
+        const color = colorMap[data.strainType] || [0, 0, 0];
+        pdf.setTextColor(color[0], color[1], color[2]);
+      } else {
+        pdf.setTextColor(0, 0, 0);
+      }
       
-      const color = colorMap[data.strainType] || [0, 0, 0];
-      pdf.setTextColor(color[0], color[1], color[2]);
-      pdf.text(`Type: ${data.strainType}`, width / 2, currentY, {
-        align: 'center',
-      });
-      currentY += 20;
+      const strainInfo = [
+        data.strainName ? `Strain: ${data.strainName}` : null,
+        data.strainType ? `(${data.strainType})` : null,
+      ].filter(Boolean).join(' ');
+      pdf.text(strainInfo, width / 2, currentY, { align: 'center' });
+      currentY += 14;
+    }
+
+    // THC/CBD and Batch Number
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+    const details = [];
+    if (data.thcPercent !== undefined) details.push(`THC: ${data.thcPercent}%`);
+    if (data.cbdPercent !== undefined) details.push(`CBD: ${data.cbdPercent}%`);
+    if (data.batchNumber) details.push(`Batch: ${data.batchNumber}`);
+    if (details.length > 0) {
+      pdf.text(details.join(' | '), width / 2, currentY, { align: 'center' });
+      currentY += 12;
+    }
+
+    // Price (if available)
+    if (data.price !== undefined) {
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Price: $${data.price}`, width / 2, currentY, { align: 'center' });
+      currentY += 14;
     }
 
     // Barcode (centered, below text)
