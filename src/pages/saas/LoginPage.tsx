@@ -142,31 +142,109 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
       
-      {/* Floating orbs */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-      <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
+      {/* Floating orbs with movement */}
+      <div 
+        className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" 
+        style={{ 
+          animationDuration: '4s',
+          animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite, float 8s ease-in-out infinite'
+        }} 
+      />
+      <div 
+        className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" 
+        style={{ 
+          animationDuration: '6s',
+          animationDelay: '1s',
+          animation: 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite 1s, float-reverse 10s ease-in-out infinite'
+        }} 
+      />
+      <div 
+        className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" 
+        style={{ 
+          animationDuration: '5s',
+          animationDelay: '2s',
+          animation: 'pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite 2s, float-diagonal 12s ease-in-out infinite'
+        }} 
+      />
+      
+      {/* Animated gradient shapes */}
+      <div 
+        className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-pink-500/10 to-orange-500/10 rounded-full blur-2xl"
+        style={{ animation: 'float 7s ease-in-out infinite' }}
+      />
+      <div 
+        className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-gradient-to-tr from-cyan-500/10 to-blue-500/10 rounded-full blur-2xl"
+        style={{ animation: 'float-reverse 9s ease-in-out infinite' }}
+      />
       
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
         backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
         backgroundSize: '40px 40px'
       }} />
+      
+      {/* Animated lines */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="absolute h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent top-1/4"
+          style={{ animation: 'slide-horizontal 15s linear infinite' }}
+        />
+        <div 
+          className="absolute h-px w-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent top-2/3"
+          style={{ animation: 'slide-horizontal-reverse 20s linear infinite' }}
+        />
+        <div 
+          className="absolute w-px h-full bg-gradient-to-b from-transparent via-emerald-500/20 to-transparent left-1/4"
+          style={{ animation: 'slide-vertical 18s linear infinite' }}
+        />
+      </div>
 
-      <Card className="w-full max-w-md p-8 relative z-10 backdrop-blur-sm bg-card/95 shadow-2xl border-2">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-4">
-            <Sparkles className="h-8 w-8 text-primary" />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(30px, -30px) rotate(5deg); }
+          50% { transform: translate(-20px, 20px) rotate(-5deg); }
+          75% { transform: translate(20px, 10px) rotate(3deg); }
+        }
+        @keyframes float-reverse {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-30px, 30px) rotate(-5deg); }
+          50% { transform: translate(20px, -20px) rotate(5deg); }
+          75% { transform: translate(-20px, -10px) rotate(-3deg); }
+        }
+        @keyframes float-diagonal {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(40px, -40px) scale(1.1); }
+          66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+        @keyframes slide-horizontal {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes slide-horizontal-reverse {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
+        @keyframes slide-vertical {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+      `}} />
+
+      <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-sm bg-card/95 shadow-2xl border-2 animate-fade-in">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-4 animate-scale-in">
+            <Sparkles className="h-8 w-8 text-primary animate-pulse" />
           </div>
-          <Badge className="mb-4" variant="outline">Business Admin Portal</Badge>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent">
+          <Badge className="mb-4 animate-fade-in" variant="outline">Business Admin Portal</Badge>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent animate-fade-in">
             Welcome Back
           </h1>
-          <p className="text-muted-foreground">Sign in to your business dashboard</p>
+          <p className="text-muted-foreground animate-fade-in">Sign in to your business dashboard</p>
         </div>
 
         {signupSuccess && (
@@ -179,7 +257,7 @@ export default function LoginPage() {
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="email"
@@ -226,7 +304,7 @@ export default function LoginPage() {
 
             <Button 
               type="submit" 
-              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all" 
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -243,14 +321,15 @@ export default function LoginPage() {
           </form>
         </Form>
 
-        <div className="mt-6 text-center text-sm space-y-2">
+        <div className="mt-8 text-center text-sm space-y-3">
           <p className="text-muted-foreground">
             Don't have an account?{' '}
-            <a href="/signup" className="text-primary font-semibold hover:underline transition-all">
+            <a href="/signup" className="text-primary font-semibold hover:underline transition-all story-link">
               Start free trial
             </a>
           </p>
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
+            <Lock className="h-3 w-3" />
             Secure authentication powered by DevPanel
           </p>
         </div>
