@@ -181,8 +181,20 @@ export async function generateProductLabelPDF(
 
     // Generate barcode
     const barcodeValue = data.barcodeValue || data.sku;
+    
+    // Validate barcode value
+    if (!barcodeValue || barcodeValue.trim().length === 0) {
+      logger.error('Invalid barcode value', { barcodeValue, sku: data.sku });
+      throw new Error('Barcode value is required but was empty');
+    }
+    
     try {
-      logger.info('Generating barcode for PDF', { barcodeValue });
+      logger.info('Generating barcode for PDF', { 
+        barcodeValue, 
+        length: barcodeValue.length,
+        productName: data.productName,
+        sku: data.sku 
+      });
       
       const barcodeDataUrl = generateBarcodeSVG(barcodeValue, {
         width: 3,
@@ -191,8 +203,13 @@ export async function generateProductLabelPDF(
         format: 'CODE128',
       });
       
+      logger.info('Barcode data URL generated', {
+        urlLength: barcodeDataUrl.length,
+        startsWithDataImage: barcodeDataUrl.startsWith('data:image'),
+      });
+      
       if (!barcodeDataUrl || !barcodeDataUrl.startsWith('data:image')) {
-        throw new Error('Invalid barcode data URL');
+        throw new Error('Invalid barcode data URL - does not start with data:image');
       }
       
       // Match preview max-w-[300px] scaled to PDF
@@ -207,19 +224,22 @@ export async function generateProductLabelPDF(
       pdf.addImage(barcodeDataUrl, 'PNG', barcodeX, currentY, barcodeMaxWidth, barcodeHeight);
       currentY += barcodeHeight + 16;
       
-      logger.info('Barcode added to PDF successfully');
+      logger.info('Barcode added to PDF successfully', {
+        barcodeX,
+        currentY,
+        barcodeMaxWidth,
+        barcodeHeight,
+      });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to generate barcode for PDF', error, {
         component: 'labelGenerator',
         barcodeValue,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorMessage,
       });
-      // Show barcode value as fallback text
-      pdf.setFontSize(fontSizes['text-xs']);
-      pdf.setFont('courier', 'bold');
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(barcodeValue, width / 2, currentY + 20, { align: 'center' });
-      currentY += 40;
+      
+      // Show error to user
+      throw new Error(`Barcode generation failed: ${errorMessage}`);
     }
 
     // QR Code (only for non-small labels)

@@ -124,8 +124,23 @@ export function generateBarcodeSVG(
   const height = options.height || 100;
   const displayValue = options.displayValue !== false;
   const format = options.format || 'CODE128';
+  const margin = 10;
 
   try {
+    // Validate barcode text
+    if (!barcodeText || barcodeText.trim().length === 0) {
+      throw new Error('Barcode text cannot be empty');
+    }
+
+    // Calculate required canvas dimensions
+    const barcodeTextLength = barcodeText.length;
+    const calculatedWidth = (barcodeTextLength * width * 11) + (margin * 2) + 50;
+    const calculatedHeight = height + (displayValue ? 40 : 0) + (margin * 2);
+
+    // Set canvas dimensions BEFORE rendering
+    canvas.width = calculatedWidth;
+    canvas.height = calculatedHeight;
+
     JsBarcode(canvas, barcodeText, {
       format,
       width,
@@ -133,14 +148,34 @@ export function generateBarcodeSVG(
       displayValue,
       background: '#ffffff',
       lineColor: '#000000',
-      margin: 10,
+      margin,
     });
 
-    // Convert canvas to SVG data URL
-    return canvas.toDataURL('image/png');
+    // Validate canvas has content
+    if (canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas dimensions are invalid');
+    }
+
+    // Convert canvas to data URL
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    if (!dataUrl || !dataUrl.startsWith('data:image')) {
+      throw new Error('Failed to generate valid data URL from canvas');
+    }
+
+    return dataUrl;
   } catch (error) {
-    console.error('Barcode generation error:', error);
-    throw new Error(`Failed to generate barcode: ${error}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    // Import logger at the top of the file if not already imported
+    console.error('Barcode generation error:', {
+      barcodeText,
+      width,
+      height,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      error: errorMessage,
+    });
+    throw new Error(`Failed to generate barcode: ${errorMessage}`);
   }
 }
 

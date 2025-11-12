@@ -72,6 +72,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     if (open && product.sku) {
       try {
         const barcodeValue = (product.barcode as string) || product.sku || '';
+        
+        logger.info('Generating barcode preview', {
+          component: 'ProductLabel',
+          barcodeValue,
+          productName: product.name,
+          sku: product.sku,
+        });
+        
         // Use exact same parameters as PDF generation for consistency
         const dataUrl = generateBarcodeSVG(barcodeValue, {
           width: 3,
@@ -79,11 +87,22 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           displayValue: true,
           format: 'CODE128',
         });
+        
+        logger.info('Barcode preview generated successfully', {
+          urlLength: dataUrl.length,
+          startsWithDataImage: dataUrl.startsWith('data:image'),
+        });
+        
         setBarcodeDataUrl(dataUrl);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         logger.error('Failed to generate barcode preview', error, {
           component: 'ProductLabel',
+          errorMessage,
+          productName: product.name,
+          sku: product.sku,
         });
+        toast.error(`Barcode preview failed: ${errorMessage}`);
       }
     }
   }, [open, product.sku, product.barcode]);
@@ -128,23 +147,57 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   }
 
   const handleDownload = async () => {
+    if (!labelData) {
+      toast.error('Label data is missing');
+      return;
+    }
+
     try {
       setLoading(true);
+      
+      // Debug logging
+      logger.info('Downloading label', {
+        component: 'ProductLabel',
+        labelSize,
+        productName: labelData.productName,
+        sku: labelData.sku,
+        barcodeValue: labelData.barcodeValue,
+        hasBarcode: !!labelData.barcodeValue,
+        labelDataKeys: Object.keys(labelData),
+      });
+      
       await downloadProductLabel(labelData, labelSize);
       toast.success(`${labelSize} label downloaded successfully`);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to download label', error, {
         component: 'ProductLabel',
+        errorMessage,
+        labelData,
       });
-      toast.error('Failed to download label');
+      toast.error(`Failed to download label: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePrint = async () => {
+    if (!labelData) {
+      toast.error('Label data is missing');
+      return;
+    }
+
     try {
       setLoading(true);
+      
+      logger.info('Printing label', {
+        component: 'ProductLabel',
+        labelSize,
+        productName: labelData.productName,
+        sku: labelData.sku,
+        barcodeValue: labelData.barcodeValue,
+      });
+      
       const pdfBlob = await generateProductLabelPDF(labelData, labelSize);
       const url = URL.createObjectURL(pdfBlob);
       
@@ -158,10 +211,12 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
       
       toast.success('Opening print dialog...');
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to print label', error, {
         component: 'ProductLabel',
+        errorMessage,
       });
-      toast.error('Failed to print label');
+      toast.error(`Failed to print label: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -212,6 +267,23 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             </Select>
             <p className="text-xs text-muted-foreground">{sizeDescriptions[labelSize]}</p>
           </div>
+
+          {/* Debug Info */}
+          <details className="text-xs border border-border rounded-lg">
+            <summary className="p-2 cursor-pointer hover:bg-muted/50 rounded-t-lg font-medium">
+              🔍 Debug Information
+            </summary>
+            <div className="p-3 space-y-2 bg-muted/20 border-t border-border">
+              <div><strong>Product:</strong> {product.name}</div>
+              <div><strong>SKU:</strong> {product.sku}</div>
+              <div><strong>Barcode Value:</strong> {labelData?.barcodeValue || 'N/A'}</div>
+              <div><strong>Barcode Length:</strong> {labelData?.barcodeValue?.length || 0}</div>
+              <div><strong>Has Barcode URL:</strong> {barcodeDataUrl ? `Yes (${barcodeDataUrl.length} chars)` : 'No'}</div>
+              <div><strong>Label Size:</strong> {labelSize}</div>
+              <div><strong>Category:</strong> {product.category || 'N/A'}</div>
+              <div><strong>THC:</strong> {product.thc_percent}% | <strong>CBD:</strong> {product.cbd_percent}%</div>
+            </div>
+          </details>
 
           {/* Preview Mode Toggle */}
           <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
