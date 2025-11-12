@@ -46,7 +46,26 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   const [loading, setLoading] = useState(false);
   const [labelSize, setLabelSize] = useState<LabelSize>('standard');
   const [barcodeDataUrl, setBarcodeDataUrl] = useState<string>('');
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string>('');
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Prepare label data
+  const labelData: ProductLabelData | null = product.sku ? {
+    productName: product.name || '',
+    category: product.category || undefined,
+    strainName: product.strain_name || undefined,
+    strainType: (product.strain_type as 'Sativa' | 'Indica' | 'Hybrid') || undefined,
+    vendorName: product.vendor_name || undefined,
+    batchNumber: product.batch_number || undefined,
+    thcPercent: product.thc_percent || undefined,
+    cbdPercent: product.cbd_percent || undefined,
+    price: product.wholesale_price || product.retail_price || undefined,
+    sku: product.sku || '',
+    barcodeImageUrl: product.barcode_image_url || undefined,
+    barcodeValue: (product.barcode as string) || product.sku || '',
+  } : null;
 
   // Generate barcode when dialog opens
   useEffect(() => {
@@ -69,24 +88,44 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     }
   }, [open, product.sku, product.barcode]);
 
+  // Generate PDF preview when size changes or PDF preview is enabled
+  useEffect(() => {
+    if (open && showPdfPreview && labelData) {
+      const generatePreview = async () => {
+        try {
+          setGeneratingPdf(true);
+          // Clean up old URL
+          if (pdfPreviewUrl) {
+            URL.revokeObjectURL(pdfPreviewUrl);
+          }
+          
+          const pdfBlob = await generateProductLabelPDF(labelData, labelSize);
+          const url = URL.createObjectURL(pdfBlob);
+          setPdfPreviewUrl(url);
+        } catch (error) {
+          logger.error('Failed to generate PDF preview', error, {
+            component: 'ProductLabel',
+          });
+          toast.error('Failed to generate PDF preview');
+        } finally {
+          setGeneratingPdf(false);
+        }
+      };
+      
+      generatePreview();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (pdfPreviewUrl) {
+        URL.revokeObjectURL(pdfPreviewUrl);
+      }
+    };
+  }, [open, showPdfPreview, labelSize, labelData]);
+
   if (!product.sku) {
     return null;
   }
-
-  const labelData: ProductLabelData = {
-    productName: product.name || '',
-    category: product.category || undefined,
-    strainName: product.strain_name || undefined,
-    strainType: (product.strain_type as 'Sativa' | 'Indica' | 'Hybrid') || undefined,
-    vendorName: product.vendor_name || undefined,
-    batchNumber: product.batch_number || undefined,
-    thcPercent: product.thc_percent || undefined,
-    cbdPercent: product.cbd_percent || undefined,
-    price: product.wholesale_price || product.retail_price || undefined,
-    sku: product.sku || '',
-    barcodeImageUrl: product.barcode_image_url || undefined,
-    barcodeValue: (product.barcode as string) || product.sku || '',
-  };
 
   const handleDownload = async () => {
     try {
@@ -173,8 +212,55 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             </Select>
             <p className="text-xs text-muted-foreground">{sizeDescriptions[labelSize]}</p>
           </div>
+
+          {/* Preview Mode Toggle */}
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <Button
+              variant={!showPdfPreview ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowPdfPreview(false)}
+              className="flex-1"
+            >
+              HTML Preview
+            </Button>
+            <Button
+              variant={showPdfPreview ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowPdfPreview(true)}
+              className="flex-1"
+            >
+              PDF Preview
+            </Button>
+          </div>
           {/* Label Preview */}
-          <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
+          {showPdfPreview ? (
+            // PDF Preview
+            <div className="border-2 border-dashed border-muted rounded-lg bg-card overflow-hidden">
+              {generatingPdf ? (
+                <div className="flex items-center justify-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-3 text-sm text-muted-foreground">Generating PDF preview...</span>
+                </div>
+              ) : pdfPreviewUrl ? (
+                <iframe
+                  src={pdfPreviewUrl}
+                  className="w-full border-0"
+                  style={{ 
+                    height: labelSize === 'small' ? '200px' : 
+                            labelSize === 'standard' ? '400px' : 
+                            labelSize === 'large' ? '500px' : '700px'
+                  }}
+                  title="PDF Preview"
+                />
+              ) : (
+                <div className="flex items-center justify-center p-12">
+                  <p className="text-sm text-muted-foreground">Click "PDF Preview" to generate</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            // HTML Preview
+            <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
             {/* Header Section */}
             <div className="text-center border-b border-border pb-3">
               <h3 className="text-base font-bold text-foreground break-words">{product.name}</h3>
@@ -297,7 +383,8 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                 <p>📅 Packaged: {new Date().toLocaleDateString()}</p>
               </div>
             )}
-          </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <BarcodeIcon className="h-4 w-4" />
