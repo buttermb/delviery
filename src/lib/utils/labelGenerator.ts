@@ -182,12 +182,18 @@ export async function generateProductLabelPDF(
     // Generate barcode
     const barcodeValue = data.barcodeValue || data.sku;
     try {
+      logger.info('Generating barcode for PDF', { barcodeValue });
+      
       const barcodeDataUrl = generateBarcodeSVG(barcodeValue, {
         width: 3,
         height: 50,
         displayValue: true,
         format: 'CODE128',
       });
+      
+      if (!barcodeDataUrl || !barcodeDataUrl.startsWith('data:image')) {
+        throw new Error('Invalid barcode data URL');
+      }
       
       // Match preview max-w-[300px] scaled to PDF
       const barcodeMaxWidth = Math.min(300 * (width / 384), contentWidth - 40);
@@ -200,8 +206,19 @@ export async function generateProductLabelPDF(
       
       pdf.addImage(barcodeDataUrl, 'PNG', barcodeX, currentY, barcodeMaxWidth, barcodeHeight);
       currentY += barcodeHeight + 16;
+      
+      logger.info('Barcode added to PDF successfully');
     } catch (error) {
-      logger.error('Failed to generate barcode', error);
+      logger.error('Failed to generate barcode for PDF', error, {
+        component: 'labelGenerator',
+        barcodeValue,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+      // Show barcode value as fallback text
+      pdf.setFontSize(fontSizes['text-xs']);
+      pdf.setFont('courier', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(barcodeValue, width / 2, currentY + 20, { align: 'center' });
       currentY += 40;
     }
 
@@ -217,6 +234,8 @@ export async function generateProductLabelPDF(
       currentY += fontSizes['text-xs'] + 8;
 
       try {
+        logger.info('Generating QR code for PDF', { sku: data.sku });
+        
         const qrData = JSON.stringify({
           sku: data.sku,
           name: data.productName,
@@ -234,6 +253,10 @@ export async function generateProductLabelPDF(
           color: { dark: '#000000', light: '#FFFFFF' },
         });
         
+        if (!qrCodeDataUrl || !qrCodeDataUrl.startsWith('data:image')) {
+          throw new Error('Invalid QR code data URL');
+        }
+        
         const qrX = (width - qrSize) / 2;
         
         // White background with padding
@@ -248,8 +271,13 @@ export async function generateProductLabelPDF(
         pdf.setTextColor(113, 113, 122);
         pdf.text('Product Details', width / 2, currentY, { align: 'center' });
         currentY += fontSizes['text-xs'] + 12;
+        
+        logger.info('QR code added to PDF successfully');
       } catch (error) {
-        logger.warn('Failed to generate QR code', error);
+        logger.warn('Failed to generate QR code for PDF', error, {
+          component: 'labelGenerator',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        });
       }
     }
 
