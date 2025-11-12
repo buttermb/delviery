@@ -254,16 +254,48 @@ serve(async (req) => {
     }
 
     if (action === "logout") {
+      // Clear session if token provided (backwards compatibility)
       const authHeader = req.headers.get("Authorization");
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
         await supabase.from("tenant_admin_sessions").delete().eq("token", token);
       }
 
-      return new Response(
+      // Clear httpOnly cookies by setting them with expired Max-Age
+      const clearAccessCookie = [
+        'tenant_access_token=',
+        'Max-Age=0',
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+      ].join('; ');
+
+      const clearRefreshCookie = [
+        'tenant_refresh_token=',
+        'Max-Age=0',
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+      ].join('; ');
+
+      const response = new Response(
         JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Set-Cookie": clearAccessCookie,
+          },
+        }
       );
+
+      // Add second cookie
+      response.headers.append("Set-Cookie", clearRefreshCookie);
+
+      return response;
     }
 
     if (action === "setup-password") {
@@ -445,15 +477,33 @@ serve(async (req) => {
     }
 
     if (action === 'verify') {
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // Check for token in httpOnly cookie first, then fall back to Authorization header
+      let token: string | null = null;
+      
+      // Try to get token from cookie
+      const cookieHeader = req.headers.get('Cookie');
+      if (cookieHeader) {
+        const cookies = cookieHeader.split(';').map(c => c.trim());
+        const accessTokenCookie = cookies.find(c => c.startsWith('tenant_access_token='));
+        if (accessTokenCookie) {
+          token = accessTokenCookie.split('=')[1];
+        }
+      }
+      
+      // Fall back to Authorization header if no cookie
+      if (!token) {
+        const authHeader = req.headers.get('Authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          token = authHeader.replace('Bearer ', '');
+        }
+      }
+      
+      if (!token) {
         return new Response(
           JSON.stringify({ error: 'No token provided' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const token = authHeader.replace('Bearer ', '');
       
       // Verify token and get user (fast auth check)
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);

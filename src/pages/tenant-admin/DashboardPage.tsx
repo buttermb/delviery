@@ -31,12 +31,31 @@ import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { logger } from "@/utils/logger";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
   const tenantId = tenant?.id;
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  // Check if user came from signup
+  useEffect(() => {
+    const state = location.state as { fromSignup?: boolean; showWelcome?: boolean } | null;
+    if (state?.fromSignup || state?.showWelcome) {
+      // Small delay to ensure dashboard is loaded
+      const timer = setTimeout(() => {
+        setShowWelcomeModal(true);
+        // Clear state to prevent showing again on refresh
+        window.history.replaceState({}, document.title);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
   
   // Defensive check: if auth loading takes >15s, show error
   useEffect(() => {
@@ -843,6 +862,12 @@ export default function TenantAdminDashboardPage() {
           </Card>
         )}
       </div>
+
+      {/* Welcome Modal for new signups */}
+      <WelcomeModal
+        open={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+      />
     </div>
   );
 }

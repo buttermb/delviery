@@ -3,6 +3,10 @@ const mockFlags = {
   'multi_tenant': { enabled: true, rollout_percentage: 100 },
   'advanced_analytics': { enabled: false, rollout_percentage: 0 },
   'ai_recommendations': { enabled: true, rollout_percentage: 50 },
+  // Security improvements (Phase 1)
+  'USE_HTTP_ONLY_COOKIES': { enabled: true, rollout_percentage: 100 },
+  'ENABLE_RATE_LIMITING': { enabled: true, rollout_percentage: 100 },
+  'ENABLE_CAPTCHA': { enabled: true, rollout_percentage: 100 },
 };
 
 export async function isFeatureEnabled(flagKey: string, tenantId?: string): Promise<boolean> {

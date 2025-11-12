@@ -45,13 +45,15 @@ interface Tenant {
 interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
-  token: string | null;
-  accessToken: string | null;
-  refreshToken: string | null;
+  token: string | null; // For backwards compatibility
+  accessToken: string | null; // For backwards compatibility
+  refreshToken: string | null; // For backwards compatibility
+  isAuthenticated: boolean; // New: cookie-based authentication state
   loading: boolean;
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<void>;
+  handleSignupSuccess?: (signupResult: any) => Promise<void>; // For signup flow
 }
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
@@ -93,8 +95,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null); // For backwards compatibility
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null); // For backwards compatibility
+  const [refreshToken, setRefreshToken] = useState<string | null>(null); // For backwards compatibility
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
   const [loading, setLoading] = useState(true);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
@@ -134,63 +137,40 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize from localStorage
+  // Initialize authentication (cookie-based)
   useEffect(() => {
     const LOADING_TIMEOUT_MS = 12000; // 12-second safety timeout
     const startTime = Date.now();
     
-    const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    const storedAdmin = localStorage.getItem(ADMIN_KEY);
-    const storedTenant = localStorage.getItem(TENANT_KEY);
-
-    // Get current tenant slug from URL
-    const currentPath = window.location.pathname;
-    const urlTenantSlug = currentPath.split('/')[1]; // e.g., /snak-station-inc/admin/...
-
-    // Safety timeout: force loading to false after 12 seconds
-    const safetyTimeout = setTimeout(() => {
-      const duration = Date.now() - startTime;
-      logger.warn(`Auth initialization timeout after ${duration}ms - forcing loading to false`, undefined, 'TenantAdminAuthContext');
-      
-      // Clear auth state and redirect to login if we have a tenant slug
-      if (urlTenantSlug) {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        localStorage.removeItem(ADMIN_KEY);
-        localStorage.removeItem(TENANT_KEY);
-        setToken(null);
-        setAccessToken(null);
-        setRefreshToken(null);
-        setAdmin(null);
-        setTenant(null);
-        setLoading(false);
-        
-        // Redirect to login after a brief delay
-        setTimeout(() => {
-          window.location.href = `/${urlTenantSlug}/admin/login`;
-        }, 500);
-      } else {
-        setLoading(false);
-      }
-    }, LOADING_TIMEOUT_MS);
-
-    if (storedAccessToken && storedRefreshToken && storedAdmin && storedTenant) {
+    const initializeAuth = async () => {
       try {
-        const parsedTenant = JSON.parse(storedTenant);
+        // Quick check: Do we have user/tenant data in localStorage?
+        const storedAdmin = localStorage.getItem(ADMIN_KEY);
+        const storedTenant = localStorage.getItem(TENANT_KEY);
         
-        // Validate tenant slug matches URL
-        if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
-          clearTimeout(safetyTimeout);
-          logger.debug(`Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
-          localStorage.removeItem(ACCESS_TOKEN_KEY);
-          localStorage.removeItem(REFRESH_TOKEN_KEY);
-          localStorage.removeItem(ADMIN_KEY);
-          localStorage.removeItem(TENANT_KEY);
+        if (!storedAdmin || !storedTenant) {
+          // No stored data = not logged in
+          logger.debug('[AUTH] No stored user/tenant data, not authenticated');
           setLoading(false);
           return;
         }
+
+        // Parse stored data
+        const parsedAdmin = JSON.parse(storedAdmin);
+        const parsedTenant = JSON.parse(storedTenant);
         
+        // Get current tenant slug from URL
+        const currentPath = window.location.pathname;
+        const urlTenantSlug = currentPath.split('/')[1];
+        
+        // Validate tenant slug matches URL
+        if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
+          logger.debug(`[AUTH] Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
+          clearAuthState();
+          setLoading(false);
+          return;
+        }
+
         // Ensure tenant has limits and usage (fallback to defaults if missing)
         const tenantWithDefaults = {
           ...parsedTenant,
@@ -210,43 +190,84 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           },
         };
         
-        setAccessToken(storedAccessToken);
-        setRefreshToken(storedRefreshToken);
-        setToken(storedAccessToken);
-        setAdmin(JSON.parse(storedAdmin));
+        // Set state from localStorage (for quick UI rendering)
+        setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
         
-        // Restore Supabase session on page load
-        supabase.auth.setSession({
-          access_token: storedAccessToken,
-          refresh_token: storedRefreshToken,
-        }).catch(error => {
-          logger.warn('Failed to restore Supabase session', error, 'TenantAdminAuthContext');
-        });
-        
-        // Verify token and clear timeout when done
-        verifyToken(storedAccessToken).finally(() => {
-          clearTimeout(safetyTimeout);
-        });
-      } catch (e) {
-        clearTimeout(safetyTimeout);
-        // Clear invalid data
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        localStorage.removeItem(ADMIN_KEY);
-        localStorage.removeItem(TENANT_KEY);
+        // Verify authentication via API (cookies sent automatically)
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const verifyResponse = await safeFetch(
+          `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
+          {
+            method: 'GET',
+            credentials: 'include', // ⭐ Send httpOnly cookies
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (verifyResponse.ok) {
+          const verifyData = await verifyResponse.json();
+          
+          // Update state from verification response (more up-to-date)
+          setAdmin(verifyData.admin || parsedAdmin);
+          setTenant(verifyData.tenant || tenantWithDefaults);
+          setIsAuthenticated(true);
+          
+          // For backwards compatibility, set token state (but don't store in localStorage)
+          if (verifyData.access_token) {
+            setAccessToken(verifyData.access_token);
+            setToken(verifyData.access_token);
+          }
+          
+          logger.info('[AUTH] Authenticated via cookies', {
+            userId: verifyData.admin?.id,
+            tenantSlug: verifyData.tenant?.slug,
+          });
+        } else {
+          // Verification failed - clear everything
+          logger.warn('[AUTH] Cookie verification failed, clearing auth state');
+          clearAuthState();
+        }
+      } catch (error) {
+        logger.error('[AUTH] Initialization error', error);
+        clearAuthState();
+      } finally {
         setLoading(false);
       }
-    } else {
-      clearTimeout(safetyTimeout);
+    };
+
+    // Safety timeout: force loading to false after 12 seconds
+    const safetyTimeout = setTimeout(() => {
+      const duration = Date.now() - startTime;
+      logger.warn(`[AUTH] Initialization timeout after ${duration}ms - forcing loading to false`);
       setLoading(false);
-    }
+    }, LOADING_TIMEOUT_MS);
+
+    initializeAuth().finally(() => {
+      clearTimeout(safetyTimeout);
+    });
     
     // Cleanup timeout on unmount
     return () => {
       clearTimeout(safetyTimeout);
     };
   }, []);
+
+  // Helper function to clear auth state
+  const clearAuthState = () => {
+    setAdmin(null);
+    setTenant(null);
+    setToken(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem(ADMIN_KEY);
+    localStorage.removeItem(TENANT_KEY);
+    // Note: We don't remove ACCESS_TOKEN_KEY/REFRESH_TOKEN_KEY here
+    // as they may not exist if using cookies
+  };
 
   const verifyToken = async (tokenToVerify: string, retryCount = 0): Promise<boolean> => {
     const maxRetries = 1; // Fail-fast: only 1 retry
@@ -285,12 +306,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let response: Response;
       
       try {
+        // Use cookies for verification (credentials: 'include')
+        // Fall back to Authorization header if token provided (backwards compatibility)
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        
+        // Only add Authorization header if token is provided (for backwards compatibility)
+        if (tokenToVerify) {
+          headers["Authorization"] = `Bearer ${tokenToVerify}`;
+        }
+        
         response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${tokenToVerify}`,
-            "Content-Type": "application/json",
-          },
+          credentials: 'include', // ⭐ Send httpOnly cookies
+          headers,
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
@@ -423,6 +453,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         setAdmin(data.admin);
         setTenant(tenantWithDefaults);
+        setIsAuthenticated(true);
         localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
         localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       }
@@ -441,6 +472,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setRefreshToken(null);
       setAdmin(null);
       setTenant(null);
+      setIsAuthenticated(false);
       setLoading(false);
       return false;
     }
@@ -550,7 +582,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setToken(data.access_token); // Backwards compatibility
       setAdmin(data.admin);
       setTenant(tenantWithDefaults);
+      setIsAuthenticated(true);
       
+      // Store tokens in localStorage for backwards compatibility
+      // Note: With httpOnly cookies, these are not the primary auth mechanism
       localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
@@ -572,32 +607,41 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
     
     try {
-      if (accessToken) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-      }
+      // Call logout endpoint to clear cookies
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
+        method: "POST",
+        credentials: 'include', // ⭐ Send cookies to be cleared
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     } catch (error) {
-      logger.error("Logout error", error);
+      logger.error("[AUTH] Logout error", error);
     } finally {
       // Clear Supabase session
       await supabase.auth.signOut();
       
-      setToken(null);
-      setAccessToken(null);
-      setRefreshToken(null);
-      setAdmin(null);
-      setTenant(null);
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(ADMIN_KEY);
-      localStorage.removeItem(TENANT_KEY);
+      // Always clear local state
+      clearAuthState();
     }
+  };
+
+  // Handle signup success (called from SignUpPage after successful signup)
+  const handleSignupSuccess = async (signupResult: any) => {
+    // No tokens to store! Cookies already set by edge function
+    setAdmin(signupResult.user);
+    setTenant(signupResult.tenant);
+    setIsAuthenticated(true);
+    
+    // Store non-sensitive data for quick access
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(signupResult.user));
+    localStorage.setItem(TENANT_KEY, JSON.stringify(signupResult.tenant));
+    
+    logger.info('[AUTH] Signup success, authenticated via cookies', {
+      userId: signupResult.user.id,
+      tenantSlug: signupResult.tenant.slug,
+    });
   };
 
   const refreshAuthToken = async () => {
@@ -786,7 +830,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   return (
-    <TenantAdminAuthContext.Provider value={{ admin, tenant, token, accessToken, refreshToken: refreshToken, loading, login, logout, refreshAuthToken }}>
+    <TenantAdminAuthContext.Provider value={{ 
+      admin, 
+      tenant, 
+      token, 
+      accessToken, 
+      refreshToken: refreshToken, 
+      isAuthenticated,
+      loading, 
+      login, 
+      logout, 
+      refreshAuthToken,
+      handleSignupSuccess,
+    }}>
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}

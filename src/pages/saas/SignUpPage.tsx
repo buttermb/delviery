@@ -3,7 +3,7 @@
  * Registration for new tenants with responsive layout and enhanced UX
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +36,9 @@ import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowca
 import { SignupStepContent } from '@/components/signup/SignupStepContent';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 
 const signupSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
@@ -94,9 +97,13 @@ const STORAGE_KEY = 'signup_form_data';
 export default function SignUpPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { handleSignupSuccess } = useTenantAdminAuth();
+  const { prefetch } = usePrefetchDashboard();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string>('');
+  const turnstileRef = useRef<any>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -178,6 +185,17 @@ export default function SignUpPage() {
       // Clear saved form data
       localStorage.removeItem(STORAGE_KEY);
 
+      // CAPTCHA validation (optional for now, can be made required)
+      if (!captchaToken) {
+        toast({
+          title: 'Verification Required',
+          description: 'Please complete the security verification.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Call tenant-signup Edge Function
       const { data: result, error } = await supabase.functions.invoke('tenant-signup', {
         body: {
@@ -189,6 +207,7 @@ export default function SignUpPage() {
           state: data.state,
           industry: data.industry,
           company_size: data.company_size,
+          captchaToken, // Include CAPTCHA token
         },
       });
 
@@ -223,30 +242,50 @@ export default function SignUpPage() {
         hasTokens: !!result.tokens 
       });
 
-      // Store tokens and user data for auto-login
-      if (result.tokens) {
-        localStorage.setItem('tenant_admin_access_token', result.tokens.access_token);
-        localStorage.setItem('tenant_admin_refresh_token', result.tokens.refresh_token);
+      // Update auth context (handles localStorage and state)
+      if (handleSignupSuccess) {
+        await handleSignupSuccess(result);
+      } else {
+        // Fallback: Store non-sensitive user and tenant data
         localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
         localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
         localStorage.setItem('lastTenantSlug', tenant.slug); // Store for LoginDirectory redirect
-        logger.info('[SIGNUP] Tokens stored', { slug: tenant.slug });
-      } else {
-        logger.warn('[SIGNUP] No tokens returned');
       }
+
+      logger.info('[SIGNUP] Account created, cookies set automatically', {
+        slug: tenant.slug,
+        userId: result.user.id,
+      });
 
       toast({
         title: 'Account Created!',
-        description: 'Welcome to your new dashboard! Redirecting...',
+        description: 'Setting up your dashboard...',
       });
 
-      // Force page reload to re-initialize auth context with new tokens
-      logger.info('[SIGNUP] Redirecting to dashboard', { path: `/${tenant.slug}/admin/dashboard` });
-      setTimeout(() => {
-        window.location.href = `/${tenant.slug}/admin/dashboard`;
-      }, 100);
+      // Prefetch dashboard data (non-blocking, runs in background)
+      prefetch(tenant.slug, tenant.id).catch((error) => {
+        logger.warn('[SIGNUP] Prefetch failed, continuing anyway', error);
+      });
+
+      // Navigate instantly with React Router (SPA navigation, no page reload)
+      // Note: Tokens are already set as httpOnly cookies by edge function
+      navigate(`/${tenant.slug}/admin/dashboard`, {
+        replace: true,
+        state: { 
+          fromSignup: true,
+          showWelcome: true, // Show welcome modal on dashboard
+        },
+      });
+
+      logger.info('[SIGNUP] Navigation complete', { slug: tenant.slug });
     } catch (error: any) {
       logger.error('[SIGNUP] Fatal error', error);
+      
+      // Reset CAPTCHA on error
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+        setCaptchaToken('');
+      }
       
       // Provide user-friendly error messages
       let errorMessage = 'Failed to create account. Please try again.';
@@ -440,6 +479,32 @@ export default function SignUpPage() {
                           </FormItem>
                         )}
                       />
+
+                      {/* CAPTCHA Verification */}
+                      <div className="flex justify-center py-2">
+                        <Turnstile
+                          siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ''}
+                          onSuccess={(token) => setCaptchaToken(token)}
+                          onError={() => {
+                            setCaptchaToken('');
+                            toast({
+                              title: 'Verification Failed',
+                              description: 'CAPTCHA verification failed. Please try again.',
+                              variant: 'destructive',
+                            });
+                          }}
+                          onExpire={() => {
+                            setCaptchaToken('');
+                          }}
+                          options={{
+                            theme: 'light',
+                            size: 'normal',
+                            action: 'signup',
+                            appearance: 'always',
+                          }}
+                          ref={turnstileRef}
+                        />
+                      </div>
                     </div>
                   </SignupStepContent>
 

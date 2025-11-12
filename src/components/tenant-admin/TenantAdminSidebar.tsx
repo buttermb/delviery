@@ -70,6 +70,7 @@ import { logger } from "@/lib/logger";
 import { UpgradeModal } from "./UpgradeModal";
 import { useState } from "react";
 import { type FeatureId } from "@/lib/featureConfig";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 
 interface MenuItem {
   featureId: FeatureId;
@@ -224,6 +225,7 @@ export function TenantAdminSidebar() {
   const { tenant, logout } = useTenantAdminAuth();
   const { canAccess, currentTier } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
+  const { prefetchRoute } = useRoutePrefetch();
 
   // Debug logging - remove in production
   // log.debug('TenantAdminSidebar:', {

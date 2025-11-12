@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { checkRateLimit } from "../_shared/rateLimiting.ts";
 
 // JWT Token generation (simplified for Edge Functions)
 function base64UrlEncode(data: Uint8Array): string {
@@ -47,6 +48,7 @@ const TenantSignupSchema = z.object({
   state: z.string().max(100).optional(),
   industry: z.string().max(100).optional(),
   company_size: z.string().max(50).optional(),
+  captchaToken: z.string().optional(), // Cloudflare Turnstile token
 });
 
 serve(async (req) => {
@@ -65,10 +67,83 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Extract client IP for rate limiting
+    const clientIP = 
+      req.headers.get('x-forwarded-for')?.split(',')[0] ||
+      req.headers.get('cf-connecting-ip') ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
+
     // Parse and validate request body
     const rawBody = await req.json();
     const body = TenantSignupSchema.parse(rawBody);
-    const { email, password, business_name, owner_name, phone, state, industry, company_size } = body;
+    const { email, password, business_name, owner_name, phone, state, industry, company_size, captchaToken } = body;
+
+    // Rate limiting check (before any processing)
+    const rateLimitResult = await checkRateLimit(
+      {
+        key: 'signup',
+        limit: parseInt(Deno.env.get('RATE_LIMIT_MAX_SIGNUPS_PER_HOUR') || '3'),
+        windowMs: 60 * 60 * 1000, // 1 hour
+      },
+      `${clientIP}:${email.toLowerCase()}`
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.log('[SIGNUP] Rate limit exceeded', { clientIP, email: email.toLowerCase() });
+      return new Response(
+        JSON.stringify({
+          error: 'Too many signup attempts. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // CAPTCHA verification (if token provided)
+    if (captchaToken) {
+      const turnstileSecret = Deno.env.get('TURNSTILE_SECRET_KEY');
+      if (turnstileSecret) {
+        try {
+          const captchaVerification = await fetch(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                secret: turnstileSecret,
+                response: captchaToken,
+                remoteip: clientIP,
+              }),
+            }
+          );
+
+          const captchaResult = await captchaVerification.json();
+
+          if (!captchaResult.success) {
+            console.warn('[SIGNUP] CAPTCHA verification failed', {
+              email: email.toLowerCase(),
+              errorCodes: captchaResult['error-codes'],
+            });
+            return new Response(
+              JSON.stringify({ error: 'Security verification failed. Please try again.' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        } catch (error) {
+          console.error('[SIGNUP] CAPTCHA verification error', error);
+          // Don't fail signup if CAPTCHA service is down, but log it
+        }
+      }
+    } else {
+      // CAPTCHA is optional for now (can be made required later)
+      console.log('[SIGNUP] No CAPTCHA token provided', { email: email.toLowerCase() });
+    }
+
+    console.log('[SIGNUP] Security checks passed', { email: email.toLowerCase(), clientIP });
 
     // Check if email already exists in Supabase Auth
     const { data: existingAuthUser } = await supabase.auth.admin.listUsers();
@@ -150,117 +225,78 @@ serve(async (req) => {
       });
     }
 
-    // Create Supabase Auth user
+    // Create Supabase Auth user (must be done before atomic function)
+    // Hybrid approach: Allow immediate access but require verification within 7 days
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
       password: password,
-      email_confirm: true, // Auto-confirm email for signup
+      email_confirm: false, // ⭐ Change to false - require email verification
       user_metadata: {
         name: owner_name,
         business_name: business_name,
+        signup_date: new Date().toISOString(),
+        verification_deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       },
     });
 
     if (authError || !authData.user) {
-      console.error('Auth user creation error:', authError);
+      console.error('[SIGNUP] Auth user creation error:', authError);
       return new Response(
         JSON.stringify({ error: authError?.message || 'Failed to create user account' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Calculate trial end date (14 days from now)
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+    console.log('[SIGNUP] Auth user created', { userId: authData.user.id });
 
-    // Create tenant
-    const { data: tenant, error: tenantError } = await supabase
-      .from('tenants')
-      .insert({
-        business_name,
+    // Call atomic function to create all database records in single transaction
+    console.log('[SIGNUP] Creating tenant records atomically', { slug });
+
+    const { data: atomicResult, error: atomicError } = await supabase
+      .rpc('create_tenant_atomic', {
+        p_auth_user_id: authData.user.id,
+        p_email: email.toLowerCase(),
+        p_business_name: business_name,
+        p_owner_name: owner_name,
+        p_phone: phone || null,
+        p_state: state || null,
+        p_industry: industry || null,
+        p_company_size: company_size || null,
+        p_slug: slug,
+      });
+
+    if (atomicError) {
+      console.error('[SIGNUP] Atomic creation failed', { 
+        error: atomicError,
         slug,
-        owner_email: email.toLowerCase(),
-        owner_name,
-        phone: phone || null,
-        state: state || null,
-        industry: industry || null,
-        company_size: company_size || null,
-        subscription_plan: 'starter',
-        subscription_status: 'trial',
-        trial_ends_at: trialEndsAt.toISOString(),
-        limits: {
-          customers: 50,
-          menus: 3,
-          products: 100,
-          locations: 2,
-          users: 3,
-        },
-        usage: {
-          customers: 0,
-          menus: 0,
-          products: 0,
-          locations: 0,
-          users: 1,
-        },
-        features: {
-          api_access: false,
-          custom_branding: false,
-          white_label: false,
-          advanced_analytics: false,
-          sms_enabled: false,
-        },
-        mrr: 99,
-      })
-      .select()
-      .single();
+        userId: authData.user.id 
+      });
 
-    if (tenantError || !tenant) {
-      console.error('Tenant creation error:', tenantError);
-      // Try to clean up auth user if tenant creation failed
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      
+      // Rollback: Delete auth user since DB creation failed
+      try {
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        console.log('[SIGNUP] Rolled back auth user creation', { userId: authData.user.id });
+      } catch (rollbackError) {
+        console.error('[SIGNUP] Rollback failed', { error: rollbackError });
+      }
+
       return new Response(
-        JSON.stringify({ error: tenantError?.message || 'Failed to create tenant' }),
+        JSON.stringify({
+          error: 'Failed to create tenant. Please try again.',
+          details: atomicError.message,
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Create tenant user (owner)
-    // Note: Password is handled by Supabase Auth, no need to store hash separately
-    const { data: tenantUser, error: userError } = await supabase
-      .from('tenant_users')
-      .insert({
-        tenant_id: tenant.id,
-        user_id: authData.user.id,
-        email: email.toLowerCase(),
-        name: owner_name,
-        role: 'owner',
-        status: 'active',
-        invited_at: new Date().toISOString(),
-        accepted_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (userError || !tenantUser) {
-      console.error('Tenant user creation error:', userError);
-      // Try to clean up
-      await supabase.from('tenants').delete().eq('id', tenant.id);
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      
-      return new Response(
-        JSON.stringify({ error: userError?.message || 'Failed to create tenant user' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create subscription event
-    await supabase.from('subscription_events').insert({
-      tenant_id: tenant.id,
-      event_type: 'trial_started',
-      to_plan: 'starter',
-      amount: 0,
+    console.log('[SIGNUP] Tenant created atomically', { 
+      tenantId: atomicResult.tenant_id,
+      slug 
     });
+
+    // Extract tenant and tenant_user from atomic result
+    const tenant = atomicResult.tenant;
+    const tenantUser = atomicResult.tenant_user;
 
     // Generate JWT tokens for auto-login
     const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
@@ -288,8 +324,27 @@ serve(async (req) => {
       30 * 24 * 60 * 60 // 30 days
     );
 
-    // Return success response with tokens
-    return new Response(
+    // Set httpOnly cookies for tokens (XSS protection)
+    const accessCookie = [
+      `tenant_access_token=${accessToken}`,
+      `Max-Age=${7 * 24 * 60 * 60}`, // 7 days in seconds
+      'HttpOnly',
+      'Secure',
+      'SameSite=Strict',
+      'Path=/',
+    ].join('; ');
+
+    const refreshCookie = [
+      `tenant_refresh_token=${refreshToken}`,
+      `Max-Age=${30 * 24 * 60 * 60}`, // 30 days in seconds
+      'HttpOnly',
+      'Secure',
+      'SameSite=Strict',
+      'Path=/',
+    ].join('; ');
+
+    // Return success response WITHOUT tokens in body (cookies set via headers)
+    const response = new Response(
       JSON.stringify({
         success: true,
         tenant: {
@@ -310,13 +365,144 @@ serve(async (req) => {
           role: tenantUser.role,
           tenant_id: tenantUser.tenant_id,
         },
-        tokens: {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        },
+        // ⚠️ NO tokens in body anymore! Cookies set via headers
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Set-Cookie': accessCookie,
+        },
+      }
     );
+
+    // Add second cookie (Set-Cookie can be set multiple times)
+    response.headers.append('Set-Cookie', refreshCookie);
+
+    // Background tasks (don't await - run asynchronously)
+    // These don't block the response, improving signup performance
+    Promise.allSettled([
+      // Send email verification link (hybrid approach: immediate access, 7-day deadline)
+      (async () => {
+        try {
+          // Generate email verification link via Supabase Auth
+          const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+            type: 'signup',
+            email: email.toLowerCase(),
+            options: {
+              redirectTo: `${Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || ''}/${tenant.slug}/admin/verify-email`,
+            },
+          });
+
+          if (linkError || !linkData) {
+            console.warn('[SIGNUP] Failed to generate verification link (non-blocking)', linkError);
+            return;
+          }
+
+          // Update tenant_user record with verification sent timestamp
+          await supabase
+            .from('tenant_users')
+            .update({
+              email_verification_sent_at: new Date().toISOString(),
+            })
+            .eq('id', tenantUser.id)
+            .catch((err) => {
+              console.warn('[SIGNUP] Failed to update verification timestamp (non-blocking)', err);
+            });
+
+          // Send verification email via Klaviyo or Supabase email
+          const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
+          const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
+          
+          if (klaviyoApiKey) {
+            // Send via Klaviyo (custom template)
+            const emailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
+            await fetch(emailUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: email.toLowerCase(),
+                template: 'email-verification',
+                data: {
+                  business_name,
+                  owner_name,
+                  verification_link: linkData.properties.action_link,
+                  verification_deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                  dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
+                },
+              }),
+            }).catch((err) => {
+              console.warn('[SIGNUP] Verification email failed (non-blocking)', err);
+            });
+          } else {
+            // Fallback: Supabase will send verification email automatically
+            // since email_confirm is false
+            console.log('[SIGNUP] Verification email will be sent by Supabase Auth');
+          }
+        } catch (error) {
+          console.warn('[SIGNUP] Email verification error (non-blocking)', error);
+        }
+      })(),
+
+      // Send welcome email (if email service configured)
+      (async () => {
+        try {
+          const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
+          const welcomeEmailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
+          
+          // Only send if email service is configured
+          const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
+          if (klaviyoApiKey) {
+            await fetch(welcomeEmailUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: email.toLowerCase(),
+                template: 'welcome',
+                data: {
+                  business_name,
+                  owner_name,
+                  tenant_slug: tenant.slug,
+                  dashboard_url: `${siteUrl}/${tenant.slug}/admin/dashboard`,
+                },
+              }),
+            }).catch((err) => {
+              console.warn('[SIGNUP] Welcome email failed (non-blocking)', err);
+            });
+          }
+        } catch (error) {
+          console.warn('[SIGNUP] Welcome email error (non-blocking)', error);
+        }
+      })(),
+
+      // Track signup analytics event (if analytics configured)
+      (async () => {
+        try {
+          // This would integrate with your analytics service
+          // Example: PostHog, Mixpanel, Amplitude, etc.
+          console.log('[SIGNUP] Analytics event: tenant_signup', {
+            tenant_id: tenant.id,
+            tenant_slug: tenant.slug,
+            email: email.toLowerCase(),
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.warn('[SIGNUP] Analytics tracking error (non-blocking)', error);
+        }
+      })(),
+    ]).catch((error) => {
+      // Log but don't fail signup
+      console.warn('[SIGNUP] Background tasks error (non-blocking)', error);
+    });
+
+    return response;
 
   } catch (error: unknown) {
     console.error('Error in tenant-signup:', error);

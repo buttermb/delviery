@@ -29,6 +29,8 @@ import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
 import { AuthErrorBoundary } from "./components/auth/AuthErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
+import { SkeletonAdminLayout } from "./components/loading/SkeletonAdminLayout";
+import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
@@ -418,8 +420,26 @@ const App = () => {
                         
                         {/* Tenant Admin Portal - Exact redirect */}
                         <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />
-                        <Route path="/:tenantSlug/admin/*" element={<TenantAdminProtectedRoute><AdminLayout /></TenantAdminProtectedRoute>}>
-                          <Route path="dashboard" element={<FeatureProtectedRoute featureId="dashboard"><TenantAdminDashboardPage /></FeatureProtectedRoute>} />
+                        <Route 
+                          path="/:tenantSlug/admin/*" 
+                          element={
+                            <Suspense fallback={<SkeletonAdminLayout />}>
+                              <TenantAdminProtectedRoute>
+                                <AdminLayout />
+                              </TenantAdminProtectedRoute>
+                            </Suspense>
+                          }
+                        >
+                          <Route 
+                            path="dashboard" 
+                            element={
+                              <Suspense fallback={<SkeletonDashboard />}>
+                                <FeatureProtectedRoute featureId="dashboard">
+                                  <TenantAdminDashboardPage />
+                                </FeatureProtectedRoute>
+                              </Suspense>
+                            } 
+                          />
                           {/* Legacy route redirects - redirect old paths to new paths */}
                           <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />
                           <Route path="big-plug-order" element={<Navigate to="wholesale-orders" replace />} />
