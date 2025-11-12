@@ -238,7 +238,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-sm bg-card/95 shadow-2xl border-2 animate-fade-in">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-4 animate-scale-in">
-            <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+            <Sparkles className="h-8 w-8 text-primary" />
           </div>
           <Badge className="mb-4 animate-fade-in" variant="outline">Business Admin Portal</Badge>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent animate-fade-in">
