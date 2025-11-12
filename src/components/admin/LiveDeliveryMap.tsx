@@ -382,7 +382,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             return (
               <div key={delivery.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                  <div className="h-10 w-10 rounded-full bg-info flex items-center justify-center text-info-foreground font-semibold">
                     🚗
                   </div>
                   <div>

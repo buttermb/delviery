@@ -77,8 +77,8 @@ export function ProductCard({
             </Badge>
           )}
           {!isInStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="outline" className="bg-red-500 text-white border-0">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+              <Badge variant="destructive">
                 Out of Stock
               </Badge>
             </div>
@@ -88,8 +88,8 @@ export function ProductCard({
         <div className="relative aspect-square bg-gradient-to-br from-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-surface))]/50 flex items-center justify-center">
           <Package className="h-16 w-16 text-[hsl(var(--tenant-text-light))]" />
           {!isInStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="outline" className="bg-red-500 text-white border-0">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+              <Badge variant="destructive">
                 Out of Stock
               </Badge>
             </div>
@@ -146,8 +146,8 @@ export function ProductCard({
               )}
               {onDelete && (
                 <DropdownMenuItem 
-                  onClick={() => onDelete(product.id)}
-                  className="text-red-600 focus:text-red-600"
+              onClick={() => onDelete(product.id)}
+              className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
@@ -176,7 +176,7 @@ export function ProductCard({
           {margin && Number(margin) > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-[hsl(var(--tenant-text-light))]">Margin</span>
-              <span className="text-green-600 font-semibold flex items-center gap-1">
+              <span className="text-success font-semibold flex items-center gap-1">
                 <TrendingUp className="h-3 w-3" />
                 {margin}%
               </span>
@@ -193,13 +193,13 @@ export function ProductCard({
             </span>
           </div>
           {isLowStock && (
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Low Stock
             </Badge>
           )}
           {!isInStock && (
-            <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
+            <Badge variant="destructive">
               Out of Stock
             </Badge>
           )}

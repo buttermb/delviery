@@ -190,7 +190,7 @@ export default function LiveMap() {
         el.innerHTML = `
           <div class="relative">
             <div class="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
-            <div class="relative bg-gradient-to-br from-primary to-primary/80 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg border-2 border-background hover:scale-110 transition-transform cursor-pointer">
+            <div class="relative bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center shadow-lg border-2 border-background hover:scale-110 transition-transform cursor-pointer">
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
                 <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
@@ -203,7 +203,7 @@ export default function LiveMap() {
           <div class="p-2">
             <div class="font-semibold text-sm mb-1">${courier.full_name}</div>
             <div class="flex items-center gap-1 mb-1">
-              <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+              <span class="inline-block w-2 h-2 rounded-full" style="background-color: hsl(var(--success))"></span>
               <span class="text-xs text-muted-foreground">Online</span>
             </div>
             <div class="text-xs text-muted-foreground">

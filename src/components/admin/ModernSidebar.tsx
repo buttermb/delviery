@@ -145,7 +145,7 @@ export function ModernSidebar() {
       {/* Header */}
       <div className="p-4 border-b border-border">
         <NavLink to={getFullPath('/admin/dashboard')} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
             🌿
           </div>
           <span className="font-semibold text-lg">Your Company</span>

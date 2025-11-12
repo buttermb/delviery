@@ -135,8 +135,8 @@ export function Sidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-2 px-6 py-4 border-b">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">B</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">B</span>
             </div>
             <div className="flex-1">
               <h2 className="font-bold text-sm">{tenant?.business_name || 'BigMike'}</h2>
