@@ -22,7 +22,13 @@ export function setupGlobalErrorHandlers() {
 
   // Handle uncaught errors
   window.onerror = (message, source, lineno, colno, error) => {
-    logger.error('Uncaught error', error || new Error(String(message)), {
+    // Ignore benign ResizeObserver errors
+    const messageStr = String(message);
+    if (messageStr.includes('ResizeObserver')) {
+      return false;
+    }
+
+    logger.error('Uncaught error', error || new Error(messageStr), {
       source,
       lineno,
       colno,
@@ -39,7 +45,16 @@ export function setupGlobalErrorHandlers() {
 
   // Handle unhandled promise rejections
   window.onunhandledrejection = (event) => {
-    logger.error('Unhandled promise rejection', event.reason, {
+    // Ignore benign ResizeObserver errors
+    const reason = event.reason;
+    if (reason && typeof reason === 'object' && 'message' in reason) {
+      if (String(reason.message).includes('ResizeObserver')) {
+        event.preventDefault();
+        return;
+      }
+    }
+
+    logger.error('Unhandled promise rejection', reason, {
       promise: event.promise,
     });
 
