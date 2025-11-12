@@ -3,6 +3,7 @@ import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useOptimisticList } from "@/hooks/useOptimisticUpdate";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +69,17 @@ type Product = Database['public']['Tables']['products']['Row'];
 export default function ProductManagement() {
   const navigate = useTenantNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  
+  // Use optimistic list for products
+  const {
+    items: products,
+    optimisticIds,
+    addOptimistic,
+    updateOptimistic,
+    deleteOptimistic,
+    setItems: setProducts,
+  } = useOptimisticList<Product>([]);
+  
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -232,26 +243,31 @@ export default function ProductManagement() {
       } as Database['public']['Tables']['products']['Insert'] & { barcode_image_url?: string | null };
 
       if (editingProduct) {
-        const { data: updatedProduct, error } = await supabase
-          .from("products")
-          .update(productData)
-          .eq("id", editingProduct.id)
-          .select()
-          .single();
+        // Use optimistic update for instant feedback
+        const updatedProduct = await updateOptimistic(
+          editingProduct.id,
+          productData,
+          async (id, updates) => {
+            const { data, error } = await supabase
+              .from("products")
+              .update(updates)
+              .eq("id", id)
+              .select()
+              .single();
 
-        if (error) throw error;
+            if (error) throw error;
+            return data;
+          }
+        );
+
+        if (!updatedProduct) return; // Operation failed, rollback already handled
         
         // Update barcode_image_url separately if it was generated
         if (barcodeImageUrl && updatedProduct) {
-          const { error: updateError } = await supabase
+          await supabase
             .from("products")
             .update({ barcode_image_url: barcodeImageUrl } as any)
             .eq("id", updatedProduct.id);
-          
-          if (updateError) {
-            logger.warn('Failed to update barcode_image_url', updateError, { component: 'ProductManagement' });
-            // Don't throw - product was updated successfully
-          }
         }
         
         // Sync to menus if stock changed
@@ -259,7 +275,7 @@ export default function ProductManagement() {
           await syncProductToMenus(updatedProduct.id, tenant.id);
         }
         
-        toast.success("Product updated successfully");
+        // No need for separate toast - optimistic hook handles it
       } else {
         // Check tenant limits before creating
         if (tenant?.limits?.products !== undefined) {
@@ -275,25 +291,36 @@ export default function ProductManagement() {
           }
         }
 
-        const { data: newProduct, error } = await supabase
-          .from("products")
-          .insert([productData])
-          .select()
-          .single();
+        // Use optimistic add for instant feedback
+        const tempProduct: Product = {
+          ...productData,
+          id: `temp-${Date.now()}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as Product;
 
-        if (error) throw error;
+        const newProduct = await addOptimistic(
+          tempProduct,
+          async (item) => {
+            const { data, error } = await supabase
+              .from("products")
+              .insert([productData])
+              .select()
+              .single();
+
+            if (error) throw error;
+            return data;
+          }
+        );
+
+        if (!newProduct) return; // Operation failed, rollback already handled
         
         // Update barcode_image_url separately since it's not in types yet
         if (barcodeImageUrl && newProduct) {
-          const { error: updateError } = await supabase
+          await supabase
             .from("products")
             .update({ barcode_image_url: barcodeImageUrl } as any)
             .eq("id", newProduct.id);
-          
-          if (updateError) {
-            logger.warn('Failed to update barcode_image_url', updateError, { component: 'ProductManagement' });
-            // Don't throw - product was created successfully
-          }
         }
         
         // Auto-sync to menus if stock > 0
@@ -301,6 +328,7 @@ export default function ProductManagement() {
           await syncProductToMenus(newProduct.id, tenant.id);
         }
         
+        // Custom success toast with SKU
         toast.success("Product created successfully", {
           description: sku ? `SKU: ${sku}` : undefined,
         });
@@ -308,7 +336,7 @@ export default function ProductManagement() {
 
       setIsDialogOpen(false);
       resetForm();
-      loadProducts();
+      // No need to loadProducts() - optimistic update already updated the UI
     } catch (error: unknown) {
       logger.error('Failed to save product', error, { 
         component: 'ProductManagement',
@@ -395,31 +423,36 @@ export default function ProductManagement() {
   const confirmDelete = async () => {
     if (!productToDelete || !tenant?.id) {
       toast.error("Tenant not found");
-      setIsDeleting(false); // Reset state even on early return
+      setIsDeleting(false);
       return;
     }
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", productToDelete.id)
-        .eq("tenant_id", tenant.id);
-      
-      if (error) throw error;
-      
-      toast.success("Product deleted");
-      await loadProducts(); // Wait for reload
-      setSelectedProducts((prev) => prev.filter((pid) => pid !== productToDelete.id));
-      setDeleteDialogOpen(false);
-      setProductToDelete(null);
+      // Use optimistic delete for instant feedback
+      const success = await deleteOptimistic(
+        productToDelete.id,
+        async (id) => {
+          const { error } = await supabase
+            .from("products")
+            .delete()
+            .eq("id", id)
+            .eq("tenant_id", tenant.id);
+          
+          if (error) throw error;
+        }
+      );
+
+      if (success) {
+        setSelectedProducts((prev) => prev.filter((pid) => pid !== productToDelete.id));
+        setDeleteDialogOpen(false);
+        setProductToDelete(null);
+      }
     } catch (error: unknown) {
       logger.error('Failed to delete product', error, { component: 'ProductManagement', productId: productToDelete.id });
-      toast.error("Failed to delete: " + (error instanceof Error ? error.message : "An error occurred"));
-      // Don't close dialog on error
+      // Error toast already shown by optimistic hook
     } finally {
-      setIsDeleting(false); // Always reset loading state
+      setIsDeleting(false);
     }
   };
 
@@ -715,24 +748,32 @@ export default function ProductManagement() {
     }
 
     try {
-      const { error } = await supabase
-        .from("products")
-        .update(updates)
-        .eq("id", id)
-        .eq("tenant_id", tenant.id);
+      // Use optimistic update for instant feedback
+      await updateOptimistic(
+        id,
+        updates,
+        async (id, updates) => {
+          const { data, error } = await supabase
+            .from("products")
+            .update(updates)
+            .eq("id", id)
+            .eq("tenant_id", tenant.id)
+            .select()
+            .single();
 
-      if (error) throw error;
-      
-      // Sync to menus if stock changed
-      if ('available_quantity' in updates && updates.available_quantity > 0) {
-        await syncProductToMenus(id, tenant.id);
-      }
-      
-      toast.success("Product updated");
-      loadProducts();
+          if (error) throw error;
+          
+          // Sync to menus if stock changed
+          if ('available_quantity' in updates && updates.available_quantity && updates.available_quantity > 0) {
+            await syncProductToMenus(id, tenant.id);
+          }
+          
+          return data;
+        }
+      );
     } catch (error: unknown) {
       logger.error('Failed to update product', error, { component: 'ProductManagement', productId: id });
-      toast.error("Failed to update: " + (error instanceof Error ? error.message : "An error occurred"));
+      // Error toast already shown by optimistic hook
     }
   };
 
@@ -1180,16 +1221,20 @@ export default function ProductManagement() {
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
-                <ProductCard
+                <div 
                   key={product.id}
-                  product={product}
-                  onEdit={() => handleEdit(product)}
-                  onDelete={() => handleDelete(product.id)}
-                  onPrintLabel={() => {
-                    setLabelProduct(product as any);
-                    setLabelDialogOpen(true);
-                  }}
-                />
+                  className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
+                >
+                  <ProductCard
+                    product={product}
+                    onEdit={() => handleEdit(product)}
+                    onDelete={() => handleDelete(product.id)}
+                    onPrintLabel={() => {
+                      setLabelProduct(product as any);
+                      setLabelDialogOpen(true);
+                    }}
+                  />
+                </div>
                 ))}
               </div>
             ) : (
