@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import {
   Upload,
   Search,
@@ -16,7 +17,8 @@ import {
   Download,
   Image as ImageIcon,
   Tag,
-  Filter
+  Filter,
+  ArrowLeft
 } from 'lucide-react';
 import {
   Dialog,
@@ -31,6 +33,7 @@ import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 
 export default function ImagesPage() {
+  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -208,6 +211,15 @@ export default function ImagesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-3xl font-bold">Images & Media</h1>
           <p className="text-muted-foreground">
             Manage product images and media files

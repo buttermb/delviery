@@ -4,15 +4,28 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { MapPin, TrendingUp, Users, DollarSign, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export default function LocationAnalyticsPage() {
+  const navigate = useNavigate();
+
   return (
     <>
       <SEOHead title="Location Analytics" />
       <div className="container mx-auto p-6 space-y-6">
         <div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <MapPin className="h-8 w-8" />
             Location Analytics

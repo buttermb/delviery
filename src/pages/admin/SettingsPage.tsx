@@ -9,17 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2
+  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { account } = useAccount();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'general';
@@ -114,6 +115,15 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate(-1)}
+          className="mb-2"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
         <h1 className="text-3xl font-bold mb-2">🔧 Settings</h1>
         <p className="text-muted-foreground">Manage your account and system preferences</p>
       </div>

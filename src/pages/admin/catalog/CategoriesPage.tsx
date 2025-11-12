@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -17,7 +18,8 @@ import {
   FolderOpen,
   ChevronRight,
   ChevronDown,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft
 } from 'lucide-react';
 import {
   Dialog,
@@ -39,6 +41,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 export default function CategoriesPage() {
+  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const { toast } = useToast();
@@ -303,6 +306,15 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-3xl font-bold">Categories & Tags</h1>
           <p className="text-muted-foreground">
             Organize products with categories and tags

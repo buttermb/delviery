@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   BarChart3, FileText, Package, DollarSign, Download,
-  Calendar, TrendingUp, Loader2
+  Calendar, TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, startOfMonth, endOfMonth, subMonths, subWeeks, subDays } from 'date-fns';
@@ -20,6 +21,7 @@ import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { reportsTutorial } from '@/lib/tutorials/tutorialConfig';
 
 export default function ReportsPage() {
+  const navigate = useNavigate();
   const { account } = useAccount();
   const { tenant } = useTenantAdminAuth();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
@@ -128,6 +130,15 @@ export default function ReportsPage() {
     <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(-1)}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">📊 Reports</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Business intelligence and analytics</p>
         </div>
