@@ -105,11 +105,15 @@ export default function LoginPage() {
       }
 
       // Call tenant-admin-auth to set up complete authentication
+      logger.debug('Calling tenant-admin-auth edge function', { email: data.email, tenantSlug: tenant.slug });
+      
       const authResponse = await edgeFunctionRequest('tenant-admin-auth?action=login', {
         email: data.email,
         password: data.password,
         tenantSlug: tenant.slug,
       }, { skipAuth: true });
+      
+      logger.debug('Auth response received', { hasAccessToken: !!authResponse.access_token });
 
       // Store authentication data
       localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
