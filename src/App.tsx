@@ -44,6 +44,7 @@ import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
 import { BetaBanner } from "./components/shared/BetaBanner";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
+import { useVersionCheck } from "./hooks/useVersionCheck";
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -266,6 +267,9 @@ const queryClient = new QueryClient({
 setupGlobalErrorHandlers();
 
 const App = () => {
+  // Enable automatic version checking and cache busting
+  useVersionCheck();
+
   // Clear stale auth data on marketing/login pages to prevent cross-tenant contamination
   useEffect(() => {
     const path = window.location.pathname;

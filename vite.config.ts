@@ -23,11 +23,13 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { execSync } from 'child_process';
 import { deferCssPlugin } from "./vite-plugins/defer-css";
 import viteCompression from 'vite-plugin-compression';
 import { VitePWA } from 'vite-plugin-pwa';
 import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
+import { versionGeneratorPlugin } from './vite-plugins/version-generator';
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -49,12 +51,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString())
+    'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString()),
+    '__BUILD_TIME__': JSON.stringify(Date.now().toString())
   },
   envPrefix: 'VITE_', // Only expose env vars prefixed with VITE_ to client
   plugins: [
     react(), 
     mode === "development" && componentTagger(),
+    versionGeneratorPlugin(),
     buildTimestampPlugin(),
     deferCssPlugin(),
     realtimeValidationPlugin(),
