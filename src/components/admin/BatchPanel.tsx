@@ -6,7 +6,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { X, Trash2, Package } from 'lucide-react';
+import { X, Trash2, Package, DollarSign } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -16,10 +16,11 @@ interface BatchPanelProps {
   onRemove: (productId: string) => void;
   onClear: () => void;
   onBatchDelete: () => void;
+  onBatchEditPrice: () => void;
   isDeleting?: boolean;
 }
 
-export function BatchPanel({ products, onRemove, onClear, onBatchDelete, isDeleting }: BatchPanelProps) {
+export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatchEditPrice, isDeleting }: BatchPanelProps) {
   if (products.length === 0) return null;
 
   return (
@@ -72,7 +73,15 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, isDelet
             onClick={onClear}
             className="flex-1"
           >
-            Clear All
+            Clear
+          </Button>
+          <Button
+            variant="default"
+            onClick={onBatchEditPrice}
+            className="flex-1 gap-2"
+          >
+            <DollarSign className="h-4 w-4" />
+            Edit Prices
           </Button>
           <Button
             variant="destructive"
@@ -81,7 +90,7 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, isDelet
             className="flex-1 gap-2"
           >
             <Trash2 className="h-4 w-4" />
-            Delete {products.length}
+            Delete
           </Button>
         </div>
       </div>

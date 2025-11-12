@@ -58,6 +58,7 @@ import { syncProductToMenus } from "@/lib/utils/menuSync";
 import { ProductLabel } from "@/components/admin/ProductLabel";
 import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
+import { BulkPriceEditor, type PriceUpdate } from "@/components/admin/BulkPriceEditor";
 import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -367,6 +368,7 @@ export default function ProductManagement() {
   const [batchScanMode, setBatchScanMode] = useState(false);
   const [batchProducts, setBatchProducts] = useState<Product[]>([]);
   const [batchPanelOpen, setBatchPanelOpen] = useState(false);
+  const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
     const product = products.find((p) => p.id === id);
@@ -490,6 +492,52 @@ export default function ProductManagement() {
   const clearBatch = () => {
     setBatchProducts([]);
     setBatchPanelOpen(false);
+  };
+
+  const handleBulkPriceUpdate = async (updates: PriceUpdate[]) => {
+    if (!tenant?.id || updates.length === 0) return;
+
+    setIsGenerating(true);
+    try {
+      // Update each product
+      const updatePromises = updates.map(update => {
+        const updateData: any = {
+          wholesale_price: update.newWholesale,
+        };
+
+        if (update.newRetail !== undefined) {
+          updateData.retail_price = update.newRetail;
+        }
+
+        return supabase
+          .from('products')
+          .update(updateData)
+          .eq('id', update.id)
+          .eq('tenant_id', tenant.id);
+      });
+
+      const results = await Promise.all(updatePromises);
+      
+      // Check for errors
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) {
+        throw new Error(`Failed to update ${errors.length} product(s)`);
+      }
+
+      toast.success(`Updated prices for ${updates.length} products`, {
+        description: 'All changes have been applied successfully',
+      });
+      
+      // Reload products and clear batch
+      loadProducts();
+      setBatchProducts([]);
+      setBatchPanelOpen(false);
+    } catch (error: unknown) {
+      logger.error('Bulk price update failed', error, { component: 'ProductManagement' });
+      toast.error("Failed to update prices: " + (error instanceof Error ? error.message : "An error occurred"));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleDuplicate = async (id: string) => {
@@ -1175,9 +1223,18 @@ export default function ProductManagement() {
           onRemove={removeBatchProduct}
           onClear={clearBatch}
           onBatchDelete={handleBatchDelete}
+          onBatchEditPrice={() => setBulkPriceEditorOpen(true)}
           isDeleting={isDeleting}
         />
       )}
+
+      {/* Bulk Price Editor */}
+      <BulkPriceEditor
+        open={bulkPriceEditorOpen}
+        onOpenChange={setBulkPriceEditorOpen}
+        products={batchProducts}
+        onApply={handleBulkPriceUpdate}
+      />
     </div>
   );
 }
