@@ -54,7 +54,8 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
           : waypoints;
 
         // Fetch route from Mapbox Directions API
-        const response = await fetch(
+        const safeFetch = fetch.bind(window);
+        const response = await safeFetch(
           `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates.join(';')}?geometries=geojson&access_token=${mapboxToken}`
         );
         

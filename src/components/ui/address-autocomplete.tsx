@@ -60,7 +60,8 @@ export function AddressAutocomplete({
         return;
       }
 
-      const response = await fetch(
+      const safeFetch = fetch.bind(window);
+      const response = await safeFetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           query
         )}.json?access_token=${mapboxToken}&autocomplete=true&limit=5&types=address,place`

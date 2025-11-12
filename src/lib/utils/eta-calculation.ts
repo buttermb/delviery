@@ -30,7 +30,8 @@ export async function calculateETA(
   try {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${driverLocation[0]},${driverLocation[1]};${destination[0]},${destination[1]}?access_token=${MAPBOX_TOKEN}&geometries=geojson`;
 
-    const response = await fetch(url);
+    const safeFetch = fetch.bind(window);
+    const response = await safeFetch(url);
     
     if (!response.ok) {
       throw new Error(`Mapbox API error: ${response.status}`);

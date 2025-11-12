@@ -58,7 +58,8 @@ export default function MapboxAddressAutocomplete({
     try {
       // Limit search to New York City area
       const bbox = "-74.2591,40.4774,-73.7004,40.9176"; // NYC bounding box
-      const response = await fetch(
+      const safeFetch = fetch.bind(window);
+      const response = await safeFetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
         `access_token=${MAPBOX_TOKEN}&` +
         `bbox=${bbox}&` +
