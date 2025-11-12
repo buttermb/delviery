@@ -296,7 +296,7 @@ export function TutorialOverlay({
           key="tutorial-overlay"
           ref={overlayRef}
           data-tutorial-overlay
-          className="fixed inset-0 z-[9999] pointer-events-auto"
+          className="fixed inset-0 z-[9999] pointer-events-none"
           aria-modal="true"
           aria-labelledby="tutorial-title"
           role="dialog"
@@ -306,7 +306,7 @@ export function TutorialOverlay({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/75"
+            className="absolute inset-0 bg-black/75 pointer-events-auto"
           style={{
             clipPath: targetRect
               ? `polygon(
