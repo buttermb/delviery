@@ -145,39 +145,15 @@ export async function generateProductLabelPDF(
     let barcodeWidth = size === 'small' ? 120 : size === 'standard' ? 200 : 240;
     
     try {
-      const barcodeSvg = generateBarcodeSVG(barcodeValue, {
+      // generateBarcodeSVG actually returns a PNG data URL, not SVG
+      const barcodeDataUrl = generateBarcodeSVG(barcodeValue, {
         width: 1.5,
         height: barcodeHeight,
         displayValue: true,
         format: 'CODE128',
       });
       
-      // Convert SVG to data URL
-      const svgBlob = new Blob([barcodeSvg], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-      const img = new Image();
-      
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-      });
-      
-      // Draw barcode on canvas to get PNG
-      const canvas = document.createElement('canvas');
-      canvas.width = barcodeWidth * 3; // Higher resolution for clarity
-      canvas.height = barcodeHeight * 3;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      }
-      
-      const barcodeDataUrl = canvas.toDataURL('image/png', 1.0);
-      URL.revokeObjectURL(url);
-      
-      // Add barcode to PDF centered
+      // Add barcode directly to PDF
       const barcodeY = currentY + 5;
       const barcodeX = (width - barcodeWidth) / 2;
       
@@ -191,8 +167,9 @@ export async function generateProductLabelPDF(
       );
       currentY = barcodeY + barcodeHeight + 8;
     } catch (error) {
-      logger.warn('Failed to generate barcode, using text fallback', error, {
+      logger.error('Failed to generate barcode for PDF', error, {
         component: 'labelGenerator',
+        barcodeValue,
       });
       // Fallback: Show as text
       pdf.setFontSize(fontSize + 2);
