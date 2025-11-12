@@ -144,7 +144,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
       {/* Dynamic gradient background with animation */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 animate-gradient" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
       
       {/* Large floating orbs with complex movement */}
       <div 
@@ -169,85 +169,76 @@ export default function LoginPage() {
         }} 
       />
       
-      {/* Smaller accent orbs */}
+      {/* Medium accent orbs */}
       <div 
-        className="absolute top-20 right-1/4 w-40 h-40 rounded-full blur-2xl opacity-40"
+        className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl opacity-40"
         style={{ 
-          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0) 70%)',
-          animation: 'float-small 8s ease-in-out infinite'
+          background: 'radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, rgba(236, 72, 153, 0) 70%)',
+          animation: 'float-small 12s ease-in-out infinite'
         }} 
       />
       <div 
-        className="absolute bottom-32 left-1/4 w-32 h-32 rounded-full blur-2xl opacity-40"
+        className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl opacity-40"
         style={{ 
-          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%)',
-          animation: 'float-small-reverse 10s ease-in-out infinite'
+          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.35) 0%, rgba(251, 191, 36, 0) 70%)',
+          animation: 'float-small-reverse 14s ease-in-out infinite'
+        }} 
+      />
+      <div 
+        className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl opacity-30"
+        style={{ 
+          background: 'radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, rgba(34, 211, 238, 0) 70%)',
+          animation: 'float-medium 16s ease-in-out infinite'
         }} 
       />
       
-      {/* Animated gradient mesh */}
-      <div className="absolute inset-0 opacity-30">
+      {/* Animated gradient waves */}
+      <div className="absolute inset-0 opacity-40">
         <div 
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
-            animation: 'mesh-movement 15s ease-in-out infinite'
+            background: 'radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)',
+            animation: 'wave-movement 20s ease-in-out infinite'
+          }}
+        />
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at 50% 30%, rgba(16, 185, 129, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 50%)',
+            animation: 'wave-movement-reverse 25s ease-in-out infinite'
           }}
         />
       </div>
       
-      {/* Particle effect lines */}
-      <div className="absolute inset-0">
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={`line-${i}`}
-            className="absolute h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-            style={{
-              top: `${20 + i * 15}%`,
-              width: '100%',
-              animation: `slide-horizontal ${12 + i * 3}s linear infinite`,
-              animationDelay: `${i * 0.5}s`
-            }}
-          />
-        ))}
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={`vline-${i}`}
-            className="absolute w-px h-full bg-gradient-to-b from-transparent via-purple-500/30 to-transparent"
-            style={{
-              left: `${25 + i * 25}%`,
-              animation: `slide-vertical ${15 + i * 4}s linear infinite`,
-              animationDelay: `${i * 0.7}s`
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Floating dots/particles */}
-      <div className="absolute inset-0">
-        {[...Array(20)].map((_, i) => (
+      {/* Floating sparkle particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(30)].map((_, i) => (
           <div
             key={`particle-${i}`}
-            className="absolute rounded-full bg-primary/20"
+            className="absolute rounded-full"
             style={{
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
+              width: `${Math.random() * 6 + 2}px`,
+              height: `${Math.random() * 6 + 2}px`,
+              background: `radial-gradient(circle, ${
+                ['rgba(59, 130, 246, 0.6)', 'rgba(168, 85, 247, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(236, 72, 153, 0.6)'][i % 4]
+              } 0%, transparent 70%)`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animation: `particle-float ${Math.random() * 10 + 15}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 5}s`
+              animation: `sparkle-float ${Math.random() * 15 + 20}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 10}s`,
+              filter: 'blur(1px)'
             }}
           />
         ))}
       </div>
       
-      {/* Grid pattern overlay with shimmer */}
+      {/* Subtle grid overlay with shimmer */}
       <div 
-        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" 
+        className="absolute inset-0 opacity-[0.015] dark:opacity-[0.04]" 
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
-          backgroundSize: '40px 40px',
-          animation: 'shimmer 8s linear infinite'
+          backgroundSize: '50px 50px',
+          animation: 'shimmer 10s ease-in-out infinite'
         }} 
       />
 
@@ -284,117 +275,86 @@ export default function LoginPage() {
         
         @keyframes float-diagonal-complex {
           0%, 100% { 
-            transform: translate(0, 0) scale(1);
+            transform: translate(0, 0) scale(1) rotate(0deg);
             opacity: 0.5;
           }
           33% { 
-            transform: translate(80px, -80px) scale(1.15);
+            transform: translate(80px, -80px) scale(1.15) rotate(10deg);
             opacity: 0.7;
           }
           66% { 
-            transform: translate(-70px, 70px) scale(0.85);
+            transform: translate(-70px, 70px) scale(0.85) rotate(-10deg);
             opacity: 0.4;
           }
         }
         
         @keyframes float-small {
           0%, 100% { 
-            transform: translate(0, 0);
+            transform: translate(0, 0) rotate(0deg);
           }
           50% { 
-            transform: translate(30px, -50px);
+            transform: translate(50px, -60px) rotate(180deg);
           }
         }
         
         @keyframes float-small-reverse {
           0%, 100% { 
-            transform: translate(0, 0);
-          }
-          50% { 
-            transform: translate(-40px, 40px);
-          }
-        }
-        
-        @keyframes mesh-movement {
-          0%, 100% {
             transform: translate(0, 0) rotate(0deg);
           }
-          33% {
-            transform: translate(30px, -30px) rotate(5deg);
-          }
-          66% {
-            transform: translate(-30px, 30px) rotate(-5deg);
+          50% { 
+            transform: translate(-60px, 50px) rotate(-180deg);
           }
         }
         
-        @keyframes particle-float {
+        @keyframes float-medium {
           0%, 100% { 
-            transform: translateY(0) translateX(0);
+            transform: translate(0, 0) scale(1);
+          }
+          33% { 
+            transform: translate(40px, 40px) scale(1.2);
+          }
+          66% { 
+            transform: translate(-40px, -40px) scale(0.8);
+          }
+        }
+        
+        @keyframes wave-movement {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          50% {
+            transform: translate(50px, -30px) scale(1.1);
+          }
+        }
+        
+        @keyframes wave-movement-reverse {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          50% {
+            transform: translate(-40px, 40px) scale(1.15);
+          }
+        }
+        
+        @keyframes sparkle-float {
+          0%, 100% { 
+            transform: translate(0, 0) scale(0);
             opacity: 0;
           }
-          10% {
-            opacity: 1;
-          }
-          90% {
+          10%, 90% {
             opacity: 1;
           }
           50% { 
-            transform: translateY(-100px) translateX(50px);
-          }
-        }
-        
-        @keyframes slide-horizontal {
-          0% { 
-            transform: translateX(-100%);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          90% {
-            opacity: 1;
-          }
-          100% { 
-            transform: translateX(100%);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes slide-vertical {
-          0% { 
-            transform: translateY(-100%);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          90% {
-            opacity: 1;
-          }
-          100% { 
-            transform: translateY(100%);
-            opacity: 0;
+            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px) scale(1);
           }
         }
         
         @keyframes shimmer {
-          0% {
-            opacity: 0.02;
-          }
-          50% {
-            opacity: 0.05;
-          }
-          100% {
-            opacity: 0.02;
-          }
-        }
-        
-        @keyframes animate-gradient {
           0%, 100% {
-            background-position: 0% 50%;
+            opacity: 0.015;
           }
           50% {
-            background-position: 100% 50%;
+            opacity: 0.03;
           }
         }
       `}} />
