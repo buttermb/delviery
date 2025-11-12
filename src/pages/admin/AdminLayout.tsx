@@ -56,15 +56,18 @@ const AdminLayout = () => {
   const getBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
     
-    // Skip tenant slug in breadcrumbs if present
+    // Skip tenant slug in breadcrumbs
     const startIndex = tenantSlug && paths[0] === tenantSlug ? 1 : 0;
     const relevantPaths = paths.slice(startIndex);
     
-    const breadcrumbs = relevantPaths.map((path, index) => {
-      const pathSlice = relevantPaths.slice(0, index + 1);
+    // Skip 'admin' from breadcrumbs as it's implied
+    const filteredPaths = relevantPaths.filter(path => path !== 'admin');
+    
+    const breadcrumbs = filteredPaths.map((path, index) => {
+      const pathSlice = filteredPaths.slice(0, index + 1);
       const url = tenantSlug 
-        ? `/${tenantSlug}/${pathSlice.join('/')}`
-        : '/' + pathSlice.join('/');
+        ? `/${tenantSlug}/admin/${pathSlice.join('/')}`
+        : `/admin/${pathSlice.join('/')}`;
       
       const label = path
         .split('-')
@@ -72,14 +75,6 @@ const AdminLayout = () => {
         .join(' ');
       return { label, url };
     });
-    
-    // Add tenant name as first breadcrumb if tenant slug exists
-    if (tenantSlug && breadcrumbs.length > 0) {
-      return [
-        { label: tenantSlug, url: tenantSlug ? `/${tenantSlug}/admin/dashboard` : '/admin/dashboard' },
-        ...breadcrumbs
-      ];
-    }
     
     return breadcrumbs;
   };
@@ -101,16 +96,16 @@ const AdminLayout = () => {
               <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform" />
               
               {/* Breadcrumbs */}
-              <nav className="hidden md:flex items-center gap-2 text-xs md:text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
+              <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide">
                 {breadcrumbs.map((crumb, index) => (
-                  <div key={crumb.url} className="flex items-center gap-2 flex-shrink-0">
-                    {index > 0 && <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />}
+                  <div key={crumb.url} className="flex items-center gap-1.5 flex-shrink-0">
+                    {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />}
                     {index === breadcrumbs.length - 1 ? (
-                      <span className="font-medium text-foreground whitespace-nowrap">{crumb.label}</span>
+                      <span className="font-semibold text-foreground whitespace-nowrap">{crumb.label}</span>
                     ) : (
                       <Link 
                         to={crumb.url}
-                        className="hover:text-foreground text-muted-foreground transition-colors whitespace-nowrap"
+                        className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap font-medium"
                       >
                         {crumb.label}
                       </Link>
