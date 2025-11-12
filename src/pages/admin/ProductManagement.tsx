@@ -56,6 +56,7 @@ import { generateProductSKU } from "@/lib/utils/skuGenerator";
 import { generateAndStoreBarcode } from "@/lib/utils/barcodeStorage";
 import { syncProductToMenus } from "@/lib/utils/menuSync";
 import { ProductLabel } from "@/components/admin/ProductLabel";
+import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -359,6 +360,9 @@ export default function ProductManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Barcode scanner state
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
     const product = products.find((p) => p.id === id);
@@ -393,6 +397,29 @@ export default function ProductManagement() {
       toast.error("Failed to delete: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleScanSuccess = (barcode: string) => {
+    logger.info('Barcode scanned, searching products', { barcode, component: 'ProductManagement' });
+    
+    // Search for product by barcode or SKU
+    const matchingProduct = products.find(
+      (p) => p.barcode === barcode || p.sku === barcode
+    );
+
+    if (matchingProduct) {
+      // Set search term to highlight the product
+      setSearchTerm(matchingProduct.name || barcode);
+      toast.success(`Product found: ${matchingProduct.name}`, {
+        description: `SKU: ${matchingProduct.sku}`,
+      });
+    } else {
+      toast.error('Product not found', {
+        description: `No product found with barcode: ${barcode}`,
+      });
+      // Still set the search term so user can see what was scanned
+      setSearchTerm(barcode);
     }
   };
 
@@ -893,6 +920,14 @@ export default function ProductManagement() {
                 className="pl-9 min-h-[44px]"
               />
             </div>
+            <Button
+              variant="outline"
+              onClick={() => setScannerOpen(true)}
+              className="min-h-[44px] gap-2"
+            >
+              <Barcode className="h-4 w-4" />
+              <span className="hidden sm:inline">Scan Barcode</span>
+            </Button>
             <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
@@ -1035,6 +1070,13 @@ export default function ProductManagement() {
         itemName={productToDelete?.name}
         itemType="product"
         isLoading={isDeleting}
+      />
+
+      {/* Barcode Scanner */}
+      <BarcodeScanner
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onScanSuccess={handleScanSuccess}
       />
     </div>
   );
