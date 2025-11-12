@@ -144,15 +144,50 @@ const response = await safeFetch('/api/data');
 ```
 
 ## Files Updated
-The following files have been migrated to use `safeFetch`:
+The following files have been migrated to use `safeFetch` or improved fetch binding:
 
 ✅ `src/hooks/useVersionCheck.ts` - Version checking
 ✅ `src/lib/workflowEngine.ts` - Webhook sending
 ✅ `src/pages/admin/LinkChecker.tsx` - Link validation
-✅ `src/pages/saas/LoginPage.tsx` - Uses edgeFunctionRequest (which handles binding internally)
+✅ `src/components/courier/PhotoProof.tsx` - Photo upload blob conversion
+✅ `src/lib/utils/apiClient.ts` - Dynamic fetch binding for API calls
+✅ `src/pages/saas/LoginPage.tsx` - Network error recovery and retry logic
 ✅ `src/contexts/TenantAdminAuthContext.tsx` - Uses dynamic binding via getSafeFetch
 ✅ `src/contexts/CustomerAuthContext.tsx` - Uses dynamic binding via getSafeFetch
 ✅ `src/contexts/SuperAdminAuthContext.tsx` - Uses dynamic binding via getSafeFetch
+
+## Network Resilience
+
+A new `useNetworkStatus` hook provides automatic connection monitoring:
+
+```typescript
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+
+function MyComponent() {
+  const { isOnline, isSlowConnection, retryWhenOnline } = useNetworkStatus();
+  
+  // Disable submit when offline
+  <Button disabled={!isOnline || isSubmitting}>Submit</Button>
+  
+  // Automatically retry when connection restored
+  const handleSubmit = async () => {
+    try {
+      await saveData();
+    } catch (error) {
+      if (!isOnline) {
+        retryWhenOnline(() => saveData());
+      }
+    }
+  };
+}
+```
+
+**Features:**
+- 🟢 Real-time online/offline detection
+- 📶 Connection speed monitoring
+- 🔄 Automatic retry queue for failed operations
+- 🔔 User-friendly toast notifications
+- ⚡ Pending operation management
 
 ## Best Practices
 

@@ -34,8 +34,9 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
 
     setUploading(true);
     try {
-      // Convert base64 to blob
-      const response = await fetch(image);
+      // Convert base64 to blob using safeFetch
+      const { safeFetch } = await import('@/utils/safeFetch');
+      const response = await safeFetch(image);
       const blob = await response.blob();
       
       // Upload to Supabase Storage

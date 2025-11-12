@@ -131,11 +131,27 @@ export default function LoginPage() {
       window.location.href = `/${tenant.slug}/admin/dashboard`;
     } catch (error: any) {
       logger.error('Login error', error);
-      toast({
-        title: 'Login Failed',
-        description: error.message || 'Invalid email or password',
-        variant: 'destructive',
-      });
+      
+      // Distinguish between network errors and auth errors
+      const isNetworkError = 
+        error.message?.includes('Failed to fetch') || 
+        error.message?.includes('Network') ||
+        error.message?.includes('fetch') ||
+        !navigator.onLine;
+      
+      if (isNetworkError) {
+        toast({
+          title: 'Connection Error',
+          description: 'Please check your internet connection and try again.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Login Failed',
+          description: error.message || 'Invalid email or password',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

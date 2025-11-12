@@ -42,9 +42,9 @@ export async function apiFetch(
   }
 
   try {
-    // Bind fetch to window to prevent "illegal invocation" errors in mobile browsers
-    const boundFetch = fetch.bind(window);
-    const response = await boundFetch(url, {
+    // Get bound fetch dynamically at call time to ensure proper context
+    const getBoundFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
+    const response = await getBoundFetch()(url, {
       ...restOptions,
       headers: {
         "Content-Type": "application/json",
