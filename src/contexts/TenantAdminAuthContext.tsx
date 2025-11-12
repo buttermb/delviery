@@ -143,6 +143,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const startTime = Date.now();
     
     const initializeAuth = async () => {
+      // Declare variables outside try block for catch block access
+      let parsedAdmin: TenantAdmin | null = null;
+      let parsedTenant: Tenant | null = null;
+      
       try {
         // Quick check: Do we have user/tenant data in localStorage?
         const storedAdmin = localStorage.getItem(ADMIN_KEY);
@@ -156,8 +160,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
 
         // Parse stored data
-        const parsedAdmin = JSON.parse(storedAdmin);
-        const parsedTenant = JSON.parse(storedTenant);
+        parsedAdmin = JSON.parse(storedAdmin);
+        parsedTenant = JSON.parse(storedTenant);
         
         // Get current tenant slug from URL
         const currentPath = window.location.pathname;
@@ -232,9 +236,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           logger.warn('[AUTH] Cookie verification failed, clearing auth state');
           clearAuthState();
         }
-      } catch (error) {
-        logger.error('[AUTH] Initialization error', error);
-        clearAuthState();
+      } catch (error: any) {
+        // Special handling for "Failed to fetch" - edge function might be down
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+          logger.warn('[AUTH] Verify endpoint unavailable, using localStorage-only auth', {
+            error: error.message,
+            hasAdmin: !!parsedAdmin,
+            hasTenant: !!parsedTenant,
+          });
+          
+          // Trust localStorage data if verify endpoint is down
+          setIsAuthenticated(true);
+          logger.info('[AUTH] Authenticated via localStorage (verify endpoint unavailable)');
+        } else {
+          logger.error('[AUTH] Initialization error', error);
+          clearAuthState();
+        }
       } finally {
         setLoading(false);
       }

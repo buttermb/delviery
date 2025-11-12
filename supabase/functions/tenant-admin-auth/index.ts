@@ -191,8 +191,17 @@ serve(async (req) => {
 
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
 
+      // Prepare httpOnly cookie options
+      const cookieOptions = [
+        'HttpOnly',
+        'Secure',
+        'SameSite=Strict',
+        'Path=/',
+        `Max-Age=${7 * 24 * 60 * 60}` // 7 days
+      ].join('; ');
+
       // Return user data with tenant context (including limits and usage)
-      return new Response(
+      const response = new Response(
         JSON.stringify({
           user: authData.user,
           session: authData.session,
@@ -211,8 +220,19 @@ serve(async (req) => {
           access_token: authData.session?.access_token,
           refresh_token: authData.session?.refresh_token,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Set-Cookie': `tenant_access_token=${authData.session?.access_token}; ${cookieOptions}`,
+          } 
+        }
       );
+
+      // Add refresh token cookie
+      response.headers.append('Set-Cookie', `tenant_refresh_token=${authData.session?.refresh_token}; ${cookieOptions}`);
+
+      return response;
     }
 
     if (action === 'refresh') {

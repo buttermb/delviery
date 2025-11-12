@@ -64,6 +64,12 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
+    
+    // Clear any stale tenant data before login
+    localStorage.removeItem('lastTenantSlug');
+    localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
+    localStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
+    
     try {
       // Sign in with Supabase Auth first to validate credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -127,8 +133,11 @@ export default function LoginPage() {
 
       toast({
         title: 'Welcome back!',
-        description: 'Redirecting to your dashboard...',
+        description: `Redirecting to ${authResponse.tenant.business_name}...`,
       });
+
+      // Small delay to ensure localStorage is written
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Redirect to tenant admin dashboard
       window.location.href = `/${tenant.slug}/admin/dashboard`;
