@@ -179,14 +179,23 @@ export async function generateProductLabelPDF(
     pdf.text('Barcode', width / 2, currentY, { align: 'center' });
     currentY += fontSizes['text-xs'] + 8;
 
-    // Generate barcode
-    const barcodeValue = data.barcodeValue || data.sku;
+    // Generate barcode with multiple fallbacks
+    const barcodeValue = data.barcodeValue || data.sku || `PROD-${Date.now().toString().slice(-8)}`;
     
     // Validate barcode value
     if (!barcodeValue || barcodeValue.trim().length === 0) {
-      logger.error('Invalid barcode value', { barcodeValue, sku: data.sku });
-      throw new Error('Barcode value is required but was empty');
+      logger.error('Invalid barcode value - all fallbacks failed', { 
+        barcodeValue, 
+        sku: data.sku,
+        productName: data.productName 
+      });
+      throw new Error('Barcode value is required but was empty after all fallbacks');
     }
+    
+    logger.debug('Using barcode value', { 
+      barcodeValue, 
+      source: data.barcodeValue ? 'barcodeValue' : (data.sku ? 'sku' : 'timestamp-fallback')
+    });
     
     try {
       logger.info('Generating barcode for PDF', { 

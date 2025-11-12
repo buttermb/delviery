@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -142,8 +143,37 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     };
   }, [open, showPdfPreview, labelSize, labelData]);
 
+  // Show error dialog if SKU is missing instead of silently returning null
   if (!product.sku) {
-    return null;
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-destructive">⚠️</span> SKU Missing
+            </DialogTitle>
+            <DialogDescription>
+              This product cannot generate labels because it's missing a SKU (Stock Keeping Unit).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Product:</strong> {product.name}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Labels require a SKU for barcode generation. Please edit this product to add a SKU, or delete and recreate it to auto-generate one.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   const handleDownload = async () => {

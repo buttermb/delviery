@@ -162,15 +162,26 @@ export default function ProductManagement() {
       let sku = formData.sku?.trim() || null;
       let barcodeImageUrl: string | null = null;
 
-      // Auto-generate SKU if not provided (for new products only)
+      // MANDATORY: Auto-generate SKU if not provided (for new products only)
       if (!editingProduct && !sku) {
         try {
           sku = await generateProductSKU(category, tenant.id);
           logger.debug('Auto-generated SKU', { sku, category, component: 'ProductManagement' });
         } catch (error) {
-          logger.error('SKU generation failed', error, { component: 'ProductManagement' });
-          // Continue without SKU - product can still be created
+          logger.error('SKU generation failed - aborting product creation', error, { component: 'ProductManagement' });
+          toast.error('Failed to generate SKU', {
+            description: 'Product creation requires a valid SKU. Please try again.',
+          });
+          return; // STOP - SKU is mandatory
         }
+      }
+
+      // Ensure SKU exists before proceeding
+      if (!sku || sku.trim() === '') {
+        toast.error('SKU is required', {
+          description: 'All products must have a valid SKU for label generation.',
+        });
+        return;
       }
 
       // Generate barcode if SKU exists (for new products only)
