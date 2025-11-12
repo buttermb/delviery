@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { safeFetch } from '@/utils/safeFetch';
 
 const CHECK_INTERVAL = 10 * 60 * 1000; // Check every 10 minutes
 const VERSION_KEY = 'app_version';
@@ -55,7 +56,6 @@ async function checkVersion(): Promise<boolean> {
     localStorage.setItem(LAST_CHECK_KEY, now.toString());
     
     // Fetch version.json with cache-busting
-    const safeFetch = fetch.bind(window);
     const response = await safeFetch(`/version.json?t=${now}`, {
       cache: 'no-cache',
       headers: { 'Cache-Control': 'no-cache' }

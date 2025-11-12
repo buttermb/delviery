@@ -6,6 +6,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { auditActions } from './auditLog';
 import { logger } from '@/utils/logger';
+import { safeFetch } from '@/utils/safeFetch';
 
 export interface WorkflowAction {
   id: string;
@@ -160,7 +161,6 @@ async function executeAction(
     case 'send_webhook':
       // Send HTTP webhook
       if (action.config.url) {
-        const safeFetch = fetch.bind(window);
         await safeFetch(action.config.url, {
           method: action.config.method || 'POST',
           headers: action.config.headers || { 'Content-Type': 'application/json' },

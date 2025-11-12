@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, ExternalLink, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { safeFetch } from '@/utils/safeFetch';
 
 interface LinkCheck {
   url: string;
@@ -48,7 +49,6 @@ export default function LinkChecker() {
           if (check.url.startsWith('http') && !check.url.includes(window.location.host)) {
             checks[i].status = 'external';
           } else {
-            const safeFetch = fetch.bind(window);
             const response = await safeFetch(check.url, { method: 'HEAD' });
             checks[i].statusCode = response.status;
             checks[i].status = response.ok ? 'valid' : 'broken';
