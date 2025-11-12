@@ -3,7 +3,7 @@
  * Registration for new tenants with responsive layout and enhanced UX
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,28 +29,44 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, ArrowLeft, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, FileText, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, FileText, Sparkles, Loader2 } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupStepIndicator } from '@/components/signup/SignupStepIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
 import { SignupStepContent } from '@/components/signup/SignupStepContent';
+import { TurnstileWrapper } from '@/components/signup/TurnstileWrapper';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
-import { Turnstile } from '@marsidev/react-turnstile';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 
 const signupSchema = z.object({
-  business_name: z.string().min(2, 'Business name must be at least 2 characters'),
-  owner_name: z.string().min(2, 'Your name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  phone: z.string().optional(),
+  business_name: z.string()
+    .min(2, 'Business name must be at least 2 characters')
+    .max(100, 'Business name must be less than 100 characters')
+    .regex(/^[a-zA-Z0-9\s\-'&.]+$/, 'Business name contains invalid characters'),
+  owner_name: z.string()
+    .min(2, 'Your name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .regex(/^[a-zA-Z\s\-']+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
+  email: z.string()
+    .email('Please enter a valid email address (e.g., you@business.com)')
+    .max(255, 'Email must be less than 255 characters')
+    .toLowerCase(),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(72, 'Password must be less than 72 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must include uppercase, lowercase, and a number'),
+  phone: z.string()
+    .regex(/^[\d\s\-\(\)\+]*$/, 'Phone number contains invalid characters')
+    .max(20, 'Phone number is too long')
+    .optional(),
   state: z.string().optional(),
   industry: z.string().optional(),
   company_size: z.string().optional(),
   terms_accepted: z.boolean().refine((val) => val === true, {
-    message: 'You must accept the Terms of Service',
+    message: 'You must accept the Terms of Service to continue',
   }),
 });
 
@@ -93,6 +109,9 @@ const step1Schema = z.object({
 });
 
 const STORAGE_KEY = 'signup_form_data';
+const STORAGE_EXPIRY_KEY = 'signup_form_data_expiry';
+const DRAFT_EXPIRY_HOURS = 24;
+const SUBMIT_COOLDOWN_MS = 3000;
 
 export default function SignUpPage() {
   const navigate = useNavigate();
@@ -103,7 +122,8 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
-  const turnstileRef = useRef<any>(null);
+  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -121,30 +141,71 @@ export default function SignUpPage() {
     mode: 'onChange',
   });
 
-  // Auto-save form data to localStorage
+  // Auto-save form data to localStorage with expiry
   useEffect(() => {
     const subscription = form.watch((value) => {
       try {
+        const expiryTime = Date.now() + (DRAFT_EXPIRY_HOURS * 60 * 60 * 1000);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+        localStorage.setItem(STORAGE_EXPIRY_KEY, expiryTime.toString());
       } catch (error) {
-        logger.error('Failed to save form data', error);
+        logger.error('Failed to save form data to localStorage', error);
       }
     });
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Load saved form data on mount
+  // Load saved form data on mount (with expiry check)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        form.reset(parsed);
+      const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
+      
+      if (saved && expiry) {
+        const expiryTime = parseInt(expiry, 10);
+        const now = Date.now();
+        
+        if (now < expiryTime) {
+          // Data is still valid
+          const parsed = JSON.parse(saved);
+          form.reset(parsed);
+        } else {
+          // Data has expired, clear it
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(STORAGE_EXPIRY_KEY);
+        }
       }
     } catch (error) {
-      logger.error('Failed to load form data', error);
+      logger.error('Failed to load form data from localStorage', error);
     }
   }, [form]);
+
+  // Keyboard shortcuts for navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard shortcuts when not typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === 'Enter' && !e.shiftKey && currentStep < STEPS.length - 1) {
+        // Enter to go to next step
+        e.preventDefault();
+        handleNext();
+      } else if (e.key === 'Enter' && e.shiftKey && currentStep === STEPS.length - 1) {
+        // Shift+Enter on final step to submit
+        e.preventDefault();
+        handleFinalSubmit();
+      } else if (e.key === 'Escape' && currentStep > 0) {
+        // Escape to go back
+        e.preventDefault();
+        handleBack();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep]);
 
   const validateStep = async (step: number): Promise<boolean> => {
     if (step === 0) {
@@ -178,12 +239,45 @@ export default function SignUpPage() {
   };
 
   const onSubmit = async (data: SignupFormData) => {
+    // Client-side rate limiting
+    const now = Date.now();
+    if (now - lastSubmitTime < SUBMIT_COOLDOWN_MS) {
+      toast({
+        title: 'Please Wait',
+        description: 'Please wait a moment before submitting again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setLastSubmitTime(now);
+
     setIsSubmitting(true);
+    
+    // Track analytics: signup attempt
+    try {
+      if (typeof window !== 'undefined' && 'analytics' in window) {
+        (window as any).analytics?.track('Signup Attempt', {
+          email: data.email,
+          business_name: data.business_name,
+          has_phone: !!data.phone,
+          has_state: !!data.state,
+          industry: data.industry || 'not_specified',
+        });
+      }
+    } catch (e) {
+      // Silently fail analytics
+    }
+
     try {
       logger.info('[SIGNUP] Starting tenant signup', { email: data.email, business_name: data.business_name });
       
       // Clear saved form data
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_EXPIRY_KEY);
+      } catch (error) {
+        logger.warn('Failed to clear localStorage', error);
+      }
 
       // CAPTCHA validation - only required if Turnstile is configured
       const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -248,9 +342,14 @@ export default function SignUpPage() {
         await handleSignupSuccess(result);
       } else {
         // Fallback: Store non-sensitive user and tenant data
-        localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
-        localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
-        localStorage.setItem('lastTenantSlug', tenant.slug); // Store for LoginDirectory redirect
+        try {
+          localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
+          localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
+          localStorage.setItem('lastTenantSlug', tenant.slug); // Store for LoginDirectory redirect
+        } catch (error) {
+          logger.error('Failed to store auth data in localStorage', error);
+          // Continue anyway as tokens are in httpOnly cookies
+        }
       }
 
       logger.info('[SIGNUP] Account created, cookies set automatically', {
@@ -263,12 +362,30 @@ export default function SignUpPage() {
         description: 'Setting up your dashboard...',
       });
 
-      // Prefetch dashboard data (non-blocking, runs in background)
-      prefetch(tenant.slug, tenant.id).catch((error) => {
+      // Track analytics: signup success
+      try {
+        if (typeof window !== 'undefined' && 'analytics' in window) {
+          (window as any).analytics?.track('Signup Success', {
+            tenant_id: tenant.id,
+            tenant_slug: tenant.slug,
+            email: data.email,
+          });
+        }
+      } catch (e) {
+        // Silently fail analytics
+      }
+
+      // Prefetch dashboard data with visual feedback
+      // Wait up to 800ms for prefetch to complete before navigating
+      const prefetchPromise = prefetch(tenant.slug, tenant.id).catch((error) => {
         logger.warn('[SIGNUP] Prefetch failed, continuing anyway', error);
       });
 
-      // Navigate instantly with React Router (SPA navigation, no page reload)
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 800));
+      
+      await Promise.race([prefetchPromise, timeoutPromise]);
+
+      // Navigate with React Router (SPA navigation, no page reload)
       // Note: Tokens are already set as httpOnly cookies by edge function
       navigate(`/${tenant.slug}/admin/dashboard`, {
         replace: true,
@@ -281,11 +398,27 @@ export default function SignUpPage() {
       logger.info('[SIGNUP] Navigation complete', { slug: tenant.slug });
     } catch (error: any) {
       logger.error('[SIGNUP] Fatal error', error);
+
+      // Track analytics: signup error
+      try {
+        if (typeof window !== 'undefined' && 'analytics' in window) {
+          (window as any).analytics?.track('Signup Error', {
+            error_message: error.message,
+            email: data.email,
+          });
+        }
+      } catch (e) {
+        // Silently fail analytics
+      }
       
       // Reset CAPTCHA on error
       if (turnstileRef.current) {
-        turnstileRef.current.reset();
-        setCaptchaToken('');
+        try {
+          turnstileRef.current.reset();
+          setCaptchaToken('');
+        } catch (captchaError) {
+          logger.warn('Failed to reset CAPTCHA', captchaError);
+        }
       }
       
       // Provide user-friendly error messages
@@ -313,6 +446,18 @@ export default function SignUpPage() {
   };
 
   const handleFinalSubmit = async () => {
+    // Track analytics: final step reached
+    try {
+      if (typeof window !== 'undefined' && 'analytics' in window) {
+        (window as any).analytics?.track('Signup Final Step', {
+          email: form.getValues('email'),
+          business_name: form.getValues('business_name'),
+        });
+      }
+    } catch (e) {
+      // Silently fail analytics
+    }
+
     const isValid = await form.trigger();
     if (isValid) {
       await form.handleSubmit(onSubmit)();
@@ -481,31 +626,27 @@ export default function SignUpPage() {
                         )}
                       />
 
-                      {/* CAPTCHA Verification */}
-                      <div className="flex justify-center py-2">
-                        <Turnstile
-                          siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ''}
-                          onSuccess={(token) => setCaptchaToken(token)}
-                          onError={() => {
-                            setCaptchaToken('');
-                            toast({
-                              title: 'Verification Failed',
-                              description: 'CAPTCHA verification failed. Please try again.',
-                              variant: 'destructive',
-                            });
-                          }}
-                          onExpire={() => {
-                            setCaptchaToken('');
-                          }}
-                          options={{
-                            theme: 'light',
-                            size: 'normal',
-                            action: 'signup',
-                            appearance: 'always',
-                          }}
-                          ref={turnstileRef}
-                        />
-                      </div>
+                      {/* CAPTCHA Verification - Only render if configured */}
+                      {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                        <div className="flex justify-center py-2">
+                          <TurnstileWrapper
+                            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                            onSuccess={(token) => setCaptchaToken(token)}
+                            onError={() => {
+                              setCaptchaToken('');
+                              toast({
+                                title: 'Verification Failed',
+                                description: 'CAPTCHA verification failed. Please try again.',
+                                variant: 'destructive',
+                              });
+                            }}
+                            onExpire={() => {
+                              setCaptchaToken('');
+                            }}
+                            turnstileRef={turnstileRef}
+                          />
+                        </div>
+                      )}
                     </div>
                   </SignupStepContent>
 
@@ -763,14 +904,28 @@ export default function SignUpPage() {
           {/* Right Column - Features Showcase (Desktop Only) */}
           <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="sticky top-8">
-              <SignupFeaturesShowcase />
+              <Suspense fallback={
+                <div className="space-y-4">
+                  <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
+                  <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
+                </div>
+              }>
+                <SignupFeaturesShowcase />
+              </Suspense>
             </div>
           </div>
         </div>
 
         {/* Features Showcase - Mobile (Below Form) */}
         <div className="lg:hidden mt-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <SignupFeaturesShowcase />
+          <Suspense fallback={
+            <div className="space-y-4">
+              <div className="h-48 bg-muted/50 rounded-lg animate-pulse" />
+              <div className="h-96 bg-muted/50 rounded-lg animate-pulse" />
+            </div>
+          }>
+            <SignupFeaturesShowcase />
+          </Suspense>
         </div>
       </div>
     </div>
