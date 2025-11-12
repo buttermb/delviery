@@ -6,7 +6,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { X, Trash2, Package, DollarSign } from 'lucide-react';
+import { X, Trash2, Package, DollarSign, FolderTree } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -17,10 +17,11 @@ interface BatchPanelProps {
   onClear: () => void;
   onBatchDelete: () => void;
   onBatchEditPrice: () => void;
+  onBatchEditCategory: () => void;
   isDeleting?: boolean;
 }
 
-export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatchEditPrice, isDeleting }: BatchPanelProps) {
+export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatchEditPrice, onBatchEditCategory, isDeleting }: BatchPanelProps) {
   if (products.length === 0) return null;
 
   return (
@@ -67,31 +68,47 @@ export function BatchPanel({ products, onRemove, onClear, onBatchDelete, onBatch
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2 border-t">
-          <Button
-            variant="outline"
-            onClick={onClear}
-            className="flex-1"
-          >
-            Clear
-          </Button>
-          <Button
-            variant="default"
-            onClick={onBatchEditPrice}
-            className="flex-1 gap-2"
-          >
-            <DollarSign className="h-4 w-4" />
-            Edit Prices
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onBatchDelete}
-            disabled={isDeleting}
-            className="flex-1 gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
+        <div className="space-y-2 pt-2 border-t">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onClear}
+              className="flex-1"
+              size="sm"
+            >
+              Clear
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onBatchDelete}
+              disabled={isDeleting}
+              className="flex-1"
+              size="sm"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              onClick={onBatchEditPrice}
+              className="flex-1"
+              size="sm"
+            >
+              <DollarSign className="h-4 w-4 mr-1" />
+              Prices
+            </Button>
+            <Button
+              variant="default"
+              onClick={onBatchEditCategory}
+              className="flex-1"
+              size="sm"
+            >
+              <FolderTree className="h-4 w-4 mr-1" />
+              Category
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

@@ -59,6 +59,7 @@ import { ProductLabel } from "@/components/admin/ProductLabel";
 import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor, type PriceUpdate } from "@/components/admin/BulkPriceEditor";
+import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -369,6 +370,7 @@ export default function ProductManagement() {
   const [batchProducts, setBatchProducts] = useState<Product[]>([]);
   const [batchPanelOpen, setBatchPanelOpen] = useState(false);
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
+  const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
 
   const handleDelete = async (id: string) => {
     const product = products.find((p) => p.id === id);
@@ -535,6 +537,44 @@ export default function ProductManagement() {
     } catch (error: unknown) {
       logger.error('Bulk price update failed', error, { component: 'ProductManagement' });
       toast.error("Failed to update prices: " + (error instanceof Error ? error.message : "An error occurred"));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleBulkCategoryUpdate = async (newCategory: string) => {
+    if (!tenant?.id || batchProducts.length === 0) return;
+
+    setIsGenerating(true);
+    try {
+      // Validate category
+      const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
+      if (!validCategories.includes(newCategory)) {
+        throw new Error('Invalid category selected');
+      }
+
+      // Update all products
+      const productIds = batchProducts.map(p => p.id);
+      
+      const { error } = await supabase
+        .from('products')
+        .update({ category: newCategory })
+        .in('id', productIds)
+        .eq('tenant_id', tenant.id);
+      
+      if (error) throw error;
+
+      toast.success(`Updated category for ${batchProducts.length} products`, {
+        description: `All products moved to ${newCategory}`,
+      });
+      
+      // Reload products and clear batch
+      loadProducts();
+      setBatchProducts([]);
+      setBatchPanelOpen(false);
+    } catch (error: unknown) {
+      logger.error('Bulk category update failed', error, { component: 'ProductManagement' });
+      toast.error("Failed to update categories: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
       setIsGenerating(false);
     }
@@ -1224,6 +1264,7 @@ export default function ProductManagement() {
           onClear={clearBatch}
           onBatchDelete={handleBatchDelete}
           onBatchEditPrice={() => setBulkPriceEditorOpen(true)}
+          onBatchEditCategory={() => setBatchCategoryEditorOpen(true)}
           isDeleting={isDeleting}
         />
       )}
@@ -1234,6 +1275,14 @@ export default function ProductManagement() {
         onOpenChange={setBulkPriceEditorOpen}
         products={batchProducts}
         onApply={handleBulkPriceUpdate}
+      />
+
+      {/* Batch Category Editor */}
+      <BatchCategoryEditor
+        open={batchCategoryEditorOpen}
+        onOpenChange={setBatchCategoryEditorOpen}
+        products={batchProducts}
+        onApply={handleBulkCategoryUpdate}
       />
     </div>
   );
