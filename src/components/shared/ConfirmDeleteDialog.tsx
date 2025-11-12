@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AlertTriangle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -47,10 +48,13 @@ export function ConfirmDeleteDialog({
   const handleConfirm = async () => {
     try {
       await onConfirm();
-      onOpenChange(false);
+      // Only close if onConfirm succeeds
+      if (!isLoading) {
+        onOpenChange(false);
+      }
     } catch (error) {
-      // Error handling is done by the parent component
-      // Just keep dialog open on error
+      // Error is handled by parent, keep dialog open
+      logger.error('Confirm action failed', error, { component: 'ConfirmDeleteDialog' });
     }
   };
 

@@ -383,6 +383,7 @@ export default function ProductManagement() {
   const confirmDelete = async () => {
     if (!productToDelete || !tenant?.id) {
       toast.error("Tenant not found");
+      setIsDeleting(false); // Reset state even on early return
       return;
     }
 
@@ -395,16 +396,18 @@ export default function ProductManagement() {
         .eq("tenant_id", tenant.id);
       
       if (error) throw error;
+      
       toast.success("Product deleted");
-      loadProducts();
+      await loadProducts(); // Wait for reload
       setSelectedProducts((prev) => prev.filter((pid) => pid !== productToDelete.id));
       setDeleteDialogOpen(false);
       setProductToDelete(null);
     } catch (error: unknown) {
       logger.error('Failed to delete product', error, { component: 'ProductManagement', productId: productToDelete.id });
       toast.error("Failed to delete: " + (error instanceof Error ? error.message : "An error occurred"));
+      // Don't close dialog on error
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false); // Always reset loading state
     }
   };
 
@@ -531,14 +534,14 @@ export default function ProductManagement() {
       });
       
       // Reload products and clear batch
-      loadProducts();
+      await loadProducts(); // Wait for reload
       setBatchProducts([]);
       setBatchPanelOpen(false);
     } catch (error: unknown) {
       logger.error('Bulk price update failed', error, { component: 'ProductManagement' });
       toast.error("Failed to update prices: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false); // Always reset loading state
     }
   };
 
@@ -569,14 +572,14 @@ export default function ProductManagement() {
       });
       
       // Reload products and clear batch
-      loadProducts();
+      await loadProducts(); // Wait for reload
       setBatchProducts([]);
       setBatchPanelOpen(false);
     } catch (error: unknown) {
       logger.error('Bulk category update failed', error, { component: 'ProductManagement' });
       toast.error("Failed to update categories: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false); // Always reset loading state
     }
   };
 
