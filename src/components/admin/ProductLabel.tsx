@@ -147,7 +147,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarcodeIcon className="h-5 w-5" />
@@ -173,7 +173,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             <p className="text-xs text-muted-foreground">{sizeDescriptions[labelSize]}</p>
           </div>
           {/* Label Preview */}
-          <div className="border-2 border-dashed border-muted rounded-lg p-6 bg-card space-y-4">
+          <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
             {/* Header Section */}
             <div className="text-center border-b border-border pb-3">
               <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
@@ -184,7 +184,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             </div>
 
             {/* Product Details Grid */}
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               {product.category && (
                 <div className="flex items-center gap-1">
                   <span className="text-muted-foreground">Category:</span>
@@ -248,18 +248,18 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                 <p className="text-xs text-muted-foreground mb-2">Barcode</p>
                 {barcodeDataUrl ? (
                   <div 
-                    className="flex justify-center p-2 bg-white rounded"
+                    className="flex justify-center p-2 bg-white rounded max-w-full overflow-x-auto"
                     dangerouslySetInnerHTML={{ __html: barcodeDataUrl }}
                   />
                 ) : product.barcode_image_url ? (
                   <img
                     src={product.barcode_image_url as string}
                     alt="Barcode"
-                    className="h-20 object-contain"
+                    className="h-16 max-w-full object-contain"
                   />
                 ) : (
-                  <div className="h-20 flex items-center justify-center border border-muted rounded px-4 bg-white">
-                    <p className="font-mono text-sm text-black">{product.sku}</p>
+                  <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white max-w-full">
+                    <p className="font-mono text-xs text-black truncate">{product.sku}</p>
                   </div>
                 )}
               </div>
@@ -268,10 +268,10 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               {labelSize !== 'small' && (
                 <div className="flex flex-col items-center">
                   <p className="text-xs text-muted-foreground mb-2">Quick Scan</p>
-                  <div className="p-2 bg-white rounded">
+                  <div className="p-2 bg-white rounded inline-block">
                     <QRCodeSVG
                       value={productQRData}
-                      size={80}
+                      size={64}
                       level="M"
                       includeMargin={false}
                     />
