@@ -266,7 +266,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         {/* Mobile-Optimized Close Button - Always visible with high contrast */}
         <button
           onClick={() => onOpenChange(false)}
-          className="fixed right-4 top-4 z-[9999] rounded-full bg-black/80 text-white hover:bg-black transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
+          className="fixed right-4 top-4 z-[9999] rounded-full bg-background/80 text-foreground hover:bg-background border border-border transition-all md:hidden touch-manipulation active:scale-95 backdrop-blur-sm"
           aria-label="Close"
           style={{ 
             touchAction: 'manipulation',
@@ -383,7 +383,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
               <div className="text-4xl font-bold text-primary">
                 ${Number(currentPrice).toFixed(2)}
               </div>
-              <Badge className={product.in_stock ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}>
+              <Badge className={product.in_stock ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}>
                 <Package className="w-4 h-4 mr-1" />
                 {product.in_stock ? "In Stock" : "Out of Stock"}
               </Badge>
@@ -424,7 +424,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                 onClick={handleAddToCart}
                 disabled={!product.in_stock || loading || added}
                 className={`w-full transition-all duration-300 ${
-                  added ? 'bg-green-600 hover:bg-green-600 animate-pulse' : ''
+                  added ? 'bg-primary hover:bg-primary animate-pulse' : ''
                 }`}
                 size="lg"
                 variant={added ? "default" : "default"}

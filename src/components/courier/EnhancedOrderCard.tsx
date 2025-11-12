@@ -77,24 +77,24 @@ export default function EnhancedOrderCard({
       className="relative"
     >
       <Card className={`overflow-hidden ${
-        swipeDirection === 'left' ? 'border-red-500 bg-red-500/5' : 
-        swipeDirection === 'right' ? 'border-green-500 bg-green-500/5' : ''
+        swipeDirection === 'left' ? 'border-destructive bg-destructive/5' : 
+        swipeDirection === 'right' ? 'border-primary bg-primary/5' : ''
       }`}>
         {/* Swipe Hint Overlays */}
         {swipeDirection && (
           <div className={`absolute inset-0 flex items-center justify-center z-10 ${
-            swipeDirection === 'left' ? 'bg-red-500/20' : 'bg-green-500/20'
+            swipeDirection === 'left' ? 'bg-destructive/20' : 'bg-primary/20'
           }`}>
             <div className="text-center">
               {swipeDirection === 'left' ? (
                 <>
-                  <ThumbsDown className="w-12 h-12 mx-auto mb-2 text-red-500" />
-                  <p className="font-bold text-red-500">Rejecting...</p>
+                  <ThumbsDown className="w-12 h-12 mx-auto mb-2 text-destructive" />
+                  <p className="font-bold text-destructive">Rejecting...</p>
                 </>
               ) : (
                 <>
-                  <ThumbsUp className="w-12 h-12 mx-auto mb-2 text-green-500" />
-                  <p className="font-bold text-green-500">Accepting...</p>
+                  <ThumbsUp className="w-12 h-12 mx-auto mb-2 text-primary" />
+                  <p className="font-bold text-primary">Accepting...</p>
                 </>
               )}
             </div>
@@ -119,7 +119,7 @@ export default function EnhancedOrderCard({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-primary">
                 ${potentialEarnings.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">Est. earnings</p>
@@ -138,8 +138,8 @@ export default function EnhancedOrderCard({
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <div className="bg-blue-500/10 p-2 rounded-lg">
-                <Clock className="w-4 h-4 text-blue-500" />
+              <div className="bg-accent/10 p-2 rounded-lg">
+                <Clock className="w-4 h-4 text-accent-foreground" />
               </div>
               <div>
                 <p className="font-medium">{estimatedTime || '?'} min</p>
@@ -163,7 +163,7 @@ export default function EnhancedOrderCard({
               </div>
             </div>
             <div className="border-t pt-2 flex items-start gap-2">
-              <MapPin className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground mb-1">Delivery</p>
                 <p className="text-sm font-medium truncate">{String(order.delivery_address || 'N/A')}</p>
@@ -191,14 +191,14 @@ export default function EnhancedOrderCard({
               <Button
                 variant="outline"
                 onClick={onReject}
-                className="border-red-500/50 hover:bg-red-500/10 hover:border-red-500"
+                className="border-destructive/50 hover:bg-destructive/10 hover:border-destructive"
               >
                 <ThumbsDown className="w-4 h-4 mr-2" />
                 Reject
               </Button>
               <Button
                 onClick={onAccept}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <ThumbsUp className="w-4 h-4 mr-2" />
                 Accept

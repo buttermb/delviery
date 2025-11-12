@@ -96,7 +96,7 @@ export function PlanCard({ plan, currentPlan, onSelect, showYearly = false }: Pl
                   viewport={{ once: true }}
                   className="flex items-center gap-2 text-sm"
                 >
-                  <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>{feature.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
                 </motion.li>
               ))}

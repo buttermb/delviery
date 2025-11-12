@@ -182,7 +182,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
                       {new Date(order.created_at).toLocaleTimeString()}
                     </div>
                   </div>
-                  <Badge variant="secondary" className="bg-green-500/20 text-green-500 border-green-500/30">
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
                     ${order.total_amount?.toFixed(2) || '0.00'}
                   </Badge>
                 </div>
@@ -203,7 +203,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
                 <Button
                   onClick={() => handleAccept(order.id)}
                   disabled={acceptingId === order.id}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="sm"
                 >
                   {acceptingId === order.id ? 'Accepting...' : 'Accept Order'}

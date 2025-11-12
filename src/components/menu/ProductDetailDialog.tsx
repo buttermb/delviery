@@ -92,10 +92,10 @@ export function ProductDetailDialog({
                 {product.strain_type && (
                   <Badge 
                     className={`${
-                      product.strain_type === 'Indica' ? 'bg-purple-500/10 text-purple-700 border-purple-500/20' :
-                      product.strain_type === 'Sativa' ? 'bg-green-500/10 text-green-700 border-green-500/20' :
-                      product.strain_type === 'Hybrid' ? 'bg-orange-500/10 text-orange-700 border-orange-500/20' :
-                      'bg-blue-500/10 text-blue-700 border-blue-500/20'
+                      product.strain_type === 'Indica' ? 'bg-purple-500/10 dark:bg-purple-500/5 text-purple-700 dark:text-purple-400 border-purple-500/20' :
+                      product.strain_type === 'Sativa' ? 'bg-primary/10 text-primary border-primary/20' :
+                      product.strain_type === 'Hybrid' ? 'bg-orange-500/10 dark:bg-orange-500/5 text-orange-700 dark:text-orange-400 border-orange-500/20' :
+                      'bg-accent/10 text-accent-foreground border-accent/20'
                     }`}
                   >
                     {product.strain_type}
@@ -108,17 +108,17 @@ export function ProductDetailDialog({
             {(product.thc_percentage || product.cbd_percentage || product.thc_content || product.cbd_content) && (
               <div className="grid grid-cols-2 gap-3">
                 {(product.thc_percentage || product.thc_content) && (
-                  <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                     <div className="text-xs text-muted-foreground mb-1">THC Content</div>
-                    <div className="text-xl font-bold text-green-700">
+                    <div className="text-xl font-bold text-primary">
                       {product.thc_percentage ? `${product.thc_percentage.toFixed(1)}%` : product.thc_content}
                     </div>
                   </div>
                 )}
                 {(product.cbd_percentage || product.cbd_content) && (
-                  <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                  <div className="p-3 rounded-lg bg-accent/5 border border-accent/20">
                     <div className="text-xs text-muted-foreground mb-1">CBD Content</div>
-                    <div className="text-xl font-bold text-blue-700">
+                    <div className="text-xl font-bold text-accent-foreground">
                       {product.cbd_percentage ? `${product.cbd_percentage.toFixed(1)}%` : product.cbd_content}
                     </div>
                   </div>

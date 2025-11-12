@@ -46,8 +46,8 @@ export const ComparisonMetricsCard = ({
   };
 
   const getTrendColor = (change: number) => {
-    if (change > 0) return 'text-green-600 bg-green-500/10 border-green-500/20';
-    if (change < 0) return 'text-red-600 bg-red-500/10 border-red-500/20';
+    if (change > 0) return 'text-primary bg-primary/10 border-primary/20';
+    if (change < 0) return 'text-destructive bg-destructive/10 border-destructive/20';
     return 'text-muted-foreground bg-muted border-muted';
   };
 

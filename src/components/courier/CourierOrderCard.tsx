@@ -114,9 +114,9 @@ export const CourierOrderCard = memo(({
           </div>
           {tipAmount > 0 && (
             <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-green-600" />
+              <Clock className="w-4 h-4 text-primary" />
               <span className="text-muted-foreground">Tip:</span>
-              <span className="font-semibold text-green-600">${tipAmount.toFixed(2)}</span>
+              <span className="font-semibold text-primary">${tipAmount.toFixed(2)}</span>
             </div>
           )}
         </div>

@@ -26,7 +26,7 @@ export function CheckoutFormStep({
     >
       <Card className={cn(
         "border-2 transition-all duration-300",
-        isComplete && "border-green-500 bg-green-50/50 dark:bg-green-950/20"
+        isComplete && "border-primary bg-primary/5"
       )}>
         <CardHeader className="pb-3 md:pb-6">
           <CardTitle className="text-base md:text-lg flex items-center gap-3">
@@ -37,7 +37,7 @@ export function CheckoutFormStep({
               className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors",
                 isComplete 
-                  ? "bg-green-500 text-white" 
+                  ? "bg-primary text-primary-foreground" 
                   : "bg-primary text-primary-foreground"
               )}
             >

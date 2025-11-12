@@ -162,11 +162,11 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
 
   const getCategoryColor = () => {
     const colors: Record<string, string> = {
-      flower: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      edibles: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-      vapes: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      concentrates: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      "pre-rolls": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      flower: "bg-primary/20 text-primary border-primary/30",
+      edibles: "bg-purple-500/20 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
+      vapes: "bg-accent/20 text-accent-foreground border-accent/30",
+      concentrates: "bg-primary/20 text-primary border-primary/30",
+      "pre-rolls": "bg-primary/20 text-primary border-primary/30",
     };
     return colors[product.category] || colors.flower;
   };
@@ -187,7 +187,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
     <>
       <Card
         onMouseEnter={handleMouseEnter} 
-        className="group overflow-hidden backdrop-blur-2xl transition-all duration-500 cursor-pointer relative bg-white/[0.02] border border-white/[0.05] hover:border-white/10 hover:-translate-y-3 hover:scale-[1.02]"
+        className="group overflow-hidden backdrop-blur-2xl transition-all duration-500 cursor-pointer relative bg-card/50 border border-border/50 hover:border-border hover:-translate-y-3 hover:scale-[1.02]"
         onClick={handleCardClick}
       >
         {/* Out of Stock Overlay */}
@@ -248,9 +248,9 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
         <CardContent className="p-6 space-y-4">
           {/* Product Name */}
           <div>
-            <h3 className="text-xl font-bold mb-1 line-clamp-1 text-white">{cleanProductName(product.name)}</h3>
+            <h3 className="text-xl font-bold mb-1 line-clamp-1 text-foreground">{cleanProductName(product.name)}</h3>
             {getStringValue(product.strain_type) && (
-              <p className="text-sm text-white/60 capitalize">{getStringValue(product.strain_type)}</p>
+              <p className="text-sm text-muted-foreground capitalize">{getStringValue(product.strain_type)}</p>
             )}
           </div>
           
@@ -258,13 +258,13 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           <div className="flex items-end justify-between">
             {product.prices && typeof product.prices === 'object' && Object.keys(product.prices).length > 1 ? (
               <div>
-                <div className="text-4xl font-black text-emerald-500">
+                <div className="text-4xl font-black text-primary">
                   ${Number(Math.min(...Object.values(product.prices).map(p => Number(p)))).toFixed(0)}
                 </div>
-                <p className="text-xs text-white/40">Starting price</p>
+                <p className="text-xs text-muted-foreground">Starting price</p>
               </div>
             ) : (
-              <div className="text-4xl font-black text-emerald-500">
+              <div className="text-4xl font-black text-primary">
                 ${Number(product.price).toFixed(0)}
               </div>
             )}
@@ -273,10 +273,10 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           {/* Rating + Reviews - Social Proof */}
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-semibold text-white">{getNumberValue(product.average_rating, 4.8)}</span>
+              <Star className="w-4 h-4 fill-orange-500 text-orange-500" />
+              <span className="font-semibold text-foreground">{getNumberValue(product.average_rating, 4.8)}</span>
             </div>
-            <span className="text-white/60">({getNumberValue(product.review_count, 127)} reviews)</span>
+            <span className="text-muted-foreground">({getNumberValue(product.review_count, 127)} reviews)</span>
           </div>
 
           {/* Stock + Social Proof Alerts */}
@@ -287,7 +287,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
                 Only {actualStockLevel} left
               </Badge>
             )}
-            <Badge variant="secondary" className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="h-3 w-3 mr-1" />
               {Math.floor(Math.random() * 30) + 15} sold this week
             </Badge>
@@ -306,7 +306,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
             }}
             disabled={loading || !product.in_stock || added}
             className={`w-full h-12 text-base font-bold relative overflow-hidden ${
-              added ? 'animate-pulse bg-green-600 hover:bg-green-600' : ''
+              added ? 'animate-pulse bg-primary hover:bg-primary' : ''
             }`}
             size="lg"
             variant={added ? "secondary" : "hero"}

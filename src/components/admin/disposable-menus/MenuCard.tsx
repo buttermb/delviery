@@ -53,9 +53,9 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   }, 0) || 0;
 
   const statusColors = {
-    active: 'bg-green-500',
-    soft_burned: 'bg-yellow-500',
-    hard_burned: 'bg-red-500'
+    active: 'bg-primary',
+    soft_burned: 'bg-orange-500',
+    hard_burned: 'bg-destructive'
   };
 
   const statusLabels = {

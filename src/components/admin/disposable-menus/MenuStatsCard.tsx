@@ -28,7 +28,7 @@ export const MenuStatsCard = ({ title, value, subtitle, icon: Icon, trend }: Men
               <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
             )}
             {trend && (
-              <div className={`text-xs mt-3 font-semibold flex items-center gap-1 ${trend.value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-xs mt-3 font-semibold flex items-center gap-1 ${trend.value >= 0 ? 'text-primary' : 'text-destructive'}`}>
                 <span className="text-base">{trend.value >= 0 ? '↑' : '↓'}</span>
                 <span>{Math.abs(trend.value)}% {trend.label}</span>
               </div>

@@ -29,11 +29,11 @@ const colorClasses = {
 };
 
 const iconColors = {
-  blue: 'text-blue-500 bg-blue-500/10',
-  green: 'text-emerald-500 bg-emerald-500/10',
-  orange: 'text-orange-500 bg-orange-500/10',
-  red: 'text-red-500 bg-red-500/10',
-  purple: 'text-purple-500 bg-purple-500/10',
+  blue: 'text-accent bg-accent/10',
+  green: 'text-primary bg-primary/10',
+  orange: 'text-orange-500 dark:text-orange-400 bg-orange-500/10',
+  red: 'text-destructive bg-destructive/10',
+  purple: 'text-purple-500 dark:text-purple-400 bg-purple-500/10',
 };
 
 export function StatCard({
@@ -80,7 +80,7 @@ export function StatCard({
               <span
                 className={cn(
                   'flex items-center gap-1 font-medium',
-                  change.type === 'increase' ? 'text-emerald-600' : 'text-red-600'
+                  change.type === 'increase' ? 'text-primary' : 'text-destructive'
                 )}
               >
                 {change.type === 'increase' ? (
