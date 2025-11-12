@@ -47,7 +47,8 @@ export const generateDecoyTraffic = () => {
     const randomEndpoint = decoyEndpoints[Math.floor(Math.random() * decoyEndpoints.length)];
     
     // Fire and forget - don't care about response
-    fetch(randomEndpoint, { 
+    const safeFetch = fetch.bind(window);
+    safeFetch(randomEndpoint, { 
       method: 'HEAD',
       cache: 'no-cache'
     }).catch(() => {

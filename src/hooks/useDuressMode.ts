@@ -42,7 +42,8 @@ export function useDuressMode() {
     // Log the security event (silently)
     if (tenant?.id) {
       // Call Edge Function to log duress login (non-blocking)
-      fetch('/api/log-security-event', {
+      const safeFetch = fetch.bind(window);
+      safeFetch('/api/log-security-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
