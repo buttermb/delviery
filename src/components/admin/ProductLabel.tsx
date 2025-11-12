@@ -54,8 +54,8 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
       try {
         const barcodeValue = (product.barcode as string) || product.sku || '';
         const svgString = generateBarcodeSVG(barcodeValue, {
-          width: 2,
-          height: 80,
+          width: 1,
+          height: 50,
           displayValue: true,
           format: 'CODE128',
         });
@@ -176,7 +176,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
             {/* Header Section */}
             <div className="text-center border-b border-border pb-3">
-              <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
+              <h3 className="text-base font-bold text-foreground break-words">{product.name}</h3>
               {product.strain_name && (
                 <p className="text-sm font-medium text-primary mt-1">{product.strain_name}</p>
               )}
@@ -244,21 +244,27 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             {/* Barcode & QR Code Section */}
             <div className="pt-4 border-t border-border space-y-4">
               {/* Barcode */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full">
                 <p className="text-xs text-muted-foreground mb-2">Barcode</p>
                 {barcodeDataUrl ? (
                   <div 
-                    className="flex justify-center p-2 bg-white rounded max-w-full overflow-x-auto"
-                    dangerouslySetInnerHTML={{ __html: barcodeDataUrl }}
-                  />
+                    className="flex justify-center p-2 bg-white rounded w-full max-w-[300px]"
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div 
+                      className="w-full flex justify-center"
+                      style={{ maxWidth: '100%', transform: 'scale(0.9)' }}
+                      dangerouslySetInnerHTML={{ __html: barcodeDataUrl }}
+                    />
+                  </div>
                 ) : product.barcode_image_url ? (
                   <img
                     src={product.barcode_image_url as string}
                     alt="Barcode"
-                    className="h-16 max-w-full object-contain"
+                    className="h-16 max-w-[300px] object-contain"
                   />
                 ) : (
-                  <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white max-w-full">
+                  <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white max-w-[300px]">
                     <p className="font-mono text-xs text-black truncate">{product.sku}</p>
                   </div>
                 )}
