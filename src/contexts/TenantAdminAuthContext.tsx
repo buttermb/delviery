@@ -71,8 +71,8 @@ const EXPIRATION_BUFFER_MS = 60 * 1000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Bound fetch to prevent "Illegal invocation" error in production builds
-const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+// Helper to get bound fetch (prevents "Illegal invocation" error)
+const getSafeFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
@@ -202,7 +202,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         // Verify authentication via API (cookies sent automatically)
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const verifyResponse = await safeFetch(
+        const verifyResponse = await getSafeFetch()(
           `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
           {
             method: 'GET',
@@ -337,7 +337,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           headers["Authorization"] = `Bearer ${tokenToVerify}`;
         }
         
-        response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+        response = await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
           method: "GET",
           credentials: 'include', // ⭐ Send httpOnly cookies
           headers,
@@ -386,7 +386,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
             try {
-              const refreshResponse = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+              const refreshResponse = await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -554,7 +554,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s for login
       
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -629,7 +629,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       // Call logout endpoint to clear cookies
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
+      await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include', // ⭐ Send cookies to be cleared
         headers: {
@@ -679,7 +679,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -768,7 +768,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               try {
                 const adminData = JSON.parse(storedAdmin);
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-                const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+                const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {
                     "Authorization": `Bearer ${accessToken || localStorage.getItem(ACCESS_TOKEN_KEY)}`,

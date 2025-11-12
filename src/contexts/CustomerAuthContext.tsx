@@ -50,8 +50,8 @@ const TOKEN_KEY = STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN;
 const CUSTOMER_KEY = STORAGE_KEYS.CUSTOMER_USER;
 const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
-// Bound fetch to prevent "Illegal invocation" error in production builds
-const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+// Helper to get bound fetch (prevents "Illegal invocation" error)
+const getSafeFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
@@ -121,7 +121,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -161,7 +161,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -198,7 +198,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
+        await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

@@ -28,9 +28,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
-
-// Bound fetch to prevent "Illegal invocation" error
-const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+import { edgeFunctionRequest } from '@/lib/utils/apiClient';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -107,25 +105,12 @@ export default function LoginPage() {
       }
 
       // Call tenant-admin-auth to set up complete authentication
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          tenantSlug: tenant.slug,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Login failed');
-      }
-
-      const authResponse = await response.json();
+      const authResponse = await edgeFunctionRequest('tenant-admin-auth', {
+        action: 'login',
+        email: data.email,
+        password: data.password,
+        tenantSlug: tenant.slug,
+      }, { skipAuth: true });
 
       // Store authentication data
       localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);

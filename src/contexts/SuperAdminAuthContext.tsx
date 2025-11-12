@@ -30,8 +30,8 @@ const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN;
 const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
 const SUPABASE_SESSION_KEY = 'superadmin_supabase_session';
 
-// Bound fetch to prevent "Illegal invocation" error in production builds
-const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
+// Helper to get bound fetch (prevents "Illegal invocation" error)
+const getSafeFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
 
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
@@ -86,7 +86,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const verifyToken = async (tokenToVerify: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -115,7 +115,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const login = async (email: string, password: string) => {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=login`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/super-admin-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +166,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
+        await getSafeFetch()(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -194,7 +194,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`, {
+      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
