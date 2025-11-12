@@ -83,14 +83,14 @@ export default function AddressCheck({ onAddressValidated }: AddressCheckProps) 
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-teal-500/30 rounded-2xl p-8 shadow-2xl">
+      <div className="bg-gradient-to-br from-card via-card to-muted border-2 border-primary/30 rounded-2xl p-8 shadow-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center">
-            <MapPin className="w-6 h-6 text-teal-400" />
+          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+            <MapPin className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h3 className="text-2xl font-black uppercase tracking-wide text-white">Check Delivery</h3>
-            <p className="text-sm text-slate-300">Enter your ZIP to see availability</p>
+            <h3 className="text-2xl font-black uppercase tracking-wide text-foreground">Check Delivery</h3>
+            <p className="text-sm text-muted-foreground">Enter your ZIP to see availability</p>
           </div>
         </div>
 
@@ -101,54 +101,54 @@ export default function AddressCheck({ onAddressValidated }: AddressCheckProps) 
             value={zipCode}
             onChange={(e) => setZipCode(e.target.value.slice(0, 5))}
             maxLength={5}
-            className="text-lg h-14 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400"
+            className="text-lg h-14"
           />
           <Button
             onClick={validateDelivery}
             disabled={zipCode.length !== 5 || loading}
-            className="h-14 px-8 bg-teal-500 hover:bg-teal-600 text-white font-bold uppercase tracking-wide"
+            className="h-14 px-8 font-bold uppercase tracking-wide"
           >
             {loading ? "Checking..." : "Check"}
           </Button>
         </div>
 
         {result && (
-          <div className={`p-6 rounded-xl ${result.valid ? 'bg-teal-500/10 border border-teal-500/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+          <div className={`p-6 rounded-xl ${result.valid ? 'bg-primary/10 border border-primary/30' : 'bg-destructive/10 border border-destructive/30'}`}>
             {result.valid ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center">
-                    <span className="text-white text-lg">✓</span>
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                    <span className="text-primary-foreground text-lg">✓</span>
                   </div>
-                  <h4 className="text-xl font-black text-white">We Deliver to {result.borough}!</h4>
+                  <h4 className="text-xl font-black text-foreground">We Deliver to {result.borough}!</h4>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-lg">
-                    <Clock className="w-5 h-5 text-teal-400" />
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <Clock className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-xs text-slate-400 uppercase">Delivery Time</p>
-                      <p className="font-bold text-white">{result.eta}</p>
+                      <p className="text-xs text-muted-foreground uppercase">Delivery Time</p>
+                      <p className="font-bold text-foreground">{result.eta}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-lg">
-                    <Zap className="w-5 h-5 text-teal-400" />
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <Zap className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-xs text-slate-400 uppercase">Delivery Fee</p>
-                      <p className="font-bold text-white">{result.fee}</p>
+                      <p className="text-xs text-muted-foreground uppercase">Delivery Fee</p>
+                      <p className="font-bold text-foreground">{result.fee}</p>
                     </div>
                   </div>
                 </div>
 
-                <Badge className="w-full justify-center py-3 bg-teal-500/20 text-teal-300 border-teal-500/30">
+                <Badge className="w-full justify-center py-3 bg-primary/20 text-primary border-primary/30">
                   Express delivery available for $10 extra (15-20 min)
                 </Badge>
               </div>
             ) : (
               <div className="text-center py-4">
-                <p className="text-lg font-bold text-red-400 mb-2">Sorry, we don't deliver to this area yet</p>
-                <p className="text-sm text-slate-400">We currently serve Brooklyn, Queens, and Manhattan only</p>
+                <p className="text-lg font-bold text-destructive mb-2">Sorry, we don't deliver to this area yet</p>
+                <p className="text-sm text-muted-foreground">We currently serve Brooklyn, Queens, and Manhattan only</p>
               </div>
             )}
           </div>

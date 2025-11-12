@@ -84,9 +84,9 @@ export default function ClientDetail() {
   };
 
   const getStatusColor = (balance: number) => {
-    if (balance === 0) return "text-emerald-500";
+    if (balance === 0) return "text-primary";
     if (balance > 20000) return "text-destructive";
-    return "text-yellow-500";
+    return "text-orange-600 dark:text-orange-400";
   };
 
   const getClientTypeLabel = (type: string) => {

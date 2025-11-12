@@ -47,11 +47,11 @@ export default function BugScanner() {
 
   const getSeverityColor = (severity: BugReport['severity']) => {
     switch (severity) {
-      case 'critical': return 'bg-red-600';
-      case 'high': return 'bg-orange-600';
-      case 'medium': return 'bg-yellow-600';
-      case 'low': return 'bg-blue-600';
-      default: return 'bg-gray-600';
+      case 'critical': return 'bg-destructive';
+      case 'high': return 'bg-orange-600 dark:bg-orange-700';
+      case 'medium': return 'bg-orange-500 dark:bg-orange-600';
+      case 'low': return 'bg-accent';
+      default: return 'bg-muted';
     }
   };
 
@@ -334,11 +334,11 @@ function BugList({
 }) {
   const getSeverityColor = (severity: BugReport['severity']) => {
     switch (severity) {
-      case 'critical': return 'bg-red-600';
-      case 'high': return 'bg-orange-600';
-      case 'medium': return 'bg-yellow-600';
-      case 'low': return 'bg-blue-600';
-      default: return 'bg-gray-600';
+      case 'critical': return 'bg-destructive';
+      case 'high': return 'bg-orange-600 dark:bg-orange-700';
+      case 'medium': return 'bg-orange-500 dark:bg-orange-600';
+      case 'low': return 'bg-accent';
+      default: return 'bg-muted';
     }
   };
 

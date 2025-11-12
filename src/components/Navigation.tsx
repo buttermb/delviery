@@ -142,13 +142,13 @@ const Navigation = () => {
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/95 backdrop-blur-xl supports-[backdrop-filter]:bg-black/90" role="navigation" aria-label="Main navigation">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90" role="navigation" aria-label="Main navigation">
         <div className="container flex h-24 items-center justify-between px-6 gap-8">
           <Link to="/" className="flex items-center gap-4 min-w-fit">
             <NYMLogo size={48} />
             <div className="flex flex-col gap-0.5">
               <span className="font-black text-base tracking-wider">DELIVERY</span>
-              <span className="text-[10px] text-white/50 tracking-widest uppercase">Premium Service</span>
+              <span className="text-[10px] text-muted-foreground/70 tracking-widest uppercase">Premium Service</span>
             </div>
           </Link>
 
@@ -160,7 +160,7 @@ const Navigation = () => {
                   key={link.label}
                   href={link.href}
                   onClick={handleNavClick(link.href, link.scroll)}
-                  className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer whitespace-nowrap"
                 >
                   {link.label}
                 </a>
@@ -171,7 +171,7 @@ const Navigation = () => {
                   onClick={() => {
                     setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0);
                   }}
-                  className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer whitespace-nowrap"
                 >
                   {link.label}
                 </Link>

@@ -83,9 +83,9 @@ export default function FleetManagement() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      assigned: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      picked_up: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      in_transit: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+      assigned: "bg-accent/10 text-accent-foreground border-accent/20",
+      picked_up: "bg-orange-500/10 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border-orange-500/20 dark:border-orange-700",
+      in_transit: "bg-primary/10 text-primary border-primary/20"
     };
     return colors[status] || "bg-muted text-muted-foreground";
   };

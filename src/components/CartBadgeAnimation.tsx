@@ -43,8 +43,8 @@ export function CartBadgeAnimation() {
 
   return (
     <div className="fixed top-20 right-4 md:right-8 z-[100] pointer-events-none">
-      <div className="bg-green-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-5 duration-300">
-        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+      <div className="bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-5 duration-300">
+        <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
           <Check className="w-5 h-5 animate-bounce" />
         </div>
         <div>

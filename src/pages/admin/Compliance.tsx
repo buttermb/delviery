@@ -100,7 +100,7 @@ export default function Compliance() {
               <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className={`h-2 rounded-full ${
-                    compliancePercentage === 100 ? 'bg-green-500' : compliancePercentage >= 80 ? 'bg-yellow-500' : 'bg-red-500'
+                    compliancePercentage === 100 ? 'bg-primary' : compliancePercentage >= 80 ? 'bg-orange-500 dark:bg-orange-600' : 'bg-destructive'
                   }`}
                   style={{ width: `${compliancePercentage}%` }}
                 />
@@ -124,7 +124,7 @@ export default function Compliance() {
               <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   {check.status === 'compliant' ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-primary" />
                   ) : (
                     <XCircle className="h-5 w-5 text-muted-foreground" />
                   )}

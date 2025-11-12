@@ -159,12 +159,12 @@ export default function DeliveryManagement() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
-      case 'confirmed': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'out_for_delivery': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-      case 'delivered': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'cancelled': return 'bg-red-500/10 text-red-600 border-red-500/20';
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-500/20';
+      case 'pending': return 'bg-orange-500/10 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border-orange-500/20 dark:border-orange-700';
+      case 'confirmed': return 'bg-accent/10 text-accent-foreground border-accent/20';
+      case 'out_for_delivery': return 'bg-primary/10 text-primary border-primary/20';
+      case 'delivered': return 'bg-primary/10 text-primary border-primary/20';
+      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground border-muted';
     }
   };
 

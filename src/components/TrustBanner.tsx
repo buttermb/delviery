@@ -9,7 +9,7 @@ const TrustBanner = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-r from-black via-gray-900 to-black text-white border-b border-white/10">
+    <div className="bg-gradient-to-r from-background via-muted to-background text-foreground border-b border-border">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-center gap-8 flex-wrap">
           {trustSignals.map((signal, idx) => (

@@ -71,8 +71,8 @@ export default function WholesaleInventory() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      good: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-      low: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      good: "bg-primary/10 text-primary border-primary/20",
+      low: "bg-orange-500/10 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border-orange-500/20 dark:border-orange-700",
       very_low: "bg-destructive/10 text-destructive border-destructive/20"
     };
     return colors[status] || "";
