@@ -78,7 +78,8 @@ export default function ProductManagement() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false); // For product creation/update
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false); // For batch operations
   const [labelProduct, setLabelProduct] = useState<Product | null>(null);
   const [labelDialogOpen, setLabelDialogOpen] = useState(false);
 
@@ -502,7 +503,7 @@ export default function ProductManagement() {
   const handleBulkPriceUpdate = async (updates: PriceUpdate[]) => {
     if (!tenant?.id || updates.length === 0) return;
 
-    setIsGenerating(true);
+    setIsBulkUpdating(true);
     try {
       // Update each product
       const updatePromises = updates.map(update => {
@@ -541,14 +542,14 @@ export default function ProductManagement() {
       logger.error('Bulk price update failed', error, { component: 'ProductManagement' });
       toast.error("Failed to update prices: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
-      setIsGenerating(false); // Always reset loading state
+      setIsBulkUpdating(false); // Always reset loading state
     }
   };
 
   const handleBulkCategoryUpdate = async (newCategory: string) => {
     if (!tenant?.id || batchProducts.length === 0) return;
 
-    setIsGenerating(true);
+    setIsBulkUpdating(true);
     try {
       // Validate category
       const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
@@ -579,7 +580,7 @@ export default function ProductManagement() {
       logger.error('Bulk category update failed', error, { component: 'ProductManagement' });
       toast.error("Failed to update categories: " + (error instanceof Error ? error.message : "An error occurred"));
     } finally {
-      setIsGenerating(false); // Always reset loading state
+      setIsBulkUpdating(false); // Always reset loading state
     }
   };
 
