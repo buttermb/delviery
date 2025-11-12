@@ -185,8 +185,9 @@ export default function SignUpPage() {
       // Clear saved form data
       localStorage.removeItem(STORAGE_KEY);
 
-      // CAPTCHA validation (optional for now, can be made required)
-      if (!captchaToken) {
+      // CAPTCHA validation - only required if Turnstile is configured
+      const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+      if (turnstileSiteKey && !captchaToken) {
         toast({
           title: 'Verification Required',
           description: 'Please complete the security verification.',
