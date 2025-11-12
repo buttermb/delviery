@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/utils/apiClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 import { SessionManagement } from "@/components/customer/SessionManagement";
+import { safeFetch } from "@/utils/safeFetch";
 
 export default function CustomerSettingsPage() {
   const { customer, tenant, logout } = useCustomerAuth();
@@ -69,8 +70,6 @@ export default function CustomerSettingsPage() {
 
       // Call Edge Function to update password
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      // Bound fetch to prevent "Illegal invocation" error in production builds
-      const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth`, {
         method: "POST",
         headers: {

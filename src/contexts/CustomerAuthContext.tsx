@@ -4,6 +4,7 @@ import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
+import { safeFetch } from "@/utils/safeFetch";
 
 interface Customer {
   id: string;
@@ -49,9 +50,6 @@ const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(u
 const TOKEN_KEY = STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN;
 const CUSTOMER_KEY = STORAGE_KEYS.CUSTOMER_USER;
 const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
-
-// Helper to get bound fetch (prevents "Illegal invocation" error)
-const getSafeFetch = () => (typeof window !== 'undefined' ? window.fetch.bind(window) : fetch);
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
@@ -121,7 +119,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
@@ -161,7 +159,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
+      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -198,7 +196,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await getSafeFetch()(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
+        await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { safeFetch } from "@/utils/safeFetch";
 
 export default function SuperAdminSettingsPage() {
   const { superAdmin } = useSuperAdminAuth();
@@ -57,8 +58,6 @@ export default function SuperAdminSettingsPage() {
 
       // Call Edge Function to update password
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      // Bound fetch to prevent "Illegal invocation" error in production builds
-      const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
       const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth`, {
         method: "POST",
         headers: {
