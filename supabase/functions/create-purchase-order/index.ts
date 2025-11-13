@@ -1,24 +1,4 @@
-// @ts-nocheck
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface POItem {
-  product_id: string;
-  quantity_lbs: number;
-  unit_cost: number;
-}
-
-interface CreatePORequest {
-  supplier_id: string;
-  expected_delivery_date?: string;
-  notes?: string;
-  items: POItem[];
-}
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,153 +6,117 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    const supabase = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Unauthorized');
+    const { tenant_id, supplier_id, items, delivery_date, notes } = await req.json();
+
+    // Validate input
+    if (!tenant_id || !supplier_id || !items || items.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Get account_id from user metadata or tenant_users table
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!tenantUser) {
-      throw new Error('Tenant not found');
-    }
-
-    // Use the first account for now (simplified multi-tenancy)
-    const { data: account } = await supabase
-      .from('accounts')
-      .select('id')
-      .limit(1)
-      .single();
-
-    if (!account) {
-      throw new Error('Account not found');
-    }
-
-    const account_id = account.id;
-
-    const body: CreatePORequest = await req.json();
-    const { supplier_id, expected_delivery_date, notes, items } = body;
-
-    // Validation
-    if (!supplier_id || !items || items.length === 0) {
-      throw new Error('Supplier ID and at least one item are required');
-    }
-
-    // Verify vendor exists and belongs to account
-    const { data: vendor, error: vendorError } = await supabase
-      .from('vendors')
-      .select('id')
+    // Get supplier info
+    const { data: supplier } = await supabaseClient
+      .from('suppliers')
+      .select('*')
       .eq('id', supplier_id)
       .single();
 
-    if (vendorError || !vendor) {
-      throw new Error('Vendor not found or unauthorized');
+    if (!supplier) {
+      return new Response(
+        JSON.stringify({ error: 'Supplier not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Calculate total amount
-    const total_amount = items.reduce((sum, item) => sum + (item.quantity_lbs * item.unit_cost), 0);
+    // Calculate order total
+    let totalAmount = 0;
+    const processedItems = [];
+
+    for (const item of items) {
+      const { data: product } = await supabaseClient
+        .from('products')
+        .select('wholesale_price_per_lb')
+        .eq('id', item.product_id)
+        .single();
+
+      const itemTotal = item.quantity_lbs * (product?.wholesale_price_per_lb || item.price_per_lb);
+      totalAmount += itemTotal;
+
+      processedItems.push({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        quantity_lbs: item.quantity_lbs,
+        quantity_units: item.quantity_units || 0,
+        price_per_lb: product?.wholesale_price_per_lb || item.price_per_lb,
+        subtotal: itemTotal
+      });
+    }
+
+    // Check minimum order amount
+    if (supplier.minimum_order_amount && totalAmount < supplier.minimum_order_amount) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Order total below minimum',
+          minimum: supplier.minimum_order_amount,
+          current: totalAmount
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create purchase order
-    const { data: po, error: poError } = await supabase
+    const { data: po, error: poError } = await supabaseClient
       .from('purchase_orders')
       .insert({
-        account_id: account_id,
-        vendor_id: supplier_id,
-        expected_delivery_date,
+        tenant_id,
+        supplier_id,
+        total_amount: totalAmount,
+        expected_delivery_date: delivery_date,
         notes,
-        total: total_amount,
-        subtotal: total_amount,
-        tax: 0,
-        shipping: 0,
-        status: 'draft',
+        status: 'pending'
       })
       .select()
       .single();
 
-    if (poError || !po) {
-      console.error('PO creation error:', poError);
-      throw new Error('Failed to create purchase order');
-    }
+    if (poError) throw poError;
 
     // Create PO items
-    const poItems = items.map(item => ({
-      account_id: account_id,
-      purchase_order_id: po.id,
-      product_id: item.product_id,
-      quantity: item.quantity_lbs,
-      unit_cost: item.unit_cost,
-      total_cost: item.quantity_lbs * item.unit_cost,
+    const poItems = processedItems.map(item => ({
+      ...item,
+      purchase_order_id: po.id
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseClient
       .from('purchase_order_items')
       .insert(poItems);
 
-    if (itemsError) {
-      console.error('PO items creation error:', itemsError);
-      // Rollback: delete the PO
-      await supabase.from('purchase_orders').delete().eq('id', po.id);
-      throw new Error('Failed to create purchase order items');
-    }
+    if (itemsError) throw itemsError;
 
-    // Return complete PO with items
-    const { data: completePO, error: fetchError } = await supabase
-      .from('purchase_orders')
-      .select(`
-        *,
-        vendor:vendors(id, name, contact_name),
-        items:purchase_order_items(
-          *,
-          product:products(id, name, sku)
-        )
-      `)
-      .eq('id', po.id)
-      .single();
-
-    if (fetchError) {
-      console.error('Fetch complete PO error:', fetchError);
-      throw new Error('Purchase order created but failed to fetch details');
-    }
+    // TODO: Generate PDF and upload to storage
+    // TODO: Send email to supplier
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        purchase_order: completePO,
-        message: 'Purchase order created successfully',
+      JSON.stringify({ 
+        success: true, 
+        purchase_order_id: po.id,
+        po_number: po.po_number,
+        total_amount: totalAmount
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Create PO error:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message || 'Internal server error',
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

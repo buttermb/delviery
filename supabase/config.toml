@@ -83,3 +83,15 @@ verify_jwt = true
 
 [functions.generate-custom-report]
 verify_jwt = true
+
+[functions.create-purchase-order]
+verify_jwt = true
+
+[functions.process-return]
+verify_jwt = true
+
+[functions.notify-recall]
+verify_jwt = true
+
+[functions.send-scheduled-report]
+verify_jwt = true
