@@ -56,6 +56,33 @@ export function useSidebarConfig() {
     });
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
+  // Filter by hidden features and integration settings
+  const visibilityFilteredConfig = useMemo(() => {
+    const hiddenFeatures = safePreferences.hiddenFeatures || [];
+    const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
+    
+    // Get features hidden by disabled integrations
+    const integrationHiddenFeatures: string[] = [];
+    Object.entries({
+      mapbox: ['logistics', 'route-planning', 'driver-tracking', 'live-map'],
+      stripe: ['billing', 'subscriptions', 'payment-links', 'invoices'],
+      twilio: ['sms-notifications', '2fa', 'customer-alerts'],
+      sendgrid: ['email-campaigns', 'email-notifications', 'marketing'],
+      custom: ['webhooks', 'custom-integrations'],
+    }).forEach(([integrationId, features]) => {
+      if (!enabledIntegrations.includes(integrationId)) {
+        integrationHiddenFeatures.push(...features);
+      }
+    });
+    
+    const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures];
+    
+    return filteredConfig.map(section => ({
+      ...section,
+      items: section.items.filter(item => !allHiddenFeatures.includes(item.id)),
+    })).filter(section => section.items.length > 0);
+  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations]);
+
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {
     if (!tenant) return [];
@@ -65,7 +92,7 @@ export function useSidebarConfig() {
 
   // Add hot items section if any exist
   const configWithHotItems = useMemo(() => {
-    if (hotItems.length === 0) return filteredConfig;
+    if (hotItems.length === 0) return visibilityFilteredConfig;
 
     return [
       {
@@ -82,9 +109,9 @@ export function useSidebarConfig() {
           badge: hot.badge,
         })),
       },
-      ...filteredConfig,
+      ...visibilityFilteredConfig,
     ];
-  }, [filteredConfig, hotItems]);
+  }, [visibilityFilteredConfig, hotItems]);
 
   // Add favorites section if user has favorites
   const configWithFavorites = useMemo(() => {
