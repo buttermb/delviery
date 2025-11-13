@@ -5,7 +5,7 @@
  * Adapts based on operation size, role, tier, and user preferences
  */
 
-import { NavLink, useParams, useLocation } from 'react-router-dom';
+import { NavLink, useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +19,14 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { LogOut, Lock } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { LogOut, Settings, ChevronDown, User, HelpCircle } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -39,6 +46,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 function AdaptiveSidebarInner() {
   const { tenantSlug } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
   const { sidebarConfig, hotItems, favorites } = useSidebarConfig();
   const { trackFeatureClick, toggleFavorite } = useSidebar();
@@ -75,16 +83,43 @@ function AdaptiveSidebarInner() {
   return (
     <>
       <Sidebar data-tutorial="navigation-sidebar">
-        <SidebarHeader className="p-3 sm:p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
-              {tenant?.slug?.charAt(0).toUpperCase() || "T"}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
-              <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
-            </div>
-          </div>
+        <SidebarHeader className="p-0 border-b">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full p-3 sm:p-4 flex items-center gap-2 hover:bg-accent/50 transition-colors group cursor-pointer relative overflow-hidden">
+                {/* Subtle pulse animation on the background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 relative z-10 group-hover:scale-110 transition-transform">
+                  {tenant?.slug?.charAt(0).toUpperCase() || "T"}
+                </div>
+                <div className="flex flex-col min-w-0 flex-1 relative z-10">
+                  <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10 group-hover:translate-y-0.5 transition-transform" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/settings`)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/profile`)}>
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/${tenantSlug}/admin/help`)}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Help & Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarHeader>
         
         <SidebarContent>
@@ -125,14 +160,9 @@ function AdaptiveSidebarInner() {
         </SidebarContent>
 
         <SidebarFooter className="p-3 sm:p-4 border-t">
-          <Button
-            variant="ghost"
-            className="w-full justify-start min-h-[44px] touch-manipulation"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            <span className="text-sm sm:text-base">Logout</span>
-          </Button>
+          <div className="text-xs text-muted-foreground text-center">
+            Click header for quick actions
+          </div>
         </SidebarFooter>
       </Sidebar>
 
