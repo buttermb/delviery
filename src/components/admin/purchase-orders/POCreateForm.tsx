@@ -65,18 +65,18 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
     unit_cost: 0,
   });
 
-  // Fetch suppliers
-  const { data: suppliers } = useQuery({
-    queryKey: ["suppliers"],
+  // Fetch vendors
+  const { data: vendors } = useQuery({
+    queryKey: ["vendors"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("suppliers")
-        .select("id, name, company_name")
+        .from("vendors")
+        .select("id, name, contact_name")
         .eq("status", "active")
         .order("name");
 
       if (error) {
-        logger.error('Failed to fetch suppliers', error, { component: 'POCreateForm' });
+        logger.error('Failed to fetch vendors', error, { component: 'POCreateForm' });
         throw error;
       }
 
@@ -236,9 +236,9 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                     <SelectValue placeholder="Select a supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                    {suppliers?.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name || supplier.company_name}
+                    {vendors?.map((vendor) => (
+                      <SelectItem key={vendor.id} value={vendor.id}>
+                        {vendor.name || vendor.contact_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -370,9 +370,9 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
           {currentStep === "review" && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Supplier</Label>
+                <Label>Vendor</Label>
                 <div className="p-3 bg-muted rounded-lg">
-                  {suppliers?.find((s) => s.id === formData.supplier_id)?.name || "Not selected"}
+                  {vendors?.find((v) => v.id === formData.supplier_id)?.name || "Not selected"}
                 </div>
               </div>
 

@@ -43,7 +43,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Get tenant_id from user metadata or tenant_users table
+    // Get account_id from user metadata or tenant_users table
     const { data: tenantUser } = await supabase
       .from('tenant_users')
       .select('tenant_id')
@@ -54,7 +54,18 @@ serve(async (req) => {
       throw new Error('Tenant not found');
     }
 
-    const tenant_id = tenantUser.tenant_id;
+    // Use the first account for now (simplified multi-tenancy)
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id')
+      .limit(1)
+      .single();
+
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    const account_id = account.id;
 
     const body: CreatePORequest = await req.json();
     const { supplier_id, expected_delivery_date, notes, items } = body;
@@ -64,16 +75,15 @@ serve(async (req) => {
       throw new Error('Supplier ID and at least one item are required');
     }
 
-    // Verify supplier exists and belongs to tenant
-    const { data: supplier, error: supplierError } = await supabase
-      .from('suppliers')
+    // Verify vendor exists and belongs to account
+    const { data: vendor, error: vendorError } = await supabase
+      .from('vendors')
       .select('id')
       .eq('id', supplier_id)
-      .eq('tenant_id', tenant_id)
       .single();
 
-    if (supplierError || !supplier) {
-      throw new Error('Supplier not found or unauthorized');
+    if (vendorError || !vendor) {
+      throw new Error('Vendor not found or unauthorized');
     }
 
     // Calculate total amount
@@ -83,11 +93,14 @@ serve(async (req) => {
     const { data: po, error: poError } = await supabase
       .from('purchase_orders')
       .insert({
-        tenant_id,
-        supplier_id,
+        account_id: account_id,
+        vendor_id: supplier_id,
         expected_delivery_date,
         notes,
-        total_amount,
+        total: total_amount,
+        subtotal: total_amount,
+        tax: 0,
+        shipping: 0,
         status: 'draft',
       })
       .select()
@@ -100,10 +113,10 @@ serve(async (req) => {
 
     // Create PO items
     const poItems = items.map(item => ({
-      tenant_id,
+      account_id: account_id,
       purchase_order_id: po.id,
       product_id: item.product_id,
-      quantity_lbs: item.quantity_lbs,
+      quantity: item.quantity_lbs,
       unit_cost: item.unit_cost,
       total_cost: item.quantity_lbs * item.unit_cost,
     }));
@@ -124,7 +137,7 @@ serve(async (req) => {
       .from('purchase_orders')
       .select(`
         *,
-        supplier:suppliers(id, name, company_name),
+        vendor:vendors(id, name, contact_name),
         items:purchase_order_items(
           *,
           product:products(id, name, sku)
