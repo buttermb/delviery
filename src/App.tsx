@@ -34,6 +34,7 @@ import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
 import { setupGlobalErrorHandlers, handleMutationError } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
+import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "./hooks/use-toast";
@@ -446,7 +447,9 @@ const App = () => {
                           element={
                             <Suspense fallback={<SkeletonAdminLayout />}>
                               <TenantAdminProtectedRoute>
-                                <AdminLayout />
+                                <SubscriptionGuard>
+                                  <AdminLayout />
+                                </SubscriptionGuard>
                               </TenantAdminProtectedRoute>
                             </Suspense>
                           }
