@@ -17,20 +17,20 @@ export interface Feature {
 }
 
 export const TIER_PRICES = {
-  starter: 99,
-  professional: 299,
-  enterprise: 600,
+  starter: 79,
+  professional: 150,
+  enterprise: 499,
 } as const;
 
 export const TIER_NAMES = {
-  starter: 'Starter',
+  starter: 'Basic',
   professional: 'Professional',
   enterprise: 'Enterprise',
 } as const;
 
-// All 56 features organized by tier and category
+// All 87 features organized by tier and category
 export const FEATURES: Record<FeatureId, Feature> = {
-  // ===== STARTER TIER (12 features) =====
+  // ===== BASIC TIER (28 features) =====
   'dashboard': {
     id: 'dashboard',
     name: 'Dashboard',
