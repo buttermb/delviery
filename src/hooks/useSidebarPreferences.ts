@@ -55,7 +55,7 @@ export function useSidebarPreferences() {
       // Parse JSONB fields with safe defaults
       return {
         operationSize: data.operation_size as SidebarPreferences['operationSize'],
-        customLayout: Object.keys(data.custom_layout || {}).length > 0,
+        customLayout: data.custom_layout || false,
         favorites: (data.favorites as string[]) || [],
         collapsedSections: (data.collapsed_sections as string[]) || [],
         pinnedItems: (data.pinned_items as string[]) || [],
@@ -79,16 +79,16 @@ export function useSidebarPreferences() {
 
       const { error } = await supabase
         .from('sidebar_preferences')
-        .upsert({
+        .upsert([{
           tenant_id: tenant.id,
           user_id: admin.id,
           operation_size: updated.operationSize,
-          custom_layout: updated.customLayout ? { customized: true } : {},
+          custom_layout: updated.customLayout,
           favorites: updated.favorites,
           collapsed_sections: updated.collapsedSections,
           pinned_items: updated.pinnedItems,
           last_accessed_features: updated.lastAccessedFeatures,
-        }, {
+        }], {
           onConflict: 'tenant_id,user_id',
         });
 

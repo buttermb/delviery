@@ -5,8 +5,10 @@
  */
 
 import type { ReactNode } from 'react';
-import type { Permission } from '@/lib/permissions/checkPermissions';
+import type { Permission } from '@/lib/permissions/rolePermissions';
 import type { SubscriptionTier } from '@/lib/featureConfig';
+
+export type { Permission };
 
 /**
  * Operation size classification

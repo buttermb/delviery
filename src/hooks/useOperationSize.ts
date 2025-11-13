@@ -18,17 +18,20 @@ import { logger } from '@/lib/logger';
 function detectOperationSize(tenant: {
   usage?: Record<string, number>;
   detected_operation_size?: string | null;
+  monthly_orders?: number;
+  team_size?: number;
 }): OperationSize {
   // If tenant has detected_operation_size, use it
-  if (tenant.detected_operation_size && 
-      ['street', 'small', 'medium', 'enterprise'].includes(tenant.detected_operation_size)) {
-    return tenant.detected_operation_size as OperationSize;
+  const detectedSize = (tenant as any).detected_operation_size;
+  if (detectedSize && 
+      ['street', 'small', 'medium', 'enterprise'].includes(detectedSize)) {
+    return detectedSize as OperationSize;
   }
 
-  // Extract metrics from usage JSONB
+  // Extract metrics from usage JSONB or direct columns
   const usage = tenant.usage || {};
-  const monthlyOrders = usage.customers || 0;
-  const teamSize = usage.users || 1;
+  const monthlyOrders = (tenant as any).monthly_orders || usage.customers || 0;
+  const teamSize = (tenant as any).team_size || usage.users || 1;
   const locationCount = usage.locations || 1;
 
   // Classification logic
@@ -86,14 +89,14 @@ export function useOperationSize() {
 
   // Use manual override if exists, otherwise use detected
   const operationSize: OperationSize = useMemo(() => {
-    if (preferences?.operation_size && 
-        ['street', 'small', 'medium', 'enterprise'].includes(preferences.operation_size)) {
-      return preferences.operation_size as OperationSize;
+    if ((preferences as any)?.operation_size && 
+        ['street', 'small', 'medium', 'enterprise'].includes((preferences as any).operation_size)) {
+      return (preferences as any).operation_size as OperationSize;
     }
     return detectedSize;
-  }, [preferences?.operation_size, detectedSize]);
+  }, [preferences, detectedSize]);
 
-  const isAutoDetected = !preferences?.operation_size;
+  const isAutoDetected = !(preferences as any)?.operation_size;
 
   // Mutation to set manual operation size
   const setOperationSizeMutation = useMutation({
@@ -103,11 +106,11 @@ export function useOperationSize() {
       // Upsert preference
       const { error } = await supabase
         .from('sidebar_preferences')
-        .upsert({
+        .upsert([{
           tenant_id: tenant.id,
           user_id: admin.id,
           operation_size: size,
-        }, {
+        }], {
           onConflict: 'tenant_id,user_id',
         });
 
