@@ -11,6 +11,33 @@
 - Code examples and patterns
 - Testing checklists
 
+### Complete Admin Panel Documentation
+📚 **[ADMIN_PANEL_COMPLETE_DOCUMENTATION.md](./ADMIN_PANEL_COMPLETE_DOCUMENTATION.md)**
+- **Complete documentation** for all 56+ admin panel features
+- User flows for each feature
+- Integration requirements
+- Code references and file locations
+- Feature gating and tier requirements
+- Testing checklists
+
+### Admin Panel Flow Diagrams
+📊 **[ADMIN_PANEL_FLOW_DIAGRAMS.md](./ADMIN_PANEL_FLOW_DIAGRAMS.md)**
+- Visual flow diagrams for all admin features
+- User action flows
+- Database transaction flows
+- Edge function execution flows
+- Multi-tenant isolation patterns
+- Feature gating flows
+
+### Admin Panel Integration Requirements
+🔧 **[ADMIN_PANEL_INTEGRATION_REQUIREMENTS.md](./ADMIN_PANEL_INTEGRATION_REQUIREMENTS.md)**
+- Complete database schemas (all tables)
+- Edge function specifications
+- Storage bucket configurations
+- RLS policies
+- API endpoints
+- Third-party integrations
+
 ### Quick Reference
 ⚡ **[LOVABLE_QUICK_REFERENCE.md](./LOVABLE_QUICK_REFERENCE.md)** (7KB)
 - Quick navigation to all features
@@ -20,7 +47,7 @@
 - Integration checklist
 - Quick start commands
 
-### Visual Flow Diagrams
+### Visual Flow Diagrams (15 Features)
 📊 **[LOVABLE_FLOW_DIAGRAMS.md](./LOVABLE_FLOW_DIAGRAMS.md)**
 - User action flows for all 15 features
 - Database transaction flows
