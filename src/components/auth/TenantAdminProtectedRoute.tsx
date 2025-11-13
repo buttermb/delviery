@@ -169,7 +169,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       return;
     }
 
-    console.log('[PROTECTED ROUTE] 🔐 Starting local verification...');
+    console.log('[PROTECTED ROUTE] 🔐 Starting local verification with retry logic...');
     // Lock verification to prevent concurrent requests
     verificationLockRef.current = true;
     setVerifying(true);
@@ -186,38 +186,97 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       }
     }, VERIFICATION_TIMEOUT_MS);
 
-    // Local verification: compare tenant slug from URL with authenticated tenant
-    const isValidSlug = tenant.slug === tenantSlug;
-    console.log('[PROTECTED ROUTE] 🔍 Slug validation', {
-      urlSlug: tenantSlug,
-      tenantSlug: tenant.slug,
-      isValid: isValidSlug,
-    });
-    
-    if (!isValidSlug) {
-      console.log('[PROTECTED ROUTE] ❌ Slug mismatch detected!');
+    // Verification with retry logic
+    const verifyWithRetry = async (retryCount = 0): Promise<boolean> => {
+      const maxRetries = 2;
+      
+      try {
+        // Local verification: compare tenant slug from URL with authenticated tenant
+        const isValidSlug = tenant.slug === tenantSlug;
+        console.log('[PROTECTED ROUTE] 🔍 Slug validation', {
+          urlSlug: tenantSlug,
+          tenantSlug: tenant.slug,
+          isValid: isValidSlug,
+          attempt: retryCount + 1,
+        });
+        
+        if (!isValidSlug) {
+          console.log('[PROTECTED ROUTE] ❌ Slug mismatch detected!');
+          const { showErrorToast } = await import('@/lib/toastUtils');
+          const { emitAuthError } = await import('@/hooks/useAuthError');
+          
+          const errorMessage = "Tenant mismatch. You may be logged into a different account.";
+          showErrorToast(errorMessage, "Please log in with the correct account.");
+          emitAuthError({ message: errorMessage, code: 'TENANT_MISMATCH' });
+          
+          setVerificationError(errorMessage);
+          return false;
+        }
+
+        // Verification passed
+        console.log('[PROTECTED ROUTE] ✅ Verification passed!');
+        return true;
+      } catch (error: any) {
+        console.error('[PROTECTED ROUTE] ❌ Verification error:', error);
+        
+        // Retry with exponential backoff
+        if (retryCount < maxRetries) {
+          const delay = Math.pow(2, retryCount) * 500; // 500ms, 1s, 2s
+          console.log(`[PROTECTED ROUTE] 🔄 Retrying verification in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return verifyWithRetry(retryCount + 1);
+        }
+        
+        // Final failure after retries
+        const { showErrorToast } = await import('@/lib/toastUtils');
+        const { emitAuthError } = await import('@/hooks/useAuthError');
+        
+        let errorMessage = 'Verification failed after multiple attempts.';
+        let errorCode = 'VERIFICATION_FAILED';
+        
+        if (error.message?.includes('network')) {
+          errorMessage = 'Network error during verification. Please check your connection.';
+          errorCode = 'NETWORK_ERROR';
+        } else if (error.message?.includes('timeout')) {
+          errorMessage = 'Verification timed out. Please try again.';
+          errorCode = 'TIMEOUT';
+        }
+        
+        showErrorToast(errorMessage, 'Please refresh the page or log in again.');
+        emitAuthError({ message: errorMessage, code: errorCode });
+        setVerificationError(errorMessage);
+        
+        return false;
+      }
+    };
+
+    // Run verification with retry
+    verifyWithRetry().then((success) => {
       clearTimeout(verificationTimeout);
       clearTimeout(totalWaitTimeout);
-      setVerificationError("Tenant mismatch. Please re-login.");
-      setVerified(false);
+      
+      if (success) {
+        verificationCache.current[cacheKey] = {
+          verified: true,
+          timestamp: Date.now(),
+        };
+        
+        setVerified(true);
+        setVerificationError(null);
+      } else {
+        setVerified(false);
+      }
+      
       setVerifying(false);
       verificationLockRef.current = false;
-      return;
-    }
-
-    // If we reach here, verification passed
-    console.log('[PROTECTED ROUTE] ✅ Verification passed!');
-    clearTimeout(verificationTimeout);
-    clearTimeout(totalWaitTimeout);
-    verificationCache.current[cacheKey] = {
-      verified: true,
-      timestamp: Date.now(),
-    };
-    
-    setVerified(true);
-    setVerifying(false);
-    setVerificationError(null);
-    verificationLockRef.current = false;
+    }).catch((error) => {
+      console.error('[PROTECTED ROUTE] ❌ Unexpected verification error:', error);
+      clearTimeout(verificationTimeout);
+      clearTimeout(totalWaitTimeout);
+      setVerifying(false);
+      verificationLockRef.current = false;
+    });
     
     return () => {
       clearTimeout(totalWaitTimeout);

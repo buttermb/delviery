@@ -661,7 +661,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Login failed" }));
-        const error = new Error(errorData.error || "Login failed");
+        const error: any = new Error(errorData.error || "Login failed");
+        error.status = response.status;
         authFlowLogger.failFlow(flowId, error, category);
         throw error;
       }
@@ -716,12 +717,45 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { tenantId: data.tenant?.id });
-    } catch (error) {
+    } catch (error: any) {
       const category = error instanceof Error && error.message.includes('Network') 
         ? ErrorCategory.NETWORK 
         : ErrorCategory.AUTH;
       authFlowLogger.failFlow(flowId, error, category);
       logger.error("Login error", error);
+      
+      // Show user-friendly error messages
+      const { showErrorToast } = await import('@/lib/toastUtils');
+      const { emitAuthError } = await import('@/hooks/useAuthError');
+      
+      let errorMessage = 'Login failed. Please try again.';
+      let errorCode = 'LOGIN_FAILED';
+      
+      if (error.message?.includes('Invalid email or password') || error.status === 401) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        errorCode = 'INVALID_CREDENTIALS';
+      } else if (error.message?.includes('network') || error.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+        errorCode = 'NETWORK_ERROR';
+      } else if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+        errorMessage = 'Request timed out. Please try again.';
+        errorCode = 'TIMEOUT';
+      } else if (error.status === 403) {
+        errorMessage = 'Access denied. Your account may be suspended. Please contact support.';
+        errorCode = 'ACCESS_DENIED';
+      } else if (error.status === 429) {
+        errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
+        errorCode = 'RATE_LIMITED';
+      } else if (error.status >= 500) {
+        errorMessage = 'Server error. We\'re working on it. Please try again in a few minutes.';
+        errorCode = 'SERVER_ERROR';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      showErrorToast(errorMessage, `Error code: ${errorCode}`);
+      emitAuthError({ message: errorMessage, code: errorCode });
+      
       throw error;
     }
   };
