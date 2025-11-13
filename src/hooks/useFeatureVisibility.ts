@@ -70,7 +70,7 @@ export function useFeatureVisibility() {
    * Hide all features (except essential)
    */
   const hideAll = async (allFeatureIds: string[]) => {
-    const essential = ['dashboard', 'settings'];
+    const essential = ['dashboard', 'settings', 'billing'];
     const toHide = allFeatureIds.filter(id => !essential.includes(id));
     await updatePreferences({ hiddenFeatures: toHide });
   };

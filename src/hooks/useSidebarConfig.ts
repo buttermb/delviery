@@ -61,11 +61,14 @@ export function useSidebarConfig() {
     const hiddenFeatures = safePreferences.hiddenFeatures || [];
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
     
+    // Essential features that can never be hidden
+    const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
+    
     // Get features hidden by disabled integrations
     const integrationHiddenFeatures: string[] = [];
     Object.entries({
       mapbox: ['logistics', 'route-planning', 'driver-tracking', 'live-map'],
-      stripe: ['billing', 'subscriptions', 'payment-links', 'invoices'],
+      stripe: ['subscriptions', 'payment-links', 'invoices'],
       twilio: ['sms-notifications', '2fa', 'customer-alerts'],
       sendgrid: ['email-campaigns', 'email-notifications', 'marketing'],
       custom: ['webhooks', 'custom-integrations'],
@@ -75,7 +78,8 @@ export function useSidebarConfig() {
       }
     });
     
-    const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures];
+    const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures]
+      .filter(id => !ESSENTIAL_FEATURES.includes(id)); // Never hide essential features
     
     return filteredConfig.map(section => ({
       ...section,
