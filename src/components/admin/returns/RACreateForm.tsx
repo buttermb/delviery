@@ -141,12 +141,35 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from("return_authorizations").insert([data]);
+      if (!tenant?.id) throw new Error("Tenant ID required");
+
+      // Use the edge function for return processing
+      const { data: result, error } = await supabase.functions.invoke('process-return', {
+        body: {
+          tenant_id: tenant.id,
+          customer_id: formData.customer_id || undefined,
+          order_id: formData.order_id,
+          items: items.map(item => ({
+            product_id: '',  // Would be fetched from order
+            product_name: item.product_name,
+            quantity_lbs: item.quantity,
+            price_per_lb: item.unit_price,
+            subtotal: item.total_price,
+            reason: formData.reason,
+            condition: 'unopened',  // Default, could be made configurable
+            disposition: 'restock'  // Default, could be made configurable
+          })),
+          reason: formData.reason,
+          notes: formData.notes
+        }
+      });
+
       if (error) throw error;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
-      toast.success("Return authorization created successfully");
+      toast.success(`Return ${data.ra_number} created successfully. Refund: $${data.refund_amount}`);
       onSuccess?.();
     },
     onError: (error: unknown) => {
@@ -168,22 +191,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
       return;
     }
 
-    const total_amount = calculateTotal();
-    const raData = {
-      ra_number: returnAuth?.ra_number || generateRANumber(),
-      order_id: formData.order_id,
-      order_number: formData.order_number,
-      customer_id: formData.customer_id || null,
-      customer_name: formData.customer_name || null,
-      status: "pending",
-      reason: formData.reason,
-      return_method: formData.return_method,
-      total_amount,
-      notes: formData.notes || null,
-      tenant_id: tenant?.id,
-    };
-
-    await createMutation.mutateAsync(raData);
+    await createMutation.mutateAsync({});
   };
 
   const isLoading = createMutation.isPending;
