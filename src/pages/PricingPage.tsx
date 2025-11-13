@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card } from "@/components/ui/card";
 import { CTASection } from "@/components/marketing/CTASection";
+import { FeatureComparisonTable } from "@/components/pricing/FeatureComparisonTable";
 
 const plans = [
   {
@@ -249,6 +250,21 @@ export default function PricingPage() {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Feature Comparison Table */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              Complete Feature Comparison
+            </h2>
+            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
+              See exactly what's included in each plan - all 87 features side-by-side
+            </p>
+          </div>
+          <FeatureComparisonTable />
         </div>
       </section>
 
