@@ -91,9 +91,11 @@ export default function ReturnsManagementPage() {
 
   // For now, we'll use a mock query since the returns table may not exist
   // In production, this would query the actual returns table
+  // @ts-expect-error - return_authorizations table not in types yet
   const { data: returns, isLoading } = useQuery({
     queryKey: queryKeys.returns.list({ status: statusFilter }),
     queryFn: async () => {
+      // @ts-expect-error - return_authorizations table not in types yet
       let query = supabase
         .from("return_authorizations")
         .select("*")
