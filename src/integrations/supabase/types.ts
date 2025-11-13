@@ -2740,6 +2740,7 @@ export type Database = {
           auto_burn_hours: number | null
           burn_reason: string | null
           burned_at: string | null
+          business_name: string | null
           created_at: string
           created_by: string | null
           custom_message: string | null
@@ -2776,6 +2777,7 @@ export type Database = {
           auto_burn_hours?: number | null
           burn_reason?: string | null
           burned_at?: string | null
+          business_name?: string | null
           created_at?: string
           created_by?: string | null
           custom_message?: string | null
@@ -2812,6 +2814,7 @@ export type Database = {
           auto_burn_hours?: number | null
           burn_reason?: string | null
           burned_at?: string | null
+          business_name?: string | null
           created_at?: string
           created_by?: string | null
           custom_message?: string | null

@@ -43,11 +43,14 @@ serve(async (req) => {
     const orderData = order.order_data as any;
     const items = orderData?.items || [];
 
+    // Get business name with fallback hierarchy
+    const businessName = menu.business_name || menu.title || 'Our Business';
+
     // Prepare customer notification
     const customerMessage = `
 Order Confirmation
 
-Thank you for your order from ${menu.business_name || menu.title}!
+Thank you for your order from ${businessName}!
 
 Order Details:
 ${items.map((item: any) => `- ${item.product_name} x${item.quantity} - $${item.total_price.toFixed(2)}`).join('\n')}
@@ -68,6 +71,7 @@ Status: ${order.status}
     const adminMessage = `
 New Order Received!
 
+Business: ${businessName}
 Menu: ${menu.title}
 Customer: ${orderData.contact_name || 'Unknown'}
 Phone: ${order.contact_phone}
