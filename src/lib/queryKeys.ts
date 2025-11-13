@@ -217,4 +217,108 @@ export const queryKeys = {
       [...queryKeys.receiving.lists(), { tenantId, filter }] as const,
     detail: (id: string) => [...queryKeys.receiving.all, id] as const,
   },
+
+  // Suppliers
+  suppliers: {
+    all: ['suppliers'] as const,
+    lists: () => [...queryKeys.suppliers.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.suppliers.lists(), filters] as const,
+    details: () => [...queryKeys.suppliers.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.suppliers.details(), id] as const,
+    transactions: (supplierId: string) => 
+      [...queryKeys.suppliers.detail(supplierId), 'transactions'] as const,
+  },
+
+  // Purchase Orders
+  purchaseOrders: {
+    all: ['purchase-orders'] as const,
+    lists: () => [...queryKeys.purchaseOrders.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.purchaseOrders.lists(), filters] as const,
+    details: () => [...queryKeys.purchaseOrders.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.purchaseOrders.details(), id] as const,
+    items: (poId: string) => 
+      [...queryKeys.purchaseOrders.detail(poId), 'items'] as const,
+  },
+
+  // Returns
+  returns: {
+    all: ['returns'] as const,
+    lists: () => [...queryKeys.returns.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.returns.lists(), filters] as const,
+    details: () => [...queryKeys.returns.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.returns.details(), id] as const,
+  },
+
+  // Loyalty
+  loyalty: {
+    all: ['loyalty'] as const,
+    rewards: () => [...queryKeys.loyalty.all, 'rewards'] as const,
+    analytics: () => [...queryKeys.loyalty.all, 'analytics'] as const,
+  },
+
+  // Coupons
+  coupons: {
+    all: ['coupons'] as const,
+    lists: () => [...queryKeys.coupons.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.coupons.lists(), filters] as const,
+    details: () => [...queryKeys.coupons.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.coupons.details(), id] as const,
+  },
+
+  // Marketing
+  marketing: {
+    all: ['marketing'] as const,
+    campaigns: () => [...queryKeys.marketing.all, 'campaigns'] as const,
+    workflows: () => [...queryKeys.marketing.all, 'workflows'] as const,
+  },
+
+  // Appointments
+  appointments: {
+    all: ['appointments'] as const,
+    lists: () => [...queryKeys.appointments.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.appointments.lists(), filters] as const,
+    details: () => [...queryKeys.appointments.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.appointments.details(), id] as const,
+  },
+
+  // Support
+  support: {
+    all: ['support'] as const,
+    tickets: () => [...queryKeys.support.all, 'tickets'] as const,
+  },
+
+  // Recall
+  recall: {
+    all: ['recall'] as const,
+    lists: () => [...queryKeys.recall.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.recall.lists(), filters] as const,
+    details: () => [...queryKeys.recall.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.recall.details(), id] as const,
+  },
+
+  // Compliance
+  compliance: {
+    all: ['compliance'] as const,
+    documents: () => [...queryKeys.compliance.all, 'documents'] as const,
+  },
+
+  // Reporting
+  reporting: {
+    all: ['reporting'] as const,
+    custom: () => [...queryKeys.reporting.all, 'custom'] as const,
+    scheduled: () => [...queryKeys.reporting.all, 'scheduled'] as const,
+  },
+
+  // Vendor
+  vendor: {
+    all: ['vendor'] as const,
+    purchaseOrders: (vendorId: string) => [...queryKeys.vendor.all, 'purchase-orders', vendorId] as const,
+    invoices: (vendorId: string) => [...queryKeys.vendor.all, 'invoices', vendorId] as const,
+  },
 } as const;

@@ -1,0 +1,337 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import {
+  Search,
+  Users,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  Tag,
+  Filter,
+  Loader2,
+  Star,
+  AlertCircle,
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CustomerSegmentation } from "@/components/admin/crm/CustomerSegmentation";
+import { RFMAnalysis } from "@/components/admin/crm/RFMAnalysis";
+import { CommunicationTimeline } from "@/components/admin/crm/CommunicationTimeline";
+import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
+
+interface Customer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  total_spent: number;
+  loyalty_points: number;
+  last_purchase_at: string | null;
+  created_at: string;
+  status: string;
+}
+
+export default function CustomerCRMPage() {
+  const { tenant } = useTenantAdminAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
+  const [segmentFilter, setSegmentFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const { data: customers, isLoading } = useQuery({
+    queryKey: queryKeys.customers.list({ lifecycle: lifecycleFilter, segment: segmentFilter }),
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      try {
+        const { data, error } = await supabase
+          .from("customers")
+          .select("*")
+          .eq("tenant_id", tenant.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          logger.error('Failed to fetch customers', error, { component: 'CustomerCRMPage' });
+          return [];
+        }
+
+        return (data || []) as Customer[];
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!tenant?.id,
+  });
+
+  // Calculate lifecycle stage for each customer
+  const getLifecycleStage = (customer: Customer): string => {
+    if (!customer.last_purchase_at) return "prospect";
+    
+    const daysSince = Math.floor(
+      (Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysSince > 90) return "churned";
+    if (daysSince > 60) return "at-risk";
+    if (daysSince <= 30) return "active";
+    return "regular";
+  };
+
+  // Calculate RFM scores
+  const calculateRFM = (customer: Customer) => {
+    const now = Date.now();
+    const lastPurchase = customer.last_purchase_at
+      ? new Date(customer.last_purchase_at).getTime()
+      : 0;
+    
+    const recency = lastPurchase
+      ? Math.floor((now - lastPurchase) / (1000 * 60 * 60 * 24))
+      : 999;
+    
+    // Frequency would need order count - simplified for now
+    const frequency = 1; // Placeholder
+    
+    const monetary = customer.total_spent || 0;
+
+    // Score from 1-5 (5 is best)
+    const rScore = recency <= 30 ? 5 : recency <= 60 ? 4 : recency <= 90 ? 3 : recency <= 180 ? 2 : 1;
+    const fScore = frequency >= 10 ? 5 : frequency >= 5 ? 4 : frequency >= 3 ? 3 : frequency >= 1 ? 2 : 1;
+    const mScore = monetary >= 1000 ? 5 : monetary >= 500 ? 4 : monetary >= 200 ? 3 : monetary >= 50 ? 2 : 1;
+
+    return { r: rScore, f: fScore, m: mScore, rfm: `${rScore}${fScore}${mScore}` };
+  };
+
+  // Auto-segment customers
+  const getSegment = (customer: Customer): string => {
+    const rfm = calculateRFM(customer);
+    const lifecycle = getLifecycleStage(customer);
+
+    if (rfm.rfm === "555" || rfm.rfm === "554" || rfm.rfm === "545") return "champions";
+    if (rfm.m === 5 && rfm.r >= 3) return "high-value";
+    if (lifecycle === "at-risk" && rfm.m >= 3) return "at-risk";
+    if (customer.total_spent >= 500) return "bulk-buyers";
+    if (lifecycle === "prospect") return "new";
+    return "regular";
+  };
+
+  const filteredCustomers = customers?.map((customer) => ({
+    ...customer,
+    lifecycle: getLifecycleStage(customer),
+    rfm: calculateRFM(customer),
+    segment: getSegment(customer),
+  })).filter((customer) => {
+    const matchesSearch =
+      `${customer.first_name} ${customer.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesLifecycle = lifecycleFilter === "all" || customer.lifecycle === lifecycleFilter;
+    const matchesSegment = segmentFilter === "all" || customer.segment === segmentFilter;
+
+    return matchesSearch && matchesLifecycle && matchesSegment;
+  }) || [];
+
+  return (
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+            📊 Advanced CRM & Customer Insights
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Customer lifecycle, RFM analysis, segmentation, and communication timeline
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card className="p-3 sm:p-4">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search customers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 min-h-[44px] touch-manipulation"
+              />
+            </div>
+          </div>
+
+          {/* Lifecycle Filter */}
+          <Select value={lifecycleFilter} onValueChange={setLifecycleFilter}>
+            <SelectTrigger className="w-full lg:w-[180px] min-h-[44px] touch-manipulation">
+              <SelectValue placeholder="Lifecycle" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Lifecycle Stages</SelectItem>
+              <SelectItem value="prospect">Prospect</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="regular">Regular</SelectItem>
+              <SelectItem value="at-risk">At Risk</SelectItem>
+              <SelectItem value="churned">Churned</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Segment Filter */}
+          <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+            <SelectTrigger className="w-full lg:w-[180px] min-h-[44px] touch-manipulation">
+              <SelectValue placeholder="Segment" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Segments</SelectItem>
+              <SelectItem value="champions">Champions</SelectItem>
+              <SelectItem value="high-value">High Value</SelectItem>
+              <SelectItem value="bulk-buyers">Bulk Buyers</SelectItem>
+              <SelectItem value="at-risk">At Risk</SelectItem>
+              <SelectItem value="new">New Customers</SelectItem>
+              <SelectItem value="regular">Regular</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </Card>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview" className="min-h-[44px] touch-manipulation">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="segmentation" className="min-h-[44px] touch-manipulation">
+            Segmentation
+          </TabsTrigger>
+          <TabsTrigger value="rfm" className="min-h-[44px] touch-manipulation">
+            RFM Analysis
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="min-h-[44px] touch-manipulation">
+            Communication
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customers ({filteredCustomers.length})</CardTitle>
+              <CardDescription>
+                View customers with lifecycle stages and segments
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : filteredCustomers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No customers found matching your filters.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Lifecycle</TableHead>
+                        <TableHead>Segment</TableHead>
+                        <TableHead>RFM Score</TableHead>
+                        <TableHead>Total Spent</TableHead>
+                        <TableHead>Last Purchase</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCustomers.map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">
+                            {customer.first_name} {customer.last_name}
+                            {customer.email && (
+                              <div className="text-xs text-muted-foreground">
+                                {customer.email}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                customer.lifecycle === "active"
+                                  ? "default"
+                                  : customer.lifecycle === "at-risk"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                            >
+                              {customer.lifecycle}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{customer.segment}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <code className="text-sm bg-muted px-2 py-1 rounded">
+                              {customer.rfm.rfm}
+                            </code>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-muted-foreground" />
+                              {customer.total_spent.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {customer.last_purchase_at
+                              ? new Date(customer.last_purchase_at).toLocaleDateString()
+                              : "Never"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="segmentation" className="space-y-4">
+          <CustomerSegmentation customers={filteredCustomers} />
+        </TabsContent>
+
+        <TabsContent value="rfm" className="space-y-4">
+          <RFMAnalysis customers={filteredCustomers} />
+        </TabsContent>
+
+        <TabsContent value="timeline" className="space-y-4">
+          <CommunicationTimeline customers={filteredCustomers} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+

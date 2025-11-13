@@ -60,6 +60,8 @@ import {
   LineChart,
   Image,
   Tag,
+  Mail,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +105,7 @@ const menuGroups: MenuGroup[] = [
       { featureId: "inventory-transfers", title: "Inventory Transfers", url: "/admin/inventory-transfers", icon: ArrowRightLeft, tier: "professional" },
       { featureId: "fronted-inventory", title: "Fronted Inventory", url: "/admin/fronted-inventory", icon: ClipboardList, tier: "professional" },
       { featureId: "products", title: "Receiving & Packaging", url: "/admin/operations/receiving", icon: Warehouse, tier: "professional" },
+      { featureId: "returns", title: "Returns & Refunds", url: "/admin/returns", icon: ArrowRightLeft, tier: "starter" },
       { featureId: "products", title: "Images & Media", url: "/admin/catalog/images", icon: Image, tier: "professional" },
       { featureId: "products", title: "Batches & Lots", url: "/admin/catalog/batches", icon: Tag, tier: "professional" },
       { featureId: "products", title: "Categories & Tags", url: "/admin/catalog/categories", icon: Tag, tier: "professional" },
@@ -114,6 +117,8 @@ const menuGroups: MenuGroup[] = [
       { featureId: "disposable-menus", title: "Disposable Menus", url: "/admin/disposable-menus", icon: Menu, tier: "starter" },
       { featureId: "basic-orders", title: "Menu Orders", url: "/admin/disposable-menu-orders", icon: ShoppingCart, tier: "starter" },
       { featureId: "wholesale-orders", title: "Wholesale Orders", url: "/admin/wholesale-orders", icon: FileText, tier: "starter" },
+      { featureId: "loyalty-program", title: "Loyalty Program", url: "/admin/loyalty-program", icon: Star, tier: "starter" },
+      { featureId: "coupons", title: "Coupons", url: "/admin/coupons", icon: Tag, tier: "starter" },
       { featureId: "live-orders", title: "Live Orders Dashboard", url: "/admin/live-orders", icon: Activity, tier: "professional" },
       { featureId: "order-analytics", title: "Order Analytics", url: "/admin/order-analytics", icon: PieChart, tier: "professional" },
     ],
@@ -122,8 +127,15 @@ const menuGroups: MenuGroup[] = [
     label: "Customers",
     items: [
       { featureId: "customers", title: "Customers", url: "/admin/big-plug-clients", icon: Users, tier: "starter" },
+      { featureId: "customer-crm", title: "Advanced CRM", url: "/admin/customer-crm", icon: TrendingUp, tier: "professional" },
       { featureId: "customer-analytics", title: "Customer Analytics", url: "/admin/customer-analytics", icon: BarChart3, tier: "professional" },
       { featureId: "customer-insights", title: "Customer Insights", url: "/admin/customer-insights", icon: TrendingUp, tier: "professional" },
+    ],
+  },
+  {
+    label: "Marketing",
+    items: [
+      { featureId: "marketing-automation", title: "Marketing Automation", url: "/admin/marketing-automation", icon: Mail, tier: "professional" },
     ],
   },
   {
@@ -134,6 +146,8 @@ const menuGroups: MenuGroup[] = [
       { featureId: "disposable-menu-analytics", title: "Disposable Menu Analytics", url: "/admin/disposable-menu-analytics", icon: PieChart, tier: "professional" },
       { featureId: "sales-dashboard", title: "Sales Dashboard", url: "/admin/sales-dashboard", icon: DollarSign, tier: "professional" },
       { featureId: "analytics", title: "Analytics", url: "/admin/analytics/comprehensive", icon: BarChart3, tier: "professional" },
+      { featureId: "advanced-reporting", title: "Advanced Reporting & BI", url: "/admin/advanced-reporting", icon: BarChart3, tier: "professional" },
+      { featureId: "predictive-analytics", title: "Predictive Analytics", url: "/admin/predictive-analytics", icon: TrendingUp, tier: "professional" },
       { featureId: "advanced-analytics", title: "Advanced Analytics", url: "/admin/advanced-analytics", icon: TrendingUp, tier: "enterprise" },
       { featureId: "realtime-dashboard", title: "Realtime Dashboard", url: "/admin/realtime-dashboard", icon: Activity, tier: "enterprise" },
       { featureId: "custom-reports", title: "Custom Reports", url: "/admin/custom-reports", icon: FileText, tier: "enterprise" },
@@ -143,6 +157,8 @@ const menuGroups: MenuGroup[] = [
     label: "Financial",
     items: [
       { featureId: "billing", title: "Billing", url: "/admin/billing", icon: CreditCard, tier: "starter" },
+      { featureId: "suppliers", title: "Suppliers", url: "/admin/suppliers", icon: Building2, tier: "starter" },
+      { featureId: "purchase-orders", title: "Purchase Orders", url: "/admin/purchase-orders", icon: FileText, tier: "starter" },
       { featureId: "invoice-management", title: "Financial Center", url: "/admin/financial-center", icon: DollarSign, tier: "professional" },
       { featureId: "commission-tracking", title: "Commission Tracking", url: "/admin/commission-tracking", icon: DollarSign, tier: "professional" },
       { featureId: "revenue-reports", title: "Revenue Reports", url: "/admin/revenue-reports", icon: TrendingUp, tier: "professional" },
@@ -158,6 +174,7 @@ const menuGroups: MenuGroup[] = [
       { featureId: "fleet-management", title: "GPS Tracking & Replay", url: "/admin/gps-tracking", icon: Navigation, tier: "enterprise" },
       { featureId: "route-optimization", title: "Route Optimizer", url: "/admin/route-optimizer", icon: MapPinned, tier: "enterprise" },
       { featureId: "delivery-analytics", title: "Delivery Analytics", url: "/admin/delivery-analytics", icon: BarChart3, tier: "enterprise" },
+      { featureId: "appointments", title: "Appointments", url: "/admin/appointments", icon: Calendar, tier: "professional" },
     ],
   },
   {
@@ -198,6 +215,9 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Security & Compliance",
     items: [
+      { featureId: "quality-control", title: "Quality Control", url: "/admin/quality-control", icon: Shield, tier: "professional" },
+      { featureId: "batch-recall", title: "Batch Recall", url: "/admin/batch-recall", icon: AlertCircle, tier: "professional" },
+      { featureId: "compliance-vault", title: "Compliance Vault", url: "/admin/compliance-vault", icon: FileText, tier: "professional" },
       { featureId: "audit-trail", title: "Audit Trail", url: "/admin/audit-trail", icon: ScrollText, tier: "enterprise" },
       { featureId: "compliance", title: "Compliance", url: "/admin/compliance", icon: Shield, tier: "enterprise" },
     ],
@@ -213,6 +233,7 @@ const menuGroups: MenuGroup[] = [
     label: "Settings & Support",
     items: [
       { featureId: "settings", title: "Settings", url: "/admin/settings", icon: Settings, tier: "starter" },
+      { featureId: "support-tickets", title: "Support Tickets", url: "/admin/support-tickets", icon: Headphones, tier: "professional" },
       { featureId: "help", title: "Help & Support", url: "/admin/help", icon: HelpCircle, tier: "starter" },
       { featureId: "priority-support", title: "24/7 Priority Support", url: "/admin/priority-support", icon: Headphones, tier: "enterprise" },
     ],

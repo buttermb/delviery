@@ -152,6 +152,22 @@ const DeliveryTracking = lazy(() => import("./pages/admin/DeliveryTracking"));
 const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
 const FinancialCenter = lazy(() => import("./pages/admin/FinancialCenterReal"));
 const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
+const SupplierManagementPage = lazy(() => import("./pages/admin/SupplierManagementPage"));
+const PurchaseOrdersPage = lazy(() => import("./pages/admin/PurchaseOrdersPage"));
+const ReturnsManagementPage = lazy(() => import("./pages/admin/ReturnsManagementPage"));
+const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage"));
+const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
+const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
+const CustomerCRMPage = lazy(() => import("./pages/admin/CustomerCRMPage"));
+const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
+const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
+const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
+const BatchRecallPage = lazy(() => import("./pages/admin/BatchRecallPage"));
+const ComplianceVaultPage = lazy(() => import("./pages/admin/ComplianceVaultPage"));
+const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
+const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage"));
+const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
+const PredictiveAnalyticsPage = lazy(() => import("./pages/admin/PredictiveAnalyticsPage"));
 const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
 const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
 const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
@@ -503,6 +519,20 @@ const App = () => {
                           <Route path="financial-center" element={<FeatureProtectedRoute featureId="financial-center"><FinancialCenter /></FeatureProtectedRoute>} />
                           <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                           <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
+                          <Route path="suppliers" element={<FeatureProtectedRoute featureId="suppliers"><SupplierManagementPage /></FeatureProtectedRoute>} />
+                          <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="purchase-orders"><PurchaseOrdersPage /></FeatureProtectedRoute>} />
+                          <Route path="returns" element={<FeatureProtectedRoute featureId="returns"><ReturnsManagementPage /></FeatureProtectedRoute>} />
+                          <Route path="loyalty-program" element={<FeatureProtectedRoute featureId="loyalty-program"><LoyaltyProgramPage /></FeatureProtectedRoute>} />
+                          <Route path="coupons" element={<FeatureProtectedRoute featureId="coupons"><CouponManagementPage /></FeatureProtectedRoute>} />
+                          <Route path="quality-control" element={<FeatureProtectedRoute featureId="quality-control"><QualityControlPage /></FeatureProtectedRoute>} />
+                          <Route path="customer-crm" element={<FeatureProtectedRoute featureId="customer-crm"><CustomerCRMPage /></FeatureProtectedRoute>} />
+                          <Route path="marketing-automation" element={<FeatureProtectedRoute featureId="marketing-automation"><MarketingAutomationPage /></FeatureProtectedRoute>} />
+                          <Route path="appointments" element={<FeatureProtectedRoute featureId="appointments"><AppointmentSchedulerPage /></FeatureProtectedRoute>} />
+                          <Route path="support-tickets" element={<FeatureProtectedRoute featureId="support-tickets"><SupportTicketsPage /></FeatureProtectedRoute>} />
+                          <Route path="batch-recall" element={<FeatureProtectedRoute featureId="batch-recall"><BatchRecallPage /></FeatureProtectedRoute>} />
+                          <Route path="compliance-vault" element={<FeatureProtectedRoute featureId="compliance-vault"><ComplianceVaultPage /></FeatureProtectedRoute>} />
+                          <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting"><AdvancedReportingPage /></FeatureProtectedRoute>} />
+                          <Route path="predictive-analytics" element={<FeatureProtectedRoute featureId="predictive-analytics"><PredictiveAnalyticsPage /></FeatureProtectedRoute>} />
                           
                           {/* Professional Tier - Analytics */}
                           <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
@@ -594,6 +624,10 @@ const App = () => {
                         <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><OrdersListPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/orders/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+
+                        {/* ==================== VENDOR PORTAL (External Access) ==================== */}
+                        <Route path="/vendor/login" element={<VendorLoginPage />} />
+                        <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
 
                         {/* ==================== 404 NOT FOUND ==================== */}
                         <Route path="*" element={<NotFoundPage />} />
