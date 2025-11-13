@@ -18,7 +18,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
   stripe: {
     id: 'stripe',
     name: 'Stripe',
-    description: 'Payment processing and subscriptions',
+    description: 'Accept customer payments (separate from your platform billing)',
     icon: CreditCard,
     featuresEnabled: ['subscriptions', 'payment-links', 'invoices'],
     setupUrl: '/admin/settings?tab=integrations&setup=stripe',

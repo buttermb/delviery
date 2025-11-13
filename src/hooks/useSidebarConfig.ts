@@ -19,6 +19,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
+import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
 import type { SidebarSection, HotItem } from '@/types/sidebar';
 
 /**
@@ -56,10 +57,11 @@ export function useSidebarConfig() {
     });
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
-  // Filter by hidden features and integration settings
+  // Filter by hidden features, integration settings, and layout presets
   const visibilityFilteredConfig = useMemo(() => {
     const hiddenFeatures = safePreferences.hiddenFeatures || [];
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
+    const layoutPreset = getLayoutPreset(safePreferences.layoutPreset || 'default');
     
     // Essential features that can never be hidden
     const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
@@ -81,11 +83,25 @@ export function useSidebarConfig() {
     const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures]
       .filter(id => !ESSENTIAL_FEATURES.includes(id)); // Never hide essential features
     
-    return filteredConfig.map(section => ({
+    // Apply preset visibility if it's not 'all'
+    let config = filteredConfig.map(section => ({
       ...section,
       items: section.items.filter(item => !allHiddenFeatures.includes(item.id)),
-    })).filter(section => section.items.length > 0);
-  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations]);
+    }));
+    
+    // Apply preset filtering
+    if (layoutPreset && layoutPreset.visibleFeatures !== 'all') {
+      const visibleFeatures = layoutPreset.visibleFeatures as string[];
+      config = config.map(section => ({
+        ...section,
+        items: section.items.filter(item => 
+          ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
+        ),
+      }));
+    }
+    
+    return config.filter(section => section.items.length > 0);
+  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, safePreferences.layoutPreset]);
 
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {
