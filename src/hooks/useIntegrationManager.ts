@@ -1,16 +1,36 @@
 /**
  * useIntegrationManager Hook
  * 
- * Manages enabled/disabled integrations
+ * Manages enabled/disabled integrations with real-time connection status
  */
 
 import { useSidebarPreferences } from './useSidebarPreferences';
-import { getAvailableIntegrations, getIntegration } from '@/lib/sidebar/integrations';
+import { getAvailableIntegrations, getIntegration, checkIntegrationConnection } from '@/lib/sidebar/integrations';
+import { useState, useEffect } from 'react';
 
 export function useIntegrationManager() {
   const { preferences, updatePreferences } = useSidebarPreferences();
+  const [connectionStatuses, setConnectionStatuses] = useState<Record<string, boolean>>({});
 
   const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
+
+  // Check connection status for all integrations on mount
+  useEffect(() => {
+    const checkAllConnections = async () => {
+      const integrations = getAvailableIntegrations();
+      const statuses: Record<string, boolean> = {};
+      
+      await Promise.all(
+        integrations.map(async (integration) => {
+          statuses[integration.id] = await checkIntegrationConnection(integration.id);
+        })
+      );
+      
+      setConnectionStatuses(statuses);
+    };
+
+    checkAllConnections();
+  }, []);
 
   /**
    * Get all available integrations with their status
@@ -19,6 +39,7 @@ export function useIntegrationManager() {
     return getAvailableIntegrations().map(integration => ({
       ...integration,
       enabled: enabledIntegrations.includes(integration.id),
+      connected: connectionStatuses[integration.id] ?? integration.connected,
     }));
   };
 
@@ -62,10 +83,20 @@ export function useIntegrationManager() {
    * Get status of a specific integration
    */
   const getIntegrationStatus = (integrationId: string) => {
-    const integration = getIntegration(integrationId);
-    if (!integration) return 'unknown';
-    
-    return integration.connected ? 'connected' : 'disconnected';
+    const isConnected = connectionStatuses[integrationId];
+    return isConnected ? 'connected' : 'disconnected';
+  };
+
+  /**
+   * Refresh connection status for a specific integration
+   */
+  const refreshConnectionStatus = async (integrationId: string) => {
+    const isConnected = await checkIntegrationConnection(integrationId);
+    setConnectionStatuses(prev => ({
+      ...prev,
+      [integrationId]: isConnected,
+    }));
+    return isConnected;
   };
 
   return {
@@ -76,5 +107,7 @@ export function useIntegrationManager() {
     disableIntegration,
     toggleIntegration,
     getIntegrationStatus,
+    refreshConnectionStatus,
+    connectionStatuses,
   };
 }

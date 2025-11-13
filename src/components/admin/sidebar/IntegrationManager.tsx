@@ -8,18 +8,70 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export function IntegrationManager() {
-  const { getIntegrationsWithStatus, toggleIntegration } = useIntegrationManager();
+  const { getIntegrationsWithStatus, toggleIntegration, refreshConnectionStatus } = useIntegrationManager();
   const navigate = useNavigate();
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
 
   const integrations = getIntegrationsWithStatus();
 
   // Helper to identify if an integration is for payment processing (not billing)
   const isPaymentIntegration = (id: string) => id === 'stripe';
+
+  const handleRefreshStatus = async (integrationId: string) => {
+    setRefreshingId(integrationId);
+    try {
+      const isConnected = await refreshConnectionStatus(integrationId);
+      toast.success(
+        isConnected 
+          ? `${integrationId} is connected` 
+          : `${integrationId} is not configured`
+      );
+    } catch (error) {
+      toast.error('Failed to check connection status');
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
+  const getStatusIcon = (connected: boolean) => {
+    if (connected) {
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    }
+    return <XCircle className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  const getStatusBadge = (integration: any) => {
+    if (!integration.enabled) {
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <AlertCircle className="h-3 w-3" />
+          Disabled
+        </Badge>
+      );
+    }
+    
+    if (integration.connected) {
+      return (
+        <Badge variant="default" className="gap-1 bg-green-500">
+          <CheckCircle2 className="h-3 w-3" />
+          Connected
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge variant="outline" className="gap-1">
+        <XCircle className="h-3 w-3" />
+        Not Configured
+      </Badge>
+    );
+  };
 
   const handleToggle = async (integrationId: string, currentlyEnabled: boolean) => {
     await toggleIntegration(integrationId);
@@ -81,22 +133,33 @@ export function IntegrationManager() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Badge
-              variant={integration.connected ? 'default' : 'secondary'}
-              className="hidden sm:inline-flex"
+          <div className="flex items-center gap-2">
+            {getStatusBadge(integration)}
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRefreshStatus(integration.id)}
+              disabled={refreshingId === integration.id}
+              className="h-8 w-8"
+              title="Check connection status"
             >
-              {integration.connected ? 'Connected' : 'Not Setup'}
-            </Badge>
+              <RefreshCw 
+                className={`h-4 w-4 ${refreshingId === integration.id ? 'animate-spin' : ''}`} 
+              />
+            </Button>
+            
             <Switch
               checked={integration.enabled}
               onCheckedChange={() => handleToggle(integration.id, integration.enabled)}
             />
+            
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => navigate(integration.setupUrl)}
-              className="hidden sm:inline-flex"
+              className="h-8 w-8"
+              title="Configure integration"
             >
               <ExternalLink className="h-4 w-4" />
             </Button>
