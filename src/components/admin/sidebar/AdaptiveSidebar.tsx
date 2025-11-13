@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Lock } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
+import { useSidebarMigration } from '@/hooks/useSidebarMigration';
 import { SidebarProvider as ContextProvider, useSidebar } from './SidebarContext';
 import { SidebarSection } from './SidebarSection';
 import { SidebarHotItems } from './SidebarHotItems';
@@ -42,6 +43,9 @@ function AdaptiveSidebarInner() {
   const { sidebarConfig, hotItems, favorites } = useSidebarConfig();
   const { trackFeatureClick, toggleFavorite } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
+  
+  // Run storage migration on mount
+  useSidebarMigration();
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
