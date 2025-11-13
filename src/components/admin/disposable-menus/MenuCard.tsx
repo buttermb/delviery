@@ -82,7 +82,16 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h3 className="text-lg font-bold">{menu.name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold">{menu.name}</h3>
+                {/* @ts-expect-error - is_encrypted added via migration */}
+                {menu.is_encrypted && (
+                  <Badge variant="default" className="gap-1 text-xs">
+                    <Lock className="h-3 w-3" />
+                    AES-256
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground line-clamp-1">
                 {menu.description || 'No description'}
               </p>
