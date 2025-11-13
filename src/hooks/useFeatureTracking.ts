@@ -23,12 +23,19 @@ export function useFeatureTracking() {
       }
 
       try {
-        // Call RPC function to increment feature usage
-        const { error } = await supabase.rpc('increment_feature_usage', {
-          p_tenant_id: tenant.id,
-          p_user_id: admin.id,
-          p_feature_id: featureId,
-        });
+        // Upsert feature usage directly to table
+        const { error } = await supabase
+          .from('feature_usage_tracking')
+          .upsert({
+            tenant_id: tenant.id,
+            user_id: admin.id,
+            feature_id: featureId,
+            usage_count: 1,
+            last_used_at: new Date().toISOString(),
+          }, {
+            onConflict: 'tenant_id,user_id,feature_id',
+            ignoreDuplicates: false,
+          });
 
         if (error) {
           // Log error but don't throw (non-critical)
@@ -59,7 +66,7 @@ export function useFeatureTracking() {
         (window as { analytics: { track: (event: string, data: Record<string, unknown>) => void } }).analytics.track('Feature Accessed', {
           feature_id: featureId,
           tenant_id: tenant?.id,
-          operation_size: tenant?.detected_operation_size,
+          operation_size: (tenant as any)?.detected_operation_size,
         });
       } catch (error: unknown) {
         // Analytics tracking is optional, don't fail if it errors
