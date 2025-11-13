@@ -123,12 +123,12 @@ export function useSidebarConfig() {
   }, [configWithFavorites, safePreferences.collapsedSections]);
 
   return {
-    sidebarConfig: finalConfig,
+    sidebarConfig: Array.isArray(finalConfig) ? finalConfig : [],
     operationSize,
     detectedSize,
     isAutoDetected,
-    hotItems,
-    favorites: safePreferences.favorites,
+    hotItems: Array.isArray(hotItems) ? hotItems : [],
+    favorites: Array.isArray(safePreferences.favorites) ? safePreferences.favorites : [],
   };
 }
 

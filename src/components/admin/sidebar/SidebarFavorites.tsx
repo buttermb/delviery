@@ -17,11 +17,23 @@ export function SidebarFavorites() {
   const { sidebarConfig, favorites } = useSidebarConfig();
   const { canAccess } = useFeatureAccess();
 
-  // Find favorite items from all sections
-  const favoriteItems = sidebarConfig
-    .flatMap(section => section.items)
-    .filter(item => favorites.includes(item.id));
+  // Guard: Ensure favorites is an array
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
+  
+  // Guard: Early return if no favorites
+  if (safeFavorites.length === 0) {
+    return null;
+  }
 
+  // Guard: Ensure sidebarConfig is an array
+  const safeConfig = Array.isArray(sidebarConfig) ? sidebarConfig : [];
+
+  // Find favorite items from all sections
+  const favoriteItems = safeConfig
+    .flatMap(section => section?.items || [])
+    .filter(item => item && safeFavorites.includes(item.id));
+
+  // Double-check after filtering
   if (favoriteItems.length === 0) {
     return null;
   }

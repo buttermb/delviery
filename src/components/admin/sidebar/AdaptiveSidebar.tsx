@@ -92,17 +92,17 @@ function AdaptiveSidebarInner() {
             </div>
           }>
             {/* Hot Items Section */}
-            {hotItems.length > 0 && (
+            {Array.isArray(hotItems) && hotItems.length > 0 && (
               <SidebarHotItems />
             )}
 
             {/* Favorites Section */}
-            {favorites.length > 0 && (
+            {Array.isArray(favorites) && favorites.length > 0 && (
               <SidebarFavorites />
             )}
 
             {/* Main Sections */}
-            {sidebarConfig.length > 0 ? (
+            {Array.isArray(sidebarConfig) && sidebarConfig.length > 0 ? (
               sidebarConfig.map((section) => (
                 <SidebarSection
                   key={section.section}
