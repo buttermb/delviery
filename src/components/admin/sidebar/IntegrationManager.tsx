@@ -18,6 +18,9 @@ export function IntegrationManager() {
 
   const integrations = getIntegrationsWithStatus();
 
+  // Helper to identify if an integration is for payment processing (not billing)
+  const isPaymentIntegration = (id: string) => id === 'stripe';
+
   const handleToggle = async (integrationId: string, currentlyEnabled: boolean) => {
     await toggleIntegration(integrationId);
     toast.success(
@@ -29,6 +32,15 @@ export function IntegrationManager() {
 
   return (
     <div className="space-y-4">
+      <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+        <h4 className="font-medium text-sm mb-1">💳 About Stripe Integration</h4>
+        <p className="text-sm text-muted-foreground">
+          This Stripe integration is for <strong>accepting payments from your customers</strong>. 
+          Your platform subscription billing (what you pay us) uses a separate Stripe account. 
+          Enable this to add customer payment features to your admin panel.
+        </p>
+      </div>
+      
       <p className="text-sm text-muted-foreground">
         Enable or disable integrations to show/hide related features in your sidebar
       </p>
@@ -43,7 +55,14 @@ export function IntegrationManager() {
               <integration.icon className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h4 className="font-medium">{integration.name}</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="font-medium">{integration.name}</h4>
+                {isPaymentIntegration(integration.id) && (
+                  <Badge variant="secondary" className="text-xs">
+                    Customer Payments
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 {integration.description}
               </p>

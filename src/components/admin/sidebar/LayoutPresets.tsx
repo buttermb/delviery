@@ -19,11 +19,15 @@ export function LayoutPresets() {
   const [importing, setImporting] = useState(false);
 
   const handleSelectPreset = async (presetId: string) => {
-    await updatePreferences({
-      layoutPreset: presetId,
-      hiddenFeatures: [], // Reset hidden features when changing preset
-    });
-    toast.success(`Applied ${presets.find(p => p.id === presetId)?.name} layout`);
+    try {
+      await updatePreferences({
+        layoutPreset: presetId,
+        hiddenFeatures: [], // Reset hidden features when changing preset
+      });
+      toast.success(`Applied ${presets.find(p => p.id === presetId)?.name} layout`);
+    } catch (error) {
+      toast.error('Failed to apply preset');
+    }
   };
 
   const handleExport = () => {
