@@ -4,7 +4,8 @@
  * Functions for checking user permissions in components and edge functions
  */
 
-import { hasRolePermission, Role, Permission, mapDatabaseRoleToSystemRole } from './rolePermissions';
+import { hasRolePermission, mapDatabaseRoleToSystemRole } from './rolePermissions';
+import type { Role, Permission } from './rolePermissions';
 import { logger } from '@/lib/logger';
 
 /**
