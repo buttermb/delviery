@@ -21,6 +21,8 @@ interface Tenant {
   slug: string;
   subscription_plan: string;
   subscription_status: string;
+  trial_ends_at?: string | null;
+  next_billing_date?: string | null;
   limits: {
     customers: number;
     menus: number;
