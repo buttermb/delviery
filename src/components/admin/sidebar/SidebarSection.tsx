@@ -33,13 +33,18 @@ export function SidebarSection({
 
   // Sync with preferences
   useEffect(() => {
-    const shouldBeCollapsed = preferences.collapsedSections.includes(section.section);
+    // Guard: Ensure collapsedSections is an array
+    const collapsedSections = Array.isArray(preferences?.collapsedSections) 
+      ? preferences.collapsedSections 
+      : [];
+    
+    const shouldBeCollapsed = collapsedSections.includes(section.section);
     if (section.pinned) {
       setIsOpen(true); // Pinned sections always open
     } else {
       setIsOpen(!shouldBeCollapsed);
     }
-  }, [preferences.collapsedSections, section.section, section.pinned]);
+  }, [preferences?.collapsedSections, section.section, section.pinned]);
 
   const handleToggle = () => {
     if (section.pinned) return; // Don't allow collapsing pinned sections
