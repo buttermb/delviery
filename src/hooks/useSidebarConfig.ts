@@ -64,6 +64,10 @@ export function useSidebarConfig() {
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
     const layoutPreset = getLayoutPreset(currentLayoutPreset);
     
+    // Check if it's a custom preset
+    const customPresets = preferences?.customPresets || [];
+    const customPreset = customPresets.find(p => p.id === currentLayoutPreset);
+    
     // Essential features that can never be hidden
     const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
     
@@ -90,8 +94,18 @@ export function useSidebarConfig() {
       items: section.items.filter(item => !allHiddenFeatures.includes(item.id)),
     }));
     
-    // Apply preset filtering
-    if (layoutPreset && layoutPreset.visibleFeatures !== 'all') {
+    // Apply custom preset filtering first
+    if (customPreset) {
+      const visibleFeatures = customPreset.visibleFeatures;
+      config = config.map(section => ({
+        ...section,
+        items: section.items.filter(item => 
+          ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
+        ),
+      }));
+    }
+    // Then apply predefined preset filtering
+    else if (layoutPreset && layoutPreset.visibleFeatures !== 'all') {
       const visibleFeatures = layoutPreset.visibleFeatures as string[];
       config = config.map(section => ({
         ...section,
@@ -102,7 +116,7 @@ export function useSidebarConfig() {
     }
     
     return config.filter(section => section.items.length > 0);
-  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset]);
+  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {
