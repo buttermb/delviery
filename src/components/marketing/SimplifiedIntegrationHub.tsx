@@ -31,7 +31,7 @@ export function SimplifiedIntegrationHub({ integrations }: SimplifiedIntegration
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="text-white font-bold text-lg">DevPanel</span>
+          <span className="text-white font-bold text-lg">FloraIQ</span>
         </motion.div>
       </motion.div>
 

@@ -65,8 +65,8 @@ export default function Careers() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Careers - Join Our Team | DevPanel"
-        description="Join DevPanel and help revolutionize wholesale distribution management. Explore open positions and build your career with us."
+        title="Careers - Join Our Team | FloraIQ"
+        description="Join FloraIQ and help revolutionize wholesale distribution management. Explore open positions and build your career with us."
       />
       
       <MarketingNav />
@@ -93,7 +93,7 @@ export default function Careers() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-              Why Join DevPanel?
+              Why Join FloraIQ?
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               We're not just building software—we're solving real problems for thousands of distributors.

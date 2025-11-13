@@ -71,7 +71,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Blog - Insights & Resources | DevPanel"
+        title="Blog - Insights & Resources | FloraIQ"
         description="Read the latest insights, best practices, and industry trends for wholesale distribution management. Expert tips to help grow your business."
       />
       

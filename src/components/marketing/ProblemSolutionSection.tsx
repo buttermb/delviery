@@ -60,7 +60,7 @@ export function ProblemSolutionSection() {
               From Chaos to Control
             </h2>
             <p className="text-xl text-muted-foreground">
-              See how DevPanel transforms your wholesale operations
+              See how FloraIQ transforms your wholesale operations
             </p>
           </motion.div>
 
@@ -76,7 +76,7 @@ export function ProblemSolutionSection() {
                 <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
                   <X className="h-6 w-6 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground">Before DevPanel</h3>
+                <h3 className="text-2xl font-bold text-foreground">Before FloraIQ</h3>
               </div>
               <ul className="space-y-4">
                 {problems.map((problem, index) => {
@@ -111,7 +111,7 @@ export function ProblemSolutionSection() {
                 <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
                   <Check className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground">With DevPanel</h3>
+                <h3 className="text-2xl font-bold text-foreground">With FloraIQ</h3>
               </div>
               <ul className="space-y-4">
                 {solutions.map((solution, index) => {

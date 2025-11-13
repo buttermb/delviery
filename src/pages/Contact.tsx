@@ -48,8 +48,8 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
-        title="Contact Us - DevPanel | Get in Touch"
-        description="Contact DevPanel support, sales, or schedule a demo. We're here to help with your wholesale distribution needs."
+        title="Contact Us - FloraIQ | Get in Touch"
+        description="Contact FloraIQ support, sales, or schedule a demo. We're here to help with your wholesale distribution needs."
       />
       
       <MarketingNav />
@@ -99,11 +99,11 @@ export default function Contact() {
                   <Mail className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                 </div>
                 <CardTitle>EMAIL</CardTitle>
-                <CardDescription>support@devpanel.com</CardDescription>
+                <CardDescription>support@floraiq.com</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>
-                  <a href="mailto:support@devpanel.com">Email Us</a>
+                  <a href="mailto:support@floraiq.com">Email Us</a>
                 </Button>
               </CardContent>
             </Card>

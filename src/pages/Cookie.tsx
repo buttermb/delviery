@@ -52,8 +52,8 @@ export default function Cookie() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Cookie Policy | DevPanel"
-        description="Learn about how DevPanel uses cookies and similar technologies to improve your experience on our website."
+        title="Cookie Policy | FloraIQ"
+        description="Learn about how FloraIQ uses cookies and similar technologies to improve your experience on our website."
       />
       
       <MarketingNav />
@@ -70,7 +70,7 @@ export default function Cookie() {
               Last updated: March 1, 2024
             </p>
             <p className="text-muted-foreground">
-              This Cookie Policy explains how DevPanel uses cookies and similar technologies to recognize you 
+              This Cookie Policy explains how FloraIQ uses cookies and similar technologies to recognize you 
               when you visit our website.
             </p>
           </div>
@@ -248,8 +248,8 @@ export default function Cookie() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   If you have questions about our use of cookies, please contact us at{" "}
-                  <a href="mailto:privacy@devpanel.com" className="text-primary hover:underline">
-                    privacy@devpanel.com
+                  <a href="mailto:privacy@floraiq.com" className="text-primary hover:underline">
+                    privacy@floraiq.com
                   </a>
                 </p>
               </CardContent>

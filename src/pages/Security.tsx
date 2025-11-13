@@ -72,8 +72,8 @@ export default function Security() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Security & Compliance | DevPanel"
-        description="Learn about DevPanel's enterprise-grade security measures, certifications, and commitment to protecting your business data."
+        title="Security & Compliance | FloraIQ"
+        description="Learn about FloraIQ's enterprise-grade security measures, certifications, and commitment to protecting your business data."
       />
       
       <MarketingNav />

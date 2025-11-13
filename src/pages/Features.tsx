@@ -77,7 +77,7 @@ export default function Features() {
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
-        title="Features - DevPanel | Everything You Need in One Platform"
+        title="Features - FloraIQ | Everything You Need in One Platform"
         description="Comprehensive features for wholesale distributors: disposable menus, inventory tracking, order management, customer portal, and analytics."
       />
       

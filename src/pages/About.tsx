@@ -16,7 +16,7 @@ export default function About() {
     {
       icon: Rocket,
       title: "Innovation",
-      description: "We're constantly improving DevPanel with new features and improvements based on industry needs.",
+      description: "We're constantly improving FloraIQ with new features and improvements based on industry needs.",
     },
     {
       icon: Shield,
@@ -51,8 +51,8 @@ export default function About() {
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
-        title="About Us - DevPanel | Our Mission, Story & Values"
-        description="DevPanel was built by distributors, for distributors. Learn about our mission to modernize wholesale distribution and our team."
+        title="About Us - FloraIQ | Our Mission, Story & Values"
+        description="FloraIQ was built by distributors, for distributors. Learn about our mission to modernize wholesale distribution and our team."
       />
       
       <MarketingNav />
@@ -68,7 +68,7 @@ export default function About() {
               We're on a mission to modernize wholesale distribution. Wholesalers deserve better tools than outdated spreadsheets and clunky ERPs.
             </p>
             <p className="text-lg text-[hsl(var(--marketing-text))]">
-              DevPanel was built by distributors, for distributors. We understand your challenges because we've lived them.
+              FloraIQ was built by distributors, for distributors. We understand your challenges because we've lived them.
             </p>
           </div>
 
@@ -80,7 +80,7 @@ export default function About() {
                 Founded in 2023 by a team of wholesale distributors and software engineers who were frustrated with the lack of modern, affordable tools for wholesale businesses.
               </p>
               <p className="text-[hsl(var(--marketing-text))]">
-                Today, DevPanel powers 400+ distributors processing $1.4M in orders monthly. We're proud to be helping wholesalers grow their businesses every day.
+                Today, FloraIQ powers 400+ distributors processing $1.4M in orders monthly. We're proud to be helping wholesalers grow their businesses every day.
               </p>
             </div>
           </div>

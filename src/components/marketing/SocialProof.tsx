@@ -12,7 +12,7 @@ interface Activity {
 const mockActivities: Activity[] = [
   { id: '1', type: 'signup', message: 'Sarah from New York just signed up', timestamp: new Date() },
   { id: '2', type: 'purchase', message: 'Team from London upgraded to Pro', timestamp: new Date() },
-  { id: '3', type: 'milestone', message: '1,000+ developers using DevPanel', timestamp: new Date() },
+  { id: '3', type: 'milestone', message: '1,000+ businesses using FloraIQ', timestamp: new Date() },
   { id: '4', type: 'signup', message: 'Alex from Singapore joined', timestamp: new Date() },
   { id: '5', type: 'purchase', message: 'Startup from Berlin went Enterprise', timestamp: new Date() },
 ];

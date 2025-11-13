@@ -4,7 +4,7 @@ import { Check, X, Minus } from 'lucide-react';
 
 interface Feature {
   name: string;
-  devpanel: boolean | string;
+  floraiq: boolean | string;
   competitor: boolean | string;
   spreadsheet: boolean | string;
 }
@@ -12,49 +12,49 @@ interface Feature {
 const features: Feature[] = [
   {
     name: 'Real-Time Tracking',
-    devpanel: true,
+    floraiq: true,
     competitor: 'Manual refresh',
     spreadsheet: false,
   },
   {
     name: 'Disposable Menus',
-    devpanel: true,
+    floraiq: true,
     competitor: 'Static links',
     spreadsheet: false,
   },
   {
     name: 'Automation',
-    devpanel: 'Built-in workflow',
+    floraiq: 'Built-in workflow',
     competitor: 'Requires Zapier',
     spreadsheet: false,
   },
   {
     name: 'Security',
-    devpanel: 'SOC2 + SSL + MFA',
+    floraiq: 'SOC2 + SSL + MFA',
     competitor: 'SSL only',
     spreadsheet: false,
   },
   {
     name: 'Multi-Location Inventory',
-    devpanel: true,
+    floraiq: true,
     competitor: true,
     spreadsheet: false,
   },
   {
     name: 'Customer Portal',
-    devpanel: true,
+    floraiq: true,
     competitor: false,
     spreadsheet: false,
   },
   {
     name: 'Analytics Dashboard',
-    devpanel: true,
+    floraiq: true,
     competitor: 'Basic',
     spreadsheet: false,
   },
   {
     name: 'Mobile Access',
-    devpanel: true,
+    floraiq: true,
     competitor: true,
     spreadsheet: false,
   },
@@ -86,10 +86,10 @@ export function ComparisonSection() {
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              DevPanel vs. The Competition
+              FloraIQ vs. The Competition
             </h2>
             <p className="text-xl text-muted-foreground">
-              See why 400+ distributors switched to DevPanel
+              See why 400+ distributors switched to FloraIQ
             </p>
           </motion.div>
 
@@ -101,7 +101,7 @@ export function ComparisonSection() {
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left p-4 font-semibold text-foreground">Feature</th>
                     <th className="text-center p-4 font-semibold text-foreground">
-                      <span className="gradient-text-primary">DevPanel</span>
+                      <span className="gradient-text-primary">FloraIQ</span>
                     </th>
                     <th className="text-center p-4 font-semibold text-muted-foreground">
                       Competitor A
@@ -124,7 +124,7 @@ export function ComparisonSection() {
                       <td className="p-4 font-medium text-foreground">{feature.name}</td>
                       <td className="p-4 text-center">
                         <div className="flex justify-center">
-                          {renderValue(feature.devpanel)}
+                          {renderValue(feature.floraiq)}
                         </div>
                       </td>
                       <td className="p-4 text-center">
@@ -158,8 +158,8 @@ export function ComparisonSection() {
                 <h4 className="font-semibold mb-3 text-foreground">{feature.name}</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm gradient-text-primary font-medium">DevPanel</span>
-                    {renderValue(feature.devpanel)}
+                    <span className="text-sm gradient-text-primary font-medium">FloraIQ</span>
+                    {renderValue(feature.floraiq)}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Competitor</span>

@@ -144,8 +144,8 @@ export function MarketingFooter() {
         <div className="pt-8 border-t border-[hsl(var(--marketing-border))]">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-[hsl(var(--marketing-text-light))]">
-              <p>© 2024 DevPanel. All rights reserved.</p>
-              <p className="mt-1">Modern CRM for Wholesale Distributors</p>
+              <p>© 2025 FloraIQ. All rights reserved.</p>
+              <p className="mt-1">Smart Cannabis Operations Platform</p>
             </div>
             <div className="flex items-center gap-4">
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--marketing-text-light))] hover:text-[hsl(var(--marketing-primary))] transition-colors">

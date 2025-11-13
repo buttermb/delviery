@@ -32,8 +32,8 @@ export default function DemoConfirmation() {
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
       <SEOHead 
-        title="Demo Scheduled - DevPanel"
-        description="Your demo has been scheduled. We look forward to showing you DevPanel."
+        title="Demo Scheduled - FloraIQ"
+        description="Your demo has been scheduled. We look forward to showing you FloraIQ."
       />
       
       <MarketingNav />
@@ -73,12 +73,12 @@ export default function DemoConfirmation() {
                   Meeting Link (will also be in email):
                 </p>
                 <a
-                  href="https://meet.devpanel.com/demo/abc123"
+                  href="https://meet.floraiq.com/demo/abc123"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[hsl(var(--marketing-primary))] hover:underline flex items-center justify-center gap-2"
                 >
-                  https://meet.devpanel.com/demo/abc123
+                  https://meet.floraiq.com/demo/abc123
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </div>
@@ -86,7 +86,7 @@ export default function DemoConfirmation() {
               <div className="border-t border-[hsl(var(--marketing-border))] pt-6">
                 <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-2">Your demo specialist:</p>
                 <p className="font-medium text-[hsl(var(--marketing-text))]">Sarah Chen - Product Expert</p>
-                <p className="text-sm text-[hsl(var(--marketing-primary))]">sarah@devpanel.com</p>
+                <p className="text-sm text-[hsl(var(--marketing-primary))]">sarah@floraiq.com</p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
