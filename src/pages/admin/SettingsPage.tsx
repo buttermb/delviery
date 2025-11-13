@@ -13,11 +13,12 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft
+  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
+import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -149,6 +150,10 @@ export default function SettingsPage() {
           <TabsTrigger value="integrations">
             <Plug className="h-4 w-4 mr-2" />
             Integrations
+          </TabsTrigger>
+          <TabsTrigger value="sidebar">
+            <Layout className="h-4 w-4 mr-2" />
+            Sidebar
           </TabsTrigger>
         </TabsList>
 
@@ -444,6 +449,19 @@ export default function SettingsPage() {
                   <Button variant="outline" size="sm">Connect</Button>
                 </div>
               </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Sidebar Settings */}
+        <TabsContent value="sidebar">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Layout className="h-5 w-5" />
+              Sidebar Preferences
+            </h3>
+            <div className="space-y-4">
+              <OperationSizeSelector />
             </div>
           </Card>
         </TabsContent>

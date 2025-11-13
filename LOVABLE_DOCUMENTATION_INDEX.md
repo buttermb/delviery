@@ -59,6 +59,13 @@
 
 ## 📚 Additional Documentation
 
+### 🆕 Smart Adaptive Sidebar (NEW)
+- **[LOVABLE_ADAPTIVE_SIDEBAR_INTEGRATION_GUIDE.md](./LOVABLE_ADAPTIVE_SIDEBAR_INTEGRATION_GUIDE.md)** - Complete integration guide with step-by-step instructions
+- **[LOVABLE_ADAPTIVE_SIDEBAR_QUICK_START.md](./LOVABLE_ADAPTIVE_SIDEBAR_QUICK_START.md)** - 5-minute quick start guide
+- **[LOVABLE_ADAPTIVE_SIDEBAR_FLOW_DIAGRAMS.md](./LOVABLE_ADAPTIVE_SIDEBAR_FLOW_DIAGRAMS.md)** - Visual flow diagrams and sequences
+- **[ADAPTIVE_SIDEBAR_IMPLEMENTATION_SUMMARY.md](./ADAPTIVE_SIDEBAR_IMPLEMENTATION_SUMMARY.md)** - Implementation summary
+- **[ADAPTIVE_SIDEBAR_QUICK_START.md](./ADAPTIVE_SIDEBAR_QUICK_START.md)** - Developer quick start
+
 ### Authentication & Signup Flows
 - **[LOVABLE_VERIFICATION_CHECKLIST.md](./LOVABLE_VERIFICATION_CHECKLIST.md)** - Complete verification checklist for signup/auth
 - **[LOVABLE_COMPLETE_VERIFICATION_PROMPT.md](./LOVABLE_COMPLETE_VERIFICATION_PROMPT.md)** - Single comprehensive verification prompt

@@ -49,7 +49,7 @@ export function AvailabilitySettings({
     onOpenChange(false);
   };
 
-  const updateHours = (index: number, field: keyof BusinessHours, value: any) => {
+  const updateHours = (index: number, field: keyof BusinessHours, value: string | boolean) => {
     const updated = [...businessHours];
     updated[index] = { ...updated[index], [field]: value };
     setBusinessHours(updated);

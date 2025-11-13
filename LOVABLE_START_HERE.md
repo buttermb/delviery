@@ -16,6 +16,11 @@ This repository contains **15 high-value business admin features** that are **UI
 - Quick navigation to all guides
 - Feature list and status
 
+### 🆕 Smart Adaptive Sidebar (NEW)
+📱 **[LOVABLE_ADAPTIVE_SIDEBAR_QUICK_START.md](./LOVABLE_ADAPTIVE_SIDEBAR_QUICK_START.md)** - 5-minute integration
+📖 **[LOVABLE_ADAPTIVE_SIDEBAR_INTEGRATION_GUIDE.md](./LOVABLE_ADAPTIVE_SIDEBAR_INTEGRATION_GUIDE.md)** - Complete guide
+📊 **[LOVABLE_ADAPTIVE_SIDEBAR_FLOW_DIAGRAMS.md](./LOVABLE_ADAPTIVE_SIDEBAR_FLOW_DIAGRAMS.md)** - Flow diagrams
+
 ### 2. Complete Admin Panel Documentation ⭐ NEW
 📚 **[ADMIN_PANEL_COMPLETE_DOCUMENTATION.md](./ADMIN_PANEL_COMPLETE_DOCUMENTATION.md)** (29KB)
 - **COMPLETE DOCUMENTATION** for all 56+ admin panel features

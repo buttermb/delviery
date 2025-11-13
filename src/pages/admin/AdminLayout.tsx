@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TenantAdminSidebar } from "@/components/tenant-admin/TenantAdminSidebar";
+import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { MobileBottomNav } from "@/components/admin/MobileBottomNav";
 import { AccountSwitcher } from "@/components/admin/AccountSwitcher";
 import { ChevronRight, Search, Keyboard } from "lucide-react";
@@ -86,10 +86,10 @@ const AdminLayout = () => {
       {/* Command Palette */}
       <TenantAdminCommandPalette />
       
-      {/* Unified Layout with TenantAdminSidebar */}
+      {/* Unified Layout with AdaptiveSidebar */}
       <SidebarProvider>
         <div className="min-h-screen flex w-full overflow-hidden">
-          <TenantAdminSidebar />
+          <AdaptiveSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <AccountSwitcher />
             <header className="h-12 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">

@@ -1,0 +1,70 @@
+/**
+ * Sidebar Hot Items Component
+ * 
+ * Displays contextual quick actions based on business context
+ */
+
+import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
+import { SidebarMenuItem } from './SidebarMenuItem';
+import { useSidebarConfig } from '@/hooks/useSidebarConfig';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useParams, useLocation } from 'react-router-dom';
+import type { FeatureId } from '@/lib/featureConfig';
+
+export function SidebarHotItems() {
+  const { tenantSlug } = useParams();
+  const location = useLocation();
+  const { hotItems } = useSidebarConfig();
+  const { canAccess } = useFeatureAccess();
+
+  if (hotItems.length === 0) {
+    return null;
+  }
+
+  const isActive = (url: string) => {
+    const fullPath = `/${tenantSlug}${url}`;
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
+  };
+
+  const handleItemClick = (itemId: string, featureId?: string) => {
+    // Tracking is handled by SidebarMenuItem
+  };
+
+  const handleLockedItemClick = (featureId: FeatureId) => {
+    // Upgrade modal is handled by parent AdaptiveSidebar
+  };
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-orange-600 dark:text-orange-400">
+        🔥 Quick Access
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {hotItems.map((hot) => {
+            const hasAccess = hot.featureId ? canAccess(hot.featureId) : true;
+            return (
+              <SidebarMenuItem
+                key={hot.id}
+                item={{
+                  id: hot.id,
+                  name: hot.name,
+                  path: hot.path,
+                  icon: hot.icon,
+                  featureId: hot.featureId,
+                  hot: true,
+                  badge: hot.badge,
+                }}
+                isActive={isActive(hot.path)}
+                hasAccess={hasAccess}
+                onItemClick={handleItemClick}
+                onLockedItemClick={handleLockedItemClick}
+              />
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+

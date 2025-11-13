@@ -70,6 +70,12 @@ export const STORAGE_KEYS = {
   
   // Beta banner
   BETA_BANNER_DISMISSED: 'beta_banner_dismissed',
+  
+  // Sidebar Preferences (legacy - now stored in database)
+  SIDEBAR_OPERATION_SIZE: 'sidebar_operation_size',
+  SIDEBAR_CUSTOM_LAYOUT: 'sidebar_custom_layout',
+  SIDEBAR_FAVORITES: 'sidebar_favorites',
+  SIDEBAR_COLLAPSED_SECTIONS: 'sidebar_collapsed_sections',
 } as const;
 
 /**
