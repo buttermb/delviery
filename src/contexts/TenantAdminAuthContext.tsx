@@ -4,7 +4,8 @@ import { getTokenExpiration } from "@/lib/auth/jwt";
 import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
-import { safeFetch } from "@/utils/safeFetch";
+import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
+import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
 
 interface TenantAdmin {
   id: string;
@@ -50,6 +51,7 @@ interface TenantAdminAuthContextType {
   accessToken: string | null; // For backwards compatibility
   refreshToken: string | null; // For backwards compatibility
   isAuthenticated: boolean; // New: cookie-based authentication state
+  connectionStatus: ConnectionStatus; // Network connection status
   loading: boolean;
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -89,6 +91,11 @@ const validateEnvironment = (): { valid: boolean; error?: string } => {
   return { valid: true };
 };
 
+// Initialize connection monitoring on module load
+if (typeof window !== 'undefined') {
+  initConnectionMonitoring();
+}
+
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -97,6 +104,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [refreshToken, setRefreshToken] = useState<string | null>(null); // For backwards compatibility
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Cookie-based auth state
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
+
+  // Monitor connection status
+  useEffect(() => {
+    const unsubscribe = onConnectionStatusChange((status) => {
+      setConnectionStatus(status);
+      logger.info('Connection status updated in auth context', { status });
+    });
+    return unsubscribe;
+  }, []);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -200,13 +217,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         // Verify authentication via API (cookies sent automatically)
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const verifyResponse = await safeFetch(
+        const { response: verifyResponse } = await resilientFetch(
           `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
           {
             method: 'GET',
             credentials: 'include', // ⭐ Send httpOnly cookies
             headers: {
               'Content-Type': 'application/json',
+            },
+            timeout: 10000, // 10 second timeout for initialization
+            retryConfig: {
+              maxRetries: 1, // Only 1 retry for initialization
+              initialDelay: 500,
             },
           }
         );
@@ -313,13 +335,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
       }
       
-      // Create AbortController for timeout (8 seconds - fail-fast approach)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        logger.warn(`Token verification timed out after ${VERIFY_TIMEOUT_MS}ms`, undefined, 'TenantAdminAuthContext');
-        controller.abort();
-      }, VERIFY_TIMEOUT_MS);
-      
       const startTime = Date.now();
       let response: Response;
       
@@ -335,18 +350,25 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           headers["Authorization"] = `Bearer ${tokenToVerify}`;
         }
         
-        response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
-          method: "GET",
-          credentials: 'include', // ⭐ Send httpOnly cookies
-          headers,
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
+        // Use resilientFetch - it handles timeouts and retries internally
+        const { response: resilientResponse, category } = await resilientFetch(
+          `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
+          {
+            method: "GET",
+            credentials: 'include', // ⭐ Send httpOnly cookies
+            headers,
+            timeout: VERIFY_TIMEOUT_MS,
+            retryConfig: {
+              maxRetries: retryCount < maxRetries ? 1 : 0, // Only retry if we haven't exceeded max
+              initialDelay: 500,
+            },
+          }
+        );
+        response = resilientResponse;
         
         const duration = Date.now() - startTime;
         logger.debug(`Token verification completed in ${duration}ms`, undefined, 'TenantAdminAuthContext');
       } catch (fetchError: any) {
-        clearTimeout(timeoutId);
         const duration = Date.now() - startTime;
         
         if (fetchError.name === 'AbortError') {
@@ -384,12 +406,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
           if (storedRefreshToken) {
             try {
-              const refreshResponse = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ refresh_token: storedRefreshToken }),
+              const { response: refreshResponse } = await resilientFetch(
+                `${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ refresh_token: storedRefreshToken }),
+                  timeout: 10000,
+                  retryConfig: {
+                    maxRetries: 1,
+                    initialDelay: 500,
+                  },
               });
 
               if (!refreshResponse.ok) {
@@ -545,28 +574,47 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   const login = async (email: string, password: string, tenantSlug: string) => {
+    const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email, tenantSlug });
+    
     try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
+      
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
       
-      // Add timeout to fetch call
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s for login
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
       
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`, {
+      const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password, tenantSlug }),
-        signal: controller.signal,
+        timeout: 30000, // 30 seconds for login
+        retryConfig: {
+          maxRetries: 3,
+          initialDelay: 1000,
+        },
+        onRetry: (attempt, error) => {
+          const delay = 1000 * Math.pow(2, attempt - 1);
+          authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
       });
-      
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Login failed");
+        const errorData = await response.json().catch(() => ({ error: "Login failed" }));
+        const error = new Error(errorData.error || "Login failed");
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
       }
+
+      const fetchStartTime = performance.now();
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
       
@@ -611,11 +659,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       // Setup proactive refresh timer
       setupRefreshTimer(data.access_token);
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
+      authFlowLogger.completeFlow(flowId, { tenantId: data.tenant?.id });
     } catch (error) {
+      const category = error instanceof Error && error.message.includes('Network') 
+        ? ErrorCategory.NETWORK 
+        : ErrorCategory.AUTH;
+      authFlowLogger.failFlow(flowId, error, category);
       logger.error("Login error", error);
       throw error;
     }
   };
+
 
   const logout = async () => {
     // Clear refresh timer
@@ -627,11 +683,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       // Call logout endpoint to clear cookies
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
+      await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include', // ⭐ Send cookies to be cleared
         headers: {
           "Content-Type": "application/json",
+        },
+        timeout: 10000,
+        retryConfig: {
+          maxRetries: 1,
+          initialDelay: 500,
         },
       });
     } catch (error) {
@@ -673,20 +734,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logger.debug("Refreshing access token...");
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       
-      // Add timeout to fetch call
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+      const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ refresh_token: currentRefreshToken }),
-        signal: controller.signal,
+        timeout: 10000,
+        retryConfig: {
+          maxRetries: 2,
+          initialDelay: 1000,
+        },
       });
-      
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error("Token refresh failed");
@@ -766,11 +825,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               try {
                 const adminData = JSON.parse(storedAdmin);
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-                const response = await safeFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+                const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {
                     "Authorization": `Bearer ${accessToken || localStorage.getItem(ACCESS_TOKEN_KEY)}`,
                     "Content-Type": "application/json",
+                  },
+                  credentials: 'include',
+                  timeout: 10000,
+                  retryConfig: {
+                    maxRetries: 1,
+                    initialDelay: 500,
                   },
                 });
 
@@ -855,6 +920,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       accessToken, 
       refreshToken: refreshToken, 
       isAuthenticated,
+      connectionStatus,
       loading, 
       login, 
       logout, 

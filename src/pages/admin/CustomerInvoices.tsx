@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
+import { logger } from '@/lib/logger';
 
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -77,7 +78,7 @@ export default function CustomerInvoices() {
       if (error) throw error;
       setInvoices(data || []);
     } catch (error) {
-      console.error('Error loading invoices:', error);
+      logger.error('Error loading invoices', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerInvoices' });
     } finally {
       setLoading(false);
     }

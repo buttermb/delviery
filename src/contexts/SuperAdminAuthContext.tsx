@@ -5,7 +5,8 @@ import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
-import { safeFetch } from "@/utils/safeFetch";
+import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
+import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
 
 interface SuperAdmin {
   id: string;
@@ -31,13 +32,27 @@ const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN;
 const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
 const SUPABASE_SESSION_KEY = 'superadmin_supabase_session';
 
+// Initialize connection monitoring on module load
+if (typeof window !== 'undefined') {
+  initConnectionMonitoring();
+}
 export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [superAdmin, setSuperAdmin] = useState<SuperAdmin | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
+
+  // Monitor connection status
+  useEffect(() => {
+    const unsubscribe = onConnectionStatusChange((status) => {
+      setConnectionStatus(status);
+      logger.info('Connection status updated in super admin auth context', { status });
+    });
+    return unsubscribe;
+  }, []);
 
   // Initialize from localStorage and restore Supabase session
   useEffect(() => {
@@ -82,25 +97,53 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   }, []);
 
   const verifyToken = async (tokenToVerify: string) => {
+    const flowId = authFlowLogger.startFlow(AuthAction.VERIFY, {});
+    
     try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
+      const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
+      
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
+      const fetchStartTime = performance.now();
+      
+      const { response, attempts, category } = await resilientFetch(url, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${tokenToVerify}`,
           "Content-Type": "application/json",
         },
+        timeout: 10000,
+        retryConfig: {
+          maxRetries: 1,
+          initialDelay: 500,
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
       });
 
       if (!response.ok) {
-        throw new Error("Token verification failed");
+        const error = new Error("Token verification failed");
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
       }
+
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
       setSuperAdmin(data.superAdmin);
       localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
+      authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
       setLoading(false);
     } catch (error) {
+      const category = error instanceof Error && error.message.includes('Network')
+        ? ErrorCategory.NETWORK
+        : ErrorCategory.AUTH;
+      authFlowLogger.failFlow(flowId, error, category);
       logger.error("Token verification error", error);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(SUPER_ADMIN_KEY);
@@ -111,20 +154,46 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   };
 
   const login = async (email: string, password: string) => {
+    const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email });
+    
     try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=login`, {
+      const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=login`;
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
+      const fetchStartTime = performance.now();
+      
+      const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        timeout: 30000,
+        retryConfig: {
+          maxRetries: 3,
+          initialDelay: 1000,
+        },
+        onRetry: (attempt, error) => {
+          const delay = 1000 * Math.pow(2, attempt - 1);
+          authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Login failed");
+        const errorData = await response.json().catch(() => ({ error: "Login failed" }));
+        const error = new Error(errorData.error || "Login failed");
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
       }
+
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
       
@@ -154,28 +223,46 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
           logger.info('Super admin can now access tenant data via RLS', undefined, 'SuperAdminAuth');
         }
       }
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
+      authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
     } catch (error) {
+      const category = error instanceof Error && error.message.includes('Network')
+        ? ErrorCategory.NETWORK
+        : ErrorCategory.AUTH;
+      authFlowLogger.failFlow(flowId, error, category);
       logger.error("Login error", error);
       throw error;
     }
   };
 
   const logout = async () => {
+    const flowId = authFlowLogger.startFlow(AuthAction.LOGOUT, {});
+    
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
+        await resilientFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=logout`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
+          },
+          timeout: 10000,
+          retryConfig: {
+            maxRetries: 1,
+            initialDelay: 500,
           },
         });
       }
 
       // Sign out from Supabase session as well
       await supabase.auth.signOut();
+      
+      authFlowLogger.completeFlow(flowId, {});
     } catch (error) {
+      const category = ErrorCategory.NETWORK;
+      authFlowLogger.failFlow(flowId, error, category);
       logger.error("Logout error", error);
     } finally {
       setToken(null);
@@ -190,24 +277,56 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   const refreshToken = async () => {
     if (!token) return;
 
+    const flowId = authFlowLogger.startFlow(AuthAction.REFRESH, {});
+    
     try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`, {
+      const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`;
+      
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
+      const fetchStartTime = performance.now();
+      
+      const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ token }),
+        timeout: 10000,
+        retryConfig: {
+          maxRetries: 2,
+          initialDelay: 1000,
+        },
+        onRetry: (attempt, error) => {
+          const delay = 1000 * Math.pow(2, attempt - 1);
+          authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
       });
 
       if (!response.ok) {
-        throw new Error("Token refresh failed");
+        const error = new Error("Token refresh failed");
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
       }
+
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
       setToken(data.token);
       localStorage.setItem(TOKEN_KEY, data.token);
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
+      authFlowLogger.completeFlow(flowId, {});
     } catch (error) {
+      const category = error instanceof Error && error.message.includes('Network')
+        ? ErrorCategory.NETWORK
+        : ErrorCategory.AUTH;
+      authFlowLogger.failFlow(flowId, error, category);
       logger.error("Token refresh error", error);
       // If refresh fails, logout
       await logout();

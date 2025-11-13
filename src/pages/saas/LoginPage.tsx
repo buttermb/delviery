@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { logger } from '@/utils/logger';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
+import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
 import {
   Form,
   FormControl,
@@ -23,12 +25,11 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Lock, Mail, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
-import { edgeFunctionRequest } from '@/lib/utils/apiClient';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -42,9 +43,26 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
+  const [retryCount, setRetryCount] = useState(0);
   const [searchParams] = useSearchParams();
   const signupSuccess = searchParams.get('signup') === 'success';
   const tenantSlug = searchParams.get('tenant');
+
+  // Monitor connection status
+  useEffect(() => {
+    const unsubscribe = onConnectionStatusChange((status) => {
+      setConnectionStatus(status);
+      if (status === 'offline') {
+        toast({
+          title: 'No Internet Connection',
+          description: 'Please check your connection and try again.',
+          variant: 'destructive',
+        });
+      }
+    });
+    return unsubscribe;
+  }, [toast]);
 
   useEffect(() => {
     if (signupSuccess) {
@@ -64,7 +82,20 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    // Check if offline
+    if (isOffline()) {
+      toast({
+        title: 'No Internet Connection',
+        description: 'Please check your connection and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
+    setRetryCount(0);
+    
+    const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
     
     // Clear any stale tenant data before login
     localStorage.removeItem('lastTenantSlug');
@@ -72,16 +103,26 @@ export default function LoginPage() {
     localStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
     
     try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
+      
       // Sign in with Supabase Auth first to validate credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to login');
+      if (authError) {
+        authFlowLogger.failFlow(flowId, authError, ErrorCategory.AUTH);
+        throw authError;
+      }
+      if (!authData.user) {
+        const error = new Error('Failed to login');
+        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
+        throw error;
+      }
 
       // Get tenant for this user
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       const { data: tenantUser, error: tenantUserError } = await supabase
         .from('tenant_users')
         .select('tenant_id')
@@ -90,7 +131,9 @@ export default function LoginPage() {
         .single();
 
       if (tenantUserError || !tenantUser) {
-        throw new Error('No tenant found for this account');
+        const error = new Error('No tenant found for this account');
+        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
+        throw error;
       }
 
       // Get tenant slug
@@ -101,19 +144,59 @@ export default function LoginPage() {
         .single();
 
       if (tenantError || !tenant) {
-        throw new Error('Invalid tenant configuration');
+        const error = new Error('Invalid tenant configuration');
+        authFlowLogger.failFlow(flowId, error, ErrorCategory.AUTH);
+        throw error;
       }
 
       // Call tenant-admin-auth to set up complete authentication
-      logger.debug('Calling tenant-admin-auth edge function', { email: data.email, tenantSlug: tenant.slug });
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
       
-      const authResponse = await edgeFunctionRequest('tenant-admin-auth?action=login', {
-        email: data.email,
-        password: data.password,
-        tenantSlug: tenant.slug,
-      }, { skipAuth: true });
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
+      const fetchStartTime = performance.now();
       
-      logger.debug('Auth response received', { hasAccessToken: !!authResponse.access_token });
+      const { response, attempts, category } = await resilientFetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          tenantSlug: tenant.slug,
+        }),
+        timeout: 30000,
+        retryConfig: {
+          maxRetries: 3,
+          initialDelay: 1000,
+        },
+        onRetry: (attempt, error) => {
+          setRetryCount(attempt);
+          const delay = 1000 * Math.pow(2, attempt - 1);
+          authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
+          toast({
+            title: 'Retrying...',
+            description: `Attempt ${attempt} of 3`,
+            duration: 2000,
+          });
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Login failed' }));
+        const error = new Error(errorData.error || 'Login failed');
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
+      }
+
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
+
+      const authResponse = await response.json();
 
       // Store authentication data
       localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
@@ -130,33 +213,25 @@ export default function LoginPage() {
       // Small delay to ensure localStorage is written
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Redirect to tenant admin dashboard
-      window.location.href = `/${tenant.slug}/admin/dashboard`;
+      authFlowLogger.logStep(flowId, AuthFlowStep.REDIRECT);
+      authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
+      
+      // Redirect to tenant admin dashboard using React Router (SPA navigation)
+      navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
     } catch (error: any) {
+      const category = error.message?.includes('Network') || error.message?.includes('fetch')
+        ? ErrorCategory.NETWORK
+        : ErrorCategory.AUTH;
+      
       logger.error('Login error', error);
-      
-      // Distinguish between network errors and auth errors
-      const isNetworkError = 
-        error.message?.includes('Failed to fetch') || 
-        error.message?.includes('Network') ||
-        error.message?.includes('fetch') ||
-        !navigator.onLine;
-      
-      if (isNetworkError) {
-        toast({
-          title: 'Connection Error',
-          description: 'Please check your internet connection and try again.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Login Failed',
-          description: error.message || 'Invalid email or password',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Login Failed',
+        description: getErrorMessage(category, error) || error.message || 'Invalid email or password',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
+      setRetryCount(0);
     }
   };
 
@@ -411,6 +486,23 @@ export default function LoginPage() {
       `}} />
 
       <Card className="w-full max-w-md p-8 sm:p-10 relative z-10 backdrop-blur-xl bg-card/90 shadow-2xl border-2 animate-fade-in transition-colors duration-700">
+        {/* Connection Status Indicator */}
+        {connectionStatus === 'offline' && (
+          <Alert className="mb-4 border-destructive/50 bg-destructive/10">
+            <WifiOff className="h-4 w-4" />
+            <AlertDescription>
+              No internet connection. Please check your network and try again.
+            </AlertDescription>
+          </Alert>
+        )}
+        {retryCount > 0 && connectionStatus === 'online' && (
+          <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+              Retrying connection... (Attempt {retryCount} of 3)
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-6 animate-scale-in">
             <Sparkles className="h-8 w-8 text-primary" />
