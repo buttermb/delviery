@@ -85,6 +85,15 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       return;
     }
     
+    // CRITICAL FIX: If auth is complete (not loading) and we have admin/tenant, skip verification
+    // This prevents infinite loading when auth completes successfully
+    if (!loading && admin && tenant && tenant.slug === tenantSlug) {
+      console.log('[PROTECTED ROUTE] ✅ Auth complete and valid - bypassing verification');
+      setVerified(true);
+      setSkipVerification(true);
+      return;
+    }
+    
     // Track total wait time
     if (!totalWaitStartRef.current) {
       totalWaitStartRef.current = Date.now();
