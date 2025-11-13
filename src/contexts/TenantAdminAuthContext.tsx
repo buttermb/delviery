@@ -158,32 +158,47 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const startTime = Date.now();
     
     const initializeAuth = async () => {
+      console.log('[AUTH INIT] 🚀 Starting authentication initialization', { timestamp: new Date().toISOString() });
+      
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
       let parsedTenant: Tenant | null = null;
       
       try {
         // Quick check: Do we have user/tenant data in localStorage?
+        console.log('[AUTH INIT] 📦 Checking localStorage for stored credentials');
         const storedAdmin = localStorage.getItem(ADMIN_KEY);
         const storedTenant = localStorage.getItem(TENANT_KEY);
         
         if (!storedAdmin || !storedTenant) {
           // No stored data = not logged in
+          console.log('[AUTH INIT] ❌ No stored credentials found - user not authenticated');
           logger.debug('[AUTH] No stored user/tenant data, not authenticated');
           setLoading(false);
           return;
         }
 
+        console.log('[AUTH INIT] ✅ Found stored credentials, parsing...');
         // Parse stored data
         parsedAdmin = JSON.parse(storedAdmin);
         parsedTenant = JSON.parse(storedTenant);
+        console.log('[AUTH INIT] 📋 Parsed credentials:', {
+          adminEmail: parsedAdmin?.email,
+          tenantSlug: parsedTenant?.slug,
+          tenantName: parsedTenant?.business_name,
+        });
         
         // Get current tenant slug from URL
         const currentPath = window.location.pathname;
         const urlTenantSlug = currentPath.split('/')[1];
+        console.log('[AUTH INIT] 🔍 URL tenant slug:', urlTenantSlug);
         
         // Validate tenant slug matches URL
         if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
+          console.log('[AUTH INIT] ⚠️ Tenant mismatch detected!', {
+            stored: parsedTenant.slug,
+            url: urlTenantSlug,
+          });
           logger.debug(`[AUTH] Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
           clearAuthState();
           setLoading(false);
@@ -209,6 +224,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           },
         };
         
+        console.log('[AUTH INIT] 🎨 Setting state from localStorage');
         // Set state from localStorage (for quick UI rendering)
         setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
@@ -216,63 +232,91 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         localStorage.setItem('lastTenantSlug', tenantWithDefaults.slug);
         
         // Verify authentication via API (cookies sent automatically)
+        console.log('[AUTH INIT] 🌐 Calling verify endpoint...');
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const { response: verifyResponse } = await resilientFetch(
-          `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
-          {
-            method: 'GET',
-            credentials: 'include', // ⭐ Send httpOnly cookies
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            timeout: 10000, // 10 second timeout for initialization
-            retryConfig: {
-              maxRetries: 1, // Only 1 retry for initialization
-              initialDelay: 500,
-            },
-          }
-        );
-
-        if (verifyResponse.ok) {
-          const verifyData = await verifyResponse.json();
+        const verifyStartTime = Date.now();
+        
+        try {
+          const verifyResponse = await safeFetch(
+            `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
+            {
+              method: 'GET',
+              credentials: 'include', // ⭐ Send httpOnly cookies
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              signal: AbortSignal.timeout(5000), // 5-second timeout
+            }
+          );
           
-          // Update state from verification response (more up-to-date)
-          setAdmin(verifyData.admin || parsedAdmin);
-          setTenant(verifyData.tenant || tenantWithDefaults);
-          setIsAuthenticated(true);
-          
-          // For backwards compatibility, set token state (but don't store in localStorage)
-          if (verifyData.access_token) {
-            setAccessToken(verifyData.access_token);
-            setToken(verifyData.access_token);
-          }
-          
-          logger.info('[AUTH] Authenticated via cookies', {
-            userId: verifyData.admin?.id,
-            tenantSlug: verifyData.tenant?.slug,
+          const verifyDuration = Date.now() - verifyStartTime;
+          console.log('[AUTH INIT] ⏱️ Verify endpoint responded', {
+            duration: `${verifyDuration}ms`,
+            status: verifyResponse.status,
+            ok: verifyResponse.ok,
           });
-        } else {
-          // Verification failed - clear everything
-          logger.warn('[AUTH] Cookie verification failed, clearing auth state');
-          clearAuthState();
-        }
-      } catch (error: any) {
-        // Special handling for "Failed to fetch" - edge function might be down
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+
+          if (verifyResponse.ok) {
+            const verifyData = await verifyResponse.json();
+            console.log('[AUTH INIT] ✅ Verify endpoint success', {
+              hasAdmin: !!verifyData.admin,
+              hasTenant: !!verifyData.tenant,
+              hasToken: !!verifyData.access_token,
+            });
+            
+            // Update state from verification response (more up-to-date)
+            setAdmin(verifyData.admin || parsedAdmin);
+            setTenant(verifyData.tenant || tenantWithDefaults);
+            setIsAuthenticated(true);
+            
+            // For backwards compatibility, set token state (but don't store in localStorage)
+            if (verifyData.access_token) {
+              setAccessToken(verifyData.access_token);
+              setToken(verifyData.access_token);
+            }
+            
+            logger.info('[AUTH] Authenticated via cookies', {
+              userId: verifyData.admin?.id,
+              tenantSlug: verifyData.tenant?.slug,
+            });
+            console.log('[AUTH INIT] 🎉 Authentication complete via cookies');
+          } else {
+            // Verification failed - clear everything
+            console.log('[AUTH INIT] ❌ Verify endpoint failed, clearing auth state');
+            logger.warn('[AUTH] Cookie verification failed, clearing auth state');
+            clearAuthState();
+          }
+        } catch (verifyError: any) {
+          const verifyDuration = Date.now() - verifyStartTime;
+          console.log('[AUTH INIT] 🔥 Verify endpoint error', {
+            duration: `${verifyDuration}ms`,
+            error: verifyError.message,
+            name: verifyError.name,
+          });
+          
+          // Fallback: Use localStorage-only auth if verify endpoint fails
+          console.log('[AUTH INIT] 💾 Falling back to localStorage-only auth');
+          setIsAuthenticated(true);
           logger.warn('[AUTH] Verify endpoint unavailable, using localStorage-only auth', {
-            error: error.message,
+            error: verifyError.message,
             hasAdmin: !!parsedAdmin,
             hasTenant: !!parsedTenant,
           });
-          
-          // Trust localStorage data if verify endpoint is down
-          setIsAuthenticated(true);
           logger.info('[AUTH] Authenticated via localStorage (verify endpoint unavailable)');
-        } else {
-          logger.error('[AUTH] Initialization error', error);
-          clearAuthState();
         }
+      } catch (error: any) {
+        console.log('[AUTH INIT] ❌ Initialization error', {
+          error: error.message,
+          name: error.name,
+        });
+        logger.error('[AUTH] Initialization error', error);
+        clearAuthState();
       } finally {
+        const totalDuration = Date.now() - startTime;
+        console.log('[AUTH INIT] ✨ Initialization complete', {
+          duration: `${totalDuration}ms`,
+          authenticated: isAuthenticated,
+        });
         setLoading(false);
       }
     };
