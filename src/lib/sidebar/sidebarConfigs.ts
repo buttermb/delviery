@@ -119,6 +119,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
       createItem('reports', "Today's Sales", '/admin/reports', TrendingUp, { hot: true }),
       createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
       createItem('cash-register', 'Cash Count', '/admin/cash-register', Wallet),
+      createItem('billing', 'Billing', '/admin/billing', DollarSign),
     ],
   },
   {
@@ -127,14 +128,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
       createItem('products', 'My Products', '/admin/inventory/products', Box),
       createItem('customers', 'My Customers', '/admin/big-plug-clients', Users),
       createItem('disposable-menus', 'Quick Menu', '/admin/disposable-menus', Share2),
-    ],
-  },
-  {
-    section: '⚙️ Settings',
-    collapsed: true,
-    items: [
-      createItem('billing', 'Billing', '/admin/billing', CreditCard),
-      createItem('settings', 'My Profile', '/admin/settings', User),
+      createItem('settings', 'Settings', '/admin/settings', Settings),
     ],
   },
 ];
@@ -192,15 +186,15 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
       createItem('reports', "Today's Revenue", '/admin/reports', TrendingUp),
       createItem('reports', 'This Week', '/admin/reports', Calendar),
       createItem('revenue-reports', 'Expenses', '/admin/revenue-reports', Receipt),
+      createItem('billing', 'Billing', '/admin/billing', DollarSign),
     ],
   },
   {
-    section: '⚙️ Settings',
+    section: '👥 Team',
     collapsed: true,
     items: [
-      createItem('billing', 'Subscription', '/admin/billing', CreditCard),
-      createItem('team-members', 'Team', '/admin/staff-management', Users),
-      createItem('settings', 'Business Info', '/admin/settings', Building),
+      createItem('team-members', 'Staff', '/admin/staff-management', Users),
+      createItem('settings', 'Settings', '/admin/settings', Settings),
     ],
   },
 ];
@@ -304,23 +298,22 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
     ],
   },
   {
-    section: '👤 Team',
+    section: '👤 Team & Security',
     items: [
       createItem('team-members', 'Staff Management', '/admin/staff-management', Users),
       createItem('role-management', 'Roles & Permissions', '/admin/role-management', Shield),
       createItem('activity-logs', 'Activity Logs', '/admin/activity-logs', ScrollText),
+      createItem('audit-trail', 'Audit Trail', '/admin/audit-trail', Lock),
     ],
   },
   {
-    section: '⚙️ Settings',
+    section: '⚙️ Admin',
     collapsed: true,
     items: [
-      createItem('billing', 'Billing & Plans', '/admin/billing', CreditCard),
-      createItem('settings', 'Business Settings', '/admin/settings', Settings),
-      createItem('notifications', 'Notifications', '/admin/notifications', Bell),
+      createItem('billing', 'Billing & Plans', '/admin/billing', DollarSign),
       createItem('custom-integrations', 'Integrations', '/admin/custom-integrations', Zap),
       createItem('generate-barcodes', 'Printing & Labels', '/admin/generate-barcodes', Barcode),
-      createItem('audit-trail', 'Security', '/admin/audit-trail', Lock),
+      createItem('settings', 'Settings', '/admin/settings', Settings),
     ],
   },
 ];
