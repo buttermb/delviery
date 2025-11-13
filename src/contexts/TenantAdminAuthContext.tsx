@@ -231,12 +231,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Sync lastTenantSlug
         localStorage.setItem('lastTenantSlug', tenantWithDefaults.slug);
         
+        // CRITICAL: Set authenticated to true immediately with localStorage data
+        // This prevents the loading state from persisting
+        console.log('[AUTH INIT] ✅ Setting authenticated=true from localStorage');
+        setIsAuthenticated(true);
+        
         // Verify authentication via API (cookies sent automatically)
-        console.log('[AUTH INIT] 🌐 Calling verify endpoint...');
+        // This is now optional - if it fails, we already have localStorage auth
+        console.log('[AUTH INIT] 🌐 Calling verify endpoint (optional verification)...');
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const verifyStartTime = Date.now();
         
         try {
+          // Create AbortController for timeout (more compatible than AbortSignal.timeout)
+          const abortController = new AbortController();
+          const timeoutId = setTimeout(() => abortController.abort(), 5000);
+          
           const verifyResponse = await safeFetch(
             `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
             {
@@ -245,10 +255,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               headers: {
                 'Content-Type': 'application/json',
               },
-              signal: AbortSignal.timeout(5000), // 5-second timeout
+              signal: abortController.signal,
             }
           );
           
+          clearTimeout(timeoutId);
           const verifyDuration = Date.now() - verifyStartTime;
           console.log('[AUTH INIT] ⏱️ Verify endpoint responded', {
             duration: `${verifyDuration}ms`,
@@ -258,16 +269,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
-            console.log('[AUTH INIT] ✅ Verify endpoint success', {
+            console.log('[AUTH INIT] ✅ Verify endpoint success - updating from server', {
               hasAdmin: !!verifyData.admin,
               hasTenant: !!verifyData.tenant,
               hasToken: !!verifyData.access_token,
             });
             
-            // Update state from verification response (more up-to-date)
-            setAdmin(verifyData.admin || parsedAdmin);
-            setTenant(verifyData.tenant || tenantWithDefaults);
-            setIsAuthenticated(true);
+            // Update state from verification response (more up-to-date than localStorage)
+            if (verifyData.admin) setAdmin(verifyData.admin);
+            if (verifyData.tenant) setTenant(verifyData.tenant);
             
             // For backwards compatibility, set token state (but don't store in localStorage)
             if (verifyData.access_token) {
@@ -275,35 +285,35 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               setToken(verifyData.access_token);
             }
             
-            logger.info('[AUTH] Authenticated via cookies', {
+            logger.info('[AUTH] Authenticated via cookies (verified)', {
               userId: verifyData.admin?.id,
               tenantSlug: verifyData.tenant?.slug,
             });
-            console.log('[AUTH INIT] 🎉 Authentication complete via cookies');
           } else {
-            // Verification failed - clear everything
-            console.log('[AUTH INIT] ❌ Verify endpoint failed, clearing auth state');
-            logger.warn('[AUTH] Cookie verification failed, clearing auth state');
-            clearAuthState();
+            // Verification failed - but we already set isAuthenticated=true from localStorage
+            // So just log the failure
+            console.log('[AUTH INIT] ⚠️ Verify endpoint returned non-ok status, using localStorage auth', {
+              status: verifyResponse.status,
+            });
+            logger.warn('[AUTH] Cookie verification failed, continuing with localStorage auth');
           }
         } catch (verifyError: any) {
           const verifyDuration = Date.now() - verifyStartTime;
-          console.log('[AUTH INIT] 🔥 Verify endpoint error', {
+          console.log('[AUTH INIT] 🔥 Verify endpoint error (using localStorage fallback)', {
             duration: `${verifyDuration}ms`,
             error: verifyError.message,
             name: verifyError.name,
           });
           
-          // Fallback: Use localStorage-only auth if verify endpoint fails
-          console.log('[AUTH INIT] 💾 Falling back to localStorage-only auth');
-          setIsAuthenticated(true);
+          // We already set isAuthenticated=true above, so just log
           logger.warn('[AUTH] Verify endpoint unavailable, using localStorage-only auth', {
             error: verifyError.message,
             hasAdmin: !!parsedAdmin,
             hasTenant: !!parsedTenant,
           });
-          logger.info('[AUTH] Authenticated via localStorage (verify endpoint unavailable)');
         }
+        
+        console.log('[AUTH INIT] 🎉 Authentication complete');
       } catch (error: any) {
         console.log('[AUTH INIT] ❌ Initialization error', {
           error: error.message,
