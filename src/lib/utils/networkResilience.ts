@@ -121,15 +121,17 @@ function calculateDelay(attempt: number, config: Required<RetryConfig>): number 
 function isRetryable(
   category: ErrorCategory,
   status?: number,
-  config: Required<RetryConfig>
+  config?: Required<RetryConfig>
 ): boolean {
+  const finalConfig = config || DEFAULT_RETRY_CONFIG;
+  
   // Check if category is retryable
-  if (config.retryableCategories.includes(category)) {
+  if (finalConfig.retryableCategories.includes(category)) {
     return true;
   }
   
   // Check if status code is retryable
-  if (status && config.retryableStatuses.includes(status)) {
+  if (status && finalConfig.retryableStatuses.includes(status)) {
     return true;
   }
   
