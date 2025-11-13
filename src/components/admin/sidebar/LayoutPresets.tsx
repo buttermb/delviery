@@ -17,16 +17,30 @@ export function LayoutPresets() {
   const presets = getLayoutPresets();
   const currentPreset = preferences?.layoutPreset || 'default';
   const [importing, setImporting] = useState(false);
+  const [applyingPreset, setApplyingPreset] = useState<string | null>(null);
 
   const handleSelectPreset = async (presetId: string) => {
+    if (applyingPreset) return; // Prevent multiple clicks
+    
+    setApplyingPreset(presetId);
+    const presetName = presets.find(p => p.id === presetId)?.name || 'layout';
+    
     try {
+      toast.loading(`Applying ${presetName}...`, { id: 'preset-apply' });
+      
       await updatePreferences({
         layoutPreset: presetId,
         hiddenFeatures: [], // Reset hidden features when changing preset
       });
-      toast.success(`Applied ${presets.find(p => p.id === presetId)?.name} layout`);
+      
+      // Wait for sidebar to re-render
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      toast.success(`Applied ${presetName}`, { id: 'preset-apply' });
     } catch (error) {
-      toast.error('Failed to apply preset');
+      toast.error('Failed to apply preset', { id: 'preset-apply' });
+    } finally {
+      setApplyingPreset(null);
     }
   };
 
@@ -102,16 +116,24 @@ export function LayoutPresets() {
               <button
                 key={preset.id}
                 onClick={() => handleSelectPreset(preset.id)}
+                disabled={applyingPreset !== null}
                 className={`p-4 border rounded-lg text-left transition-all hover:border-primary ${
                   isActive ? 'border-primary bg-primary/5' : ''
-                }`}
+                } ${applyingPreset === preset.id ? 'opacity-50 cursor-wait' : ''} ${applyingPreset && applyingPreset !== preset.id ? 'opacity-30' : ''}`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium">{preset.name}</h4>
-                  {isActive && (
+                  <h4 className="font-medium">
+                    {applyingPreset === preset.id ? 'Applying...' : preset.name}
+                  </h4>
+                  {isActive && !applyingPreset && (
                     <Badge variant="default" className="ml-2">
                       <Check className="h-3 w-3 mr-1" />
                       Active
+                    </Badge>
+                  )}
+                  {applyingPreset === preset.id && (
+                    <Badge variant="secondary" className="ml-2 animate-pulse">
+                      Loading...
                     </Badge>
                   )}
                 </div>
