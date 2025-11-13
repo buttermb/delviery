@@ -531,6 +531,7 @@ const App = () => {
                           <Route path="support-tickets" element={<FeatureProtectedRoute featureId="support-tickets"><SupportTicketsPage /></FeatureProtectedRoute>} />
                           <Route path="batch-recall" element={<FeatureProtectedRoute featureId="batch-recall"><BatchRecallPage /></FeatureProtectedRoute>} />
                           <Route path="compliance-vault" element={<FeatureProtectedRoute featureId="compliance-vault"><ComplianceVaultPage /></FeatureProtectedRoute>} />
+                          <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
                           <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting"><AdvancedReportingPage /></FeatureProtectedRoute>} />
                           <Route path="predictive-analytics" element={<FeatureProtectedRoute featureId="predictive-analytics"><PredictiveAnalyticsPage /></FeatureProtectedRoute>} />
                           
