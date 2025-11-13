@@ -76,7 +76,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful customer support AI for Bud Dash, a premium delivery service in NYC. 
+            content: `You are a helpful customer support AI for FloraIQ, a smart cannabis operations platform. 
 
 IMPORTANT - Provide SPECIFIC, ACTIONABLE help:
 

@@ -1,7 +1,7 @@
 {
-  "name": "Premium Delivery Platform - Fast & Reliable Service",
-  "short_name": "Delivery App",
-  "description": "Premium delivery service. Order quality products from licensed vendors with fast, discreet delivery.",
+  "name": "FloraIQ - Smart Cannabis Operations",
+  "short_name": "FloraIQ",
+  "description": "FloraIQ - Smart cannabis operations platform with multi-tenant SAAS, wholesale CRM, inventory management, and premium delivery services.",
   "version": "3.0.0",
   "start_url": "/",
   "display": "standalone",

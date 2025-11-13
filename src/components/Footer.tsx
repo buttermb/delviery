@@ -4,7 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import NYMLogo from "./NYMLogo";
+import FloraIQLogo from "./FloraIQLogo";
 
 const Footer = () => {
   const [legalOpen, setLegalOpen] = useState(false);
@@ -67,15 +67,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <NYMLogo size={50} />
-              <div className="flex flex-col">
-                <span className="font-black text-lg tracking-wider">PREMIUM DELIVERY</span>
-                <span className="text-xs text-muted-foreground/70 tracking-widest">EXPRESS SERVICE</span>
-              </div>
-            </div>
+            <FloraIQLogo size="xl" />
             <p className="text-sm text-muted-foreground">
-              Premium products from licensed cultivators. Lab-tested. Fast delivery.
+              Smart cannabis operations platform. Premium products from licensed cultivators. Lab-tested. Fast delivery.
             </p>
           </div>
 
@@ -213,7 +207,7 @@ const Footer = () => {
                   </Link>
                 </div>
               </div>
-              <p className="text-xs font-semibold tracking-wider text-center md:text-right">PREMIUM FLOWER DELIVERY</p>
+              <p className="text-xs font-semibold tracking-wider text-center md:text-right">© 2025 FloraIQ. All rights reserved.</p>
             </div>
           </div>
         </div>

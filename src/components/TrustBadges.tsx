@@ -56,9 +56,9 @@ const TrustBadges = () => {
     <section className="py-16 bg-gradient-to-b from-card/30 to-background border-y border-border">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-3">Why Choose Us?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">Why Choose FloraIQ?</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of satisfied customers who trust us for premium delivery
+            Join thousands of satisfied customers who trust FloraIQ for premium delivery
           </p>
         </div>
         

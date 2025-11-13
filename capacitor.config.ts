@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.premium.delivery',
-  appName: 'Premium Delivery',
+  appId: 'com.floraiq.app',
+  appName: 'FloraIQ',
   webDir: 'dist',
   server: {
     url: 'https://localhost',

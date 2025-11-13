@@ -11,8 +11,8 @@ interface SEOHeadProps {
 }
 
 export const SEOHead = ({ 
-  title = 'Premium Delivery Platform - Fast & Reliable Service',
-  description = 'Premium delivery service with fast, discreet delivery. Lab-tested products from licensed vendors.',
+  title = 'FloraIQ - Smart Cannabis Operations Platform',
+  description = 'FloraIQ - Smart cannabis operations platform with multi-tenant SAAS, wholesale CRM, inventory management, and premium delivery services.',
   image = 'https://lovable.dev/opengraph-image-p98pqg.png',
   type = 'website',
   structuredData,

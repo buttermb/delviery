@@ -1,7 +1,7 @@
 /* TEAM */
 
-Project: Premium Delivery Platform
-Year: 2024
+Project: FloraIQ - Smart Cannabis Operations Platform
+Year: 2025
 
 /* SITE */
 

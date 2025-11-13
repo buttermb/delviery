@@ -85,7 +85,7 @@ const InstallPWA = () => {
               <Download className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-base mb-1">Install Premium Delivery Platform</h3>
+              <h3 className="font-bold text-base mb-1">Install FloraIQ</h3>
               <p className="text-sm text-muted-foreground">
                 Add to your home screen for quick access and a better experience
               </p>
