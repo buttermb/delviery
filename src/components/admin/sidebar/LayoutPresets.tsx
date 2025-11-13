@@ -11,6 +11,7 @@ import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
 import { Check, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { CustomPresetBuilder } from './CustomPresetBuilder';
 
 export function LayoutPresets() {
   const { preferences, updatePreferences } = useSidebarPreferences();
@@ -101,7 +102,7 @@ export function LayoutPresets() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h3 className="font-medium mb-2">Quick Presets</h3>
         <p className="text-sm text-muted-foreground mb-4">
@@ -150,6 +151,8 @@ export function LayoutPresets() {
           })}
         </div>
       </div>
+
+      <CustomPresetBuilder />
 
       <div className="border-t pt-6">
         <h3 className="font-medium mb-2">Import / Export</h3>

@@ -100,6 +100,15 @@ export interface SidebarBehavior {
 }
 
 /**
+ * Custom preset created by user
+ */
+export interface CustomPreset {
+  id: string;
+  name: string;
+  visibleFeatures: string[];
+}
+
+/**
  * Sidebar preferences stored in database
  */
 export interface SidebarPreferences {
@@ -132,6 +141,8 @@ export interface SidebarPreferences {
   layoutPreset?: string;
   /** Sidebar behavior settings */
   sidebarBehavior?: SidebarBehavior;
+  /** User-created custom presets */
+  customPresets?: CustomPreset[];
 }
 
 /**

@@ -32,6 +32,7 @@ const DEFAULT_PREFERENCES: SidebarPreferences = {
     iconOnly: false,
     showTooltips: true,
   },
+  customPresets: [],
 };
 
 /**
@@ -78,6 +79,7 @@ export function useSidebarPreferences() {
         customMenuItems: ((data as any).custom_menu_items as any[]) || [],
         layoutPreset: (data as any).layout_preset || 'default',
         sidebarBehavior: ((data as any).sidebar_behavior as any) || DEFAULT_PREFERENCES.sidebarBehavior,
+        customPresets: ((data as any).custom_presets as any[]) || [],
       };
     },
     enabled: !!tenant?.id && !!admin?.id,
@@ -114,6 +116,7 @@ export function useSidebarPreferences() {
           custom_menu_items: updated.customMenuItems,
           layout_preset: updated.layoutPreset,
           sidebar_behavior: updated.sidebarBehavior,
+          custom_presets: updated.customPresets,
         }], {
           onConflict: 'tenant_id,user_id',
         });
