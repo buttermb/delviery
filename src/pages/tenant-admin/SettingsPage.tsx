@@ -3,16 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Key, Building2, Bell, User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Key, Building2, Bell, User, Layout } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeFetch } from "@/utils/safeFetch";
+import { OperationSizeSelector } from "@/components/admin/sidebar/OperationSizeSelector";
+import { SidebarCustomizer } from "@/components/admin/sidebar/SidebarCustomizer";
 
 export default function TenantAdminSettingsPage() {
   const { admin, tenant } = useTenantAdminAuth();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'account';
   const [loading, setLoading] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -108,7 +114,16 @@ export default function TenantAdminSettingsPage() {
           <p className="text-sm sm:text-base text-muted-foreground">Manage your account and business settings</p>
         </div>
 
-        {/* Account Settings */}
+        <Tabs defaultValue={defaultTab} className="space-y-6">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <TabsTrigger value="account"><User className="h-4 w-4 mr-2" />Account</TabsTrigger>
+            <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-2" />Business</TabsTrigger>
+            <TabsTrigger value="security"><Key className="h-4 w-4 mr-2" />Security</TabsTrigger>
+            <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-2" />Notifications</TabsTrigger>
+            <TabsTrigger value="sidebar"><Layout className="h-4 w-4 mr-2" />Sidebar</TabsTrigger>
+          </TabsList>
+
+        <TabsContent value="account">
         <Card>
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
@@ -141,8 +156,9 @@ export default function TenantAdminSettingsPage() {
             </Button>
           </CardContent>
         </Card>
+        </TabsContent>
 
-        {/* Business Information */}
+        <TabsContent value="business">
         <Card>
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
@@ -178,8 +194,9 @@ export default function TenantAdminSettingsPage() {
             </div>
           </CardContent>
         </Card>
+        </TabsContent>
 
-        {/* Security */}
+        <TabsContent value="security">
         <Card>
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
@@ -233,8 +250,9 @@ export default function TenantAdminSettingsPage() {
             </form>
           </CardContent>
         </Card>
+        </TabsContent>
 
-        {/* Notifications */}
+        <TabsContent value="notifications">
         <Card>
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
@@ -273,6 +291,17 @@ export default function TenantAdminSettingsPage() {
             </div>
           </CardContent>
         </Card>
+        </TabsContent>
+
+        <TabsContent value="sidebar" className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Layout className="h-5 w-5 text-primary" />Sidebar Preferences</CardTitle></CardHeader>
+            <CardContent><OperationSizeSelector /></CardContent>
+          </Card>
+          <SidebarCustomizer />
+        </TabsContent>
+
+        </Tabs>
       </div>
     </div>
   );
