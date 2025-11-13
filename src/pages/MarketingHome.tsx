@@ -265,20 +265,20 @@ export default function MarketingHome() {
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
               {
-                name: "STARTER",
-                price: "$99/mo",
-                features: ["50 customers", "3 menus", "Basic feat."],
+                name: "BASIC",
+                price: "$79/mo",
+                features: ["28 Core Features", "50 customers", "100 products", "2 locations", "3 team members"],
               },
               {
                 name: "PROFESSIONAL",
-                price: "$299/mo",
+                price: "$150/mo",
                 popular: true,
-                features: ["500 customers", "Unlimited", "All features", "API access"],
+                features: ["55 Total Features", "500 customers", "1,000 products", "5 locations", "Advanced CRM"],
               },
               {
                 name: "ENTERPRISE",
-                price: "$799/mo",
-                features: ["Unlimited", "Everything", "White-label", "Dedicated"],
+                price: "$499/mo",
+                features: ["All 87 Features", "Unlimited everything", "Fleet management", "API & webhooks", "White-label"],
               },
             ].map((plan, index) => (
               <div
