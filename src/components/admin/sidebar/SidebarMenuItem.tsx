@@ -34,7 +34,10 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const { tenantSlug } = useParams();
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
   const { prefetchRoute } = useRoutePrefetch();
-  const isFavorite = favorites.includes(item.id);
+  
+  // Guard: Ensure favorites is an array
+  const safeFavorites = Array.isArray(favorites) ? favorites : [];
+  const isFavorite = safeFavorites.includes(item.id);
 
   const handleClick = () => {
     if (item.featureId) {
