@@ -61,7 +61,8 @@ export function useSidebarConfig() {
   const visibilityFilteredConfig = useMemo(() => {
     const hiddenFeatures = safePreferences.hiddenFeatures || [];
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
-    const layoutPreset = getLayoutPreset(safePreferences.layoutPreset || 'default');
+    const currentLayoutPreset = preferences?.layoutPreset || 'default';
+    const layoutPreset = getLayoutPreset(currentLayoutPreset);
     
     // Essential features that can never be hidden
     const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
@@ -101,7 +102,7 @@ export function useSidebarConfig() {
     }
     
     return config.filter(section => section.items.length > 0);
-  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, safePreferences.layoutPreset]);
+  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset]);
 
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {

@@ -81,7 +81,8 @@ export function useSidebarPreferences() {
       };
     },
     enabled: !!tenant?.id && !!admin?.id,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 1000, // Reduce cache time for faster updates
+    refetchOnMount: 'always', // Always fetch fresh data on mount
   });
 
   // Update preferences mutation
@@ -148,11 +149,13 @@ export function useSidebarPreferences() {
       logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });
       toast.error('Failed to save preferences');
     },
-    onSuccess: () => {
-      toast.success('Preferences saved');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+    onSuccess: async () => {
+      // Wait for database write to complete before invalidating
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Invalidate all related queries
+      await queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+      await queryClient.invalidateQueries({ queryKey: ['sidebar-config'] });
     },
   });
 
