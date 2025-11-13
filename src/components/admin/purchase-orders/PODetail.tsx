@@ -1,4 +1,5 @@
 // @ts-nocheck - Purchase orders table types not yet regenerated
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,6 +22,7 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Truck,
 } from "lucide-react";
 import {
   Select,
@@ -31,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { POReceiveDialog } from "./POReceiveDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -53,6 +56,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusChange }: PODetailProps) {
+  const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
+  
   const { data: items, isLoading: itemsLoading } = useQuery({
     queryKey: queryKeys.purchaseOrders.items(purchaseOrder.id),
     queryFn: async () => {
@@ -315,7 +320,70 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
             </CardContent>
           </Card>
         </div>
+
+        {/* Footer Actions */}
+        <div className="flex flex-wrap gap-2 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="min-h-[44px] touch-manipulation"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Close
+          </Button>
+
+          {canEdit && (
+            <Button
+              onClick={onEdit}
+              className="min-h-[44px] touch-manipulation"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
+
+          {purchaseOrder.status === "approved" && (
+            <Button
+              onClick={() => setReceiveDialogOpen(true)}
+              className="min-h-[44px] touch-manipulation bg-emerald-500 hover:bg-emerald-600"
+            >
+              <Truck className="h-4 w-4 mr-2" />
+              Receive Items
+            </Button>
+          )}
+
+          {canChangeStatus && (
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-sm text-muted-foreground">Change Status:</span>
+              <Select
+                value={purchaseOrder.status || "draft"}
+                onValueChange={(value) => onStatusChange(purchaseOrder, value)}
+              >
+                <SelectTrigger className="w-[150px] min-h-[44px] touch-manipulation">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </DialogContent>
+
+      {/* Receive Dialog */}
+      <POReceiveDialog
+        open={receiveDialogOpen}
+        onOpenChange={setReceiveDialogOpen}
+        purchaseOrder={purchaseOrder}
+        items={items || []}
+        onSuccess={() => {
+          onOpenChange(false);
+        }}
+      />
     </Dialog>
   );
 }
