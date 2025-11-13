@@ -9,6 +9,7 @@ import { CreateMenuDialog } from '@/components/admin/disposable-menus/CreateMenu
 import { MenuCreationWizard } from '@/components/admin/disposable-menus/MenuCreationWizard';
 import { EnhancedMenuDashboard } from '@/components/admin/disposable-menus/EnhancedMenuDashboard';
 import { PanicModeButton } from '@/components/admin/disposable-menus/PanicModeButton';
+import { EncryptionMigrationTool } from '@/components/admin/disposable-menus/EncryptionMigrationTool';
 import { SecurityAlertsPanel } from '@/components/admin/disposable-menus/SecurityAlertsPanel';
 import { SecurityMonitoringPanel } from '@/components/admin/disposable-menus/SecurityMonitoringPanel';
 import { AutomatedSecuritySettings } from '@/components/admin/disposable-menus/AutomatedSecuritySettings';
@@ -30,6 +31,7 @@ const DisposableMenus = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createWizardOpen, setCreateWizardOpen] = useState(false);
   const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
+  const [encryptionToolOpen, setEncryptionToolOpen] = useState(false);
   const [selectedMenuIds, setSelectedMenuIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -120,6 +122,15 @@ const DisposableMenus = () => {
               <span className="sm:hidden">Orders</span>
             </Button>
             <PanicModeButton />
+            <Button 
+              variant="outline"
+              onClick={() => setEncryptionToolOpen(true)}
+              className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
+            >
+              <Shield className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Encryption</span>
+              <span className="sm:hidden">🔐</span>
+            </Button>
             <Button 
               variant="outline"
               onClick={() => navigate('../help')}
@@ -338,6 +349,12 @@ const DisposableMenus = () => {
           refetch();
           setSelectedMenuIds([]);
         }}
+      />
+
+      <EncryptionMigrationTool
+        open={encryptionToolOpen}
+        onOpenChange={setEncryptionToolOpen}
+        tenantId={tenant?.id || ''}
       />
     </div>
   );
