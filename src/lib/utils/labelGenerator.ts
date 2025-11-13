@@ -19,7 +19,9 @@ export interface ProductLabelData {
   batchNumber?: string;
   thcPercent?: number;
   cbdPercent?: number;
-  price?: number;
+  price?: number; // Keep for backwards compatibility (wholesale)
+  retailPrice?: number; // NEW
+  availableQuantity?: number; // NEW
   sku: string;
   barcodeImageUrl?: string;
   barcodeValue?: string;
@@ -51,11 +53,19 @@ export async function generateProductLabelPDF(
       format: [width, height],
     });
 
-    // Font size mapping to match Tailwind classes
+    // Font size mapping to match Tailwind classes (fixed sizes, no scaling)
     const fontSizes = {
-      'text-base': size === 'small' ? 14 : 16,  // Product name
-      'text-sm': size === 'small' ? 12 : 14,    // Strain name
-      'text-xs': size === 'small' ? 10 : 12,    // SKU, labels, values
+      'text-base': 16,  // Fixed: 1rem = 16px
+      'text-sm': 14,     // Fixed: 0.875rem = 14px
+      'text-xs': 12,     // Fixed: 0.75rem = 12px
+    };
+
+    // Spacing mapping to match Tailwind spacing classes
+    const spacing = {
+      1: 4,   // mt-1, mb-1, gap-1
+      2: 8,   // gap-2
+      3: 12,  // pb-3, pt-3, space-y-3
+      4: 16,  // p-4, pt-4
     };
 
     const margin = 16; // Match preview padding
@@ -80,37 +90,38 @@ export async function generateProductLabelPDF(
     const nameLines = pdf.splitTextToSize(data.productName, contentWidth);
     nameLines.forEach((line: string) => {
       pdf.text(line, width / 2, currentY, { align: 'center' });
-      currentY += fontSizes['text-base'] + 2;
+      currentY += fontSizes['text-base'] + spacing[1]; // mt-1 = 4px
     });
-    currentY += 4;
+    currentY += spacing[1]; // Additional spacing after product name
 
     // Strain Name - text-sm font-medium text-primary (purple)
     if (data.strainName) {
       pdf.setFontSize(fontSizes['text-sm']);
       pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(147, 51, 234); // text-primary purple
+      pdf.setTextColor(147, 51, 234); // text-primary purple-600: rgb(147, 51, 234)
       pdf.text(data.strainName, width / 2, currentY, { align: 'center' });
-      currentY += fontSizes['text-sm'] + 4;
+      currentY += fontSizes['text-sm'] + spacing[1]; // mt-1 = 4px
     }
 
     // SKU - text-xs text-muted-foreground
     pdf.setFontSize(fontSizes['text-xs']);
     pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(113, 113, 122); // text-muted-foreground
+    pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
     pdf.text(`SKU: ${data.sku}`, width / 2, currentY, { align: 'center' });
-    currentY += fontSizes['text-xs'] + 12;
+    currentY += fontSizes['text-xs'] + spacing[3]; // pb-3 = 12px
 
     // Header bottom border
-    pdf.setDrawColor(228, 228, 231); // border-border
+    pdf.setDrawColor(228, 228, 231); // border-border zinc-200: rgb(228, 228, 231)
     pdf.setLineWidth(0.5);
     pdf.line(margin, currentY, width - margin, currentY);
-    currentY += 12;
+    currentY += spacing[3]; // Space after border = 12px
 
     // ============ PRODUCT DETAILS GRID (grid-cols-2 gap-2) ============
-    const leftX = margin + 4;
-    const rightX = width / 2 + 8;
+    const gridGap = spacing[2]; // gap-2 = 8px
+    const leftX = margin + 4; // Match p-4 from HTML preview
+    const rightX = width / 2 + gridGap / 2; // Center the gap
     const detailFontSize = fontSizes['text-xs'];
-    const lineHeight = detailFontSize + 6;
+    const lineHeight = detailFontSize + spacing[2]; // gap-2 = 8px
     let leftY = currentY;
     let rightY = currentY;
 
@@ -123,7 +134,7 @@ export async function generateProductLabelPDF(
       
       // Label in muted color
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(113, 113, 122);
+      pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
       pdf.text(label, x, y);
       
       // Value in foreground or custom color
@@ -154,30 +165,65 @@ export async function generateProductLabelPDF(
       addDetail('Batch:', data.batchNumber, 'right');
     }
     if (data.thcPercent !== null && data.thcPercent !== undefined) {
-      addDetail('THC:', `${data.thcPercent}%`, 'left', [22, 163, 74]); // green-600
+      addDetail('THC:', `${data.thcPercent}%`, 'left', [22, 163, 74]); // text-green-600: rgb(22, 163, 74)
     }
     if (data.cbdPercent !== null && data.cbdPercent !== undefined) {
-      addDetail('CBD:', `${data.cbdPercent}%`, 'right', [37, 99, 235]); // blue-600
+      addDetail('CBD:', `${data.cbdPercent}%`, 'right', [37, 99, 235]); // text-blue-600: rgb(37, 99, 235)
     }
     if (data.price !== undefined) {
       addDetail('Wholesale:', `$${data.price.toFixed(2)}`, 'left');
     }
+    // Match HTML preview: only show if truthy (not 0, null, or undefined)
+    if (data.retailPrice) {
+      addDetail('Retail:', `$${data.retailPrice.toFixed(2)}`, 'right');
+    }
+    if (data.availableQuantity !== null && data.availableQuantity !== undefined) {
+      // Full width (col-span-2), so add on left and sync both columns
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
+      pdf.text('In Stock:', leftX, Math.max(leftY, rightY));
+      const labelWidth = pdf.getTextWidth('In Stock:');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`${data.availableQuantity} units`, leftX + labelWidth + 3, Math.max(leftY, rightY));
+      const newY = Math.max(leftY, rightY) + lineHeight;
+      leftY = newY;
+      rightY = newY;
+    }
 
-    currentY = Math.max(leftY, rightY) + 12;
+    currentY = Math.max(leftY, rightY) + spacing[3]; // Space after details = 12px
+
+    // Check if content exceeds available space
+    const remainingSpace = height - currentY - margin;
+    const minSpaceForBarcode = 100; // Minimum space needed for barcode section
+
+    if (remainingSpace < minSpaceForBarcode) {
+      logger.warn('Label content overflow detected', {
+        currentY,
+        remainingSpace,
+        labelSize: size,
+        height,
+      });
+      
+      // For small/standard labels, skip QR code if space is tight
+      if (size === 'small' || (size === 'standard' && remainingSpace < 150)) {
+        // Will skip QR code later in code
+      }
+    }
 
     // ============ BARCODE & QR CODE SECTION (pt-4 border-t) ============
     // Top border
-    pdf.setDrawColor(228, 228, 231);
+    pdf.setDrawColor(228, 228, 231); // border-border zinc-200: rgb(228, 228, 231)
     pdf.setLineWidth(0.5);
     pdf.line(margin, currentY, width - margin, currentY);
-    currentY += 16;
+    currentY += spacing[4]; // pt-4 = 16px
 
     // "Barcode" label
     pdf.setFontSize(fontSizes['text-xs']);
     pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(113, 113, 122);
+    pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
     pdf.text('Barcode', width / 2, currentY, { align: 'center' });
-    currentY += fontSizes['text-xs'] + 8;
+    currentY += fontSizes['text-xs'] + spacing[2]; // mb-2 = 8px
 
     // Generate barcode with multiple fallbacks
     const barcodeValue = data.barcodeValue || data.sku || `PROD-${Date.now().toString().slice(-8)}`;
@@ -221,9 +267,11 @@ export async function generateProductLabelPDF(
         throw new Error('Invalid barcode data URL - does not start with data:image');
       }
       
-      // Match preview max-w-[300px] scaled to PDF
-      const barcodeMaxWidth = Math.min(300 * (width / 384), contentWidth - 40);
-      const barcodeHeight = 60; // Match preview maxHeight: '60px'
+      // Barcode: 300px HTML → 225pt PDF (300 * 72/96 = 225)
+      // But ensure it fits within content width (with 40pt margin for padding)
+      const idealBarcodeWidth = 225; // Ideal size: 300px HTML → 225pt PDF
+      const barcodeMaxWidth = Math.min(idealBarcodeWidth, contentWidth - 40);
+      const barcodeHeight = 45; // 60px HTML → 45pt PDF (60 * 72/96)
       const barcodeX = (width - barcodeMaxWidth) / 2;
       
       // White background
@@ -231,7 +279,7 @@ export async function generateProductLabelPDF(
       pdf.rect(barcodeX - 8, currentY - 8, barcodeMaxWidth + 16, barcodeHeight + 16, 'F');
       
       pdf.addImage(barcodeDataUrl, 'PNG', barcodeX, currentY, barcodeMaxWidth, barcodeHeight);
-      currentY += barcodeHeight + 16;
+      currentY += barcodeHeight + spacing[4]; // Space after barcode = 16px (p-4)
       
       logger.info('Barcode added to PDF successfully', {
         barcodeX,
@@ -253,14 +301,14 @@ export async function generateProductLabelPDF(
 
     // QR Code (only for non-small labels)
     if (size !== 'small') {
-      currentY += 8;
+      currentY += spacing[2]; // Space before QR = 8px
       
       // "Quick Scan" label
       pdf.setFontSize(fontSizes['text-xs']);
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(113, 113, 122);
+      pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
       pdf.text('Quick Scan', width / 2, currentY, { align: 'center' });
-      currentY += fontSizes['text-xs'] + 8;
+      currentY += fontSizes['text-xs'] + spacing[2]; // mb-2 = 8px
 
       try {
         logger.info('Generating QR code for PDF', { sku: data.sku });
@@ -275,7 +323,7 @@ export async function generateProductLabelPDF(
           batch: data.batchNumber,
         });
         
-        const qrSize = 64; // Match preview size={64}
+        const qrSize = 48; // 64px HTML → 48pt PDF (64 * 72/96)
         const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
           width: qrSize,
           margin: 0,
@@ -293,13 +341,13 @@ export async function generateProductLabelPDF(
         pdf.rect(qrX - 8, currentY - 8, qrSize + 16, qrSize + 16, 'F');
         
         pdf.addImage(qrCodeDataUrl, 'PNG', qrX, currentY, qrSize, qrSize);
-        currentY += qrSize + 8;
+        currentY += qrSize + spacing[2]; // Space after QR = 8px
 
         // "Product Details" label
         pdf.setFontSize(fontSizes['text-xs']);
-        pdf.setTextColor(113, 113, 122);
+        pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
         pdf.text('Product Details', width / 2, currentY, { align: 'center' });
-        currentY += fontSizes['text-xs'] + 12;
+        currentY += fontSizes['text-xs'] + spacing[3]; // mt-3 = 12px
         
         logger.info('QR code added to PDF successfully');
       } catch (error) {
@@ -312,17 +360,17 @@ export async function generateProductLabelPDF(
 
     // ============ COMPLIANCE INFO (large/sheet only, pt-3 border-t) ============
     if (size === 'large' || size === 'sheet') {
-      currentY += 8;
+      currentY += spacing[2]; // Space before compliance = 8px
       
       // Top border
-      pdf.setDrawColor(228, 228, 231);
+      pdf.setDrawColor(228, 228, 231); // border-border zinc-200: rgb(228, 228, 231)
       pdf.setLineWidth(0.5);
       pdf.line(margin, currentY, width - margin, currentY);
-      currentY += 12;
+      currentY += spacing[3]; // Space after border = 12px
 
       pdf.setFontSize(fontSizes['text-xs']);
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(113, 113, 122);
+      pdf.setTextColor(113, 113, 122); // text-muted-foreground zinc-500: rgb(113, 113, 122)
       
       const warnings = [
         '⚠️ For adult use only (21+)',
@@ -332,7 +380,7 @@ export async function generateProductLabelPDF(
       
       warnings.forEach(warning => {
         pdf.text(warning, leftX, currentY);
-        currentY += fontSizes['text-xs'] + 4;
+        currentY += fontSizes['text-xs'] + spacing[1]; // space-y-1 = 4px
       });
     }
 

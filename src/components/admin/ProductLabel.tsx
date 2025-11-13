@@ -62,7 +62,9 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     batchNumber: product.batch_number || undefined,
     thcPercent: product.thc_percent || undefined,
     cbdPercent: product.cbd_percent || undefined,
-    price: product.wholesale_price || product.retail_price || undefined,
+    price: product.wholesale_price || undefined, // Keep for backwards compatibility
+    retailPrice: product.retail_price || undefined, // NEW
+    availableQuantity: product.available_quantity ?? undefined, // NEW
     sku: product.sku || '',
     barcodeImageUrl: product.barcode_image_url || undefined,
     barcodeValue: (product.barcode as string) || product.sku || '',
