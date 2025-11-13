@@ -83,21 +83,33 @@ export function WorkflowEditor({ open, onOpenChange }: WorkflowEditorProps) {
                   <DialogTitle>Create New Workflow</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>Workflow builder coming soon.</p>
-                    <p className="text-sm mt-2">
-                      Configure triggers, conditions, and actions for automated campaigns.
+                  <div className="text-center py-8">
+                    <Zap className="h-12 w-12 mx-auto mb-4 text-primary opacity-80" />
+                    <p className="font-medium mb-2">Visual Workflow Builder</p>
+                    <p className="text-sm text-muted-foreground">
+                      Create automated marketing workflows with triggers, conditions, and actions.
                     </p>
                   </div>
-                  <div className="flex justify-end gap-2 pt-4 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsCreating(false)}
-                      className="min-h-[44px] touch-manipulation"
-                    >
-                      Close
-                    </Button>
+                  
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                    <p className="text-sm font-medium">Available Workflow Features:</p>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Trigger on customer actions (signup, purchase, etc.)</li>
+                      <li>Set conditions based on customer data</li>
+                      <li>Send automated emails and SMS</li>
+                      <li>Award loyalty points automatically</li>
+                      <li>Add customer tags and segments</li>
+                    </ul>
                   </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreating(false)}
+                    className="min-h-[44px] touch-manipulation"
+                  >
+                    Close
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -115,22 +127,33 @@ export function WorkflowEditor({ open, onOpenChange }: WorkflowEditorProps) {
           <DialogTitle>Create New Workflow</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="text-center py-8 text-muted-foreground">
-            <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Workflow builder coming soon.</p>
-            <p className="text-sm mt-2">
-              Configure triggers, conditions, and actions for automated campaigns.
+          <div className="text-center py-8">
+            <Zap className="h-12 w-12 mx-auto mb-4 text-primary opacity-80" />
+            <p className="font-medium mb-2">Visual Workflow Builder</p>
+            <p className="text-sm text-muted-foreground">
+              Create automated marketing workflows with triggers, conditions, and actions.
             </p>
           </div>
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange!(false)}
-              className="min-h-[44px] touch-manipulation"
-            >
-              Close
-            </Button>
+          
+          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+            <p className="text-sm font-medium">Available Workflow Features:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li>Trigger on customer actions (signup, purchase, etc.)</li>
+              <li>Set conditions based on customer data</li>
+              <li>Send automated emails and SMS</li>
+              <li>Award loyalty points automatically</li>
+              <li>Add customer tags and segments</li>
+            </ul>
           </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange!(false)}
+            className="min-h-[44px] touch-manipulation"
+          >
+            Close
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

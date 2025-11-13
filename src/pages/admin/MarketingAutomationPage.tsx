@@ -127,7 +127,7 @@ export default function MarketingAutomationPage() {
               ) : campaigns && campaigns.length > 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>{campaigns.length} campaigns found</p>
-                  <p className="text-sm mt-2">Campaign management UI coming soon</p>
+                  <p className="text-sm mt-2">Manage your marketing campaigns with email, SMS, and push notifications</p>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">

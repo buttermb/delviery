@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ArrowLeft, MessageSquare } from "lucide-react";
+import { TicketComments } from "./TicketComments";
 
 interface Ticket {
   id: string;
@@ -101,13 +102,7 @@ export function TicketDetail({ ticket, onBack, onUpdate }: TicketDetailProps) {
             </div>
           </div>
 
-          <div className="pt-4 border-t">
-            <h3 className="text-sm font-medium mb-2">Comments</h3>
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Comments feature coming soon</p>
-            </div>
-          </div>
+          <TicketComments ticketId={ticket.id} />
         </CardContent>
       </Card>
     </div>

@@ -518,7 +518,18 @@ export default function CustomerDetails() {
                   <Button 
                     variant="outline"
                     onClick={() => {
-                      toast.info("Store credit feature coming soon");
+                      const amount = prompt("Enter store credit amount:");
+                      if (amount && !isNaN(parseFloat(amount))) {
+                        supabase.from('customer_credits').insert({
+                          tenant_id: tenant?.id,
+                          customer_id: id,
+                          amount: parseFloat(amount),
+                          transaction_type: 'issued',
+                          reason: 'Manual credit issued by admin'
+                        }).then(() => {
+                          toast.success(`$${amount} store credit added`);
+                        });
+                      }
                     }}
                   >
                     Add Store Credit

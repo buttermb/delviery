@@ -200,7 +200,7 @@ export function ReportBuilder({
           </div>
 
           <div className="text-sm text-muted-foreground pt-4 border-t">
-            <p>Advanced report builder with drag-and-drop fields coming soon.</p>
+            <p>Configure your report parameters above and click "Create Report" to generate your custom report.</p>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">

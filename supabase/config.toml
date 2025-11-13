@@ -71,3 +71,15 @@ verify_jwt = true
 
 [functions.send-notification]
 verify_jwt = true
+
+[functions.redeem-loyalty-reward]
+verify_jwt = true
+
+[functions.send-marketing-campaign]
+verify_jwt = true
+
+[functions.execute-marketing-workflow]
+verify_jwt = true
+
+[functions.generate-custom-report]
+verify_jwt = true
