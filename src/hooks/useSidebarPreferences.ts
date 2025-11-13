@@ -36,7 +36,7 @@ export function useSidebarPreferences() {
     queryFn: async (): Promise<SidebarPreferences> => {
       if (!tenant?.id || !admin?.id) return DEFAULT_PREFERENCES;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -54,12 +54,12 @@ export function useSidebarPreferences() {
 
       // Parse JSONB fields with safe defaults
       return {
-        operationSize: data.operation_size as SidebarPreferences['operationSize'],
-        customLayout: data.custom_layout || false,
-        favorites: (data.favorites as string[]) || [],
-        collapsedSections: (data.collapsed_sections as string[]) || [],
-        pinnedItems: (data.pinned_items as string[]) || [],
-        lastAccessedFeatures: (data.last_accessed_features as SidebarPreferences['lastAccessedFeatures']) || [],
+        operationSize: (data as any).operation_size as SidebarPreferences['operationSize'],
+        customLayout: (data as any).custom_layout || false,
+        favorites: ((data as any).favorites as string[]) || [],
+        collapsedSections: ((data as any).collapsed_sections as string[]) || [],
+        pinnedItems: ((data as any).pinned_items as string[]) || [],
+        lastAccessedFeatures: ((data as any).last_accessed_features as SidebarPreferences['lastAccessedFeatures']) || [],
       };
     },
     enabled: !!tenant?.id && !!admin?.id,
@@ -77,7 +77,7 @@ export function useSidebarPreferences() {
         ...updates,
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,

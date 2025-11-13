@@ -63,7 +63,7 @@ export function useOperationSize() {
     queryFn: async () => {
       if (!tenant?.id || !admin?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('operation_size')
         .eq('tenant_id', tenant.id)
@@ -75,7 +75,7 @@ export function useOperationSize() {
         return null;
       }
 
-      return data;
+      return data as any;
     },
     enabled: !!tenant?.id && !!admin?.id,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -103,8 +103,7 @@ export function useOperationSize() {
     mutationFn: async (size: OperationSize) => {
       if (!tenant?.id || !admin?.id) throw new Error('Tenant and admin required');
 
-      // Upsert preference
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
@@ -129,7 +128,7 @@ export function useOperationSize() {
     mutationFn: async () => {
       if (!tenant?.id || !admin?.id) throw new Error('Tenant and admin required');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .update({ operation_size: null })
         .eq('tenant_id', tenant.id)

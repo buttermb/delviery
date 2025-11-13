@@ -24,7 +24,7 @@ export function useFeatureTracking() {
 
       try {
         // Upsert feature usage directly to table
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('feature_usage_tracking')
           .upsert({
             tenant_id: tenant.id,
