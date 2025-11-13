@@ -96,7 +96,7 @@ export function useSidebarPreferences() {
         ...updates,
       };
 
-      const { error } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
@@ -119,45 +119,35 @@ export function useSidebarPreferences() {
         });
 
       if (error) throw error;
+      
+      // Return the updated data for later use
+      return updated;
     },
-    onMutate: async (updates) => {
-      // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
-
-      // Snapshot previous value
-      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.id]);
-
-      // Optimistically update
+    onSuccess: async (updatedData) => {
+      // Directly set the cache to the confirmed data
       queryClient.setQueryData<SidebarPreferences>(
         ['sidebar-preferences', tenant?.id, admin?.id],
-        (old) => ({
-          ...(old || DEFAULT_PREFERENCES),
-          ...updates,
-        })
+        updatedData
       );
-
-      return { previous };
-    },
-    onError: (error: unknown, variables, context) => {
-      // Rollback on error
-      if (context?.previous) {
-        queryClient.setQueryData(
-          ['sidebar-preferences', tenant?.id, admin?.id],
-          context.previous
-        );
-      }
-      logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });
-      toast.error('Failed to save preferences');
-    },
-    onSuccess: async () => {
-      // Wait for database write to complete before invalidating
-      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Invalidate all related queries
-      await queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+      // Wait a bit longer for database consistency
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Invalidate related queries
       await queryClient.invalidateQueries({ queryKey: ['sidebar-config'] });
     },
+    onError: (error: unknown) => {
+      logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });
+      toast.error('Failed to save preferences');
+      
+      // Refetch to get correct state
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+    },
   });
+
+  const updatePreferences = async (updates: Partial<SidebarPreferences>): Promise<void> => {
+    await updatePreferencesMutation.mutateAsync(updates);
+  };
 
   // Toggle favorite mutation
   const toggleFavoriteMutation = useMutation({
@@ -266,7 +256,7 @@ export function useSidebarPreferences() {
   return {
     preferences: preferences || DEFAULT_PREFERENCES,
     isLoading,
-    updatePreferences: updatePreferencesMutation.mutateAsync,
+    updatePreferences,
     toggleFavorite: toggleFavoriteMutation.mutate,
     toggleCollapsedSection: toggleCollapsedSectionMutation.mutate,
     trackFeatureAccess,
