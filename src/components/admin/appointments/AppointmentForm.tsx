@@ -86,7 +86,7 @@ export function AppointmentForm({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
       toast.success("Appointment created successfully");
       onOpenChange(false);
       onSuccess?.();

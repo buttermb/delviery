@@ -41,7 +41,7 @@ export default function AppointmentSchedulerPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const { data: appointments, isLoading } = useQuery({
-    queryKey: queryKeys.appointments.all(),
+    queryKey: queryKeys.appointments.lists(),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -142,7 +142,7 @@ export default function AppointmentSchedulerPage() {
           onOpenChange={setIsFormOpen}
           selectedDate={selectedDate}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.appointments.lists() });
             setIsFormOpen(false);
             setSelectedDate(null);
           }}

@@ -41,7 +41,7 @@ export default function BatchRecallPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
   const { data: recalls, isLoading } = useQuery({
-    queryKey: queryKeys.recall.all(),
+    queryKey: queryKeys.recall.lists(),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -108,7 +108,7 @@ export default function BatchRecallPage() {
               recall={selectedRecall}
               onBack={() => setSelectedRecall(null)}
               onUpdate={() => {
-                queryClient.invalidateQueries({ queryKey: queryKeys.recall.all() });
+                queryClient.invalidateQueries({ queryKey: queryKeys.recall.lists() });
                 setSelectedRecall(null);
               }}
             />
@@ -136,7 +136,7 @@ export default function BatchRecallPage() {
           onOpenChange={setIsFormOpen}
           recall={selectedRecall}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.recall.all() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.recall.lists() });
             setIsFormOpen(false);
             setSelectedRecall(null);
           }}

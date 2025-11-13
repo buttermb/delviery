@@ -109,7 +109,7 @@ export function RecallForm({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.recall.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recall.lists() });
       toast.success(recall ? "Recall updated successfully" : "Recall created successfully");
       onOpenChange(false);
       onSuccess?.();
