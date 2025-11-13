@@ -31,6 +31,16 @@ export function useSidebarConfig() {
   const { currentTier, canAccess } = useFeatureAccess();
   const { tenant } = useTenantAdminAuth();
 
+  // Safe defaults for preferences
+  const safePreferences = preferences || {
+    operationSize: null,
+    customLayout: false,
+    favorites: [],
+    collapsedSections: [],
+    pinnedItems: [],
+    lastAccessedFeatures: [],
+  };
+
   // Get base config for operation size
   const baseConfig = useMemo(() => {
     return getSidebarConfig(operationSize);
@@ -78,12 +88,12 @@ export function useSidebarConfig() {
 
   // Add favorites section if user has favorites
   const configWithFavorites = useMemo(() => {
-    if (preferences.favorites.length === 0) return configWithHotItems;
+    if (!safePreferences.favorites || safePreferences.favorites.length === 0) return configWithHotItems;
 
     // Find favorite items from all sections
     const favoriteItems = configWithHotItems
       .flatMap(section => section.items)
-      .filter(item => preferences.favorites.includes(item.id));
+      .filter(item => safePreferences.favorites.includes(item.id));
 
     if (favoriteItems.length === 0) return configWithHotItems;
 
@@ -96,13 +106,13 @@ export function useSidebarConfig() {
       },
       ...configWithHotItems,
     ];
-  }, [configWithHotItems, preferences.favorites]);
+  }, [configWithHotItems, safePreferences.favorites]);
 
   // Apply user preferences (collapsed sections, pinned items)
   const finalConfig = useMemo(() => {
     return configWithFavorites.map(section => {
       // Check if section should be collapsed based on preferences
-      const isCollapsed = preferences.collapsedSections.includes(section.section);
+      const isCollapsed = safePreferences.collapsedSections?.includes(section.section) || false;
 
       return {
         ...section,
@@ -110,7 +120,7 @@ export function useSidebarConfig() {
         defaultExpanded: section.pinned ? true : !isCollapsed,
       };
     });
-  }, [configWithFavorites, preferences.collapsedSections]);
+  }, [configWithFavorites, safePreferences.collapsedSections]);
 
   return {
     sidebarConfig: finalConfig,
@@ -118,7 +128,7 @@ export function useSidebarConfig() {
     detectedSize,
     isAutoDetected,
     hotItems,
-    favorites: preferences.favorites,
+    favorites: safePreferences.favorites,
   };
 }
 
