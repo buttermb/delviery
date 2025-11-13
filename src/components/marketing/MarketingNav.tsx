@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FloraIQLogo from "@/components/FloraIQLogo";
 
 export function MarketingNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,8 +45,8 @@ export function MarketingNav() {
           transition={{ duration: 0.3 }}
         >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-[hsl(var(--marketing-text))]">
-          Dev<span className="text-[hsl(var(--marketing-primary))]">Panel</span>
+        <Link to="/" className="flex items-center">
+          <FloraIQLogo size="lg" />
         </Link>
         
         {/* Desktop Navigation */}

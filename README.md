@@ -1,4 +1,4 @@
-# 🚀 Premium Delivery Platform - Complete E-Commerce & SAAS Solution
+# 🚀 FloraIQ - Smart Cannabis Operations Platform
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/buttermb/delviery?utm_source=oss&utm_medium=github&utm_campaign=buttermb%2Fdelviery&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 

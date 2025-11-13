@@ -1,3 +1,5 @@
+import FloraIQLogo from '@/components/FloraIQLogo';
+
 export default function LuxuryFooter() {
   return (
     <footer className="bg-black border-t border-white/5">
@@ -11,19 +13,13 @@ export default function LuxuryFooter() {
             
             {/* Logo + tagline */}
             <div className="mb-8 md:mb-0">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">P</span>
-                </div>
-                <div className="flex flex-col -space-y-1">
-                  <span className="text-white font-light text-base tracking-wider">Premium</span>
-                  <span className="text-white/30 text-[10px] font-light tracking-widest uppercase">Delivery</span>
-                </div>
+              <div className="mb-4">
+                <FloraIQLogo size="xl" className="text-white" />
               </div>
               <p className="text-white/40 text-sm font-light max-w-sm leading-relaxed">
-                Premium products from licensed cultivators.
+                Smart cannabis operations platform.
                 <br />
-                Lab-tested. Fast delivery.
+                Premium products from licensed cultivators. Lab-tested. Fast delivery.
               </p>
             </div>
             
@@ -148,10 +144,10 @@ export default function LuxuryFooter() {
           {/* Bottom bar */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/30 text-xs font-light">
-              © 2025 Premium Delivery Platform. All rights reserved.
+              © 2025 FloraIQ. All rights reserved.
             </p>
             <p className="text-white/20 text-[10px] font-light tracking-widest uppercase">
-              Premium Delivery Service
+              Smart Cannabis Operations
             </p>
           </div>
           
