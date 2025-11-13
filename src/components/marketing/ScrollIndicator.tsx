@@ -11,7 +11,7 @@ export function ScrollIndicator() {
 
   return (
     <motion.div
-      className="absolute bottom-8 left-1/2 transform -translate-x-1/2 cursor-pointer"
+      className="absolute bottom-8 left-0 right-0 flex justify-center cursor-pointer z-20"
       onClick={scrollToNext}
       animate={{ y: [0, 10, 0] }}
       transition={{ duration: 2, repeat: Infinity }}
