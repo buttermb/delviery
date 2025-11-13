@@ -463,7 +463,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
               <div className="space-y-2">
                 <Label>Supplier</Label>
                 <div className="p-3 bg-muted rounded-lg">
-                  {vendors?.find((v: any) => v.id === formData.vendor_id)?.name || "Not selected"}
+                  {vendors?.find((v: { id: string; name: string }) => v.id === formData.vendor_id)?.name || "Not selected"}
                 </div>
               </div>
 

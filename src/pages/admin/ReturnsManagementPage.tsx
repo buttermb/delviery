@@ -94,34 +94,23 @@ export default function ReturnsManagementPage() {
   const { data: returns, isLoading } = useQuery({
     queryKey: queryKeys.returns.list({ status: statusFilter }),
     queryFn: async () => {
-      // Try to query returns table, fallback to empty array if it doesn't exist
-      try {
-        let query = supabase
-          .from("returns")
-          .select("*")
-          .order("created_at", { ascending: false });
+      let query = supabase
+        .from("return_authorizations")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-        if (statusFilter !== "all") {
-          query = query.eq("status", statusFilter);
-        }
+      if (statusFilter !== "all") {
+        query = query.eq("status", statusFilter);
+      }
 
-        const { data, error } = await query;
+      const { data, error } = await query;
         
-        if (error && error.code === "42P01") {
-          // Table doesn't exist yet
-          return [];
-        }
-        
-        if (error) {
-          logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
-          return [];
-        }
-
-        return (data || []) as ReturnAuthorization[];
-      } catch (error) {
-        logger.error('Error fetching returns', error, { component: 'ReturnsManagementPage' });
+      if (error) {
+        logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
         return [];
       }
+
+      return (data || []) as ReturnAuthorization[];
     },
   });
 

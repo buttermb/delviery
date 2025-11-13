@@ -140,14 +140,8 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      try {
-        const { error } = await supabase.from("returns").insert([data]);
-        if (error && error.code !== "42P01") throw error;
-      } catch (error: any) {
-        if (error.code !== "42P01") throw error;
-        // Table doesn't exist - this is expected for now
-        logger.warn('Returns table does not exist yet', { component: 'RACreateForm' });
-      }
+      const { error } = await supabase.from("return_authorizations").insert([data]);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.returns.lists() });
