@@ -332,7 +332,7 @@ export const dashboardViews = {
   },
   menus: {
     title: 'OPSEC Menu Analytics',
-    description: 'Encrypted disposable menus with security insights',
+    description: 'AES-256 encrypted disposable menus with security insights',
     preview: <DisposableMenusPreview />
   }
 };

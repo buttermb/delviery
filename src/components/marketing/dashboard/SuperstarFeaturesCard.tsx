@@ -85,7 +85,7 @@ export function SuperstarFeaturesCard({ onViewChange }: SuperstarFeaturesCardPro
                 </div>
               </div>
               <p className="text-[9px] text-muted-foreground mb-1">
-                Encrypted, disposable product catalogs
+                AES-256 encrypted, disposable catalogs
               </p>
             </div>
           </div>

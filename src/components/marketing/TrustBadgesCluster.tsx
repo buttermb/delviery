@@ -22,8 +22,8 @@ const badges: TrustBadge[] = [
   },
   {
     icon: LockKeyIcon,
-    label: 'Encrypted Infrastructure',
-    description: 'End-to-end',
+    label: 'AES-256 Encryption',
+    description: 'At Rest',
   },
   {
     icon: CheckCircleIcon,

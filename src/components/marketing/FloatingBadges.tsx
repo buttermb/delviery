@@ -4,7 +4,7 @@ import { Shield, CheckCircle, Lock } from "lucide-react";
 const badges = [
   {
     icon: Shield,
-    text: "Bank-Level Security",
+    text: "AES-256 Encrypted",
     delay: 0,
   },
   {
