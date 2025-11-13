@@ -100,10 +100,31 @@ export function DocumentDetail({
           )}
 
           <div className="pt-4 border-t">
-            <h3 className="text-sm font-medium mb-2">Audit Trail</h3>
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Audit trail coming soon</p>
+            <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Audit Trail
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <div className="w-2 h-2 rounded-full bg-primary mt-1.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Document Uploaded</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(document.created_at), "MMM d, yyyy 'at' h:mm a")}
+                  </p>
+                </div>
+              </div>
+              {document.status === "expired" && (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10">
+                  <div className="w-2 h-2 rounded-full bg-destructive mt-1.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Document Expired</p>
+                    <p className="text-xs text-muted-foreground">
+                      {document.expiration_date && format(new Date(document.expiration_date), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
