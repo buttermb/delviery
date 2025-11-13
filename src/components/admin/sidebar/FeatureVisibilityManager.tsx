@@ -92,7 +92,7 @@ export function FeatureVisibilityManager() {
                     {section.items.map((item) => {
                       const visible = isFeatureVisible(item.id);
                       const hasAccess = item.featureId ? canAccess(item.featureId as any) : true;
-                      const isEssential = ['dashboard', 'settings'].includes(item.id);
+                      const isEssential = ['dashboard', 'settings', 'billing'].includes(item.id);
 
                       return (
                         <div

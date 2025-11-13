@@ -133,6 +133,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     section: '⚙️ Settings',
     collapsed: true,
     items: [
+      createItem('billing', 'Billing', '/admin/billing', CreditCard),
       createItem('settings', 'My Profile', '/admin/settings', User),
     ],
   },
@@ -197,6 +198,7 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
     section: '⚙️ Settings',
     collapsed: true,
     items: [
+      createItem('billing', 'Subscription', '/admin/billing', CreditCard),
       createItem('team-members', 'Team', '/admin/staff-management', Users),
       createItem('settings', 'Business Info', '/admin/settings', Building),
     ],
@@ -313,6 +315,7 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
     section: '⚙️ Settings',
     collapsed: true,
     items: [
+      createItem('billing', 'Billing & Plans', '/admin/billing', CreditCard),
       createItem('settings', 'Business Settings', '/admin/settings', Settings),
       createItem('notifications', 'Notifications', '/admin/notifications', Bell),
       createItem('custom-integrations', 'Integrations', '/admin/custom-integrations', Zap),

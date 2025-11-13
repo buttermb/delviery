@@ -20,7 +20,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'Stripe',
     description: 'Payment processing and subscriptions',
     icon: CreditCard,
-    featuresEnabled: ['billing', 'subscriptions', 'payment-links', 'invoices'],
+    featuresEnabled: ['subscriptions', 'payment-links', 'invoices'],
     setupUrl: '/admin/settings?tab=integrations&setup=stripe',
     connected: false, // Check if Stripe is configured
   },
