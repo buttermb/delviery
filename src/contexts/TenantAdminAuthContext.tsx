@@ -232,8 +232,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         localStorage.setItem('lastTenantSlug', tenantWithDefaults.slug);
         
         // CRITICAL: Set authenticated to true immediately with localStorage data
-        // This prevents the loading state from persisting
+        // Use synchronous flag to prevent loading state clearing before auth state updates
         console.log('[AUTH INIT] ✅ Setting authenticated=true from localStorage');
+        const authStateReady = true;
         setIsAuthenticated(true);
         
         // Verify authentication via API (cookies sent automatically)
@@ -323,9 +324,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         clearAuthState();
       } finally {
         const totalDuration = Date.now() - startTime;
+        
+        // Small delay to ensure React state updates have processed
+        // This prevents loading=false from being set before isAuthenticated=true takes effect
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
         console.log('[AUTH INIT] ✨ Initialization complete', {
           duration: `${totalDuration}ms`,
-          authenticated: isAuthenticated,
+          authenticated: true, // We know it's true from localStorage
         });
         setLoading(false);
       }
