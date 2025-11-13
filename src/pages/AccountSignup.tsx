@@ -552,7 +552,7 @@ export default function AccountSignup() {
                         required
                       />
                       <span className="px-3 py-2 bg-[hsl(var(--marketing-bg-subtle))] border border-l-0 border-[hsl(var(--marketing-border))] rounded-r-md text-[hsl(var(--marketing-text-light))]">
-                        .devpanel.com
+                        .floraiq.com
                       </span>
                     </div>
                     <p className="text-xs text-[hsl(var(--marketing-text-light))] mt-1">

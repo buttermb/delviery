@@ -66,7 +66,7 @@ export function AnimatedHowItWorks() {
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              How DevPanel Works
+              How FloraIQ Works
             </h2>
             <p className="text-xl text-muted-foreground">
               Get started in minutes, not months

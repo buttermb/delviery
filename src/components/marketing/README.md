@@ -1,6 +1,6 @@
 # Marketing Components
 
-This directory contains all marketing site components for the DevPanel marketing homepage.
+This directory contains all marketing site components for the FloraIQ marketing homepage.
 
 ## Component Overview
 
@@ -51,7 +51,7 @@ Before/after comparison of pain points vs solutions.
 - Features: Side-by-side comparison, animated reveals
 
 #### **ComparisonSection.tsx**
-Feature comparison table (DevPanel vs Competitors vs Spreadsheets).
+Feature comparison table (FloraIQ vs Competitors vs Spreadsheets).
 - Features: Desktop table, mobile cards, interactive toggles
 
 #### **IntegrationEcosystem.tsx**

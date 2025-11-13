@@ -48,7 +48,7 @@ export function CustomerSuccessTimeline() {
           Customer Success Journey
         </h3>
         <p className="text-muted-foreground text-lg">
-          See how businesses grow with DevPanel
+          See how businesses grow with FloraIQ
         </p>
       </div>
       
