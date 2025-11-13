@@ -60,11 +60,11 @@ export function DisposableMenusPreview() {
           >
             <Shield className="h-4 w-4 text-primary" />
           </motion.div>
-          <span className="text-xs font-semibold text-primary">ENCRYPTED & SECURE</span>
+          <span className="text-xs font-semibold text-primary">AES-256 ENCRYPTED</span>
         </div>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <Lock className="h-3 w-3" />
-          <span>End-to-End Protected</span>
+          <span>Bank-Level Security</span>
         </div>
       </motion.div>
 

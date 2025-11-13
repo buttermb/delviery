@@ -158,17 +158,19 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         : null;
 
       await createMenu.mutateAsync({
+        tenant_id: tenant?.id || '',
         name,
         description,
         product_ids: selectedProducts,
         min_order_quantity: parseFloat(minOrder),
         max_order_quantity: parseFloat(maxOrder),
+        access_code: requireAccessCode ? accessCode : generateAccessCode(),
+        expiration_date: expirationDate || undefined,
+        never_expires: !expirationDate,
         security_settings: {
           access_type: accessType,
           require_access_code: requireAccessCode,
-          access_code: requireAccessCode ? accessCode : undefined,
           password_protection: requirePassword ? password : undefined,
-          expiration_date: expirationDate,
           burn_after_read: burnAfterRead,
           max_views: maxViews !== 'unlimited' ? parseInt(maxViews) : undefined,
         },

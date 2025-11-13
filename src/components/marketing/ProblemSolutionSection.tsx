@@ -41,7 +41,7 @@ const solutions: Solution[] = [
   { icon: Sparkles, text: 'Automation saves 15hrs/week' },
   { icon: RefreshCw, text: 'Real-time updates across devices' },
   { icon: Target, text: 'Streamlined order processing' },
-  { icon: ShieldCheck, text: 'Bank-level encryption & security' },
+  { icon: ShieldCheck, text: 'AES-256 encryption & security' },
   { icon: BarChart3, text: 'Powerful analytics & insights' },
 ];
 

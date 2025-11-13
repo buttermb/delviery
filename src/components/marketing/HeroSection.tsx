@@ -106,7 +106,7 @@ export function HeroSection() {
               <AnimatedIcon animation="glow" hover size={20} color="currentColor">
                 <CheckCircleIcon weight="fill" className="h-5 w-5" />
               </AnimatedIcon>
-              <span>Disposable Encrypted Menus</span>
+              <span>AES-256 Encrypted Menus</span>
             </div>
             <div className="flex items-center gap-2">
               <AnimatedIcon animation="glow" hover size={20} color="currentColor">

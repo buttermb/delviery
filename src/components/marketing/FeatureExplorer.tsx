@@ -91,10 +91,10 @@ const features: Feature[] = [
   {
     id: 'menus',
     title: 'Disposable Menus',
-    description: 'Secure, encrypted menus for wholesale clients with expiration and access controls',
+    description: 'AES-256 encrypted menus for wholesale clients with expiration and access controls',
     icon: Lock,
     benefits: [
-      'End-to-end encryption',
+      'AES-256 encryption at rest',
       'Auto-expiration',
       'Access tracking',
       'QR code sharing',

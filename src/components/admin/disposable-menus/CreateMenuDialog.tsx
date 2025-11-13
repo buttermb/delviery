@@ -145,15 +145,16 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
     try {
       const result = await createMenu.mutateAsync({
+        tenant_id: tenant?.id || '',
         name,
         description,
         product_ids: selectedProducts,
         min_order_quantity: parseFloat(minOrder),
         max_order_quantity: parseFloat(maxOrder),
+        access_code: requireAccessCode ? accessCode : generateAccessCode(),
         security_settings: {
           access_type: accessType,
           require_access_code: requireAccessCode,
-          access_code: requireAccessCode ? accessCode : null,
           require_geofence: requireGeofence,
           geofence_radius: requireGeofence ? parseFloat(geofenceRadius) : null,
           geofence_location: requireGeofence ? geofenceLocation : null,

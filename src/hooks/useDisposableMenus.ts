@@ -46,14 +46,39 @@ export const useCreateDisposableMenu = () => {
       min_order_quantity?: number;
       max_order_quantity?: number;
       custom_prices?: Record<string, number>;
+      access_code: string;
+      tenant_id: string;
+      expiration_date?: string;
+      never_expires?: boolean;
     }) => {
-      const { data, error } = await supabase.functions.invoke('menu-generate', {
-        body: menuData
+      // Transform product_ids and custom_prices into products array
+      const products = menuData.product_ids.map(productId => ({
+        product_id: productId,
+        custom_price: menuData.custom_prices?.[productId],
+        display_availability: true,
+        display_order: 0,
+      }));
+
+      // Call the new encrypted menu creation edge function
+      const { data, error } = await supabase.functions.invoke('create-encrypted-menu', {
+        body: {
+          tenant_id: menuData.tenant_id,
+          name: menuData.name,
+          description: menuData.description,
+          security_settings: menuData.security_settings || {},
+          appearance_settings: menuData.appearance_settings || {},
+          min_order_quantity: menuData.min_order_quantity || 5,
+          max_order_quantity: menuData.max_order_quantity || 50,
+          access_code: menuData.access_code,
+          products,
+          expiration_date: menuData.expiration_date,
+          never_expires: menuData.never_expires ?? true,
+        }
       });
 
       if (error) throw error;
 
-      // Check for error in response body (some edge functions return 200 with error)
+      // Check for error in response body
       if (data && typeof data === 'object' && 'error' in data && data.error) {
         const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to create menu';
         throw new Error(errorMessage);
@@ -61,9 +86,12 @@ export const useCreateDisposableMenu = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      showSuccessToast('Menu Created', 'Encrypted menu generated successfully');
+      showSuccessToast(
+        'Menu Created & Encrypted', 
+        `AES-256 encrypted menu created successfully${data?.encrypted ? ' 🔐' : ''}`
+      );
     },
     onError: (error: unknown) => {
       logger.error('Menu creation error', error, { component: 'useDisposableMenus' });
