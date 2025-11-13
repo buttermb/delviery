@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Loader2, CheckCircle, AlertTriangle, Lock, Database } from 'lucide-react';
+import { Shield, Loader2, CheckCircle, AlertTriangle, Lock, Database, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -27,6 +27,7 @@ interface MenuStatus {
 export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: EncryptionMigrationToolProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [sendingReport, setSendingReport] = useState(false);
   const [menuStatuses, setMenuStatuses] = useState<MenuStatus[]>([]);
   const [progress, setProgress] = useState(0);
 
@@ -61,6 +62,26 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
       });
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    try {
+      setSendingReport(true);
+      const { data, error } = await supabase.functions.invoke('weekly-encryption-report');
+
+      if (error) throw error;
+
+      toast.success('Encryption report sent successfully', {
+        description: `Sent to ${data.reports_sent} tenant admin${data.reports_sent !== 1 ? 's' : ''}`,
+      });
+    } catch (error: any) {
+      logger.error('Report error', error, { component: 'EncryptionMigrationTool' });
+      toast.error('Failed to send report', {
+        description: error.message,
+      });
+    } finally {
+      setSendingReport(false);
     }
   };
 
@@ -299,6 +320,28 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
             </div>
           )}
 
+          {/* Weekly Reports Section */}
+          <div className="border-t pt-4 mt-4">
+            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
+              <Mail className="h-5 w-5 text-primary mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-medium text-sm mb-1">Weekly Encryption Reports</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Automated reports are sent every Monday to tenant admins with unencrypted menus.
+                  You can also trigger a manual report now.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSendReport}
+                  disabled={sendingReport}
+                >
+                  {sendingReport ? "Sending..." : "Send Report Now"}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Security Notice */}
           <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex gap-3">
@@ -311,6 +354,45 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={scanMenus}
+              disabled={isScanning || isMigrating}
+              className="flex-1"
+            >
+              {isScanning ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  <Database className="mr-2 h-4 w-4" />
+                  Scan Again
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={migrateMenus}
+              disabled={isScanning || isMigrating || menuStatuses.filter(m => !m.is_encrypted).length === 0}
+              className="flex-1"
+            >
+              {isMigrating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Encrypting...
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 h-4 w-4" />
+                  Encrypt All Unencrypted
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>
