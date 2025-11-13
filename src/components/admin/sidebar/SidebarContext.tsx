@@ -58,7 +58,7 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     resetToAuto,
     preferences,
     updatePreferences,
-    favorites: preferences.favorites,
+    favorites: Array.isArray(preferences?.favorites) ? preferences.favorites : [],
     toggleFavorite,
     toggleCollapsedSection,
     trackFeatureAccess,
