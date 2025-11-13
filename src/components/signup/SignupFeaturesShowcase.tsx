@@ -69,7 +69,7 @@ export function SignupFeaturesShowcase() {
             </div>
             <div className="space-y-1">
               <div className="flex items-baseline justify-center gap-2">
-                <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$99</span>
+                <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">$79</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
               <p className="text-sm text-muted-foreground">After trial ends</p>

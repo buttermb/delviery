@@ -20,7 +20,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
+import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, getFeatureCount, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
