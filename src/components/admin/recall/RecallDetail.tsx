@@ -2,7 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { ArrowLeft, FileText, Users } from "lucide-react";
+import { ArrowLeft, FileText, Users, Loader2, Send } from "lucide-react";
+import { useRecallActions } from "@/hooks/useRecallActions";
+import { useState } from "react";
 
 interface Recall {
   id: string;
@@ -21,6 +23,22 @@ interface RecallDetailProps {
 }
 
 export function RecallDetail({ recall, onBack, onUpdate }: RecallDetailProps) {
+  const { notifyRecall } = useRecallActions();
+  const [isNotifying, setIsNotifying] = useState(false);
+
+  const handleNotifyCustomers = async () => {
+    setIsNotifying(true);
+    try {
+      await notifyRecall.mutateAsync({
+        recall_id: recall.id,
+        notification_method: 'email'
+      });
+      onUpdate();
+    } finally {
+      setIsNotifying(false);
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
@@ -96,8 +114,17 @@ export function RecallDetail({ recall, onBack, onUpdate }: RecallDetailProps) {
                 <FileText className="h-4 w-4 mr-2" />
                 Generate Report
               </Button>
-              <Button variant="outline" className="min-h-[44px] touch-manipulation">
-                <Users className="h-4 w-4 mr-2" />
+              <Button 
+                variant="outline" 
+                className="min-h-[44px] touch-manipulation"
+                onClick={handleNotifyCustomers}
+                disabled={isNotifying || recall.status !== 'active'}
+              >
+                {isNotifying ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4 mr-2" />
+                )}
                 Notify Customers
               </Button>
             </div>
