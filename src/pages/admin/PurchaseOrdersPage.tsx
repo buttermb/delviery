@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +64,7 @@ const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 export default function PurchaseOrdersPage() {
   const { tenant } = useTenantAdminAuth();
-  const queryClient = useQueryClient();
+  const { deletePurchaseOrder, updatePurchaseOrderStatus } = usePurchaseOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -94,43 +95,8 @@ export default function PurchaseOrdersPage() {
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("purchase_orders")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
-      toast.success("Purchase order deleted successfully");
-    },
-    onError: (error: unknown) => {
-      logger.error('Failed to delete purchase order', error, { component: 'PurchaseOrdersPage' });
-      toast.error("Failed to delete purchase order");
-    },
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from("purchase_orders")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
-      toast.success("Purchase order status updated");
-    },
-    onError: (error: unknown) => {
-      logger.error('Failed to update purchase order status', error, { component: 'PurchaseOrdersPage' });
-      toast.error("Failed to update status");
-    },
-  });
+  const deleteMutation = deletePurchaseOrder;
+  const updateStatusMutation = updatePurchaseOrderStatus;
 
   const filteredPOs = purchaseOrders?.filter((po) => {
     const matchesSearch =
