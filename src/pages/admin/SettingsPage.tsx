@@ -13,12 +13,13 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout
+  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
+import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -154,6 +155,10 @@ export default function SettingsPage() {
           <TabsTrigger value="sidebar">
             <Layout className="h-4 w-4 mr-2" />
             Sidebar
+          </TabsTrigger>
+          <TabsTrigger value="sidebar-customization">
+            <Sliders className="h-4 w-4 mr-2" />
+            Sidebar Layout
           </TabsTrigger>
         </TabsList>
 
@@ -464,6 +469,11 @@ export default function SettingsPage() {
               <OperationSizeSelector />
             </div>
           </Card>
+        </TabsContent>
+
+        {/* Sidebar Customization */}
+        <TabsContent value="sidebar-customization">
+          <SidebarCustomizer />
         </TabsContent>
       </Tabs>
     </div>

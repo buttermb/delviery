@@ -69,6 +69,37 @@ export interface SidebarSection {
 }
 
 /**
+ * Custom section created by user
+ */
+export interface CustomSection {
+  id: string;
+  name: string;
+  items: string[]; // Array of item IDs
+  order: number;
+}
+
+/**
+ * Custom menu item created by user
+ */
+export interface CustomMenuItem {
+  id: string;
+  name: string;
+  url: string;
+  icon: string; // Icon name
+  permissions?: Permission[];
+  openInNewTab?: boolean;
+}
+
+/**
+ * Sidebar behavior settings
+ */
+export interface SidebarBehavior {
+  autoCollapse: boolean;
+  iconOnly: boolean;
+  showTooltips: boolean;
+}
+
+/**
  * Sidebar preferences stored in database
  */
 export interface SidebarPreferences {
@@ -87,6 +118,20 @@ export interface SidebarPreferences {
     id: string;
     timestamp: number;
   }>;
+  /** Array of hidden feature IDs */
+  hiddenFeatures?: string[];
+  /** Custom order of sections */
+  sectionOrder?: string[];
+  /** User-created custom sections */
+  customSections?: CustomSection[];
+  /** Enabled integrations */
+  enabledIntegrations?: string[];
+  /** Custom menu items */
+  customMenuItems?: CustomMenuItem[];
+  /** Selected layout preset */
+  layoutPreset?: string;
+  /** Sidebar behavior settings */
+  sidebarBehavior?: SidebarBehavior;
 }
 
 /**
@@ -147,5 +192,29 @@ export interface OperationProfile {
   locationCount: number;
   /** Enabled features */
   features: string[];
+}
+
+/**
+ * Integration definition
+ */
+export interface IntegrationConfig {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  featuresEnabled: string[];
+  setupUrl: string;
+  connected: boolean;
+}
+
+/**
+ * Layout preset definition
+ */
+export interface LayoutPreset {
+  id: string;
+  name: string;
+  description: string;
+  visibleFeatures: string[] | 'all';
+  sectionOrder?: string[];
 }
 

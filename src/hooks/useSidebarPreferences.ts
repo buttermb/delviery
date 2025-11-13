@@ -21,6 +21,17 @@ const DEFAULT_PREFERENCES: SidebarPreferences = {
   collapsedSections: [],
   pinnedItems: [],
   lastAccessedFeatures: [],
+  hiddenFeatures: [],
+  sectionOrder: [],
+  customSections: [],
+  enabledIntegrations: ['mapbox', 'stripe'],
+  customMenuItems: [],
+  layoutPreset: 'default',
+  sidebarBehavior: {
+    autoCollapse: true,
+    iconOnly: false,
+    showTooltips: true,
+  },
 };
 
 /**
@@ -60,6 +71,13 @@ export function useSidebarPreferences() {
         collapsedSections: ((data as any).collapsed_sections as string[]) || [],
         pinnedItems: ((data as any).pinned_items as string[]) || [],
         lastAccessedFeatures: ((data as any).last_accessed_features as SidebarPreferences['lastAccessedFeatures']) || [],
+        hiddenFeatures: ((data as any).hidden_features as string[]) || [],
+        sectionOrder: ((data as any).section_order as string[]) || [],
+        customSections: ((data as any).custom_sections as any[]) || [],
+        enabledIntegrations: ((data as any).enabled_integrations as string[]) || ['mapbox', 'stripe'],
+        customMenuItems: ((data as any).custom_menu_items as any[]) || [],
+        layoutPreset: (data as any).layout_preset || 'default',
+        sidebarBehavior: ((data as any).sidebar_behavior as any) || DEFAULT_PREFERENCES.sidebarBehavior,
       };
     },
     enabled: !!tenant?.id && !!admin?.id,
@@ -88,6 +106,13 @@ export function useSidebarPreferences() {
           collapsed_sections: updated.collapsedSections,
           pinned_items: updated.pinnedItems,
           last_accessed_features: updated.lastAccessedFeatures,
+          hidden_features: updated.hiddenFeatures,
+          section_order: updated.sectionOrder,
+          custom_sections: updated.customSections,
+          enabled_integrations: updated.enabledIntegrations,
+          custom_menu_items: updated.customMenuItems,
+          layout_preset: updated.layoutPreset,
+          sidebar_behavior: updated.sidebarBehavior,
         }], {
           onConflict: 'tenant_id,user_id',
         });
