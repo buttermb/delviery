@@ -17,7 +17,11 @@ export function SidebarHotItems() {
   const { hotItems } = useSidebarConfig();
   const { canAccess } = useFeatureAccess();
 
-  if (hotItems.length === 0) {
+  // Guard: Ensure hotItems is an array
+  const safeHotItems = Array.isArray(hotItems) ? hotItems : [];
+  
+  // Guard: Early return if no hot items
+  if (safeHotItems.length === 0) {
     return null;
   }
 
@@ -41,7 +45,7 @@ export function SidebarHotItems() {
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {hotItems.map((hot) => {
+          {safeHotItems.map((hot) => {
             const hasAccess = hot.featureId ? canAccess(hot.featureId) : true;
             return (
               <SidebarMenuItem
