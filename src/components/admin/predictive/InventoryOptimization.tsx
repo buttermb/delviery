@@ -42,7 +42,7 @@ export function InventoryOptimization() {
           action,
         };
       }).sort((a, b) => {
-        const priority: any = { critical: 0, low: 1, excess: 2, optimal: 3 };
+        const priority: Record<string, number> = { critical: 0, low: 1, excess: 2, optimal: 3 };
         return priority[a.status] - priority[b.status];
       });
     },
@@ -78,7 +78,7 @@ export function InventoryOptimization() {
         <CardContent>
           {recommendations && recommendations.length > 0 ? (
             <div className="space-y-3">
-              {recommendations.map((rec: any) => (
+              {recommendations.map((rec: { product: string; status: string; action: string; current: number; optimal: number }) => (
                 <Card key={rec.product} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

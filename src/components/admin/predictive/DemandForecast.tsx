@@ -18,7 +18,7 @@ export function DemandForecast() {
         .eq("orders.tenant_id", tenant?.id)
         .gte("orders.created_at", new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString());
 
-      const productDemand = items?.reduce((acc: any, item) => {
+      const productDemand = items?.reduce((acc: Record<string, { product: string; current: number; forecast: number }>, item) => {
         if (!acc[item.product_name]) {
           acc[item.product_name] = { product: item.product_name, current: 0, forecast: 0 };
         }

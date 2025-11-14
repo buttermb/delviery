@@ -20,7 +20,7 @@ export function CashFlowProjection() {
         .gte("created_at", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: true });
 
-      const monthlyData = orders?.reduce((acc: any, order) => {
+      const monthlyData = orders?.reduce((acc: Record<string, { month: string; revenue: number }>, order) => {
         const month = new Date(order.created_at).toLocaleDateString("en-US", { month: "short" });
         if (!acc[month]) acc[month] = { month, revenue: 0 };
         acc[month].revenue += Number(order.total_amount);
@@ -51,7 +51,7 @@ export function CashFlowProjection() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {cashFlowData?.projections.map((proj: any) => (
+        {cashFlowData?.projections.map((proj: { period: string; revenue: number; expenses: number; net: number }) => (
           <Card key={proj.period}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{proj.period}</CardTitle>
@@ -81,7 +81,7 @@ export function CashFlowProjection() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(value: any) => `$${value.toFixed(2)}`} />
+              <Tooltip formatter={(value: number | string) => `$${typeof value === 'number' ? value.toFixed(2) : value}`} />
               <Legend />
               <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
             </LineChart>
