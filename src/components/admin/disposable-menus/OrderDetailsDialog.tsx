@@ -32,7 +32,6 @@ import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
-import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface OrderItem {
   product_name?: string;
