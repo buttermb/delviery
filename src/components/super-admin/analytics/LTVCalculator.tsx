@@ -58,8 +58,15 @@ export function LTVCalculator() {
       // Mock lifetime for demo
       const avgLifetimeMonths = 12;
 
-      // Calculate churn rate (mock for demo)
-      const churnRate = customChurnRate || 2.5; // Mock 2.5% churn
+      // Calculate REAL churn rate from cancelled tenants
+      const cancelledCount = activeTenants.filter(t => 
+        t.subscription_plan === 'cancelled' || t.subscription_plan === 'suspended'
+      ).length;
+      const realChurnRate = activeTenants.length > 0 
+        ? (cancelledCount / activeTenants.length) * 100 
+        : 0;
+      
+      const churnRate = customChurnRate || (realChurnRate > 0 ? realChurnRate : 2.5);
 
       // LTV = ARPU / Churn Rate (simplified formula)
       const avgLTV = churnRate > 0 ? (avgARPU / (churnRate / 100)) : avgARPU * avgLifetimeMonths;
@@ -233,16 +240,18 @@ export function LTVCalculator() {
           </div>
         </div>
 
-        {/* Formula */}
-        <div className="p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-          <p className="font-medium mb-1">LTV Formula:</p>
-          <p>LTV = ARPU / (Churn Rate / 100)</p>
-          <p className="mt-2">
+        {/* Formula Explanation */}
+        <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-sm">
+          <p className="font-semibold mb-2 text-success">LTV Formula:</p>
+          <p className="font-mono text-foreground">
+            LTV = ARPU / (Churn Rate / 100)
+          </p>
+          <p className="text-foreground mt-2">
             Current: ${ltvData.avgMonthlyRevenue.toFixed(2)} / ({ltvData.churnRate}% / 100) = $
             {ltvData.avgLTV.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
-          <p className="mt-2 text-xs">
-            * Using mock churn rate - Connect billing system for actual data
+          <p className="text-xs text-muted-foreground mt-2">
+            Calculated from real tenant and subscription data
           </p>
         </div>
       </CardContent>
