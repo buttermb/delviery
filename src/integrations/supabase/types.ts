@@ -2459,6 +2459,77 @@ export type Database = {
           },
         ]
       }
+      customer_users: {
+        Row: {
+          business_license_number: string | null
+          business_name: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string
+          email_verification_sent_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
+          first_name: string | null
+          id: string
+          is_active: boolean | null
+          is_business_buyer: boolean | null
+          last_login_at: string | null
+          last_name: string | null
+          password_hash: string
+          phone: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          business_license_number?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email: string
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_business_buyer?: boolean | null
+          last_login_at?: string | null
+          last_name?: string | null
+          password_hash: string
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          business_license_number?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_business_buyer?: boolean | null
+          last_login_at?: string | null
+          last_name?: string | null
+          password_hash?: string
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           account_id: string

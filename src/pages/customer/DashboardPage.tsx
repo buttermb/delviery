@@ -68,7 +68,7 @@ export default function CustomerDashboardPage() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("marketplace_profiles")
         .select("id, license_verified, marketplace_status, can_sell")
         .eq("tenant_id", tenantId)
@@ -286,7 +286,7 @@ export default function CustomerDashboardPage() {
                 className="border-[hsl(var(--customer-secondary))]/30 text-[hsl(var(--customer-secondary))] hover:bg-[hsl(var(--customer-secondary))]/10"
               >
                 <Link to={`/${tenant?.slug}/shop/retail/businesses`}>
-                  <Store className="h-4 w-4 mr-2" />
+                  <Building2 className="h-4 w-4 mr-2" />
                   Find Businesses
                 </Link>
               </Button>

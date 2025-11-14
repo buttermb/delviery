@@ -75,7 +75,7 @@ export function BusinessVerificationCard() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_profiles')
         .select('*')
         .eq('tenant_id', tenantId)

@@ -287,7 +287,7 @@ serve(async (req) => {
               .from('marketplace_profiles')
               .update({
                 business_name: businessName,
-                license_number: businessLicenseNumber || existingProfile.license_number,
+                license_number: businessLicenseNumber || '',
               })
               .eq('id', existingProfile.id);
 
