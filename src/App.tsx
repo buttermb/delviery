@@ -254,6 +254,7 @@ const CustomerSignUpPage = lazy(() => import("./pages/customer/SignUpPage"));
 const CustomerVerifyEmailPage = lazy(() => import("./pages/customer/VerifyEmailPage"));
 const CustomerForgotPasswordPage = lazy(() => import("./pages/customer/ForgotPasswordPage"));
 const CustomerResetPasswordPage = lazy(() => import("./pages/customer/ResetPasswordPage"));
+const CustomerLoginLanding = lazy(() => import("./pages/customer/CustomerLoginLanding"));
 
 // Invitation Pages
 const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
@@ -655,6 +656,10 @@ const App = () => {
                             </CourierProvider>
                           }
                         />
+                        
+                        {/* ==================== CUSTOMER LOGIN LANDING (No Tenant) ==================== */}
+                        <Route path="/customer/login" element={<CustomerLoginLanding />} />
+                        <Route path="/shop/login" element={<CustomerLoginLanding />} />
                         
                         {/* ==================== LEVEL 3: CUSTOMER (End User) ==================== */}
                         <Route path="/:tenantSlug/customer/login" element={<CustomerLoginPage />} />
