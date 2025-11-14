@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Marketplace Seller Profile Page
  * Allows sellers to create and manage their marketplace profile

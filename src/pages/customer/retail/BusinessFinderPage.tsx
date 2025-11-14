@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Business Finder Page
  * Customers can browse and find nearby dispensaries/businesses

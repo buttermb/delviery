@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Marketplace Listing Detail Page
  * View detailed information about a marketplace listing

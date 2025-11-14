@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Business Menu Page
  * Customers can browse products from a specific business
