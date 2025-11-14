@@ -80,7 +80,7 @@ export function RecallForm({
   }, [recall, open]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { product_id: string; reason: string; severity: string; affected_batches?: string[] }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
@@ -102,7 +102,7 @@ export function RecallForm({
 
           if (error && error.code !== "42P01") throw error;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (error.code !== "42P01") throw error;
         logger.warn('Batch recalls table does not exist yet', { component: 'RecallForm' });
       }

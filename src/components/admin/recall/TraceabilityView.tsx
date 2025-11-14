@@ -42,7 +42,7 @@ export function TraceabilityView({
         .in("product_id", productIds);
 
       const affectedOrders = orderItems?.length || 0;
-      const affectedCustomers = new Set(orderItems?.map((item: any) => item.orders.customer_name)).size;
+      const affectedCustomers = new Set(orderItems?.map((item: { orders?: { customer_name?: string } }) => item.orders?.customer_name).filter(Boolean)).size;
       const totalUnits = orderItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
       return {
@@ -143,7 +143,7 @@ export function TraceabilityView({
             <div>
               <h3 className="font-medium mb-3">Products in Batch</h3>
               <div className="space-y-2">
-                {traceData.products.map((product: any) => (
+                {traceData.products.map((product: { id: string; name: string; batch_id?: string }) => (
                   <div key={product.id} className="p-3 border rounded-lg">
                     <p className="font-medium">{product.name}</p>
                     <Badge variant="outline" className="mt-1">{product.batch_number}</Badge>
@@ -156,7 +156,7 @@ export function TraceabilityView({
               <div>
                 <h3 className="font-medium mb-3">Order History</h3>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {traceData.orderItems.map((item: any, idx: number) => (
+                  {traceData.orderItems.map((item: { id: string; product_name: string; quantity: number; orders?: { customer_name?: string; created_at?: string } }, idx: number) => (
                     <div key={idx} className="p-3 border rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>

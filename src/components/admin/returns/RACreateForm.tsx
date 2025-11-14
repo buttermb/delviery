@@ -139,7 +139,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
   };
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { order_id: string; reason: string; items: Array<{ product_id: string; quantity: number; reason?: string }> }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       // Use the edge function for return processing
@@ -213,7 +213,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
               <Select
                 value={formData.order_id}
                 onValueChange={(value) => {
-                  const order = orders?.find((o: any) => o.id === value);
+                  const order = orders?.find((o: { id: string; order_number?: string }) => o.id === value);
                   setFormData({
                     ...formData,
                     order_id: value,
@@ -226,7 +226,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
                   <SelectValue placeholder="Select an order" />
                 </SelectTrigger>
                 <SelectContent>
-                  {orders?.map((order: any) => (
+                  {orders?.map((order: { id: string; order_number?: string; created_at?: string; total_amount?: number }) => (
                     <SelectItem key={order.id} value={order.id}>
                       {order.order_number || order.id.substring(0, 8)}
                     </SelectItem>
