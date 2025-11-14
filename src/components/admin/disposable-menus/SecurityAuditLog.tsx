@@ -132,7 +132,7 @@ export const SecurityAuditLog = ({ events, onRefresh }: SecurityAuditLogProps) =
           </div>
         ) : (
           filteredEvents.map((event) => (
-            <Card key={event.id} className="p-4">
+            <Card key={event.id || crypto.randomUUID()} className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
                   <div className="p-2 bg-muted rounded-lg">

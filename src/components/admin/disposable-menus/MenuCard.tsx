@@ -13,7 +13,7 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
-import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import type { DisposableMenu } from '@/types/admin';
 
 interface MenuCardProps {
@@ -98,7 +98,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                   Screenshot Protection
                 </Badge>
               )}
-              {menu.geofence_enabled && (
+              {jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) && (
                 <Badge variant="outline" className="text-xs">
                   <MapPin className="h-3 w-3 mr-1" />
                   Geofencing

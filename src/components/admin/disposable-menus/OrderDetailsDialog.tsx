@@ -78,7 +78,7 @@ export const OrderDetailsDialog = ({
       const { error } = await supabase
         .from('menu_orders')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id);
