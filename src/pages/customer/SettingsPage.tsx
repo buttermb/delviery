@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 import { SessionManagement } from "@/components/customer/SessionManagement";
 import { safeFetch } from "@/utils/safeFetch";
+import { BusinessVerificationCard } from "@/components/customer/BusinessVerificationCard";
 
 export default function CustomerSettingsPage() {
   const { customer, tenant, logout } = useCustomerAuth();
@@ -382,6 +383,9 @@ export default function CustomerSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Business Verification */}
+        <BusinessVerificationCard />
 
         {/* Session Management */}
         <Card className="bg-white border-[hsl(var(--customer-border))] shadow-md">

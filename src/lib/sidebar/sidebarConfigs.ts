@@ -59,6 +59,7 @@ import {
   Menu,
   ClipboardList,
   ArrowRightLeft,
+  MessageSquare,
 } from 'lucide-react';
 import { FEATURES, type FeatureId } from '@/lib/featureConfig';
 
@@ -304,6 +305,16 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
       createItem('role-management', 'Roles & Permissions', '/admin/role-management', Shield),
       createItem('activity-logs', 'Activity Logs', '/admin/activity-logs', ScrollText),
       createItem('audit-trail', 'Audit Trail', '/admin/audit-trail', Lock),
+    ],
+  },
+  {
+    section: '🌐 Marketplace',
+    items: [
+      createItem('marketplace', 'My Listings', '/admin/marketplace/listings', Store),
+      createItem('marketplace', 'Create Listing', '/admin/marketplace/listings/new', Store),
+      createItem('marketplace', 'Wholesale Orders', '/admin/marketplace/orders', ShoppingCart),
+      createItem('marketplace', 'Messages', '/admin/marketplace/messages', MessageSquare, { hot: true }),
+      createItem('marketplace', 'Seller Profile', '/admin/marketplace/profile', User),
     ],
   },
   {

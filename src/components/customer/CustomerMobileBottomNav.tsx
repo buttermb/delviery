@@ -70,9 +70,9 @@ export function CustomerMobileBottomNav() {
       path: `/${tenant?.slug}/shop/dashboard`,
     },
     {
-      label: "Menus",
+      label: "Retail",
       icon: ShoppingBag,
-      path: `/${tenant?.slug}/shop/dashboard`,
+      path: `/${tenant?.slug}/shop/retail/businesses`,
     },
     {
       label: "Cart",

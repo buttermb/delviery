@@ -76,6 +76,8 @@ const Blog = lazy(() => import("./pages/Blog"));
 const Security = lazy(() => import("./pages/Security"));
 const Cookie = lazy(() => import("./pages/Cookie"));
 const LoginDirectory = lazy(() => import("./pages/LoginDirectory"));
+const PublicMarketplacePage = lazy(() => import("./pages/marketplace/PublicMarketplacePage"));
+const PublicListingDetailPage = lazy(() => import("./pages/marketplace/PublicListingDetailPage"));
 
 // Three-Tier Auth System Pages
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
@@ -223,6 +225,15 @@ const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"))
 const WhiteLabelPage = lazy(() => import("./pages/tenant-admin/WhiteLabelPage"));
 const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPage"));
 const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
+
+// Marketplace Pages
+const SellerProfilePage = lazy(() => import("./pages/tenant-admin/marketplace/SellerProfilePage"));
+const MyListingsPage = lazy(() => import("./pages/tenant-admin/marketplace/MyListingsPage"));
+const ListingForm = lazy(() => import("./pages/tenant-admin/marketplace/ListingForm").then(m => ({ default: m.ListingForm })));
+const ListingDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/ListingDetailPage"));
+const MarketplaceOrdersPage = lazy(() => import("./pages/tenant-admin/marketplace/MarketplaceOrdersPage"));
+const OrderDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/OrderDetailPage"));
+const MessagesPage = lazy(() => import("./pages/tenant-admin/marketplace/MessagesPage"));
 // These pages were deleted as they referenced non-existent database tables
 // Will be re-added when proper database migrations are created
 
@@ -255,6 +266,14 @@ const OrderTrackingPage = lazy(() => import("./pages/customer/OrderTrackingPage"
 const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage"));
 const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess"));
 const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
+const WholesaleMarketplacePage = lazy(() => import("./pages/customer/WholesaleMarketplacePage"));
+const WholesaleCartPage = lazy(() => import("./pages/customer/WholesaleCartPage"));
+const WholesaleCheckoutPage = lazy(() => import("./pages/customer/WholesaleCheckoutPage"));
+const WholesaleOrdersPage = lazy(() => import("./pages/customer/WholesaleOrdersPage"));
+const WholesaleOrderDetailPage = lazy(() => import("./pages/customer/WholesaleOrderDetailPage"));
+const BusinessFinderPage = lazy(() => import("./pages/customer/retail/BusinessFinderPage"));
+const BusinessMenuPage = lazy(() => import("./pages/customer/retail/BusinessMenuPage"));
+const UnifiedOrdersPage = lazy(() => import("./pages/customer/UnifiedOrdersPage"));
 
 // Public Menu Access
 const MenuAccess = lazy(() => import("./pages/MenuAccess"));
@@ -389,6 +408,10 @@ const App = () => {
                         <Route path="/cookie" element={<Cookie />} />
                         <Route path="/login" element={<LoginDirectory />} />
                         
+                        {/* Public Marketplace */}
+                        <Route path="/marketplace" element={<PublicMarketplacePage />} />
+                        <Route path="/marketplace/listings/:listingId" element={<PublicListingDetailPage />} />
+                        
                         {/* Public Authentication */}
                         <Route path="/signup" element={<SignUpPage />} />
                         <Route path="/saas/login" element={<SaasLoginPage />} />
@@ -433,6 +456,7 @@ const App = () => {
                           <Route path="tools" element={<SuperAdminToolsPage />} />
                           <Route path="tenants" element={<SuperAdminTenantsListPage />} />
                           <Route path="tenants/:tenantId" element={<SuperAdminTenantDetailPage />} />
+                          <Route path="marketplace/moderation" element={<MarketplaceModerationPage />} />
                           <Route path="settings" element={<SuperAdminSettingsPage />} />
                         </Route>
                         
@@ -502,6 +526,17 @@ const App = () => {
                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                           <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
                           <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
+                          
+                          {/* Marketplace Routes */}
+                          <Route path="marketplace/profile" element={<FeatureProtectedRoute featureId="marketplace"><SellerProfilePage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/profile/edit" element={<FeatureProtectedRoute featureId="marketplace"><SellerProfilePage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/listings" element={<FeatureProtectedRoute featureId="marketplace"><MyListingsPage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/listings/new" element={<FeatureProtectedRoute featureId="marketplace"><ListingForm /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/listings/:listingId" element={<FeatureProtectedRoute featureId="marketplace"><ListingDetailPage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/listings/:listingId/edit" element={<FeatureProtectedRoute featureId="marketplace"><ListingForm /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/orders" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceOrdersPage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/orders/:orderId" element={<FeatureProtectedRoute featureId="marketplace"><OrderDetailPage /></FeatureProtectedRoute>} />
+                          <Route path="marketplace/messages" element={<FeatureProtectedRoute featureId="marketplace"><MessagesPage /></FeatureProtectedRoute>} />
                           
                           {/* 10 Built-but-not-routed pages */}
                           <Route path="live-orders" element={<FeatureProtectedRoute featureId="live-orders"><LiveOrders /></FeatureProtectedRoute>} />
@@ -634,9 +669,19 @@ const App = () => {
                         </Route>
                         <Route path="/:tenantSlug/shop/cart" element={<CustomerProtectedRoute><ShoppingCartPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/checkout" element={<CustomerProtectedRoute><CheckoutPage /></CustomerProtectedRoute>} />
-                        <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><OrdersListPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/orders" element={<CustomerProtectedRoute><UnifiedOrdersPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/orders/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/orders/retail/:orderId" element={<CustomerProtectedRoute><OrderTrackingPage /></CustomerProtectedRoute>} />
                         <Route path="/:tenantSlug/shop/settings" element={<CustomerProtectedRoute><CustomerSettingsPage /></CustomerProtectedRoute>} />
+                        {/* Retail Shopping Routes */}
+                        <Route path="/:tenantSlug/shop/retail/businesses" element={<CustomerProtectedRoute><BusinessFinderPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/retail/businesses/:businessSlug/menu" element={<CustomerProtectedRoute><BusinessMenuPage /></CustomerProtectedRoute>} />
+                        {/* Wholesale Marketplace Routes */}
+                        <Route path="/:tenantSlug/shop/wholesale" element={<CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/wholesale/cart" element={<CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/wholesale/checkout" element={<CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/wholesale/orders" element={<CustomerProtectedRoute><WholesaleOrdersPage /></CustomerProtectedRoute>} />
+                        <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute>} />
 
                         {/* ==================== VENDOR PORTAL (External Access) ==================== */}
                         <Route path="/vendor/login" element={<VendorLoginPage />} />

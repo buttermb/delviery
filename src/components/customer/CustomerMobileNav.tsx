@@ -12,6 +12,7 @@ import {
   User,
   LogOut,
   ShoppingCart,
+  Building2,
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -97,6 +98,24 @@ export function CustomerMobileNav() {
       path: `/${tenant?.slug}/shop/dashboard`,
       onClick: () => {
         navigate(`/${tenant?.slug}/shop/dashboard`);
+        setMenuOpen(false);
+      },
+    },
+    {
+      label: "Retail",
+      icon: ShoppingBag,
+      path: `/${tenant?.slug}/shop/retail/businesses`,
+      onClick: () => {
+        navigate(`/${tenant?.slug}/shop/retail/businesses`);
+        setMenuOpen(false);
+      },
+    },
+    {
+      label: "Wholesale",
+      icon: Building2,
+      path: `/${tenant?.slug}/shop/wholesale`,
+      onClick: () => {
+        navigate(`/${tenant?.slug}/shop/wholesale`);
         setMenuOpen(false);
       },
     },

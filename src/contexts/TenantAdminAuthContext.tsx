@@ -167,18 +167,71 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let parsedTenant: Tenant | null = null;
       
       try {
-        // Quick check: Do we have user/tenant data in localStorage?
-        console.log('[AUTH INIT] 📦 Checking localStorage for stored credentials');
-        const storedAdmin = localStorage.getItem(ADMIN_KEY);
-        const storedTenant = localStorage.getItem(TENANT_KEY);
-        
-        if (!storedAdmin || !storedTenant) {
-          // No stored data = not logged in
-          console.log('[AUTH INIT] ❌ No stored credentials found - user not authenticated');
-          logger.debug('[AUTH] No stored user/tenant data, not authenticated');
-          setLoading(false);
-          return;
+        // PRIORITY 1: Try cookie-based verification first (most secure)
+        console.log('[AUTH INIT] 🔐 Attempting cookie-based authentication...');
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
+            method: 'GET',
+            credentials: 'include', // Include cookies
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (verifyResponse.ok) {
+            const verifyData = await verifyResponse.json();
+            console.log('[AUTH INIT] ✅ Cookie verification successful', {
+              hasAdmin: !!verifyData.admin,
+              hasTenant: !!verifyData.tenant,
+            });
+            
+            // Set state from verified cookie data
+            if (verifyData.admin) {
+              parsedAdmin = verifyData.admin;
+              setAdmin(verifyData.admin);
+            }
+            if (verifyData.tenant) {
+              parsedTenant = verifyData.tenant;
+              setTenant(verifyData.tenant);
+            }
+            
+            // Store non-sensitive data in localStorage for quick access
+            if (verifyData.admin) {
+              localStorage.setItem(ADMIN_KEY, JSON.stringify(verifyData.admin));
+            }
+            if (verifyData.tenant) {
+              localStorage.setItem(TENANT_KEY, JSON.stringify(verifyData.tenant));
+            }
+            
+            setIsAuthenticated(true);
+            setLoading(false);
+            logger.info('[AUTH] Authenticated via httpOnly cookies', {
+              userId: verifyData.admin?.id,
+              tenantSlug: verifyData.tenant?.slug,
+            });
+            return; // Success - exit early
+          } else {
+            console.log('[AUTH INIT] ⚠️ Cookie verification failed, trying localStorage fallback', {
+              status: verifyResponse.status,
+            });
+          }
+        } catch (cookieError) {
+          console.log('[AUTH INIT] ⚠️ Cookie verification error, trying localStorage fallback', cookieError);
         }
+
+      // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
+      console.log('[AUTH INIT] 📦 Checking localStorage for stored credentials');
+      const storedAdmin = localStorage.getItem(ADMIN_KEY);
+      const storedTenant = localStorage.getItem(TENANT_KEY);
+      
+      if (!storedAdmin || !storedTenant) {
+        // No stored data = not logged in
+        console.log('[AUTH INIT] ❌ No stored credentials found - user not authenticated');
+        logger.debug('[AUTH] No stored user/tenant data, not authenticated');
+        setLoading(false);
+        return;
+      }
 
         console.log('[AUTH INIT] ✅ Found stored credentials, parsing...');
         // Parse stored data
@@ -236,7 +289,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // CRITICAL: Set authenticated to true immediately with localStorage data
         // Use synchronous flag to prevent loading state clearing before auth state updates
         console.log('[AUTH INIT] ✅ Setting authenticated=true from localStorage');
-        const authStateReady = true;
         setIsAuthenticated(true);
         
         // Verify authentication via API (cookies sent automatically)

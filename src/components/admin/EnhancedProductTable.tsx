@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import {
   GripVertical, Edit, Copy, Trash2, Eye, EyeOff,
   Check, X, DollarSign, ArrowUpDown, ChevronLeft, ChevronRight,
-  ChevronsLeft, ChevronsRight, Search, Printer
+  ChevronsLeft, ChevronsRight, Search, Printer, Store
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -63,6 +63,7 @@ interface EnhancedProductTableProps {
   onEdit: (id: string) => void;
   onDuplicate: (id: string) => void;
   onPrintLabel?: (product: Product) => void;
+  onListOnMarketplace?: (product: Product) => void;
 }
 
 export function EnhancedProductTable({
@@ -75,6 +76,7 @@ export function EnhancedProductTable({
   onEdit,
   onDuplicate,
   onPrintLabel,
+  onListOnMarketplace,
 }: EnhancedProductTableProps) {
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -342,6 +344,12 @@ export function EnhancedProductTable({
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
+              {onListOnMarketplace && (
+                <DropdownMenuItem onClick={() => onListOnMarketplace(row.original)}>
+                  <Store className="mr-2 h-4 w-4" />
+                  List on Marketplace
+                </DropdownMenuItem>
+              )}
               {onPrintLabel && 'sku' in row.original && row.original.sku && (
                 <DropdownMenuItem onClick={() => onPrintLabel(row.original)}>
                   <Printer className="mr-2 h-4 w-4" />
@@ -362,7 +370,7 @@ export function EnhancedProductTable({
         enableHiding: false,
       },
     ],
-    [editingCell, editValue, selectedProducts, onToggleSelect, onSelectAll, onUpdate, onEdit, onDuplicate, onDelete, onPrintLabel]
+    [editingCell, editValue, selectedProducts, onToggleSelect, onSelectAll, onUpdate, onEdit, onDuplicate, onDelete, onPrintLabel, onListOnMarketplace]
   );
 
   const table = useReactTable({

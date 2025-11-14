@@ -71,6 +71,12 @@ export const STORAGE_KEYS = {
   // Beta banner
   BETA_BANNER_DISMISSED: 'beta_banner_dismissed',
   
+  // Email verification
+  EMAIL_VERIFICATION_BANNER_DISMISSED: 'email_verification_banner_dismissed',
+  
+  // Customer mode (retail/wholesale)
+  CUSTOMER_MODE: 'customer_mode',
+  
   // Sidebar Preferences (legacy - now stored in database)
   SIDEBAR_OPERATION_SIZE: 'sidebar_operation_size',
   SIDEBAR_CUSTOM_LAYOUT: 'sidebar_custom_layout',

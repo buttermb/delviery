@@ -628,6 +628,39 @@ export default function ProductManagement() {
     }
   };
 
+  const handleListOnMarketplace = (product: Product) => {
+    // Check if tenant has marketplace access
+    const subscriptionPlan = tenant?.subscription_plan || 'starter';
+    const canAccessMarketplace = subscriptionPlan === 'professional' || subscriptionPlan === 'enterprise' || subscriptionPlan === 'medium';
+    
+    if (!canAccessMarketplace) {
+      toast.error("Marketplace access requires Medium tier or higher", {
+        description: "Upgrade your plan to list products on the marketplace",
+      });
+      navigate(`/${tenant?.slug}/admin/billing`);
+      return;
+    }
+
+    // Navigate to listing form with product data in state
+    navigate(`/${tenant?.slug}/admin/marketplace/listings/new`, {
+      state: {
+        productData: {
+          name: product.name,
+          category: product.category,
+          strain_name: product.strain_name,
+          strain_type: product.strain_type,
+          thc_percent: product.thc_percent,
+          cbd_percent: product.cbd_percent,
+          batch_number: product.batch_number,
+          wholesale_price: product.wholesale_price,
+          available_quantity: product.available_quantity,
+          image_url: product.image_url,
+          description: product.description || '',
+        },
+      },
+    });
+  };
+
   const handleDuplicate = async (id: string) => {
     if (!tenant?.id) {
       toast.error("Tenant not found");
@@ -1250,6 +1283,7 @@ export default function ProductManagement() {
                   if (product) handleEdit(product);
                 }}
                 onDuplicate={handleDuplicate}
+                onListOnMarketplace={handleListOnMarketplace}
                 onPrintLabel={(product) => {
                   setLabelProduct(product as any);
                   setLabelDialogOpen(true);

@@ -99,7 +99,7 @@ serve(async (req) => {
         );
       }
 
-      const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug } = validationResult.data;
+      const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug, isBusinessBuyer, businessName, businessLicenseNumber } = validationResult.data;
 
       console.log('Customer signup attempt:', { email, tenantSlug });
 
@@ -252,6 +252,55 @@ serve(async (req) => {
         // Don't fail signup if email sending fails
       });
 
+      // Create marketplace profile for business buyers
+      if (isBusinessBuyer && businessName) {
+        try {
+          // Check if marketplace profile already exists for this tenant
+          const { data: existingProfile } = await supabase
+            .from('marketplace_profiles')
+            .select('id')
+            .eq('tenant_id', tenant.id)
+            .maybeSingle();
+
+          if (!existingProfile) {
+            // Create new marketplace profile (buyer profile)
+            const { error: profileError } = await supabase
+              .from('marketplace_profiles')
+              .insert({
+                tenant_id: tenant.id,
+                business_name: businessName,
+                license_number: businessLicenseNumber || null,
+                marketplace_status: 'pending',
+                license_verified: false,
+                can_sell: false, // Buyers can't sell, only purchase
+              });
+
+            if (profileError) {
+              console.error('Failed to create marketplace profile:', profileError);
+              // Don't fail signup if profile creation fails - user can complete it later
+            } else {
+              console.log('Marketplace profile created for business buyer:', businessName);
+            }
+          } else {
+            // Update existing profile with business buyer info
+            const { error: updateError } = await supabase
+              .from('marketplace_profiles')
+              .update({
+                business_name: businessName,
+                license_number: businessLicenseNumber || existingProfile.license_number,
+              })
+              .eq('id', existingProfile.id);
+
+            if (updateError) {
+              console.error('Failed to update marketplace profile:', updateError);
+            }
+          }
+        } catch (profileErr) {
+          console.error('Error creating marketplace profile:', profileErr);
+          // Don't fail signup if profile creation fails
+        }
+      }
+
       console.log('Customer signup successful:', email);
 
       return new Response(
@@ -260,6 +309,7 @@ serve(async (req) => {
           message: "Account created successfully. Please check your email to verify your account.",
           requires_verification: true,
           customer_user_id: customerUser.id,
+          is_business_buyer: isBusinessBuyer || false,
         }),
         { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

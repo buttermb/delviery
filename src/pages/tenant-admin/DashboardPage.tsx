@@ -28,10 +28,11 @@ import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
@@ -227,10 +228,16 @@ export default function TenantAdminDashboardPage() {
 
   // Memoize onboarding progress
   const onboardingSteps = useMemo(() => [
-    { id: "products", completed: (tenantUsage.products || 0) > 0 },
-    { id: "customers", completed: (tenantUsage.customers || 0) > 0 },
-    { id: "menu", completed: (tenantUsage.menus || 0) > 0 },
-  ], [tenantUsage.products, tenantUsage.customers, tenantUsage.menus]);
+    { id: "products", completed: (tenantUsage.products || 0) > 0, title: "Add your first product", link: `/${tenant?.slug}/admin/inventory/products` },
+    { id: "customers", completed: (tenantUsage.customers || 0) > 0, title: "Add a customer", link: `/${tenant?.slug}/admin/customers` },
+    { id: "menu", completed: (tenantUsage.menus || 0) > 0, title: "Create a disposable menu", link: `/${tenant?.slug}/admin/disposable-menus` },
+    { id: "profile", completed: false, title: "Complete your business profile", link: `/${tenant?.slug}/admin/settings` },
+  ], [tenantUsage.products, tenantUsage.customers, tenantUsage.menus, tenant?.slug]);
+
+  const completedSteps = onboardingSteps.filter(step => step.completed).length;
+  const onboardingProgress = onboardingSteps.length > 0 
+    ? (completedSteps / onboardingSteps.length) * 100 
+    : 100;
   // Fetch recent activity (menu views, orders, menu creations)
   const { data: recentActivity } = useQuery({
     queryKey: ["recent-activity", tenantId],
@@ -464,6 +471,9 @@ export default function TenantAdminDashboardPage() {
       </header>
 
       <div className="container mx-auto p-2 sm:p-3 md:p-4 lg:p-6 space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
+        {/* Email Verification Banner */}
+        <EmailVerificationBanner />
+        
         {/* Trial Countdown Banner */}
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${
@@ -512,73 +522,65 @@ export default function TenantAdminDashboardPage() {
           </Card>
         )}
 
-        {/* Setup Progress Widget - Disabled until database columns are added
-            TODO: Add onboarding_completed, usage, limits columns to tenants table
+        {/* Onboarding Progress Widget */}
         {onboardingProgress < 100 && (
-          <Card className="bg-white border-[hsl(var(--tenant-border))] shadow-sm">
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-[hsl(var(--tenant-text))]">
-                  📊 Setup Progress: {Math.round(onboardingProgress)}% Complete
+                <CardTitle className="text-[hsl(var(--tenant-text))] flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Setup Progress: {Math.round(onboardingProgress)}% Complete
                 </CardTitle>
                 <Badge variant="outline">{completedSteps}/{onboardingSteps.length}</Badge>
               </div>
+              <Progress value={onboardingProgress} className="mt-3" />
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  {(usage.products || 0) > 0 ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-gray-400" />
-                  )}
-                  <span className="text-sm text-[hsl(var(--tenant-text))]">
-                    Products Added {(usage.products || 0) > 0 ? `(${usage.products})` : ""}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(usage.customers || 0) > 0 ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-gray-400" />
-                  )}
-                  <span className="text-sm text-[hsl(var(--tenant-text))]">
-                    Customers Added {(usage.customers || 0) > 0 ? `(${usage.customers})` : ""}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {(usage.menus || 0) > 0 ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-gray-400" />
-                  )}
-                  <span className="text-sm text-[hsl(var(--tenant-text))]">
-                    Menu Created {(usage.menus || 0) > 0 ? `(${usage.menus})` : ""}
-                  </span>
-                  {onboardingProgress < 100 && (
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="ml-auto min-h-[44px] text-xs sm:text-sm"
-                  onClick={() => {
-                    if ((usage.menus || 0) === 0) {
-                      navigate(`/${tenant?.slug}/admin/disposable-menus`);
-                    }
-                  }}
-                >
-                  {onboardingProgress < 100 ? (
-                    <>
-                      <span className="hidden sm:inline">Let's finish this! →</span>
-                      <span className="sm:hidden">Finish →</span>
-                    </>
-                  ) : ""}
-                </Button>
-                  )}
-                </div>
+                {onboardingSteps.map((step) => (
+                  <div key={step.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1">
+                      {step.completed ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-gray-400" />
+                      )}
+                      <span className={`text-sm ${step.completed ? 'text-[hsl(var(--tenant-text))]' : 'text-[hsl(var(--tenant-text-light))]'}`}>
+                        {step.title}
+                      </span>
+                    </div>
+                    {!step.completed && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(step.link)}
+                        className="text-xs"
+                      >
+                        <ArrowRight className="h-3 w-3 mr-1" />
+                        Go
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {onboardingProgress < 100 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full mt-4"
+                    onClick={() => {
+                      const nextStep = onboardingSteps.find(s => !s.completed);
+                      if (nextStep) {
+                        navigate(nextStep.link);
+                      }
+                    }}
+                  >
+                    Continue Setup →
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
-        )} */}
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">

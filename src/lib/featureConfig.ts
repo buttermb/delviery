@@ -297,6 +297,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Sales',
     route: '/admin/sales-dashboard',
   },
+  'marketplace': {
+    id: 'marketplace',
+    name: 'Wholesale Marketplace',
+    description: 'List products on B2B marketplace, manage wholesale orders, and communicate with buyers',
+    tier: 'professional',
+    category: 'Marketplace',
+    route: '/admin/marketplace/listings',
+  },
   'commission-tracking': {
     id: 'commission-tracking',
     name: 'Commission Tracking',

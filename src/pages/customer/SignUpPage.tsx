@@ -24,6 +24,9 @@ export default function CustomerSignUpPage() {
     lastName: "",
     phone: "",
     dateOfBirth: "",
+    isBusinessBuyer: false,
+    businessName: "",
+    businessLicenseNumber: "",
   });
   const [phoneValidating, setPhoneValidating] = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -97,6 +100,9 @@ export default function CustomerSignUpPage() {
           phone: formData.phone || null,
           dateOfBirth: formData.dateOfBirth || null,
           tenantSlug,
+          isBusinessBuyer: formData.isBusinessBuyer || false,
+          businessName: formData.isBusinessBuyer ? formData.businessName : null,
+          businessLicenseNumber: formData.isBusinessBuyer ? formData.businessLicenseNumber : null,
         }),
         skipAuth: true,
       });
@@ -303,6 +309,58 @@ export default function CustomerSignUpPage() {
                 )}
               </div>
             )}
+
+            {/* Business Buyer Option */}
+            <div className="space-y-4 p-4 border border-[hsl(var(--customer-border))] rounded-lg bg-[hsl(var(--customer-surface))]">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isBusinessBuyer"
+                  checked={formData.isBusinessBuyer}
+                  onChange={(e) => setFormData({ ...formData, isBusinessBuyer: e.target.checked })}
+                  className="h-4 w-4 rounded border-[hsl(var(--customer-border))] text-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]"
+                />
+                <Label htmlFor="isBusinessBuyer" className="text-[hsl(var(--customer-text))] font-medium cursor-pointer">
+                  I'm a business buyer (wholesale)
+                </Label>
+              </div>
+              {formData.isBusinessBuyer && (
+                <div className="space-y-3 pt-2 border-t border-[hsl(var(--customer-border))]">
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName" className="text-[hsl(var(--customer-text))]">
+                      Business Name *
+                    </Label>
+                    <Input
+                      id="businessName"
+                      type="text"
+                      placeholder="Your business name"
+                      value={formData.businessName}
+                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                      required={formData.isBusinessBuyer}
+                      disabled={loading}
+                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessLicenseNumber" className="text-[hsl(var(--customer-text))]">
+                      Business License Number
+                    </Label>
+                    <Input
+                      id="businessLicenseNumber"
+                      type="text"
+                      placeholder="Enter license number (optional)"
+                      value={formData.businessLicenseNumber}
+                      onChange={(e) => setFormData({ ...formData, businessLicenseNumber: e.target.value })}
+                      disabled={loading}
+                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You can complete business verification after signup to access wholesale marketplace
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-[hsl(var(--customer-text))]">

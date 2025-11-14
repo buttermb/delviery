@@ -10,6 +10,7 @@ import {
   Settings,
   Sparkles,
   TrendingUp,
+  Building2,
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -17,12 +18,30 @@ import { Link, useNavigate } from "react-router-dom";
 import { MenuList } from "@/components/customer/MenuList";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
+import { ModeSwitcher, ModeBanner } from "@/components/customer/ModeSwitcher";
+import { useState, useEffect } from "react";
+import { STORAGE_KEYS, safeStorage } from "@/constants/storageKeys";
+
+type CustomerMode = 'retail' | 'wholesale';
 
 export default function CustomerDashboardPage() {
   const navigate = useNavigate();
   const { customer, tenant, logout } = useCustomerAuth();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
+  const [mode, setMode] = useState<CustomerMode>('retail');
+
+  // Load saved mode preference
+  useEffect(() => {
+    try {
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
+        setMode(savedMode);
+      }
+    } catch (error) {
+      // Ignore storage errors
+    }
+  }, []);
 
   // Fetch recent orders
   const { data: recentOrders } = useQuery({
@@ -42,6 +61,33 @@ export default function CustomerDashboardPage() {
     },
     enabled: !!tenantId && !!customerId,
   });
+
+  // Fetch marketplace profile to check if customer is a business buyer and verified
+  const { data: marketplaceProfile } = useQuery({
+    queryKey: ["customer-marketplace-profile", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+
+      const { data, error } = await supabase
+        .from("marketplace_profiles")
+        .select("id, license_verified, marketplace_status, can_sell")
+        .eq("tenant_id", tenantId)
+        .eq("can_sell", false) // Only buyer profiles
+        .maybeSingle();
+
+      if (error) {
+        // Ignore errors - not all customers are business buyers
+        return null;
+      }
+
+      return data;
+    },
+    enabled: !!tenantId,
+  });
+
+  // Check if customer is a verified business buyer
+  const isBusinessBuyer = !!marketplaceProfile;
+  const isVerified = marketplaceProfile?.license_verified === true && marketplaceProfile?.marketplace_status === 'active';
 
   const handleLogout = async () => {
     await logout();
@@ -80,6 +126,12 @@ export default function CustomerDashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <ModeSwitcher 
+              currentMode={mode} 
+              onModeChange={setMode}
+              isBusinessBuyer={isBusinessBuyer}
+              isVerified={isVerified}
+            />
             <Button variant="ghost" asChild className="text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]">
               <Link to={`/${tenant?.slug}/shop/settings`}>
                 <Settings className="h-4 w-4 mr-2" />
@@ -94,6 +146,15 @@ export default function CustomerDashboardPage() {
       </header>
 
       <div className="container mx-auto p-6 space-y-6">
+        {/* Mode Banner (Mobile) */}
+        <div className="lg:hidden">
+          <ModeBanner 
+            currentMode={mode} 
+            onModeChange={setMode}
+            isBusinessBuyer={isBusinessBuyer}
+            isVerified={isVerified}
+          />
+        </div>
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-gradient-to-br from-[hsl(var(--customer-primary))]/10 to-[hsl(var(--customer-primary))]/5 border-[hsl(var(--customer-primary))]/20">
@@ -141,6 +202,108 @@ export default function CustomerDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Wholesale Marketplace Quick Access */}
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-[hsl(var(--customer-primary))]" />
+                Wholesale Marketplace
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                asChild
+                className="text-[hsl(var(--customer-primary))]"
+              >
+                <Link to={`/${tenant?.slug}/shop/wholesale`}>
+                  Browse <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[hsl(var(--customer-text-light))] mb-3">
+              Shop wholesale products from verified suppliers
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-primary))]/30 text-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/10"
+              >
+                <Link to={`/${tenant?.slug}/shop/wholesale`}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Browse Marketplace
+                </Link>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))]"
+              >
+                <Link to={`/${tenant?.slug}/shop/wholesale/orders`}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Wholesale Orders
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Retail Shopping Quick Access */}
+        <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-[hsl(var(--customer-secondary))]" />
+                Retail Shopping
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                asChild
+                className="text-[hsl(var(--customer-secondary))]"
+              >
+                <Link to={`/${tenant?.slug}/shop/retail/businesses`}>
+                  Browse <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[hsl(var(--customer-text-light))] mb-3">
+              Shop from local dispensaries and businesses
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-secondary))]/30 text-[hsl(var(--customer-secondary))] hover:bg-[hsl(var(--customer-secondary))]/10"
+              >
+                <Link to={`/${tenant?.slug}/shop/retail/businesses`}>
+                  <Store className="h-4 w-4 mr-2" />
+                  Find Businesses
+                </Link>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))]"
+              >
+                <Link to={`/${tenant?.slug}/shop/orders`}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Retail Orders
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Available Menus */}
         <Card className="bg-white border-[hsl(var(--customer-border))] shadow-sm">
