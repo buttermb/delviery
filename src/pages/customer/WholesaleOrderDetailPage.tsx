@@ -396,17 +396,13 @@ export default function WholesaleOrderDetailPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="font-medium">{sellerProfile?.business_name || 'Unknown Seller'}</div>
-                    {sellerProfile?.verified_badge && (
+                    {sellerProfile?.license_verified && (
                       <Badge variant="outline" className="border-success/30 text-success text-xs mt-1">
-                        Verified Seller
+                        <ShieldCheck className="h-3 w-3 mr-1" />
+                        Verified License
                       </Badge>
                     )}
                   </div>
-                  {sellerProfile?.average_rating > 0 && (
-                    <div className="text-sm text-muted-foreground">
-                      ⭐ {sellerProfile.average_rating.toFixed(1)} ({sellerProfile.total_reviews} reviews)
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -465,12 +461,6 @@ export default function WholesaleOrderDetailPage() {
                   <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
                   <div className="text-sm capitalize">{order.payment_terms || 'Prepaid'}</div>
                 </div>
-                {order.paid_at && (
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Paid At</div>
-                    <div className="text-sm">{formatSmartDate(order.paid_at as string)}</div>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
