@@ -205,14 +205,14 @@ export const MenuWhitelistTab = ({
               <Card key={entry.id} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <div className="font-semibold mb-1">{entry.customer_name}</div>
+                    <div className="font-semibold mb-1">{jsonToString(entry.customer_name as any)}</div>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <div>{entry.customer_phone}</div>
-                      {entry.customer_email && <div>{entry.customer_email}</div>}
+                      <div>{jsonToString(entry.customer_phone as any)}</div>
+                      {entry.customer_email && <div>{jsonToString(entry.customer_email as any)}</div>}
                     </div>
                   </div>
-                  <Badge variant={entry.status === 'active' ? 'default' : 'outline'}>
-                    {entry.status}
+                  <Badge variant={jsonToString(entry.status as any) === 'active' ? 'default' : 'outline'}>
+                    {jsonToString(entry.status as any)}
                   </Badge>
                 </div>
 
@@ -221,16 +221,16 @@ export const MenuWhitelistTab = ({
                     <span className="font-medium">Views:</span> {entry.view_count || 0}
                   </div>
                   <div>
-                    <span className="font-medium">Invited:</span> {format(new Date(entry.invited_at), 'MMM dd')}
+                    <span className="font-medium">Invited:</span> {format(new Date(String(jsonToStringOrNumber(entry.invited_at as any))), 'MMM dd')}
                   </div>
                   {entry.first_access_at && (
                     <div>
-                      <span className="font-medium">First Access:</span> {format(new Date(entry.first_access_at), 'MMM dd')}
+                      <span className="font-medium">First Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.first_access_at as any))), 'MMM dd')}
                     </div>
                   )}
                   {entry.last_access_at && (
                     <div>
-                      <span className="font-medium">Last Access:</span> {format(new Date(entry.last_access_at), 'MMM dd')}
+                      <span className="font-medium">Last Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.last_access_at as any))), 'MMM dd')}
                     </div>
                   )}
                 </div>

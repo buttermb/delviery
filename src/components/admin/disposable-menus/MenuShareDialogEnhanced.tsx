@@ -382,23 +382,23 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
             <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status:</span>
-                <Badge variant={menu?.status === 'active' ? 'default' : 'destructive'}>
-                  {menu?.status}
+                <Badge variant={jsonToString(menu?.status as any) === 'active' ? 'default' : 'destructive'}>
+                  {jsonToString(menu?.status as any)}
                 </Badge>
               </div>
               {menu?.expiration_date && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Expires:</span>
                   <span className="font-medium">
-                    {new Date(menu.expiration_date).toLocaleDateString()}
+                    {new Date(String(jsonToStringOrNumber(menu.expiration_date as any))).toLocaleDateString()}
                   </span>
                 </div>
               )}
-              {menu?.security_settings?.max_views && (
+              {(menu?.security_settings as any)?.max_views && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">View Limit:</span>
                   <span className="font-medium">
-                    {menu.security_settings.max_views} views
+                    {String((menu.security_settings as any).max_views)} views
                   </span>
                 </div>
               )}
@@ -529,21 +529,21 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                       <div key={String(entry.id)} className="p-3 flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {jsonToString(entry.customer_name) || jsonToString((entry.customer as any)?.business_name) || 'Unknown Customer'}
+                            {jsonToString(entry.customer_name as any) || jsonToString((entry.customer as any)?.business_name as any) || 'Unknown Customer'}
                           </div>
                           {entry.customer_phone && (
                             <div className="text-sm text-muted-foreground">
-                              {jsonToString(entry.customer_phone)}
+                              {jsonToString(entry.customer_phone as any)}
                             </div>
                           )}
                           {(entry as any).invited_at && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Invited: {new Date(jsonToStringOrNumber((entry as any).invited_at)).toLocaleDateString()}
+                              Invited: {new Date(String(jsonToStringOrNumber((entry as any).invited_at as any))).toLocaleDateString()}
                             </div>
                           )}
                         </div>
-                        <Badge variant={jsonToString(entry.status) === 'active' ? 'default' : 'secondary'}>
-                          {jsonToString(entry.status) || 'active'}
+                        <Badge variant={jsonToString(entry.status as any) === 'active' ? 'default' : 'secondary'}>
+                          {jsonToString(entry.status as any) || 'active'}
                         </Badge>
                       </div>
                     ))}

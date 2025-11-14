@@ -34,3 +34,33 @@ export const jsonToStringOrNumber = (value: Json | undefined | null): string | n
   if (typeof value === 'boolean') return value.toString();
   return JSON.stringify(value);
 };
+
+export const jsonToBooleanSafe = (value: Json | undefined | null): boolean => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value === 'true' || value === '1';
+  if (typeof value === 'number') return value !== 0;
+  return false;
+};
+
+export const safeNestedAccess = (
+  obj: Json | undefined | null,
+  path: string[]
+): Json | undefined => {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
+  
+  let current: any = obj;
+  for (const key of path) {
+    if (!current || typeof current !== 'object' || Array.isArray(current)) return undefined;
+    current = current[key];
+  }
+  return current as Json;
+};
+
+export const extractSecuritySetting = (
+  securitySettings: Json | undefined | null,
+  key: string
+): Json | undefined => {
+  if (!securitySettings || typeof securitySettings !== 'object' || Array.isArray(securitySettings)) return undefined;
+  return (securitySettings as Record<string, Json>)[key];
+};

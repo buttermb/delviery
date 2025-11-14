@@ -78,7 +78,7 @@ export const OrderDetailsDialog = ({
       const { error } = await supabase
         .from('menu_orders')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id);
@@ -87,7 +87,7 @@ export const OrderDetailsDialog = ({
 
       // Send notification if status changed
       if (newStatus !== order.status) {
-        const eventMap: Record<string, string> = {
+        const eventMap: Record<string, any> = {
           'pending': 'order_placed',
           'processing': 'order_processing',
           'completed': 'order_completed',
@@ -96,7 +96,7 @@ export const OrderDetailsDialog = ({
 
         const event = eventMap[newStatus];
         if (event) {
-          sendNotification.mutate({ orderId: order.id, event });
+          sendNotification.mutate({ orderId: order.id, event: event as any });
         }
       }
 

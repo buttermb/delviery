@@ -30,7 +30,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
-import { jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface OrderItem {
   product_name?: string;
@@ -277,7 +277,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
             <p className="text-lg font-semibold">
               {order.urgency === 'asap' ? 'ASAP (Today/Tomorrow)' :
                order.urgency === 'this_week' ? 'This Week' :
-               order.specific_date ? new Date(order.specific_date).toLocaleDateString() : 'Not specified'}
+               order.specific_date ? new Date(String(jsonToStringOrNumber(order.specific_date as any))).toLocaleDateString() : 'Not specified'}
             </p>
           </div>
 
@@ -286,7 +286,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
             <div>
               <Label className="mb-2 block">Customer Notes</Label>
               <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-sm">{order.notes}</p>
+                <p className="text-sm">{jsonToString(order.notes as any)}</p>
               </div>
             </div>
           )}

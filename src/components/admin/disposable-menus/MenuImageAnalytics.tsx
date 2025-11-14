@@ -155,7 +155,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
             onDateRangeChange={setDateRange} 
           />
           <AnalyticsExportButton 
-            data={analytics} 
+            data={analytics as unknown as Record<string, unknown>[]} 
             filename={`menu-analytics-${menuId}`} 
           />
         </div>
