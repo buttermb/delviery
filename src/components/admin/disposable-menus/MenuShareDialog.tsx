@@ -13,7 +13,7 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { jsonToString, safeJsonAccess } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
 
 interface Menu {
   encrypted_url_token: string;
