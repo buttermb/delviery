@@ -67,7 +67,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-bold">{menu.name}</h3>
-                {menu.menu_type === 'forum' && (
+                {isForumMenu && (
                   <Badge variant="secondary" className="gap-1 text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
                     <MessageSquare className="h-3 w-3" />
                     Forum Menu
