@@ -82,11 +82,11 @@ export function PanicResetTool() {
       setShowPreview(false);
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       logger.error('Panic reset error', error);
       toast({
         title: 'Reset Failed',
-        description: error.message || 'An error occurred during reset',
+        description: error instanceof Error ? error.message : 'An error occurred during reset',
         variant: 'destructive',
       });
     },
@@ -130,14 +130,14 @@ export function PanicResetTool() {
   const selectedTenant = tenants?.find((t) => t.id === selectedTenantId);
 
   return (
-    <Card className="border-red-200 dark:border-red-900">
+    <Card className="border-destructive/20">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-red-500" />
+          <AlertTriangle className="h-5 w-5 text-destructive" />
           <CardTitle>Panic Reset Tool</CardTitle>
         </div>
         <CardDescription>
-          <strong className="text-red-600 dark:text-red-400">DANGER:</strong> This will permanently delete tenant data.
+          <strong className="text-destructive">DANGER:</strong> This will permanently delete tenant data.
           Use with extreme caution.
         </CardDescription>
       </CardHeader>
@@ -204,7 +204,7 @@ export function PanicResetTool() {
         {selectedTenant && (
           <div className="space-y-2 pt-4 border-t">
             <Label htmlFor="confirmation">
-              Type <code className="text-red-600 font-bold">CONFIRM_RESET</code> to proceed:
+              Type <code className="text-destructive font-bold">CONFIRM_RESET</code> to proceed:
             </Label>
             <Input
               id="confirmation"

@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SuperAdminNavigation } from "@/components/super-admin/SuperAdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Shield, AlertTriangle, CheckCircle, Play, Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -53,18 +52,11 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
-      <header className="border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">🔒 Security</h1>
-            <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Vulnerability scanning & compliance</p>
-          </div>
-          <SuperAdminNavigation />
-        </div>
-      </header>
-
-      <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">🔒 Security</h1>
+        <p className="text-sm text-muted-foreground">Vulnerability scanning & compliance</p>
+      </div>
         {/* Security Score */}
         <Card className="bg-gradient-to-r from-[hsl(var(--super-admin-primary))]/20 to-[hsl(var(--super-admin-secondary))]/20 border-[hsl(var(--super-admin-primary))]/30">
           <CardHeader>
@@ -197,7 +189,6 @@ export default function SecurityPage() {
             ))}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

@@ -157,7 +157,7 @@ export function MRRBreakdownChart() {
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
               }}
-              formatter={(value: any) => `$${value.toLocaleString()}`}
+              formatter={(value: number | string) => `$${typeof value === 'number' ? value.toLocaleString() : value}`}
             />
             <Legend />
             <Area

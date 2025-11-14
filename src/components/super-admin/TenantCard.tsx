@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +13,7 @@ import {
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { calculateHealthScore } from "@/lib/tenant";
+import { getStatusColor, getHealthTextColor, getHealthVariant, getStatusVariant } from "@/lib/utils/statusColors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,31 +45,32 @@ export const TenantCard = memo(function TenantCard({
 }: TenantCardProps) {
   const health = calculateHealthScore(tenant);
   const healthScore = health.score;
-  const healthColor = 
-    healthScore >= 80 ? "text-green-400" :
-    healthScore >= 60 ? "text-yellow-400" :
-    "text-red-400";
+  const healthColor = getHealthTextColor(healthScore);
   
+  // Map health text color to stroke color
   const healthRingColor = 
-    healthScore >= 80 ? "stroke-green-400" :
-    healthScore >= 60 ? "stroke-yellow-400" :
-    "stroke-red-400";
+    healthScore >= 80 ? "stroke-success" :
+    healthScore >= 60 ? "stroke-warning" :
+    "stroke-destructive";
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; className: string }> = {
-      active: { label: "✅ Active", className: "bg-green-500/20 text-green-400 border-green-500/30" },
-      trial: { label: "🆓 Trial", className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-      trialing: { label: "🆓 Trialing", className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-      past_due: { label: "🔴 Past Due", className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-      cancelled: { label: "Cancelled", className: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
-      suspended: { label: "Suspended", className: "bg-red-500/20 text-red-400 border-red-500/30" },
+    const statusLabels: Record<string, string> = {
+      active: "✅ Active",
+      trial: "🆓 Trial",
+      trialing: "🆓 Trialing",
+      past_due: "🔴 Past Due",
+      cancelled: "Cancelled",
+      canceled: "Cancelled",
+      suspended: "Suspended",
     };
 
-    const config = statusConfig[status] || { label: status.toUpperCase(), className: "" };
+    const label = statusLabels[status.toLowerCase()] || status.toUpperCase();
+    const statusColor = getStatusColor(status);
+    const variant = getStatusVariant(status);
 
     return (
-      <Badge variant="outline" className={config.className}>
-        {config.label}
+      <Badge variant={variant} className={statusColor}>
+        {label}
       </Badge>
     );
   };
@@ -176,7 +177,7 @@ export const TenantCard = memo(function TenantCard({
                 r="20"
                 fill="none"
                 strokeWidth="4"
-                className={healthRingColor}
+                className={`${healthRingColor} stroke-[hsl(var(--${healthScore >= 80 ? 'success' : healthScore >= 60 ? 'warning' : 'destructive'}))]`}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"

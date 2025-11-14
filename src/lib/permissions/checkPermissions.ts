@@ -1,11 +1,9 @@
-// @ts-nocheck
 /**
  * Permission Check Utilities
  * Functions for checking user permissions in components and edge functions
  */
 
-import { hasRolePermission, mapDatabaseRoleToSystemRole } from './rolePermissions';
-import type { Role, Permission } from './rolePermissions';
+import { hasRolePermission, Role, Permission, ROLES, mapDatabaseRoleToSystemRole, getRolePermissions } from './rolePermissions';
 import { logger } from '@/lib/logger';
 
 /**
@@ -21,7 +19,7 @@ export function hasPermission(role: Role | string | null | undefined, permission
   }
 
   // Map database role to system role if needed
-  const systemRole = typeof role === 'string' && !Object.values(Role).includes(role as Role)
+  const systemRole = typeof role === 'string' && !Object.values(ROLES).includes(role as Role)
     ? mapDatabaseRoleToSystemRole(role)
     : (role as Role);
 
@@ -54,12 +52,10 @@ export function getUserPermissions(role: Role | string | null | undefined): Perm
   }
 
   // Map database role to system role if needed
-  const systemRole = typeof role === 'string' && !Object.values(Role).includes(role as Role)
+  const systemRole = typeof role === 'string' && !Object.values(ROLES).includes(role as Role)
     ? mapDatabaseRoleToSystemRole(role)
     : (role as Role);
 
-  // Import getRolePermissions dynamically to avoid circular dependency
-  const { getRolePermissions } = require('./rolePermissions');
   return getRolePermissions(systemRole);
 }
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { 
   Building2, 
   DollarSign,
@@ -22,6 +23,7 @@ import {
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { FeatureList } from "@/components/admin/FeatureList";
@@ -31,6 +33,7 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { logger } from "@/lib/logger";
 import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
+import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -232,35 +235,17 @@ export default function TenantDetailPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; className: string }> = {
-      active: { label: "Active", className: "bg-green-500/20 text-green-400 border-green-500/30" },
-      suspended: { label: "Suspended", className: "bg-red-500/20 text-red-400 border-red-500/30" },
-      cancelled: { label: "Cancelled", className: "bg-muted text-muted-foreground border-border" },
-    };
-
-    const config = statusConfig[status] || { label: status.toUpperCase(), className: "" };
-
     return (
-      <Badge variant="outline" className={config.className}>
-        {config.label}
+      <Badge variant={getStatusVariant(status)} className={getStatusColor(status)}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
   };
 
   const getSubscriptionStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; className: string }> = {
-      active: { label: "Active", className: "bg-green-500/20 text-green-400 border-green-500/30" },
-      trial: { label: "Trial", className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-      trialing: { label: "Trialing", className: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-      past_due: { label: "Past Due", className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-      cancelled: { label: "Cancelled", className: "bg-muted text-muted-foreground border-border" },
-    };
-
-    const config = statusConfig[status] || { label: status.replace("_", " ").toUpperCase(), className: "" };
-
     return (
-      <Badge variant="outline" className={config.className}>
-        {config.label}
+      <Badge variant={getStatusVariant(status)} className={getStatusColor(status)}>
+        {status.replace("_", " ").charAt(0).toUpperCase() + status.replace("_", " ").slice(1)}
       </Badge>
     );
   };
@@ -363,13 +348,15 @@ export default function TenantDetailPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="bg-[hsl(var(--super-admin-surface))]/80 border-white/10">
+          <TabsList className="bg-[hsl(var(--super-admin-surface))]/80 border-white/10 grid w-full grid-cols-8">
             <TabsTrigger value="overview" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Overview</TabsTrigger>
             <TabsTrigger value="features" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Features</TabsTrigger>
+            <TabsTrigger value="usage" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Usage</TabsTrigger>
             <TabsTrigger value="billing" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Billing</TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Users</TabsTrigger>
             <TabsTrigger value="activity" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Activity</TabsTrigger>
             <TabsTrigger value="data" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Data</TabsTrigger>
+            <TabsTrigger value="support" className="data-[state=active]:bg-white/10 data-[state=active]:text-[hsl(var(--super-admin-text))] text-[hsl(var(--super-admin-text))]/70">Support</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -849,7 +836,7 @@ export default function TenantDetailPage() {
                                               </thead>
                                               <tbody>
                                                 ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
-                                                  ? invoice.line_items.map((item: any) => `
+                                                  ? invoice.line_items.map((item: InvoiceLineItem) => `
                                                     <tr>
                                                       <td>${item.description || item.name || 'N/A'}</td>
                                                       <td>${item.quantity || 1}</td>
@@ -1024,6 +1011,52 @@ export default function TenantDetailPage() {
                 </p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="usage" className="space-y-6">
+            <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
+              <CardHeader>
+                <CardTitle className="text-[hsl(var(--super-admin-text))]">Usage Monitoring</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Customers</span>
+                      <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
+                        {((tenant.usage as Record<string, number>)?.customers || 0)} / {((tenant.limits as Record<string, number>)?.customers || 'Unlimited')}
+                      </span>
+                    </div>
+                    {((tenant.limits as Record<string, number>)?.customers || -1) !== -1 && (
+                      <Progress value={(((tenant.usage as Record<string, number>)?.customers || 0) / ((tenant.limits as Record<string, number>)?.customers || 1)) * 100} />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Products</span>
+                      <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
+                        {((tenant.usage as Record<string, number>)?.products || 0)} / {((tenant.limits as Record<string, number>)?.products || 'Unlimited')}
+                      </span>
+                    </div>
+                    {((tenant.limits as Record<string, number>)?.products || -1) !== -1 && (
+                      <Progress value={(((tenant.usage as Record<string, number>)?.products || 0) / ((tenant.limits as Record<string, number>)?.products || 1)) * 100} />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Monthly Orders</span>
+                      <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
+                        {(tenant as any).monthly_orders || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="support" className="space-y-6">
+            <SupportTicketsTab tenantId={tenantId || ''} />
           </TabsContent>
         </Tabs>
       </div>

@@ -127,7 +127,7 @@ export function TenantMigration() {
         {/* Migration Type */}
         <div className="space-y-2">
           <Label>Migration Type</Label>
-          <Select value={migrationType} onValueChange={(value: any) => setMigrationType(value)}>
+          <Select value={migrationType} onValueChange={(value: string) => setMigrationType(value)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -229,10 +229,10 @@ export function TenantMigration() {
               {steps.map((step, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
                   {step.status === 'completed' && (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   )}
                   {step.status === 'running' && (
-                    <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-info border-t-transparent rounded-full animate-spin" />
                   )}
                   {step.status === 'pending' && (
                     <div className="h-4 w-4 border-2 border-muted rounded-full" />

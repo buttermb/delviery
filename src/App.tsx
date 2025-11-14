@@ -80,6 +80,7 @@ const LoginDirectory = lazy(() => import("./pages/LoginDirectory"));
 // Three-Tier Auth System Pages
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
 const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
+const SuperAdminTenantsListPage = lazy(() => import("./pages/super-admin/TenantsListPage"));
 const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
 const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
 const SuperAdminMonitoringPage = lazy(() => import("./pages/super-admin/MonitoringPage"));
@@ -97,6 +98,7 @@ const SuperAdminSystemConfigPage = lazy(() => import("./pages/super-admin/System
 const SuperAdminSecurityPage = lazy(() => import("./pages/super-admin/SecurityPage"));
 const SuperAdminToolsPage = lazy(() => import("./pages/super-admin/ToolsPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
+const SuperAdminLayout = lazy(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
@@ -409,23 +411,30 @@ const App = () => {
                         {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                         <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
                         <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
-                        <Route path="/super-admin/dashboard" element={<SuperAdminProtectedRouteNew><SuperAdminDashboardPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/monitoring" element={<SuperAdminProtectedRouteNew><SuperAdminMonitoringPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/analytics" element={<SuperAdminProtectedRouteNew><SuperAdminAnalyticsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/data-explorer" element={<SuperAdminProtectedRouteNew><SuperAdminDataExplorerPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/api-usage" element={<SuperAdminProtectedRouteNew><SuperAdminAPIUsagePage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/audit-logs" element={<SuperAdminProtectedRouteNew><SuperAdminAuditLogsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/revenue-analytics" element={<SuperAdminProtectedRouteNew><SuperAdminRevenueAnalyticsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/report-builder" element={<SuperAdminProtectedRouteNew><SuperAdminReportBuilderPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/executive-dashboard" element={<SuperAdminProtectedRouteNew><SuperAdminExecutiveDashboardPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/workflows" element={<SuperAdminProtectedRouteNew><SuperAdminWorkflowsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/communication" element={<SuperAdminProtectedRouteNew><SuperAdminCommunicationPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/feature-flags" element={<SuperAdminProtectedRouteNew><SuperAdminFeatureFlagsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/system-config" element={<SuperAdminProtectedRouteNew><SuperAdminSystemConfigPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/security" element={<SuperAdminProtectedRouteNew><SuperAdminSecurityPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/tools" element={<SuperAdminProtectedRouteNew><SuperAdminToolsPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/tenants/:tenantId" element={<SuperAdminProtectedRouteNew><SuperAdminTenantDetailPage /></SuperAdminProtectedRouteNew>} />
-                        <Route path="/super-admin/settings" element={<SuperAdminProtectedRouteNew><SuperAdminSettingsPage /></SuperAdminProtectedRouteNew>} />
+                        <Route path="/super-admin/*" element={
+                          <SuperAdminProtectedRouteNew>
+                            <SuperAdminLayout />
+                          </SuperAdminProtectedRouteNew>
+                        }>
+                          <Route path="dashboard" element={<SuperAdminDashboardPage />} />
+                          <Route path="monitoring" element={<SuperAdminMonitoringPage />} />
+                          <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
+                          <Route path="data-explorer" element={<SuperAdminDataExplorerPage />} />
+                          <Route path="api-usage" element={<SuperAdminAPIUsagePage />} />
+                          <Route path="audit-logs" element={<SuperAdminAuditLogsPage />} />
+                          <Route path="revenue-analytics" element={<SuperAdminRevenueAnalyticsPage />} />
+                          <Route path="report-builder" element={<SuperAdminReportBuilderPage />} />
+                          <Route path="executive-dashboard" element={<SuperAdminExecutiveDashboardPage />} />
+                          <Route path="workflows" element={<SuperAdminWorkflowsPage />} />
+                          <Route path="communication" element={<SuperAdminCommunicationPage />} />
+                          <Route path="feature-flags" element={<SuperAdminFeatureFlagsPage />} />
+                          <Route path="system-config" element={<SuperAdminSystemConfigPage />} />
+                          <Route path="security" element={<SuperAdminSecurityPage />} />
+                          <Route path="tools" element={<SuperAdminToolsPage />} />
+                          <Route path="tenants" element={<SuperAdminTenantsListPage />} />
+                          <Route path="tenants/:tenantId" element={<SuperAdminTenantDetailPage />} />
+                          <Route path="settings" element={<SuperAdminSettingsPage />} />
+                        </Route>
                         
                         {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                         <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />

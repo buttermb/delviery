@@ -1,0 +1,546 @@
+/**
+ * Tenants List Page
+ * Complete tenant management with filters, table/cards view, and bulk actions
+ */
+
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import {
+  Search,
+  Download,
+  Plus,
+  SlidersHorizontal,
+  ChevronDown,
+  X,
+  Table2,
+  LayoutGrid,
+  Eye,
+  UserCog,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Ban,
+} from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { formatSmartDate } from '@/lib/utils/formatDate';
+import { calculateHealthScore } from '@/lib/tenant';
+import { getStatusColor, getStatusVariant, getPlanVariant, getHealthTextColor } from '@/lib/utils/statusColors';
+import { TenantCard } from '@/components/super-admin/TenantCard';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+export default function TenantsListPage() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [planFilter, setPlanFilter] = useState('all');
+  const [healthFilter, setHealthFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  // Fetch tenants
+  const { data: tenants = [], isLoading } = useQuery({
+    queryKey: ['super-admin-tenants-list', searchQuery, statusFilter, planFilter],
+    queryFn: async () => {
+      let query = supabase.from('tenants').select('*');
+
+      if (searchQuery) {
+        query = query.or(
+          `business_name.ilike.%${searchQuery}%,owner_email.ilike.%${searchQuery}%,id.eq.${searchQuery}`
+        );
+      }
+
+      if (statusFilter !== 'all') {
+        query = query.eq('subscription_status', statusFilter);
+      }
+
+      if (planFilter !== 'all') {
+        query = query.eq('subscription_plan', planFilter);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Filter tenants by health score
+  const filteredTenants = useMemo(() => {
+    if (healthFilter === 'all') return tenants;
+
+    return tenants.filter((tenant) => {
+      const health = calculateHealthScore(tenant);
+      const score = health.score;
+
+      if (healthFilter === 'healthy') return score >= 80;
+      if (healthFilter === 'warning') return score >= 50 && score < 80;
+      if (healthFilter === 'at-risk') return score < 50;
+
+      return true;
+    });
+  }, [tenants, healthFilter]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTenants.length / itemsPerPage);
+  const paginatedTenants = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredTenants.slice(start, start + itemsPerPage);
+  }, [filteredTenants, currentPage]);
+
+  // Active filters for display
+  const activeFilters = useMemo(() => {
+    const filters: Array<{ key: string; label: string }> = [];
+    if (statusFilter !== 'all') {
+      filters.push({ key: 'status', label: `Status: ${statusFilter}` });
+    }
+    if (planFilter !== 'all') {
+      filters.push({ key: 'plan', label: `Plan: ${planFilter}` });
+    }
+    if (healthFilter !== 'all') {
+      filters.push({ key: 'health', label: `Health: ${healthFilter}` });
+    }
+    return filters;
+  }, [statusFilter, planFilter, healthFilter]);
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setPlanFilter('all');
+    setHealthFilter('all');
+    setSearchQuery('');
+  };
+
+  const toggleSelect = (tenantId: string) => {
+    setSelectedTenants((prev) =>
+      prev.includes(tenantId)
+        ? prev.filter((id) => id !== tenantId)
+        : [...prev, tenantId]
+    );
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTenants(paginatedTenants.map((t) => t.id));
+    } else {
+      setSelectedTenants([]);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedTenants([]);
+  };
+
+  const getHealthColor = (score: number) => {
+    if (score >= 80) return 'bg-success';
+    if (score >= 50) return 'bg-warning';
+    return 'bg-destructive';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center py-12">Loading tenants...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Tenants</h1>
+          <p className="text-muted-foreground">Manage all customer accounts</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => {/* TODO: Export */}}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button onClick={() => navigate('/super-admin/tenants/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Tenant
+          </Button>
+        </div>
+      </div>
+
+      {/* Smart Filter Bar */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Search */}
+            <div className="md:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tenants by name, email, or ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
+                <SelectItem value="past_due">Past Due</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Plan Filter */}
+            <Select value={planFilter} onValueChange={setPlanFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Plans</SelectItem>
+                <SelectItem value="starter">Starter</SelectItem>
+                <SelectItem value="professional">Professional</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Health Filter */}
+            <Select value={healthFilter} onValueChange={setHealthFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Health" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Health</SelectItem>
+                <SelectItem value="healthy">Healthy (80-100)</SelectItem>
+                <SelectItem value="warning">Warning (50-79)</SelectItem>
+                <SelectItem value="at-risk">At Risk (&lt;50)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Advanced Filters (Collapsible) */}
+          <Collapsible open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="mt-4">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                Advanced Filters
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 transition-transform ${
+                    showAdvancedFilters ? 'rotate-180' : ''
+                  }`}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Sort By</label>
+                  <Select defaultValue="name">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="mrr-desc">MRR (High to Low)</SelectItem>
+                      <SelectItem value="mrr-asc">MRR (Low to High)</SelectItem>
+                      <SelectItem value="health-desc">Health Score</SelectItem>
+                      <SelectItem value="date-desc">Newest First</SelectItem>
+                      <SelectItem value="date-asc">Oldest First</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Active Filters Display */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {activeFilters.map((filter) => (
+                <Badge key={filter.key} variant="secondary" className="gap-1">
+                  {filter.label}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => {
+                      if (filter.key === 'status') setStatusFilter('all');
+                      if (filter.key === 'plan') setPlanFilter('all');
+                      if (filter.key === 'health') setHealthFilter('all');
+                    }}
+                  />
+                </Badge>
+              ))}
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                Clear All
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {filteredTenants.length} of {tenants.length} tenants
+        </div>
+        <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'table' | 'cards')}>
+          <ToggleGroupItem value="table" aria-label="Table view">
+            <Table2 className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="cards" aria-label="Cards view">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Table View */}
+      {viewMode === 'table' && (
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={
+                      selectedTenants.length > 0 &&
+                      selectedTenants.length === paginatedTenants.length
+                    }
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
+                <TableHead>Tenant</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>MRR</TableHead>
+                <TableHead>Health</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedTenants.map((tenant) => {
+                const health = calculateHealthScore(tenant);
+                const healthScore = health.score;
+                return (
+                  <TableRow key={tenant.id} className="group">
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedTenants.includes(tenant.id)}
+                        onCheckedChange={() => toggleSelect(tenant.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={(tenant.white_label as any)?.logo} />
+                          <AvatarFallback>
+                            {(tenant.business_name as string)?.charAt(0) || 'T'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{tenant.business_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {tenant.owner_email}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getPlanVariant(tenant.subscription_plan as string)}>
+                        {tenant.subscription_plan}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getStatusVariant(tenant.subscription_status as string)}
+                        className={getStatusColor(tenant.subscription_status as string)}
+                      >
+                        {tenant.subscription_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">
+                        {formatCurrency((tenant.mrr as number) || 0)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress
+                          value={healthScore}
+                          className="w-16 h-2"
+                        />
+                        <span className={`text-sm font-medium ${getHealthTextColor(healthScore)}`}>
+                          {healthScore}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {formatSmartDate(tenant.created_at as string)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View Details</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                                }}
+                              >
+                                <UserCog className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Impersonate</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate(`/super-admin/tenants/${tenant.id}?tab=settings`)}
+                              >
+                                <Settings className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Settings</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Card View */}
+      {viewMode === 'cards' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paginatedTenants.map((tenant) => (
+            <TenantCard
+              key={tenant.id}
+              tenant={tenant}
+              onView={(id) => navigate(`/super-admin/tenants/${id}`)}
+              onLoginAs={(id) => {
+                window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Bulk Actions Bar */}
+      {selectedTenants.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <Card className="shadow-2xl">
+            <CardContent className="flex items-center gap-4 py-3 px-6">
+              <span className="font-medium">{selectedTenants.length} selected</span>
+              <Separator orientation="vertical" className="h-6" />
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk change plan */}}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                Change Plan
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk suspend */}}>
+                <Ban className="mr-2 h-4 w-4" />
+                Suspend
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk export */}}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+              <Button variant="ghost" size="sm" onClick={clearSelection}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+

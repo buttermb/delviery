@@ -167,7 +167,7 @@ export function APIUsageDashboard() {
                     <td className="p-2 font-mono text-xs">{endpoint.endpoint}</td>
                     <td className="p-2 text-right">{endpoint.count.toLocaleString()}</td>
                     <td className="p-2 text-right">
-                      <span className={endpoint.avgResponseTime > 500 ? 'text-yellow-500' : ''}>
+                      <span className={endpoint.avgResponseTime > 500 ? 'text-warning' : ''}>
                         {endpoint.avgResponseTime}ms
                       </span>
                     </td>

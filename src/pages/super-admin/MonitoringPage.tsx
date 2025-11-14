@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SuperAdminNavigation } from "@/components/super-admin/SuperAdminNavigation";
 import { Activity, Cpu, HardDrive, Server, TrendingUp, Clock } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -14,18 +13,11 @@ const mockMetricsData = Array.from({ length: 24 }, (_, i) => ({
 
 export default function MonitoringPage() {
   return (
-    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
-      <header className="border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">📊 System Monitoring</h1>
-            <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Real-time platform health & metrics</p>
-          </div>
-          <SuperAdminNavigation />
-        </div>
-      </header>
-
-      <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">📊 System Monitoring</h1>
+        <p className="text-sm text-muted-foreground">Real-time platform health & metrics</p>
+      </div>
         {/* System Health Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
@@ -125,7 +117,6 @@ export default function MonitoringPage() {
             ))}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

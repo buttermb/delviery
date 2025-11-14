@@ -1,37 +1,66 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SuperAdminNavigation } from "@/components/super-admin/SuperAdminNavigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Send, Users, TrendingUp, Clock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-// Mock campaign data
-const mockCampaigns = [
-  { id: 1, name: 'Monthly Newsletter', sent: 1250, opened: 892, clicked: 234, created: '2024-01-10' },
-  { id: 2, name: 'Product Update', sent: 980, opened: 765, clicked: 198, created: '2024-01-12' },
-  { id: 3, name: 'Trial Reminder', sent: 450, opened: 312, clicked: 87, created: '2024-01-14' },
-];
+import { formatSmartDate } from '@/lib/utils/formatDate';
 
 export default function CommunicationPage() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
 
-  return (
-    <div className="min-h-screen bg-[hsl(var(--super-admin-bg))]">
-      <header className="border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">📧 Communications</h1>
-            <p className="text-sm text-[hsl(var(--super-admin-text))]/70">Manage email campaigns & messaging</p>
-          </div>
-          <SuperAdminNavigation />
-        </div>
-      </header>
+  // Fetch campaigns from all tenants
+  const { data: campaigns = [], isLoading } = useQuery({
+    queryKey: ['super-admin-campaigns'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('marketing_campaigns')
+        .select('id, name, sent_count, opened_count, clicked_count, created_at, status, tenant_id')
+        .in('status', ['sent', 'sending'])
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      <div className="container mx-auto p-6 space-y-6">
+      if (error) throw error;
+      return data || [];
+    },
+    refetchInterval: 60000, // Refetch every minute
+  });
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    
+    const thisMonthCampaigns = campaigns.filter(c => 
+      new Date(c.created_at || 0) >= thisMonth
+    );
+
+    const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0);
+    const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0);
+    const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
+    
+    const openRate = totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : '0.0';
+    const clickRate = totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : '0.0';
+
+    return {
+      campaigns: thisMonthCampaigns.length,
+      totalSent,
+      openRate: parseFloat(openRate),
+      clickRate: parseFloat(clickRate),
+    };
+  }, [campaigns]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">📧 Communications</h1>
+        <p className="text-sm text-muted-foreground">Manage email campaigns & messaging</p>
+      </div>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
@@ -40,7 +69,9 @@ export default function CommunicationPage() {
               <Mail className="h-4 w-4 text-[hsl(var(--super-admin-primary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">24</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                {isLoading ? '...' : stats.campaigns}
+              </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">This month</p>
             </CardContent>
           </Card>
@@ -51,7 +82,9 @@ export default function CommunicationPage() {
               <Send className="h-4 w-4 text-[hsl(var(--super-admin-secondary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">2,680</div>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                {isLoading ? '...' : stats.totalSent.toLocaleString()}
+              </div>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">Emails delivered</p>
             </CardContent>
           </Card>
@@ -62,8 +95,10 @@ export default function CommunicationPage() {
               <TrendingUp className="h-4 w-4 text-[hsl(var(--super-admin-primary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">72.8%</div>
-              <p className="text-xs text-green-400 mt-1">+5.2% ↑</p>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                {isLoading ? '...' : `${stats.openRate}%`}
+              </div>
+              <p className="text-xs text-green-400 mt-1">Average open rate</p>
             </CardContent>
           </Card>
 
@@ -73,8 +108,10 @@ export default function CommunicationPage() {
               <Users className="h-4 w-4 text-[hsl(var(--super-admin-secondary))]" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">19.4%</div>
-              <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">Above average</p>
+              <div className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">
+                {isLoading ? '...' : `${stats.clickRate}%`}
+              </div>
+              <p className="text-xs text-[hsl(var(--super-admin-text))]/60 mt-1">Average click rate</p>
             </CardContent>
           </Card>
         </div>
@@ -139,35 +176,58 @@ export default function CommunicationPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockCampaigns.map((campaign) => (
-                    <TableRow key={campaign.id} className="border-white/10">
-                      <TableCell className="text-[hsl(var(--super-admin-text))]">{campaign.name}</TableCell>
-                      <TableCell className="text-[hsl(var(--super-admin-text))]">{campaign.sent.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[hsl(var(--super-admin-text))]">{campaign.opened}</span>
-                          <Badge className="bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))]">
-                            {((campaign.opened / campaign.sent) * 100).toFixed(1)}%
-                          </Badge>
-                        </div>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        Loading campaigns...
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[hsl(var(--super-admin-text))]">{campaign.clicked}</span>
-                          <Badge className="bg-[hsl(var(--super-admin-secondary))]/20 text-[hsl(var(--super-admin-secondary))]">
-                            {((campaign.clicked / campaign.sent) * 100).toFixed(1)}%
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-[hsl(var(--super-admin-text))]/70">{campaign.created}</TableCell>
                     </TableRow>
-                  ))}
+                  ) : campaigns.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No campaigns found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    campaigns.map((campaign) => {
+                      const sent = campaign.sent_count || 0;
+                      const opened = campaign.opened_count || 0;
+                      const clicked = campaign.clicked_count || 0;
+                      const openRate = sent > 0 ? ((opened / sent) * 100).toFixed(1) : '0.0';
+                      const clickRate = sent > 0 ? ((clicked / sent) * 100).toFixed(1) : '0.0';
+
+                      return (
+                        <TableRow key={campaign.id} className="border-white/10">
+                          <TableCell className="text-[hsl(var(--super-admin-text))]">{campaign.name || 'Unnamed Campaign'}</TableCell>
+                          <TableCell className="text-[hsl(var(--super-admin-text))]">{sent.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[hsl(var(--super-admin-text))]">{opened}</span>
+                              <Badge className="bg-[hsl(var(--super-admin-primary))]/20 text-[hsl(var(--super-admin-primary))]">
+                                {openRate}%
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[hsl(var(--super-admin-text))]">{clicked}</span>
+                              <Badge className="bg-[hsl(var(--super-admin-secondary))]/20 text-[hsl(var(--super-admin-secondary))]">
+                                {clickRate}%
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-[hsl(var(--super-admin-text))]/70">
+                            {campaign.created_at ? formatSmartDate(campaign.created_at) : 'N/A'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

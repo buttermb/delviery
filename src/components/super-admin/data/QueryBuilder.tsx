@@ -34,7 +34,7 @@ export function QueryBuilder() {
   const { toast } = useToast();
   const [query, setQuery] = useState('');
   const [selectedTable, setSelectedTable] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<Record<string, unknown>[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
   const [queryHistory, setQueryHistory] = useState<string[]>([]);
   const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
@@ -78,7 +78,7 @@ export function QueryBuilder() {
       });
       
       // For demo purposes, return empty results
-      const data: any[] = [];
+      const data: Record<string, unknown>[] = [];
       const error = null;
 
       setResults(data || []);
@@ -88,10 +88,10 @@ export function QueryBuilder() {
         title: 'Success',
         description: `Query executed. ${data?.length || 0} rows returned.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Query Error',
-        description: error.message || 'Failed to execute query',
+        description: error instanceof Error ? error.message : 'Failed to execute query',
         variant: 'destructive',
       });
       setResults([]);
@@ -221,7 +221,7 @@ export function QueryBuilder() {
                     <tbody>
                       {results.slice(0, 100).map((row, idx) => (
                         <tr key={idx} className="border-t hover:bg-muted/50">
-                          {Object.values(row).map((value: any, valIdx) => (
+                          {Object.values(row).map((value: unknown, valIdx) => (
                             <td key={valIdx} className="px-4 py-2">
                               {value !== null && value !== undefined
                                 ? String(value)

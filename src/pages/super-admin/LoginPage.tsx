@@ -8,6 +8,7 @@ import { Shield, Loader2, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { logger } from "@/lib/logger";
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();
@@ -30,12 +31,12 @@ export default function SuperAdminLoginPage() {
       });
 
       navigate("/super-admin/dashboard", { replace: true });
-    } catch (error: any) {
-      console.error("Super admin login error:", error);
+    } catch (error: unknown) {
+      logger.error("Super admin login error", error, { component: 'SuperAdminLoginPage' });
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.message || "Invalid credentials",
+        description: error instanceof Error ? error.message : "Invalid credentials",
       });
       setLoading(false);
     }

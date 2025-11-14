@@ -88,10 +88,10 @@ export default function SuperAdminSettingsPage() {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update password",
+        description: error instanceof Error ? error.message : "Failed to update password",
         variant: "destructive",
       });
     } finally {
