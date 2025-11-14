@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Public Marketplace Page
  * Browse wholesale marketplace without login

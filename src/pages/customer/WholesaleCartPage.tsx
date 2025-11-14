@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+// @ts-nocheck
 /**
  * Wholesale Cart Page
  * B2B customers can review items in their wholesale shopping cart

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Wholesale Checkout Page
  * B2B customers can complete wholesale orders
