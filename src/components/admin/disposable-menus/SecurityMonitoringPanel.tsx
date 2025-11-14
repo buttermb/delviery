@@ -367,7 +367,7 @@ export const SecurityMonitoringPanel = () => {
                             {blocked.reason || 'Suspicious activity detected'}
                           </p>
                           <div className="text-xs text-muted-foreground">
-                            Blocked {format(new Date(blocked.created_at), 'MMM dd, yyyy HH:mm')}
+                            Blocked {format(new Date(String(blocked.created_at || Date.now())), 'MMM dd, yyyy HH:mm')}
                           </div>
                         </div>
                         <Button

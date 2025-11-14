@@ -23,10 +23,15 @@ import {
 } from '@/components/ui/select';
 
 interface SecurityEvent {
+  id?: string;
   event_type: string;
   severity?: string;
+  created_at?: string | number;
   details?: {
     customer_name?: string;
+    method?: string;
+    reason?: string;
+    location?: string | { lat: number; lng: number; latitude?: number; longitude?: number };
   } | null;
   [key: string]: unknown;
 }
@@ -158,15 +163,15 @@ export const SecurityAuditLog = ({ events, onRefresh }: SecurityAuditLogProps) =
                         <p>Reason: {event.details.reason}</p>
                       )}
                       {event.details?.location && (
-                        <p>Location: {event.details.location.latitude}, {event.details.location.longitude}</p>
+                        <p>Location: {typeof event.details.location === 'string' ? String(event.details.location) : `${(event.details.location as any).lat || (event.details.location as any).latitude}, ${(event.details.location as any).lng || (event.details.location as any).longitude}`}</p>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground text-right">
-                  {format(new Date(event.created_at), 'MMM dd, yyyy')}
+                  {format(new Date(String(event.created_at || Date.now())), 'MMM dd, yyyy')}
                   <br />
-                  {format(new Date(event.created_at), 'HH:mm:ss')}
+                  {format(new Date(String(event.created_at || Date.now())), 'HH:mm:ss')}
                 </div>
               </div>
             </Card>

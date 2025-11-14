@@ -383,7 +383,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status:</span>
                 <Badge variant={menu?.status === 'active' ? 'default' : 'destructive'}>
-                  {menu?.status}
+                  {jsonToString(menu?.status as any)}
                 </Badge>
               </div>
               {menu?.expiration_date && (

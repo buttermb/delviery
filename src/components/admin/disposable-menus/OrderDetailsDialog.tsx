@@ -94,9 +94,9 @@ export const OrderDetailsDialog = ({
           'cancelled': 'order_cancelled'
         };
 
-        const event = eventMap[newStatus];
+        const event = eventMap[newStatus] as any;
         if (event) {
-          sendNotification.mutate({ orderId: order.id, event });
+          sendNotification.mutate({ orderId: order.id, event: event });
         }
       }
 

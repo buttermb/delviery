@@ -90,7 +90,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           </div>
 
           {/* Security Features */}
-          {((menu as any).screenshot_protection || menu.geofence_enabled || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
+          {((menu as any).screenshot_protection || jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
             <div className="flex flex-wrap gap-2">
               {(menu as any).screenshot_protection && (
                 <Badge variant="outline" className="text-xs">
