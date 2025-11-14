@@ -75,21 +75,15 @@ export default function WholesaleMarketplacePage() {
           marketplace_profiles!inner (
             id,
             business_name,
-            verified_badge,
-            average_rating,
-            total_reviews
+            license_verified
           )
         `)
         .eq('status', 'active')
-        .eq('visibility', 'public')
         .order('created_at', { ascending: false });
 
       // Apply filters
       if (productTypeFilter !== 'all') {
         query = query.eq('product_type', productTypeFilter);
-      }
-      if (strainTypeFilter !== 'all') {
-        query = query.eq('strain_type', strainTypeFilter);
       }
 
       const { data, error } = await query;

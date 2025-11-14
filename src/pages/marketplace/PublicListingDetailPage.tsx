@@ -163,10 +163,10 @@ export default function PublicListingDetailPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-2xl">{listing.product_name}</CardTitle>
-                  {listing.marketplace_profiles?.verified_badge && (
+                  {listing.marketplace_profiles?.license_verified && (
                     <Badge className="bg-green-500 text-white">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Verified Supplier
+                      Verified License
                     </Badge>
                   )}
                 </div>
@@ -189,22 +189,16 @@ export default function PublicListingDetailPage() {
                       <p className="font-medium">{listing.product_type}</p>
                     </div>
                   )}
-                  {listing.strain_type && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Strain Type</p>
-                      <p className="font-medium">{listing.strain_type}</p>
-                    </div>
-                  )}
-                  {listing.unit_type && (
+                  {listing.unit_of_measure && (
                     <div>
                       <p className="text-sm text-muted-foreground">Unit</p>
-                      <p className="font-medium">{listing.unit_type}</p>
+                      <p className="font-medium">{listing.unit_of_measure}</p>
                     </div>
                   )}
                   {listing.quantity_available !== undefined && (
                     <div>
                       <p className="text-sm text-muted-foreground">Available</p>
-                      <p className="font-medium">{listing.quantity_available} {listing.unit_type}</p>
+                      <p className="font-medium">{listing.quantity_available} {listing.unit_of_measure}</p>
                     </div>
                   )}
                 </div>
@@ -230,24 +224,6 @@ export default function PublicListingDetailPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm">
-                  {listing.marketplace_profiles?.average_rating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">
-                        {listing.marketplace_profiles.average_rating.toFixed(1)}
-                      </span>
-                      <span className="text-muted-foreground">
-                        ({listing.marketplace_profiles.total_reviews} reviews)
-                      </span>
-                    </div>
-                  )}
-                  {listing.marketplace_profiles?.total_orders && (
-                    <div className="text-muted-foreground">
-                      {listing.marketplace_profiles.total_orders} orders
-                    </div>
-                  )}
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -265,38 +241,12 @@ export default function PublicListingDetailPage() {
                   <p className="text-3xl font-bold">
                     {formatCurrency(listing.base_price as number || 0)}
                   </p>
-                  {listing.unit_type && (
+                  {listing.unit_of_measure && (
                     <p className="text-sm text-muted-foreground">
-                      per {listing.unit_type}
+                      per {listing.unit_of_measure}
                     </p>
                   )}
                 </div>
-
-                {listing.bulk_pricing && Array.isArray(listing.bulk_pricing) && listing.bulk_pricing.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">Bulk Pricing</p>
-                    <div className="space-y-2">
-                      {listing.bulk_pricing.map((tier: any, idx: number) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {tier.quantity}+ units
-                          </span>
-                          <span className="font-medium">
-                            {formatCurrency(tier.price)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {listing.min_order_quantity && (
-                  <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      Minimum order: {listing.min_order_quantity} {listing.unit_type}
-                    </p>
-                  </div>
-                )}
 
                 <div className="pt-4 space-y-2">
                   <Button
