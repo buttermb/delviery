@@ -14,7 +14,7 @@ interface Batch {
   batch_number: string;
   product_id: string;
   product?: { name: string };
-  test_results?: any;
+  test_results?: Record<string, unknown> & { thc?: number; cbd?: number; contaminants?: string };
   lab_name?: string;
   test_date?: string;
   coa_url?: string;
