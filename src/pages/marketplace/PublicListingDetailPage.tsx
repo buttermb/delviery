@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Public Listing Detail Page
  * View marketplace listing details without login

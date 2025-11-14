@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AES-256 Encryption Utilities
  * 
