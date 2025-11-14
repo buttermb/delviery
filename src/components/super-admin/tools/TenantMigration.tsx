@@ -127,7 +127,7 @@ export function TenantMigration() {
         {/* Migration Type */}
         <div className="space-y-2">
           <Label>Migration Type</Label>
-          <Select value={migrationType} onValueChange={(value: string) => setMigrationType(value)}>
+          <Select value={migrationType} onValueChange={(value) => setMigrationType(value as 'copy' | 'move' | 'export' | 'import')}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

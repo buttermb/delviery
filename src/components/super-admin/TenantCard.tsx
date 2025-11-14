@@ -154,7 +154,7 @@ export const TenantCard = memo(function TenantCard({
           <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">
             💼 {((tenant.subscription_plan as string) || '').charAt(0).toUpperCase() + ((tenant.subscription_plan as string) || '').slice(1)}
           </Badge>
-          {getStatusBadge(tenant.subscription_status as React.ReactNode)}
+          {getStatusBadge(tenant.subscription_status as string)}
         </div>
 
         {/* Health Score Ring */}
