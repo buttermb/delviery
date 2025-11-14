@@ -1,4 +1,3 @@
-// @ts-nocheck - Temporary type suppression
 import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -101,7 +100,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
 
   const removeImage = (index: number) => {
     const currentImages = formData.images || [];
-    updateFormData({ images: currentImages.filter((_: any, i: number) => i !== index) });
+    updateFormData({ images: currentImages.filter((_, i: number) => i !== index) });
   };
 
   return (

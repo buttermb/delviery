@@ -74,10 +74,10 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
       toast.success('Encryption report sent successfully', {
         description: `Sent to ${data.reports_sent} tenant admin${data.reports_sent !== 1 ? 's' : ''}`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Report error', error, { component: 'EncryptionMigrationTool' });
       toast.error('Failed to send report', {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setSendingReport(false);

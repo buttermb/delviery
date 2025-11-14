@@ -1,4 +1,3 @@
-// @ts-nocheck - Quality control tests table types not yet regenerated
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +49,7 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
     mutationFn: async (data: {
       lab_name: string;
       test_date: string;
-      test_results: any;
+      test_results: Record<string, unknown>;
       coa_url?: string;
       compliance_status: string;
     }) => {

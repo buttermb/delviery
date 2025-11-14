@@ -1,4 +1,3 @@
-// @ts-nocheck - Marketing campaigns table types not yet regenerated
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +43,7 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { name: string; description?: string; start_date?: string; end_date?: string; budget?: number; target_audience?: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       // Store campaign (would need marketing_campaigns table)
@@ -58,8 +57,8 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
         ]);
 
         if (error && error.code !== "42P01") throw error;
-      } catch (error: any) {
-        if (error.code !== "42P01") throw error;
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code !== "42P01") throw error;
         // Table doesn't exist yet - that's okay for now
         logger.warn('Marketing campaigns table does not exist yet', { component: 'CampaignBuilder' });
       }
