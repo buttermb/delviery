@@ -25,6 +25,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       // Fetch latest metrics for each type
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       
+      // @ts-ignore - Table exists in DB but types not yet regenerated
       const { data: metrics, error } = await supabase
         .from('system_metrics')
         .select('metric_type, value, timestamp, metadata')
@@ -64,7 +65,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
 
       // Group metrics by type and get latest value
       const metricsByType = new Map<string, { value: number; metadata?: Record<string, unknown> }>();
-      metrics.forEach((m) => {
+      metrics.forEach((m: any) => {
         const existing = metricsByType.get(m.metric_type);
         if (!existing || new Date(m.timestamp) > new Date(existing.metadata?.timestamp as string || 0)) {
           metricsByType.set(m.metric_type, {
