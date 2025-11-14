@@ -56,8 +56,8 @@ export const ComplianceDashboard = () => {
 
       toast.success(data.message);
       refetch();
-    } catch (error: any) {
-      toast.error(`Encryption failed: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsEncrypting(false);
     }
@@ -77,8 +77,8 @@ export const ComplianceDashboard = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("Report downloaded");
-    } catch (error: any) {
-      toast.error(`Download failed: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsGeneratingReport(false);
     }
@@ -257,7 +257,7 @@ export const ComplianceDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {report.recommendations.map((rec: any, index: number) => (
+                  {report.recommendations.map((rec: { priority?: string; title?: string; description?: string }, index: number) => (
                     <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                       <Badge variant={rec.priority === 'CRITICAL' ? 'destructive' : 'default'}>
                         {rec.priority}
