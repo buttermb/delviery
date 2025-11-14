@@ -140,86 +140,68 @@ export default function CustomerLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--customer-bg))] via-[hsl(var(--customer-surface))] to-[hsl(var(--customer-bg))] p-4 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden opacity-20">
-        <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-[hsl(var(--customer-primary))] blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-[hsl(var(--customer-secondary))] blur-3xl" />
-      </div>
-
-      {/* White Card */}
-      <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl border border-[hsl(var(--customer-border))] p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              {logo ? (
-                <img src={logo} alt={businessName} className="h-16 object-contain" />
-              ) : (
-                <div className="relative">
-                  <div className="rounded-full bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] p-4 shadow-lg">
-                    <ShoppingBag className="h-8 w-8 text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1">
-                    <Sparkles className="h-5 w-5 text-[hsl(var(--customer-accent))] animate-pulse" />
-                  </div>
-                </div>
-              )}
-            </div>
-            <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">
-              Welcome Back!
-            </h1>
-            <p className="text-[hsl(var(--customer-text-light))]">
-              {businessName} - Customer Portal
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--customer-bg))] to-[hsl(var(--customer-surface))] p-4">
+      <div className="max-w-md w-full">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] rounded-2xl mb-4 shadow-lg">
+            <ShoppingBag className="h-8 w-8 text-white" />
           </div>
+          <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">
+            Welcome Back!
+          </h1>
+          <p className="text-[hsl(var(--customer-text-light))]">
+            {businessName} - Customer Portal
+          </p>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[hsl(var(--customer-text))]">
-                Email
-              </Label>
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-[hsl(var(--customer-border))] p-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="customer@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
-                disabled={loading}
-                className="h-12 border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 transition-all"
+                className="mt-1"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-[hsl(var(--customer-text))]">
-                Password
-              </Label>
+            {/* Password */}
+            <div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 required
-                disabled={loading}
-                className="h-12 border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 transition-all"
+                className="mt-1"
               />
             </div>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white h-12 font-semibold shadow-lg"
+              className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
-                "Sign In to Shop"
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Sign In to Shop
+                </>
               )}
             </Button>
           </form>
