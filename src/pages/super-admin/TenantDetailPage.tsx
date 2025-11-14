@@ -58,10 +58,15 @@ export default function TenantDetailPage() {
   const queryClient = useQueryClient();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
+  // Validate UUID format
+  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId || '');
+
   // Fetch tenant details
   const { data: tenant, isLoading } = useQuery({
     queryKey: ["super-admin-tenant", tenantId],
     queryFn: async () => {
+      if (!tenantId || !isValidUUID) return null;
+      
       const { data, error } = await supabase
         .from("tenants")
         .select("*")
@@ -71,8 +76,29 @@ export default function TenantDetailPage() {
       if (error) throw error;
       return data;
     },
-    enabled: !!tenantId,
+    enabled: !!tenantId && isValidUUID,
   });
+
+  // Early return for invalid UUID
+  if (!isValidUUID) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Invalid Tenant ID</h2>
+            <p className="text-muted-foreground mb-4">
+              The tenant ID in the URL is not valid.
+            </p>
+            <Button onClick={() => navigate('/super-admin/tenants')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Tenants
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Fetch subscription plan
   const { data: plan } = useQuery({
