@@ -46,7 +46,7 @@ export function IntegrationManager() {
     return <XCircle className="h-4 w-4 text-muted-foreground" />;
   };
 
-  const getStatusBadge = (integration: any) => {
+  const getStatusBadge = (integration: { enabled?: boolean; status?: string }) => {
     if (!integration.enabled) {
       return (
         <Badge variant="secondary" className="gap-1">

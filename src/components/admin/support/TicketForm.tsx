@@ -76,7 +76,7 @@ export function TicketForm({
   }, [ticket, open]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { subject: string; description: string; priority?: string; category?: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
@@ -98,8 +98,8 @@ export function TicketForm({
 
           if (error && error.code !== "42P01") throw error;
         }
-      } catch (error: any) {
-        if (error.code !== "42P01") throw error;
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code !== "42P01") throw error;
         logger.warn('Support tickets table does not exist yet', { component: 'TicketForm' });
       }
     },

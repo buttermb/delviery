@@ -48,7 +48,7 @@ export function ReportBuilder({
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { name: string; description?: string; report_type: string; filters?: Record<string, unknown> }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
@@ -61,8 +61,8 @@ export function ReportBuilder({
         ]);
 
         if (error && error.code !== "42P01") throw error;
-      } catch (error: any) {
-        if (error.code !== "42P01") throw error;
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code !== "42P01") throw error;
         logger.warn('Custom reports table does not exist yet', { component: 'ReportBuilder' });
       }
     },
