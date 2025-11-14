@@ -1,4 +1,3 @@
-// @ts-nocheck - Types will update after schema regeneration
 /**
  * Enhanced Invite System
  * Supports SMS, encrypted messaging, email, and manual delivery

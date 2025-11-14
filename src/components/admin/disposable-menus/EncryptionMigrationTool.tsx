@@ -1,4 +1,3 @@
-// @ts-nocheck - Types will update after encryption migration is applied
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';

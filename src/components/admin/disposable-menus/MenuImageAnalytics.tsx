@@ -1,4 +1,3 @@
-// @ts-nocheck - Types will update after schema regeneration
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMenuAnalytics, useProductImageAnalytics } from '@/hooks/useMenuAnalytics';

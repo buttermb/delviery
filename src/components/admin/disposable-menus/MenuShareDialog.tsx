@@ -1,4 +1,3 @@
-// @ts-nocheck - Types will update after schema regeneration
 import {
   Dialog,
   DialogContent,
