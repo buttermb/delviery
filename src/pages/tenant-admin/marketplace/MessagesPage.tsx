@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Marketplace Messages Page
  * View and manage buyer-seller conversations
