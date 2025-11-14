@@ -66,9 +66,7 @@ export default function WholesaleOrderDetailPage() {
           marketplace_profiles!seller_profile_id (
             id,
             business_name,
-            verified_badge,
-            average_rating,
-            total_reviews
+            license_verified
           )
         `)
         .eq('id', orderId)

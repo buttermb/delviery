@@ -35,7 +35,7 @@ export default function PublicListingDetailPage() {
     queryFn: async () => {
       if (!listingId) return null;
 
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('marketplace_listings')
         .select(`
           *,
@@ -43,15 +43,11 @@ export default function PublicListingDetailPage() {
             id,
             business_name,
             business_description,
-            verified_badge,
-            average_rating,
-            total_reviews,
-            total_orders
+            license_verified
           )
         `)
         .eq('id', listingId)
         .eq('status', 'active')
-        .eq('visibility', 'public')
         .maybeSingle();
 
       if (error) {

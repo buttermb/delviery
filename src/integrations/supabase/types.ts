@@ -4469,6 +4469,363 @@ export type Database = {
           },
         ]
       }
+      marketplace_cart: {
+        Row: {
+          added_at: string | null
+          buyer_tenant_id: string
+          id: string
+          listing_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          added_at?: string | null
+          buyer_tenant_id: string
+          id?: string
+          listing_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          added_at?: string | null
+          buyer_tenant_id?: string
+          id?: string
+          listing_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_cart_buyer_tenant_id_fkey"
+            columns: ["buyer_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_cart_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          available_states: string[] | null
+          base_price: number
+          cbd_content: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          lab_results_encrypted: string | null
+          lab_results_url: string | null
+          marketplace_profile_id: string | null
+          product_name: string
+          product_type: string | null
+          quantity_available: number
+          seller_tenant_id: string
+          status: string | null
+          strain_name: string | null
+          thc_content: number | null
+          unit_of_measure: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          available_states?: string[] | null
+          base_price: number
+          cbd_content?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          lab_results_encrypted?: string | null
+          lab_results_url?: string | null
+          marketplace_profile_id?: string | null
+          product_name: string
+          product_type?: string | null
+          quantity_available?: number
+          seller_tenant_id: string
+          status?: string | null
+          strain_name?: string | null
+          thc_content?: number | null
+          unit_of_measure?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          available_states?: string[] | null
+          base_price?: number
+          cbd_content?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          lab_results_encrypted?: string | null
+          lab_results_url?: string | null
+          marketplace_profile_id?: string | null
+          product_name?: string
+          product_type?: string | null
+          quantity_available?: number
+          seller_tenant_id?: string
+          status?: string | null
+          strain_name?: string | null
+          thc_content?: number | null
+          unit_of_measure?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_marketplace_profile_id_fkey"
+            columns: ["marketplace_profile_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_seller_tenant_id_fkey"
+            columns: ["seller_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string | null
+          order_id: string
+          product_name: string
+          product_type: string | null
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string | null
+          order_id: string
+          product_name: string
+          product_type?: string | null
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string
+          product_name?: string
+          product_type?: string | null
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_order_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_orders: {
+        Row: {
+          buyer_notes: string | null
+          buyer_tenant_id: string
+          buyer_user_id: string | null
+          confirmed_at: string | null
+          created_at: string | null
+          delivered_at: string | null
+          id: string
+          order_number: string
+          payment_status: string | null
+          payment_terms: string | null
+          platform_fee: number | null
+          seller_notes: string | null
+          seller_profile_id: string | null
+          seller_tenant_id: string
+          shipped_at: string | null
+          shipping_address: Json | null
+          shipping_cost: number | null
+          shipping_method: string | null
+          status: string | null
+          subtotal: number
+          tax: number | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_notes?: string | null
+          buyer_tenant_id: string
+          buyer_user_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          id?: string
+          order_number: string
+          payment_status?: string | null
+          payment_terms?: string | null
+          platform_fee?: number | null
+          seller_notes?: string | null
+          seller_profile_id?: string | null
+          seller_tenant_id: string
+          shipped_at?: string | null
+          shipping_address?: Json | null
+          shipping_cost?: number | null
+          shipping_method?: string | null
+          status?: string | null
+          subtotal?: number
+          tax?: number | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_notes?: string | null
+          buyer_tenant_id?: string
+          buyer_user_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          id?: string
+          order_number?: string
+          payment_status?: string | null
+          payment_terms?: string | null
+          platform_fee?: number | null
+          seller_notes?: string | null
+          seller_profile_id?: string | null
+          seller_tenant_id?: string
+          shipped_at?: string | null
+          shipping_address?: Json | null
+          shipping_cost?: number | null
+          shipping_method?: string | null
+          status?: string | null
+          subtotal?: number
+          tax?: number | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_orders_buyer_tenant_id_fkey"
+            columns: ["buyer_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_orders_seller_profile_id_fkey"
+            columns: ["seller_profile_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_orders_seller_tenant_id_fkey"
+            columns: ["seller_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_profiles: {
+        Row: {
+          business_description: string | null
+          business_name: string | null
+          can_sell: boolean | null
+          cover_image_url: string | null
+          created_at: string | null
+          id: string
+          license_document_url: string | null
+          license_expiry_date: string | null
+          license_number: string | null
+          license_state: string | null
+          license_type: string | null
+          license_verification_notes: string | null
+          license_verified: boolean | null
+          license_verified_at: string | null
+          logo_url: string | null
+          marketplace_status: string | null
+          return_policy: string | null
+          shipping_policy: string | null
+          shipping_states: string[] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          business_description?: string | null
+          business_name?: string | null
+          can_sell?: boolean | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          license_document_url?: string | null
+          license_expiry_date?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          license_type?: string | null
+          license_verification_notes?: string | null
+          license_verified?: boolean | null
+          license_verified_at?: string | null
+          logo_url?: string | null
+          marketplace_status?: string | null
+          return_policy?: string | null
+          shipping_policy?: string | null
+          shipping_states?: string[] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          business_description?: string | null
+          business_name?: string | null
+          can_sell?: boolean | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          license_document_url?: string | null
+          license_expiry_date?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          license_type?: string | null
+          license_verification_notes?: string | null
+          license_verified?: boolean | null
+          license_verified_at?: string | null
+          logo_url?: string | null
+          marketplace_status?: string | null
+          return_policy?: string | null
+          shipping_policy?: string | null
+          shipping_states?: string[] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_patient_info: {
         Row: {
           account_id: string
@@ -6159,6 +6516,63 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          fee_percentage: number | null
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          processed_at: string | null
+          status: string | null
+          tenant_id: string
+          transaction_type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          fee_percentage?: number | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          processed_at?: string | null
+          status?: string | null
+          tenant_id: string
+          transaction_type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          fee_percentage?: number | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          processed_at?: string | null
+          status?: string | null
+          tenant_id?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -9874,6 +10288,10 @@ export type Database = {
       decrement_inventory: {
         Args: { _product_id: string; _quantity: number }
         Returns: boolean
+      }
+      decrement_listing_quantity: {
+        Args: { p_listing_id: string; p_quantity: number }
+        Returns: undefined
       }
       decrement_wholesale_inventory: {
         Args: {
