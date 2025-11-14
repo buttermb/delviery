@@ -84,10 +84,13 @@ export type ExtendedDatabase = Database & {
           ip_address: string | null;
           created_at: string;
           resource_type: string | null;
+          resource_id: string | null;
           tenant_id: string | null;
+          actor_id: string | null;
           actor_type: string | null;
           timestamp: string | null;
           metadata: Record<string, any> | null;
+          changes: Record<string, any> | null;
         };
         Insert: {
           id?: string;
@@ -99,10 +102,13 @@ export type ExtendedDatabase = Database & {
           ip_address?: string | null;
           created_at?: string;
           resource_type?: string | null;
+          resource_id?: string | null;
           tenant_id?: string | null;
+          actor_id?: string | null;
           actor_type?: string | null;
           timestamp?: string | null;
           metadata?: Record<string, any> | null;
+          changes?: Record<string, any> | null;
         };
         Update: {
           id?: string;
@@ -114,10 +120,30 @@ export type ExtendedDatabase = Database & {
           ip_address?: string | null;
           created_at?: string;
           resource_type?: string | null;
+          resource_id?: string | null;
           tenant_id?: string | null;
+          actor_id?: string | null;
           actor_type?: string | null;
           timestamp?: string | null;
           metadata?: Record<string, any> | null;
+          changes?: Record<string, any> | null;
+        };
+      };
+      super_admins: {
+        Row: {
+          id: string;
+          email: string;
+          [key: string]: any;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          [key: string]: any;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          [key: string]: any;
         };
       };
     };

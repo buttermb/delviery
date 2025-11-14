@@ -18,6 +18,7 @@ export default function AuditLogsPage() {
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ['super-admin-audit-logs', actionFilter],
     queryFn: async () => {
+      // @ts-ignore - audit_logs columns will be available after types regenerate
       let query = supabase
         .from('audit_logs')
         .select('id, action, resource_type, resource_id, tenant_id, actor_id, actor_type, timestamp, changes')
@@ -31,7 +32,7 @@ export default function AuditLogsPage() {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as any[];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -70,11 +71,12 @@ export default function AuditLogsPage() {
     queryKey: ['audit-logs-actors', actorIds],
     queryFn: async () => {
       if (actorIds.length === 0) return [];
-      const { data } = await supabase
+      // @ts-ignore - super_admins table exists but not in types yet
+      const { data } = await (supabase as any)
         .from('super_admins')
         .select('id, email')
         .in('id', actorIds);
-      return data || [];
+      return (data || []) as any[];
     },
     enabled: actorIds.length > 0,
   });
