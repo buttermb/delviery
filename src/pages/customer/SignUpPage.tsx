@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
-import { logger } from "@/lib/logger";
+import { logger } from "@/utils/logger";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
 export default function CustomerSignUpPage() {
