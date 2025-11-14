@@ -19,6 +19,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 export const SecurityMonitoringPanel = () => {
   interface SecurityThreat {
@@ -364,10 +365,10 @@ export const SecurityMonitoringPanel = () => {
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {blocked.reason || 'Suspicious activity detected'}
+                            {jsonToString(blocked.reason as any) || 'Suspicious activity detected'}
                           </p>
                           <div className="text-xs text-muted-foreground">
-                            Blocked {format(new Date(blocked.created_at), 'MMM dd, yyyy HH:mm')}
+                            Blocked {format(new Date(String(jsonToStringOrNumber(blocked.created_at as any))), 'MMM dd, yyyy HH:mm')}
                           </div>
                         </div>
                         <Button

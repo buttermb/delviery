@@ -52,6 +52,7 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
           {
             tenant_id: tenant.id,
             ...data,
+            content: data.description || '',
             created_by: admin?.id || null,
           },
         ]);
@@ -91,12 +92,12 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
 
     await createMutation.mutateAsync({
       name: formData.name,
-      type: campaignType,
-      subject: campaignType === "email" ? formData.subject : null,
+      type: campaignType as any,
+      subject: (campaignType === "email" ? formData.subject : null) as any,
       content: formData.content,
-      audience: formData.audience,
-      scheduled_at: formData.scheduled_at || null,
-      status: "draft",
+      audience: formData.audience as any,
+      scheduled_at: (formData.scheduled_at || null) as any,
+      status: "draft" as any,
     });
   };
 

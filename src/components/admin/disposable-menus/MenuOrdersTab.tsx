@@ -76,7 +76,7 @@ export const MenuOrdersTab = ({ orders, isLoading }: MenuOrdersTabProps) => {
             <div className="flex items-center gap-2 text-sm">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
               <span className="font-semibold">
-                ${parseFloat(order.total_amount).toFixed(2)}
+                ${parseFloat(String(order.total_amount)).toFixed(2)}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">

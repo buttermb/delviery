@@ -23,10 +23,15 @@ import {
 } from '@/components/ui/select';
 
 interface SecurityEvent {
+  id?: string;
   event_type: string;
   severity?: string;
+  created_at?: string | number;
   details?: {
     customer_name?: string;
+    method?: string;
+    reason?: string;
+    location?: string | { latitude: number; longitude: number };
   } | null;
   [key: string]: unknown;
 }

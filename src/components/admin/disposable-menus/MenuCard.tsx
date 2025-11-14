@@ -13,7 +13,7 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
-import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { jsonToString, jsonToStringOrNumber, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
 import type { DisposableMenu } from '@/types/admin';
 
 interface MenuCardProps {
@@ -67,7 +67,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-bold">{menu.name}</h3>
-                {menu.menu_type === 'forum' && (
+                {extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum' && (
                   <Badge variant="secondary" className="gap-1 text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
                     <MessageSquare className="h-3 w-3" />
                     Forum Menu
@@ -90,7 +90,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           </div>
 
           {/* Security Features */}
-          {((menu as any).screenshot_protection || menu.geofence_enabled || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
+          {((menu as any).screenshot_protection || jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
             <div className="flex flex-wrap gap-2">
               {(menu as any).screenshot_protection && (
                 <Badge variant="outline" className="text-xs">
@@ -98,7 +98,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                   Screenshot Protection
                 </Badge>
               )}
-              {menu.geofence_enabled && (
+              {jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) && (
                 <Badge variant="outline" className="text-xs">
                   <MapPin className="h-3 w-3 mr-1" />
                   Geofencing

@@ -141,15 +141,15 @@ export const MenuShareDialog = ({
           <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Status:</span>
-              <Badge variant={jsonToString(menu.status) === 'active' ? 'default' : 'destructive'}>
-                {jsonToString(menu.status)}
+              <Badge variant={jsonToString(menu.status as any) === 'active' ? 'default' : 'destructive'}>
+                {jsonToString(menu.status as any)}
               </Badge>
             </div>
             {menu.expiration_date && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Expires:</span>
                 <span className="font-medium">
-                  {new Date(jsonToStringOrNumber(menu.expiration_date)).toLocaleDateString()}
+                  {new Date(String(jsonToStringOrNumber(menu.expiration_date as any))).toLocaleDateString()}
                 </span>
               </div>
             )}
