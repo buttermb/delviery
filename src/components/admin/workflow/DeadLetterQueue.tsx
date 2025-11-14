@@ -1,4 +1,3 @@
-// @ts-nocheck - Temporary type suppression
 /**
  * Dead Letter Queue Dashboard
  * View and manage failed workflow executions

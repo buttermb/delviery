@@ -1,4 +1,3 @@
-// @ts-nocheck - Temporary type suppression
 /**
  * Action Configuration Form
  * Dynamic form that changes based on action type
