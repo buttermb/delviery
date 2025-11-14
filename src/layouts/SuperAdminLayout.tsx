@@ -224,10 +224,12 @@ export function SuperAdminLayout() {
         className={cn(
           isImpersonating ? 'pt-28' : 'pt-16', // Extra offset if impersonation banner is shown
           'min-h-[calc(100vh-4rem)]',
-          'px-4 md:px-6'
+          'px-4 md:px-6 w-full overflow-x-auto'
         )}
       >
-        <Outlet />
+        <div className="min-w-fit">
+          <Outlet />
+        </div>
       </main>
 
       {/* Command Palette */}
