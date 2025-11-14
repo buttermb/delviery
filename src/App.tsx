@@ -99,6 +99,7 @@ const SuperAdminFeatureFlagsPage = lazy(() => import("./pages/super-admin/Featur
 const SuperAdminSystemConfigPage = lazy(() => import("./pages/super-admin/SystemConfigPage"));
 const SuperAdminSecurityPage = lazy(() => import("./pages/super-admin/SecurityPage"));
 const SuperAdminToolsPage = lazy(() => import("./pages/super-admin/ToolsPage"));
+const MarketplaceModerationPage = lazy(() => import("./pages/super-admin/MarketplaceModerationPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SuperAdminLayout = lazy(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
