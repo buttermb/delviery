@@ -71,23 +71,18 @@ export function EnhancedInviteSystem({
 
     setSending(true);
     try {
-      // @ts-expect-error - WhitelistEntry type mismatch with manual customer, but we handle both cases
       const customersToInvite = inviteMethod === 'manual'
         ? [manualCustomer]
         : whitelist.filter(w => selectedCustomers.includes(w.id));
 
       for (const customer of customersToInvite) {
-        // @ts-expect-error - customer may be WhitelistEntry or manual customer object
-        const custId = customer.id || null;
-        // @ts-expect-error - customer properties accessed dynamically
-        const custToken = customer.unique_access_token || '';
+        const custId = 'id' in customer ? customer.id : null;
+        const custToken = 'unique_access_token' in customer ? customer.unique_access_token : '';
 
         // Send via appropriate method
-        // @ts-expect-error - customer properties accessed dynamically
-        if (inviteMethod === 'sms' && customer.phone) {
+        if (inviteMethod === 'sms' && 'phone' in customer && customer.phone) {
           const { data, error } = await supabase.functions.invoke('send-sms', {
             body: {
-              // @ts-expect-error - customer properties accessed dynamically
               phone: customer.phone,
               message: message,
             },
@@ -117,7 +112,6 @@ export function EnhancedInviteSystem({
       setCustomMessage('');
       onInviteSent();
     } catch (error: unknown) {
-      // @ts-expect-error - error handling with unknown type
       console.error('Invite error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to send invites');
     } finally {
@@ -243,10 +237,10 @@ export function EnhancedInviteSystem({
                     }}
                   />
                   <div className="flex-1">
-                    <div className="font-medium">{entry.customer_name}</div>
+                    <div className="font-medium">{String(entry.customer_name || '')}</div>
                     <div className="text-sm text-muted-foreground">
-                      {entry.customer_phone}
-                      {entry.customer_email && ` • ${entry.customer_email}`}
+                      {String(entry.customer_phone || '')}
+                      {entry.customer_email && ` • ${String(entry.customer_email)}`}
                     </div>
                   </div>
                   <Badge variant={entry.status === 'active' ? 'default' : 'secondary'}>

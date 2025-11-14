@@ -242,13 +242,9 @@ export function EnhancedMenuDashboard() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {/* @ts-expect-error - Menu type mismatch with Supabase generated types */}
-            {activeMenus.map((menu: Menu) => {
-              // @ts-expect-error - menu properties accessed dynamically
+            {activeMenus.map((menu) => {
               const viewCount = menu.menu_access_logs?.length || 0;
-              // @ts-expect-error - menu properties accessed dynamically
               const orderCount = menu.menu_orders?.length || 0;
-              // @ts-expect-error - menu properties accessed dynamically
               const customerCount = menu.menu_access_whitelist?.length || 0;
               const menuUrl = `${siteUrl}/menu/${menu.encrypted_url_token}`;
 
@@ -343,7 +339,7 @@ export function EnhancedMenuDashboard() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">🔴 Burned Menus (Last 30 days)</h2>
           <div className="space-y-2">
-            {recentBurnedMenus.map((menu: Menu) => (
+            {recentBurnedMenus.map((menu) => (
               <Card key={menu.id} className="p-4 bg-muted/50">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -380,7 +376,7 @@ export function EnhancedMenuDashboard() {
       <CreateMenuDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       {selectedMenuForBurn && (
         <BurnMenuDialog
-          menu={selectedMenuForBurn}
+          menu={selectedMenuForBurn as DisposableMenu}
           open={!!selectedMenuForBurn}
           onOpenChange={(open) => !open && setSelectedMenuForBurn(null)}
         />

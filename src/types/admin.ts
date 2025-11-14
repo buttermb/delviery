@@ -94,16 +94,10 @@ export interface InventoryItem {
   tenant_id?: string;
 }
 
-// Disposable Menu types
-export interface DisposableMenu {
-  id: string;
-  name: string;
-  description?: string;
-  encrypted_url_token: string;
-  status: 'active' | 'soft_burned' | 'hard_burned';
-  created_at: string;
-  tenant_id?: string;
-}
+// Disposable Menu types - using actual database schema
+import type { Database } from '@/integrations/supabase/types';
+
+export type DisposableMenu = Database['public']['Tables']['disposable_menus']['Row'];
 
 // Courier types
 export interface Courier {

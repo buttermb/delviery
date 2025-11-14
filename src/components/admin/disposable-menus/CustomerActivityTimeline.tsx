@@ -231,7 +231,7 @@ export const CustomerActivityTimeline = ({
                       {activity.type === 'access' && (activity.data as ActivityData).location && (
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
-                          {(activity.data as ActivityData).location}
+                          {String((activity.data as ActivityData).location)}
                         </span>
                       )}
                     </div>

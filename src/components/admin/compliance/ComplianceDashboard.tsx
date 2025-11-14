@@ -257,7 +257,7 @@ export const ComplianceDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {report.recommendations.map((rec: { priority?: string; title?: string; description?: string }, index: number) => (
+                  {report.recommendations.map((rec: { priority?: string; title?: string; description?: string; category?: string; action?: string; records_affected?: number }, index: number) => (
                     <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                       <Badge variant={rec.priority === 'CRITICAL' ? 'destructive' : 'default'}>
                         {rec.priority}

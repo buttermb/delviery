@@ -72,9 +72,8 @@ export function AppointmentForm({
       try {
         const { error } = await supabase.from("appointments").insert([
           {
-            tenant_id: tenant.id,
             ...data,
-            created_by: admin?.id || null,
+            account_id: tenant.id,
           },
         ]);
 
