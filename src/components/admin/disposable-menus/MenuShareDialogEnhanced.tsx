@@ -440,11 +440,11 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                           />
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm">
-                              {customer.business_name || customer.contact_name}
+                              {jsonToString((customer as any).business_name as any) || jsonToString((customer as any).contact_name as any)}
                             </div>
-                            {customer.phone && (
+                            {(customer as any).phone && (
                               <div className="text-xs text-muted-foreground">
-                                {customer.phone}
+                                {jsonToString((customer as any).phone as any)}
                               </div>
                             )}
                           </div>

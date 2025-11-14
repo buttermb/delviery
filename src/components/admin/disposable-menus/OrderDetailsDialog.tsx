@@ -208,17 +208,17 @@ export const OrderDetailsDialog = ({
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">
-                    {order.whitelist?.customer_name || 'Not provided'}
+                    {jsonToString((order.whitelist as any)?.customer_name as any) || 'Not provided'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{order.whitelist?.customer_phone || order.contact_phone || 'Not provided'}</span>
+                  <span>{jsonToString((order.whitelist as any)?.customer_phone as any) || jsonToString(order.contact_phone as any) || 'Not provided'}</span>
                 </div>
-                {order.whitelist?.customer_email && (
+                {(order.whitelist as any)?.customer_email && (
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{order.whitelist.customer_email}</span>
+                    <span>{jsonToString((order.whitelist as any).customer_email as any)}</span>
                   </div>
                 )}
               </div>
@@ -242,19 +242,19 @@ export const OrderDetailsDialog = ({
                     <div key={idx} className="border rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-medium">{item.name || item.product_name}</div>
-                          {item.weight && (
+                          <div className="font-medium">{jsonToString((item as any).name as any) || jsonToString((item as any).product_name as any)}</div>
+                          {(item as any).weight && (
                             <div className="text-sm text-muted-foreground">
-                              Weight: {item.weight}
+                              Weight: {jsonToString((item as any).weight as any)}
                             </div>
                           )}
                         </div>
                         <div className="text-right">
                           <div className="font-semibold">
-                            ${((parseFloat(item.price || item.price_per_unit || 0)) * (item.quantity || 0)).toFixed(2)}
+                            ${String(((parseFloat(String((item as any).price || (item as any).price_per_unit || 0))) * ((item as any).quantity || 0)).toFixed(2))}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {item.quantity} x ${parseFloat(item.price || item.price_per_unit || 0).toFixed(2)}
+                            {(item as any).quantity} x ${String(parseFloat(String((item as any).price || (item as any).price_per_unit || 0)).toFixed(2))}
                           </div>
                         </div>
                       </div>
