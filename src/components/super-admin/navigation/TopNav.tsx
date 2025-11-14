@@ -136,7 +136,7 @@ export function TopNav({
         </Link>
 
         {/* Primary Navigation - Hidden on mobile, shown on tablet+ */}
-        <div className="hidden md:flex items-center gap-1 overflow-x-auto flex-1 max-w-[60vw]">
+        <div className="hidden md:flex items-center gap-1 overflow-x-auto flex-1 max-w-[40vw]">
           {/* Platform Overview */}
           <NavItem
             icon={LayoutDashboard}
@@ -525,7 +525,7 @@ export function TopNav({
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-2 md:gap-3 ml-auto">
+      <div className="flex items-center gap-1.5 md:gap-2 ml-auto shrink-0">
         {/* Mobile Menu Button - Only on mobile */}
         <Button
           variant="ghost"
@@ -541,11 +541,11 @@ export function TopNav({
           variant="outline"
           size="sm"
           onClick={() => onCommandPaletteOpen?.()}
-          className="gap-2 min-w-[200px] hidden lg:flex"
+          className="gap-2 hidden lg:flex"
         >
           <Search className="h-4 w-4" />
-          <span className="text-muted-foreground">Quick search...</span>
-          <kbd className="ml-auto hidden lg:inline">⌘K</kbd>
+          <span className="text-muted-foreground text-xs">Search...</span>
+          <kbd className="ml-2 hidden xl:inline text-xs">⌘K</kbd>
         </Button>
 
         {/* Environment Indicator */}
