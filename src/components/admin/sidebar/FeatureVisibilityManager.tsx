@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useFeatureVisibility } from '@/hooks/useFeatureVisibility';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import type { FeatureId } from '@/lib/featureConfig';
 import { ChevronDown, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -91,7 +92,7 @@ export function FeatureVisibilityManager() {
                   <div className="p-4 pt-0 space-y-2">
                     {section.items.map((item) => {
                       const visible = isFeatureVisible(item.id);
-                      const hasAccess = item.featureId ? canAccess(item.featureId as any) : true;
+                      const hasAccess = item.featureId ? canAccess(item.featureId as FeatureId) : true;
                       const isEssential = ['dashboard', 'settings', 'billing'].includes(item.id);
 
                       return (
