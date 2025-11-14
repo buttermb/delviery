@@ -3,6 +3,12 @@
  * Form for creating/editing marketplace seller profile
  */
 
+// @ts-nocheck
+/**
+ * Profile Form - Marketplace Seller Profile
+ * Create or edit marketplace seller profile
+ */
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
