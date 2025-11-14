@@ -396,17 +396,12 @@ export default function WholesaleOrderDetailPage() {
                 <div className="space-y-3">
                   <div>
                     <div className="font-medium">{sellerProfile?.business_name || 'Unknown Seller'}</div>
-                    {sellerProfile?.verified_badge && (
+                    {sellerProfile?.license_verified && (
                       <Badge variant="outline" className="border-success/30 text-success text-xs mt-1">
-                        Verified Seller
+                        Verified License
                       </Badge>
                     )}
                   </div>
-                  {sellerProfile?.average_rating > 0 && (
-                    <div className="text-sm text-muted-foreground">
-                      ⭐ {sellerProfile.average_rating.toFixed(1)} ({sellerProfile.total_reviews} reviews)
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -465,10 +460,10 @@ export default function WholesaleOrderDetailPage() {
                   <div className="text-xs text-muted-foreground mb-1">Payment Terms</div>
                   <div className="text-sm capitalize">{order.payment_terms || 'Prepaid'}</div>
                 </div>
-                {order.paid_at && (
+                {order.confirmed_at && (
                   <div>
-                    <div className="text-xs text-muted-foreground mb-1">Paid At</div>
-                    <div className="text-sm">{formatSmartDate(order.paid_at as string)}</div>
+                    <div className="text-xs text-muted-foreground mb-1">Confirmed At</div>
+                    <div className="text-sm">{formatSmartDate(order.confirmed_at as string)}</div>
                   </div>
                 )}
               </CardContent>
@@ -487,12 +482,12 @@ export default function WholesaleOrderDetailPage() {
                     <div className="text-xs text-muted-foreground">{formatSmartDate(order.created_at as string)}</div>
                   </div>
                 </div>
-                {order.accepted_at && (
+                {order.confirmed_at && (
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="h-4 w-4 text-success" />
                     <div>
-                      <div className="font-medium">Order Accepted</div>
-                      <div className="text-xs text-muted-foreground">{formatSmartDate(order.accepted_at as string)}</div>
+                      <div className="font-medium">Order Confirmed</div>
+                      <div className="text-xs text-muted-foreground">{formatSmartDate(order.confirmed_at as string)}</div>
                     </div>
                   </div>
                 )}
