@@ -3,11 +3,13 @@
  * Tests adaptive sidebar rendering, operation size adaptation, and error handling
  */
 
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AdaptiveSidebar } from '../AdaptiveSidebar';
+import * as useSidebarConfigModule from '@/hooks/useSidebarConfig';
 import { TenantAdminAuthProvider } from '@/contexts/TenantAdminAuthContext';
 
 // Mock hooks
@@ -37,7 +39,7 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
     admin: { id: 'test-admin' },
     logout: vi.fn()
   }),
-  TenantAdminAuthProvider: ({ children }: any) => children
+  TenantAdminAuthProvider: ({ children }: { children: React.ReactNode }) => children
 }));
 
 const createWrapper = () => {
@@ -45,7 +47,7 @@ const createWrapper = () => {
     defaultOptions: { queries: { retry: false } }
   });
   
-  return ({ children }: any) => (
+  return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         {children}
@@ -81,7 +83,7 @@ describe('AdaptiveSidebar', () => {
   });
 
   it('should show loading skeleton when data is loading', () => {
-    vi.mocked(require('@/hooks/useSidebarConfig').useSidebarConfig).mockReturnValue({
+    vi.mocked(useSidebarConfigModule.useSidebarConfig).mockReturnValue({
       sidebarConfig: [],
       hotItems: [],
       favorites: [],

@@ -20,7 +20,7 @@ interface RecallListProps {
 }
 
 export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (severity) {
       case "critical":
         return "destructive";
@@ -35,7 +35,7 @@ export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "active":
         return "destructive";
@@ -86,10 +86,10 @@ export function RecallList({ recalls, isLoading, onSelect }: RecallListProps) {
                   <div className="text-sm font-medium truncate">
                     Batch: {recall.batch_number}
                   </div>
-                  <Badge variant={getSeverityColor(recall.severity) as any} className="shrink-0">
+                  <Badge variant={getSeverityColor(recall.severity)} className="shrink-0">
                     {recall.severity}
                   </Badge>
-                  <Badge variant={getStatusColor(recall.status) as any} className="shrink-0">
+                  <Badge variant={getStatusColor(recall.status)} className="shrink-0">
                     {recall.status}
                   </Badge>
                 </div>

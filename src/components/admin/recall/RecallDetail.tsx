@@ -39,7 +39,7 @@ export function RecallDetail({ recall, onBack, onUpdate }: RecallDetailProps) {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (severity) {
       case "critical":
         return "destructive";
@@ -73,7 +73,7 @@ export function RecallDetail({ recall, onBack, onUpdate }: RecallDetailProps) {
                 Recall: {recall.batch_number}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant={getSeverityColor(recall.severity) as any}>
+                <Badge variant={getSeverityColor(recall.severity)}>
                   {recall.severity}
                 </Badge>
                 <Badge variant={recall.status === "active" ? "destructive" : "secondary"}>
