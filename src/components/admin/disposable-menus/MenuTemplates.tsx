@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Zap, Crown, Sparkles } from 'lucide-react';
+import { Clock, Zap, Crown, Sparkles, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MenuTemplate {
@@ -16,6 +16,7 @@ interface MenuTemplate {
   accessType: 'invite_only' | 'shared' | 'hybrid';
   requireAccessCode: boolean;
   color: string;
+  menuType?: 'product' | 'forum'; // New field to distinguish menu types
 }
 
 const TEMPLATES: MenuTemplate[] = [
@@ -30,6 +31,7 @@ const TEMPLATES: MenuTemplate[] = [
     accessType: 'invite_only',
     requireAccessCode: true,
     color: 'bg-blue-500',
+    menuType: 'product',
   },
   {
     id: 'flash-sale',
@@ -42,6 +44,7 @@ const TEMPLATES: MenuTemplate[] = [
     accessType: 'shared',
     requireAccessCode: false,
     color: 'bg-orange-500',
+    menuType: 'product',
   },
   {
     id: 'vip-menu',
@@ -54,6 +57,20 @@ const TEMPLATES: MenuTemplate[] = [
     accessType: 'invite_only',
     requireAccessCode: true,
     color: 'bg-purple-500',
+    menuType: 'product',
+  },
+  {
+    id: 'forum-menu',
+    name: 'Forum Menu',
+    description: 'Create a menu that links to the community forum',
+    icon: MessageSquare,
+    expirationDays: 90,
+    burnAfterRead: false,
+    maxViews: 'unlimited',
+    accessType: 'shared',
+    requireAccessCode: false,
+    color: 'bg-green-500',
+    menuType: 'forum',
   },
   {
     id: 'custom',
@@ -66,6 +83,7 @@ const TEMPLATES: MenuTemplate[] = [
     accessType: 'invite_only',
     requireAccessCode: true,
     color: 'bg-gray-500',
+    menuType: 'product',
   },
 ];
 
@@ -119,6 +137,8 @@ export const MenuTemplates = ({ onSelectTemplate, selectedTemplateId }: MenuTemp
                       ? '7 days'
                       : template.expirationDays === 30
                       ? '30 days'
+                      : template.expirationDays === 90
+                      ? '90 days'
                       : 'Custom'}
                   </span>
                 </div>

@@ -15,7 +15,7 @@ import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { MenuTemplates, type MenuTemplate } from '@/components/admin/disposable-menus/MenuTemplates';
-import { Eye, CheckCircle2, Shield, Calendar, Lock, Search, X, Loader2, Sparkles } from 'lucide-react';
+import { Eye, CheckCircle2, Shield, Calendar, Lock, Search, X, Loader2, Sparkles, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -91,7 +91,10 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
     );
   }, [inventory, searchQuery]);
 
-  const progress = (currentStep / STEPS.length) * 100;
+  // Calculate progress - account for forum menus skipping step 3
+  const totalSteps = selectedTemplate?.menuType === 'forum' ? STEPS.length - 1 : STEPS.length;
+  const adjustedStep = selectedTemplate?.menuType === 'forum' && currentStep > 3 ? currentStep - 1 : currentStep;
+  const progress = (adjustedStep / totalSteps) * 100;
 
   const handleTemplateSelect = (template: MenuTemplate) => {
     setSelectedTemplate(template);
@@ -114,18 +117,29 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       toast.error('Menu name is required');
       return;
     }
-    if (currentStep === 3 && selectedProducts.length === 0) {
+    // Skip product validation for forum menus
+    if (currentStep === 3 && selectedTemplate?.menuType !== 'forum' && selectedProducts.length === 0) {
       toast.error('Please select at least one product');
       return;
     }
     if (currentStep < STEPS.length) {
-      setCurrentStep(prev => prev + 1);
+      // Skip product step for forum menus
+      if (currentStep === 2 && selectedTemplate?.menuType === 'forum') {
+        setCurrentStep(4); // Jump directly to settings
+      } else {
+        setCurrentStep(prev => prev + 1);
+      }
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+      // Skip product step when going back from settings for forum menus
+      if (currentStep === 4 && selectedTemplate?.menuType === 'forum') {
+        setCurrentStep(2); // Go back to details
+      } else {
+        setCurrentStep(prev => prev - 1);
+      }
     }
   };
 
@@ -138,7 +152,14 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
   };
 
   const handleCreate = async () => {
-    if (!name || selectedProducts.length === 0) return;
+    const isForumMenu = selectedTemplate?.menuType === 'forum';
+    
+    // Validate based on menu type
+    if (!name) return;
+    if (!isForumMenu && selectedProducts.length === 0) {
+      toast.error('Please select at least one product');
+      return;
+    }
 
     // Check menu limit
     if (!canCreate('menus')) {
@@ -160,10 +181,13 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       await createMenu.mutateAsync({
         tenant_id: tenant?.id || '',
         name,
-        description,
-        product_ids: selectedProducts,
-        min_order_quantity: parseFloat(minOrder),
-        max_order_quantity: parseFloat(maxOrder),
+        description: isForumMenu 
+          ? (description || 'Community Forum Access Menu')
+          : description,
+        product_ids: isForumMenu ? [] : selectedProducts, // Empty for forum menus
+        // Don't pass min/max order for forum menus (they're optional and must be positive if provided)
+        min_order_quantity: isForumMenu ? undefined : parseFloat(minOrder),
+        max_order_quantity: isForumMenu ? undefined : parseFloat(maxOrder),
         access_code: requireAccessCode ? accessCode : generateAccessCode(),
         expiration_date: expirationDate || undefined,
         never_expires: !expirationDate,
@@ -173,11 +197,15 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
           password_protection: requirePassword ? password : undefined,
           burn_after_read: burnAfterRead,
           max_views: maxViews !== 'unlimited' ? parseInt(maxViews) : undefined,
+          menu_type: isForumMenu ? 'forum' : 'product', // Store menu type
+          forum_url: isForumMenu ? '/community' : undefined, // Store forum URL
         },
       });
 
       toast.success('Menu Created', {
-        description: 'Your disposable menu has been created successfully',
+        description: isForumMenu 
+          ? 'Forum menu created! Customers will be redirected to the community forum.'
+          : 'Your disposable menu has been created successfully',
       });
       onOpenChange(false);
       // Reset form
@@ -217,19 +245,25 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         <div className="space-y-2">
           <Progress value={progress} className="w-full" />
           <div className="flex justify-between text-xs text-muted-foreground">
-            {STEPS.map((step) => (
-              <div
-                key={step.id}
-                className={cn(
-                  'flex items-center gap-1',
-                  currentStep === step.id && 'text-primary font-medium',
-                  currentStep > step.id && 'text-green-600'
-                )}
-              >
-                <step.icon className="h-3 w-3" />
-                <span className="hidden sm:inline">{step.name}</span>
-              </div>
-            ))}
+            {STEPS.map((step) => {
+              // Hide Products step for forum menus
+              if (step.id === 3 && selectedTemplate?.menuType === 'forum') {
+                return null;
+              }
+              return (
+                <div
+                  key={step.id}
+                  className={cn(
+                    'flex items-center gap-1',
+                    currentStep === step.id && 'text-primary font-medium',
+                    currentStep > step.id && 'text-green-600'
+                  )}
+                >
+                  <step.icon className="h-3 w-3" />
+                  <span className="hidden sm:inline">{step.name}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -279,8 +313,8 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
             </div>
           )}
 
-          {/* Step 3: Products */}
-          {currentStep === 3 && (
+          {/* Step 3: Products (Skip for Forum Menus) */}
+          {currentStep === 3 && selectedTemplate?.menuType !== 'forum' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Select Products</h3>
@@ -383,6 +417,34 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                     value={maxOrder}
                     onChange={(e) => setMaxOrder(e.target.value)}
                   />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Forum Menu Info (Only for Forum Menus) */}
+          {currentStep === 3 && selectedTemplate?.menuType === 'forum' && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/50 p-6">
+                <div className="flex items-start gap-3">
+                  <MessageSquare className="h-6 w-6 text-green-600 mt-1" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-2">Forum Menu</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This menu will redirect customers to the community forum where they can:
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground mb-4">
+                      <li>Browse and discuss products</li>
+                      <li>Share reviews and experiences</li>
+                      <li>Ask questions and get answers</li>
+                      <li>Connect with other customers</li>
+                    </ul>
+                    <div className="rounded-md bg-primary/10 p-3">
+                      <p className="text-sm font-medium">
+                        Customers will be redirected to: <code className="text-xs bg-background px-2 py-1 rounded">/community</code>
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

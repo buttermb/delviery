@@ -259,6 +259,7 @@ const CustomerLoginLanding = lazy(() => import("./pages/customer/CustomerLoginLa
 // Invitation Pages
 const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
+const CommunityProtectedRoute = lazy(() => import("./components/auth/CommunityProtectedRoute").then(m => ({ default: m.CommunityProtectedRoute })));
 const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
 const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
 const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
@@ -276,6 +277,16 @@ const WholesaleOrderDetailPage = lazy(() => import("./pages/customer/WholesaleOr
 const BusinessFinderPage = lazy(() => import("./pages/customer/retail/BusinessFinderPage"));
 const BusinessMenuPage = lazy(() => import("./pages/customer/retail/BusinessMenuPage"));
 const UnifiedOrdersPage = lazy(() => import("./pages/customer/UnifiedOrdersPage"));
+
+// Community Forum Pages
+const CommunityLayout = lazy(() => import("./pages/community/CommunityLayout").then(m => ({ default: m.CommunityLayout })));
+const CommunityHomePage = lazy(() => import("./pages/community/HomePage").then(m => ({ default: m.HomePage })));
+const CategoryPage = lazy(() => import("./pages/community/CategoryPage").then(m => ({ default: m.CategoryPage })));
+const PostDetailPage = lazy(() => import("./pages/community/PostDetailPage").then(m => ({ default: m.PostDetailPage })));
+const CreatePostPage = lazy(() => import("./pages/community/CreatePostPage").then(m => ({ default: m.CreatePostPage })));
+const UserProfilePage = lazy(() => import("./pages/community/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
+const SearchPage = lazy(() => import("./pages/community/SearchPage").then(m => ({ default: m.SearchPage })));
+const ApprovalPage = lazy(() => import("./pages/community/ApprovalPage").then(m => ({ default: m.ApprovalPage })));
 
 // Public Menu Access
 const MenuAccess = lazy(() => import("./pages/MenuAccess"));
@@ -692,6 +703,17 @@ const App = () => {
                         {/* ==================== VENDOR PORTAL (External Access) ==================== */}
                         <Route path="/vendor/login" element={<VendorLoginPage />} />
                         <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
+
+                        {/* ==================== COMMUNITY FORUM (Global) ==================== */}
+                        <Route path="/community" element={<CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute>}>
+                          <Route index element={<CommunityHomePage />} />
+                          <Route path="c/:categorySlug" element={<CategoryPage />} />
+                          <Route path="post/:postId" element={<PostDetailPage />} />
+                          <Route path="create" element={<CreatePostPage />} />
+                          <Route path="u/:username" element={<UserProfilePage />} />
+                          <Route path="search" element={<SearchPage />} />
+                          <Route path="approval" element={<ApprovalPage />} />
+                        </Route>
 
                         {/* ==================== 404 NOT FOUND ==================== */}
                         <Route path="*" element={<NotFoundPage />} />

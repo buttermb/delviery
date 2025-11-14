@@ -100,6 +100,14 @@ const SecureMenuAccess = () => {
       if (data) {
         if (data.access_granted) {
           sessionStorage.setItem(`menu_${token}`, JSON.stringify(data.menu_data));
+          
+          // Check if this is a forum menu and redirect immediately
+          if (data.menu_data?.security_settings?.menu_type === 'forum') {
+            const forumUrl = data.menu_data.security_settings?.forum_url || '/community';
+            window.location.href = forumUrl;
+            return;
+          }
+          
           setMenuData(data.menu_data);
           return;
         } else if (data.violations) {

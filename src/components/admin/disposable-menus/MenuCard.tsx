@@ -2,7 +2,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, Key } from 'lucide-react';
+import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, Key, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
@@ -82,8 +82,15 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-bold">{menu.name}</h3>
+                {/* @ts-expect-error - security_settings added via migration */}
+                {menu.security_settings?.menu_type === 'forum' && (
+                  <Badge variant="secondary" className="gap-1 text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
+                    <MessageSquare className="h-3 w-3" />
+                    Forum Menu
+                  </Badge>
+                )}
                 {/* @ts-expect-error - is_encrypted added via migration */}
                 {menu.is_encrypted && (
                   <Badge variant="default" className="gap-1 text-xs">

@@ -326,12 +326,14 @@ serve(async (req) => {
             description: menu.description,
             products: products,
             menu_id: menu.id,
+            whitelist_id: whitelist_entry?.id || null,
             min_order_quantity: menu.min_order_quantity,
             max_order_quantity: menu.max_order_quantity,
             appearance_settings: menu.appearance_settings || {
               show_product_images: true,
               show_availability: true
-            }
+            },
+            security_settings: security_settings // Include security_settings so frontend can check menu_type
           },
           remaining_views: whitelist_entry 
             ? (security_settings.view_limits?.max_views_per_week || 999) - whitelist_entry.view_count 

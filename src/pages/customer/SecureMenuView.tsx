@@ -102,6 +102,14 @@ const SecureMenuView = () => {
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
     if (storedMenu) {
       const parsed = JSON.parse(storedMenu);
+      
+      // Check if this is a forum menu and redirect
+      if (parsed.security_settings?.menu_type === 'forum') {
+        const forumUrl = parsed.security_settings?.forum_url || '/community';
+        navigate(forumUrl);
+        return;
+      }
+      
       setMenuData(parsed);
       setLoading(false);
 

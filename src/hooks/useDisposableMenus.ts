@@ -51,29 +51,44 @@ export const useCreateDisposableMenu = () => {
       expiration_date?: string;
       never_expires?: boolean;
     }) => {
-      // Transform product_ids and custom_prices into products array
-      const products = menuData.product_ids.map(productId => ({
-        product_id: productId,
-        custom_price: menuData.custom_prices?.[productId],
-        display_availability: true,
-        display_order: 0,
-      }));
+      // Transform product_ids and custom_prices into products array (only if products exist)
+      const products = menuData.product_ids && menuData.product_ids.length > 0
+        ? menuData.product_ids.map(productId => ({
+            product_id: productId,
+            custom_price: menuData.custom_prices?.[productId],
+            display_availability: true,
+            display_order: 0,
+          }))
+        : undefined; // Don't pass empty array, use undefined for forum menus
+
+      // Build request body, only including optional fields if they have values
+      const requestBody: Record<string, unknown> = {
+        tenant_id: menuData.tenant_id,
+        name: menuData.name,
+        description: menuData.description,
+        security_settings: menuData.security_settings || {},
+        appearance_settings: menuData.appearance_settings || {},
+        access_code: menuData.access_code,
+        expiration_date: menuData.expiration_date,
+        never_expires: menuData.never_expires ?? true,
+      };
+
+      // Only add products if provided (forum menus won't have products)
+      if (products && products.length > 0) {
+        requestBody.products = products;
+      }
+
+      // Only add order quantities if provided (forum menus won't have these)
+      if (menuData.min_order_quantity !== undefined && menuData.min_order_quantity > 0) {
+        requestBody.min_order_quantity = menuData.min_order_quantity;
+      }
+      if (menuData.max_order_quantity !== undefined && menuData.max_order_quantity > 0) {
+        requestBody.max_order_quantity = menuData.max_order_quantity;
+      }
 
       // Call the new encrypted menu creation edge function
       const { data, error } = await supabase.functions.invoke('create-encrypted-menu', {
-        body: {
-          tenant_id: menuData.tenant_id,
-          name: menuData.name,
-          description: menuData.description,
-          security_settings: menuData.security_settings || {},
-          appearance_settings: menuData.appearance_settings || {},
-          min_order_quantity: menuData.min_order_quantity || 5,
-          max_order_quantity: menuData.max_order_quantity || 50,
-          access_code: menuData.access_code,
-          products,
-          expiration_date: menuData.expiration_date,
-          never_expires: menuData.never_expires ?? true,
-        }
+        body: requestBody
       });
 
       if (error) throw error;

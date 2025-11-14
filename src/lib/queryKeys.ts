@@ -321,4 +321,50 @@ export const queryKeys = {
     purchaseOrders: (vendorId: string) => [...queryKeys.vendor.all, 'purchase-orders', vendorId] as const,
     invoices: (vendorId: string) => [...queryKeys.vendor.all, 'invoices', vendorId] as const,
   },
+
+  // Forum
+  forum: {
+    all: ['forum'] as const,
+    posts: {
+      all: () => [...queryKeys.forum.all, 'posts'] as const,
+      lists: () => [...queryKeys.forum.posts.all(), 'list'] as const,
+      list: (options?: Record<string, unknown>) => [...queryKeys.forum.posts.lists(), options] as const,
+      details: () => [...queryKeys.forum.posts.all(), 'detail'] as const,
+      detail: (id: string) => [...queryKeys.forum.posts.details(), id] as const,
+    },
+    comments: {
+      all: () => [...queryKeys.forum.all, 'comments'] as const,
+      lists: () => [...queryKeys.forum.comments.all(), 'list'] as const,
+      list: (postId: string) => [...queryKeys.forum.comments.lists(), postId] as const,
+    },
+    categories: {
+      all: () => [...queryKeys.forum.all, 'categories'] as const,
+      lists: () => [...queryKeys.forum.categories.all(), 'list'] as const,
+    },
+    votes: {
+      all: () => [...queryKeys.forum.all, 'votes'] as const,
+      userVote: (votableType: string, votableId: string) => [...queryKeys.forum.votes.all(), votableType, votableId] as const,
+    },
+    profile: {
+      all: () => [...queryKeys.forum.all, 'profile'] as const,
+      current: () => [...queryKeys.forum.profile.all(), 'current'] as const,
+      byUsername: (username: string) => [...queryKeys.forum.profile.all(), 'username', username] as const,
+    },
+    approval: {
+      all: () => [...queryKeys.forum.all, 'approval'] as const,
+      current: () => [...queryKeys.forum.approval.all(), 'current'] as const,
+    },
+    reputation: {
+      all: () => [...queryKeys.forum.all, 'reputation'] as const,
+      user: (userId: string) => [...queryKeys.forum.reputation.all(), userId] as const,
+    },
+    notifications: {
+      all: () => [...queryKeys.forum.all, 'notifications'] as const,
+      lists: () => [...queryKeys.forum.notifications.all(), 'list'] as const,
+    },
+    search: {
+      all: () => [...queryKeys.forum.all, 'search'] as const,
+      posts: (query: string) => [...queryKeys.forum.search.all(), 'posts', query] as const,
+    },
+  },
 } as const;

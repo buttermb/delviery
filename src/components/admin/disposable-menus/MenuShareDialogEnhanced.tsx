@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, ExternalLink, MessageCircle, Mail, QrCode, Download, Loader2, CheckCircle2, Users, DollarSign } from 'lucide-react';
+import { Copy, ExternalLink, MessageCircle, Mail, QrCode, Download, Loader2, CheckCircle2, Users, DollarSign, MessageSquare } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { formatMenuUrl } from '@/utils/menuHelpers';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
@@ -89,10 +89,21 @@ export const MenuShareDialogEnhanced = ({
     }
   }, [open, menuUrl]);
 
+  // Check if this is a forum menu
+  const isForumMenu = menu?.security_settings?.menu_type === 'forum';
+
   // Auto-populate SMS message
   useEffect(() => {
     if (activeTab === 'sms' && !smsMessage) {
-      const defaultMessage = `Hi! You've been granted access to our wholesale catalog.
+      const defaultMessage = isForumMenu
+        ? `Hi! You've been granted access to our community forum.
+
+Access URL: ${menuUrl}
+${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n` : ''}
+Join the discussion, share reviews, and connect with other customers!
+
+This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
+        : `Hi! You've been granted access to our wholesale catalog.
 
 Access URL: ${menuUrl}
 Access Code: ${accessCode}
@@ -100,7 +111,7 @@ Access Code: ${accessCode}
 This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
       setSmsMessage(defaultMessage);
     }
-  }, [activeTab, menuUrl, accessCode, menu?.expiration_date, smsMessage]);
+  }, [activeTab, menuUrl, accessCode, menu?.expiration_date, smsMessage, isForumMenu]);
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -187,27 +198,38 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
   };
 
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(
-      `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
-      `You've been granted access to our wholesale catalog.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `Access Code: ${accessCode}\n\n` +
-      `This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
-    );
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    const message = isForumMenu
+      ? `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
+        `You've been granted access to our community forum.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+        `Join the discussion, share reviews, and connect with other customers!\n\n` +
+        `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
+      : `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
+        `You've been granted access to our wholesale catalog.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `Access Code: ${accessCode}\n\n` +
+        `This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleEmail = () => {
     const subject = encodeURIComponent(`Access to ${menu?.name}`);
-    const body = encodeURIComponent(
-      `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
-      `You've been granted access to our wholesale catalog.\n\n` +
-      `Access URL: ${menuUrl}\n` +
-      `Access Code: ${accessCode}\n\n` +
-      `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
-      `Best regards`
-    );
-    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${body}`, '_blank');
+    const body = isForumMenu
+      ? `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
+        `You've been granted access to our community forum.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+        `Join the discussion, share reviews, and connect with other customers!\n\n` +
+        `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+        `Best regards`
+      : `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
+        `You've been granted access to our wholesale catalog.\n\n` +
+        `Access URL: ${menuUrl}\n` +
+        `Access Code: ${accessCode}\n\n` +
+        `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+        `Best regards`;
+    window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
   };
 
   return (
@@ -216,7 +238,9 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
         <DialogHeader>
           <DialogTitle>Share Menu Access</DialogTitle>
           <DialogDescription>
-            Share this encrypted menu via link, QR code, or SMS
+            {isForumMenu 
+              ? 'Share this forum menu link - customers will be redirected to the community forum'
+              : 'Share this encrypted menu via link, QR code, or SMS'}
           </DialogDescription>
         </DialogHeader>
 
@@ -259,28 +283,47 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
               </div>
             </div>
 
-            {/* Access Code */}
-            <div className="space-y-2">
-              <Label>Access Code</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={accessCode}
-                  readOnly
-                  className="font-mono text-2xl text-center tracking-widest font-bold"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleCopy(accessCode, 'Code')}
-                >
-                  {copied ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
+            {/* Access Code - Only show if required */}
+            {accessCode !== 'N/A' && (
+              <div className="space-y-2">
+                <Label>Access Code</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={accessCode}
+                    readOnly
+                    className="font-mono text-2xl text-center tracking-widest font-bold"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleCopy(accessCode, 'Code')}
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
+            
+            {/* Forum Menu Notice */}
+            {isForumMenu && (
+              <div className="rounded-lg border bg-green-500/10 border-green-500/20 p-4">
+                <div className="flex items-start gap-2">
+                  <MessageSquare className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      Forum Menu
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      Customers accessing this menu will be automatically redirected to the community forum at <code className="bg-background px-1 rounded">/community</code>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* QR Code */}
             <div className="space-y-2">
