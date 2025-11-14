@@ -83,6 +83,7 @@ const PublicListingDetailPage = lazy(() => import("./pages/marketplace/PublicLis
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
 const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
 const SuperAdminTenantsListPage = lazy(() => import("./pages/super-admin/TenantsListPage"));
+const SuperAdminCreateTenantPage = lazy(() => import("./pages/super-admin/CreateTenantPage"));
 const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
 const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
 const SuperAdminMonitoringPage = lazy(() => import("./pages/super-admin/MonitoringPage"));
@@ -468,6 +469,7 @@ const App = () => {
                           <Route path="security" element={<SuperAdminSecurityPage />} />
                           <Route path="tools" element={<SuperAdminToolsPage />} />
                           <Route path="tenants" element={<SuperAdminTenantsListPage />} />
+                          <Route path="tenants/new" element={<SuperAdminCreateTenantPage />} />
                           <Route path="tenants/:tenantId" element={<SuperAdminTenantDetailPage />} />
                           <Route path="marketplace/moderation" element={<MarketplaceModerationPage />} />
                           <Route path="settings" element={<SuperAdminSettingsPage />} />

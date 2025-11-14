@@ -43,7 +43,7 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; description?: string; start_date?: string; end_date?: string; budget?: number; target_audience?: string }) => {
+    mutationFn: async (data: { name: string; type: string; subject?: string; content: string; audience?: string; scheduled_at?: string; status?: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       // Store campaign (would need marketing_campaigns table)
@@ -52,7 +52,6 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
           {
             tenant_id: tenant.id,
             ...data,
-            content: data.description || '',
             created_by: admin?.id || null,
           },
         ]);
@@ -92,12 +91,12 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
 
     await createMutation.mutateAsync({
       name: formData.name,
-      type: campaignType as any,
-      subject: (campaignType === "email" ? formData.subject : null) as any,
+      type: campaignType,
+      subject: campaignType === "email" ? formData.subject : undefined,
       content: formData.content,
-      audience: formData.audience as any,
-      scheduled_at: (formData.scheduled_at || null) as any,
-      status: "draft" as any,
+      audience: formData.audience,
+      scheduled_at: formData.scheduled_at || undefined,
+      status: "draft",
     });
   };
 
