@@ -111,9 +111,9 @@ export function TopNav({
     return 'SA';
   };
 
-  const adminName = superAdmin?.full_name || superAdmin?.email || 'Super Admin';
+  const adminName = (superAdmin as any)?.full_name || superAdmin?.email || 'Super Admin';
   const adminEmail = superAdmin?.email || '';
-  const adminInitials = getInitials(superAdmin?.full_name, superAdmin?.email);
+  const adminInitials = getInitials((superAdmin as any)?.full_name, superAdmin?.email);
 
   return (
     <nav
@@ -584,7 +584,7 @@ export function TopNav({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={superAdmin?.avatar_url} />
+                <AvatarImage src={(superAdmin as any)?.avatar_url} />
                 <AvatarFallback>{adminInitials}</AvatarFallback>
               </Avatar>
               <div className="text-left hidden xl:block">
