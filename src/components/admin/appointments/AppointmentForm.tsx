@@ -45,7 +45,7 @@ export function AppointmentForm({
       ? new Date(selectedDate).toISOString().slice(0, 16)
       : "",
     duration_minutes: "30",
-    type: "consultation",
+    appointment_type: "consultation",
     notes: "",
   });
 
@@ -63,7 +63,7 @@ export function AppointmentForm({
       customer_id: string;
       scheduled_at: string;
       duration_minutes: number;
-      type: string;
+      appointment_type: string;
       notes: string | null;
       status: string;
     }) => {
@@ -107,7 +107,7 @@ export function AppointmentForm({
       customer_id: formData.customer_id,
       scheduled_at: formData.scheduled_at,
       duration_minutes: parseInt(formData.duration_minutes, 10),
-      type: formData.type,
+      appointment_type: formData.appointment_type,
       notes: formData.notes || null,
       status: "scheduled",
     });
@@ -177,11 +177,11 @@ export function AppointmentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Appointment Type</Label>
+            <Label htmlFor="appointment_type">Appointment Type</Label>
             <Select
-              value={formData.type}
+              value={formData.appointment_type}
               onValueChange={(value) =>
-                setFormData({ ...formData, type: value })
+                setFormData({ ...formData, appointment_type: value })
               }
             >
               <SelectTrigger className="min-h-[44px] touch-manipulation">

@@ -13,25 +13,11 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
-
-interface MenuOrder {
-  total_amount?: number | string | null;
-  [key: string]: unknown;
-}
-
-interface Menu {
-  id: string;
-  name?: string;
-  status?: string;
-  encrypted_url_token?: string;
-  menu_access_logs?: Array<{ count?: number; [key: string]: unknown }>;
-  menu_access_whitelist?: Array<{ count?: number; [key: string]: unknown }>;
-  menu_orders?: MenuOrder[];
-  [key: string]: unknown;
-}
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import type { DisposableMenu } from '@/types/admin';
 
 interface MenuCardProps {
-  menu: Menu;
+  menu: DisposableMenu;
 }
 
 export const MenuCard = ({ menu }: MenuCardProps) => {
@@ -43,13 +29,11 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
 
-  const viewCount = menu.menu_access_logs?.[0]?.count || 0;
-  const customerCount = menu.menu_access_whitelist?.[0]?.count || 0;
-  const orderCount = menu.menu_orders?.length || 0;
+  const viewCount = (menu as any).view_count || 0;
+  const customerCount = (menu as any).customer_count || 0;
+  const orderCount = (menu as any).order_count || 0;
   
-  const totalRevenue = menu.menu_orders?.reduce((sum: number, order: MenuOrder) => {
-    return sum + parseFloat(String(order.total_amount || 0));
-  }, 0) || 0;
+  const totalRevenue = (menu as any).total_revenue || 0;
 
   const statusColors = {
     active: 'bg-primary',
@@ -83,14 +67,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-bold">{menu.name}</h3>
-                {/* @ts-expect-error - security_settings added via migration */}
-                {menu.security_settings?.menu_type === 'forum' && (
+                {menu.menu_type === 'forum' && (
                   <Badge variant="secondary" className="gap-1 text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
                     <MessageSquare className="h-3 w-3" />
                     Forum Menu
                   </Badge>
                 )}
-                {/* @ts-expect-error - is_encrypted added via migration */}
                 {menu.is_encrypted && (
                   <Badge variant="default" className="gap-1 text-xs">
                     <Lock className="h-3 w-3" />
@@ -99,7 +81,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                 )}
               </div>
               <p className="text-sm text-muted-foreground line-clamp-1">
-                {menu.description || 'No description'}
+                {jsonToString(menu.description) || 'No description'}
               </p>
             </div>
             <Badge className={statusColors[menu.status as keyof typeof statusColors]}>
@@ -108,9 +90,9 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
           </div>
 
           {/* Security Features */}
-          {(menu.screenshot_protection || menu.geofence_enabled || menu.device_lock_enabled || menu.max_views_per_period) && (
+          {((menu as any).screenshot_protection || menu.geofence_enabled || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
             <div className="flex flex-wrap gap-2">
-              {menu.screenshot_protection && (
+              {(menu as any).screenshot_protection && (
                 <Badge variant="outline" className="text-xs">
                   <Shield className="h-3 w-3 mr-1" />
                   Screenshot Protection
@@ -122,16 +104,16 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
                   Geofencing
                 </Badge>
               )}
-              {menu.device_lock_enabled && (
+              {menu.device_locking_enabled && (
                 <Badge variant="outline" className="text-xs">
                   <Lock className="h-3 w-3 mr-1" />
                   Device Lock
                 </Badge>
               )}
-              {menu.max_views_per_period && (
+              {(menu as any).max_views_per_period && (
                 <Badge variant="outline" className="text-xs">
                   <Clock className="h-3 w-3 mr-1" />
-                  View Limit: {menu.max_views_per_period}
+                  View Limit: {(menu as any).max_views_per_period}
                 </Badge>
               )}
             </div>

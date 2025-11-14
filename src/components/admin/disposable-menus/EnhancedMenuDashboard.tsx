@@ -21,21 +21,7 @@ import { CreateMenuDialog } from './CreateMenuDialog';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-
-interface WhitelistEntry {
-  id: string;
-  [key: string]: unknown;
-}
-
-interface AccessLog {
-  id: string;
-  [key: string]: unknown;
-}
-
-interface MenuOrder {
-  id: string;
-  [key: string]: unknown;
-}
+import type { DisposableMenu } from '@/types/admin';
 
 interface SecurityAlert {
   id: string;
@@ -44,28 +30,10 @@ interface SecurityAlert {
   [key: string]: unknown;
 }
 
-interface Menu {
-  id: string;
-  name: string;
-  encrypted_url_token: string;
-  status: string;
-  created_at: string;
-  burned_at?: string;
-  burn_reason?: string;
-  regenerated_from?: string;
-  min_order_quantity?: number;
-  max_order_quantity?: number;
-  expiration_date?: string;
-  never_expires?: boolean;
-  menu_access_whitelist?: WhitelistEntry[];
-  menu_access_logs?: AccessLog[];
-  menu_orders?: MenuOrder[];
-}
-
 export function EnhancedMenuDashboard() {
   const { tenant } = useTenantAdminAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedMenuForBurn, setSelectedMenuForBurn] = useState<Menu | null>(null);
+  const [selectedMenuForBurn, setSelectedMenuForBurn] = useState<DisposableMenu | null>(null);
   
   const { data: menus, isLoading } = useDisposableMenus(tenant?.id);
 
@@ -73,10 +41,8 @@ export function EnhancedMenuDashboard() {
   const { data: overviewStats } = useQuery({
     queryKey: ['menu-overview-stats'],
     queryFn: async () => {
-      // @ts-expect-error - Menu type mismatch with Supabase generated types
-      const activeMenus = menus?.filter((m: Menu) => m.status === 'active') || [];
-      // @ts-expect-error - Menu type mismatch with Supabase generated types
-      const burnedMenus = menus?.filter((m: Menu) => 
+      const activeMenus = menus?.filter((m: DisposableMenu) => m.status === 'active') || [];
+      const burnedMenus = menus?.filter((m: DisposableMenu) => 
         m.status === 'soft_burned' || m.status === 'hard_burned'
       ) || [];
 
@@ -354,13 +320,13 @@ export function EnhancedMenuDashboard() {
                       Burned: {menu.burned_at && format(new Date(menu.burned_at), 'MMM d, yyyy')}
                       {menu.burn_reason && ` • Reason: ${menu.burn_reason}`}
                     </div>
-                    {menu.regenerated_from && (
+                    {(menu as any).regenerated_from && (
                       <div className="text-sm text-green-600 mt-1">
                         ✅ Regenerated as new menu
                       </div>
                     )}
                   </div>
-                  {menu.regenerated_from && (
+                  {(menu as any).regenerated_from && (
                     <Button variant="outline" size="sm">
                       View New Menu
                     </Button>

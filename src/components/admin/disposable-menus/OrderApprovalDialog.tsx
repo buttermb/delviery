@@ -30,6 +30,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
+import { jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface OrderItem {
   product_name?: string;
