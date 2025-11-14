@@ -11,6 +11,8 @@ import {
   Sparkles,
   TrendingUp,
   Building2,
+  MessageSquare,
+  Users,
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -248,6 +250,57 @@ export default function CustomerDashboardPage() {
                 <Link to={`/${tenant?.slug}/shop/wholesale/orders`}>
                   <Package className="h-4 w-4 mr-2" />
                   Wholesale Orders
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Community Forum Banner */}
+        <Card className="bg-gradient-to-br from-[hsl(var(--customer-accent))]/10 to-[hsl(var(--customer-accent))]/5 border-[hsl(var(--customer-accent))]/20 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
+                <Users className="h-5 w-5 text-[hsl(var(--customer-accent))]" />
+                Community Forum
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                asChild
+                className="text-[hsl(var(--customer-accent))]"
+              >
+                <Link to="/community">
+                  Join <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[hsl(var(--customer-text-light))] mb-3">
+              Connect with the community, share experiences, and discover tips
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-accent))]/30 text-[hsl(var(--customer-accent))] hover:bg-[hsl(var(--customer-accent))]/10"
+              >
+                <Link to="/community">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Browse Discussions
+                </Link>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))]"
+              >
+                <Link to="/community/new">
+                  <Users className="h-4 w-4 mr-2" />
+                  Create Post
                 </Link>
               </Button>
             </div>

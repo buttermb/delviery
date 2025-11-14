@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, ShoppingBag, Package, User, ShoppingCart } from "lucide-react";
+import { Home, ShoppingBag, Package, User, ShoppingCart, Users } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,11 @@ export function CustomerMobileBottomNav() {
       label: "Retail",
       icon: ShoppingBag,
       path: `/${tenant?.slug}/shop/retail/businesses`,
+    },
+    {
+      label: "Community",
+      icon: Users,
+      path: `/community`,
     },
     {
       label: "Cart",
