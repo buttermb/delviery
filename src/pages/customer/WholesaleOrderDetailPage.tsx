@@ -21,7 +21,8 @@ import {
   Building2,
   MapPin,
   DollarSign,
-  FileText
+  FileText,
+  ShieldCheck
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
