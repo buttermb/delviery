@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useManageWhitelist } from '@/hooks/useDisposableMenus';
 import { formatMenuUrl } from '@/utils/menuHelpers';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface Menu {
   access_code?: string | null;
@@ -119,7 +120,8 @@ export const MenuWhitelistTab = ({
       `• Location verification required\n\n` +
       `Thank you!`
     );
-    window.open(`https://wa.me/${entry.customer_phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+    const phone = String(entry.customer_phone || '').replace(/\D/g, '');
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   if (isLoading) {

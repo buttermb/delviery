@@ -373,7 +373,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
         <SendAccessLinkDialog
           open={!!sendLinkCustomer}
           onClose={() => setSendLinkCustomer(null)}
-          whitelistEntry={sendLinkCustomer}
+          whitelistEntry={sendLinkCustomer as any}
           menuTitle={menu.name}
         />
       )}

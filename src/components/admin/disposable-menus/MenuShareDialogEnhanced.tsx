@@ -21,6 +21,7 @@ import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
 
 interface Menu {
   id?: string;
@@ -89,7 +90,7 @@ export const MenuShareDialogEnhanced = ({
   }, [open, menuUrl]);
 
   // Check if this is a forum menu
-  const isForumMenu = menu?.security_settings?.menu_type === 'forum';
+  const isForumMenu = (menu?.security_settings as any)?.menu_type === 'forum';
 
   // Auto-populate SMS message
   useEffect(() => {
@@ -525,24 +526,24 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                     {whitelist && whitelist.length > 0 ? (
                   <div className="divide-y">
                     {whitelist.map((entry: WhitelistEntry) => (
-                      <div key={entry.id} className="p-3 flex items-center justify-between">
+                      <div key={String(entry.id)} className="p-3 flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {entry.customer_name || entry.customer?.business_name || 'Unknown Customer'}
+                            {jsonToString(entry.customer_name) || jsonToString((entry.customer as any)?.business_name) || 'Unknown Customer'}
                           </div>
                           {entry.customer_phone && (
                             <div className="text-sm text-muted-foreground">
-                              {entry.customer_phone}
+                              {jsonToString(entry.customer_phone)}
                             </div>
                           )}
-                          {entry.invited_at && (
+                          {(entry as any).invited_at && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Invited: {new Date(entry.invited_at).toLocaleDateString()}
+                              Invited: {new Date(jsonToStringOrNumber((entry as any).invited_at)).toLocaleDateString()}
                             </div>
                           )}
                         </div>
-                        <Badge variant={entry.status === 'active' ? 'default' : 'secondary'}>
-                          {entry.status || 'active'}
+                        <Badge variant={jsonToString(entry.status) === 'active' ? 'default' : 'secondary'}>
+                          {jsonToString(entry.status) || 'active'}
                         </Badge>
                       </div>
                     ))}

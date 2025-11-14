@@ -87,7 +87,7 @@ export const MenuOrdersTab = ({ orders, isLoading }: MenuOrdersTabProps) => {
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>{format(new Date(order.created_at), 'MMM dd, HH:mm')}</span>
+              <span>{format(new Date(String(order.created_at)), 'MMM dd, HH:mm')}</span>
             </div>
             <div>
               <Button variant="outline" size="sm">
