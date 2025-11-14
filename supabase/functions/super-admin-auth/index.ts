@@ -169,7 +169,15 @@ serve(async (req) => {
     
     let body: any = {};
     if (req.method === "POST") {
-      body = await req.json();
+      try {
+        const text = await req.text();
+        if (text && text.trim() !== '') {
+          body = JSON.parse(text);
+        }
+      } catch (error) {
+        console.error("Failed to parse request body:", error);
+        // body remains empty object
+      }
     }
 
     if (action === "login") {
