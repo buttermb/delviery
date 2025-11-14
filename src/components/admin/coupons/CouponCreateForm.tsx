@@ -168,7 +168,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
       total_usage_limit: formData.total_usage_limit ? parseInt(formData.total_usage_limit) : null,
       per_user_limit: formData.per_user_limit ? parseInt(formData.per_user_limit) : null,
       auto_apply: formData.auto_apply,
-      status: "active",
+      status: "active" as const,
       created_by: admin?.id || null,
       updated_at: new Date().toISOString(),
     };
@@ -176,7 +176,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     if (isEditing) {
       await updateMutation.mutateAsync(couponData);
     } else {
-      await createMutation.mutateAsync(couponData);
+      await createMutation.mutateAsync(couponData as Database['public']['Tables']['coupon_codes']['Insert']);
     }
   };
 

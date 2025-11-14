@@ -12,21 +12,21 @@ import { showSuccessToast } from '@/utils/toastHelpers';
 import { ImportCustomersDialog } from './ImportCustomersDialog';
 import { CustomerActivityTimeline } from './CustomerActivityTimeline';
 import { SendAccessLinkDialog } from './SendAccessLinkDialog';
-
-interface Menu {
-  id: string;
-  name?: string;
-  [key: string]: unknown;
-}
+import type { DisposableMenu } from '@/types/admin';
 
 interface WhitelistEntry {
   id: string;
   status?: string;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  unique_access_token?: string | null;
+  last_access_at?: string | null;
   [key: string]: unknown;
 }
 
 interface ManageAccessDialogProps {
-  menu: Menu;
+  menu: DisposableMenu;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -108,9 +108,9 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
 
           {selectedCustomer ? (
             <div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedCustomer(null)}
                 className="mb-4"
               >
@@ -118,7 +118,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
               </Button>
               <CustomerActivityTimeline
                 whitelistId={selectedCustomer.id}
-                customerName={selectedCustomer.customer_name}
+                customerName={String(selectedCustomer.customer_name || '')}
               />
             </div>
           ) : (
@@ -215,7 +215,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
 
                     <div className="bg-muted p-2 rounded text-xs mb-3">
                       <code className="break-all">
-                        /m/{menu.encrypted_url_token}?u={customer.unique_access_token}
+                        /m/{menu.encrypted_url_token}?u={String(customer.unique_access_token || '')}
                       </code>
                     </div>
 
@@ -295,7 +295,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                     
                     <div className="bg-muted p-2 rounded text-xs mb-3">
                       <code className="break-all">
-                        /m/{menu.encrypted_url_token}?u={customer.unique_access_token}
+                        /m/{menu.encrypted_url_token}?u={String(customer.unique_access_token || '')}
                       </code>
                     </div>
 

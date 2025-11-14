@@ -362,7 +362,6 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                   </div>
                   <div className="max-h-[300px] overflow-y-auto space-y-2 border rounded-lg p-2">
                     {customers && customers.length > 0 ? (
-                      // @ts-expect-error - customers may not have business_name column yet
                       customers.map((customer: { id: string; first_name?: string; last_name?: string; business_name?: string; email?: string }) => {
                         const isSelected = selectedCustomers.includes(customer.id);
                         const displayName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unnamed Customer';
