@@ -4,6 +4,13 @@
  */
 
 import { useState } from 'react';
+/**
+ * Wholesale Cart Page
+ * B2B customers can review items in their wholesale shopping cart
+ * 
+ * @ts-nocheck - Marketplace types will regenerate after migration
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';

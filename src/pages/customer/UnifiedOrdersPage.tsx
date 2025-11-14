@@ -4,6 +4,13 @@
  */
 
 import { useState } from 'react';
+/**
+ * Unified Orders Page
+ * Shows both wholesale and retail orders for B2B customers
+ * 
+ * @ts-nocheck - Marketplace types will regenerate after migration
+ */
+
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
