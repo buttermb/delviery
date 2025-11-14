@@ -43,7 +43,7 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; description?: string; start_date?: string; end_date?: string; budget?: number; target_audience?: string }) => {
+    mutationFn: async (data: { name: string; description?: string; start_date?: string; end_date?: string; budget?: number; target_audience?: string; type?: string }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       // Store campaign (would need marketing_campaigns table)
