@@ -136,7 +136,7 @@ export function TopNav({
         </Link>
 
         {/* Primary Navigation - Hidden on mobile, shown on tablet+ */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1 overflow-x-auto flex-1 max-w-[60vw]">
           {/* Platform Overview */}
           <NavItem
             icon={LayoutDashboard}
