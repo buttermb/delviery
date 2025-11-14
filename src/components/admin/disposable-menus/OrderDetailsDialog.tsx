@@ -31,6 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
+import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 
 interface OrderItem {
   product_name?: string;
@@ -296,13 +297,13 @@ export const OrderDetailsDialog = ({
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="text-muted-foreground">Method:</span>{' '}
-                  <Badge variant="outline">{order.delivery_method || 'Not specified'}</Badge>
+                  <Badge variant="outline">{jsonToString(order.delivery_method as any) || 'Not specified'}</Badge>
                 </div>
                 {order.special_instructions && (
                   <div>
                     <span className="text-muted-foreground">Special Instructions:</span>
                     <p className="mt-1 p-2 bg-muted rounded text-sm">
-                      {order.special_instructions}
+                      {jsonToString(order.special_instructions as any)}
                     </p>
                   </div>
                 )}
@@ -320,7 +321,7 @@ export const OrderDetailsDialog = ({
               <div className="text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Menu:</span>
-                  <span className="font-medium">{order.menu?.name || 'Unknown'}</span>
+                  <span className="font-medium">{jsonToString((order.menu as any)?.name as any) || 'Unknown'}</span>
                 </div>
               </div>
             </div>
@@ -331,12 +332,12 @@ export const OrderDetailsDialog = ({
             <div className="space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Clock className="h-3 w-3" />
-                <span>Created: {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm:ss')}</span>
+                <span>Created: {format(new Date(String(jsonToStringOrNumber(order.created_at as any))), 'MMM dd, yyyy HH:mm:ss')}</span>
               </div>
               {order.updated_at && order.updated_at !== order.created_at && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-3 w-3" />
-                  <span>Updated: {format(new Date(order.updated_at), 'MMM dd, yyyy HH:mm:ss')}</span>
+                  <span>Updated: {format(new Date(String(jsonToStringOrNumber(order.updated_at as any))), 'MMM dd, yyyy HH:mm:ss')}</span>
                 </div>
               )}
             </div>

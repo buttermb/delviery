@@ -51,6 +51,7 @@ export function CampaignBuilder({ open, onOpenChange }: CampaignBuilderProps) {
         const { error } = await supabase.from("marketing_campaigns").insert([
           {
             tenant_id: tenant.id,
+            type: (data as any).type || 'email',
             ...data,
             content: data.description || '',
             created_by: admin?.id || null,

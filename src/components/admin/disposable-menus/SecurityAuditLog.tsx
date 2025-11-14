@@ -163,7 +163,7 @@ export const SecurityAuditLog = ({ events, onRefresh }: SecurityAuditLogProps) =
                         <p>Reason: {event.details.reason}</p>
                       )}
                       {event.details?.location && (
-                        <p>Location: {event.details.location.latitude}, {event.details.location.longitude}</p>
+                        <p>Location: {typeof event.details.location === 'object' && event.details.location !== null && 'latitude' in event.details.location ? `${(event.details.location as any).latitude}, ${(event.details.location as any).longitude}` : String(event.details.location)}</p>
                       )}
                     </div>
                   </div>
