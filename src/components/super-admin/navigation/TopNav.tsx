@@ -111,9 +111,25 @@ export function TopNav({
     return 'SA';
   };
 
-  const adminName = (superAdmin as any)?.full_name || superAdmin?.email || 'Super Admin';
-  const adminEmail = superAdmin?.email || '';
-  const adminInitials = getInitials((superAdmin as any)?.full_name, superAdmin?.email);
+  // Handle full_name - may not exist in type yet, so use fallback
+  // Type assertion for fields that may be added via migration
+  const admin = superAdmin as { 
+    full_name?: string; 
+    first_name?: string; 
+    last_name?: string; 
+    email?: string;
+    avatar_url?: string;
+  };
+  
+  const adminName = admin?.full_name 
+    || (admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : null)
+    || admin?.email 
+    || 'Super Admin';
+  const adminEmail = admin?.email || '';
+  const adminInitials = getInitials(
+    admin?.full_name || (admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : undefined),
+    admin?.email
+  );
 
   return (
     <nav
@@ -584,7 +600,7 @@ export function TopNav({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={(superAdmin as any)?.avatar_url} />
+                <AvatarImage src={admin?.avatar_url} />
                 <AvatarFallback>{adminInitials}</AvatarFallback>
               </Avatar>
               <div className="text-left hidden xl:block">
