@@ -32,12 +32,12 @@ export default function LoginDirectory() {
       icon: Building2,
       title: "Business Owner",
       badge: "Tenant Admin",
-      description: "Access your business administration dashboard. Manage operations, inventory, orders, and team members.",
+      description: "Manage your cannabis business operations, inventory, compliance, and marketplace presence. Access retail, wholesale, and delivery management tools.",
       features: [
-        "Order & inventory management",
-        "Team & location management",
-        "Business analytics",
-        "Customer management"
+        "Inventory & compliance tracking",
+        "Retail & wholesale orders",
+        "Team & delivery management",
+        "Marketplace selling (Medium+ tier)"
       ],
       loginUrl: "/saas/login",
       buttonText: "Business Admin Login",
@@ -49,43 +49,60 @@ export default function LoginDirectory() {
       icon: ShoppingCart,
       title: "Customer Portal",
       badge: "Customer Access",
-      description: "Access your customer account. Browse products, place orders, track deliveries, and manage your profile.",
+      description: "Shop cannabis products from local dispensaries (Retail Mode) or browse wholesale marketplace for bulk purchases (Wholesale Mode - business license required).",
       features: [
-        "Browse product catalogs",
-        "Place & track orders",
-        "Order history & invoices",
-        "Profile management"
+        "Browse & order products (Retail)",
+        "Wholesale marketplace (B2B)",
+        "Switch between Retail/Wholesale",
+        "Order tracking & history"
       ],
       loginUrl: "/customer/login",
       buttonText: "Customer Login",
       color: "from-green-500/10 to-green-500/5 border-green-500/20",
       iconColor: "text-green-600",
-      forWho: "Customers & end users"
+      forWho: "Retail & wholesale customers"
     },
     {
       icon: Truck,
       title: "Courier Portal",
       badge: "Delivery Driver",
-      description: "Access your courier dashboard. View available orders, manage deliveries, track earnings, and update your status.",
+      description: "Access your courier dashboard for licensed cannabis delivery. View available orders, manage deliveries, track earnings, and update your status.",
       features: [
         "View available orders",
         "Track active deliveries",
         "Real-time earnings",
-        "Location tracking"
+        "Location & compliance tracking"
       ],
       loginUrl: "/courier/login",
       buttonText: "Courier Login",
       color: "from-orange-500/10 to-orange-500/5 border-orange-500/20",
       iconColor: "text-orange-600",
-      forWho: "Delivery drivers & couriers"
+      forWho: "Licensed delivery drivers"
+    },
+    {
+      icon: Package,
+      title: "Vendor Portal",
+      badge: "Supplier Access",
+      description: "External vendor access for suppliers and partners. Manage your product listings, view orders, and track payments in the FloraIQ marketplace.",
+      features: [
+        "Manage product listings",
+        "View wholesale orders",
+        "Track payments & invoices",
+        "Communication with buyers"
+      ],
+      loginUrl: "/vendor/login",
+      buttonText: "Vendor Login",
+      color: "from-purple-500/10 to-purple-500/5 border-purple-500/20",
+      iconColor: "text-purple-600",
+      forWho: "External suppliers & vendors"
     }
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Login Portal Directory | DevPanel"
-        description="Access your DevPanel account. Choose from Super Admin, Business Admin, or Customer portals."
+        title="Login Portal Directory | FloraIQ"
+        description="Access your FloraIQ cannabis technology platform. Choose from Business Admin, Customer, Courier, Vendor, or Super Admin portals."
       />
       
       <MarketingNav />
@@ -97,10 +114,10 @@ export default function LoginDirectory() {
             <Badge className="mb-4">Login Portal</Badge>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
               Welcome Back to
-              <span className="block text-primary">DevPanel</span>
+              <span className="block text-primary">FloraIQ</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Choose the appropriate portal based on your role to access your account.
+              Access your FloraIQ cannabis technology platform based on your role.
             </p>
           </div>
         </div>
@@ -208,10 +225,10 @@ export default function LoginDirectory() {
                   <Cog className="h-8 w-8 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                  New to DevPanel?
+                  New to FloraIQ?
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Ready to transform your wholesale business? Start your 14-day free trial today.
+                  Ready to transform your cannabis business? Start your 14-day free trial today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link to="/signup">
