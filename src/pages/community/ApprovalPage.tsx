@@ -18,9 +18,12 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { validateUsername } from '@/lib/utils/forumHelpers';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export function ApprovalPage() {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const { data: approval, isLoading: approvalLoading } = useForumApproval();
   const requestApprovalMutation = useRequestForumApproval();
   const createProfileMutation = useCreateForumProfile();
@@ -28,6 +31,21 @@ export function ApprovalPage() {
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [usernameError, setUsernameError] = useState<string | null>(null);
+
+  // Check authentication first
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+      setAuthLoading(false);
+      
+      if (!user) {
+        navigate(`/community/auth?returnTo=/community/approval`);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleRequestApproval = async () => {
     try {
@@ -82,12 +100,16 @@ export function ApprovalPage() {
     }
   };
 
-  if (approvalLoading) {
+  if (authLoading || approvalLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect in useEffect
   }
 
   // If approved but no profile, show profile creation form
