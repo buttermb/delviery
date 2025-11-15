@@ -489,6 +489,11 @@ export function TopNav({
                 to="/super-admin/communication"
               />
               <MenuItem
+                icon={MessageSquare}
+                label="Forum Approvals"
+                to="/super-admin/forum-approvals"
+              />
+              <MenuItem
                 icon={FileText}
                 label="Templates"
                 to="/super-admin/communication"
