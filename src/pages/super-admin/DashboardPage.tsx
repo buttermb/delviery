@@ -102,7 +102,7 @@ export default function SuperAdminDashboardPage() {
         avgHealthScore,
       };
     },
-    refetchInterval: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch at-risk tenants
@@ -130,7 +130,7 @@ export default function SuperAdminDashboardPage() {
         .sort((a, b) => a.health_score - b.health_score)
         .slice(0, 10);
     },
-    refetchInterval: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch active trials
@@ -247,7 +247,7 @@ export default function SuperAdminDashboardPage() {
         };
       });
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const platformStats = stats || {
