@@ -229,6 +229,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // No stored data = not logged in
         console.log('[AUTH INIT] ❌ No stored credentials found - user not authenticated');
         logger.debug('[AUTH] No stored user/tenant data, not authenticated');
+        // CRITICAL: Clear auth state to ensure redirect works
+        setAdmin(null);
+        setTenant(null);
+        setToken(null);
+        setIsAuthenticated(false);
         setLoading(false);
         return;
       }
@@ -406,7 +411,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         console.log('[AUTH INIT] ✨ Initialization complete', {
           duration: `${totalDuration}ms`,
-          authenticated: true, // We know it's true from localStorage
+          authenticated: isAuthenticated,
+          hasAdmin: !!admin,
+          hasTenant: !!tenant,
         });
         setLoading(false);
       }
