@@ -59,7 +59,7 @@ export function SuperAdminLayout() {
 
       return atRisk.length;
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Track read notifications in state
@@ -93,7 +93,7 @@ export function SuperAdminLayout() {
         tenantId: log.tenant_id,
       }));
     },
-    refetchInterval: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const unreadNotifications = notifications.filter((n: { read: boolean }) => !n.read).length;
