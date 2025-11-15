@@ -224,7 +224,7 @@ export default function LoginPage() {
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
       
-      logger.error('Login error', errorObj, { component: 'LoginPage' });
+      logger.error('Login error', errorObj, 'LoginPage');
       toast({
         title: 'Login Failed',
         description: getErrorMessage(category, errorObj) || errorObj.message || 'Invalid email or password',

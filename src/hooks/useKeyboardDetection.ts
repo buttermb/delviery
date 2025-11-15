@@ -92,4 +92,3 @@ export function useKeyboardDetection() {
 
   return { isKeyboardOpen, viewportHeight };
 }
-

@@ -294,6 +294,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           "border-t space-y-2 bg-background chat-input-container",
           isMobile ? "p-3 pb-safe sticky bottom-0" : "p-4"
         )}
+        style={{ zIndex: 70 }}
         data-chat-widget="input-container"
       >
         {mode === 'ai' && (
@@ -313,12 +314,19 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            onFocus={() => setIsInputFocused(true)}
+            onFocus={() => {
+              setIsInputFocused(true);
+              if (isMobile && inputRef.current) {
+                setTimeout(() => {
+                  inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+              }
+            }}
             onBlur={() => setIsInputFocused(false)}
             placeholder={mode === 'ai' ? 'Ask me anything...' : 'Type your message...'}
             disabled={loading}
             className={cn(
-              "min-h-[44px] text-base flex-1",
+              "min-h-[44px] text-base flex-1 mobile-input-container",
               isMobile && "text-base"
             )}
             style={isMobile && isInputFocused ? { 

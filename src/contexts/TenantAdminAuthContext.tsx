@@ -238,7 +238,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           parsedAdmin = JSON.parse(storedAdmin);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
+          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), 'TenantAdminAuthContext');
           clearAuthState();
           setLoading(false);
           return;
@@ -246,7 +246,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           parsedTenant = JSON.parse(storedTenant);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
+          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), 'TenantAdminAuthContext');
           clearAuthState();
           setLoading(false);
           return;
@@ -395,7 +395,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           name: errorObj.name,
           component: 'TenantAdminAuthContext'
         });
-        logger.error('[AUTH] Initialization error', errorObj, { component: 'TenantAdminAuthContext' });
+        logger.error('[AUTH] Initialization error', errorObj, 'TenantAdminAuthContext');
         clearAuthState();
       } finally {
         const totalDuration = Date.now() - startTime;
@@ -804,7 +804,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         ? ErrorCategory.NETWORK 
         : ErrorCategory.AUTH;
       authFlowLogger.failFlow(flowId, errorObj, category);
-      logger.error("Login error", errorObj, { component: 'TenantAdminAuthContext' });
+      logger.error("Login error", errorObj, 'TenantAdminAuthContext');
       
       // Show user-friendly error messages
       const { showErrorToast } = await import('@/lib/toastUtils');
@@ -828,7 +828,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       } else if ('status' in errorObj && errorObj.status === 429) {
         errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
         errorCode = 'RATE_LIMITED';
-      } else if ('status' in errorObj && errorObj.status >= 500) {
+      } else if ('status' in errorObj && typeof errorObj.status === 'number' && errorObj.status >= 500) {
         errorMessage = 'Server error. We\'re working on it. Please try again in a few minutes.';
         errorCode = 'SERVER_ERROR';
       } else if (errorObj.message) {
