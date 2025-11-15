@@ -43,19 +43,24 @@ export default function TenantAdminDashboardPage() {
   const tenantId = tenant?.id;
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-  // Check if user came from signup
+  // Check if user came from signup (with safeguard against multiple calls)
   useEffect(() => {
     const state = location.state as { fromSignup?: boolean; showWelcome?: boolean } | null;
     if (state?.fromSignup || state?.showWelcome) {
       // Small delay to ensure dashboard is loaded
       const timer = setTimeout(() => {
         setShowWelcomeModal(true);
-        // Clear state to prevent showing again on refresh
-        window.history.replaceState({}, document.title);
+        // Clear state to prevent showing again on refresh (only once)
+        try {
+          window.history.replaceState({}, document.title);
+        } catch (error) {
+          logger.error('Failed to clear history state', error, 'DashboardPage');
+        }
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [location.state]);
+    // Only run once per location change, not on every state update
+  }, [location.pathname]); // Changed from location.state to location.pathname
   
   // Defensive check: if auth loading takes >15s, show error
   useEffect(() => {

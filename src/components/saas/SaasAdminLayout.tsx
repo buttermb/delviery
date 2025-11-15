@@ -6,6 +6,7 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { SaasAdminSidebar } from './SaasAdminSidebar';
+import { SuperAdminMobileBottomNav } from './SuperAdminMobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,10 +65,13 @@ export function SaasAdminLayout() {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))]">
+          <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))] pb-20 lg:pb-0">
             <Outlet />
           </main>
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <SuperAdminMobileBottomNav />
       </div>
     </SidebarProvider>
   );
