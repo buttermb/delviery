@@ -144,7 +144,7 @@ export function SaasAdminSidebar() {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-white/10 bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl"
+      className="border-r border-white/10 bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl hidden lg:flex"
     >
       <SidebarContent>
         <SidebarGroup>

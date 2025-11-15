@@ -319,16 +319,16 @@ export default function SuperAdminDashboardPage() {
 
   if (statsLoading) {
     return (
-      <div className="p-6">
+      <div className="p-3 sm:p-4 md:p-6">
         <div className="text-center py-12">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       {/* Hero Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <MetricCard
           title="Total Revenue"
           value={formatCurrency(platformStats.mrr)}
@@ -368,7 +368,7 @@ export default function SuperAdminDashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column (2/3 width) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Revenue Chart */}

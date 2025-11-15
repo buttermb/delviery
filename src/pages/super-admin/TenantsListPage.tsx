@@ -335,7 +335,8 @@ export default function TenantsListPage() {
       {/* Table View */}
       {viewMode === 'table' && (
         <Card>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
@@ -468,6 +469,7 @@ export default function TenantsListPage() {
               })}
             </TableBody>
           </Table>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
