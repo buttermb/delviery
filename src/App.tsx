@@ -100,6 +100,7 @@ const SuperAdminFeatureFlagsPage = lazy(() => import("./pages/super-admin/Featur
 const SuperAdminSystemConfigPage = lazy(() => import("./pages/super-admin/SystemConfigPage"));
 const SuperAdminSecurityPage = lazy(() => import("./pages/super-admin/SecurityPage"));
 const ForumApprovalsPage = lazy(() => import("./pages/super-admin/ForumApprovalsPage"));
+const AdminUsersPage = lazy(() => import("./pages/super-admin/AdminUsersPage"));
 const SuperAdminToolsPage = lazy(() => import("./pages/super-admin/ToolsPage"));
 const MarketplaceModerationPage = lazy(() => import("./pages/super-admin/MarketplaceModerationPage"));
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
@@ -472,6 +473,7 @@ const App = () => {
                           <Route path="system-config" element={<SuperAdminSystemConfigPage />} />
                           <Route path="security" element={<SuperAdminSecurityPage />} />
                           <Route path="forum-approvals" element={<ForumApprovalsPage />} />
+                          <Route path="admin-users" element={<AdminUsersPage />} />
                           <Route path="tools" element={<SuperAdminToolsPage />} />
                           <Route path="tenants" element={<SuperAdminTenantsListPage />} />
                           <Route path="tenants/new" element={<SuperAdminCreateTenantPage />} />
