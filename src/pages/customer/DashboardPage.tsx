@@ -119,8 +119,8 @@ export default function CustomerDashboardPage() {
       <CustomerMobileNav />
       
       {/* Desktop Header */}
-      <header className="hidden lg:block border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="hidden lg:block border-b border-[hsl(var(--customer-border))] bg-white sticky top-0 z-50 shadow-sm safe-area-top">
+        <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[hsl(var(--customer-text))]">{tenant?.business_name || "Customer Portal"}</h1>
             <p className="text-sm text-[hsl(var(--customer-text-light))]">
@@ -147,7 +147,7 @@ export default function CustomerDashboardPage() {
         </div>
       </header>
 
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-screen-2xl mx-auto pb-20 lg:pb-6">
         {/* Mode Banner (Mobile) */}
         <div className="lg:hidden">
           <ModeBanner 
@@ -158,7 +158,7 @@ export default function CustomerDashboardPage() {
           />
         </div>
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <Card className="bg-gradient-to-br from-[hsl(var(--customer-primary))]/10 to-[hsl(var(--customer-primary))]/5 border-[hsl(var(--customer-primary))]/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-[hsl(var(--customer-text))]">📦 Total Orders</CardTitle>

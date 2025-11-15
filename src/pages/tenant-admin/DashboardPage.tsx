@@ -432,7 +432,7 @@ export default function TenantAdminDashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-background sticky top-0 z-50 shadow-sm safe-area-top">
-        <div className="container mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+        <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0 flex-1">
             <h1 className="text-base sm:text-xl md:text-2xl font-bold text-foreground truncate">
               🎛️ {tenant?.business_name || "Dashboard"}
@@ -476,7 +476,7 @@ export default function TenantAdminDashboardPage() {
         </div>
       </header>
 
-      <div className="container mx-auto p-2 sm:p-3 md:p-4 lg:p-6 space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-screen-2xl mx-auto">
         {/* Email Verification Banner */}
         <EmailVerificationBanner />
         
@@ -589,7 +589,7 @@ export default function TenantAdminDashboardPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <Card>
             <CardHeader className="p-3 sm:p-4 md:p-6">
               <CardTitle className="text-sm sm:text-base md:text-lg">⚡ Quick Actions</CardTitle>
