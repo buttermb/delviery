@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
 import { QRCodeSVG } from 'qrcode.react';
+import html2canvas from 'html2canvas';
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -51,6 +52,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
 
   // Prepare label data
   const labelData: ProductLabelData | null = product.sku ? {
@@ -179,33 +181,53 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   }
 
   const handleDownload = async () => {
-    if (!labelData) {
-      toast.error('Label data is missing');
+    if (!labelRef.current) {
+      toast.error('Label preview not available');
       return;
     }
 
     try {
       setLoading(true);
       
-      // Debug logging
-      logger.info('Downloading label', {
+      logger.info('Capturing label as image', {
         component: 'ProductLabel',
         labelSize,
-        productName: labelData.productName,
-        sku: labelData.sku,
-        barcodeValue: labelData.barcodeValue,
-        hasBarcode: !!labelData.barcodeValue,
-        labelDataKeys: Object.keys(labelData),
+        productName: product.name,
+        sku: product.sku,
       });
+
+      // Capture the label div as canvas
+      const canvas = await html2canvas(labelRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 3, // Higher quality
+        logging: false,
+        useCORS: true,
+      });
+
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('Failed to generate image');
+        }
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `${product.sku || 'label'}-${labelSize}.png`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success(`Label image downloaded successfully`);
+      }, 'image/png');
       
-      await downloadProductLabel(labelData, labelSize);
-      toast.success(`${labelSize} label downloaded successfully`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to download label', error, {
+      logger.error('Failed to download label image', error, {
         component: 'ProductLabel',
         errorMessage,
-        labelData,
       });
       toast.error(`Failed to download label: ${errorMessage}`);
     } finally {
@@ -364,7 +386,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             </div>
           ) : (
             // HTML Preview
-            <div className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
+            <div ref={labelRef} className="border-2 border-dashed border-muted rounded-lg p-4 bg-card space-y-3 max-w-full overflow-hidden">
             {/* Header Section */}
             <div className="text-center border-b border-border pb-3">
               <h3 className="text-base font-bold text-foreground break-words">{product.name}</h3>
@@ -526,7 +548,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                Download Image
               </>
             )}
           </Button>
