@@ -40,10 +40,14 @@ import type { FeatureId } from '@/lib/featureConfig';
 import { logger } from '@/lib/logger';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface AdaptiveSidebarInnerProps {
+  collapsible?: "offcanvas" | "icon" | "none";
+}
+
 /**
  * Inner sidebar component that uses context
  */
-function AdaptiveSidebarInner() {
+export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSidebarInnerProps) {
   const { tenantSlug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -82,7 +86,7 @@ function AdaptiveSidebarInner() {
 
   return (
     <>
-      <Sidebar data-tutorial="navigation-sidebar">
+      <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible}>
         <SidebarHeader className="p-0 border-b">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

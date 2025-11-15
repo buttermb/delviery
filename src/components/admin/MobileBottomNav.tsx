@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Sidebar } from './Sidebar';
+import { AdaptiveSidebarInner } from './sidebar/AdaptiveSidebar';
+import { SidebarProvider as ContextProvider } from './sidebar/SidebarContext';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -86,8 +87,16 @@ export function MobileBottomNav() {
               <span className="truncate max-w-full px-1">More</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-[85vw] max-w-sm">
-            <Sidebar />
+          <SheetContent 
+            side="left" 
+            className="p-0 w-[85vw] max-w-sm mobile-input-container"
+            style={{ zIndex: 60 }}
+          >
+            <div className="h-full overflow-y-auto bg-background">
+              <ContextProvider>
+                <AdaptiveSidebarInner collapsible="none" />
+              </ContextProvider>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
