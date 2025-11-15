@@ -184,10 +184,10 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
 /**
  * Main Adaptive Sidebar component with context provider
  */
-export function AdaptiveSidebar() {
+export function AdaptiveSidebar({ collapsible = "offcanvas" }: AdaptiveSidebarInnerProps = {}) {
   return (
     <ContextProvider>
-      <AdaptiveSidebarInner />
+      <AdaptiveSidebarInner collapsible={collapsible} />
     </ContextProvider>
   );
 }

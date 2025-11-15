@@ -9,8 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { AdaptiveSidebarInner } from './sidebar/AdaptiveSidebar';
-import { SidebarProvider as ContextProvider } from './sidebar/SidebarContext';
+import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -93,9 +92,7 @@ export function MobileBottomNav() {
             style={{ zIndex: 60 }}
           >
             <div className="h-full overflow-y-auto bg-background">
-              <ContextProvider>
-                <AdaptiveSidebarInner collapsible="none" />
-              </ContextProvider>
+              <AdaptiveSidebar collapsible="none" />
             </div>
           </SheetContent>
         </Sheet>
