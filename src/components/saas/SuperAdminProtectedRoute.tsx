@@ -27,12 +27,13 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       }
 
       try {
-        // Check user_roles table directly with proper RLS
+        // Check admin_users table for super_admin role
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
+          .from('admin_users')
+          .select('role, is_active')
           .eq('user_id', user.id)
-          .eq('role', 'super_admin' as any)
+          .eq('role', 'super_admin')
+          .eq('is_active', true)
           .maybeSingle();
 
         if (error) {

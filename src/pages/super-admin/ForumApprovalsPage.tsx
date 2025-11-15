@@ -37,9 +37,11 @@ export default function ForumApprovalsPage() {
   const queryClient = useQueryClient();
 
   // Fetch approvals with user emails from auth
-  const { data: approvals, isLoading } = useQuery({
+  const { data: approvals, isLoading, error: queryError } = useQuery({
     queryKey: ['forum-approvals', activeTab],
     queryFn: async () => {
+      console.log('[ForumApprovals] Fetching approvals, activeTab:', activeTab);
+      
       let query = supabase
         .from('forum_user_approvals')
         .select('*')
@@ -50,34 +52,47 @@ export default function ForumApprovalsPage() {
       }
 
       const { data: approvalsData, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        console.error('[ForumApprovals] Error fetching approvals:', error);
+        throw error;
+      }
 
-      // For now, just return the data with user IDs
-      // Email will be fetched via edge function when needed
+      console.log('[ForumApprovals] Fetched approvals:', approvalsData?.length || 0);
       return (approvalsData || []) as ForumApproval[];
     },
   });
 
+  // Log query error if present
+  if (queryError) {
+    console.error('[ForumApprovals] Query error:', queryError);
+  }
+
   // Approve mutation
   const approveMutation = useMutation({
     mutationFn: async (approvalId: string) => {
+      console.log('[ForumApprovals] Approving:', approvalId);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase.functions.invoke('forum-approvals', {
+      const { data, error } = await supabase.functions.invoke('forum-approvals', {
         body: {
           action: 'approve',
           approval_id: approvalId,
         },
       });
 
+      console.log('[ForumApprovals] Approve response:', { data, error });
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
       toast.success('User approved successfully');
     },
     onError: (error: Error) => {
+      console.error('[ForumApprovals] Approve error:', error);
       toast.error(error.message || 'Failed to approve user');
     },
   });
@@ -85,10 +100,11 @@ export default function ForumApprovalsPage() {
   // Reject mutation
   const rejectMutation = useMutation({
     mutationFn: async ({ approvalId, reason }: { approvalId: string; reason?: string }) => {
+      console.log('[ForumApprovals] Rejecting:', approvalId, 'reason:', reason);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase.functions.invoke('forum-approvals', {
+      const { data, error } = await supabase.functions.invoke('forum-approvals', {
         body: {
           action: 'reject',
           approval_id: approvalId,
@@ -96,13 +112,17 @@ export default function ForumApprovalsPage() {
         },
       });
 
+      console.log('[ForumApprovals] Reject response:', { data, error });
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
       toast.success('User rejected');
     },
     onError: (error: Error) => {
+      console.error('[ForumApprovals] Reject error:', error);
       toast.error(error.message || 'Failed to reject user');
     },
   });

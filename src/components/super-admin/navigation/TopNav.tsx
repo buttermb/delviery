@@ -205,6 +205,11 @@ export function TopNav({
                   to="/super-admin/tenants/users"
                 />
                 <MenuItem
+                  icon={Shield}
+                  label="Admin Users"
+                  to="/super-admin/admin-users"
+                />
+                <MenuItem
                   icon={Settings}
                   label="Feature Control"
                   to="/super-admin/tenants/features"
