@@ -3163,6 +3163,385 @@ export type Database = {
           },
         ]
       }
+      forum_categories: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          display_order: number
+          icon: string | null
+          id: string
+          member_count: number
+          name: string
+          post_count: number
+          slug: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: string
+          member_count?: number
+          name: string
+          post_count?: number
+          slug: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: string
+          member_count?: number
+          name?: string
+          post_count?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      forum_comments: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          depth: number
+          downvote_count: number
+          id: string
+          is_removed: boolean
+          parent_comment_id: string | null
+          post_id: string
+          updated_at: string
+          upvote_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          depth?: number
+          downvote_count?: number
+          id?: string
+          is_removed?: boolean
+          parent_comment_id?: string | null
+          post_id: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          depth?: number
+          downvote_count?: number
+          id?: string
+          is_removed?: boolean
+          parent_comment_id?: string | null
+          post_id?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "forum_user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "forum_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_notifications: {
+        Row: {
+          action_url: string | null
+          actor_id: string | null
+          comment_id: string | null
+          created_at: string
+          id: string
+          message: string | null
+          post_id: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          actor_id?: string | null
+          comment_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          post_id?: string | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          actor_id?: string | null
+          comment_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          post_id?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "forum_user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "forum_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_posts: {
+        Row: {
+          author_id: string | null
+          category_id: string | null
+          comment_count: number
+          content: string | null
+          content_type: string
+          created_at: string
+          downvote_count: number
+          id: string
+          images: string[] | null
+          is_pinned: boolean
+          is_removed: boolean
+          link_url: string | null
+          linked_listing_id: string | null
+          tenant_id: string | null
+          title: string
+          updated_at: string
+          upvote_count: number
+          view_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          category_id?: string | null
+          comment_count?: number
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          downvote_count?: number
+          id?: string
+          images?: string[] | null
+          is_pinned?: boolean
+          is_removed?: boolean
+          link_url?: string | null
+          linked_listing_id?: string | null
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+          upvote_count?: number
+          view_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          category_id?: string | null
+          comment_count?: number
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          downvote_count?: number
+          id?: string
+          images?: string[] | null
+          is_pinned?: boolean
+          is_removed?: boolean
+          link_url?: string | null
+          linked_listing_id?: string | null
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+          upvote_count?: number
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "forum_user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "forum_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_posts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_user_approvals: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          auto_approved: boolean
+          created_at: string
+          customer_user_id: string
+          id: string
+          rejection_reason: string | null
+          request_message: string | null
+          requested_at: string
+          status: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auto_approved?: boolean
+          created_at?: string
+          customer_user_id: string
+          id?: string
+          rejection_reason?: string | null
+          request_message?: string | null
+          requested_at?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auto_approved?: boolean
+          created_at?: string
+          customer_user_id?: string
+          id?: string
+          rejection_reason?: string | null
+          request_message?: string | null
+          requested_at?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_user_approvals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          customer_user_id: string
+          display_name: string | null
+          id: string
+          status: string
+          tenant_id: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          customer_user_id: string
+          display_name?: string | null
+          id?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          customer_user_id?: string
+          display_name?: string | null
+          id?: string
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_user_profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_votes: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          votable_id: string
+          votable_type: string
+          vote: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          votable_id: string
+          votable_type: string
+          vote: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          votable_id?: string
+          votable_type?: string
+          vote?: number
+        }
+        Relationships: []
+      }
       fraud_flags: {
         Row: {
           auto_resolved: boolean | null
@@ -8771,6 +9150,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_reputation: {
+        Row: {
+          comment_karma: number
+          comments_created: number
+          post_karma: number
+          posts_created: number
+          total_karma: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_karma?: number
+          comments_created?: number
+          post_karma?: number
+          posts_created?: number
+          total_karma?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_karma?: number
+          comments_created?: number
+          post_karma?: number
+          posts_created?: number
+          total_karma?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reputation_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "forum_user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

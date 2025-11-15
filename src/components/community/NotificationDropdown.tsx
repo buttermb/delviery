@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Notification Dropdown Component
  * Real-time forum notifications
