@@ -217,7 +217,7 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                   disabled={loading}
-                  className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
               </div>
 
@@ -233,7 +233,7 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                   disabled={loading}
-                  className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function CustomerSignUpPage() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 disabled={loading}
-                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
             </div>
 
@@ -265,7 +265,7 @@ export default function CustomerSignUpPage() {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 disabled={loading}
-                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
             </div>
 
@@ -294,7 +294,7 @@ export default function CustomerSignUpPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={loading}
-                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               <PasswordStrengthIndicator password={formData.password} />
             </div>
@@ -311,7 +311,7 @@ export default function CustomerSignUpPage() {
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
                 disabled={loading}
-                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
             </div>
 
