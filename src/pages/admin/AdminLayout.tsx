@@ -135,14 +135,12 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="flex-1 overflow-auto bg-muted/30 pb-20 sm:pb-6 safe-area-bottom">
-              <div className="container mx-auto p-2 sm:p-3 md:p-4 lg:p-6 max-w-full">
-                <AdminErrorBoundary>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Outlet />
-                  </Suspense>
-                </AdminErrorBoundary>
-              </div>
+            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-6 safe-area-bottom">
+              <AdminErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Outlet />
+                </Suspense>
+              </AdminErrorBoundary>
             </main>
           </div>
         </div>
