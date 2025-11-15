@@ -62,8 +62,10 @@ export function ResponsiveTable<T = Record<string, unknown>>({
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((row, rowIndex) => (
-                  <TableRow key={(row as Record<string, unknown>).id as string || rowIndex}>
+                data.map((row, rowIndex) => {
+                  const rowId = (row as Record<string, unknown>).id as string || `row-${rowIndex}`;
+                  return (
+                  <TableRow key={rowId}>
                     {columns.map((column) => (
                     <TableCell key={column.key} className={column.className}>
                         {column.render
@@ -72,7 +74,8 @@ export function ResponsiveTable<T = Record<string, unknown>>({
                       </TableCell>
                     ))}
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -94,8 +97,10 @@ export function ResponsiveTable<T = Record<string, unknown>>({
             </CardContent>
           </Card>
         ) : (
-          data.map((row, rowIndex) => (
-            <Card key={(row as Record<string, unknown>).id as string || rowIndex} className={mobileCardClassName}>
+          data.map((row, rowIndex) => {
+            const rowId = (row as Record<string, unknown>).id as string || `row-${rowIndex}`;
+            return (
+            <Card key={rowId} className={mobileCardClassName}>
               <CardContent className="p-4 space-y-3">
                 {columns.map((column) => {
                   const label = column.mobileLabel || column.label;
@@ -114,7 +119,8 @@ export function ResponsiveTable<T = Record<string, unknown>>({
                 })}
               </CardContent>
             </Card>
-          ))
+            );
+          })
         )}
       </div>
     </>
