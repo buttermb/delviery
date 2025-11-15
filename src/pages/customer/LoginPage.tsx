@@ -140,38 +140,30 @@ export default function CustomerLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--customer-primary))]/95 via-[hsl(var(--customer-secondary))]/90 to-[hsl(var(--customer-primary))]/95" />
-      
-      {/* Animated orbs */}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Subtle animated accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--customer-primary))]/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[hsl(var(--customer-secondary))]/15 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-md w-full relative z-10 animate-fade-in">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 mb-6 shadow-2xl animate-scale-in">
-            <ShoppingBag className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] mb-4 shadow-xl animate-scale-in">
+            <ShoppingBag className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
             Welcome Back
           </h1>
-          <div className="flex items-center justify-center gap-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Sparkles className="w-4 h-4 text-white/80" />
-            <p className="text-white/80 text-lg font-medium">{businessName}</p>
-            <Sparkles className="w-4 h-4 text-white/80" />
-          </div>
+          <p className="text-slate-400 text-base">{businessName}</p>
         </div>
 
-        {/* Premium Glassmorphic Card */}
-        <div className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-scale-in" style={{ animationDelay: '0.3s' }}>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2 group">
-              <Label htmlFor="email" className="text-sm font-semibold text-white/90">
+        {/* Card with better contrast */}
+        <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-slate-200">
                 Email Address
               </Label>
               <Input
@@ -181,12 +173,12 @@ export default function CustomerLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="min-h-[48px] bg-white/5 backdrop-blur-xl border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:ring-2 focus:ring-white/20 rounded-xl transition-all duration-300 hover:bg-white/10 focus:bg-white/10"
+                className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
-            <div className="space-y-2 group">
-              <Label htmlFor="password" className="text-sm font-semibold text-white/90">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                 Password
               </Label>
               <Input
@@ -195,50 +187,47 @@ export default function CustomerLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="min-h-[48px] bg-white/5 backdrop-blur-xl border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:ring-2 focus:ring-white/20 rounded-xl transition-all duration-300 hover:bg-white/10 focus:bg-white/10"
+                className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full min-h-[52px] bg-white text-[hsl(var(--customer-primary))] hover:bg-white/90 font-bold text-base shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-[1.02] rounded-xl relative overflow-hidden group"
+              className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
               disabled={loading}
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <ShoppingBag className="h-5 w-5" />
-                    Sign In to Shop
-                  </>
-                )}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  Sign In to Shop
+                </>
+              )}
             </Button>
           </form>
 
           {/* Footer Links */}
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 space-y-4">
             <div className="flex items-center justify-center gap-3 text-sm">
               <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug}>
-                <button className="text-white/90 hover:text-white font-medium transition-all duration-300 hover:scale-105">
+                <button className="text-slate-400 hover:text-white font-medium transition-colors">
                   Forgot password?
                 </button>
               </ForgotPasswordDialog>
-              <span className="text-white/40">•</span>
+              <span className="text-slate-600">•</span>
               <Link
                 to={`/${tenantSlug}/customer/signup`}
-                className="text-white/90 hover:text-white font-medium transition-all duration-300 hover:scale-105"
+                className="text-[hsl(var(--customer-primary))] hover:text-[hsl(var(--customer-primary))]/80 font-medium transition-colors"
               >
                 Create account
               </Link>
             </div>
 
-            <div className="pt-4 border-t border-white/10 text-center">
+            <div className="pt-4 border-t border-slate-700/50 text-center">
               <Link
                 to={`/${tenantSlug}/admin/login`}
-                className="text-sm text-white/70 hover:text-white transition-all duration-300 hover:scale-105 inline-flex items-center gap-1"
+                className="text-sm text-slate-400 hover:text-slate-300 transition-colors inline-flex items-center gap-1"
               >
                 Business owner? Admin Login →
               </Link>
@@ -246,9 +235,9 @@ export default function CustomerLoginPage() {
           </div>
         </div>
 
-        {/* Trust indicators */}
-        <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <p className="text-white/60 text-xs font-medium">
+        {/* Trust indicator */}
+        <div className="mt-6 text-center">
+          <p className="text-slate-500 text-xs">
             🔒 Secure & encrypted connection
           </p>
         </div>
