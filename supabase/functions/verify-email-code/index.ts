@@ -116,7 +116,6 @@ serve(async (req) => {
       .from('customer_users')
       .update({
         email_verified: true,
-        email_verified_at: new Date().toISOString(),
       })
       .eq('id', customerUser.id);
 
