@@ -68,9 +68,9 @@ export function CommunityLayout() {
                   </Link>
                 </Button>
               ) : (
-                <Button variant="ghost" size="icon" asChild>
-                  <Link to="/community/approval">
-                    <User className="h-5 w-5" />
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/community/auth?returnTo=/community/approval">
+                    Sign In
                   </Link>
                 </Button>
               )}
@@ -122,9 +122,16 @@ export function CommunityLayout() {
               {/* Placeholder for trending, etc. */}
               <div className="bg-card rounded-lg border p-4">
                 <h3 className="font-semibold mb-2">About</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   Welcome to the FloraIQ Community! Share your experiences, ask questions, and connect with other cannabis enthusiasts.
                 </p>
+                {!profile && (
+                  <Button variant="default" size="sm" className="w-full" asChild>
+                    <Link to="/community/auth?returnTo=/community/approval">
+                      Sign In to Join
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

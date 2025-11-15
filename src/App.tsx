@@ -257,6 +257,9 @@ const CustomerForgotPasswordPage = lazy(() => import("./pages/customer/ForgotPas
 const CustomerResetPasswordPage = lazy(() => import("./pages/customer/ResetPasswordPage"));
 const CustomerLoginLanding = lazy(() => import("./pages/customer/CustomerLoginLanding"));
 
+// Community Pages
+const CommunityAuthPage = lazy(() => import("./pages/community/AuthPage").then(m => ({ default: m.AuthPage })));
+
 // Invitation Pages
 const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
 const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
@@ -707,6 +710,7 @@ const App = () => {
                         <Route path="/vendor/dashboard" element={<VendorDashboardPage />} />
 
                         {/* ==================== COMMUNITY FORUM (Global) ==================== */}
+                        <Route path="/community/auth" element={<CommunityAuthPage />} />
                         <Route path="/community" element={<CommunityProtectedRoute><CommunityLayout /></CommunityProtectedRoute>}>
                           <Route index element={<CommunityHomePage />} />
                           <Route path="c/:categorySlug" element={<CategoryPage />} />
