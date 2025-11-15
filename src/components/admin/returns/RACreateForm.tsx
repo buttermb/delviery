@@ -190,7 +190,15 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
       return;
     }
 
-    await createMutation.mutateAsync({});
+    await createMutation.mutateAsync({
+      order_id: formData.order_id,
+      reason: formData.reason,
+      items: items.map(item => ({
+        product_id: '',
+        quantity: item.quantity,
+        reason: formData.reason
+      }))
+    });
   };
 
   const isLoading = createMutation.isPending;

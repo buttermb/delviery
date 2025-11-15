@@ -46,8 +46,8 @@ export function EmptyState({ type, message, actionLabel, actionHref, onAction }:
   const config = configs[type];
   const Icon = config.icon;
   const displayMessage = message || config.defaultMessage;
-  const displayAction = actionLabel || config.defaultAction;
-  const displayHref = actionHref || (config as { defaultHref?: string }).defaultHref;
+  const displayAction = actionLabel || ('defaultAction' in config ? config.defaultAction : undefined);
+  const displayHref = actionHref || ('defaultHref' in config ? config.defaultHref : undefined);
 
   return (
     <div className="text-center py-12 px-4">
