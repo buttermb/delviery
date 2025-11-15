@@ -61,15 +61,6 @@ export function DeadLetterQueue() {
     return true;
   });
 
-  const handleViewDetails = (entry: DLQEntry) => {
-    setSelectedEntry(entry);
-    setShowDetails(true);
-  };
-
-  const handleRetry = async (entry: DLQEntry) => {
-    await retryExecution.mutateAsync(entry.id);
-  };
-
   const handleResolve = async () => {
     if (!selectedEntry) return;
     await resolveEntry.mutateAsync({ id: selectedEntry.id, notes: resolutionNotes });

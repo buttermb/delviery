@@ -92,7 +92,6 @@ export function TicketForm({
             {
               tenant_id: tenant.id,
               ...data,
-              created_by: admin?.id || null,
             },
           ]);
 
@@ -124,11 +123,10 @@ export function TicketForm({
     }
 
     await createMutation.mutateAsync({
-      customer_id: formData.customer_id || null,
       subject: formData.subject,
       description: formData.description,
       priority: formData.priority,
-      status: formData.status,
+      category: formData.status,
     });
   };
 
