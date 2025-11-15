@@ -134,8 +134,12 @@ export default function CustomerMenuViewPage() {
     // Create a Map for O(1) product lookups instead of O(n) find() in loop
     const productMap = new Map<string, any>();
     for (const mp of products) {
-      if (mp.products?.id) {
-        productMap.set(mp.products.id, mp);
+      // Type-safe check for valid product data
+      if (mp && typeof mp === 'object' && 'products' in mp) {
+        const products_data = (mp as any).products;
+        if (products_data && typeof products_data === 'object' && 'id' in products_data) {
+          productMap.set(products_data.id as string, mp);
+        }
       }
     }
     

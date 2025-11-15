@@ -95,7 +95,7 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
               {(formData.description as string) || "No description provided"}
             </p>
             <div className="flex items-center justify-between pt-2">
-              <span className="text-2xl font-bold">${getPrice()}</span>
+              <span className="text-2xl font-bold">${String(getPrice())}</span>
               <Badge variant={formData.in_stock ? "default" : "secondary"}>
                 {formData.in_stock ? "In Stock" : "Out of Stock"}
               </Badge>
