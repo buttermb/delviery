@@ -715,7 +715,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           authFlowLogger.logFetchRetry(flowId, url, attempt, error, Math.min(delay, 10000));
         },
         onError: (errorCategory) => {
-          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, 0);
         },
       });
 
