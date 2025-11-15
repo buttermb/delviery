@@ -4,14 +4,14 @@ import { z } from '../_shared/deps.ts';
 export const signupSchema = z.object({
   email: z.string().email('Invalid email address').max(255),
   password: z.string().min(8, 'Password must be at least 8 characters').max(100),
-  firstName: z.string().max(100).optional(),
-  lastName: z.string().max(100).optional(),
-  phone: z.string().max(20).optional(),
-  dateOfBirth: z.string().optional(), // Format: YYYY-MM-DD
+  firstName: z.string().max(100).optional().nullable(),
+  lastName: z.string().max(100).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(), // Format: YYYY-MM-DD
   tenantSlug: z.string().min(1, 'Tenant slug is required').max(100).regex(/^[a-z0-9-]+$/, 'Invalid tenant slug format'),
-  isBusinessBuyer: z.boolean().optional().default(false),
-  businessName: z.string().max(255).optional(),
-  businessLicenseNumber: z.string().max(100).optional(),
+  isBusinessBuyer: z.boolean().optional().nullable().default(false),
+  businessName: z.string().max(255).optional().nullable(),
+  businessLicenseNumber: z.string().max(100).optional().nullable(),
 });
 
 // Login validation schema
