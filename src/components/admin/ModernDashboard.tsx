@@ -96,7 +96,7 @@ export function ModernDashboard() {
   });
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -151,27 +151,27 @@ export function ModernDashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           <SalesChartWidget />
           <RevenuePredictionWidget />
           <RecentOrdersWidget />
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <InventoryAlertsWidget />
           <ActivityFeedWidget />
         </div>
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <LocationMapWidget />
         <PendingTransfersWidget />
       </div>
 
       {/* Additional Widgets Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <RevenueChartWidget />
         <TopProductsWidget />
       </div>
