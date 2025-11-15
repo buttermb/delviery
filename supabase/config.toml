@@ -39,6 +39,9 @@ verify_jwt = false
 [functions.customer-auth]
 verify_jwt = false
 
+[functions.verify-email-code]
+verify_jwt = false
+
 [functions.tenant-invite]
 verify_jwt = true
 
