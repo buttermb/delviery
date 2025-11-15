@@ -4,18 +4,28 @@ import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts
 
 serve(async (req) => {
   // Get origin from request for CORS (required when credentials are included)
-  const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || '*';
+  const origin = req.headers.get('origin');
   const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
   
   // When credentials are included, must return specific origin, not wildcard
+  // Also need to validate origin against allowed origins for security
+  const allowedOrigins = [
+    'https://floraiqcrm.com',
+    'https://www.floraiqcrm.com',
+    'http://localhost:8080',
+    'http://localhost:5173',
+  ];
+  
+  const requestOrigin = origin && allowedOrigins.includes(origin) ? origin : (origin || '*');
+  
   const corsHeadersWithOrigin: Record<string, string> = {
-    'Access-Control-Allow-Origin': hasCredentials ? origin : '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Origin': hasCredentials ? requestOrigin : '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   };
   
   // Only add credentials header when credentials are present
-  if (hasCredentials) {
+  if (hasCredentials && requestOrigin !== '*') {
     corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
   

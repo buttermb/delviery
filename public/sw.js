@@ -7,7 +7,7 @@
 // Version: 4.0.0 | Last Updated: January 2025 | FORCE CACHE BUST
 
 // Cache Configuration - Simplified versioning
-const CACHE_VERSION = 'v11'; // Increment this manually on each deploy - bumped to clear Workbox conflicts
+const CACHE_VERSION = 'v12'; // Increment this manually on each deploy - bumped to fix response cloning issues
 const CACHE_NAME = `nym-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `nym-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `nym-images-${CACHE_VERSION}`;
@@ -121,14 +121,19 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(RUNTIME_CACHE).then((cache) => {
         return cache.match(event.request).then((cached) => {
-          const fetchPromise = fetch(event.request).then((response) => {
-            // Clone response BEFORE any body consumption
-            if (response.status === 200 && response.body) {
-              const clonedResponse = response.clone();
-              // Put cloned response in cache, return original
-              cache.put(event.request, clonedResponse).catch(() => {
-                // Ignore cache errors
-              });
+          const fetchPromise = fetch(event.request.clone()).then((response) => {
+            // Clone response immediately to avoid body consumption issues
+            if (response.status === 200 && response.ok) {
+              try {
+                const clonedResponse = response.clone();
+                // Put cloned response in cache asynchronously, return original
+                cache.put(event.request.clone(), clonedResponse).catch(() => {
+                  // Ignore cache errors silently
+                });
+              } catch (cloneError) {
+                // If cloning fails, just return response without caching
+                console.warn('[SW] Failed to clone response for caching:', cloneError);
+              }
             }
             return response;
           }).catch(() => {
@@ -149,14 +154,19 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(IMAGE_CACHE).then((cache) => {
         return cache.match(event.request).then((cached) => {
-          const fetchPromise = fetch(event.request).then((response) => {
-            // Clone response BEFORE any body consumption
-            if (response.status === 200 && response.body) {
-              const clonedResponse = response.clone();
-              // Put cloned response in cache, return original
-              cache.put(event.request, clonedResponse).catch(() => {
-                // Ignore cache errors
-              });
+          const fetchPromise = fetch(event.request.clone()).then((response) => {
+            // Clone response immediately to avoid body consumption issues
+            if (response.status === 200 && response.ok) {
+              try {
+                const clonedResponse = response.clone();
+                // Put cloned response in cache asynchronously, return original
+                cache.put(event.request.clone(), clonedResponse).catch(() => {
+                  // Ignore cache errors silently
+                });
+              } catch (cloneError) {
+                // If cloning fails, just return response without caching
+                console.warn('[SW] Failed to clone image response for caching:', cloneError);
+              }
             }
             return response;
           });
@@ -172,20 +182,25 @@ self.addEventListener('fetch', (event) => {
   // Network-first for JS/CSS - never serve stale chunks
   if (event.request.destination === 'script' || event.request.destination === 'style') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request.clone())
         .then((response) => {
           // Only cache after successful network response
-          if (response.status === 200 && response.body) {
+          if (response.status === 200 && response.ok) {
             // Check if URL includes current cache version to prevent stale chunks
             const responseUrl = response.url || event.request.url;
             if (responseUrl.includes(CACHE_VERSION) || !responseUrl.includes('v')) {
-              // Clone response BEFORE caching
-              const clonedResponse = response.clone();
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, clonedResponse).catch(() => {
-                  // Ignore cache errors
+              try {
+                // Clone response immediately before any body consumption
+                const clonedResponse = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(event.request.clone(), clonedResponse).catch(() => {
+                    // Ignore cache errors silently
+                  });
                 });
-              });
+              } catch (cloneError) {
+                // If cloning fails, just return response without caching
+                console.warn('[SW] Failed to clone JS/CSS response for caching:', cloneError);
+              }
             }
           }
           return response;
@@ -200,16 +215,21 @@ self.addEventListener('fetch', (event) => {
 
   // Network first for everything else
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request.clone())
       .then((response) => {
-        // Clone response BEFORE caching to avoid body consumption issues
-        if (response.status === 200 && response.body) {
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(event.request, responseClone).catch(() => {
-              // Ignore cache errors
+        // Clone response immediately to avoid body consumption issues
+        if (response.status === 200 && response.ok) {
+          try {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(event.request.clone(), responseClone).catch(() => {
+                // Ignore cache errors silently
+              });
             });
-          });
+          } catch (cloneError) {
+            // If cloning fails, just return response without caching
+            console.warn('[SW] Failed to clone response for caching:', cloneError);
+          }
         }
         return response;
       })

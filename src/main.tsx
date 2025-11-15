@@ -127,7 +127,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Register custom service worker
-      const registration = await navigator.serviceWorker.register('/sw.js?v=11'); // Bump version
+      const registration = await navigator.serviceWorker.register('/sw.js?v=12'); // Bump version to fix cloning issues
       logger.debug('[APP] Custom ServiceWorker registered', { 
         scope: registration.scope 
       }, 'main');
