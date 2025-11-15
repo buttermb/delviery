@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,19 +19,31 @@ export default function CustomerPortal() {
   const { userProfile, loading: accountLoading } = useAccount();
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any[]>([]);
+  const [customerUser, setCustomerUser] = useState<any>(null);
 
   useEffect(() => {
-    if (!accountLoading && userProfile?.role !== 'customer') {
-      // Legacy customers - don't redirect
-      return;
+    // Check for customer token
+    const token = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+    const userData = localStorage.getItem(STORAGE_KEYS.CUSTOMER_USER);
+    
+    if (token && userData) {
+      try {
+        setCustomerUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing customer user data:', error);
+        navigate('/willysbo/customer/login');
+      }
+    } else if (!user) {
+      // No customer auth and no regular user auth - redirect to login
+      navigate('/willysbo/customer/login');
     }
-  }, [userProfile, accountLoading, navigate]);
+  }, [user, navigate]);
 
   useEffect(() => {
-    if (user) {
+    if (customerUser || user) {
       loadCustomerData();
     }
-  }, [user]);
+  }, [customerUser, user]);
 
   const loadCustomerData = async () => {
     try {
@@ -61,7 +74,9 @@ export default function CustomerPortal() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">My Account</h1>
-          <p className="text-muted-foreground mt-2">Welcome back, {userProfile?.full_name}</p>
+          <p className="text-muted-foreground mt-2">
+            Welcome back, {customerUser?.first_name || userProfile?.full_name || 'Customer'}
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
