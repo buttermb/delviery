@@ -3,7 +3,6 @@
  * Real-time monitoring of workflow executions with metrics and logs
  */
 
-// @ts-nocheck
 import { useState } from 'react';
 import { useWorkflowExecutions } from '@/hooks/useWorkflowExecutions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

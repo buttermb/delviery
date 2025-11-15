@@ -82,10 +82,10 @@ export function TicketList({ tickets, isLoading, onSelect }: TicketListProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="text-sm font-medium truncate">{ticket.subject}</div>
-                  <Badge variant={getPriorityColor(ticket.priority) as any} className="shrink-0">
+                  <Badge variant={getPriorityColor(ticket.priority) as "default" | "secondary" | "destructive" | "outline"} className="shrink-0">
                     {ticket.priority}
                   </Badge>
-                  <Badge variant={getStatusColor(ticket.status) as any} className="shrink-0">
+                  <Badge variant={getStatusColor(ticket.status) as "default" | "secondary" | "destructive" | "outline"} className="shrink-0">
                     {ticket.status}
                   </Badge>
                 </div>

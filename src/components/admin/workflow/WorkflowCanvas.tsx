@@ -1,10 +1,8 @@
-// @ts-nocheck - Temporary type suppression
 /**
  * Workflow Canvas - Visual workflow builder with drag & drop
  * Database-connected workflow automation
  */
 
-// @ts-nocheck
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

@@ -3,7 +3,6 @@
  * Draggable node types for workflow builder
  */
 
-// @ts-nocheck
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Mail, 

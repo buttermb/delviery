@@ -3,7 +3,6 @@
  * Drag-and-drop workflow builder with nodes and connections
  */
 
-// @ts-nocheck
 import { useCallback, useState, useEffect } from 'react';
 import ReactFlow, {
   Node,
@@ -288,7 +287,7 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
 
   // Save node configuration
   const handleSaveNodeConfig = useCallback(
-    (name: string, config: Record<string, any>) => {
+    (name: string, config: Record<string, unknown>) => {
       if (!configuringNode) return;
 
       setNodes((nds) =>

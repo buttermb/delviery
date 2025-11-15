@@ -69,10 +69,10 @@ export function TicketDetail({ ticket, onBack, onUpdate }: TicketDetailProps) {
             <div className="flex-1">
               <CardTitle className="text-xl mb-2">{ticket.subject}</CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant={getPriorityColor(ticket.priority) as any}>
+                <Badge variant={getPriorityColor(ticket.priority) as "default" | "secondary" | "destructive" | "outline"}>
                   {ticket.priority}
                 </Badge>
-                <Badge variant={getStatusColor(ticket.status) as any}>
+                <Badge variant={getStatusColor(ticket.status) as "default" | "secondary" | "destructive" | "outline"}>
                   {ticket.status}
                 </Badge>
               </div>
