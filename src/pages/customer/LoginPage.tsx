@@ -140,27 +140,40 @@ export default function CustomerLoginPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--customer-bg))] to-[hsl(var(--customer-surface))] p-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--customer-primary))]/95 via-[hsl(var(--customer-secondary))]/90 to-[hsl(var(--customer-primary))]/95" />
+      
+      {/* Animated orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+      </div>
+
+      <div className="max-w-md w-full relative z-10 animate-fade-in">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] rounded-2xl mb-4 shadow-lg">
-            <ShoppingBag className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 mb-6 shadow-2xl animate-scale-in">
+            <ShoppingBag className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">
-            Welcome Back!
+          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            Welcome Back
           </h1>
-          <p className="text-[hsl(var(--customer-text-light))]">
-            {businessName} - Customer Portal
-          </p>
+          <div className="flex items-center justify-center gap-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <Sparkles className="w-4 h-4 text-white/80" />
+            <p className="text-white/80 text-lg font-medium">{businessName}</p>
+            <Sparkles className="w-4 h-4 text-white/80" />
+          </div>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-[hsl(var(--customer-border))] p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div>
-              <Label htmlFor="email">Email</Label>
+        {/* Premium Glassmorphic Card */}
+        <div className="bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 p-8 animate-scale-in" style={{ animationDelay: '0.3s' }}>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2 group">
+              <Label htmlFor="email" className="text-sm font-semibold text-white/90">
+                Email Address
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -168,65 +181,76 @@ export default function CustomerLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="mt-1"
+                className="min-h-[48px] bg-white/5 backdrop-blur-xl border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:ring-2 focus:ring-white/20 rounded-xl transition-all duration-300 hover:bg-white/10 focus:bg-white/10"
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2 group">
+              <Label htmlFor="password" className="text-sm font-semibold text-white/90">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
-                className="mt-1"
+                className="min-h-[48px] bg-white/5 backdrop-blur-xl border-white/10 text-white placeholder:text-white/40 focus:border-white/30 focus:ring-2 focus:ring-white/20 rounded-xl transition-all duration-300 hover:bg-white/10 focus:bg-white/10"
               />
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
+              className="w-full min-h-[52px] bg-white text-[hsl(var(--customer-primary))] hover:bg-white/90 font-bold text-base shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-[1.02] rounded-xl relative overflow-hidden group"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Sign In to Shop
-                </>
-              )}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <ShoppingBag className="h-5 w-5" />
+                    Sign In to Shop
+                  </>
+                )}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
             </Button>
           </form>
 
-          {/* Links */}
-          <div className="mt-6 space-y-3 text-center text-sm">
-            <div className="flex items-center justify-center gap-2">
-              <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug} />
-              <span className="text-[hsl(var(--customer-text-light))]">•</span>
-              <Link 
+          {/* Footer Links */}
+          <div className="mt-8 space-y-4">
+            <div className="flex items-center justify-center gap-3 text-sm">
+              <ForgotPasswordDialog userType="customer" tenantSlug={tenantSlug}>
+                <button className="text-white/90 hover:text-white font-medium transition-all duration-300 hover:scale-105">
+                  Forgot password?
+                </button>
+              </ForgotPasswordDialog>
+              <span className="text-white/40">•</span>
+              <Link
                 to={`/${tenantSlug}/customer/signup`}
-                className="text-[hsl(var(--customer-primary))] hover:underline font-medium"
+                className="text-white/90 hover:text-white font-medium transition-all duration-300 hover:scale-105"
               >
                 Create account
               </Link>
             </div>
-            <div className="pt-3 border-t border-[hsl(var(--customer-border))]">
-              <Link 
-                to={`/${tenantSlug}/admin/login`} 
-                className="text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-primary))] transition-colors"
+
+            <div className="pt-4 border-t border-white/10 text-center">
+              <Link
+                to={`/${tenantSlug}/admin/login`}
+                className="text-sm text-white/70 hover:text-white transition-all duration-300 hover:scale-105 inline-flex items-center gap-1"
               >
                 Business owner? Admin Login →
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* Trust indicators */}
+        <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <p className="text-white/60 text-xs font-medium">
+            🔒 Secure & encrypted connection
+          </p>
         </div>
       </div>
     </div>
