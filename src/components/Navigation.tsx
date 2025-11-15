@@ -129,6 +129,7 @@ const Navigation = () => {
   const navLinks = [
     { label: "Products", href: "#products", scroll: true },
     { label: "How It Works", href: "#how-it-works", scroll: true },
+    { label: "Community", href: "/community", scroll: false },
     { label: "Track Order", href: "/track-order", scroll: false },
     { label: "Support", href: "/support", scroll: false },
   ];
