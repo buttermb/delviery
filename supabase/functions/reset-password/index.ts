@@ -3,7 +3,8 @@
  * Resets customer password using reset token
  */
 
-import { serve, createClient, corsHeaders, hash, z } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { hashPassword } from '../_shared/password.ts';
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
@@ -67,7 +68,7 @@ serve(async (req) => {
     }
 
     // Hash new password
-    const passwordHash = await hash(new_password);
+    const passwordHash = await hashPassword(new_password);
 
     // Update password
     const { error: updateError } = await supabase

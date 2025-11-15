@@ -12,9 +12,6 @@ export { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 // Supabase client (standardized to latest stable version)
 export { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-// Bcrypt for password hashing
-export { hash, compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-
 // Zod for validation (standardized version)
 export { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
