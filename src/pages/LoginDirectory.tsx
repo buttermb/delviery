@@ -249,6 +249,33 @@ export default function LoginDirectory() {
         </div>
       </section>
 
+      {/* Community Forum Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+              <CardContent className="p-8 text-center">
+                <div className="p-4 rounded-lg bg-green-500/10 w-fit mx-auto mb-4">
+                  <Users className="h-8 w-8 text-green-600" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                  Join Our Community Forum
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Connect with other cannabis professionals, share experiences, ask questions, and stay updated with industry insights.
+                </p>
+                <Link to="/community">
+                  <Button size="lg">
+                    Visit Community Forum
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Help Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
