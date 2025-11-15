@@ -44,7 +44,7 @@ export function ActionConfigForm({
               <Input 
                 id="to"
                 placeholder="user@example.com or {{trigger.customer_email}}"
-                value={formData.to || ''} 
+                value={(formData.to as string) || ''} 
                 onChange={(e) => setFormData({...formData, to: e.target.value})}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -56,7 +56,7 @@ export function ActionConfigForm({
               <Input 
                 id="subject"
                 placeholder="Order Confirmation #{{trigger.order_id}}"
-                value={formData.subject || ''}
+                value={(formData.subject as string) || ''}
                 onChange={(e) => setFormData({...formData, subject: e.target.value})}
               />
             </div>
@@ -65,7 +65,7 @@ export function ActionConfigForm({
               <Textarea 
                 id="body"
                 placeholder="Your order has been received..."
-                value={formData.body || ''}
+                value={(formData.body as string) || ''}
                 onChange={(e) => setFormData({...formData, body: e.target.value})}
                 rows={6}
               />
@@ -92,7 +92,7 @@ export function ActionConfigForm({
               <Input 
                 id="to"
                 placeholder="+1234567890 or {{trigger.customer_phone}}"
-                value={formData.to || ''}
+                value={(formData.to as string) || ''}
                 onChange={(e) => setFormData({...formData, to: e.target.value})}
               />
             </div>
@@ -101,13 +101,13 @@ export function ActionConfigForm({
               <Textarea 
                 id="message"
                 placeholder="Your order #{{trigger.order_id}} is confirmed!"
-                value={formData.message || ''}
+                value={(formData.message as string) || ''}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
                 rows={4}
                 maxLength={160}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {(formData.message || '').length}/160 characters
+                {((formData.message as string) || '').length}/160 characters
               </p>
             </div>
           </div>
@@ -121,14 +121,14 @@ export function ActionConfigForm({
               <Input 
                 id="url"
                 placeholder="https://api.example.com/webhook"
-                value={formData.url || ''}
+                value={(formData.url as string) || ''}
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
             <div>
               <Label htmlFor="method">HTTP Method</Label>
               <Select 
-                value={formData.method || 'POST'}
+                value={(formData.method as string) || 'POST'}
                 onValueChange={(value) => setFormData({...formData, method: value})}
               >
                 <SelectTrigger>
@@ -186,7 +186,7 @@ export function ActionConfigForm({
             <div>
               <Label htmlFor="operation">Operation *</Label>
               <Select 
-                value={formData.operation || 'insert'}
+                value={(formData.operation as string) || 'insert'}
                 onValueChange={(value) => setFormData({...formData, operation: value})}
               >
                 <SelectTrigger>
@@ -205,7 +205,7 @@ export function ActionConfigForm({
               <Input 
                 id="table"
                 placeholder="orders"
-                value={formData.table || ''}
+                value={(formData.table as string) || ''}
                 onChange={(e) => setFormData({...formData, table: e.target.value})}
               />
             </div>
@@ -226,7 +226,7 @@ export function ActionConfigForm({
                 rows={6}
               />
             </div>
-            {(formData.operation === 'update' || formData.operation === 'delete') && (
+            {((formData.operation as string) === 'update' || (formData.operation as string) === 'delete') && (
               <div>
                 <Label htmlFor="filter">Filter (JSON)</Label>
                 <Textarea 
@@ -256,14 +256,14 @@ export function ActionConfigForm({
               <Input 
                 id="order_id"
                 placeholder="{{trigger.order_id}}"
-                value={formData.order_id_source || ''}
+                value={(formData.order_id_source as string) || ''}
                 onChange={(e) => setFormData({...formData, order_id_source: e.target.value})}
               />
             </div>
             <div>
               <Label htmlFor="selection_method">Selection Method</Label>
               <Select 
-                value={formData.selection_method || 'nearest'}
+                value={(formData.selection_method as string) || 'nearest'}
                 onValueChange={(value) => setFormData({...formData, selection_method: value})}
               >
                 <SelectTrigger>
@@ -303,7 +303,7 @@ export function ActionConfigForm({
               <Input 
                 id="product_id"
                 placeholder="{{trigger.product_id}}"
-                value={formData.product_id_source || ''}
+                value={(formData.product_id_source as string) || ''}
                 onChange={(e) => setFormData({...formData, product_id_source: e.target.value})}
               />
             </div>
@@ -313,7 +313,7 @@ export function ActionConfigForm({
                 id="quantity_change"
                 type="number"
                 placeholder="-1 or {{trigger.quantity}}"
-                value={formData.quantity_change || ''}
+                value={(formData.quantity_change as string | number) || ''}
                 onChange={(e) => setFormData({...formData, quantity_change: e.target.value})}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -325,7 +325,7 @@ export function ActionConfigForm({
               <Input 
                 id="warehouse"
                 placeholder="main_warehouse or {{trigger.warehouse_id}}"
-                value={formData.warehouse_id || ''}
+                value={(formData.warehouse_id as string) || ''}
                 onChange={(e) => setFormData({...formData, warehouse_id: e.target.value})}
               />
             </div>

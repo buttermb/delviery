@@ -130,7 +130,13 @@ export function WorkflowCanvas() {
         ]);
 
       if (error) throw error;
-      setTemplates((data as Workflow[]) || []);
+      // Parse Json fields to WorkflowAction[]
+      const parsedTemplates = (data || []).map((w: { actions: unknown; trigger_config: unknown }) => ({
+        ...w,
+        actions: Array.isArray(w.actions) ? w.actions : (typeof w.actions === 'object' && w.actions !== null ? Object.values(w.actions) : []) as WorkflowAction[],
+        trigger_config: typeof w.trigger_config === 'object' && w.trigger_config !== null ? w.trigger_config : {} as Record<string, unknown>,
+      })) as Workflow[];
+      setTemplates(parsedTemplates);
     } catch (error: unknown) {
       logger.error('Error loading templates', error, { component: 'WorkflowCanvas' });
     }

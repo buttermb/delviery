@@ -80,7 +80,7 @@ export function RecallForm({
   }, [recall, open]);
 
   const createMutation = useMutation({
-    mutationFn: async (data: { batch_id?: string | null; batch_number: string; reason: string; severity: string; status: string; notification_message?: string | null; affected_customers_count?: number }) => {
+    mutationFn: async (data: { batch_id?: string | null; batch_number: string; product_name: string; recall_reason: string; severity: string; status: string; affected_customers?: number }) => {
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
@@ -95,7 +95,12 @@ export function RecallForm({
           const { error } = await supabase.from("batch_recalls").insert([
             {
               tenant_id: tenant.id,
-              ...data,
+              batch_number: data.batch_number,
+              product_name: data.product_name,
+              recall_reason: data.recall_reason,
+              severity: data.severity,
+              status: data.status,
+              affected_customers: data.affected_customers || 0,
               created_by: admin?.id || null,
             },
           ]);
@@ -127,14 +132,28 @@ export function RecallForm({
       return;
     }
 
+    // Get product name from batch if batch_id is provided
+    let productName = "Unknown Product";
+    if (formData.batch_id) {
+      const { data: batch } = await supabase
+        .from("inventory_batches")
+        .select("product_id, products(name)")
+        .eq("id", formData.batch_id)
+        .single();
+      
+      if (batch && (batch as { products?: { name: string } }).products) {
+        productName = (batch as { products: { name: string } }).products.name;
+      }
+    }
+
     await createMutation.mutateAsync({
       batch_id: formData.batch_id || null,
       batch_number: formData.batch_number,
-      reason: formData.reason,
+      product_name: productName,
+      recall_reason: formData.reason,
       severity: formData.severity,
       status: formData.status,
-      notification_message: formData.notification_message || null,
-      affected_customers_count: 0, // Would be calculated from traceability
+      affected_customers: 0, // Would be calculated from traceability
     });
   };
 

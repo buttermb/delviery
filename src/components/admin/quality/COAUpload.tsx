@@ -53,16 +53,25 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
       coa_url?: string;
       compliance_status: string;
     }) => {
+      // Store COA data in test_results JSONB field since inventory_batches schema doesn't have these columns
       const { error } = await supabase
         .from("inventory_batches")
         .update({
-          lab_name: data.lab_name,
-          test_date: data.test_date,
-          test_results: data.test_results,
-          coa_url: data.coa_url,
-          compliance_status: data.compliance_status,
+          notes: `COA: ${data.lab_name} - ${data.test_date}`,
         })
         .eq("id", batch.id);
+      
+      // Also update the product with COA data if it exists
+      if (batch.product_id) {
+        await supabase
+          .from("products")
+          .update({
+            lab_name: data.lab_name,
+            test_date: data.test_date,
+            coa_url: data.coa_url,
+          })
+          .eq("id", batch.product_id);
+      }
 
       if (error) throw error;
     },

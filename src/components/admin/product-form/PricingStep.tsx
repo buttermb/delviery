@@ -65,7 +65,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
               value={(formData.price as string | number) || ""}
               onChange={(e) => {
                 const value = e.target.value;
-                updateFormData({ price: value === "" ? "" : parseFloat(value) });
+                updateFormData({ price: value === "" ? 0 : parseFloat(value) || 0 });
               }}
               placeholder="45.00"
             />

@@ -36,23 +36,24 @@ import {
 import { useDeadLetterQueue } from '@/hooks/useDeadLetterQueue';
 import { formatDistanceToNow } from 'date-fns';
 
-interface DLQEntry {
-  id: string;
-  status: string;
-  workflow: {
-    name: string;
-  };
-  error_type?: string;
-  [key: string]: unknown;
-}
+import type { DeadLetterEntry } from '@/hooks/useDeadLetterQueue';
 
 export function DeadLetterQueue() {
   const { entries, isLoading, stats, retryExecution, resolveEntry, ignoreEntry, deleteEntry } = useDeadLetterQueue();
-  const [selectedEntry, setSelectedEntry] = useState<DLQEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<DeadLetterEntry | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
+  
+  const handleViewDetails = (entry: DeadLetterEntry) => {
+    setSelectedEntry(entry);
+    setShowDetails(true);
+  };
+  
+  const handleRetry = async (entry: DeadLetterEntry) => {
+    await retryExecution.mutateAsync(entry.id);
+  };
 
   const filteredEntries = entries.filter(entry => {
     if (filterStatus !== 'all' && entry.status !== filterStatus) return false;
@@ -210,7 +211,7 @@ export function DeadLetterQueue() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewDetails(entry)}
+                        onClick={() => handleViewDetails(entry as DeadLetterEntry)}
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Details
@@ -219,7 +220,7 @@ export function DeadLetterQueue() {
                         <Button
                           variant="default"
                           size="sm"
-                          onClick={() => handleRetry(entry)}
+                          onClick={() => handleRetry(entry as DeadLetterEntry)}
                           disabled={retryExecution.isPending}
                         >
                           <RefreshCw className="h-4 w-4 mr-2" />

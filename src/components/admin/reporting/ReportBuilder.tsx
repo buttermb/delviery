@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import type { Json } from "@/integrations/supabase/types";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +59,7 @@ export function ReportBuilder({
             name: data.name,
             description: data.description,
             report_type: data.report_type,
-            filters: data.filters as unknown,
+            filters: data.filters as Json | null,
             created_by: admin?.id || null,
           },
         ]);
