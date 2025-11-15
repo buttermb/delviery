@@ -127,7 +127,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
           {formData.image_url ? (
             <div className="relative group">
               <img
-                src={formData.image_url}
+                src={(formData.image_url as string)}
                 alt="Product"
                 className="w-full h-64 object-cover rounded-lg"
               />

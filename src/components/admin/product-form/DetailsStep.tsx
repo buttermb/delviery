@@ -71,10 +71,10 @@ export function DetailsStep({ formData, updateFormData }: DetailsStepProps) {
         <Label htmlFor="full-desc">Full Description (Shown on product page)</Label>
         <Textarea
           id="full-desc"
-          value={formData.strain_info?.description || ""}
+          value={((formData.strain_info as { description?: string })?.description) || ""}
           onChange={(e) =>
             updateFormData({
-              strain_info: { ...formData.strain_info, description: e.target.value },
+              strain_info: { ...(formData.strain_info as Record<string, unknown> || {}), description: e.target.value },
             })
           }
           placeholder="Tell customers about strain effects, flavor profile, best use cases, and lab testing highlights..."
@@ -126,7 +126,7 @@ export function DetailsStep({ formData, updateFormData }: DetailsStepProps) {
         <Label htmlFor="usage-tips">Usage Tips (Optional)</Label>
         <Textarea
           id="usage-tips"
-          value={formData.usage_tips || ""}
+          value={(formData.usage_tips as string) || ""}
           onChange={(e) => updateFormData({ usage_tips: e.target.value })}
           placeholder="Best practices for consumption, dosage recommendations, etc."
           rows={3}

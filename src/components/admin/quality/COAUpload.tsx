@@ -55,7 +55,13 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
     }) => {
       const { error } = await supabase
         .from("inventory_batches")
-        .update(data)
+        .update({
+          lab_name: data.lab_name,
+          test_date: data.test_date,
+          test_results: data.test_results,
+          coa_url: data.coa_url,
+          compliance_status: data.compliance_status,
+        })
         .eq("id", batch.id);
 
       if (error) throw error;

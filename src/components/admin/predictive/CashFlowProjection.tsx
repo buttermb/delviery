@@ -51,7 +51,7 @@ export function CashFlowProjection() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {cashFlowData?.projections.map((proj: { period: string; revenue: number; expenses: number; net: number }) => (
+        {cashFlowData?.projections.map((proj: { period: string; amount: number; trend: string }) => (
           <Card key={proj.period}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{proj.period}</CardTitle>

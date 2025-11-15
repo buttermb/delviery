@@ -105,7 +105,7 @@ export function TestResultsViewer({ open, onOpenChange, batch }: TestResultsView
               </CardHeader>
               <CardContent>
                 <div className="p-3 bg-muted rounded-lg">
-                  {testResults.terpenes}
+                  {(testResults.terpenes as string) || "N/A"}
                 </div>
               </CardContent>
             </Card>

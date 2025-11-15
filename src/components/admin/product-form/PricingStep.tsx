@@ -16,28 +16,29 @@ interface PricingStepProps {
 }
 
 export function PricingStep({ formData, updateFormData }: PricingStepProps) {
-  const regularPrice = formData.price || 0;
-  const salePrice = formData.sale_price || 0;
-  const costPerUnit = formData.cost_per_unit || 0;
+  const regularPrice = (formData.price as number) || 0;
+  const salePrice = (formData.sale_price as number) || 0;
+  const costPerUnit = (formData.cost_per_unit as number) || 0;
   
   const profit = regularPrice - costPerUnit;
   const profitMargin = regularPrice > 0 ? ((profit / regularPrice) * 100).toFixed(1) : 0;
 
   const addPriceVariation = (weight: string) => {
-    const currentPrices = formData.prices || {};
+    const currentPrices = (formData.prices as Record<string, unknown>) || {};
     updateFormData({
       prices: { ...currentPrices, [weight]: "" },
     });
   };
 
   const updatePriceVariation = (weight: string, price: string) => {
+    const currentPrices = (formData.prices as Record<string, unknown>) || {};
     updateFormData({
-      prices: { ...formData.prices, [weight]: price === "" ? "" : parseFloat(price) },
+      prices: { ...currentPrices, [weight]: price === "" ? "" : parseFloat(price) },
     });
   };
 
   const removePriceVariation = (weight: string) => {
-    const newPrices = { ...formData.prices };
+    const newPrices = { ...((formData.prices as Record<string, unknown>) || {}) };
     delete newPrices[weight];
     updateFormData({ prices: newPrices });
   };
@@ -61,7 +62,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
               type="number"
               min="0"
               step="0.01"
-              value={formData.price || ""}
+              value={(formData.price as string | number) || ""}
               onChange={(e) => {
                 const value = e.target.value;
                 updateFormData({ price: value === "" ? "" : parseFloat(value) });
@@ -80,7 +81,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
               type="number"
               min="0"
               step="0.01"
-              value={formData.sale_price || ""}
+              value={(formData.sale_price as string | number) || ""}
               onChange={(e) => {
                 const value = e.target.value;
                 updateFormData({ sale_price: value === "" ? "" : parseFloat(value) });
@@ -94,7 +95,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
         </div>
       </div>
 
-      {salePrice > 0 && salePrice < regularPrice && (
+      {typeof salePrice === 'number' && salePrice > 0 && typeof regularPrice === 'number' && salePrice < regularPrice && (
         <Card className="p-4 bg-muted">
           <p className="text-sm font-medium">Sale Badge Preview:</p>
           <p className="text-sm">
@@ -115,7 +116,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
             type="number"
             min="0"
             step="0.01"
-            value={formData.cost_per_unit || ""}
+            value={(formData.cost_per_unit as string | number) || ""}
             onChange={(e) => {
               const value = e.target.value;
               updateFormData({ cost_per_unit: value === "" ? "" : parseFloat(value) });
@@ -128,12 +129,12 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
         </p>
       </div>
 
-      {costPerUnit > 0 && regularPrice > 0 && (
+      {typeof costPerUnit === 'number' && costPerUnit > 0 && typeof regularPrice === 'number' && regularPrice > 0 && (
         <Card className="p-4 bg-muted">
           <p className="text-sm font-medium mb-1">Profit Margin:</p>
           <p className={`text-2xl font-bold ${
-            parseFloat(profitMargin as string) > 40 ? "text-green-600" :
-            parseFloat(profitMargin as string) > 20 ? "text-yellow-600" : "text-red-600"
+            parseFloat(String(profitMargin)) > 40 ? "text-green-600" :
+            parseFloat(String(profitMargin)) > 20 ? "text-yellow-600" : "text-red-600"
           }`}>
             {profitMargin}% (${profit.toFixed(2)} profit per unit)
           </p>
@@ -148,7 +149,7 @@ export function PricingStep({ formData, updateFormData }: PricingStepProps) {
           id="stock"
           type="number"
           min="0"
-          value={formData.stock_quantity || ""}
+          value={(formData.stock_quantity as string | number) || ""}
           onChange={(e) => {
             const value = e.target.value;
             updateFormData({ stock_quantity: value === "" ? "" : parseInt(value) });

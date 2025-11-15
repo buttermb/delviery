@@ -33,7 +33,10 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
 
   const missingRequired = requiredFields.filter((f) => !formData[f.field]);
   const missingOptional = optionalFields.filter(
-    (f) => !formData[f.field] || formData[f.field]?.length === 0
+    (f) => {
+      const value = formData[f.field];
+      return !value || (Array.isArray(value) && value.length === 0);
+    }
   );
 
   const getPrice = () => {
@@ -60,17 +63,17 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
         </p>
         <Card className="overflow-hidden max-w-sm">
           <img
-            src={formData.image_url || "/placeholder.svg"}
-            alt={formData.name}
+            src={(formData.image_url as string) || "/placeholder.svg"}
+            alt={(formData.name as string) || "Product"}
             className="w-full h-48 object-cover"
           />
           <div className="p-4 space-y-2">
-            <h3 className="font-semibold text-lg">{formData.name || "Product Name"}</h3>
+            <h3 className="font-semibold text-lg">{(formData.name as string) || "Product Name"}</h3>
             <p className="text-sm text-muted-foreground">
-              {formData.category || "Category"} • {formData.thca_percentage || "0"}%
+              {(formData.category as string) || "Category"} • {(formData.thca_percentage as string | number) || "0"}%
             </p>
             <p className="text-sm line-clamp-2">
-              {formData.description || "No description provided"}
+              {(formData.description as string) || "No description provided"}
             </p>
             <div className="flex items-center justify-between pt-2">
               <span className="text-2xl font-bold">${getPrice()}</span>
@@ -114,7 +117,7 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
       <div>
         <Label className="text-lg font-semibold">Visibility Settings</Label>
         <RadioGroup
-          value={formData.publish_status || "publish"}
+          value={(formData.publish_status as string) || "publish"}
           onValueChange={(value) => updateFormData({ publish_status: value })}
           className="mt-3"
         >

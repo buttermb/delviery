@@ -31,6 +31,23 @@ import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
 import { versionGeneratorPlugin } from './vite-plugins/version-generator';
 
+// Sitemap generator plugin
+function sitemapPlugin() {
+  return {
+    name: "sitemap-generator",
+    buildEnd: () => {
+      console.log("Running sitemap generator...");
+      try {
+        // Use tsx to run TypeScript directly
+        execSync("npx tsx src/lib/generate-sitemap.ts", { stdio: "inherit" });
+      } catch (error) {
+        console.error("Failed to generate sitemap:", error);
+        // Don't fail the build if sitemap generation fails
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -62,6 +79,7 @@ export default defineConfig(({ mode }) => ({
     buildTimestampPlugin(),
     deferCssPlugin(),
     realtimeValidationPlugin(),
+    sitemapPlugin(),
     viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',

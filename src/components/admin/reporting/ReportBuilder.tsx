@@ -55,7 +55,10 @@ export function ReportBuilder({
         const { error } = await supabase.from("custom_reports").insert([
           {
             tenant_id: tenant.id,
-            ...data,
+            name: data.name,
+            description: data.description,
+            report_type: data.report_type,
+            filters: data.filters as unknown,
             created_by: admin?.id || null,
           },
         ]);

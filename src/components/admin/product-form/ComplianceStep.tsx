@@ -85,7 +85,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
                 <div>
                   <p className="font-medium">COA Document Uploaded</p>
                   <p className="text-sm text-muted-foreground">
-                    {formData.coa_filename || "Certificate of Analysis"}
+                    {(formData.coa_filename as string) || "Certificate of Analysis"}
                   </p>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
           <Label htmlFor="lab-name">Lab Name</Label>
           <Input
             id="lab-name"
-            value={formData.lab_name || ""}
+            value={(formData.lab_name as string) || ""}
             onChange={(e) => updateFormData({ lab_name: e.target.value })}
             placeholder="Testing lab name"
             className="mt-1.5"
@@ -152,7 +152,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
           <Input
             id="test-date"
             type="date"
-            value={formData.test_date || ""}
+            value={(formData.test_date as string) || ""}
             onChange={(e) => updateFormData({ test_date: e.target.value })}
             className="mt-1.5"
           />
@@ -163,7 +163,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
         <Label htmlFor="batch">Batch/Lot Number</Label>
         <Input
           id="batch"
-          value={formData.batch_number || ""}
+          value={(formData.batch_number as string) || ""}
           onChange={(e) => updateFormData({ batch_number: e.target.value })}
           placeholder="Batch ID"
           className="mt-1.5"

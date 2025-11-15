@@ -43,7 +43,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
         <div>
           <Label htmlFor="strain">Strain Name (Optional)</Label>
           <AutocompleteInput
-            value={formData.strain_lineage || formData.strain_name || ""}
+            value={(formData.strain_lineage as string) || (formData.strain_name as string) || ""}
             onChange={(value) => updateFormData({ 
               strain_lineage: value,
               strain_name: value 
@@ -83,7 +83,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
         <div>
           <Label>Strain Type (Optional)</Label>
           <RadioGroup
-            value={formData.strain_type || ""}
+            value={(formData.strain_type as string) || ""}
             onValueChange={(value) => updateFormData({ strain_type: value })}
             className="mt-3 flex gap-4"
           >
@@ -119,7 +119,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                 min="0"
                 max="100"
                 step="0.1"
-                value={formData.thca_percentage || ""}
+                value={(formData.thca_percentage as string | number) || ""}
                 onChange={(e) =>
                   updateFormData({ thca_percentage: e.target.value === "" ? "" : parseFloat(e.target.value) })
                 }
@@ -138,7 +138,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
                 min="0"
                 max="100"
                 step="0.1"
-                value={formData.cbd_content || ""}
+                value={(formData.cbd_content as string | number) || ""}
                 onChange={(e) =>
                   updateFormData({ cbd_content: e.target.value === "" ? "" : parseFloat(e.target.value) })
                 }
@@ -156,7 +156,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
               id="weight"
               type="number"
               step="0.1"
-              value={formData.weight_grams || ""}
+              value={(formData.weight_grams as string | number) || ""}
               onChange={(e) =>
                 updateFormData({ weight_grams: e.target.value === "" ? "" : parseFloat(e.target.value) })
               }
@@ -176,7 +176,7 @@ export function BasicInfoStep({ formData, updateFormData }: BasicInfoStepProps) 
         <div>
           <Label htmlFor="vendor">Vendor Name (Optional)</Label>
           <AutocompleteInput
-            value={formData.vendor_name || ""}
+            value={(formData.vendor_name as string) || ""}
             onChange={(value) => updateFormData({ vendor_name: value })}
             type="brand"
             placeholder="Vendor/Brand name (e.g., Cookies, Jungle Boys)"

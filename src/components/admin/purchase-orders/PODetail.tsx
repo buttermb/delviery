@@ -170,7 +170,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                   <div className="text-sm text-muted-foreground">Vendor</div>
                   <div className="flex items-center gap-2 mt-1">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span>{vendor?.name || "Unknown Vendor"}</span>
+                    <span>{(vendor && 'name' in vendor ? vendor.name : null) || "Unknown Vendor"}</span>
                   </div>
                 </div>
                 {purchaseOrder.expected_delivery_date && (
