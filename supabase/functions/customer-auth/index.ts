@@ -212,7 +212,6 @@ serve(async (req) => {
           phone: phone || null,
           date_of_birth: dateOfBirth || null,
           tenant_id: tenant.id,
-          status: 'active',
           email_verified: false, // Require email verification
         })
         .select()
