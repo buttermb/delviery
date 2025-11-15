@@ -1,4 +1,5 @@
-import { serve, createClient, hash, compare, corsHeaders, z } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
 
@@ -53,14 +54,6 @@ function base64Decode(str: string): Uint8Array {
   str = str.replace(/-/g, "+").replace(/_/g, "/");
   while (str.length % 4) str += "=";
   return Uint8Array.from(atob(str).split("").map((c) => c.charCodeAt(0)));
-}
-
-async function hashPassword(password: string): Promise<string> {
-  return await hash(password);
-}
-
-async function comparePassword(password: string, hashValue: string): Promise<boolean> {
-  return await compare(password, hashValue);
 }
 
 serve(async (req) => {
