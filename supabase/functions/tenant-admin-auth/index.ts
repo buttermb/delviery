@@ -1,16 +1,6 @@
 // @ts-nocheck
-import { serve, createClient, hash, compare, corsHeaders, z } from '../_shared/deps.ts';
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
-
-// Hash password using bcrypt
-async function hashPassword(password: string): Promise<string> {
-  return await hash(password);
-}
-
-// Compare password with hash
-async function comparePassword(password: string, hash: string): Promise<boolean> {
-  return await compare(password, hash);
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
