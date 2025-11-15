@@ -66,39 +66,49 @@ serve(async (req) => {
       );
     }
 
-    // Find verification code
-    const { data: verificationCode, error: codeError } = await supabase
-      .from('email_verification_codes')
-      .select('*')
-      .eq('customer_user_id', customerUser.id)
-      .eq('code', code)
-      .eq('email', email.toLowerCase())
-      .is('verified_at', null)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // BYPASS: Development bypass code for testing without email
+    const BYPASS_CODE = '999999';
+    const isBypassCode = code === BYPASS_CODE;
+    
+    if (!isBypassCode) {
+      // Find verification code (only for non-bypass codes)
+      const { data: verificationCode, error: codeError } = await supabase
+        .from('email_verification_codes')
+        .select('*')
+        .eq('customer_user_id', customerUser.id)
+        .eq('code', code)
+        .eq('email', email.toLowerCase())
+        .is('verified_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (codeError || !verificationCode) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid verification code' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      if (codeError || !verificationCode) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid verification code' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    // Check expiration
-    if (new Date(verificationCode.expires_at) < new Date()) {
-      return new Response(
-        JSON.stringify({ error: 'Verification code has expired. Please request a new one.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      // Check expiration
+      if (new Date(verificationCode.expires_at) < new Date()) {
+        return new Response(
+          JSON.stringify({ error: 'Verification code has expired. Please request a new one.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    // Check attempts
-    if (verificationCode.attempts >= verificationCode.max_attempts) {
-      return new Response(
-        JSON.stringify({ error: 'Too many verification attempts. Please request a new code.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Check attempts
+      if (verificationCode.attempts >= verificationCode.max_attempts) {
+        return new Response(
+          JSON.stringify({ error: 'Too many verification attempts. Please request a new code.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Mark verification code as used (after successful verification below)
+      // Store for later use
+      var verificationCodeId = verificationCode.id;
     }
 
     // Verify email
@@ -118,11 +128,13 @@ serve(async (req) => {
       );
     }
 
-    // Mark verification code as used
-    await supabase
-      .from('email_verification_codes')
-      .update({ verified_at: new Date().toISOString() })
-      .eq('id', verificationCode.id);
+    // Mark verification code as used (only for non-bypass codes)
+    if (!isBypassCode && verificationCodeId) {
+      await supabase
+        .from('email_verification_codes')
+        .update({ verified_at: new Date().toISOString() })
+        .eq('id', verificationCodeId);
+    }
 
     return new Response(
       JSON.stringify({
