@@ -213,6 +213,9 @@ serve(async (req) => {
           date_of_birth: dateOfBirth || null,
           tenant_id: tenant.id,
           email_verified: false, // Require email verification
+          is_business_buyer: isBusinessBuyer || false,
+          business_name: businessName || null,
+          business_license_number: businessLicenseNumber || null,
         })
         .select()
         .single();
