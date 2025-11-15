@@ -214,7 +214,6 @@ serve(async (req) => {
           tenant_id: tenant.id,
           status: 'active',
           email_verified: false, // Require email verification
-          minimum_age_required: tenant.minimum_age || 21,
         })
         .select()
         .single();
