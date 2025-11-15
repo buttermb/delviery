@@ -4,7 +4,6 @@
  * Enhanced workflow automation with database integration
  */
 
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,11 +61,11 @@ export function AdvancedWorkflowBuilder() {
         .limit(50);
 
       if (error) throw error;
-      setExecutions((data as any) || []);
-    } catch (error: any) {
+      setExecutions((data as WorkflowExecution[]) || []);
+    } catch (error: unknown) {
       toast({
         title: 'Error loading executions',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       });
     } finally {
