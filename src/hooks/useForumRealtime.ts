@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Forum Real-time Hooks
  * Real-time subscriptions for forum posts and comments

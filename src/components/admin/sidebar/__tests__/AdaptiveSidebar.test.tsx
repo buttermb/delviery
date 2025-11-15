@@ -87,7 +87,9 @@ describe('AdaptiveSidebar', () => {
       sidebarConfig: [],
       hotItems: [],
       favorites: [],
-      isLoading: true
+      operationSize: 'small' as const,
+      detectedSize: 'small' as const,
+      isAutoDetected: false,
     });
 
     render(<AdaptiveSidebar />, { wrapper: createWrapper() });

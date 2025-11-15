@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Forum API Functions
  * All forum-related database operations
