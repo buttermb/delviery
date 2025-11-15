@@ -164,20 +164,20 @@ export default function CustomerSignUpPage() {
   const logo = tenant.white_label?.logo;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[hsl(var(--customer-bg))] via-[hsl(var(--customer-surface))] to-[hsl(var(--customer-bg))] p-4 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 overflow-hidden opacity-20">
-        <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-[hsl(var(--customer-primary))] blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-[hsl(var(--customer-secondary))] blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Subtle animated accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--customer-primary))]/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[hsl(var(--customer-secondary))]/15 rounded-full blur-3xl" />
       </div>
 
-      {/* White Card */}
+      {/* Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl border border-[hsl(var(--customer-border))] p-8">
+        <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           {/* Back Button */}
           <Link 
             to={`/${tenantSlug}/customer/login`}
-            className="inline-flex items-center text-sm text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-primary))] mb-6 transition-colors"
+            className="inline-flex items-center text-sm text-slate-400 hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to login
@@ -189,20 +189,15 @@ export default function CustomerSignUpPage() {
               {logo ? (
                 <img src={logo} alt={businessName} className="h-16 object-contain" />
               ) : (
-                <div className="relative">
-                  <div className="rounded-full bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] p-4 shadow-lg">
-                    <ShoppingBag className="h-8 w-8 text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1">
-                    <Sparkles className="h-5 w-5 text-[hsl(var(--customer-accent))] animate-pulse" />
-                  </div>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] shadow-xl">
+                  <ShoppingBag className="w-8 h-8 text-white" />
                 </div>
               )}
             </div>
-            <h1 className="text-3xl font-bold text-[hsl(var(--customer-text))] mb-2">
+            <h1 className="text-4xl font-bold text-white mb-2">
               Create Account
             </h1>
-            <p className="text-[hsl(var(--customer-text-light))]">
+            <p className="text-slate-400">
               Start shopping at {businessName}
             </p>
           </div>
@@ -211,7 +206,7 @@ export default function CustomerSignUpPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-[hsl(var(--customer-text))]">
+                <Label htmlFor="firstName" className="text-sm font-medium text-slate-200">
                   First Name
                 </Label>
                 <Input
@@ -222,12 +217,12 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                   disabled={loading}
-                  className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-[hsl(var(--customer-text))]">
+                <Label htmlFor="lastName" className="text-sm font-medium text-slate-200">
                   Last Name
                 </Label>
                 <Input
@@ -238,132 +233,57 @@ export default function CustomerSignUpPage() {
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                   disabled={loading}
-                  className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[hsl(var(--customer-text))]">
+              <Label htmlFor="email" className="text-sm font-medium text-slate-200">
                 Email
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="customer@example.com"
+                placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 disabled={loading}
-                className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-[hsl(var(--customer-text))]">
-                Phone Number {phoneValidating && <Loader2 className="inline h-3 w-3 animate-spin ml-2" />}
+              <Label htmlFor="phone" className="text-sm font-medium text-slate-200">
+                Phone Number
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={formData.phone}
-                onChange={(e) => {
-                  setFormData({ ...formData, phone: e.target.value });
-                  setPhoneError(null);
-                }}
-                required
-                disabled={loading || phoneValidating}
-                className={`border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 ${phoneError ? 'border-red-500' : ''}`}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                disabled={loading}
+                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
-              {phoneError && (
-                <p className="text-sm text-red-500">{phoneError}</p>
-              )}
             </div>
 
-            {(tenant?.age_verification_required || formData.dateOfBirth) && (
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth" className="text-[hsl(var(--customer-text))]">
-                  Date of Birth {tenant?.age_verification_required && <span className="text-red-500">*</span>}
-                </Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => {
-                    setFormData({ ...formData, dateOfBirth: e.target.value });
-                    setAgeError(null);
-                  }}
-                  required={tenant?.age_verification_required}
-                  disabled={loading}
-                  max={new Date(new Date().setFullYear(new Date().getFullYear() - (tenant?.minimum_age || 21))).toISOString().split('T')[0]}
-                  className={`border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20 ${ageError ? 'border-red-500' : ''}`}
-                />
-                {ageError && (
-                  <p className="text-sm text-red-500">{ageError}</p>
-                )}
-                {tenant?.minimum_age && (
-                  <p className="text-xs text-muted-foreground">
-                    You must be at least {tenant.minimum_age} years old to create an account
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Business Buyer Option */}
-            <div className="space-y-4 p-4 border border-[hsl(var(--customer-border))] rounded-lg bg-[hsl(var(--customer-surface))]">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isBusinessBuyer"
-                  checked={formData.isBusinessBuyer}
-                  onChange={(e) => setFormData({ ...formData, isBusinessBuyer: e.target.checked })}
-                  className="h-4 w-4 rounded border-[hsl(var(--customer-border))] text-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]"
-                />
-                <Label htmlFor="isBusinessBuyer" className="text-[hsl(var(--customer-text))] font-medium cursor-pointer">
-                  I'm a business buyer (wholesale)
-                </Label>
-              </div>
-              {formData.isBusinessBuyer && (
-                <div className="space-y-3 pt-2 border-t border-[hsl(var(--customer-border))]">
-                  <div className="space-y-2">
-                    <Label htmlFor="businessName" className="text-[hsl(var(--customer-text))]">
-                      Business Name *
-                    </Label>
-                    <Input
-                      id="businessName"
-                      type="text"
-                      placeholder="Your business name"
-                      value={formData.businessName}
-                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      required={formData.isBusinessBuyer}
-                      disabled={loading}
-                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="businessLicenseNumber" className="text-[hsl(var(--customer-text))]">
-                      Business License Number
-                    </Label>
-                    <Input
-                      id="businessLicenseNumber"
-                      type="text"
-                      placeholder="Enter license number (optional)"
-                      value={formData.businessLicenseNumber}
-                      onChange={(e) => setFormData({ ...formData, businessLicenseNumber: e.target.value })}
-                      disabled={loading}
-                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      You can complete business verification after signup to access wholesale marketplace
-                    </p>
-                  </div>
-                </div>
-              )}
+            <div className="flex items-center space-x-2 py-2">
+              <input
+                type="checkbox"
+                id="isBusinessBuyer"
+                checked={formData.isBusinessBuyer}
+                onChange={(e) => setFormData({ ...formData, isBusinessBuyer: e.target.checked })}
+                className="rounded border-slate-700 bg-slate-900/50 text-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20"
+              />
+              <Label htmlFor="isBusinessBuyer" className="text-sm text-slate-300 cursor-pointer">
+                I'm a business buyer (wholesale)
+              </Label>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[hsl(var(--customer-text))]">
+              <Label htmlFor="password" className="text-sm font-medium text-slate-200">
                 Password
               </Label>
               <Input
@@ -374,15 +294,13 @@ export default function CustomerSignUpPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={loading}
-                className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
-              {formData.password && (
-                <PasswordStrengthIndicator password={formData.password} />
-              )}
+              <PasswordStrengthIndicator password={formData.password} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-[hsl(var(--customer-text))]">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-200">
                 Confirm Password
               </Label>
               <Input
@@ -393,32 +311,28 @@ export default function CustomerSignUpPage() {
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
                 disabled={loading}
-                className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                className="h-11 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white h-12 font-semibold shadow-lg mt-6"
+              className="w-full h-12 bg-[hsl(var(--customer-primary))] hover:bg-[hsl(var(--customer-primary))]/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-lg"
             >
               {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Creating account...
-                </>
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 "Create Account"
               )}
             </Button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center text-sm">
-            <span className="text-[hsl(var(--customer-text-light))]">Already have an account? </span>
-            <Link 
+          <div className="mt-6 text-center text-sm text-slate-400">
+            Already have an account?{" "}
+            <Link
               to={`/${tenantSlug}/customer/login`}
-              className="text-[hsl(var(--customer-primary))] hover:underline font-medium"
+              className="text-[hsl(var(--customer-primary))] hover:text-[hsl(var(--customer-primary))]/80 font-medium transition-colors"
             >
               Sign in
             </Link>
