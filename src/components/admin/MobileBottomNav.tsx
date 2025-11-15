@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 
 export function MobileBottomNav() {
@@ -91,9 +92,11 @@ export function MobileBottomNav() {
             className="p-0 w-[85vw] max-w-sm mobile-input-container"
             style={{ zIndex: 60 }}
           >
-            <div className="h-full overflow-y-auto bg-background">
-              <AdaptiveSidebar collapsible="none" />
-            </div>
+            <SidebarProvider>
+              <div className="h-full overflow-y-auto bg-background">
+                <AdaptiveSidebar collapsible="none" />
+              </div>
+            </SidebarProvider>
           </SheetContent>
         </Sheet>
       </div>
