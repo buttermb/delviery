@@ -285,8 +285,9 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
   }, [tenantSlug, location.pathname, admin, tenant, loading]);
 
-  // Loading state - wait for auth AND verification (unless skipped)
-  if ((loading || verifying || !verified) && !skipVerification) {
+  // Loading state - wait for auth AND verification (unless skipped OR not authenticated)
+  // If user is not authenticated (no admin/tenant), let it fall through to redirect
+  if ((loading || verifying || (!verified && (admin || tenant))) && !skipVerification) {
     return <LoadingFallback />;
   }
 
