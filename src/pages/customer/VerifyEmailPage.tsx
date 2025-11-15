@@ -295,6 +295,14 @@ export default function CustomerVerifyEmailPage() {
               <p className="text-xs text-muted-foreground text-center">
                 Enter the 6-digit code sent to your email
               </p>
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p className="text-xs text-blue-900 dark:text-blue-100 text-center font-medium">
+                  🔓 Development Bypass Code: <span className="font-mono font-bold">999999</span>
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 text-center mt-1">
+                  Use this code to verify without email setup
+                </p>
+              </div>
             </div>
 
             <Button
