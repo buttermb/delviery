@@ -182,7 +182,7 @@ export default function LoginPage() {
           });
         },
         onError: (errorCategory) => {
-          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, 0);
         },
       });
 
