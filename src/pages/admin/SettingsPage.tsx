@@ -18,6 +18,7 @@ import {
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 
@@ -83,15 +84,15 @@ export default function SettingsPage() {
           break;
         case 'Security':
           // Security settings would be saved to a separate table or user preferences
-          console.log('Saving security settings:', securitySettings);
+          logger.debug('Saving security settings', { component: 'SettingsPage' });
           break;
         case 'Notifications':
           // Save notification preferences
-          console.log('Saving notification settings:', notificationSettings);
+          logger.debug('Saving notification settings', { component: 'SettingsPage' });
           break;
         case 'Printing':
           // Save printing preferences
-          console.log('Saving printing settings:', printingSettings);
+          logger.debug('Saving printing settings', { component: 'SettingsPage' });
           break;
       }
 
@@ -106,9 +107,10 @@ export default function SettingsPage() {
       }
 
       showSuccessToast(`${section} settings saved successfully`);
-    } catch (error: any) {
-      console.error(`Error saving ${section} settings:`, error);
-      showErrorToast(error.message || `Failed to save ${section} settings`);
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error(`Error saving ${section} settings`, errorObj, { section, component: 'SettingsPage' });
+      showErrorToast(errorObj.message || `Failed to save ${section} settings`);
     } finally {
       setLoading(false);
     }

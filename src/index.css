@@ -7,6 +7,48 @@
   main {
     padding-bottom: 80px !important;
   }
+  
+  /* Ensure inputs are scrollable into view when keyboard opens */
+  body {
+    position: relative;
+  }
+  
+  /* Fix for iOS Safari viewport when keyboard opens */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    body {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+  }
+  
+  /* Prevent body scroll when keyboard is open (iOS Safari fix) */
+  body.keyboard-open {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+    /* Store scroll position */
+    top: 0;
+  }
+  
+  /* Ensure main content is scrollable when keyboard opens */
+  body.keyboard-open main,
+  body.keyboard-open [role="main"] {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  /* Dialog content should be scrollable when keyboard opens */
+  body.keyboard-open [role="dialog"],
+  body.keyboard-open [data-radix-dialog-content] {
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
 }
 
 /* Smooth scrolling for mobile */
@@ -1068,6 +1110,75 @@
 
     .hover\:shadow-xl:hover {
       box-shadow: none;
+    }
+  }
+
+  /* Mobile input focus fixes - prevent z-index issues */
+  @media (max-width: 768px) {
+    /* Ensure inputs are always on top when focused */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      position: relative;
+      z-index: 9999 !important;
+      transform: none !important;
+    }
+    
+    /* Fix chat widget and bottom nav z-index hierarchy */
+    [data-chat-widget] {
+      z-index: 60 !important;
+    }
+    
+    /* Ensure bottom navigation doesn't overlap inputs */
+    nav[class*="fixed"][class*="bottom"] {
+      z-index: 50 !important;
+    }
+    
+    /* Input containers should be above bottom nav */
+    .chat-input-container,
+    .mobile-input-container {
+      z-index: 70 !important;
+      position: relative;
+    }
+    
+    /* Dialog and Sheet inputs should be on top */
+    [role="dialog"] input:focus,
+    [role="dialog"] textarea:focus,
+    [data-radix-dialog-content] input:focus,
+    [data-radix-dialog-content] textarea:focus {
+      z-index: 9999 !important;
+      position: relative;
+    }
+    
+    /* Prevent viewport issues when keyboard opens */
+    body.keyboard-open {
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+    
+    /* Smooth scroll for inputs into view */
+    input:focus,
+    textarea:focus {
+      scroll-margin-bottom: 100px;
+    }
+    
+    /* Fix for iOS Safari - ensure inputs are clickable */
+    input,
+    textarea {
+      -webkit-appearance: none;
+      appearance: none;
+      touch-action: manipulation;
+    }
+    
+    /* Ensure inputs in fixed bottom elements are clickable */
+    [class*="fixed"][class*="bottom"] input,
+    [class*="fixed"][class*="bottom"] textarea,
+    [class*="fixed"][class*="bottom"] button {
+      pointer-events: auto;
+      position: relative;
+      z-index: 1;
     }
   }
 

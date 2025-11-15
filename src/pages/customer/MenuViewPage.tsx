@@ -127,18 +127,26 @@ export default function CustomerMenuViewPage() {
     return Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
   }, [quantities]);
 
-  // Memoize cart total calculation
+  // Memoize cart total calculation (optimized: create Map for O(1) lookups)
   const calculateCartTotal = useMemo(() => {
     if (!products || !Array.isArray(products)) return 0;
     
+    // Create a Map for O(1) product lookups instead of O(n) find() in loop
+    const productMap = new Map<string, any>();
+    for (const mp of products) {
+      if (mp.products?.id) {
+        productMap.set(mp.products.id, mp);
+      }
+    }
+    
     let total = 0;
-    Object.entries(quantities).forEach(([productId, quantity]) => {
-      const menuProduct: any = products.find((mp: any) => mp.products?.id === productId);
+    for (const [productId, quantity] of Object.entries(quantities)) {
+      const menuProduct = productMap.get(productId);
       if (menuProduct?.products?.price) {
         const price = Number(menuProduct.products.price) || 0;
         total += price * quantity;
       }
-    });
+    }
     
     return total;
   }, [products, quantities]);
@@ -481,7 +489,7 @@ export default function CustomerMenuViewPage() {
 
         {/* Sticky Cart Footer */}
         {getTotalItems > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4 z-50">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg p-4 z-50 safe-area-bottom" style={{ zIndex: 50 }}>
             <div className="container mx-auto flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">

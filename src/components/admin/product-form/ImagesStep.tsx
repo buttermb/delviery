@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 interface ProductFormData {
   images?: string[];
@@ -38,7 +39,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
 
-      console.log("Uploading image:", { fileName, filePath, isMain });
+      logger.debug("Uploading product image", { fileName, filePath, isMain, component: 'ImagesStep' });
 
       const { error: uploadError, data } = await supabase.storage
         .from("product-images")
@@ -50,23 +51,21 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
         .from("product-images")
         .getPublicUrl(filePath);
 
-      console.log("Image uploaded successfully:", { publicUrl, isMain });
+      logger.debug("Product image uploaded successfully", { publicUrl, isMain, component: 'ImagesStep' });
 
       // Update form data immediately and persistently
       if (isMain) {
         const newData = { image_url: publicUrl };
-        console.log("Updating main image in form data:", newData);
         updateFormData(newData);
       } else {
         const currentImages = formData.images || [];
         const newImages = [...currentImages, publicUrl];
-        console.log("Updating additional images:", newImages);
         updateFormData({ images: newImages });
       }
 
       toast({ title: "✓ Image uploaded successfully" });
     } catch (error: unknown) {
-      console.error("Image upload error:", error);
+      logger.error("Product image upload error", error instanceof Error ? error : new Error(String(error)), { component: 'ImagesStep' });
       toast({
         title: "Upload failed",
         description: error instanceof Error ? error.message : "Unknown error occurred",

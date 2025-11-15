@@ -33,7 +33,7 @@ const SecureMenuAccess = () => {
           setLocationStatus('granted');
         },
         (error) => {
-          console.error('Location error:', error);
+          logger.error('Location access error', error instanceof Error ? error : new Error(String(error)), { component: 'SecureMenuAccess' });
           setLocationStatus('denied');
         }
       );
@@ -121,7 +121,7 @@ const SecureMenuAccess = () => {
 
       // If we have an error object, try to extract details from it
       if (validateError) {
-        console.error('Validation error:', validateError);
+        logger.error('Menu access validation error', validateError instanceof Error ? validateError : new Error(String(validateError)), { component: 'SecureMenuAccess', token, accessCode: accessCode.substring(0, 2) + '****' });
         // Try to get error details from the error context
         const errorMessage = validateError.message || 'Failed to validate access';
         setError(errorMessage);

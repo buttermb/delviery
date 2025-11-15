@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -737,34 +737,51 @@ export default function ProductManagement() {
     return (((price - cost) / price) * 100).toFixed(1);
   };
 
-  const filteredProducts = products
-    .filter(
-      (p) =>
-        p.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        p.sku?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        p.category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-    )
-    .filter((p) => categoryFilter === "all" || p.category === categoryFilter)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return (a.name || "").localeCompare(b.name || "");
-        case "price":
-          return (b.wholesale_price || 0) - (a.wholesale_price || 0);
-        case "stock":
-          return (b.available_quantity || 0) - (a.available_quantity || 0);
-        case "margin":
-          const marginA = profitMargin(a.cost_per_unit, a.wholesale_price);
-          const marginB = profitMargin(b.cost_per_unit, b.wholesale_price);
-          return Number(marginB) - Number(marginA);
-        default:
-          return 0;
-      }
-    });
+  // Optimized: memoized filtering with single pass and toLowerCase() done once
+  const filteredProducts = useMemo(() => {
+    const searchLower = debouncedSearchTerm.toLowerCase();
+    const applyCategoryFilter = categoryFilter !== "all";
+    
+    return products
+      .filter((p) => {
+        // Single filter combining search and category
+        const matchesSearch = !searchLower || 
+          p.name?.toLowerCase().includes(searchLower) ||
+          p.sku?.toLowerCase().includes(searchLower) ||
+          p.category?.toLowerCase().includes(searchLower);
+        
+        const matchesCategory = !applyCategoryFilter || p.category === categoryFilter;
+        
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "name":
+            return (a.name || "").localeCompare(b.name || "");
+          case "price":
+            return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+          case "stock":
+            return (b.available_quantity || 0) - (a.available_quantity || 0);
+          case "margin":
+            const marginA = profitMargin(a.cost_per_unit, a.wholesale_price);
+            const marginB = profitMargin(b.cost_per_unit, b.wholesale_price);
+            return Number(marginB) - Number(marginA);
+          default:
+            return 0;
+        }
+      });
+  }, [products, debouncedSearchTerm, categoryFilter, sortBy]);
 
-  const categories = Array.from(
-    new Set(products.map((p) => p.category).filter(Boolean))
-  );
+  // Optimized: memoized categories extraction
+  const categories = useMemo(() => {
+    const categorySet = new Set<string>();
+    for (const p of products) {
+      if (p.category) {
+        categorySet.add(p.category);
+      }
+    }
+    return Array.from(categorySet);
+  }, [products]);
 
   const handleSelectAll = () => {
     if (selectedProducts.length === filteredProducts.length) {

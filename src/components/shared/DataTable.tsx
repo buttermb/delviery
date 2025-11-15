@@ -323,7 +323,7 @@ export function DataTable<TData, TValue>({
                 const isSelected = selectedRows.has(rowId);
                 return (
                   <TableRow
-                    key={rowIndex}
+                    key={rowId}
                     className={cn("hover:bg-muted/50", isSelected && "bg-muted")}
                   >
                     {enableSelection && (

@@ -11,6 +11,7 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface AdvancedReportsCardProps {
   menuId: string;
@@ -27,7 +28,7 @@ interface AdvancedReportsCardProps {
 export const AdvancedReportsCard = ({ menuId, stats }: AdvancedReportsCardProps) => {
   const generateReport = async (reportType: string) => {
     try {
-      console.log(`Generating ${reportType} report for menu ${menuId}`);
+      logger.debug(`Generating ${reportType} report`, { menuId, reportType, component: 'AdvancedReportsCard' });
       
       // Generate report data based on type
       interface ReportData {
@@ -94,9 +95,10 @@ export const AdvancedReportsCard = ({ menuId, stats }: AdvancedReportsCardProps)
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      console.log('Report generated successfully');
-    } catch (error) {
-      console.error('Failed to generate report:', error);
+      logger.debug('Report generated successfully', { menuId, reportType, component: 'AdvancedReportsCard' });
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to generate report', errorObj, { menuId, reportType, component: 'AdvancedReportsCard' });
     }
   };
 

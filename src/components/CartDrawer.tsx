@@ -77,20 +77,22 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     item: GuestCartItemWithProduct | null
   ): item is GuestCartItemWithProduct => item !== null;
 
-  // Memoize guest cart items to prevent recalculation
+  // Memoize guest cart items to prevent recalculation (optimized: single pass with reduce)
   const guestCartItems: GuestCartItemWithProduct[] = useMemo(() => {
     if (user) return [];
-    return guestCart
-      .map(item => {
-        const product = guestProducts.find(p => p.id === item.product_id);
-        if (!product) return null;
-        return {
+    
+    // Single pass optimization: combine map and filter into reduce
+    return guestCart.reduce<GuestCartItemWithProduct[]>((acc, item) => {
+      const product = guestProducts.find(p => p.id === item.product_id);
+      if (product) {
+        acc.push({
           ...item,
           id: `${item.product_id}-${item.selected_weight ?? "unit"}`,
           products: product
-        };
-      })
-      .filter(isGuestItemWithProduct);
+        });
+      }
+      return acc;
+    }, []);
   }, [user, guestCart, guestProducts]);
   
   const cartItems: RenderCartItem[] = user ? dbCartItems : guestCartItems;
@@ -188,7 +190,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+      <SheetContent className="w-full sm:max-w-lg flex flex-col safe-area-bottom">
         <SheetHeader>
           <SheetTitle className="text-xl md:text-2xl">Shopping Cart</SheetTitle>
         </SheetHeader>

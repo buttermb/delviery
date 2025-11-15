@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,17 +32,35 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
     { field: "vendor_name", label: "Vendor name" },
   ];
 
-  const missingRequired = requiredFields.filter((f) => !formData[f.field]);
-  const missingOptional = optionalFields.filter(
-    (f) => {
-      const value = formData[f.field];
-      return !value || (Array.isArray(value) && value.length === 0);
+  // Optimized: single pass for both filters with memoization
+  const { missingRequired, missingOptional } = useMemo(() => {
+    const required: typeof requiredFields = [];
+    const optional: typeof optionalFields = [];
+    
+    for (const f of requiredFields) {
+      if (!formData[f.field]) {
+        required.push(f);
+      }
     }
-  );
+    
+    for (const f of optionalFields) {
+      const value = formData[f.field];
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        optional.push(f);
+      }
+    }
+    
+    return { missingRequired: required, missingOptional: optional };
+  }, [formData]);
 
+  // Optimized: avoid Object.keys() check, just get first value directly
   const getPrice = () => {
-    if (formData.prices && Object.keys(formData.prices).length > 0) {
-      return Object.values(formData.prices)[0];
+    if (formData.prices && typeof formData.prices === 'object' && !Array.isArray(formData.prices)) {
+      const prices = formData.prices as Record<string, unknown>;
+      const firstKey = Object.keys(prices)[0];
+      if (firstKey) {
+        return prices[firstKey] || 0;
+      }
     }
     return formData.price || 0;
   };

@@ -234,9 +234,23 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
         console.log('[AUTH INIT] ✅ Found stored credentials, parsing...');
-        // Parse stored data
-        parsedAdmin = JSON.parse(storedAdmin);
-        parsedTenant = JSON.parse(storedTenant);
+        // Parse stored data safely
+        try {
+          parsedAdmin = JSON.parse(storedAdmin);
+        } catch (error) {
+          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
+          clearAuthState();
+          setLoading(false);
+          return;
+        }
+        try {
+          parsedTenant = JSON.parse(storedTenant);
+        } catch (error) {
+          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
+          clearAuthState();
+          setLoading(false);
+          return;
+        }
         console.log('[AUTH INIT] 📋 Parsed credentials:', {
           adminEmail: parsedAdmin?.email,
           tenantSlug: parsedTenant?.slug,
@@ -374,12 +388,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
         
         console.log('[AUTH INIT] 🎉 Authentication complete');
-      } catch (error: any) {
-        console.log('[AUTH INIT] ❌ Initialization error', {
-          error: error.message,
-          name: error.name,
+      } catch (error: unknown) {
+        const errorObj = error instanceof Error ? error : new Error(String(error));
+        logger.debug('[AUTH INIT] Initialization error', { 
+          error: errorObj.message, 
+          name: errorObj.name,
+          component: 'TenantAdminAuthContext'
         });
-        logger.error('[AUTH] Initialization error', error);
+        logger.error('[AUTH] Initialization error', errorObj, { component: 'TenantAdminAuthContext' });
         clearAuthState();
       } finally {
         const totalDuration = Date.now() - startTime;
@@ -782,12 +798,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { tenantId: data.tenant?.id });
-    } catch (error: any) {
-      const category = error instanceof Error && error.message.includes('Network') 
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      const category = errorObj.message.includes('Network') 
         ? ErrorCategory.NETWORK 
         : ErrorCategory.AUTH;
-      authFlowLogger.failFlow(flowId, error, category);
-      logger.error("Login error", error);
+      authFlowLogger.failFlow(flowId, errorObj, category);
+      logger.error("Login error", errorObj, { component: 'TenantAdminAuthContext' });
       
       // Show user-friendly error messages
       const { showErrorToast } = await import('@/lib/toastUtils');
@@ -796,26 +813,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let errorMessage = 'Login failed. Please try again.';
       let errorCode = 'LOGIN_FAILED';
       
-      if (error.message?.includes('Invalid email or password') || error.status === 401) {
+      if (errorObj.message?.includes('Invalid email or password') || ('status' in errorObj && errorObj.status === 401)) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
         errorCode = 'INVALID_CREDENTIALS';
-      } else if (error.message?.includes('network') || error.message?.includes('Network')) {
+      } else if (errorObj.message?.includes('network') || errorObj.message?.includes('Network')) {
         errorMessage = 'Network error. Please check your internet connection and try again.';
         errorCode = 'NETWORK_ERROR';
-      } else if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+      } else if (errorObj.message?.includes('timeout') || errorObj.message?.includes('timed out')) {
         errorMessage = 'Request timed out. Please try again.';
         errorCode = 'TIMEOUT';
-      } else if (error.status === 403) {
+      } else if ('status' in errorObj && errorObj.status === 403) {
         errorMessage = 'Access denied. Your account may be suspended. Please contact support.';
         errorCode = 'ACCESS_DENIED';
-      } else if (error.status === 429) {
+      } else if ('status' in errorObj && errorObj.status === 429) {
         errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
         errorCode = 'RATE_LIMITED';
-      } else if (error.status >= 500) {
+      } else if ('status' in errorObj && errorObj.status >= 500) {
         errorMessage = 'Server error. We\'re working on it. Please try again in a few minutes.';
         errorCode = 'SERVER_ERROR';
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else if (errorObj.message) {
+        errorMessage = errorObj.message;
       }
       
       showErrorToast(errorMessage, `Error code: ${errorCode}`);

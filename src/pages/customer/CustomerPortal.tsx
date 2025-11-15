@@ -12,6 +12,7 @@ import {
   MapPin, Clock
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { logger } from '@/lib/logger';
 
 export default function CustomerPortal() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function CustomerPortal() {
       try {
         setCustomerUser(JSON.parse(userData));
       } catch (error) {
-        console.error('Error parsing customer user data:', error);
+        logger.error('Error parsing customer user data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerPortal' });
         navigate('/willysbo/customer/login');
       }
     } else if (!user) {
@@ -50,7 +51,7 @@ export default function CustomerPortal() {
       // Placeholder - will load actual customer orders
       setOrders([]);
     } catch (error) {
-      console.error('Error loading customer data:', error);
+      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerPortal' });
     } finally {
       setLoading(false);
     }

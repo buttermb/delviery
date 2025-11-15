@@ -98,8 +98,9 @@ export function useOptimisticUpdate<T = any, P = any>(
                 description: 'Changes have been saved',
               });
               onSuccess?.(result);
-            } catch (retryError: any) {
-              logger.error('Background sync failed', retryError);
+            } catch (retryError: unknown) {
+              const errorObj = retryError instanceof Error ? retryError : new Error(String(retryError));
+              logger.error('Background sync failed', errorObj, { component: 'useOptimisticUpdate' });
               toast.error('Sync failed', {
                 description: 'Please try again manually',
               });
@@ -138,21 +139,22 @@ export function useOptimisticUpdate<T = any, P = any>(
         });
         
         return result;
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Check if operation was aborted
         if (abortControllerRef.current?.signal.aborted) {
-          logger.info('Operation was aborted during error handling');
+          logger.info('Operation was aborted during error handling', { component: 'useOptimisticUpdate' });
           return null;
         }
 
-        logger.error('Optimistic update failed - rolling back', err, {
+        const errorObj = err instanceof Error ? err : new Error(String(err));
+        logger.error('Optimistic update failed - rolling back', errorObj, {
           component: 'useOptimisticUpdate',
         });
         
         toast.dismiss(loadingToast);
         
         // Show error state briefly before rollback
-        setError(err);
+        setError(errorObj);
         
         // Rollback after delay to show error
         setTimeout(() => {
@@ -161,12 +163,12 @@ export function useOptimisticUpdate<T = any, P = any>(
           setIsLoading(false);
           
           toast.error(errorMessage, {
-            description: err.message || 'Please try again',
+            description: errorObj.message || 'Please try again',
             duration: 4000,
           });
         }, rollbackDelay);
         
-        onError?.(err);
+        onError?.(errorObj);
         
         return null;
       }

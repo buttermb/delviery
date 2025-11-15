@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import { LoadingFallback } from '@/components/LoadingFallback';
+import { logger } from '@/lib/logger';
 
 interface SuperAdminProtectedRouteProps {
   children: React.ReactNode;
@@ -37,13 +38,13 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
           .maybeSingle();
 
         if (error) {
-          console.error('Error checking admin status:', error);
+          logger.error('Error checking admin status', error instanceof Error ? error : new Error(String(error)), { userId: user.id, component: 'SuperAdminProtectedRoute' });
           setIsPlatformAdmin(false);
         } else {
           setIsPlatformAdmin(data !== null);
         }
       } catch (error) {
-        console.error('Error checking platform admin status:', error);
+        logger.error('Error checking platform admin status', error instanceof Error ? error : new Error(String(error)), { userId: user.id, component: 'SuperAdminProtectedRoute' });
         setIsPlatformAdmin(false);
       } finally {
         setChecking(false);

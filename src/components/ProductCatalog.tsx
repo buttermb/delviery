@@ -109,14 +109,25 @@ const ProductCatalog = () => {
     return result;
   }, [allProducts, searchQuery, premiumFilter]);
 
-  // Memoize category grouping to prevent recalculation
-  const productsByCategory = useMemo(() => ({
-    flower: filteredProducts.filter((p) => p.category === "flower"),
-    edibles: filteredProducts.filter((p) => p.category === "edibles"),
-    "pre-rolls": filteredProducts.filter((p) => p.category === "pre-rolls"),
-    concentrates: filteredProducts.filter((p) => p.category === "concentrates"),
-    vapes: filteredProducts.filter((p) => p.category === "vapes"),
-  }), [filteredProducts]);
+  // Memoize category grouping to prevent recalculation (optimized: single pass)
+  const productsByCategory = useMemo(() => {
+    const categories: Record<string, typeof filteredProducts> = {
+      flower: [],
+      edibles: [],
+      "pre-rolls": [],
+      concentrates: [],
+      vapes: [],
+    };
+    
+    // Single pass instead of multiple filters
+    for (const product of filteredProducts) {
+      if (product.category && product.category in categories) {
+        categories[product.category].push(product);
+      }
+    }
+    
+    return categories;
+  }, [filteredProducts]);
 
   const categories = [
     { key: "flower", label: "Flower", icon: Leaf, desc: "Premium indoor-grown flower" },

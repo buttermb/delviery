@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, Search, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
@@ -40,7 +41,7 @@ export default function ForumApprovalsPage() {
   const { data: approvals, isLoading, error: queryError } = useQuery({
     queryKey: ['forum-approvals', activeTab],
     queryFn: async () => {
-      console.log('[ForumApprovals] Fetching approvals, activeTab:', activeTab);
+      logger.debug('Fetching forum approvals', { activeTab, component: 'ForumApprovalsPage' });
       
       let query = supabase
         .from('forum_user_approvals')
@@ -54,24 +55,24 @@ export default function ForumApprovalsPage() {
       const { data: approvalsData, error } = await query;
       
       if (error) {
-        console.error('[ForumApprovals] Error fetching approvals:', error);
+        logger.error('Error fetching forum approvals', error instanceof Error ? error : new Error(String(error)), { activeTab, component: 'ForumApprovalsPage' });
         throw error;
       }
 
-      console.log('[ForumApprovals] Fetched approvals:', approvalsData?.length || 0);
+      logger.debug('Fetched forum approvals', { count: approvalsData?.length || 0, component: 'ForumApprovalsPage' });
       return (approvalsData || []) as ForumApproval[];
     },
   });
 
   // Log query error if present
   if (queryError) {
-    console.error('[ForumApprovals] Query error:', queryError);
+    logger.error('Forum approvals query error', queryError instanceof Error ? queryError : new Error(String(queryError)), { component: 'ForumApprovalsPage' });
   }
 
   // Approve mutation
   const approveMutation = useMutation({
     mutationFn: async (approvalId: string) => {
-      console.log('[ForumApprovals] Approving:', approvalId);
+      logger.debug('Approving forum user', { approvalId, component: 'ForumApprovalsPage' });
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -82,25 +83,29 @@ export default function ForumApprovalsPage() {
         },
       });
 
-      console.log('[ForumApprovals] Approve response:', { data, error });
-
-      if (error) throw error;
+      if (error) {
+        logger.error('Forum approval error', error instanceof Error ? error : new Error(String(error)), { approvalId, component: 'ForumApprovalsPage' });
+        throw error;
+      }
+      
+      logger.debug('Forum user approved', { approvalId, component: 'ForumApprovalsPage' });
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
       toast.success('User approved successfully');
     },
-    onError: (error: Error) => {
-      console.error('[ForumApprovals] Approve error:', error);
-      toast.error(error.message || 'Failed to approve user');
+    onError: (error: unknown) => {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to approve forum user', errorObj, { component: 'ForumApprovalsPage' });
+      toast.error(errorObj.message || 'Failed to approve user');
     },
   });
 
   // Reject mutation
   const rejectMutation = useMutation({
     mutationFn: async ({ approvalId, reason }: { approvalId: string; reason?: string }) => {
-      console.log('[ForumApprovals] Rejecting:', approvalId, 'reason:', reason);
+      logger.debug('Rejecting forum user', { approvalId, reason, component: 'ForumApprovalsPage' });
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -112,18 +117,22 @@ export default function ForumApprovalsPage() {
         },
       });
 
-      console.log('[ForumApprovals] Reject response:', { data, error });
-
-      if (error) throw error;
+      if (error) {
+        logger.error('Forum rejection error', error instanceof Error ? error : new Error(String(error)), { approvalId, reason, component: 'ForumApprovalsPage' });
+        throw error;
+      }
+      
+      logger.debug('Forum user rejected', { approvalId, component: 'ForumApprovalsPage' });
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
       toast.success('User rejected');
     },
-    onError: (error: Error) => {
-      console.error('[ForumApprovals] Reject error:', error);
-      toast.error(error.message || 'Failed to reject user');
+    onError: (error: unknown) => {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to reject forum user', errorObj, { component: 'ForumApprovalsPage' });
+      toast.error(errorObj.message || 'Failed to reject user');
     },
   });
 

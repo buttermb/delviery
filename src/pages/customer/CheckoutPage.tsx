@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,18 +119,25 @@ export default function CheckoutPage() {
     enabled: !!user,
   });
 
-  // Combine cart items
-  const guestCartItems = user ? [] : guestCart
-    .map(item => {
-      const product = guestProducts.find(p => p.id === item.product_id);
-      if (!product) return null;
-      return {
-        ...item,
-        id: `${item.product_id}-${item.selected_weight}`,
-        products: product
-      };
-    })
-    .filter((item): item is RenderCartItem => item !== null);
+  // Combine cart items (optimized: Map for O(1) lookups)
+  const guestCartItems = useMemo(() => {
+    if (user) return [];
+    
+    // Create Map for O(1) product lookups instead of O(n) find() in loop
+    const productMap = new Map(guestProducts.map(p => [p.id, p]));
+    
+    return guestCart.reduce<RenderCartItem[]>((acc, item) => {
+      const product = productMap.get(item.product_id);
+      if (product) {
+        acc.push({
+          ...item,
+          id: `${item.product_id}-${item.selected_weight}`,
+          products: product
+        });
+      }
+      return acc;
+    }, []);
+  }, [user, guestCart, guestProducts]);
 
   const cartItems = user ? dbCartItems : guestCartItems;
   const isLoading = (user && dbLoading) || (!user && false);

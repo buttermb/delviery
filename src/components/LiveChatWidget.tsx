@@ -7,6 +7,9 @@ import { Card } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useKeyboardDetection } from '@/hooks/useKeyboardDetection';
+import { cn } from '@/lib/utils';
 
 interface Message {
   id: string;
@@ -26,8 +29,12 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [mode, setMode] = useState<'ai' | 'human'>('ai');
   const [loading, setLoading] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const { isKeyboardOpen } = useKeyboardDetection();
 
   // Initialize session
   useEffect(() => {
@@ -174,12 +181,34 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
     });
   };
 
+  // Handle mobile viewport adjustment when keyboard opens
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+
+    if (isInputFocused && inputRef.current) {
+      // Scroll input into view when focused on mobile
+      const scrollTimeout = setTimeout(() => {
+        inputRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'nearest',
+          inline: 'nearest'
+        });
+      }, 300);
+
+      return () => clearTimeout(scrollTimeout);
+    }
+  }, [isInputFocused, isMobile, isOpen, isKeyboardOpen]);
+
   if (!isOpen) {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50"
+        className={cn(
+          "fixed rounded-full w-14 h-14 shadow-lg z-[60] touch-target",
+          isMobile ? "bottom-20 right-4 safe-area-bottom" : "bottom-6 right-6"
+        )}
         size="icon"
+        aria-label="Open chat"
       >
         <MessageCircle className="w-6 h-6" />
       </Button>
@@ -187,7 +216,16 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
+    <Card 
+      className={cn(
+        "fixed shadow-2xl flex flex-col",
+        isMobile 
+          ? "bottom-0 left-0 right-0 top-auto h-[calc(100vh-4rem)] max-h-[600px] rounded-t-2xl rounded-b-none safe-area-bottom"
+          : "bottom-6 right-6 w-96 h-[600px] rounded-lg"
+      )}
+      style={{ zIndex: 60 }}
+      data-chat-widget="main"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
         <div className="flex items-center gap-2">
@@ -250,28 +288,50 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
         </div>
       </ScrollArea>
 
-      {/* Input */}
-      <div className="p-4 border-t space-y-2">
+      {/* Input - Mobile optimized with proper z-index */}
+      <div 
+        className={cn(
+          "border-t space-y-2 bg-background chat-input-container",
+          isMobile ? "p-3 pb-safe sticky bottom-0" : "p-4"
+        )}
+        data-chat-widget="input-container"
+      >
         {mode === 'ai' && (
           <Button
             variant="outline"
             size="sm"
             onClick={switchToHuman}
-            className="w-full"
+            className="w-full min-h-[44px] touch-target"
           >
             <User className="w-4 h-4 mr-2" />
             Speak to Real Person
           </Button>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-end">
           <Input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
             placeholder={mode === 'ai' ? 'Ask me anything...' : 'Type your message...'}
             disabled={loading}
+            className={cn(
+              "min-h-[44px] text-base flex-1",
+              isMobile && "text-base"
+            )}
+            style={isMobile && isInputFocused ? { 
+              position: 'relative',
+              zIndex: 9999 
+            } : undefined}
           />
-          <Button onClick={handleSend} disabled={loading || !input.trim()}>
+          <Button 
+            onClick={handleSend} 
+            disabled={loading || !input.trim()}
+            className="min-h-[44px] min-w-[44px] touch-target shrink-0"
+            aria-label="Send message"
+          >
             <Send className="w-4 h-4" />
           </Button>
         </div>

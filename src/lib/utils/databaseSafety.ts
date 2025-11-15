@@ -4,6 +4,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 /**
  * Check if a column exists in a table
@@ -27,13 +28,14 @@ export async function columnExists(
     
     // Any other error might mean table doesn't exist, but we'll assume column doesn't exist
     if (error) {
-      console.warn(`Error checking column ${column} in ${table}:`, error.message);
+      logger.warn(`Error checking column ${column} in ${table}`, error instanceof Error ? error : new Error(String(error)), { table, column, component: 'databaseSafety' });
       return false;
     }
     
     return true;
   } catch (error) {
-    console.warn(`Exception checking column ${column} in ${table}:`, error);
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.warn(`Exception checking column ${column} in ${table}`, errorObj, { table, column, component: 'databaseSafety' });
     return false;
   }
 }
@@ -91,7 +93,8 @@ export async function safeSelect<T>(
     
     return data as T;
   } catch (error) {
-    console.warn(`Error in safeSelect for ${table}:`, error);
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.warn(`Error in safeSelect for ${table}`, errorObj, { table, component: 'databaseSafety' });
     return null;
   }
 }
@@ -136,8 +139,9 @@ export async function safeUpdate(
     
     return { success: true };
   } catch (error) {
-    console.warn(`Error in safeUpdate for ${table}:`, error);
-    return { success: false, error };
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.warn(`Error in safeUpdate for ${table}`, errorObj, { table, component: 'databaseSafety' });
+    return { success: false, error: errorObj };
   }
 }
 

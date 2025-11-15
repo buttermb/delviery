@@ -101,8 +101,9 @@ export async function executeWorkflow(
 
       // Log audit event
       auditActions.workflowExecuted(workflowId, tenantId);
-    } catch (actionError: any) {
+    } catch (actionError: unknown) {
       // Mark execution as failed
+      const errorMessage = actionError instanceof Error ? actionError.message : String(actionError);
       // @ts-ignore - workflow_executions table not in types yet
       await supabase
         // @ts-ignore
@@ -110,7 +111,7 @@ export async function executeWorkflow(
         .update({
           status: 'failed',
           completed_at: new Date().toISOString(),
-          error_message: actionError.message,
+          error_message: errorMessage,
           execution_log: executionLog,
         })
         .eq('id', execution.id);

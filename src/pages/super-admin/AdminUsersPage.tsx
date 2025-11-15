@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserPlus, Shield, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface AdminUser {
   id: string;
@@ -46,7 +47,7 @@ export default function AdminUsersPage() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching admin users:', error);
+        logger.error('Error fetching admin users', error instanceof Error ? error : new Error(String(error)), { component: 'AdminUsersPage' });
         throw error;
       }
       return (data || []) as AdminUser[];
@@ -67,8 +68,10 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast.success('Admin status updated');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update admin status');
+    onError: (error: unknown) => {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to update admin status', errorObj, { component: 'AdminUsersPage' });
+      toast.error(errorObj.message || 'Failed to update admin status');
     },
   });
 
@@ -87,8 +90,10 @@ export default function AdminUsersPage() {
       setNewAdminName('');
       toast.success('Admin user added');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to add admin');
+    onError: (error: unknown) => {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Failed to add admin', errorObj, { component: 'AdminUsersPage' });
+      toast.error(errorObj.message || 'Failed to add admin');
     },
   });
 

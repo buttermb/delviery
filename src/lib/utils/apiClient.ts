@@ -62,9 +62,10 @@ export async function apiFetch(
     }
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Network errors
-    if (error.message?.includes("Failed to fetch") || error.message?.includes("Network")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("Failed to fetch") || errorMessage.includes("Network")) {
       emitAuthError({
         message: "Network error. Please check your connection.",
         code: "NETWORK_ERROR",

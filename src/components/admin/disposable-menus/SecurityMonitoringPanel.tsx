@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useMenuSecurityEvents } from '@/hooks/useDisposableMenus';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 import { 
   Shield, 
   AlertTriangle, 
@@ -53,11 +54,11 @@ export const SecurityMonitoringPanel = () => {
           table: 'menu_security_events'
         },
         (payload) => {
-          console.log('New security event:', payload);
+          logger.debug('New security event received', { component: 'SecurityMonitoringPanel' });
           
           // Validate payload structure
           if (!payload?.new || typeof payload.new !== 'object') {
-            console.error('Invalid payload structure:', payload);
+            logger.error('Invalid security event payload structure', new Error('Invalid payload'), { component: 'SecurityMonitoringPanel' });
             return;
           }
 
@@ -77,16 +78,16 @@ export const SecurityMonitoringPanel = () => {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Security monitoring subscribed successfully');
+          logger.debug('Security monitoring subscribed successfully', { component: 'SecurityMonitoringPanel' });
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('Security monitoring channel error');
+          logger.error('Security monitoring channel error', new Error('Channel error'), { component: 'SecurityMonitoringPanel' });
           toast({
             variant: 'destructive',
             title: 'Monitoring Error',
             description: 'Failed to connect to security monitoring. Retrying...',
           });
         } else if (status === 'TIMED_OUT') {
-          console.error('Security monitoring subscription timed out');
+          logger.error('Security monitoring subscription timed out', new Error('Subscription timeout'), { component: 'SecurityMonitoringPanel' });
           toast({
             variant: 'destructive',
             title: 'Connection Timeout',

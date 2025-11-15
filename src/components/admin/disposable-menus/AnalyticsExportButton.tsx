@@ -8,6 +8,7 @@ import {
 import { Download, FileText, FileSpreadsheet, FileSpreadsheet as ExcelIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { logger } from '@/lib/logger';
 
 interface AnalyticsExportButtonProps {
   data: Record<string, unknown> | unknown[];
@@ -64,8 +65,9 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       // Generate Excel file
       XLSX.writeFile(workbook, `${filename}.xlsx`);
       toast.success('Analytics exported to Excel');
-    } catch (error) {
-      console.error('Excel export error:', error);
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error('Excel export error', errorObj, { component: 'AnalyticsExportButton' });
       toast.error('Failed to export to Excel');
     }
   };

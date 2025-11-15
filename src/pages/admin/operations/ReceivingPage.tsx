@@ -91,12 +91,14 @@ export default function ReceivingPage() {
         if (error) throw error;
         setTableMissing(false);
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') {
+      } catch (error: unknown) {
+        const errorObj = error instanceof Error ? error : new Error(String(error));
+        // Check for PostgreSQL table missing error (42P01)
+        if ('code' in errorObj && errorObj.code === '42P01') {
           setTableMissing(true);
           return [];
         }
-        throw error;
+        throw errorObj;
       }
     },
     enabled: !!tenantId,

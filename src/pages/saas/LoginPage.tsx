@@ -218,15 +218,16 @@ export default function LoginPage() {
       
       // Redirect to tenant admin dashboard using React Router (SPA navigation)
       navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
-    } catch (error: any) {
-      const category = error.message?.includes('Network') || error.message?.includes('fetch')
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      const category = errorObj.message?.includes('Network') || errorObj.message?.includes('fetch')
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
       
-      logger.error('Login error', error);
+      logger.error('Login error', errorObj, { component: 'LoginPage' });
       toast({
         title: 'Login Failed',
-        description: getErrorMessage(category, error) || error.message || 'Invalid email or password',
+        description: getErrorMessage(category, errorObj) || errorObj.message || 'Invalid email or password',
         variant: 'destructive',
       });
     } finally {

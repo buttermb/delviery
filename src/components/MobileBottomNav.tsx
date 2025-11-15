@@ -75,7 +75,7 @@ const MobileBottomNav = ({ onCartClick, onAuthClick }: MobileBottomNavProps) => 
   return (
     <nav 
       className={cn(
-        "fixed left-0 right-0 z-50 md:hidden",
+        "fixed left-0 right-0 md:hidden",
         "bg-card/98 backdrop-blur-xl supports-[backdrop-filter]:bg-card/95",
         "border-t border-border/50",
         "rounded-t-3xl safe-area-bottom",
@@ -84,6 +84,7 @@ const MobileBottomNav = ({ onCartClick, onAuthClick }: MobileBottomNavProps) => 
         isVisible ? "translate-y-0 bottom-0" : "translate-y-full bottom-0"
       )}
       style={{
+        zIndex: 50,
         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
       }}
     >

@@ -97,7 +97,9 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
             .from('menu_access_whitelist')
             .insert(whitelistToClone);
 
-          if (whitelistError) console.error('Failed to clone whitelist:', whitelistError);
+          if (whitelistError) {
+            logger.error('Failed to clone menu whitelist', whitelistError instanceof Error ? whitelistError : new Error(String(whitelistError)), { component: 'CloneMenuDialog' });
+          }
         }
       }
 

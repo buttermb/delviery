@@ -82,9 +82,10 @@ export function AuthPage() {
         toast.success('Signed in successfully!');
         // Navigation will be handled by onAuthStateChange
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign in');
-      toast.error(error.message || 'Failed to sign in');
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      setError(errorObj.message || 'Failed to sign in');
+      toast.error(errorObj.message || 'Failed to sign in');
     } finally {
       setIsSubmitting(false);
     }
@@ -134,9 +135,10 @@ export function AuthPage() {
           setError('Please check your email to verify your account before signing in.');
         }
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign up');
-      toast.error(error.message || 'Failed to sign up');
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      setError(errorObj.message || 'Failed to sign up');
+      toast.error(errorObj.message || 'Failed to sign up');
     } finally {
       setIsSubmitting(false);
     }
