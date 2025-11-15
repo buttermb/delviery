@@ -43,9 +43,10 @@ export function SaasAdminLayout() {
 
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-10">
+          <header className="h-14 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/50 backdrop-blur-xl flex items-center justify-between px-4 sticky top-0 z-10 safe-area-top">
             <div className="flex items-center gap-2">
-              <SidebarTrigger className="text-[hsl(var(--super-admin-text))] hover:bg-white/10" />
+              <SidebarTrigger className="text-[hsl(var(--super-admin-text))] hover:bg-white/10 hidden lg:flex" />
+              <span className="text-sm font-semibold text-[hsl(var(--super-admin-text))] lg:hidden">Platform Admin</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -65,7 +66,7 @@ export function SaasAdminLayout() {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))] pb-20 lg:pb-0">
+          <main className="flex-1 overflow-auto bg-[hsl(var(--super-admin-bg))] pb-20 lg:pb-4">
             <Outlet />
           </main>
         </div>

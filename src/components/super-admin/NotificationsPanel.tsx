@@ -82,7 +82,7 @@ export function NotificationsPanel({
   };
 
   return (
-    <Card className={cn('w-96 h-[80vh] flex flex-col', className)} onClick={onClick}>
+    <Card className={cn('w-full max-w-96 h-[80vh] flex flex-col', className)} onClick={onClick}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="p-4 border-b">
           <TabsList className="grid w-full grid-cols-3">
