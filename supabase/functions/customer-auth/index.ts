@@ -345,7 +345,7 @@ serve(async (req) => {
         .select("*")
         .eq("email", email.toLowerCase())
         .eq("tenant_id", tenant.id)
-        .eq("status", "active")
+        .eq("is_active", true)
         .maybeSingle();
 
       if (customerError || !customerUser) {
