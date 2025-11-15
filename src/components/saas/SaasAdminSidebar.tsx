@@ -23,6 +23,7 @@ import {
   Flag,
   Wrench,
   Lock,
+  MessageSquare,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -86,6 +87,11 @@ const menuItems = [
     title: 'Communication',
     url: '/super-admin/communication',
     icon: Mail,
+  },
+  {
+    title: 'Forum Approvals',
+    url: '/super-admin/forum-approvals',
+    icon: MessageSquare,
   },
   {
     title: 'Feature Flags',
