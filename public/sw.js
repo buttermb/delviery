@@ -122,9 +122,13 @@ self.addEventListener('fetch', (event) => {
       caches.open(RUNTIME_CACHE).then((cache) => {
         return cache.match(event.request).then((cached) => {
           const fetchPromise = fetch(event.request).then((response) => {
-            // Update cache with fresh response
-            if (response.status === 200) {
-              cache.put(event.request, response.clone());
+            // Clone response BEFORE any body consumption
+            if (response.status === 200 && response.body) {
+              const clonedResponse = response.clone();
+              // Put cloned response in cache, return original
+              cache.put(event.request, clonedResponse).catch(() => {
+                // Ignore cache errors
+              });
             }
             return response;
           }).catch(() => {
@@ -146,8 +150,13 @@ self.addEventListener('fetch', (event) => {
       caches.open(IMAGE_CACHE).then((cache) => {
         return cache.match(event.request).then((cached) => {
           const fetchPromise = fetch(event.request).then((response) => {
-            if (response.status === 200) {
-              cache.put(event.request, response.clone());
+            // Clone response BEFORE any body consumption
+            if (response.status === 200 && response.body) {
+              const clonedResponse = response.clone();
+              // Put cloned response in cache, return original
+              cache.put(event.request, clonedResponse).catch(() => {
+                // Ignore cache errors
+              });
             }
             return response;
           });
@@ -166,12 +175,16 @@ self.addEventListener('fetch', (event) => {
       fetch(event.request)
         .then((response) => {
           // Only cache after successful network response
-          if (response.status === 200) {
+          if (response.status === 200 && response.body) {
             // Check if URL includes current cache version to prevent stale chunks
             const responseUrl = response.url || event.request.url;
             if (responseUrl.includes(CACHE_VERSION) || !responseUrl.includes('v')) {
+              // Clone response BEFORE caching
+              const clonedResponse = response.clone();
               caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, response.clone());
+                cache.put(event.request, clonedResponse).catch(() => {
+                  // Ignore cache errors
+                });
               });
             }
           }
@@ -189,10 +202,13 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.status === 200) {
+        // Clone response BEFORE caching to avoid body consumption issues
+        if (response.status === 200 && response.body) {
           const responseClone = response.clone();
           caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(event.request, responseClone);
+            cache.put(event.request, responseClone).catch(() => {
+              // Ignore cache errors
+            });
           });
         }
         return response;

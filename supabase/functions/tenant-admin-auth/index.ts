@@ -3,8 +3,24 @@ import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { loginSchema, refreshSchema, setupPasswordSchema } from './validation.ts';
 
 serve(async (req) => {
+  // Get origin from request for CORS (required when credentials are included)
+  const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || '*';
+  const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
+  
+  // When credentials are included, must return specific origin, not wildcard
+  const corsHeadersWithOrigin: Record<string, string> = {
+    'Access-Control-Allow-Origin': hasCredentials ? origin : '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  };
+  
+  // Only add credentials header when credentials are present
+  if (hasCredentials) {
+    corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
+  }
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeadersWithOrigin });
   }
 
   try {
@@ -36,7 +52,7 @@ serve(async (req) => {
             error: 'Validation failed', 
             details: validationResult.error.errors 
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -77,7 +93,7 @@ serve(async (req) => {
             error: 'Tenant not found',
             detail: 'No tenant exists with this slug. Please check the URL and try again.'
           }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -101,7 +117,7 @@ serve(async (req) => {
             error: 'Invalid credentials',
             detail: 'Email or password is incorrect. Please try again.'
           }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -109,7 +125,7 @@ serve(async (req) => {
         console.error('No user returned after authentication');
         return new Response(
           JSON.stringify({ error: 'Authentication failed' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -155,7 +171,7 @@ serve(async (req) => {
               error: 'You do not have access to this tenant',
               detail: `The account ${email} is not authorized to access ${tenant.business_name}. Please contact your administrator or use the correct login credentials.`
             }),
-            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 403, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -212,7 +228,7 @@ serve(async (req) => {
         }),
         { 
           headers: { 
-            ...corsHeaders, 
+            ...corsHeadersWithOrigin, 
             'Content-Type': 'application/json',
             'Set-Cookie': `tenant_access_token=${authData.session?.access_token}; ${cookieOptions}`,
           } 
@@ -234,7 +250,7 @@ serve(async (req) => {
             error: 'Validation failed', 
             details: validationResult.error.errors 
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -248,7 +264,7 @@ serve(async (req) => {
         console.error('Token refresh error:', error);
         return new Response(
           JSON.stringify({ error: 'Failed to refresh token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -295,7 +311,7 @@ serve(async (req) => {
         {
           status: 200,
           headers: {
-            ...corsHeaders,
+            ...corsHeadersWithOrigin,
             "Content-Type": "application/json",
             "Set-Cookie": clearAccessCookie,
           },
@@ -320,7 +336,7 @@ serve(async (req) => {
             error: 'Validation failed', 
             details: validationResult.error.errors 
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -395,7 +411,7 @@ serve(async (req) => {
       if (!tenant_id) {
         return new Response(
           JSON.stringify({ error: 'tenant_id required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -409,7 +425,7 @@ serve(async (req) => {
       if (tenantError || !tenant) {
         return new Response(
           JSON.stringify({ error: 'Tenant not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -426,7 +442,7 @@ serve(async (req) => {
       if (adminError || !tenantAdmin) {
         return new Response(
           JSON.stringify({ error: 'No active admin found for tenant' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -511,7 +527,7 @@ serve(async (req) => {
       if (!token) {
         return new Response(
           JSON.stringify({ error: 'No token provided' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
       
@@ -522,7 +538,7 @@ serve(async (req) => {
         console.error('Token verification failed:', authError);
         return new Response(
           JSON.stringify({ error: 'Invalid or expired token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -567,7 +583,7 @@ serve(async (req) => {
 
         return new Response(
           JSON.stringify({ user, admin, tenant }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -589,7 +605,7 @@ serve(async (req) => {
         console.log('[VERIFY] No tenant access found for:', userEmail);
         return new Response(
           JSON.stringify({ error: 'No tenant access found' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -604,7 +620,7 @@ serve(async (req) => {
         console.error('[VERIFY] Tenant lookup error:', userTenantError);
         return new Response(
           JSON.stringify({ error: 'Tenant not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -646,7 +662,7 @@ serve(async (req) => {
     console.error('Error in tenant-admin-auth:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
     );
   }
 });
