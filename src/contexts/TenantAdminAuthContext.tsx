@@ -291,9 +291,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         console.log('[AUTH INIT] ✅ Setting authenticated=true from localStorage');
         setIsAuthenticated(true);
         
+        // CRITICAL FIX: Set loading=false immediately to unblock UI
+        // The optional verification below should NOT block the dashboard from rendering
+        console.log('[AUTH INIT] ✅ Setting loading=false - UI can render now');
+        setLoading(false);
+        
         // Verify authentication via API (cookies sent automatically)
-        // This is now optional - if it fails, we already have localStorage auth
-        console.log('[AUTH INIT] 🌐 Calling verify endpoint (optional verification)...');
+        // This is now optional and runs in background - if it fails, we already have localStorage auth
+        console.log('[AUTH INIT] 🌐 Calling verify endpoint (optional background verification)...');
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const verifyStartTime = Date.now();
         
