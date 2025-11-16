@@ -1,0 +1,100 @@
+project_id = "aejugtmhwwknrowfyzie"
+
+[functions.track-access]
+verify_jwt = false
+
+[functions.admin-api-operations]
+verify_jwt = false
+
+[functions.invoice-management]
+verify_jwt = false
+
+[functions.enforce-tenant-limits]
+verify_jwt = false
+
+[functions.menu-access-validate]
+verify_jwt = false
+
+[functions.menu-generate]
+verify_jwt = true
+
+[functions.menu-burn]
+verify_jwt = true
+
+[functions.menu-whitelist-manage]
+verify_jwt = true
+
+[functions.generate-product-images]
+verify_jwt = true
+
+[functions.super-admin-auth]
+verify_jwt = false
+
+[functions.admin-auth]
+verify_jwt = false
+
+[functions.tenant-admin-auth]
+verify_jwt = false
+
+[functions.customer-auth]
+verify_jwt = false
+
+[functions.verify-email-code]
+verify_jwt = false
+
+[functions.tenant-invite]
+verify_jwt = true
+
+[functions.update-subscription]
+verify_jwt = true
+
+[functions.leafly-suggestions]
+verify_jwt = false
+
+[functions.generate-product-barcode]
+verify_jwt = true
+
+[functions.sync-product-to-menu]
+verify_jwt = true
+
+[functions.impersonate-tenant]
+verify_jwt = true
+
+[functions.gdpr-export]
+verify_jwt = true
+
+[functions.gdpr-erase]
+verify_jwt = true
+
+[functions.gdpr-portability]
+verify_jwt = true
+
+[functions.process-payment]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = true
+
+[functions.redeem-loyalty-reward]
+verify_jwt = true
+
+[functions.send-marketing-campaign]
+verify_jwt = true
+
+[functions.execute-marketing-workflow]
+verify_jwt = true
+
+[functions.generate-custom-report]
+verify_jwt = true
+
+[functions.create-purchase-order]
+verify_jwt = true
+
+[functions.process-return]
+verify_jwt = true
+
+[functions.notify-recall]
+verify_jwt = true
+
+[functions.send-scheduled-report]
+verify_jwt = true

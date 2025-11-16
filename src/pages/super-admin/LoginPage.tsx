@@ -1,0 +1,187 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Shield, Loader2, Lock } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
+import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { logger } from "@/lib/logger";
+
+export default function SuperAdminLoginPage() {
+  const navigate = useNavigate();
+  const { login } = useSuperAdminAuth();
+  useAuthRedirect(); // Redirect if already logged in
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      await login(email, password);
+      
+      toast({
+        title: "Welcome, Super Admin!",
+        description: "Logged in successfully",
+      });
+
+      navigate("/super-admin/dashboard", { replace: true });
+    } catch (error: unknown) {
+      logger.error("Super admin login error", error, { component: 'SuperAdminLoginPage' });
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid credentials",
+      });
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[hsl(var(--super-admin-bg))] p-4">
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)`,
+          backgroundSize: "50px 50px",
+          animation: "grid-move 20s linear infinite",
+        }} />
+      </div>
+
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--super-admin-primary))]/20 via-[hsl(var(--super-admin-secondary))]/20 to-[hsl(var(--super-admin-bg))]" />
+
+      {/* Animated Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-[hsl(var(--super-admin-primary))]/10 blur-sm"
+            style={{
+              width: `${Math.random() * 100 + 20}px`,
+              height: `${Math.random() * 100 + 20}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${10 + Math.random() * 20}s infinite ease-in-out`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Frosted Glass Card */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="backdrop-blur-xl bg-[hsl(var(--super-admin-surface))]/80 border border-white/10 rounded-2xl shadow-2xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-gradient-to-br from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] p-4 shadow-lg">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-[hsl(var(--super-admin-text))] mb-2">
+              Platform Admin
+            </h1>
+            <p className="text-[hsl(var(--super-admin-text))]/70 text-sm">
+              Sign in to manage all tenant accounts
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-[hsl(var(--super-admin-text))]/90">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@platform.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+                className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-[hsl(var(--super-admin-text))]/90">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] placeholder:text-[hsl(var(--super-admin-text))]/50 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:from-[hsl(var(--super-admin-primary))]/90 hover:to-[hsl(var(--super-admin-secondary))]/90 text-white h-12 font-semibold shadow-lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
+
+          {/* Forgot Password */}
+          <div className="mt-6 text-center">
+            <ForgotPasswordDialog userType="super_admin" />
+          </div>
+
+          {/* 2FA Message */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-center gap-2 text-xs text-[hsl(var(--super-admin-text))]/60">
+              <Lock className="h-3 w-3" />
+              <span>Protected by 2FA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          25% {
+            transform: translate(20px, -20px) rotate(90deg);
+          }
+          50% {
+            transform: translate(-20px, 20px) rotate(180deg);
+          }
+          75% {
+            transform: translate(20px, 20px) rotate(270deg);
+          }
+        }
+        @keyframes grid-move {
+          0% {
+            background-position: 0 0;
+          }
+          100% {
+            background-position: 50px 50px;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
