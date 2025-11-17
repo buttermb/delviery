@@ -1,5 +1,6 @@
 -- Migration: Secure invoice RPCs and robust invoice numbering
 -- Date: 2025-11-16 22:45
+-- Updated: 2025-11-17
 
 -- 1) Ensure a robust, concurrent-safe invoice number generator
 CREATE TABLE IF NOT EXISTS public.invoice_counters (
