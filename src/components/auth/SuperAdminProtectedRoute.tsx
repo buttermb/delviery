@@ -17,38 +17,14 @@ interface SuperAdminProtectedRouteProps {
 export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteProps) {
   const { superAdmin, token, loading, refreshToken } = useSuperAdminAuth();
   const navigate = useNavigate();
-  const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const lastRedirectTime = useRef<number>(0);
-  const verifyAttempted = useRef(false);
   const redirectCount = useRef<number>(0);
   const redirectWindowStart = useRef<number>(0);
 
-  // Safety timeout: if verification takes too long, stop showing loading
+  // Remove duplicate verification - auth context handles all verification
   useEffect(() => {
-    if (!verifying) return;
-    
-    const timeout = setTimeout(() => {
-      if (verifying) {
-        logger.warn("Auth verification timeout - stopping verification", undefined, 'SuperAdminProtectedRoute');
-        setVerifying(false);
-      }
-    }, 10000); // 10 second timeout
-
-    return () => clearTimeout(timeout);
-  }, [verifying]);
-
-  useEffect(() => {
-    const verifyAuth = async () => {
-      // Prevent multiple verification attempts
-      if (verifyAttempted.current) return;
-      verifyAttempted.current = true;
-
-      if (loading) {
-        verifyAttempted.current = false;
-        return;
-      }
-
-      // Enhanced redirect throttling to prevent loops
+    // Only handle redirection, not verification
+    if (!loading && (!token || !superAdmin)) {
       const now = Date.now();
       const timeSinceLastRedirect = now - lastRedirectTime.current;
       
@@ -61,74 +37,21 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       // Check if we've exceeded max redirects in window
       if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
         logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", undefined, 'SuperAdminProtectedRoute');
-        setVerifying(false);
-        verifyAttempted.current = false;
         return;
       }
       
       // Throttle individual redirects
       if (timeSinceLastRedirect < REDIRECT_THROTTLE_MS) {
-        setVerifying(false);
-        verifyAttempted.current = false;
         return;
       }
 
-      // If not authenticated, don't verify - let the redirect happen
-      if (!token || !superAdmin) {
-        setVerifying(false);
-        lastRedirectTime.current = Date.now();
-        redirectCount.current += 1;
-        navigate("/super-admin/login", { replace: true });
-        return;
-      }
-
-      // Skip if already checking
-      if (verifying) {
-        verifyAttempted.current = false;
-        return;
-      }
-
-      // Lock verification to prevent concurrent requests
-      setVerifying(true);
-
-      // Verify token is still valid
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const response = await apiFetch(`${supabaseUrl}/functions/v1/super-admin-auth?action=verify`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-          skipAuth: true,
-        });
-
-        if (!response.ok) {
-          throw new Error("Token verification failed");
-        }
-
-        const data = await response.json();
-        
-        // Ensure we have the expected data structure
-        if (!data || !data.superAdmin) {
-          throw new Error("Invalid response from server");
-        }
-
-        setVerifying(false);
-        verifyAttempted.current = false;
-      } catch (error) {
-        logger.error("Auth verification error", error, 'SuperAdminProtectedRoute');
-        setVerifying(false);
-        lastRedirectTime.current = Date.now();
-        redirectCount.current += 1;
-        navigate("/super-admin/login", { replace: true });
-        verifyAttempted.current = false;
-      }
-    };
-
-    verifyAuth();
+      lastRedirectTime.current = Date.now();
+      redirectCount.current += 1;
+      navigate("/super-admin/login", { replace: true });
+    }
   }, [token, superAdmin, loading, navigate]);
 
-  if (loading || verifying) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
