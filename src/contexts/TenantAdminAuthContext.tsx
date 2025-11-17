@@ -79,7 +79,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
   
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -172,7 +172,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // PRIORITY 1: Try cookie-based verification first (most secure)
         console.log('[AUTH INIT] 🔐 Attempting cookie-based authentication...');
         try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
           const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
             method: 'GET',
             credentials: 'include', // Include cookies
@@ -320,7 +320,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
         console.log('[AUTH INIT] 🌐 Calling verify endpoint (optional background verification)...');
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
         const verifyStartTime = Date.now();
         
         try {
@@ -463,7 +463,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         throw new Error(envCheck.error || 'Environment configuration error');
       }
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       
       // Check if token will expire soon (within 60 seconds)
       const tokenExpiration = getTokenExpiration(tokenToVerify);
@@ -723,7 +723,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
       
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -861,7 +861,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     
     try {
       // Call logout endpoint to clear cookies
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=logout`, {
         method: "POST",
         credentials: 'include', // ⭐ Send cookies to be cleared
@@ -930,7 +930,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     
     try {
       logger.debug("Refreshing access token...");
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       
       const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
@@ -1022,7 +1022,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (storedAdmin) {
               try {
                 const adminData = JSON.parse(storedAdmin);
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
                 const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
                   method: "GET",
                   headers: {

@@ -53,7 +53,7 @@ const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
   
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
@@ -118,7 +118,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
         headers: {
@@ -158,7 +158,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
         headers: {
@@ -195,7 +195,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       if (token) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
         await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
           method: "POST",
           headers: {
