@@ -6,6 +6,7 @@ import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
+import { useFeatureFlags } from "@/config/featureFlags";
 
 interface TenantAdmin {
   id: string;
@@ -99,6 +100,7 @@ if (typeof window !== 'undefined') {
 }
 
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
+  const { shouldAutoApprove, flags } = useFeatureFlags();
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [token, setToken] = useState<string | null>(null); // For backwards compatibility
@@ -898,6 +900,25 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       userId: signupResult.user.id,
       tenantSlug: signupResult.tenant.slug,
     });
+
+    // Auto-approve tenant and tenant user records if feature flag is active (non-blocking)
+    try {
+      if (shouldAutoApprove('SIGNUPS')) {
+        const tId = signupResult.tenant.id;
+        const uId = signupResult.user.id;
+        // Mark tenant as approved/active if a status field exists
+        await supabase.from('tenants').update({ status: 'approved', onboarded: true }).eq('id', tId);
+        // Mark tenant user record as approved
+        const updateUser: Record<string, unknown> = { status: 'approved' };
+        if (flags.AUTO_BYPASS_EMAIL_VERIFICATION) {
+          updateUser.email_verified = true;
+        }
+        await supabase.from('tenant_users').update(updateUser).eq('tenant_id', tId).eq('user_id', uId);
+        logger.info('[AUTH] Auto-approve applied to signup records');
+      }
+    } catch (e) {
+      logger.warn('[AUTH] Auto-approve (signup) update failed (non-blocking)', e);
+    }
   };
 
   const refreshAuthToken = async () => {

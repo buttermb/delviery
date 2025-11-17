@@ -38,6 +38,7 @@ import { logger } from '@/lib/logger';
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useFeatureFlags } from '@/config/featureFlags';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const PRODUCT_TYPES = [
@@ -109,6 +110,7 @@ interface ListingFormProps {
 }
 
 export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
+  const { shouldAutoApprove } = useFeatureFlags();
   const { tenant, admin } = useTenantAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -357,7 +359,8 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         tags: data.tags || [],
         lab_results: encryptedLabResults ? { encrypted: encryptedLabResults } : null,
         lab_results_encrypted: !!encryptedLabResults,
-        status: existingListing ? existingListing.status : 'draft',
+        // Auto-approve new listings when feature flag is active; preserve existing status on edits
+        status: existingListing ? existingListing.status : (shouldAutoApprove('LISTINGS') ? 'approved' : 'draft'),
         slug: existingListing ? existingListing.slug : slug,
       };
 
@@ -380,8 +383,10 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
     },
     onSuccess: () => {
       toast({
-        title: 'Listing Saved',
-        description: existingListing ? 'Listing updated successfully' : 'Listing created successfully',
+        title: existingListing ? 'Listing Saved' : (shouldAutoApprove('LISTINGS') ? 'Listing Auto‑Approved' : 'Listing Saved'),
+        description: existingListing
+          ? 'Listing updated successfully'
+          : (shouldAutoApprove('LISTINGS') ? 'Your listing is live and visible immediately.' : 'Listing created successfully'),
       });
       onSuccess?.();
       if (!existingListing) {

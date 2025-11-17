@@ -9,7 +9,6 @@
  * - Tailwind CSS utility framework
  */
 
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -38,6 +37,8 @@ import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "./hooks/use-toast";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 
 import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
@@ -46,6 +47,26 @@ import { DeviceTracker } from "./components/DeviceTracker";
 import { BetaBanner } from "./components/shared/BetaBanner";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
+import { FeatureFlagsProvider } from "./config/featureFlags";
+import AutoApproveBanner from "./components/shared/AutoApproveBanner";
+
+// Configure route-level progress indicator (NProgress)
+NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
+const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (prefersReducedMotion) {
+  NProgress.configure({ trickle: false });
+}
+
+function SuspenseProgressFallback() {
+  // Start progress when lazy content is loading; stop when it resolves
+  useEffect(() => {
+    try { NProgress.start(); } catch {}
+    return () => {
+      try { NProgress.done(); } catch {}
+    };
+  }, []);
+  return <LoadingFallback />;
+}
 
 // Eager load critical pages
 import NotFoundPage from "./pages/NotFoundPage";
@@ -380,6 +401,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <FeatureFlagsProvider>
         <ThemeProvider>
           <AuthProvider>
             <AccountProvider>
@@ -391,14 +413,14 @@ const App = () => {
                 <TooltipProvider>
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
+                    <AutoApproveBanner />
                     <OfflineBanner />
                     <BetaBanner />
                     <InstallPWA />
                     <DeviceTracker />
                     
-                    <Toaster />
                     <Sonner />
-                    <Suspense fallback={<LoadingFallback />}>
+                    <Suspense fallback={<SuspenseProgressFallback />}>
                       <Routes>
                         {/* Marketing & Public Routes */}
                         <Route path="/" element={<SmartRootRedirect />} />
@@ -739,6 +761,7 @@ const App = () => {
             </AccountProvider>
           </AuthProvider>
         </ThemeProvider>
+        </FeatureFlagsProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

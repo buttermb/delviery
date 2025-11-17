@@ -1,4 +1,7 @@
 import * as React from "react";
+// Bridge the legacy shadcn toast hook to Sonner to unify notifications.
+// This keeps the existing `useToast()` API working while rendering via Sonner.
+import { toast as sonnerToast } from "sonner";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
@@ -136,6 +139,30 @@ type Toast = Omit<ToasterToast, "id">;
 
 function toast({ ...props }: Toast) {
   const id = genId();
+
+  // Map shadcn-style props to Sonner.
+  const title = (props as any).title as React.ReactNode | undefined;
+  const description = (props as any).description as React.ReactNode | undefined;
+  const variant = (props as any).variant as string | undefined;
+
+  try {
+    // Prefer semantic shortcuts when possible
+    if (variant === "destructive") {
+      sonnerToast.error(
+        // Ensure non-empty title for SR users
+        (typeof title === "string" ? title : undefined) || "Error",
+        description ? { description: typeof description === "string" ? description : undefined } : undefined
+      );
+    } else {
+      // Default informational toast
+      sonnerToast(
+        (typeof title === "string" ? title : undefined) || "",
+        description ? { description: typeof description === "string" ? description : undefined } : undefined
+      );
+    }
+  } catch (_e) {
+    // No-op: Avoid breaking if Sonner is not mounted in some test scenarios
+  }
 
   const update = (props: ToasterToast) =>
     dispatch({

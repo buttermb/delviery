@@ -79,7 +79,8 @@ export default defineConfig(({ mode }) => ({
     buildTimestampPlugin(),
     deferCssPlugin(),
     realtimeValidationPlugin(),
-    sitemapPlugin(),
+    // Run sitemap generation only in production to avoid noisy logs and CI/tooling issues
+    mode === "production" && sitemapPlugin(),
     viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
@@ -90,7 +91,9 @@ export default defineConfig(({ mode }) => ({
       ext: '.gz',
       threshold: 10240,
     }),
-    VitePWA({
+    // Only include PWA manifest generation in production. We use a custom sw.js and
+    // want to avoid any possible interference during development or testing.
+    mode === "production" && VitePWA({
       // Completely disable service worker generation - using custom sw.js instead
       // This prevents Workbox from interfering with chunk loading
       injectRegister: false, // Don't register service worker

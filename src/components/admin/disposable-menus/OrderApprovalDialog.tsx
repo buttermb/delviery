@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import { useFeatureFlags } from '@/config/featureFlags';
 
 interface OrderItem {
   product_name?: string;
@@ -64,6 +65,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectionForm, setShowRejectionForm] = useState(false);
   const queryClient = useQueryClient();
+  const { shouldAutoApprove } = useFeatureFlags();
 
   const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
   const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) => 
@@ -127,6 +129,18 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
       setIsProcessing(false);
     }
   };
+
+  // Auto-approve when feature flag is active; runs once on dialog open
+  useEffect(() => {
+    if (open && shouldAutoApprove('ORDERS')) {
+      handleApprove()
+        .catch((e) => {
+          // Non-blocking; warn and keep dialog open
+          console.warn('Auto-approve (menu order) failed', e);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {

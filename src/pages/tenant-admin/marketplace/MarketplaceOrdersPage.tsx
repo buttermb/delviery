@@ -25,7 +25,8 @@ import {
   Package,
   Truck,
   MoreVertical,
-  TrendingUp
+  TrendingUp,
+  RefreshCcw
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -45,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export default function MarketplaceOrdersPage() {
   const { tenant, admin } = useTenantAdminAuth();
@@ -312,15 +314,22 @@ export default function MarketplaceOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShoppingCart className="h-6 w-6" />
-          Marketplace Orders
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage wholesale orders from marketplace buyers
-        </p>
-      </div>
+      <PageHeader
+        title="Marketplace Orders"
+        description="Manage wholesale orders from marketplace buyers"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId, statusFilter, activeTab] })}
+            data-component="MarketplaceOrdersPage"
+            data-action="refresh-orders"
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -447,6 +456,7 @@ export default function MarketplaceOrdersPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/orders/${order.id}`)}
+                              disabled={updateStatusMutation.isPending}
                             >
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
@@ -454,14 +464,22 @@ export default function MarketplaceOrdersPage() {
                             {order.status === 'pending' && (
                               <>
                                 <DropdownMenuItem
-                                  onClick={() => updateStatusMutation.mutate({ orderId: order.id, newStatus: 'accepted' })}
+                                  onClick={() => {
+                                    if (updateStatusMutation.isPending) return;
+                                    updateStatusMutation.mutate({ orderId: order.id, newStatus: 'accepted' });
+                                  }}
+                                  disabled={updateStatusMutation.isPending}
                                 >
                                   <CheckCircle className="h-4 w-4 mr-2" />
                                   Accept Order
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => updateStatusMutation.mutate({ orderId: order.id, newStatus: 'rejected' })}
+                                  onClick={() => {
+                                    if (updateStatusMutation.isPending) return;
+                                    updateStatusMutation.mutate({ orderId: order.id, newStatus: 'rejected' });
+                                  }}
                                   className="text-destructive"
+                                  disabled={updateStatusMutation.isPending}
                                 >
                                   <XCircle className="h-4 w-4 mr-2" />
                                   Reject Order
@@ -470,7 +488,11 @@ export default function MarketplaceOrdersPage() {
                             )}
                             {order.status === 'accepted' && (
                               <DropdownMenuItem
-                                onClick={() => updateStatusMutation.mutate({ orderId: order.id, newStatus: 'processing' })}
+                                onClick={() => {
+                                  if (updateStatusMutation.isPending) return;
+                                  updateStatusMutation.mutate({ orderId: order.id, newStatus: 'processing' });
+                                }}
+                                disabled={updateStatusMutation.isPending}
                               >
                                 <Package className="h-4 w-4 mr-2" />
                                 Start Processing
@@ -478,7 +500,11 @@ export default function MarketplaceOrdersPage() {
                             )}
                             {order.status === 'processing' && (
                               <DropdownMenuItem
-                                onClick={() => updateStatusMutation.mutate({ orderId: order.id, newStatus: 'shipped' })}
+                                onClick={() => {
+                                  if (updateStatusMutation.isPending) return;
+                                  updateStatusMutation.mutate({ orderId: order.id, newStatus: 'shipped' });
+                                }}
+                                disabled={updateStatusMutation.isPending}
                               >
                                 <Truck className="h-4 w-4 mr-2" />
                                 Mark as Shipped
@@ -486,7 +512,11 @@ export default function MarketplaceOrdersPage() {
                             )}
                             {order.payment_status !== 'paid' && (
                               <DropdownMenuItem
-                                onClick={() => markPaidMutation.mutate(order.id)}
+                                onClick={() => {
+                                  if (markPaidMutation.isPending) return;
+                                  markPaidMutation.mutate(order.id);
+                                }}
+                                disabled={markPaidMutation.isPending}
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Mark as Paid

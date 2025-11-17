@@ -15,12 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X } from 'lucide-react';
+import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { logger } from '@/lib/logger';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -29,6 +30,7 @@ export default function CustomerInvoices() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [lineItems, setLineItems] = useState([
     { description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
@@ -54,7 +56,21 @@ export default function CustomerInvoices() {
     if (!tenant) return;
 
     try {
-      // Try using Edge Function first
+      // Preferred: use RPC to fetch invoices as a single JSON array for tenant
+      try {
+        const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_tenant_invoices', {
+          tenant_id: tenant.id,
+        });
+        if (!rpcError && Array.isArray(rpcData)) {
+          setInvoices(rpcData);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Fall through to edge function
+      }
+
+      // Secondary: use Edge Function
       const { data: edgeData, error: edgeError } = await callAdminFunction({
         functionName: 'invoice-management',
         body: { action: 'list', tenant_id: tenant.id },
@@ -138,7 +154,20 @@ export default function CustomerInvoices() {
     const { subtotal, tax, total } = calculateTotals();
 
     try {
-      const invoiceNumber = `INV-${Date.now()}`;
+      setIsSubmitting(true);
+
+      // Prefer generating a unique invoice number via RPC (guaranteed unique per tenant/year)
+      let invoiceNumber = `INV-${Date.now()}`;
+      try {
+        const { data: genNum, error: genErr } = await (supabase as any).rpc('generate_invoice_number', {
+          tenant_id: tenant.id,
+        });
+        if (!genErr && typeof genNum === 'string' && genNum.trim()) {
+          invoiceNumber = genNum;
+        }
+      } catch (_e) {
+        // Fallback to timestamp-based number
+      }
       
       const invoiceData: any = {
         tenant_id: tenant.id,
@@ -204,6 +233,8 @@ export default function CustomerInvoices() {
         description: error.message,
         variant: 'destructive'
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -232,18 +263,19 @@ export default function CustomerInvoices() {
       />
 
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Customer Invoices</h1>
-          <p className="text-muted-foreground">Create and track customer invoices</p>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
+        <PageHeader
+          title="Customer Invoices"
+          description="Create and track customer invoices"
+          actions={
+            <Button onClick={() => setIsDialogOpen(true)} data-component="CustomerInvoices" data-action="open-create-invoice">
               <Plus className="w-4 h-4 mr-2" />
               Create Invoice
             </Button>
-          </DialogTrigger>
+          }
+          className="w-full"
+        />
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Invoice</DialogTitle>
@@ -428,10 +460,20 @@ export default function CustomerInvoices() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Create Invoice</Button>
+                <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} aria-live="polite">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Invoice'
+                  )}
+                </Button>
               </div>
             </form>
           </DialogContent>

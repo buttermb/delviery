@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { calculateOrderTotal } from '@/lib/marketplace/feeCalculation';
+import { useFeatureFlags } from '@/config/featureFlags';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -54,6 +55,7 @@ const PAYMENT_TERMS = [
 ];
 
 export default function WholesaleCheckoutPage() {
+  const { shouldAutoApprove } = useFeatureFlags();
   const { slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
   const { toast } = useToast();
@@ -196,6 +198,22 @@ export default function WholesaleCheckoutPage() {
           throw new Error(data.error);
         }
 
+        // Auto-approve newly created orders if flag is active
+        try {
+          if (shouldAutoApprove('ORDERS')) {
+            const createdOrderId = data?.order?.id || data?.id;
+            if (createdOrderId) {
+              await supabase
+                .from('marketplace_orders')
+                .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
+                .eq('id', createdOrderId);
+            }
+          }
+        } catch (e) {
+          // Non-blocking: log and continue
+          logger?.warn?.('Auto-approve (orders) update failed (non-blocking)', e);
+        }
+
         orders.push(data);
       }
 
@@ -217,8 +235,10 @@ export default function WholesaleCheckoutPage() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
       
       toast({
-        title: 'Order Placed!',
-        description: `Successfully created ${orders.length} order(s)`,
+        title: shouldAutoApprove('ORDERS') ? 'Order Auto‑Approved' : 'Order Placed!',
+        description: shouldAutoApprove('ORDERS')
+          ? `Created ${orders.length} order(s) and marked as confirmed.`
+          : `Successfully created ${orders.length} order(s)`,
       });
 
       // Navigate to orders page
