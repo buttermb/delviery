@@ -44,17 +44,30 @@ export function useSidebarConfig() {
 
   // Get base config for operation size
   const baseConfig = useMemo(() => {
-    return getSidebarConfig(operationSize);
+    const config = getSidebarConfig(operationSize);
+    console.log('[Sidebar Debug] Base config loaded:', {
+      operationSize,
+      sectionsCount: config.length,
+      totalItems: config.reduce((acc, section) => acc + section.items.length, 0)
+    });
+    return config;
   }, [operationSize]);
 
   // Apply filters (role, tier, feature access)
   const filteredConfig = useMemo(() => {
-    return applyAllFilters(baseConfig, {
+    const filtered = applyAllFilters(baseConfig, {
       role,
       currentTier,
       checkPermission,
       canAccessFeature: canAccess,
     });
+    console.log('[Sidebar Debug] After role/tier filtering:', {
+      role,
+      currentTier,
+      sectionsCount: filtered.length,
+      totalItems: filtered.reduce((acc, section) => acc + section.items.length, 0)
+    });
+    return filtered;
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
   // Filter by hidden features, integration settings, and layout presets
@@ -115,7 +128,14 @@ export function useSidebarConfig() {
       }));
     }
     
-    return config.filter(section => section.items.length > 0);
+    const finalFiltered = config.filter(section => section.items.length > 0);
+    console.log('[Sidebar Debug] After visibility filtering:', {
+      hiddenFeatures,
+      layoutPreset: currentLayoutPreset,
+      sectionsCount: finalFiltered.length,
+      totalItems: finalFiltered.reduce((acc, section) => acc + section.items.length, 0)
+    });
+    return finalFiltered;
   }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
   // Generate hot items
@@ -183,6 +203,12 @@ export function useSidebarConfig() {
       };
     });
   }, [configWithFavorites, safePreferences.collapsedSections]);
+
+  console.log('[Sidebar Debug] Final config:', {
+    sectionsCount: finalConfig.length,
+    totalItems: finalConfig.reduce((acc, section) => acc + section.items.length, 0),
+    sections: finalConfig.map(s => ({ name: s.section, itemCount: s.items.length }))
+  });
 
   return {
     sidebarConfig: Array.isArray(finalConfig) ? finalConfig : [],
