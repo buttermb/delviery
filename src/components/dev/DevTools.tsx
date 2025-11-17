@@ -88,8 +88,8 @@ if (!intercepted) {
     addLog('info', args);
   };
 
-  // Intercept fetch
-  const originalFetch = window.fetch;
+  // Intercept fetch with proper binding
+  const originalFetch = window.fetch.bind(window);
   window.fetch = async (...args) => {
     const [url, options] = args;
     const startTime = Date.now();
@@ -111,7 +111,8 @@ if (!intercepted) {
     };
 
     try {
-      const response = await originalFetch(...args);
+      // Call with proper context
+      const response = await originalFetch.apply(window, args);
       const duration = Date.now() - startTime;
       
       // Clone response to read body

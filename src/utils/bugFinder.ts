@@ -92,7 +92,8 @@ class BugFinder {
   private setupFetchInterceptor() {
     if (typeof window === 'undefined') return;
 
-    this.originalFetch = window.fetch;
+    // Store original fetch with proper binding to window
+    this.originalFetch = window.fetch.bind(window);
     const self = this;
 
     window.fetch = async function(...args): Promise<Response> {
@@ -102,7 +103,8 @@ class BugFinder {
       const startTime = Date.now();
 
       try {
-        const response = await self.originalFetch!(...args);
+        // Call with proper context using apply
+        const response = await self.originalFetch!.apply(window, args);
         const duration = Date.now() - startTime;
 
         // Check for errors
