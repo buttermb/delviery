@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout, RefreshCw } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -59,6 +59,20 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   
   // Run storage migration on mount
   useSidebarMigration();
+
+  // Phase 3: Debug logging for mobile sidebar
+  logger.debug('AdaptiveSidebar Render', {
+    component: 'AdaptiveSidebar',
+    tenantSlug,
+    hasTenant: !!tenant,
+    tenantId: tenant?.id,
+    sidebarConfigLength: sidebarConfig?.length || 0,
+    hotItemsLength: hotItems?.length || 0,
+    favoritesLength: favorites?.length || 0,
+    layoutPreset: preferences?.layoutPreset || 'none',
+    operationSize,
+    sidebarSections: sidebarConfig?.map(s => s.section) || []
+  });
 
   const currentPreset = preferences?.layoutPreset || 'default';
   const presetNames: Record<string, string> = {
@@ -180,8 +194,40 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 />
               ))
             ) : (
-              <div className="p-4 text-sm text-muted-foreground text-center">
-                No menu items available
+              /* Phase 4: Improved empty state */
+              <div className="p-6 text-center space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    No menu items available
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Layout: <span className="font-semibold">{presetNames[currentPreset] || currentPreset}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {tenant ? `Tenant: ${tenant.slug}` : 'Loading tenant...'}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    logger.info('Manual sidebar reload triggered', { component: 'AdaptiveSidebar' });
+                    window.location.reload();
+                  }}
+                  className="w-full"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Reload Navigation
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/${tenantSlug}/admin/settings?tab=sidebar`)}
+                  className="w-full"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Go to Settings
+                </Button>
               </div>
             )}
           </Suspense>

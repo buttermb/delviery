@@ -5,17 +5,27 @@ import {
   ShoppingCart,
   Users,
   Map,
-  Menu
+  Menu,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 
 export function MobileBottomNav() {
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [sidebarError, setSidebarError] = useState<Error | null>(null);
 
   const quickLinks = [
     {
@@ -80,7 +90,19 @@ export function MobileBottomNav() {
         })}
 
         {/* More menu */}
-        <Sheet open={open} onOpenChange={setOpen}>
+        <Sheet 
+          open={open} 
+          onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            // Phase 2: Force preferences refresh when sheet opens
+            if (isOpen && tenant?.id) {
+              queryClient.invalidateQueries({ 
+                queryKey: ['sidebar-preferences', tenant.id] 
+              });
+              setSidebarError(null);
+            }
+          }}
+        >
           <SheetTrigger asChild>
             <button className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[60px] touch-manipulation w-full active:bg-muted/50">
               <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
@@ -94,7 +116,42 @@ export function MobileBottomNav() {
           >
             <SidebarProvider>
               <div className="h-full overflow-y-auto bg-background">
-                <AdaptiveSidebar collapsible="none" />
+                {/* Phase 1: Add loading state & tenant check */}
+                {!tenant ? (
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : sidebarError ? (
+                  /* Phase 5: Error boundary fallback */
+                  <div className="p-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                    <AlertCircle className="h-12 w-12 text-destructive" />
+                    <div className="text-center space-y-2">
+                      <h3 className="font-semibold text-lg">Something went wrong</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {sidebarError.message || 'Failed to load navigation menu'}
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setSidebarError(null);
+                        queryClient.invalidateQueries({ 
+                          queryKey: ['sidebar-preferences', tenant.id] 
+                        });
+                      }}
+                      variant="outline"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <ErrorBoundary onError={setSidebarError}>
+                    <AdaptiveSidebar collapsible="none" />
+                  </ErrorBoundary>
+                )}
               </div>
             </SidebarProvider>
           </SheetContent>
