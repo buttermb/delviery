@@ -2,21 +2,31 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
+                                 import.meta.env.VITE_SUPABASE_ANON_KEY ||
+                                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlanVndG1od3drbnJvd2Z5emllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NDA4OTcsImV4cCI6MjA3NzQxNjg5N30.R7S5uyha_U5oNc1IBXt8bThumQJSa8FuJZdgiWRgwek';
 
 // Validate environment variables
-if (!SUPABASE_URL) {
+if (!SUPABASE_URL || SUPABASE_URL === 'undefined') {
+  console.error('[SUPABASE] Environment variables missing:', {
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    allEnvVars: import.meta.env
+  });
   throw new Error(
     'Missing Supabase URL. Please set VITE_SUPABASE_URL environment variable.\n' +
-    'In Lovable: Go to Settings > Environment Variables and add VITE_SUPABASE_URL'
+    'Check your .env file in the project root.'
   );
 }
 
-if (!SUPABASE_PUBLISHABLE_KEY) {
+if (!SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY === 'undefined') {
+  console.error('[SUPABASE] Environment variables missing:', {
+    VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY
+  });
   throw new Error(
-    'Missing Supabase key. Please set VITE_SUPABASE_PUBLISHABLE_KEY or VITE_SUPABASE_ANON_KEY environment variable.\n' +
-    'In Lovable: Go to Settings > Environment Variables and add VITE_SUPABASE_PUBLISHABLE_KEY'
+    'Missing Supabase key. Please set VITE_SUPABASE_PUBLISHABLE_KEY environment variable.\n' +
+    'Check your .env file in the project root.'
   );
 }
 
