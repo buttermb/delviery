@@ -155,8 +155,47 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
 }
 
 serve(async (req) => {
+  // Get origin from request for CORS
+  const origin = req.headers.get('origin');
+  const hasCredentials = req.headers.get('cookie') || req.headers.get('authorization');
+  
+  // Allowed origins for CORS
+  const allowedOrigins: (string | RegExp)[] = [
+    'https://floraiqcrm.com',
+    'https://www.floraiqcrm.com',
+    'http://localhost:8080',
+    'http://localhost:5173',
+    // Lovable preview domains
+    /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
+    /^https:\/\/[a-f0-9-]+\.lovable\.app$/,
+    'https://lovable.app',
+    'https://lovable.dev',
+  ];
+  
+  const isOriginAllowed = (checkOrigin: string | null): boolean => {
+    if (!checkOrigin) return false;
+    return allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return checkOrigin === allowed;
+      }
+      return allowed.test(checkOrigin);
+    });
+  };
+  
+  const requestOrigin = origin && isOriginAllowed(origin) ? origin : (origin || '*');
+  
+  const corsHeadersWithOrigin: Record<string, string> = {
+    'Access-Control-Allow-Origin': hasCredentials ? requestOrigin : '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  };
+  
+  if (hasCredentials && requestOrigin !== '*') {
+    corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
+  }
+  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeadersWithOrigin });
   }
 
   try {
