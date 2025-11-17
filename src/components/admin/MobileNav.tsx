@@ -111,8 +111,8 @@ export function MobileNav() {
                 <span className="text-xs font-medium">More</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[60vh]">
-              <div className="space-y-4 mt-4">
+            <SheetContent side="bottom" className="h-[60vh] flex flex-col overflow-hidden">
+              <div className="space-y-4 mt-4 overflow-y-auto flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">More Options</h3>
                   <Button
