@@ -9,14 +9,29 @@ serve(async (req) => {
   
   // When credentials are included, must return specific origin, not wildcard
   // Also need to validate origin against allowed origins for security
-  const allowedOrigins = [
+  const allowedOrigins: (string | RegExp)[] = [
     'https://floraiqcrm.com',
     'https://www.floraiqcrm.com',
     'http://localhost:8080',
     'http://localhost:5173',
+    // Lovable preview domains
+    /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
+    /^https:\/\/[a-f0-9-]+\.lovable\.app$/,
+    'https://lovable.app',
+    'https://lovable.dev',
   ];
   
-  const requestOrigin = origin && allowedOrigins.includes(origin) ? origin : (origin || '*');
+  const isOriginAllowed = (checkOrigin: string | null): boolean => {
+    if (!checkOrigin) return false;
+    return allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return checkOrigin === allowed;
+      }
+      return allowed.test(checkOrigin);
+    });
+  };
+  
+  const requestOrigin = origin && isOriginAllowed(origin) ? origin : (origin || '*');
   
   const corsHeadersWithOrigin: Record<string, string> = {
     'Access-Control-Allow-Origin': hasCredentials ? requestOrigin : '*',
