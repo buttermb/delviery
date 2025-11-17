@@ -32,6 +32,7 @@ import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { useFeatureFlags } from '@/config/featureFlags';
+import { logger } from '@/lib/logger';
 
 interface OrderItem {
   product_name?: string;
@@ -136,7 +137,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
       handleApprove()
         .catch((e) => {
           // Non-blocking; warn and keep dialog open
-          console.warn('Auto-approve (menu order) failed', e);
+          logger.warn('Auto-approve (menu order) failed', e instanceof Error ? e : new Error(String(e)), { component: 'OrderApprovalDialog' });
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

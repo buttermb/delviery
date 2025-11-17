@@ -157,8 +157,21 @@ serve(async (req) => {
         );
       }
 
-      // Generate invoice number if not provided
-      const invoiceNumber = invoice_data.invoice_number || `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      // Generate invoice number via robust DB generator (fallback to timestamp if RPC fails)
+      let invoiceNumber: string | undefined = invoice_data.invoice_number;
+      const fallbackInvoiceNumber = () => `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      if (!invoiceNumber) {
+        try {
+          const { data: gen, error: genErr } = await serviceClient.rpc('generate_invoice_number', { tenant_id: tenantId });
+          if (!genErr && typeof gen === 'string' && gen.trim()) {
+            invoiceNumber = gen.trim();
+          } else {
+            invoiceNumber = fallbackInvoiceNumber();
+          }
+        } catch (_e) {
+          invoiceNumber = fallbackInvoiceNumber();
+        }
+      }
 
       // Calculate amounts if not provided
       const subtotal = invoice_data.subtotal || 0;
@@ -166,33 +179,66 @@ serve(async (req) => {
       const total = invoice_data.total || (subtotal + tax);
       const amountDue = total - (invoice_data.amount_paid || 0);
 
-      const newInvoice = {
-        tenant_id: tenantId,
-        invoice_number: invoiceNumber,
-        subtotal,
-        tax,
-        total,
-        amount_paid: invoice_data.amount_paid || 0,
-        amount_due: amountDue,
-        line_items: invoice_data.line_items || [],
-        billing_period_start: invoice_data.billing_period_start || null,
-        billing_period_end: invoice_data.billing_period_end || null,
-        issue_date: invoice_data.issue_date || new Date().toISOString().split('T')[0],
-        due_date: invoice_data.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: invoice_data.status || 'draft',
-        stripe_invoice_id: invoice_data.stripe_invoice_id || null,
-        stripe_payment_intent_id: invoice_data.stripe_payment_intent_id || null,
-      };
+      let createdInvoice: any = null;
+      let lastError: any = null;
 
-      const { data: createdInvoice, error: createError } = await serviceClient
-        .from('invoices')
-        .insert(newInvoice)
-        .select()
-        .single();
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const newInvoice = {
+          tenant_id: tenantId,
+          invoice_number: invoiceNumber,
+          subtotal,
+          tax,
+          total,
+          amount_paid: invoice_data.amount_paid || 0,
+          amount_due: amountDue,
+          line_items: invoice_data.line_items || [],
+          billing_period_start: invoice_data.billing_period_start || null,
+          billing_period_end: invoice_data.billing_period_end || null,
+          issue_date: invoice_data.issue_date || new Date().toISOString().split('T')[0],
+          due_date: invoice_data.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: invoice_data.status || 'draft',
+          stripe_invoice_id: invoice_data.stripe_invoice_id || null,
+          stripe_payment_intent_id: invoice_data.stripe_payment_intent_id || null,
+        };
 
-      if (createError) {
+        const { data, error } = await serviceClient
+          .from('invoices')
+          .insert(newInvoice)
+          .select()
+          .single();
+
+        if (!error) {
+          createdInvoice = data;
+          lastError = null;
+          break;
+        }
+
+        lastError = error;
+        const code = (error as any)?.code || '';
+        const msg = (error as any)?.message || '';
+        const isUnique = code === '23505' || /duplicate key value|unique constraint/i.test(msg);
+
+        if (attempt === 0 && isUnique) {
+          // Retry once with a freshly generated number
+          try {
+            const { data: gen2, error: genErr2 } = await serviceClient.rpc('generate_invoice_number', { tenant_id: tenantId });
+            if (!genErr2 && typeof gen2 === 'string' && gen2.trim()) {
+              invoiceNumber = gen2.trim();
+            } else {
+              invoiceNumber = fallbackInvoiceNumber();
+            }
+          } catch (_e) {
+            invoiceNumber = fallbackInvoiceNumber();
+          }
+          continue;
+        } else {
+          break;
+        }
+      }
+
+      if (lastError) {
         return new Response(
-          JSON.stringify({ error: 'Failed to create invoice', details: createError.message }),
+          JSON.stringify({ error: 'Failed to create invoice', details: lastError.message }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

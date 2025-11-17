@@ -23,6 +23,8 @@ import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { logger } from '@/lib/logger';
 import { PageHeader } from '@/components/shared/PageHeader';
 
+const PAGE_SIZE = 25;
+
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { toast } = useToast();
@@ -31,6 +33,10 @@ export default function CustomerInvoices() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allInvoices, setAllInvoices] = useState<any[]>([]); // Store all invoices when using client-side pagination
   const [lineItems, setLineItems] = useState([
     { description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
@@ -52,52 +58,131 @@ export default function CustomerInvoices() {
     }
   }, [tenant, accountLoading]);
 
-  const loadInvoices = async () => {
+  const loadInvoices = async (page: number = 1, append: boolean = false) => {
     if (!tenant) return;
 
     try {
-      // Preferred: use RPC to fetch invoices as a single JSON array for tenant
-      try {
-        const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_tenant_invoices', {
-          tenant_id: tenant.id,
-        });
-        if (!rpcError && Array.isArray(rpcData)) {
-          setInvoices(rpcData);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        // Fall through to edge function
+      if (append) {
+        setIsLoadingMore(true);
       }
 
-      // Secondary: use Edge Function
-      const { data: edgeData, error: edgeError } = await callAdminFunction({
-        functionName: 'invoice-management',
-        body: { action: 'list', tenant_id: tenant.id },
-        errorMessage: 'Failed to load invoices',
-        showToast: false,
-      });
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
 
-      if (!edgeError && edgeData?.invoices) {
-        setInvoices(edgeData.invoices);
-        setLoading(false);
+      // Try direct query with pagination first (most reliable for pagination)
+      const { data, error, count } = await (supabase as any)
+        .from('customer_invoices')
+        .select('*', { count: 'exact' })
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (!error && data) {
+        const newData = data || [];
+        
+        // Clear client-side cache when using direct query (server-side pagination)
+        if (!append) {
+          setAllInvoices([]);
+        }
+        
+        if (append) {
+          setInvoices(prev => {
+            const updated = [...prev, ...newData];
+            // Check if there are more invoices to load
+            const totalCount = count || 0;
+            setHasMore(updated.length < totalCount);
+            return updated;
+          });
+        } else {
+          setInvoices(newData);
+          // Check if there are more invoices to load
+          const totalCount = count || 0;
+          setHasMore(newData.length < totalCount);
+        }
+        
+        setCurrentPage(page);
+        
+        if (!append) {
+          setLoading(false);
+        }
+        setIsLoadingMore(false);
         return;
       }
 
-      // Fallback to direct query
-      const { data, error } = await (supabase as any)
-        .from('customer_invoices')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .order('created_at', { ascending: false });
+      // Fallback: Try RPC (may not support pagination, so load all and paginate client-side)
+      if (page === 1) {
+        try {
+          const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_tenant_invoices', {
+            tenant_id: tenant.id,
+          });
+          if (!rpcError && Array.isArray(rpcData)) {
+            // Store all invoices for client-side pagination
+            setAllInvoices(rpcData);
+            const paginatedData = rpcData.slice(0, PAGE_SIZE);
+            setInvoices(paginatedData);
+            setHasMore(rpcData.length > PAGE_SIZE);
+            setCurrentPage(1);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          // Fall through to edge function
+        }
+
+        // Fallback: Try Edge Function
+        const { data: edgeData, error: edgeError } = await callAdminFunction({
+          functionName: 'invoice-management',
+          body: { action: 'list', tenant_id: tenant.id },
+          errorMessage: 'Failed to load invoices',
+          showToast: false,
+        });
+
+        if (!edgeError && edgeData?.invoices && Array.isArray(edgeData.invoices)) {
+          // Store all invoices for client-side pagination
+          setAllInvoices(edgeData.invoices);
+          const paginatedData = edgeData.invoices.slice(0, PAGE_SIZE);
+          setInvoices(paginatedData);
+          setHasMore(edgeData.invoices.length > PAGE_SIZE);
+          setCurrentPage(1);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // If we have all invoices stored (from RPC/Edge Function fallback), use client-side pagination
+      if (allInvoices.length > 0 && page > 1) {
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE;
+        const paginatedData = allInvoices.slice(from, to);
+        
+        if (append) {
+          setInvoices(prev => [...prev, ...paginatedData]);
+        } else {
+          setInvoices(paginatedData);
+        }
+        
+        setHasMore(to < allInvoices.length);
+        setCurrentPage(page);
+        setIsLoadingMore(false);
+        if (!append) {
+          setLoading(false);
+        }
+        return;
+      }
 
       if (error) throw error;
-      setInvoices(data || []);
     } catch (error) {
       logger.error('Error loading invoices', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerInvoices' });
-    } finally {
-      setLoading(false);
+      if (!append) {
+        setLoading(false);
+      }
+      setIsLoadingMore(false);
     }
+  };
+
+  const loadMoreInvoices = async () => {
+    if (isLoadingMore || !hasMore) return;
+    await loadInvoices(currentPage + 1, true);
   };
 
   const loadCustomers = async () => {
@@ -113,7 +198,7 @@ export default function CustomerInvoices() {
       if (error) throw error;
       setCustomers(data || []);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      logger.error('Error loading customers', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerInvoices' });
     }
   };
 
@@ -226,7 +311,10 @@ export default function CustomerInvoices() {
         tax_rate: '8.875'
       });
       setLineItems([{ description: '', quantity: 1, rate: 0, amount: 0 }]);
-      loadInvoices();
+      // Reset pagination and reload from page 1
+      setCurrentPage(1);
+      setAllInvoices([]); // Clear stored invoices
+      loadInvoices(1, false);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -532,6 +620,21 @@ export default function CustomerInvoices() {
           </Card>
         ))}
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center my-6">
+          <Button onClick={loadMoreInvoices} disabled={isLoadingMore} aria-busy={isLoadingMore}>
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load more'
+            )}
+          </Button>
+        </div>
+      )}
 
       {invoices.length === 0 && (
         <Card>
