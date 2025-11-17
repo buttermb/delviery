@@ -45,8 +45,22 @@ export function useSidebarConfig() {
 
   // Get base config for operation size
   const baseConfig = useMemo(() => {
-    return getSidebarConfig(operationSize);
-  }, [operationSize]);
+    const config = getSidebarConfig(operationSize);
+    logger.debug('Base config loaded', {
+      component: 'useSidebarConfig',
+      operationSize,
+      detectedSize,
+      isAutoDetected,
+      sectionsCount: config.length,
+      totalItems: config.reduce((sum, s) => sum + s.items.length, 0),
+      sections: config.map(s => ({ 
+        name: s.section, 
+        itemCount: s.items.length,
+        items: s.items.map(i => i.id)
+      }))
+    });
+    return config;
+  }, [operationSize, detectedSize, isAutoDetected]);
 
   // Apply filters (role, tier, feature access)
   const filteredConfig = useMemo(() => {

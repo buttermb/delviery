@@ -89,12 +89,23 @@ export function useOperationSize() {
 
   // Use manual override if exists, otherwise use detected
   const operationSize: OperationSize = useMemo(() => {
-    if ((preferences as any)?.operation_size && 
-        ['street', 'small', 'medium', 'enterprise'].includes((preferences as any).operation_size)) {
-      return (preferences as any).operation_size as OperationSize;
+    const manualSize = (preferences as any)?.operation_size;
+    
+    logger.debug('Operation size calculation', {
+      component: 'useOperationSize',
+      manualSize,
+      detectedSize,
+      willUse: manualSize && ['street', 'small', 'medium', 'enterprise'].includes(manualSize) ? manualSize : detectedSize,
+      preferencesLoading: preferencesLoading,
+      hasPreferences: !!preferences,
+      tenantId: tenant?.id
+    });
+    
+    if (manualSize && ['street', 'small', 'medium', 'enterprise'].includes(manualSize)) {
+      return manualSize as OperationSize;
     }
     return detectedSize;
-  }, [preferences, detectedSize]);
+  }, [preferences, detectedSize, preferencesLoading, tenant?.id]);
 
   const isAutoDetected = !(preferences as any)?.operation_size;
 
