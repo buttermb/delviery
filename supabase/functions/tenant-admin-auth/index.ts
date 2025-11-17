@@ -31,16 +31,28 @@ serve(async (req) => {
     });
   };
   
-  const requestOrigin = origin && isOriginAllowed(origin) ? origin : (origin || '*');
+  // Determine the origin to use in response
+  const requestOrigin = origin && isOriginAllowed(origin) ? origin : null;
+  
+  // Reject requests with credentials from non-allowed origins
+  if (hasCredentials && !requestOrigin) {
+    return new Response(
+      JSON.stringify({ error: 'Origin not allowed' }), 
+      { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
   
   const corsHeadersWithOrigin: Record<string, string> = {
-    'Access-Control-Allow-Origin': hasCredentials ? requestOrigin : '*',
+    'Access-Control-Allow-Origin': requestOrigin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cookie',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   };
   
-  // Only add credentials header when credentials are present
-  if (hasCredentials && requestOrigin !== '*') {
+  // Add credentials header when we have a valid origin
+  if (requestOrigin) {
     corsHeadersWithOrigin['Access-Control-Allow-Credentials'] = 'true';
   }
   
