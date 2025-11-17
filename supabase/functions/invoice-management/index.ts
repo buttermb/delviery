@@ -2,6 +2,7 @@
  * Invoice Management Edge Function
  * Handles CRUD operations for invoices with proper authentication
  * Phase 5: Advanced Invoice Management
+ * Updated: 2025-11-17 - Added retry logic for invoice number generation
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
