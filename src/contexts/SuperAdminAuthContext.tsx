@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
 import { logger } from "@/utils/logger";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
@@ -54,6 +54,74 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     return unsubscribe;
   }, []);
 
+  // Wrap verifyToken in useCallback to prevent infinite loops
+  const verifyToken = useCallback(async (tokenToVerify: string) => {
+    const flowId = authFlowLogger.startFlow(AuthAction.VERIFY, {});
+    
+    try {
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+      const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
+      
+      authFlowLogger.logFetchAttempt(flowId, url, 1);
+      const fetchStartTime = performance.now();
+      
+      // Detect mobile and use longer timeout
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+      const timeout = isMobile ? 15000 : 10000;
+      
+      const { response, attempts, category } = await resilientFetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${tokenToVerify}`,
+          "Content-Type": "application/json",
+        },
+        timeout,
+        retryConfig: {
+          maxRetries: 1,
+          initialDelay: 500,
+        },
+        onError: (errorCategory) => {
+          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
+        },
+      });
+
+      if (!response.ok) {
+        const error = new Error("Token verification failed");
+        authFlowLogger.failFlow(flowId, error, category);
+        throw error;
+      }
+
+      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
+
+      const data = await response.json();
+      setSuperAdmin(data.superAdmin);
+      localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
+      
+      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
+      authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
+      setLoading(false);
+    } catch (error) {
+      const category = error instanceof Error && error.message.includes('Network')
+        ? ErrorCategory.NETWORK
+        : ErrorCategory.AUTH;
+      authFlowLogger.failFlow(flowId, error, category);
+      
+      // User-friendly error messages
+      const errorMessage = category === ErrorCategory.NETWORK
+        ? 'Network connection lost. Check your internet and try again.'
+        : 'Login session expired. Please log in again.';
+      
+      logger.error(errorMessage, error);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(SUPER_ADMIN_KEY);
+      setToken(null);
+      setSuperAdmin(null);
+      setLoading(false);
+    }
+  }, []); // No dependencies needed - uses parameter
+
   // Initialize from localStorage and restore Supabase session
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
@@ -94,64 +162,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     } else {
       setLoading(false);
     }
-  }, []);
-
-  const verifyToken = async (tokenToVerify: string) => {
-    const flowId = authFlowLogger.startFlow(AuthAction.VERIFY, {});
-    
-    try {
-      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
-      
-      authFlowLogger.logFetchAttempt(flowId, url, 1);
-      const fetchStartTime = performance.now();
-      
-      const { response, attempts, category } = await resilientFetch(url, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${tokenToVerify}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 10000,
-        retryConfig: {
-          maxRetries: 1,
-          initialDelay: 500,
-        },
-        onError: (errorCategory) => {
-          authFlowLogger.logFetchFailure(flowId, url, new Error(getErrorMessage(errorCategory)), errorCategory, attempts);
-        },
-      });
-
-      if (!response.ok) {
-        const error = new Error("Token verification failed");
-        authFlowLogger.failFlow(flowId, error, category);
-        throw error;
-      }
-
-      authFlowLogger.logFetchSuccess(flowId, url, response.status, performance.now() - fetchStartTime);
-      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
-
-      const data = await response.json();
-      setSuperAdmin(data.superAdmin);
-      localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
-      
-      authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
-      authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
-      setLoading(false);
-    } catch (error) {
-      const category = error instanceof Error && error.message.includes('Network')
-        ? ErrorCategory.NETWORK
-        : ErrorCategory.AUTH;
-      authFlowLogger.failFlow(flowId, error, category);
-      logger.error("Token verification error", error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(SUPER_ADMIN_KEY);
-      setToken(null);
-      setSuperAdmin(null);
-      setLoading(false);
-    }
-  };
+  }, [verifyToken]); // Add verifyToken as dependency
 
   const login = async (email: string, password: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email });

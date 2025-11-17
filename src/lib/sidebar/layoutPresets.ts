@@ -56,6 +56,7 @@ export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
       'locations',
       'location-analytics',
       'delivery-management',
+      'fleet-management',
       'live-map',
       'team-members',
       'route-planning',

@@ -44,11 +44,9 @@ import { NotificationPreferences } from "./components/NotificationPreferences";
 import OfflineBanner from "./components/OfflineBanner";
 import InstallPWA from "./components/InstallPWA";
 import { DeviceTracker } from "./components/DeviceTracker";
-import { BetaBanner } from "./components/shared/BetaBanner";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
-import AutoApproveBanner from "./components/shared/AutoApproveBanner";
 
 // Configure route-level progress indicator (NProgress)
 NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
@@ -413,9 +411,7 @@ const App = () => {
                 <TooltipProvider>
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     <SkipToContent />
-                    <AutoApproveBanner />
                     <OfflineBanner />
-                    <BetaBanner />
                     <InstallPWA />
                     <DeviceTracker />
                     
