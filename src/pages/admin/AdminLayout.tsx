@@ -89,7 +89,7 @@ const AdminLayout = () => {
       
       {/* Unified Layout with AdaptiveSidebar */}
       <SidebarProvider>
-        <div className="min-h-screen flex w-full overflow-hidden">
+        <div className="min-h-screen flex w-full">
           <SidebarErrorBoundary>
             <AdaptiveSidebar />
           </SidebarErrorBoundary>
@@ -135,7 +135,7 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="flex-1 overflow-auto bg-muted/30 pb-20 lg:pb-6 safe-area-bottom">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-20 lg:pb-6 safe-area-bottom">
               <AdminErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <Outlet />
