@@ -403,13 +403,13 @@ const App = () => {
         <ThemeProvider>
           <AuthProvider>
             <AccountProvider>
-                  <SuperAdminAuthProvider>
-                    <TenantAdminAuthProvider>
-                      <CustomerAuthProvider>
                         <TenantProvider>
                           <WhiteLabelProvider>
                 <TooltipProvider>
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                  <SuperAdminAuthProvider>
+                    <TenantAdminAuthProvider>
+                      <CustomerAuthProvider>
                     <SkipToContent />
                     <OfflineBanner />
                     <InstallPWA />
@@ -747,13 +747,13 @@ const App = () => {
                         <Route path="*" element={<NotFoundPage />} />
                       </Routes>
                     </Suspense>
+                      </CustomerAuthProvider>
+                    </TenantAdminAuthProvider>
+                  </SuperAdminAuthProvider>
                   </BrowserRouter>
                 </TooltipProvider>
                           </WhiteLabelProvider>
                         </TenantProvider>
-                      </CustomerAuthProvider>
-                    </TenantAdminAuthProvider>
-                  </SuperAdminAuthProvider>
             </AccountProvider>
           </AuthProvider>
         </ThemeProvider>
