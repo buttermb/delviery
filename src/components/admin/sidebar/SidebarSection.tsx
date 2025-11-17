@@ -92,7 +92,7 @@ export function SidebarSection({
         <CollapsibleContent>
           <SidebarGroupContent>
             <SidebarMenu>
-              {section.items.map((item) => {
+              {section.items.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;
                 
                 console.log(`Rendering item [${item.id}] in [${section.section}]:`, {
@@ -103,7 +103,7 @@ export function SidebarSection({
                 
                 return (
                   <SidebarMenuItem
-                    key={item.id}
+                    key={`${section.section}-${item.id}-${index}`}
                     item={item}
                     isActive={isActive(item.path)}
                     hasAccess={hasAccess}
