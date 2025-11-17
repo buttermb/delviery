@@ -19,6 +19,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, ChevronDown, User, HelpCircle } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, User, HelpCircle, Layout } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarMigration } from '@/hooks/useSidebarMigration';
@@ -52,12 +53,22 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const location = useLocation();
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();
-  const { sidebarConfig, hotItems, favorites } = useSidebarConfig();
-  const { trackFeatureClick, toggleFavorite } = useSidebar();
+  const { sidebarConfig, hotItems, favorites, operationSize } = useSidebarConfig();
+  const { trackFeatureClick, toggleFavorite, preferences } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
   
   // Run storage migration on mount
   useSidebarMigration();
+
+  const currentPreset = preferences?.layoutPreset || 'default';
+  const presetNames: Record<string, string> = {
+    default: 'Default',
+    minimal: 'Minimal',
+    sales_focus: 'Sales',
+    operations_focus: 'Operations',
+    financial_focus: 'Financial',
+    full_featured: 'Full'
+  };
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
@@ -99,7 +110,20 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                 </div>
                 <div className="flex flex-col min-w-0 flex-1 relative z-10">
                   <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
-                  <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">Business Admin</span>
+                    <Badge 
+                      variant="secondary" 
+                      className="text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:bg-primary/10 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
+                      }}
+                    >
+                      <Layout className="h-2.5 w-2.5 mr-0.5" />
+                      {presetNames[currentPreset]}
+                    </Badge>
+                  </div>
                 </div>
                 <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10 group-hover:translate-y-0.5 transition-transform" />
               </button>

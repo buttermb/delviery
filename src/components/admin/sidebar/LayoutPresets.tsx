@@ -8,10 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
-import { Check, Download, Upload } from 'lucide-react';
+import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { CustomPresetBuilder } from './CustomPresetBuilder';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function LayoutPresets() {
   const { preferences, updatePreferences } = useSidebarPreferences();
@@ -102,55 +108,92 @@ export function LayoutPresets() {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h3 className="font-medium mb-2">Quick Presets</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Choose a predefined layout optimized for your workflow
-        </p>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          {presets.map((preset) => {
-            const isActive = currentPreset === preset.id;
-
-            return (
-              <button
-                key={preset.id}
-                onClick={() => handleSelectPreset(preset.id)}
+    <TooltipProvider>
+      <div className="space-y-8">
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium">Quick Presets</h3>
+            {currentPreset !== 'default' && (
+              <Button 
+                onClick={() => handleSelectPreset('default')} 
+                variant="outline" 
+                size="sm"
                 disabled={applyingPreset !== null}
-                className={`p-4 border rounded-lg text-left transition-all hover:border-primary ${
-                  isActive ? 'border-primary bg-primary/5' : ''
-                } ${applyingPreset === preset.id ? 'opacity-50 cursor-wait' : ''} ${applyingPreset && applyingPreset !== preset.id ? 'opacity-30' : ''}`}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-medium">
-                    {applyingPreset === preset.id ? 'Applying...' : preset.name}
-                  </h4>
-                  {isActive && !applyingPreset && (
-                    <Badge variant="default" className="ml-2">
-                      <Check className="h-3 w-3 mr-1" />
-                      Active
-                    </Badge>
-                  )}
-                  {applyingPreset === preset.id && (
-                    <Badge variant="secondary" className="ml-2 animate-pulse">
-                      Loading...
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {preset.description}
-                </p>
-                <div className="mt-2 text-xs text-muted-foreground">
-                  {preset.visibleFeatures === 'all'
-                    ? 'All features enabled'
-                    : `${preset.visibleFeatures.length} features enabled`}
-                </div>
-              </button>
-            );
-          })}
+                <RotateCcw className="h-3 w-3 mr-2" />
+                Reset to Default
+              </Button>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Choose a predefined layout optimized for your workflow
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {presets.map((preset) => {
+              const isActive = currentPreset === preset.id;
+              const featureCount = preset.visibleFeatures === 'all' 
+                ? 'All' 
+                : preset.visibleFeatures.length;
+
+              return (
+                <button
+                  key={preset.id}
+                  onClick={() => handleSelectPreset(preset.id)}
+                  disabled={applyingPreset !== null}
+                  className={`p-4 border-2 rounded-lg text-left transition-all hover:border-primary hover:shadow-md ${
+                    isActive 
+                      ? 'border-primary bg-primary/10 shadow-sm ring-2 ring-primary/20' 
+                      : 'border-border'
+                  } ${applyingPreset === preset.id ? 'opacity-50 cursor-wait' : ''} ${applyingPreset && applyingPreset !== preset.id ? 'opacity-30' : ''}`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {preset.id === 'full_featured' && <Star className="h-4 w-4 text-yellow-500" />}
+                      <h4 className="font-medium">
+                        {applyingPreset === preset.id ? 'Applying...' : preset.name}
+                      </h4>
+                    </div>
+                    {isActive && !applyingPreset && (
+                      <Badge variant="default" className="ml-2">
+                        <Check className="h-3 w-3 mr-1" />
+                        Active
+                      </Badge>
+                    )}
+                    {applyingPreset === preset.id && (
+                      <Badge variant="secondary" className="ml-2 animate-pulse">
+                        Loading...
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {preset.description}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center gap-1.5 text-xs px-2 py-1 bg-muted rounded-md">
+                          <Eye className="h-3 w-3" />
+                          <span className="font-medium">{featureCount}</span>
+                          <span className="text-muted-foreground">
+                            {preset.visibleFeatures === 'all' ? 'features' : 'items'}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">
+                          {preset.visibleFeatures === 'all'
+                            ? 'Shows all available features'
+                            : `Shows ${featureCount} selected features`}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
       <CustomPresetBuilder />
 
@@ -172,5 +215,6 @@ export function LayoutPresets() {
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
