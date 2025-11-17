@@ -3,7 +3,7 @@
  * Fixed bottom navigation bar for mobile devices (hidden on desktop)
  */
 
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
 import { 
   Home, 
   Package, 
@@ -17,6 +17,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -32,8 +34,18 @@ const mainNavItems: NavItem[] = [
 
 export function MobileNav() {
   const location = useLocation();
-  const { sidebarConfig } = useSidebarConfig();
+  const [open, setOpen] = useState(false);
+  const { sidebarConfig, hotItems } = useSidebarConfig();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Phase 6: Debug logging for mobile nav
+  logger.debug('MobileNav Render', {
+    component: 'MobileNav',
+    pathname: location.pathname,
+    sidebarConfigLength: sidebarConfig?.length || 0,
+    hotItemsLength: hotItems?.length || 0,
+    isSheetOpen: open
+  });
   
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/');
@@ -98,7 +110,7 @@ export function MobileNav() {
           })}
           
           {/* More Menu */}
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -111,57 +123,90 @@ export function MobileNav() {
                 <span className="text-xs font-medium">More</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[60vh] flex flex-col overflow-hidden">
-              <div className="space-y-4 mt-4 overflow-y-auto flex-1">
+            <SheetContent side="bottom" className="h-[70vh] flex flex-col overflow-hidden">
+              <div className="space-y-4 mt-4 pb-6 overflow-y-auto flex-1">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">More Options</h3>
+                  <h3 className="text-lg font-semibold">All Menu Items</h3>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={handleRefreshAuth}
-                    disabled={isRefreshing}
+                    onClick={() => setOpen(false)}
                   >
-                    <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
-                    Refresh
+                    Close
                   </Button>
                 </div>
                 
-                {moreItems.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      No additional items available
-                    </p>
-                    <Button onClick={handleRefreshAuth} disabled={isRefreshing} variant="outline">
-                      <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
-                      Try Refreshing
-                    </Button>
-                  </div>
-                )}
-                
-                {moreItems.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {moreItems.map((item) => {
+                {/* Phase 5: Show ALL sidebar items grouped by section */}
+                {sidebarConfig && sidebarConfig.map(section => (
+                  <div key={section.section} className="space-y-2">
+                    <div className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {section.section}
+                    </div>
+                    {section.items.map(item => {
                       const Icon = item.icon;
-                      const active = isActive(item.href);
-                      
                       return (
-                        <NavLink
-                          key={item.href}
-                          to={item.href}
+                        <Link
+                          key={item.id}
+                          to={item.url}
+                          onClick={() => setOpen(false)}
                           className={cn(
-                            'flex flex-col items-center justify-center gap-2 p-4 rounded-lg border transition-colors touch-manipulation active:scale-95',
-                            active
-                              ? 'bg-primary/10 text-primary border-primary/20'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted border-border'
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50",
+                            isActive(item.url) && "bg-accent text-accent-foreground"
                           )}
                         >
-                          <Icon className="h-6 w-6" />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </NavLink>
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.title}</span>
+                          {item.badge && (
+                            <Badge variant="secondary" className="ml-auto text-xs">
+                              {item.badge}
+                            </Badge>
+                          )}
+                          {item.hot && (
+                            <Badge variant="destructive" className="ml-auto text-xs">
+                              Hot
+                            </Badge>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
+
+                {/* Hot Items Section */}
+                {hotItems && hotItems.length > 0 && (
+                  <div className="space-y-2 pt-4 border-t">
+                    <div className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Quick Actions
+                    </div>
+                    {hotItems.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.id}
+                          to={item.path}
+                          onClick={() => setOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50",
+                            isActive(item.path) && "bg-accent text-accent-foreground"
+                          )}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.name}</span>
+                        </Link>
                       );
                     })}
                   </div>
                 )}
+
+                {/* Refresh Auth Button */}
+                <button
+                  onClick={handleRefreshAuth}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50 w-full mt-4 border-t pt-4"
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={cn("h-5 w-5", isRefreshing && "animate-spin")} />
+                  <span className="font-medium">Refresh</span>
+                </button>
               </div>
             </SheetContent>
           </Sheet>

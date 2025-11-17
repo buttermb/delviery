@@ -156,10 +156,11 @@ const Sidebar = React.forwardRef<
         <SheetContent
           data-sidebar="sidebar"
           data-mobile="true"
-          className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+          className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden z-50"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              maxHeight: 'calc(100vh - 80px)'
             } as React.CSSProperties
           }
           side={side}
