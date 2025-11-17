@@ -241,7 +241,8 @@ const ButtonTester = () => {
 
   const testButton = async (button: { label: string; path: string; element: HTMLElement }): Promise<ButtonTest> => {
     return new Promise((resolve) => {
-      const originalFetch = window.fetch;
+      // Store original fetch with proper binding
+      const originalFetch = window.fetch.bind(window);
       const originalXHROpen = XMLHttpRequest.prototype.open;
       const originalXHRSend = XMLHttpRequest.prototype.send;
       let capturedError: string | null = null;
@@ -273,12 +274,13 @@ const ButtonTester = () => {
         window.removeEventListener('unhandledrejection', handleRejection);
       };
 
-      // Intercept fetch requests (improved to avoid cloning issues)
+      // Intercept fetch requests with proper binding
       window.fetch = async (...args) => {
         const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : 'unknown';
         
         try {
-          const response = await originalFetch(...args);
+          // Call with proper context
+          const response = await originalFetch.apply(window, args);
           
           // Check for various error status codes
           if (response.status === 404) {
