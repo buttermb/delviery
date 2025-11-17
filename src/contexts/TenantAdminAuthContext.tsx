@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { logger } from "@/utils/logger";
@@ -100,6 +101,7 @@ if (typeof window !== 'undefined') {
 }
 
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
   const { shouldAutoApprove, flags } = useFeatureFlags();
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -166,6 +168,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
+      // Check if we're on a tenant admin route
+      const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
+      
+      // Skip all authentication logic if NOT on a tenant admin route
+      if (!isTenantAdminRoute) {
+        console.log('[AUTH INIT] ℹ️ Not on tenant admin route, skipping verification');
+        setLoading(false);
+        return;
+      }
+      
       let parsedTenant: Tenant | null = null;
       
       try {
@@ -466,7 +478,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => {
       clearTimeout(safetyTimeout);
     };
-  }, []);
+  }, [location.pathname]); // Re-run when route changes
 
   // Helper function to clear auth state
   const clearAuthState = () => {
