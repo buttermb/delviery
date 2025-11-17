@@ -20,6 +20,7 @@ import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
 import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
+import { logger } from '@/lib/logger';
 import type { SidebarSection, HotItem } from '@/types/sidebar';
 
 /**
@@ -49,12 +50,30 @@ export function useSidebarConfig() {
 
   // Apply filters (role, tier, feature access)
   const filteredConfig = useMemo(() => {
-    return applyAllFilters(baseConfig, {
+    logger.debug('Before filtering', {
+      component: 'useSidebarConfig',
+      sectionsCount: baseConfig.length,
+      totalItems: baseConfig.reduce((sum, s) => sum + s.items.length, 0),
+      role,
+      currentTier,
+      sampleItem: baseConfig[0]?.items[0]
+    });
+    
+    const result = applyAllFilters(baseConfig, {
       role,
       currentTier,
       checkPermission,
       canAccessFeature: canAccess,
     });
+    
+    logger.debug('After filtering', {
+      component: 'useSidebarConfig',
+      sectionsCount: result.length,
+      totalItems: result.reduce((sum, s) => sum + s.items.length, 0),
+      sections: result.map(s => ({ name: s.section, itemCount: s.items.length }))
+    });
+    
+    return result;
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
   // Filter by hidden features, integration settings, and layout presets
