@@ -173,12 +173,23 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         console.log('[AUTH INIT] 🔐 Attempting cookie-based authentication...');
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
+          
+          // Get localStorage token as fallback
+          const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+          
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+          };
+          
+          // Include Authorization header if token exists in localStorage
+          if (storedToken) {
+            headers['Authorization'] = `Bearer ${storedToken}`;
+          }
+          
           const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
             method: 'GET',
             credentials: 'include', // Include cookies
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers,
           });
 
           if (verifyResponse.ok) {
