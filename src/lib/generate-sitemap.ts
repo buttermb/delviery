@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 
 // ⚠ 1. website url (Do not forget to replace this with your own url)
 // Set VITE_APP_URL environment variable or update this default
+// Updated: 2025-11-17 - Domain set to floraiqcrm.com
 const BASE_URL = process.env.VITE_APP_URL || process.env.APP_URL || "https://floraiqcrm.com";
 
 // ⚠ 2. input path (App.tsx contains all routes)

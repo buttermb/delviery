@@ -1,5 +1,6 @@
 -- Migration: Paginated tenant invoices RPC and supporting index
 -- Date: 2025-11-16 23:10 UTC
+-- Updated: 2025-11-17
 
 -- Composite index to support keyset pagination by tenant
 CREATE INDEX IF NOT EXISTS idx_invoices_tenant_created_id
