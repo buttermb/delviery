@@ -42,7 +42,7 @@ window.addEventListener('error', (event) => {
   if (isChunkError && chunkReloadCount < MAX_CHUNK_RELOADS) {
     chunkReloadCount++;
     const timestamp = new Date().toISOString();
-    logger.error('Chunk loading failed', new Error(errorMessage), 'main');
+    logger.error('Chunk loading failed', new Error(errorMessage), { component: 'main' });
     
     // Show error message to user
     const errorDiv = document.createElement('div');
@@ -60,7 +60,7 @@ window.addEventListener('error', (event) => {
     }, 2000);
   } else if (isChunkError && chunkReloadCount >= MAX_CHUNK_RELOADS) {
     // Max reloads reached - show permanent error
-    logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), 'main');
+    logger.error('Chunk loading failed after max reload attempts', new Error(errorMessage), { component: 'main' });
     
     const errorDiv = document.createElement('div');
     errorDiv.id = 'chunk-loading-error-permanent';
@@ -129,15 +129,16 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       // Register custom service worker
       const registration = await navigator.serviceWorker.register('/sw.js?v=12'); // Bump version to fix cloning issues
       logger.debug('[APP] Custom ServiceWorker registered', { 
-        scope: registration.scope 
-      }, 'main');
+        scope: registration.scope,
+        component: 'main'
+      });
       
       // Only activate new service workers, don't force reload
       if (registration.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
     } catch (error) {
-      logger.error('[APP] ServiceWorker registration failed', error, 'main');
+      logger.error('[APP] ServiceWorker registration failed', error instanceof Error ? error : new Error(String(error)), { component: 'main' });
     }
   });
 }
@@ -188,10 +189,10 @@ try {
     </ErrorBoundary>
   );
 } catch (error) {
-  logger.error('[APP] Fatal initialization error', error, 'main');
+  logger.error('[APP] Fatal initialization error', error instanceof Error ? error : new Error(String(error)), { component: 'main' });
   
   if (import.meta.env.DEV) {
-    logger.debug('Initialization error details', error, 'main');
+    logger.debug('Initialization error details', { error: error instanceof Error ? error.message : String(error), component: 'main' });
   }
   
   // Display user-friendly error message
