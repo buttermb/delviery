@@ -169,13 +169,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let parsedTenant: Tenant | null = null;
       
       try {
+        // Check if we have any auth tokens or cookies before trying to verify
+        const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const hasCookies = document.cookie.includes('tenant_access_token');
+        
+        // Skip verification if no auth data exists (user not logged in as tenant admin)
+        if (!storedToken && !hasCookies) {
+          console.log('[AUTH INIT] ℹ️ No tenant admin auth data found, skipping verification');
+          setLoading(false);
+          return;
+        }
+        
         // PRIORITY 1: Try cookie-based verification first (most secure)
         console.log('[AUTH INIT] 🔐 Attempting cookie-based authentication...');
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-          
-          // Get localStorage token as fallback
-          const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
           
           const headers: Record<string, string> = {
             'Content-Type': 'application/json',
@@ -225,9 +233,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             });
             return; // Success - exit early
           } else {
-            console.log('[AUTH INIT] ⚠️ Cookie verification failed, trying localStorage fallback', {
+            console.log('[AUTH INIT] ⚠️ Cookie verification failed', {
               status: verifyResponse.status,
             });
+            
+            // If 403 "No tenant access found", clear stale localStorage data
+            if (verifyResponse.status === 403) {
+              const errorData = await verifyResponse.json().catch(() => ({}));
+              if (errorData.error === 'No tenant access found') {
+                console.log('[AUTH INIT] 🧹 Clearing stale auth data - user has no tenant access');
+                clearAuthState();
+                setLoading(false);
+                return;
+              }
+            }
           }
         } catch (cookieError) {
           console.log('[AUTH INIT] ⚠️ Cookie verification error, trying localStorage fallback', cookieError);
