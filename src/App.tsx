@@ -405,17 +405,17 @@ const App = () => {
           <AuthProvider>
             <AccountProvider>
               <EncryptionProvider>
-                  <SuperAdminAuthProvider>
-                    <TenantAdminAuthProvider>
-                      <CustomerAuthProvider>
-                        <TenantProvider>
-                          <WhiteLabelProvider>
                 <TooltipProvider>
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                    <SkipToContent />
-                    <OfflineBanner />
-                    <InstallPWA />
-                    <DeviceTracker />
+                    <SuperAdminAuthProvider>
+                      <TenantAdminAuthProvider>
+                        <CustomerAuthProvider>
+                          <TenantProvider>
+                            <WhiteLabelProvider>
+                              <SkipToContent />
+                              <OfflineBanner />
+                              <InstallPWA />
+                              <DeviceTracker />
                     
                     <Sonner />
                     <Suspense fallback={<SuspenseProgressFallback />}>
@@ -749,13 +749,13 @@ const App = () => {
                         <Route path="*" element={<NotFoundPage />} />
                       </Routes>
                     </Suspense>
+                            </WhiteLabelProvider>
+                          </TenantProvider>
+                        </CustomerAuthProvider>
+                      </TenantAdminAuthProvider>
+                    </SuperAdminAuthProvider>
                   </BrowserRouter>
                 </TooltipProvider>
-                          </WhiteLabelProvider>
-                        </TenantProvider>
-                      </CustomerAuthProvider>
-                    </TenantAdminAuthProvider>
-                  </SuperAdminAuthProvider>
               </EncryptionProvider>
             </AccountProvider>
           </AuthProvider>
