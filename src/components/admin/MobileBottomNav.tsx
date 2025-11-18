@@ -142,11 +142,23 @@ export function MobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="left" 
-            className="p-0 w-[85vw] max-w-sm mobile-input-container h-[80vh] max-h-[calc(100vh-80px)] flex flex-col overflow-hidden"
-            style={{ zIndex: 60 }}
+            className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
+            style={{ 
+              zIndex: 60,
+              height: '100vh',
+              maxHeight: '100vh',
+              top: 0,
+              bottom: 0,
+              position: 'fixed'
+            }}
           >
-            <SidebarProvider>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background">
+            <SidebarProvider
+              style={{
+                '--sidebar-width': '100%',
+                '--sidebar-width-icon': '3rem',
+              } as React.CSSProperties}
+            >
+              <div className="flex-1 overflow-y-auto overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background min-h-0 w-full">
                 {/* Phase 1: Add loading state & tenant check */}
                 {!tenant ? (
                   <div className="p-4 space-y-2">
@@ -180,7 +192,9 @@ export function MobileBottomNav() {
                   </div>
                 ) : (
                   <ErrorBoundary onError={setSidebarError}>
-                    <AdaptiveSidebar collapsible="none" />
+                    <div className="w-full" style={{ minHeight: '100%' }}>
+                      <AdaptiveSidebar collapsible="none" />
+                    </div>
                   </ErrorBoundary>
                 )}
               </div>
