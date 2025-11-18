@@ -3,7 +3,7 @@
  * Uses Mapbox Directions API to calculate estimated time of arrival
  */
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiYnV1dGVybWIiLCJhIjoiY21nNzNrd3U3MGlyNjJqcTNlMnhsenFwbCJ9.Ss9KyWJkDeSvZilooUFZgA";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export interface ETAResult {
   duration: number; // in seconds
@@ -23,7 +23,8 @@ export async function calculateETA(
   destination: [number, number]
 ): Promise<ETAResult | null> {
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
-    console.warn('Mapbox token not configured, using fallback ETA calculation');
+    const { logger } = await import('@/utils/logger');
+    logger.warn('Mapbox token not configured, using fallback ETA calculation', undefined, 'eta-calculation');
     return calculateFallbackETA(driverLocation, destination);
   }
 
