@@ -179,7 +179,7 @@ export function MobileBottomNav() {
             side="left" 
             className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
             style={{ 
-              zIndex: 60,
+              zIndex: 120,
               height: '100vh',
               maxHeight: '100vh',
               position: 'fixed',
