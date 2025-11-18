@@ -29,11 +29,15 @@ export function useKeyboardDetection() {
           // Prevent body scroll when keyboard is open
           document.body.style.top = `-${scrollYRef.current}px`;
         } else {
+          // Always ensure cleanup happens
           document.body.classList.remove('keyboard-open');
+          document.body.style.position = '';
           // Restore scroll position
           const scrollY = scrollYRef.current;
           document.body.style.top = '';
-          window.scrollTo(0, scrollY);
+          if (scrollY > 0) {
+            window.scrollTo(0, scrollY);
+          }
         }
         
         setViewportHeight(currentHeight);
@@ -47,8 +51,11 @@ export function useKeyboardDetection() {
       
       return () => {
         window.visualViewport?.removeEventListener('resize', handleViewportChange);
+        // Ensure complete cleanup
         document.body.classList.remove('keyboard-open');
+        document.body.style.position = '';
         document.body.style.top = '';
+        document.body.style.overflow = '';
       };
     }
 
@@ -85,8 +92,11 @@ export function useKeyboardDetection() {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
+      // Ensure complete cleanup
       document.body.classList.remove('keyboard-open');
+      document.body.style.position = '';
       document.body.style.top = '';
+      document.body.style.overflow = '';
     };
   }, []);
 
