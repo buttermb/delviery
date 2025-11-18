@@ -5,6 +5,7 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { triggerHaptic } from '@/lib/utils/mobile';
 import {
   LayoutDashboard,
   Building2,
@@ -54,10 +55,10 @@ export function SuperAdminMobileBottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden safe-area-bottom shadow-lg"
+      className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
       style={{ zIndex: 50 }}
     >
-      <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
+      <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           const active = isActive(link.href);
@@ -66,8 +67,9 @@ export function SuperAdminMobileBottomNav() {
             <Link
               key={link.href}
               to={link.href}
+              onClick={() => triggerHaptic('light')}
               className={cn(
-                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[60px] touch-manipulation active:bg-white/5',
+                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-white/5',
                 active
                   ? 'text-[hsl(var(--super-admin-primary))] font-medium bg-white/5'
                   : 'text-[hsl(var(--super-admin-text))]/70'
@@ -83,7 +85,8 @@ export function SuperAdminMobileBottomNav() {
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <button 
-              className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-[hsl(var(--super-admin-text))]/70 min-h-[60px] touch-manipulation w-full active:bg-white/5"
+              onClick={() => triggerHaptic('medium')}
+              className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-[hsl(var(--super-admin-text))]/70 min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-white/5"
             >
               <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
               <span className="truncate max-w-full px-1">More</span>

@@ -1301,11 +1301,11 @@ section {
   /* Safe area insets for notched devices (consolidated) */
   @supports (padding: max(0px)) {
     .safe-area-bottom {
-      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
     }
 
     .safe-area-top {
-      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-top: max(0.5rem, env(safe-area-inset-top));
     }
 
     .safe-area-left {
@@ -1314,6 +1314,15 @@ section {
 
     .safe-area-right {
       padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    
+    /* Legacy safe area classes for backward compatibility */
+    .pb-safe {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    .pt-safe {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
     }
   }
 

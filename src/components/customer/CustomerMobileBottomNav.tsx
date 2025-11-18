@@ -3,6 +3,7 @@ import { Home, ShoppingBag, Package, User, ShoppingCart, Users } from "lucide-re
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { triggerHaptic } from "@/lib/utils/mobile";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,8 +99,8 @@ export function CustomerMobileBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden safe-area-bottom" style={{ zIndex: 50 }}>
-      <div className="flex justify-around items-center h-16 px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" style={{ zIndex: 50 }}>
+      <div className="grid grid-cols-6 h-full items-center px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -108,9 +109,12 @@ export function CustomerMobileBottomNav() {
           return (
             <button
               key={item.label}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                triggerHaptic('light');
+                navigate(item.path);
+              }}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors relative",
+                "flex flex-col items-center justify-center gap-1 w-full min-h-[48px] transition-colors relative touch-manipulation active:scale-95",
                 isActive
                   ? "text-[hsl(var(--customer-primary))]"
                   : "text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-text))]"
