@@ -35,6 +35,16 @@ section {
   contain: layout style paint;
 }
 
+/* Hide scrollbar for bottom nav */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Mobile bottom navigation spacing */
 @media (max-width: 1024px) {
   main:not(.custom-mobile-padding) {
