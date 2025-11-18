@@ -22,6 +22,8 @@ import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
+import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
+import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -86,24 +88,27 @@ export function MobileBottomNav() {
   }, [location.pathname]); // Close sheet on route change, but not on open state change
 
   return (
-    <nav 
-      className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
-      style={{ pointerEvents: 'auto' }}
-      role="navigation"
-      aria-label="Mobile bottom navigation"
-    >
-      {/* Loading indicator */}
-      {isNavigating && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/30 overflow-hidden">
-          <div className="h-full bg-primary animate-[shimmer_1s_ease-in-out_infinite]" style={{
-            backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1s ease-in-out infinite'
-          }} />
-        </div>
-      )}
-      
-      <div className="grid grid-cols-5 h-full items-center">
+    <>
+      <OfflineIndicator />
+      <MobileErrorBoundary>
+        <nav 
+          className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
+          style={{ pointerEvents: 'auto' }}
+          role="navigation"
+          aria-label="Mobile bottom navigation"
+        >
+          {/* Loading indicator */}
+          {isNavigating && (
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/30 overflow-hidden">
+              <div className="h-full bg-primary animate-[shimmer_1s_ease-in-out_infinite]" style={{
+                backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1s ease-in-out infinite'
+              }} />
+            </div>
+          )}
+          
+          <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           const fullPath = getFullPath(link.href);
@@ -234,6 +239,8 @@ export function MobileBottomNav() {
         </Sheet>
       </div>
     </nav>
+    </MobileErrorBoundary>
+    </>
   );
 }
 
