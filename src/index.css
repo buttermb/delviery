@@ -73,13 +73,16 @@ section {
    * even after navigation. Main content scrolling is handled by individual containers.
    */
   
-  /* Ensure main content is scrollable when keyboard opens */
+  /* REMOVED: keyboard-open main rules - they interfere with admin scroll container
+   * Main content scrolling is handled by individual layout containers
+   */
+  /*
   body.keyboard-open main,
   body.keyboard-open [role="main"] {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    /* Removed height: 100vh constraint - let content determine height */
   }
+  */
   
   /* Dialog content should be scrollable when keyboard opens */
   body.keyboard-open [role="dialog"],

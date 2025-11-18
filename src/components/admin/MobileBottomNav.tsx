@@ -146,7 +146,11 @@ export function MobileBottomNav() {
             style={{ 
               zIndex: 60,
               height: '100vh',
-              maxHeight: '100vh'
+              maxHeight: '100vh',
+              position: 'fixed',
+              top: 0,
+              bottom: 0,
+              left: 0
             }}
           >
             <SidebarProvider
@@ -189,7 +193,7 @@ export function MobileBottomNav() {
                   </div>
                 ) : (
                   <ErrorBoundary onError={setSidebarError}>
-                    <div className="w-full h-full flex flex-col">
+                    <div className="w-full" style={{ minHeight: '100%' }}>
                       <AdaptiveSidebar collapsible="none" />
                     </div>
                   </ErrorBoundary>
