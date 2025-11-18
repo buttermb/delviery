@@ -135,7 +135,7 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom">
+            <main className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom min-h-screen lg:min-h-0 -webkit-overflow-scrolling-touch">
               <AdminErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <Outlet />

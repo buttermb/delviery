@@ -65,7 +65,7 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t lg:hidden safe-area-bottom shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden h-[60px] pb-safe shadow-lg">
       <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
         {quickLinks.map((link) => {
           const Icon = link.icon;
@@ -77,7 +77,7 @@ export function MobileBottomNav() {
               key={link.href}
               to={fullPath}
               className={cn(
-                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[60px] touch-manipulation active:bg-muted/50',
+                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 active:bg-muted/50',
                 active
                   ? 'text-primary font-medium bg-primary/5'
                   : 'text-muted-foreground'
@@ -104,18 +104,18 @@ export function MobileBottomNav() {
           }}
         >
           <SheetTrigger asChild>
-            <button className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[60px] touch-manipulation w-full active:bg-muted/50">
+            <button className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[44px] min-w-[44px] touch-manipulation w-full active:scale-95 active:bg-muted/50">
               <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
               <span className="truncate max-w-full px-1">More</span>
             </button>
           </SheetTrigger>
           <SheetContent 
             side="left" 
-            className="p-0 w-[85vw] max-w-sm mobile-input-container"
+            className="p-0 w-[85vw] max-w-sm mobile-input-container h-[80vh] max-h-[calc(100vh-80px)] flex flex-col overflow-hidden"
             style={{ zIndex: 60 }}
           >
             <SidebarProvider>
-              <div className="h-full overflow-y-auto bg-background">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background">
                 {/* Phase 1: Add loading state & tenant check */}
                 {!tenant ? (
                   <div className="p-4 space-y-2">
