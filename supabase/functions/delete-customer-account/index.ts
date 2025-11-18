@@ -4,6 +4,7 @@
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { logPHIAccess } from '../_shared/encryption.ts';
 
 const deleteAccountSchema = z.object({
   customer_user_id: z.string().uuid(),
@@ -27,7 +28,7 @@ serve(async (req) => {
     // Verify customer exists and belongs to tenant
     const { data: customerUser, error: customerError } = await supabase
       .from('customer_users')
-      .select('id, email, tenant_id, deleted_at')
+      .select('id, email, tenant_id, deleted_at, customer_id')
       .eq('id', customer_user_id)
       .eq('tenant_id', tenant_id)
       .maybeSingle();
@@ -43,6 +44,25 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Account already deleted' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get customer record to check if encrypted
+    const { data: customerRecord } = await supabase
+      .from('customers')
+      .select('id, is_encrypted')
+      .eq('id', customerUser.customer_id || customer_user_id)
+      .maybeSingle();
+
+    // Log PHI access before deletion
+    if (customerRecord) {
+      await logPHIAccess(
+        supabase,
+        customerRecord.id,
+        'delete',
+        ['all_fields'],
+        customer_user_id,
+        `Account deletion - Reason: ${reason || 'User request'}`
       );
     }
 
