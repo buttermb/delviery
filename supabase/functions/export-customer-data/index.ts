@@ -1,14 +1,16 @@
 /**
  * Export Customer Data (GDPR Compliance)
- * Generates a JSON export of all customer data
+ * Generates a JSON export of all customer data with PHI decryption
  */
 
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { decryptCustomerFields, logPHIAccess } from '../_shared/encryption.ts';
 
 const exportDataSchema = z.object({
   customer_user_id: z.string().uuid(),
   tenant_id: z.string().uuid(),
   format: z.enum(['json', 'csv']).default('json'),
+  encryption_password: z.string().optional(),
 });
 
 serve(async (req) => {
@@ -22,9 +24,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json();
-    const { customer_user_id, tenant_id, format } = exportDataSchema.parse(body);
+    const { customer_user_id, tenant_id, format, encryption_password } = exportDataSchema.parse(body);
 
-    // Verify customer exists and belongs to tenant
     const { data: customerUser, error: customerError } = await supabase
       .from('customer_users')
       .select('*')
@@ -39,9 +40,8 @@ serve(async (req) => {
       );
     }
 
-    // Create export request record
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     const { data: exportRequest, error: requestError } = await supabase
       .from('data_export_requests')
@@ -63,7 +63,6 @@ serve(async (req) => {
       );
     }
 
-    // Collect all customer data
     const exportData: any = {
       export_date: new Date().toISOString(),
       customer_id: customer_user_id,
@@ -85,7 +84,6 @@ serve(async (req) => {
       },
     };
 
-    // Get linked customer record
     if (customerUser.customer_id) {
       const { data: customerRecord } = await supabase
         .from('customers')
@@ -94,11 +92,34 @@ serve(async (req) => {
         .maybeSingle();
 
       if (customerRecord) {
-        exportData.customer_record = customerRecord;
+        if (customerRecord.is_encrypted && encryption_password) {
+          try {
+            const decrypted = await decryptCustomerFields(customerRecord, encryption_password);
+            exportData.customer_record = decrypted;
+            
+            await logPHIAccess(
+              supabase,
+              customerRecord.id,
+              'export',
+              Object.keys(decrypted).filter(k => !k.includes('_encrypted')),
+              customer_user_id,
+              'GDPR data export request'
+            );
+          } catch (error) {
+            console.error('Failed to decrypt customer data:', error);
+            exportData.customer_record = { error: 'Failed to decrypt PHI' };
+          }
+        } else if (customerRecord.is_encrypted) {
+          exportData.customer_record = {
+            note: 'Customer PHI is encrypted. Provide encryption_password to decrypt.',
+            encrypted: true,
+          };
+        } else {
+          exportData.customer_record = customerRecord;
+        }
       }
     }
 
-    // Get orders
     const { data: orders } = await supabase
       .from('orders')
       .select('*')
@@ -108,128 +129,82 @@ serve(async (req) => {
 
     if (orders) {
       exportData.orders = orders;
-    }
+      
+      if (orders.length > 0) {
+        const orderIds = orders.map(o => o.id);
+        const { data: orderItems } = await supabase
+          .from('order_items')
+          .select('*')
+          .in('order_id', orderIds);
 
-    // Get order items
-    if (orders && orders.length > 0) {
-      const orderIds = orders.map(o => o.id);
-      const { data: orderItems } = await supabase
-        .from('order_items')
-        .select('*')
-        .in('order_id', orderIds);
-
-      if (orderItems) {
-        exportData.order_items = orderItems;
+        if (orderItems) exportData.order_items = orderItems;
       }
     }
 
-    // Get sessions (excluding tokens for security)
-    const { data: sessions } = await supabase
-      .from('customer_sessions')
-      .select('id, ip_address, user_agent, created_at, expires_at')
-      .eq('customer_user_id', customer_user_id)
-      .order('created_at', { ascending: false });
-
-    if (sessions) {
-      exportData.sessions = sessions;
-    }
-
-    // Get age verification logs
-    const { data: ageLogs } = await supabase
-      .from('age_verification_logs')
+    const { data: addresses } = await supabase
+      .from('addresses')
       .select('*')
-      .eq('customer_user_id', customer_user_id)
-      .order('verified_at', { ascending: false });
+      .eq('user_id', customerUser.customer_id || customer_user_id);
+    if (addresses) exportData.addresses = addresses;
 
-    if (ageLogs) {
-      exportData.age_verification_history = ageLogs;
-    }
+    const { data: loyaltyPoints } = await supabase
+      .from('loyalty_points')
+      .select('*')
+      .eq('customer_id', customerUser.customer_id || customer_user_id)
+      .eq('tenant_id', tenant_id);
+    if (loyaltyPoints) exportData.loyalty_points = loyaltyPoints;
 
-    // Convert to requested format
-    let exportContent: string;
-    let contentType: string;
-    let filename: string;
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('user_id', customerUser.customer_id || customer_user_id);
+    if (reviews) exportData.reviews = reviews;
 
-    if (format === 'json') {
-      exportContent = JSON.stringify(exportData, null, 2);
-      contentType = 'application/json';
-      filename = `customer-data-export-${customer_user_id}-${Date.now()}.json`;
-    } else {
-      // CSV format (simplified - just orders for now)
-      const csvRows: string[] = [];
-      csvRows.push('Export Date,Type,Data');
-      csvRows.push(`${new Date().toISOString()},Personal Information,${JSON.stringify(exportData.personal_information)}`);
-      
-      if (exportData.orders) {
-        exportData.orders.forEach((order: any) => {
-          csvRows.push(`${order.created_at},Order,${JSON.stringify(order)}`);
-        });
-      }
-      
-      exportContent = csvRows.join('\n');
-      contentType = 'text/csv';
-      filename = `customer-data-export-${customer_user_id}-${Date.now()}.csv`;
-    }
-
-    // Store export in Supabase Storage (if bucket exists)
-    let fileUrl: string | null = null;
-    try {
-      const filePath = `customer-exports/${customer_user_id}/${filename}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('customer-data-exports')
-        .upload(filePath, exportContent, {
-          contentType,
-          upsert: false,
-        });
-
-      if (!uploadError && uploadData) {
-        const { data: urlData } = supabase.storage
-          .from('customer-data-exports')
-          .getPublicUrl(filePath);
-        
-        fileUrl = urlData?.publicUrl || null;
-      }
-    } catch (storageError) {
-      console.error('Storage upload error:', storageError);
-      // Continue without storage - return data directly
-    }
-
-    // Update export request
     await supabase
       .from('data_export_requests')
       .update({
         status: 'completed',
+        export_data: exportData,
         completed_at: new Date().toISOString(),
-        file_url: fileUrl,
       })
       .eq('id', exportRequest.id);
 
-    // Return export data
-    if (fileUrl) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          export_id: exportRequest.id,
-          download_url: fileUrl,
-          expires_at: expiresAt.toISOString(),
-          message: 'Your data export is ready. The download link will expire in 7 days.',
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } else {
-      // Return data directly if storage failed
-      return new Response(
-        exportContent,
-        {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': contentType,
-            'Content-Disposition': `attachment; filename="${filename}"`,
-          },
+    if (format === 'csv') {
+      let csv = 'Section,Field,Value\n';
+      const flattenObject = (obj: any, prefix = '') => {
+        for (const key in obj) {
+          const value = obj[key];
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            flattenObject(value, prefix ? `${prefix}.${key}` : key);
+          } else {
+            csv += `${prefix},${key},"${String(value).replace(/"/g, '""')}"\n`;
+          }
         }
-      );
+      };
+      flattenObject(exportData);
+      
+      return new Response(csv, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename="customer-data-${customer_user_id}.csv"`,
+        },
+      });
     }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        export_request_id: exportRequest.id,
+        data: exportData,
+        expires_at: expiresAt.toISOString(),
+        note: exportData.customer_record?.encrypted 
+          ? 'PHI data is encrypted. Provide encryption_password to decrypt.'
+          : undefined,
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error: unknown) {
     console.error('Export data error:', error);
     return new Response(
@@ -240,4 +215,3 @@ serve(async (req) => {
     );
   }
 });
-
