@@ -160,12 +160,13 @@ const Sidebar = React.forwardRef<
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              maxHeight: 'calc(100vh - 80px)'
+              maxHeight: 'calc(100vh - 80px)',
+              zIndex: 50
             } as React.CSSProperties
           }
           side={side}
         >
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col overflow-hidden">{children}</div>
         </SheetContent>
       </Sheet>
     );
