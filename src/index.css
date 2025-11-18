@@ -2,6 +2,11 @@
 @tailwind utilities;
 @tailwind components;
 
+/* Ensure body is always scrollable */
+body {
+  overflow-y: auto !important;
+}
+
 /* Mobile bottom navigation spacing */
 @media (max-width: 1024px) {
   main:not(.custom-mobile-padding) {
@@ -1228,13 +1233,7 @@
       position: relative;
     }
     
-    /* Prevent viewport issues when keyboard opens */
-    body.keyboard-open {
-      height: 100vh;
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
-    }
+    /* Keyboard handling is managed by JavaScript in useKeyboardDetection hook */
     
     /* Smooth scroll for inputs into view */
     input:focus,
@@ -1287,12 +1286,9 @@
       overflow-y: auto;
     }
     
-    /* Prevent bounce scroll on body, allow on content */
+    /* Prevent bounce scroll effects while allowing normal scrolling */
     html, body {
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
-      height: 100%;
+      overscroll-behavior: none;
     }
     
     main {
