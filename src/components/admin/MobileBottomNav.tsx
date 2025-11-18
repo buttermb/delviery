@@ -177,15 +177,22 @@ export function MobileBottomNav() {
           <SheetContent 
             side="right" 
             className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
-            style={{ zIndex: 120 }}
+            style={{ 
+              zIndex: 120,
+              height: '100vh',
+              maxHeight: '100vh',
+              top: 0,
+              bottom: 0,
+              position: 'fixed'
+            }}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div className="flex flex-col h-full min-h-0">
+            <div className="flex flex-col h-full min-h-0" style={{ height: '100%' }}>
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 flex-shrink-0">
                 <span className="text-sm font-medium">More navigation</span>
               </div>
               
-              <div className="flex-1 overflow-y-auto pb-safe min-h-0" style={{ height: '100%' }}>
+              <div className="flex-1 overflow-y-auto pb-safe min-h-0" style={{ height: '100%', minHeight: 0 }}>
                 <SidebarProvider
                   style={{
                     '--sidebar-width': '100%',
@@ -227,7 +234,7 @@ export function MobileBottomNav() {
                       </div>
                     ) : (
                       <ErrorBoundary onError={setSidebarError}>
-                        <div className="w-full h-full">
+                        <div className="w-full" style={{ height: '100%', minHeight: '100%' }}>
                           <AdaptiveSidebar collapsible="none" />
                         </div>
                       </ErrorBoundary>
