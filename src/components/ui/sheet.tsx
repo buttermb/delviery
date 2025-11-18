@@ -52,7 +52,11 @@ interface SheetContentProps
     VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, children, ...props }, ref) => (
+  ({ side = "right", className, children, style, ...props }, ref) => {
+    // Merge z-index: use provided style zIndex or default to 60
+    const mergedStyle = { zIndex: 60, ...style };
+    
+    return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content 
@@ -62,7 +66,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
           "mobile-input-container",
           className
         )} 
-        style={{ zIndex: 60 }}
+        style={mergedStyle}
         {...props}
       >
         {children}
@@ -72,7 +76,8 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPortal>
-  ),
+    );
+  }
 );
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 

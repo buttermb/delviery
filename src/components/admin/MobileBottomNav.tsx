@@ -163,7 +163,7 @@ export function MobileBottomNav() {
             <button 
               onClick={() => {
                 triggerHaptic('medium');
-                logger.debug('MobileBottomNav More button clicked');
+                logger.debug('MobileBottomNav More button clicked', { open });
               }}
               className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
               style={{ pointerEvents: 'auto' }}
@@ -178,6 +178,7 @@ export function MobileBottomNav() {
             side="right" 
             className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
             style={{ zIndex: 120 }}
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 flex-shrink-0">
