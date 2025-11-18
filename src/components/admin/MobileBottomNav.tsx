@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
+import { logger } from '@/lib/logger';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -85,6 +86,13 @@ export function MobileBottomNav() {
             <Link
               key={link.href}
               to={fullPath}
+              onClick={() => {
+                logger.debug('MobileBottomNav click', { 
+                  href: link.href, 
+                  fullPath,
+                  title: link.title 
+                });
+              }}
               className={cn(
                 'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[44px] min-w-[70px] flex-shrink-0 snap-center touch-manipulation active:scale-95 active:bg-muted/50',
                 active
@@ -115,6 +123,9 @@ export function MobileBottomNav() {
         >
           <SheetTrigger asChild>
             <button 
+              onClick={() => {
+                logger.debug('MobileBottomNav More button clicked');
+              }}
               className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[44px] min-w-[70px] flex-shrink-0 snap-center touch-manipulation active:scale-95 active:bg-muted/50"
               style={{ pointerEvents: 'auto' }}
             >

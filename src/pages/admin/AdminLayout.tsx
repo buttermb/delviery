@@ -24,6 +24,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TutorialProvider } from "@/components/tutorial/TutorialProvider";
+import { logRouteState } from "@/utils/routeDebugger";
+import { logger } from "@/lib/logger";
+import { useEffect } from "react";
 
 /**
  * Admin Layout Component - v2.1.1
@@ -42,6 +45,18 @@ const AdminLayout = () => {
   const moduleVersion = "2.1.0";
   
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  
+  // DEBUG: Log route changes to diagnose navigation issues
+  useEffect(() => {
+    if (tenantSlug) {
+      logRouteState(tenantSlug, location.pathname);
+      logger.debug('AdminLayout route change', { 
+        tenantSlug, 
+        pathname: location.pathname,
+        scrollable: document.body.style.overflow !== 'hidden'
+      });
+    }
+  }, [tenantSlug, location.pathname]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -10,6 +10,7 @@ import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { isFeatureAvailable, featureTableRequirements } from '@/utils/featureAvailability';
+import { logger } from '@/lib/logger';
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -181,7 +182,14 @@ export function Sidebar() {
                             <Link
                               key={item.href}
                               to={fullPath}
-                              onClick={() => setIsOpen(false)}
+                              onClick={() => {
+                                logger.debug('Sidebar click', { 
+                                  href: item.href, 
+                                  fullPath,
+                                  title: item.title 
+                                });
+                                setIsOpen(false);
+                              }}
                               onMouseEnter={() => prefetchOnHover(fullPath)}
                               className={cn(
                                 'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',

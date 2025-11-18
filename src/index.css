@@ -68,22 +68,10 @@ section {
     }
   }
   
-  /* Prevent body scroll when keyboard is open (iOS Safari fix) */
-  body.keyboard-open {
-    position: fixed;
-    width: 100%;
-    /* Store scroll position */
-    top: 0;
-  }
+  /* REMOVED: body.keyboard-open position:fixed was preventing all scrolling
+     This was blocking admin panel navigation - main content already handles scroll */
   
-  /* Ensure main content is scrollable when keyboard opens */
-  body.keyboard-open main,
-  body.keyboard-open [role="main"] {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: 100vh;
-    max-height: 100vh;
-  }
+  /* Main content is already scrollable, no keyboard-specific override needed */
   
   /* Dialog content should be scrollable when keyboard opens */
   body.keyboard-open [role="dialog"],
