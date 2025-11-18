@@ -6,6 +6,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/mobile';
+import { logger } from '@/lib/logger';
 import {
   LayoutDashboard,
   Building2,
@@ -92,7 +93,12 @@ export function SuperAdminMobileBottomNav() {
         })}
 
         {/* More menu */}
-        <Sheet open={open} onOpenChange={setOpen}>
+        <Sheet open={open} onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (isOpen) {
+            logger.debug('SuperAdminMobileBottomNav sheet opened');
+          }
+        }}>
           <SheetTrigger asChild>
             <button 
               onClick={() => triggerHaptic('medium')}
@@ -105,12 +111,20 @@ export function SuperAdminMobileBottomNav() {
             </button>
           </SheetTrigger>
           <SheetContent 
-            side="left" 
-            className="p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
+            side="right" 
+            className="z-[120] p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
           >
-            <SidebarProvider>
-              <SaasAdminSidebar />
-            </SidebarProvider>
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/80">
+                <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">More navigation</span>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto pb-safe">
+                <SidebarProvider>
+                  <SaasAdminSidebar />
+                </SidebarProvider>
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
