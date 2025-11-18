@@ -57,6 +57,8 @@ export function SuperAdminMobileBottomNav() {
     <nav 
       className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
       style={{ zIndex: 50 }}
+      role="navigation"
+      aria-label="Super admin mobile navigation"
     >
       <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
@@ -74,8 +76,10 @@ export function SuperAdminMobileBottomNav() {
                   ? 'text-[hsl(var(--super-admin-primary))] font-medium bg-white/5'
                   : 'text-[hsl(var(--super-admin-text))]/70'
               )}
+              aria-label={`Navigate to ${link.title}`}
+              aria-current={active ? 'page' : undefined}
             >
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
               <span className="truncate max-w-full px-1">{link.title}</span>
             </Link>
           );
@@ -87,8 +91,10 @@ export function SuperAdminMobileBottomNav() {
             <button 
               onClick={() => triggerHaptic('medium')}
               className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-[hsl(var(--super-admin-text))]/70 min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-white/5"
+              aria-label="Open navigation menu"
+              aria-expanded={open}
             >
-              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
               <span className="truncate max-w-full px-1">More</span>
             </button>
           </SheetTrigger>

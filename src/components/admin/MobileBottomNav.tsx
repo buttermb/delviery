@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { logger } from '@/lib/logger';
+import { Loader2 } from 'lucide-react';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -28,6 +29,7 @@ export function MobileBottomNav() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [sidebarError, setSidebarError] = useState<Error | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const quickLinks = [
     {
@@ -81,12 +83,32 @@ export function MobileBottomNav() {
       setOpen(false);
     }
   }, [location.pathname]); // Close sheet on route change, but not on open state change
+  
+  // Show loading state during navigation
+  useEffect(() => {
+    setIsNavigating(true);
+    const timer = setTimeout(() => setIsNavigating(false), 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
       style={{ pointerEvents: 'auto' }}
+      role="navigation"
+      aria-label="Mobile bottom navigation"
     >
+      {/* Loading indicator */}
+      {isNavigating && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/30 overflow-hidden">
+          <div className="h-full bg-primary animate-[shimmer_1s_ease-in-out_infinite]" style={{
+            backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1s ease-in-out infinite'
+          }} />
+        </div>
+      )}
+      
       <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
           const Icon = link.icon;
@@ -112,8 +134,10 @@ export function MobileBottomNav() {
                   : 'text-muted-foreground'
               )}
               style={{ pointerEvents: 'auto' }}
+              aria-label={`Navigate to ${link.title}`}
+              aria-current={active ? 'page' : undefined}
             >
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
               <span className="truncate max-w-full px-1">{link.title}</span>
             </Link>
           );
@@ -145,8 +169,10 @@ export function MobileBottomNav() {
               }}
               className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
               style={{ pointerEvents: 'auto' }}
+              aria-label="Open navigation menu"
+              aria-expanded={open}
             >
-              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
               <span className="truncate max-w-full">More</span>
             </button>
           </SheetTrigger>
