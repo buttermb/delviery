@@ -1162,13 +1162,16 @@ section {
     }
     
     /* Ensure bottom navigation doesn't overlap inputs */
-    nav[class*="fixed"][class*="bottom"] {
+    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
+    /* This rule only applies to navs without explicit z-index */
+    nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
       z-index: 50 !important;
     }
     
     /* Input containers should be above bottom nav */
+    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
     .chat-input-container,
-    .mobile-input-container {
+    .mobile-input-container:not([style*="z-index"]) {
       z-index: 70 !important;
       position: relative;
     }
@@ -1258,13 +1261,16 @@ section {
     }
     
     /* Ensure bottom navigation doesn't overlap inputs */
-    nav[class*="fixed"][class*="bottom"] {
+    /* Note: Bottom nav z-index is set inline in component (z-index: 100) */
+    /* This rule only applies to navs without explicit z-index */
+    nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
       z-index: 50 !important;
     }
     
     /* Input containers should be above bottom nav */
+    /* Note: SheetContent uses explicit z-index: 120, so this doesn't apply */
     .chat-input-container,
-    .mobile-input-container {
+    .mobile-input-container:not([style*="z-index"]) {
       z-index: 70 !important;
       position: relative;
     }

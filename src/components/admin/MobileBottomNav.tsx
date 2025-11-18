@@ -92,8 +92,11 @@ export function MobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav 
-          className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
-          style={{ pointerEvents: 'auto' }}
+          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
+          style={{ 
+            pointerEvents: 'auto',
+            zIndex: 100
+          }}
           role="navigation"
           aria-label="Mobile bottom navigation"
         >
@@ -176,7 +179,7 @@ export function MobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
+            className="p-0 w-[85vw] max-w-sm flex flex-col overflow-hidden bg-background"
             style={{ 
               zIndex: 120,
               height: '100vh',
