@@ -112,14 +112,15 @@ export function SuperAdminMobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="z-[120] p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
+            className="p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
+            style={{ zIndex: 120 }}
           >
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/80">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/80 flex-shrink-0">
                 <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">More navigation</span>
               </div>
               
-              <div className="flex-1 overflow-y-auto pb-safe">
+              <div className="flex-1 overflow-y-auto pb-safe min-h-0">
                 <SidebarProvider>
                   <SaasAdminSidebar />
                 </SidebarProvider>
