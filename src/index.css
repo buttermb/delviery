@@ -29,7 +29,6 @@
   body.keyboard-open {
     position: fixed;
     width: 100%;
-    overflow: hidden;
     /* Store scroll position */
     top: 0;
   }

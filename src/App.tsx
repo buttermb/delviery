@@ -347,6 +347,15 @@ const App = () => {
   // Enable automatic version checking and cache busting
   useVersionCheck();
 
+  // Safety cleanup: Ensure scroll is never blocked on app load
+  useEffect(() => {
+    // Remove any stuck keyboard-open state
+    document.body.classList.remove('keyboard-open');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.overflow = '';
+  }, []);
+
   // Clear stale auth data on marketing/login pages to prevent cross-tenant contamination
   useEffect(() => {
     const path = window.location.pathname;
