@@ -27,6 +27,7 @@ import { ScrollReveal, StaggerContainer } from "@/components/marketing/ScrollRev
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
+import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
 import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
@@ -99,6 +100,9 @@ export default function MarketingHome() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Performance Monitor - Dev mode only (Ctrl+Shift+P to toggle) */}
+      <PerformanceMonitor />
+      
       {/* Parallax Background Effects */}
       <ParallaxBackground />
       

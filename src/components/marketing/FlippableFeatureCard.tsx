@@ -35,7 +35,7 @@ export function FlippableFeatureCard({
       <motion.div
         className="relative w-full h-full"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         style={{ transformStyle: 'preserve-3d' }}
       >
         {/* FRONT SIDE */}
@@ -43,13 +43,9 @@ export function FlippableFeatureCard({
           className="absolute inset-0 backface-hidden p-8 rounded-2xl bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))] shadow-lg flex flex-col"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            className="mb-6"
-          >
+          <div className="mb-6">
             <Icon className="h-14 w-14 text-[hsl(var(--marketing-primary))]" />
-          </motion.div>
+          </div>
           <h3 className="text-xl font-bold mb-3 text-[hsl(var(--marketing-text))]">
             {title}
           </h3>
@@ -77,16 +73,13 @@ export function FlippableFeatureCard({
             {benefits && (
               <ul className="space-y-3 mb-6">
                 {benefits.map((benefit, index) => (
-                  <motion.li 
+                  <li 
                     key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, type: 'spring', stiffness: 200 }}
                     className="flex items-start gap-3 text-white/90"
                   >
                     <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                     <span className="text-sm leading-relaxed">{benefit}</span>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
             )}
@@ -94,14 +87,10 @@ export function FlippableFeatureCard({
 
           <div className="space-y-4">
             {metric && (
-              <motion.div 
-                className="p-4 rounded-lg bg-white/10 backdrop-blur-sm"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
+              <div className="p-4 rounded-lg bg-white/10 backdrop-blur-sm">
                 <div className="text-xs text-white/70 mb-1">{metric.label}</div>
                 <div className="text-3xl font-bold text-white">{metric.value}</div>
-              </motion.div>
+              </div>
             )}
 
             <a 

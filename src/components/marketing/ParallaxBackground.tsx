@@ -1,14 +1,22 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { useInView } from 'react-intersection-observer';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function ParallaxBackground() {
   usePerformanceMonitor('ParallaxBackground');
   const ref = useRef<HTMLDivElement>(null);
+  const { ref: inViewRef, inView } = useInView({ threshold: 0.1 });
+  const prefersReducedMotion = useReducedMotion();
+  
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   });
+
+  // Pause animations when off-screen or reduced motion preferred
+  const shouldAnimate = inView && !prefersReducedMotion;
 
   const y1 = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const y2 = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
@@ -16,8 +24,13 @@ export function ParallaxBackground() {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.6, 0.3, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.5]);
 
+  if (!shouldAnimate) {
+    return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none" />;
+  }
+
   return (
     <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div ref={inViewRef} className="absolute inset-0" />
       {/* Gradient orbs */}
       <motion.div
         className="absolute top-[10%] left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))]/20 to-[hsl(var(--marketing-accent))]/10 blur-3xl"
@@ -34,8 +47,8 @@ export function ParallaxBackground() {
         style={{ y: y3, opacity, willChange: 'transform, opacity', transform: 'translate3d(0, 0, 0)' }}
       />
 
-      {/* Floating shapes - reduced from 20 to 8 for performance */}
-      {[...Array(8)].map((_, i) => (
+      {/* Floating shapes - reduced to 5 for performance */}
+      {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-2 h-2 rounded-full bg-[hsl(var(--marketing-accent))]/20"
@@ -51,7 +64,7 @@ export function ParallaxBackground() {
             opacity: [0.2, 0.5, 0.2],
           }}
           transition={{
-            duration: 3 + Math.random() * 2,
+            duration: 5 + Math.random() * 3,
             repeat: Infinity,
             delay: Math.random() * 2,
             ease: 'easeInOut',

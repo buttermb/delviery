@@ -1,6 +1,7 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface SectionTransitionProps {
   children: ReactNode;
@@ -15,10 +16,16 @@ export function SectionTransition({
   variant = 'fade',
   delay = 0,
 }: SectionTransitionProps) {
+  const prefersReducedMotion = useReducedMotion();
   const { ref, inView } = useInView({
     threshold: 0.05,
     triggerOnce: true,
   });
+
+  // Skip animations if user prefers reduced motion
+  if (prefersReducedMotion) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
 
   const getAnimationProps = () => {
     switch (variant) {
