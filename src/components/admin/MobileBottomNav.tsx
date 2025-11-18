@@ -1,5 +1,6 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { triggerHaptic } from '@/lib/utils/mobile';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -83,16 +84,10 @@ export function MobileBottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden h-[60px] pb-safe shadow-lg"
+      className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
       style={{ pointerEvents: 'auto' }}
     >
-      <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory gap-0.5 sm:gap-1 px-1"
-        style={{ 
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
+      <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
           const Icon = link.icon;
           const fullPath = getFullPath(link.href);
@@ -103,6 +98,7 @@ export function MobileBottomNav() {
               key={link.href}
               to={fullPath}
               onClick={() => {
+                triggerHaptic('light');
                 logger.debug('MobileBottomNav click', { 
                   href: link.href, 
                   fullPath,
@@ -110,7 +106,7 @@ export function MobileBottomNav() {
                 });
               }}
               className={cn(
-                'flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs transition-colors min-h-[44px] min-w-[70px] flex-shrink-0 snap-center touch-manipulation active:scale-95 active:bg-muted/50',
+                'flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs transition-colors min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50',
                 active
                   ? 'text-primary font-medium bg-primary/5'
                   : 'text-muted-foreground'
@@ -144,13 +140,14 @@ export function MobileBottomNav() {
           <SheetTrigger asChild>
             <button 
               onClick={() => {
+                triggerHaptic('medium');
                 logger.debug('MobileBottomNav More button clicked');
               }}
-              className="flex flex-col items-center justify-center py-2 sm:py-3 text-[10px] sm:text-xs text-muted-foreground min-h-[44px] min-w-[70px] flex-shrink-0 snap-center touch-manipulation active:scale-95 active:bg-muted/50"
+              className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
               style={{ pointerEvents: 'auto' }}
             >
               <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" />
-              <span className="truncate max-w-full px-1">More</span>
+              <span className="truncate max-w-full">More</span>
             </button>
           </SheetTrigger>
           <SheetContent 
