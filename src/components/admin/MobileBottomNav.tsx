@@ -180,19 +180,22 @@ export function MobileBottomNav() {
             style={{ zIndex: 120 }}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full min-h-0">
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 flex-shrink-0">
                 <span className="text-sm font-medium">More navigation</span>
               </div>
               
-              <div className="flex-1 overflow-y-auto pb-safe min-h-0">
+              <div className="flex-1 overflow-y-auto pb-safe min-h-0" style={{ height: '100%' }}>
                 <SidebarProvider
                   style={{
                     '--sidebar-width': '100%',
                     '--sidebar-width-icon': '3rem',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
                   } as React.CSSProperties}
                 >
-                  <div className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full">
+                  <div className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full flex-1 min-h-0">
                     {!tenant ? (
                       <div className="p-4 space-y-2">
                         <Skeleton className="h-12 w-full" />
@@ -224,7 +227,7 @@ export function MobileBottomNav() {
                       </div>
                     ) : (
                       <ErrorBoundary onError={setSidebarError}>
-                        <div className="w-full" style={{ minHeight: '100%' }}>
+                        <div className="w-full h-full">
                           <AdaptiveSidebar collapsible="none" />
                         </div>
                       </ErrorBoundary>
