@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useEncryption } from '@/lib/hooks/useEncryption';
+import { decryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, User, Mail, Phone, MapPin, Calendar, 
-  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare 
+  DollarSign, Star, ShoppingBag, CreditCard, Gift, MessageSquare, Shield 
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -18,7 +20,6 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
-import { useEncryption } from '@/lib/hooks/useEncryption';
 import { logger } from '@/lib/logger';
 
 interface Customer {
@@ -46,7 +47,7 @@ export default function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
-  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+  const { isReady: encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);

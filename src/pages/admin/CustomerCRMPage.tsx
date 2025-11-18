@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useEncryption } from "@/lib/hooks/useEncryption";
+import { decryptCustomerData } from "@/lib/utils/customerEncryption";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +58,7 @@ interface Customer {
 
 export default function CustomerCRMPage() {
   const { tenant } = useTenantAdminAuth();
+  const { isReady: encryptionIsReady } = useEncryption();
   const [searchTerm, setSearchTerm] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
   const [segmentFilter, setSegmentFilter] = useState<string>("all");
@@ -78,12 +81,33 @@ export default function CustomerCRMPage() {
           return [];
         }
 
+        // Decrypt encrypted customers if encryption is ready
+        if (encryptionIsReady && data) {
+          const decrypted = await Promise.all(
+            data.map(async (c) => {
+              if (c.is_encrypted) {
+                try {
+                  return await decryptCustomerData(c);
+                } catch (err) {
+                  logger.error('Failed to decrypt customer', err as Error, { 
+                    component: 'CustomerCRMPage',
+                    customerId: c.id 
+                  });
+                  return c; // Return plaintext fallback
+                }
+              }
+              return c;
+            })
+          );
+          return decrypted as any as Customer[];
+        }
+
         return (data || []) as Customer[];
       } catch {
         return [];
       }
     },
-    enabled: !!tenant?.id,
+    enabled: !!tenant?.id && encryptionIsReady,
   });
 
   // Calculate lifecycle stage for each customer
