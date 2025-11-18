@@ -34,12 +34,10 @@ export function mergeEncryptedPlaintext<T extends Record<string, unknown>>(
   record: T,
   decrypted: Partial<T>
 ): T {
-  const merged = { ...record };
+  const merged = { ...record } as Record<string, unknown>;
   
   // For each field that could be encrypted
   Object.keys(decrypted).forEach(key => {
-    const encryptedKey = `${key}_encrypted`;
-    
     // If we have decrypted value, use it (it's from encrypted field)
     if (decrypted[key] !== undefined && decrypted[key] !== null) {
       merged[key] = decrypted[key];
@@ -50,7 +48,7 @@ export function mergeEncryptedPlaintext<T extends Record<string, unknown>>(
     }
   });
   
-  return merged;
+  return merged as T;
 }
 
 /**
@@ -93,7 +91,7 @@ export function validateEncryptedRecord(record: Record<string, unknown>): {
   if (!record.encryption_metadata) {
     errors.push('Missing encryption_metadata');
   } else {
-    const metadata = record.encryption_metadata;
+    const metadata = record.encryption_metadata as any;
     if (typeof metadata !== 'object' || metadata === null) {
       errors.push('Invalid encryption_metadata format');
     } else {

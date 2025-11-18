@@ -134,33 +134,8 @@ export default function ProductManagement() {
 
       if (error) throw error;
       
-      // Decrypt product data if encryption is ready and encrypted fields exist
-      let decryptedProducts = data || [];
-      if (encryptionIsReady && data && data.length > 0 && (data[0].name_encrypted || data[0].sku_encrypted)) {
-        try {
-          decryptedProducts = data.map((product: any) => {
-            try {
-              const decrypted = decryptObject(product);
-              return {
-                ...product,
-                name: decrypted.name || product.name || '',
-                description: decrypted.description || product.description || '',
-                sku: decrypted.sku || product.sku || '',
-                price: decrypted.price || product.price || null,
-                supplier_info: decrypted.supplier_info || product.supplier_info || null,
-              };
-            } catch (decryptError) {
-              logger.warn('Failed to decrypt product, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'ProductManagement', productId: product.id });
-              return product;
-            }
-          });
-        } catch (error) {
-          logger.warn('Failed to decrypt products, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'ProductManagement' });
-          decryptedProducts = data || [];
-        }
-      }
-      
-      setProducts(decryptedProducts);
+      // Products are NOT encrypted - use plaintext fields directly
+      setProducts(data || []);
     } catch (error: unknown) {
       logger.error('Failed to load products', error, { component: 'ProductManagement' });
       toast.error("Failed to load products: " + (error instanceof Error ? error.message : "An error occurred"));

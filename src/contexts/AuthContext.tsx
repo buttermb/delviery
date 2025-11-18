@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
-        logger.debug('Initial session', { hasSession: !!session }, 'AuthContext');
+        logger.debug('Initial session', { hasSession: !!session, component: 'AuthContext' });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        logger.debug('Auth state change', { event, hasSession: !!session }, 'AuthContext');
+        logger.debug('Auth state change', { event, hasSession: !!session, component: 'AuthContext' });
         
         if (mounted) {
           setSession(session);

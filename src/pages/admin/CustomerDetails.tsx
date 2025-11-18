@@ -76,28 +76,8 @@ export default function CustomerDetails() {
 
       if (customerError) throw customerError;
       
-      // Decrypt customer data if encryption is ready and encrypted fields exist
-      let decryptedCustomer = customerData;
-      if (encryptionIsReady && (customerData.name_encrypted || customerData.email_encrypted || customerData.phone_encrypted)) {
-        try {
-          decryptedCustomer = decryptObject(customerData);
-          // Map decrypted fields to Customer interface
-          const nameParts = typeof decryptedCustomer.name === 'string' ? decryptedCustomer.name.split(' ') : ['', ''];
-          decryptedCustomer = {
-            ...customerData,
-            first_name: nameParts[0] || customerData.first_name || '',
-            last_name: nameParts.slice(1).join(' ') || customerData.last_name || '',
-            email: decryptedCustomer.email || customerData.email || '',
-            phone: decryptedCustomer.phone || customerData.phone || '',
-            address: decryptedCustomer.address || customerData.address || '',
-          };
-        } catch (decryptError) {
-          logger.warn('Failed to decrypt customer data, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerDetails', customerId: id });
-          // Fall back to plaintext
-        }
-      }
-      
-      setCustomer(decryptedCustomer as Customer);
+      // Customer data is NOT encrypted - use plaintext fields directly
+      setCustomer(customerData as Customer);
 
       // Load orders
       const { data: ordersData, error: ordersError } = await supabase

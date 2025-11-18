@@ -61,34 +61,8 @@ export default function Orders() {
         return;
       }
       
-      // Decrypt order data if encryption is ready and encrypted fields exist
-      let decryptedOrders = data || [];
-      if (encryptionIsReady && data && data.length > 0 && (data[0].items_encrypted || data[0].total_encrypted)) {
-        try {
-          decryptedOrders = data.map((order: any) => {
-            try {
-              const decrypted = decryptObject(order);
-              return {
-                ...order,
-                items: decrypted.items || order.items || [],
-                total: decrypted.total || order.total || order.total_amount || 0,
-                total_amount: decrypted.total ? parseFloat(decrypted.total) : (order.total_amount || 0),
-                customer_notes: decrypted.customer_notes || order.customer_notes || null,
-                delivery_address: decrypted.delivery_address || order.delivery_address || null,
-                payment_info: decrypted.payment_info || order.payment_info || null,
-              };
-            } catch (decryptError) {
-              logger.warn('Failed to decrypt order, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'Orders', orderId: order.id });
-              return order;
-            }
-          });
-        } catch (error) {
-          logger.warn('Failed to decrypt orders, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-          decryptedOrders = data || [];
-        }
-      }
-      
-      setOrders(decryptedOrders);
+      // Orders are NOT encrypted - use plaintext fields directly
+      setOrders(data || []);
     } catch (error: unknown) {
       logger.error('Unexpected error loading orders', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error('Failed to load orders. Please check your connection.');
