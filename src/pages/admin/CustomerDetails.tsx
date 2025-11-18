@@ -18,6 +18,8 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
+import { useEncryption } from '@/lib/hooks/useEncryption';
+import { logger } from '@/lib/logger';
 
 interface Customer {
   id: string;
@@ -44,6 +46,7 @@ export default function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -72,7 +75,29 @@ export default function CustomerDetails() {
         .single();
 
       if (customerError) throw customerError;
-      setCustomer(customerData);
+      
+      // Decrypt customer data if encryption is ready and encrypted fields exist
+      let decryptedCustomer = customerData;
+      if (encryptionIsReady && (customerData.name_encrypted || customerData.email_encrypted || customerData.phone_encrypted)) {
+        try {
+          decryptedCustomer = decryptObject(customerData);
+          // Map decrypted fields to Customer interface
+          const nameParts = typeof decryptedCustomer.name === 'string' ? decryptedCustomer.name.split(' ') : ['', ''];
+          decryptedCustomer = {
+            ...customerData,
+            first_name: nameParts[0] || customerData.first_name || '',
+            last_name: nameParts.slice(1).join(' ') || customerData.last_name || '',
+            email: decryptedCustomer.email || customerData.email || '',
+            phone: decryptedCustomer.phone || customerData.phone || '',
+            address: decryptedCustomer.address || customerData.address || '',
+          };
+        } catch (decryptError) {
+          logger.warn('Failed to decrypt customer data, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerDetails', customerId: id });
+          // Fall back to plaintext
+        }
+      }
+      
+      setCustomer(decryptedCustomer as Customer);
 
       // Load orders
       const { data: ordersData, error: ordersError } = await supabase
@@ -113,7 +138,7 @@ export default function CustomerDetails() {
       if (notesError) throw notesError;
       setNotes(notesData || []);
     } catch (error) {
-      console.error('Error loading customer data:', error);
+      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails', customerId: id });
       toast.error('Failed to load customer data');
     } finally {
       setLoading(false);
@@ -137,7 +162,7 @@ export default function CustomerDetails() {
       setNewNote('');
       loadCustomerData();
     } catch (error) {
-      console.error('Error adding note:', error);
+      logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails', customerId: id });
       toast.error('Failed to add note');
     }
   };

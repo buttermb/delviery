@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
@@ -844,6 +845,23 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
       localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       
+      // Store user ID for encryption
+      if (data.admin?.id) {
+        sessionStorage.setItem('floraiq_user_id', data.admin.id);
+        localStorage.setItem('floraiq_user_id', data.admin.id);
+      }
+
+      // Initialize encryption with user's password
+      try {
+        if (data.admin?.id) {
+          await clientEncryption.initialize(password, data.admin.id);
+          logger.debug('Encryption initialized successfully', { userId: data.admin.id }, { component: 'TenantAdminAuthContext' });
+        }
+      } catch (encryptionError) {
+        // Log but don't block login - encryption is optional for now
+        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'TenantAdminAuthContext' });
+      }
+
       // Setup proactive refresh timer
       setupRefreshTimer(data.access_token);
       
@@ -919,11 +937,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } catch (error) {
       logger.error("[AUTH] Logout error", error);
     } finally {
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
+      
       // Clear Supabase session
       await supabase.auth.signOut();
       
       // Always clear local state
       clearAuthState();
+      
+      // Clear user ID from storage
+      sessionStorage.removeItem('floraiq_user_id');
+      localStorage.removeItem('floraiq_user_id');
     }
   };
 

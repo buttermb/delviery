@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
@@ -186,6 +187,23 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
       localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+
+      // Store user ID for encryption
+      if (data.customer?.id) {
+        sessionStorage.setItem('floraiq_user_id', data.customer.id);
+        localStorage.setItem('floraiq_user_id', data.customer.id);
+      }
+
+      // Initialize encryption with user's password
+      try {
+        if (data.customer?.id) {
+          await clientEncryption.initialize(password, data.customer.id);
+          logger.debug('Encryption initialized successfully', { userId: data.customer.id }, { component: 'CustomerAuthContext' });
+        }
+      } catch (encryptionError) {
+        // Log but don't block login - encryption is optional for now
+        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'CustomerAuthContext' });
+      }
     } catch (error) {
       logger.error("Login error", error);
       throw error;
@@ -207,12 +225,19 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       logger.error("Logout error", error);
     } finally {
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
+      
       setToken(null);
       setCustomer(null);
       setTenant(null);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(CUSTOMER_KEY);
       localStorage.removeItem(TENANT_KEY);
+      
+      // Clear user ID from storage
+      sessionStorage.removeItem('floraiq_user_id');
+      localStorage.removeItem('floraiq_user_id');
     }
   };
 

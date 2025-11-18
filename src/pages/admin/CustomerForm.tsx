@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useEncryptedMutation } from '@/lib/hooks/useEncryptedMutation';
+import { useEncryption } from '@/lib/hooks/useEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { logger } from '@/lib/logger';
 
 export default function CustomerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { insert, update: updateEncrypted } = useEncryptedMutation({ table: 'customers' });
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
@@ -52,21 +57,40 @@ export default function CustomerForm() {
       if (error) throw error;
       
       if (data) {
+        // Try to decrypt if encryption is ready and encrypted fields exist
+        let decryptedData = data;
+        if (encryptionIsReady && (data.name_encrypted || data.email_encrypted || data.phone_encrypted)) {
+          try {
+            decryptedData = decryptObject(data);
+          } catch (decryptError) {
+            logger.warn('Failed to decrypt customer data, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerForm' });
+            // Fall back to plaintext fields
+          }
+        }
+
+        // Map to form fields (handle both encrypted and plaintext during hybrid migration)
+        const firstName = decryptedData.name_encrypted ? 
+          (typeof decryptedData.name === 'string' ? decryptedData.name.split(' ')[0] : '') : 
+          (decryptedData.first_name || '');
+        const lastName = decryptedData.name_encrypted ? 
+          (typeof decryptedData.name === 'string' ? decryptedData.name.split(' ').slice(1).join(' ') : '') : 
+          (decryptedData.last_name || '');
+
         setFormData({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          date_of_birth: data.date_of_birth || '',
-          address: data.address || '',
-          customer_type: data.customer_type || 'recreational',
-          medical_card_number: data.medical_card_number || '',
-          medical_card_expiration: data.medical_card_expiration || '',
-          status: data.status || 'active'
+          first_name: firstName,
+          last_name: lastName,
+          email: decryptedData.email_encrypted ? decryptedData.email : (decryptedData.email || ''),
+          phone: decryptedData.phone_encrypted ? decryptedData.phone : (decryptedData.phone || ''),
+          date_of_birth: decryptedData.date_of_birth || '',
+          address: decryptedData.address_encrypted ? decryptedData.address : (decryptedData.address || ''),
+          customer_type: decryptedData.customer_type || 'recreational',
+          medical_card_number: decryptedData.medical_card_number || '',
+          medical_card_expiration: decryptedData.medical_card_expiration || '',
+          status: decryptedData.status || 'active'
         });
       }
     } catch (error: any) {
-      console.error('Error loading customer:', error);
+      logger.error('Error loading customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to load customer data');
     } finally {
       setPageLoading(false);
@@ -94,21 +118,44 @@ export default function CustomerForm() {
     try {
       setLoading(true);
 
+      // Prepare customer data - combine name fields for encryption
       const customerData = {
-        ...formData,
+        name: `${formData.first_name} ${formData.last_name}`.trim(), // Combined for encryption
+        email: formData.email,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        notes: null, // Can be added later
         tenant_id: tenant.id,
+        date_of_birth: formData.date_of_birth || null,
+        customer_type: formData.customer_type,
+        medical_card_number: formData.medical_card_number || null,
+        medical_card_expiration: formData.medical_card_expiration || null,
+        status: formData.status,
         total_spent: 0,
         loyalty_points: 0,
         loyalty_tier: 'bronze'
       };
 
       if (isEdit) {
-        const { error } = await supabase
-          .from('customers')
-          .update(customerData)
-          .eq('id', id);
+        // Use encrypted mutation if encryption is ready
+        if (encryptionIsReady) {
+          await updateEncrypted(id!, customerData);
+        } else {
+          // Fallback to plaintext during hybrid migration
+          const { error } = await supabase
+            .from('customers')
+            .update({
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+              ...customerData
+            })
+            .eq('id', id);
 
-        if (error) throw error;
+          if (error) throw error;
+        }
         toast.success('Customer updated successfully');
       } else {
         // Check tenant limits before creating
@@ -122,11 +169,24 @@ export default function CustomerForm() {
           return;
         }
 
-        const { error } = await supabase
-          .from('customers')
-          .insert([customerData as any]);
+        // Use encrypted mutation if encryption is ready
+        if (encryptionIsReady) {
+          await insert(customerData);
+        } else {
+          // Fallback to plaintext during hybrid migration
+          const { error } = await supabase
+            .from('customers')
+            .insert([{
+              first_name: formData.first_name,
+              last_name: formData.last_name,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+              ...customerData
+            } as any]);
 
-        if (error) throw error;
+          if (error) throw error;
+        }
 
         // Update usage count
         const currentUsage = ((tenant as any).usage as any) || {};
@@ -146,7 +206,7 @@ export default function CustomerForm() {
 
       navigate('/admin/customer-management');
     } catch (error: any) {
-      console.error('Error saving customer:', error);
+      logger.error('Error saving customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to save customer', {
         description: error.message
       });

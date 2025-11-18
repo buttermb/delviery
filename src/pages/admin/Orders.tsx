@@ -15,6 +15,7 @@ import { logger } from '@/lib/logger';
 import { useDebounce } from '@/hooks/useDebounce';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
+import { useEncryption } from '@/lib/hooks/useEncryption';
 
 interface Order {
   id: string;
@@ -29,6 +30,7 @@ interface Order {
 
 export default function Orders() {
   const navigate = useTenantNavigate();
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,14 +56,41 @@ export default function Orders() {
       const { data, error } = await query;
       
       if (error) {
-        logger.error('Error loading orders', error, { component: 'Orders' });
+        logger.error('Error loading orders', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
         toast.error(`Failed to load orders: ${error.message}`);
         return;
       }
       
-      setOrders(data || []);
+      // Decrypt order data if encryption is ready and encrypted fields exist
+      let decryptedOrders = data || [];
+      if (encryptionIsReady && data && data.length > 0 && (data[0].items_encrypted || data[0].total_encrypted)) {
+        try {
+          decryptedOrders = data.map((order: any) => {
+            try {
+              const decrypted = decryptObject(order);
+              return {
+                ...order,
+                items: decrypted.items || order.items || [],
+                total: decrypted.total || order.total || order.total_amount || 0,
+                total_amount: decrypted.total ? parseFloat(decrypted.total) : (order.total_amount || 0),
+                customer_notes: decrypted.customer_notes || order.customer_notes || null,
+                delivery_address: decrypted.delivery_address || order.delivery_address || null,
+                payment_info: decrypted.payment_info || order.payment_info || null,
+              };
+            } catch (decryptError) {
+              logger.warn('Failed to decrypt order, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'Orders', orderId: order.id });
+              return order;
+            }
+          });
+        } catch (error) {
+          logger.warn('Failed to decrypt orders, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+          decryptedOrders = data || [];
+        }
+      }
+      
+      setOrders(decryptedOrders);
     } catch (error: unknown) {
-      logger.error('Unexpected error loading orders', error);
+      logger.error('Unexpected error loading orders', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error('Failed to load orders. Please check your connection.');
     } finally {
       setLoading(false);

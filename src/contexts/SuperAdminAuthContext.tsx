@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
@@ -214,6 +215,23 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
 
+      // Store user ID for encryption
+      if (data.superAdmin?.id) {
+        sessionStorage.setItem('floraiq_user_id', data.superAdmin.id);
+        localStorage.setItem('floraiq_user_id', data.superAdmin.id);
+      }
+
+      // Initialize encryption with user's password
+      try {
+        if (data.superAdmin?.id) {
+          await clientEncryption.initialize(password, data.superAdmin.id);
+          logger.debug('Encryption initialized successfully', { userId: data.superAdmin.id }, { component: 'SuperAdminAuthContext' });
+        }
+      } catch (encryptionError) {
+        // Log but don't block login - encryption is optional for now
+        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'SuperAdminAuthContext' });
+      }
+
       // ============================================================================
       // PHASE 2: HYBRID AUTH - Store and set Supabase session for RLS access
       // ============================================================================
@@ -276,12 +294,19 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       authFlowLogger.failFlow(flowId, error, category);
       logger.error("Logout error", error);
     } finally {
+      // Destroy encryption session before logout
+      clientEncryption.destroy();
+      
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(SUPER_ADMIN_KEY);
       localStorage.removeItem(SUPABASE_SESSION_KEY);
+      
+      // Clear user ID from storage
+      sessionStorage.removeItem('floraiq_user_id');
+      localStorage.removeItem('floraiq_user_id');
     }
   };
 

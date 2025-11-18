@@ -11,7 +11,8 @@ import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
+import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
 import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
@@ -204,6 +205,24 @@ export default function LoginPage() {
       localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(authResponse.admin));
       localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(authResponse.tenant));
       localStorage.setItem('lastTenantSlug', tenant.slug);
+
+      // Store user ID for encryption
+      if (authData.user?.id) {
+        sessionStorage.setItem('floraiq_user_id', authData.user.id);
+        localStorage.setItem('floraiq_user_id', authData.user.id);
+      }
+
+      // Initialize encryption with user's password
+      try {
+        await clientEncryption.initialize(data.password, authData.user.id);
+        logger.debug('Encryption initialized successfully', { userId: authData.user.id }, { component: 'LoginPage' });
+      } catch (encryptionError) {
+        // Log but don't block login - encryption is optional for now
+        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'LoginPage' });
+      }
+
+      // Clear password from memory (best effort)
+      data.password = '';
 
       toast({
         title: 'Welcome back!',

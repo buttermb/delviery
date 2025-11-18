@@ -31,6 +31,7 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { logger } from "@/lib/logger";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
+import { useEncryption } from "@/lib/hooks/useEncryption";
 
 interface Customer {
   id: string;
@@ -50,6 +51,7 @@ interface Customer {
 export default function CustomerManagement() {
   const navigate = useNavigate();
   const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -89,7 +91,36 @@ export default function CustomerManagement() {
       const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCustomers(data || []);
+      
+      // Decrypt customer data if encryption is ready and encrypted fields exist
+      let decryptedCustomers = data || [];
+      if (encryptionIsReady && data && data.length > 0 && (data[0].name_encrypted || data[0].email_encrypted)) {
+        try {
+          decryptedCustomers = data.map((customer: any) => {
+            try {
+              const decrypted = decryptObject(customer);
+              // Map decrypted fields to Customer interface
+              const nameParts = typeof decrypted.name === 'string' ? decrypted.name.split(' ') : ['', ''];
+              return {
+                ...customer,
+                first_name: nameParts[0] || customer.first_name || '',
+                last_name: nameParts.slice(1).join(' ') || customer.last_name || '',
+                email: decrypted.email || customer.email || null,
+                phone: decrypted.phone || customer.phone || null,
+              };
+            } catch (decryptError) {
+              // Fall back to plaintext if decryption fails
+              logger.warn('Failed to decrypt customer, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement', customerId: customer.id });
+              return customer;
+            }
+          });
+        } catch (error) {
+          logger.warn('Failed to decrypt customers, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerManagement' });
+          decryptedCustomers = data || [];
+        }
+      }
+      
+      setCustomers(decryptedCustomers);
       toast.success("Customers loaded");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load customers";

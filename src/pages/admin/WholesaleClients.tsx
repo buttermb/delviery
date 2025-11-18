@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useEncryption } from "@/lib/hooks/useEncryption";
+import { logger } from "@/lib/logger";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,7 @@ import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
+  const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: any }>({ open: false });
@@ -66,10 +69,35 @@ export default function WholesaleClients() {
       
       if (error) throw error;
 
+      // Decrypt client data if encryption is ready
+      let decryptedClients = data || [];
+      if (encryptionIsReady && data && data.length > 0 && (data[0].business_name_encrypted || data[0].license_number_encrypted)) {
+        try {
+          decryptedClients = data.map((client: any) => {
+            try {
+              const decrypted = decryptObject(client);
+              return {
+                ...client,
+                business_name: decrypted.business_name || client.business_name || '',
+                license_number: decrypted.license_number || client.license_number || '',
+                address: decrypted.address || client.address || '',
+                contact_info: decrypted.contact_info || client.contact_info || '',
+              };
+            } catch (decryptError) {
+              logger.warn('Failed to decrypt client, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'WholesaleClients', clientId: client.id });
+              return client;
+            }
+          });
+        } catch (error) {
+          logger.warn('Failed to decrypt clients, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'WholesaleClients' });
+          decryptedClients = data || [];
+        }
+      }
+
       // Map to expected format
-      return (data || []).map(client => ({
+      return decryptedClients.map(client => ({
         ...client,
-        territory: client.address.split(',')[1]?.trim() || 'Unknown',
+        territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
         total_spent: Number(client.outstanding_balance) + 100000 // Estimate
       }));

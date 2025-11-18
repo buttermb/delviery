@@ -22,6 +22,7 @@ import { CourierProvider } from "./contexts/CourierContext";
 import { SuperAdminAuthProvider } from "./contexts/SuperAdminAuthContext";
 import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
+import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { lazy, Suspense, useEffect } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
@@ -403,13 +404,14 @@ const App = () => {
         <ThemeProvider>
           <AuthProvider>
             <AccountProvider>
+              <EncryptionProvider>
+                  <SuperAdminAuthProvider>
+                    <TenantAdminAuthProvider>
+                      <CustomerAuthProvider>
                         <TenantProvider>
                           <WhiteLabelProvider>
                 <TooltipProvider>
                   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                  <SuperAdminAuthProvider>
-                    <TenantAdminAuthProvider>
-                      <CustomerAuthProvider>
                     <SkipToContent />
                     <OfflineBanner />
                     <InstallPWA />
@@ -747,13 +749,14 @@ const App = () => {
                         <Route path="*" element={<NotFoundPage />} />
                       </Routes>
                     </Suspense>
-                      </CustomerAuthProvider>
-                    </TenantAdminAuthProvider>
-                  </SuperAdminAuthProvider>
                   </BrowserRouter>
                 </TooltipProvider>
                           </WhiteLabelProvider>
                         </TenantProvider>
+                      </CustomerAuthProvider>
+                    </TenantAdminAuthProvider>
+                  </SuperAdminAuthProvider>
+              </EncryptionProvider>
             </AccountProvider>
           </AuthProvider>
         </ThemeProvider>

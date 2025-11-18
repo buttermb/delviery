@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import { clientEncryption } from "@/lib/encryption/clientEncryption";
 
 interface AuthContextType {
   user: User | null;
@@ -51,11 +52,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Destroy encryption session before signing out
+      clientEncryption.destroy();
+      
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
+      
+      // Clear user ID from storage
+      sessionStorage.removeItem('floraiq_user_id');
+      localStorage.removeItem('floraiq_user_id');
     } catch (error) {
-      logger.error("Error signing out", error as Error, 'AuthContext');
+      logger.error("Error signing out", error instanceof Error ? error : new Error(String(error)), { component: 'AuthContext' });
     }
   };
 

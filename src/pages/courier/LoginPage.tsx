@@ -9,7 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
+import { clientEncryption } from '@/lib/encryption/clientEncryption';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -34,6 +35,22 @@ export default function CourierLoginPage() {
       });
 
       if (authError) throw authError;
+
+      // Initialize encryption after successful auth (before PIN step)
+      try {
+        if (authData.user?.id) {
+          sessionStorage.setItem('floraiq_user_id', authData.user.id);
+          localStorage.setItem('floraiq_user_id', authData.user.id);
+          await clientEncryption.initialize(password, authData.user.id);
+          logger.debug('Encryption initialized successfully', { userId: authData.user.id }, { component: 'CourierLoginPage' });
+        }
+      } catch (encryptionError) {
+        // Log but don't block login - encryption is optional for now
+        logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'CourierLoginPage' });
+      }
+
+      // Clear password from memory (best effort)
+      setPassword('');
 
       // Check if user is a courier or runner
       const { data: courierData } = await supabase
