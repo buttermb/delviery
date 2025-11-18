@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useEffect, useState } from "react";
+import { useMobileNavigation } from "@/hooks/useMobileNavigation";
 
 export function CustomerMobileBottomNav() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export function CustomerMobileBottomNav() {
   const isMobile = useIsMobile();
   const { getGuestCartCount } = useGuestCart();
   const [cartUpdateKey, setCartUpdateKey] = useState(0);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const { isNavigating } = useMobileNavigation();
 
   // Listen for cart updates
   useEffect(() => {
@@ -27,13 +28,6 @@ export function CustomerMobileBottomNav() {
     window.addEventListener('cartUpdated', handleCartUpdate);
     return () => window.removeEventListener('cartUpdated', handleCartUpdate);
   }, []);
-  
-  // Show loading state during navigation
-  useEffect(() => {
-    setIsNavigating(true);
-    const timer = setTimeout(() => setIsNavigating(false), 300);
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
 
   // Get current user session for cart query
   const [user, setUser] = useState<{ id: string } | null>(null);

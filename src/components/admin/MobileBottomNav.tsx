@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
+import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -29,7 +30,7 @@ export function MobileBottomNav() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [sidebarError, setSidebarError] = useState<Error | null>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const { isNavigating } = useMobileNavigation();
 
   const quickLinks = [
     {
@@ -83,13 +84,6 @@ export function MobileBottomNav() {
       setOpen(false);
     }
   }, [location.pathname]); // Close sheet on route change, but not on open state change
-  
-  // Show loading state during navigation
-  useEffect(() => {
-    setIsNavigating(true);
-    const timer = setTimeout(() => setIsNavigating(false), 300);
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
 
   return (
     <nav 
