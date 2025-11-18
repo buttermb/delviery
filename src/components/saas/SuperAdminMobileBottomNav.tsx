@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { SaasAdminSidebar } from './SaasAdminSidebar';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
@@ -107,7 +108,9 @@ export function SuperAdminMobileBottomNav() {
             side="left" 
             className="p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
           >
-            <SaasAdminSidebar />
+            <SidebarProvider>
+              <SaasAdminSidebar />
+            </SidebarProvider>
           </SheetContent>
         </Sheet>
       </div>
