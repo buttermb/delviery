@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -17,10 +18,16 @@ export function ScrollReveal({
   duration = 0.6,
   className = '',
 }: ScrollRevealProps) {
+  const prefersReducedMotion = useReducedMotion();
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  // Skip animations if user prefers reduced motion
+  if (prefersReducedMotion) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
 
   const variants: Variants = {
     hidden: {

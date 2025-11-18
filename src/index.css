@@ -2,9 +2,37 @@
 @tailwind utilities;
 @tailwind components;
 
-/* Ensure body is always scrollable */
+/* Optimize scroll performance */
 body {
   overflow-y: auto !important;
+  will-change: scroll-position;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* GPU acceleration for transforms */
+* {
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+}
+
+/* Performance optimizations for animations */
+.animate-fade-in,
+.animate-scale-in,
+.animate-slide-in-right,
+[class*="animate-"] {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes */
+.animation-complete {
+  will-change: auto;
+}
+
+/* Optimize rendering for sections */
+section {
+  contain: layout style paint;
 }
 
 /* Mobile bottom navigation spacing */
@@ -1178,6 +1206,21 @@ body {
 
   /* Touch device optimizations */
   @media (hover: none) and (pointer: coarse) {
+    /* Disable expensive animations on touch devices */
+    .animate-fade-in,
+    .animate-scale-in,
+    .animate-slide-in-right,
+    [class*="animate-"] {
+      animation: none !important;
+    }
+    
+    /* Reduce motion for better performance */
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
     /* Better tap feedback */
     button:active,
     a:active,
