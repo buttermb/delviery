@@ -17,6 +17,7 @@ export function CustomerMobileBottomNav() {
   const isMobile = useIsMobile();
   const { getGuestCartCount } = useGuestCart();
   const [cartUpdateKey, setCartUpdateKey] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Listen for cart updates
   useEffect(() => {
@@ -26,6 +27,13 @@ export function CustomerMobileBottomNav() {
     window.addEventListener('cartUpdated', handleCartUpdate);
     return () => window.removeEventListener('cartUpdated', handleCartUpdate);
   }, []);
+  
+  // Show loading state during navigation
+  useEffect(() => {
+    setIsNavigating(true);
+    const timer = setTimeout(() => setIsNavigating(false), 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   // Get current user session for cart query
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -99,7 +107,22 @@ export function CustomerMobileBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" style={{ zIndex: 50 }}>
+    <nav 
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" 
+      style={{ zIndex: 50 }}
+      role="navigation"
+      aria-label="Customer mobile navigation"
+    >
+      {/* Loading indicator */}
+      {isNavigating && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[hsl(var(--customer-primary))]/30 overflow-hidden">
+          <div className="h-full bg-[hsl(var(--customer-primary))] animate-[shimmer_1s_ease-in-out_infinite]" style={{
+            backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--customer-primary)), transparent)',
+            backgroundSize: '200% 100%'
+          }} />
+        </div>
+      )}
+      
       <div className="grid grid-cols-6 h-full items-center px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
