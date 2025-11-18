@@ -176,21 +176,22 @@ export function MobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="z-[120] p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
+            className="p-0 w-[85vw] max-w-sm mobile-input-container flex flex-col overflow-hidden bg-background"
+            style={{ zIndex: 120 }}
           >
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 flex-shrink-0">
                 <span className="text-sm font-medium">More navigation</span>
               </div>
               
-              <div className="flex-1 overflow-y-auto pb-safe">
+              <div className="flex-1 overflow-y-auto pb-safe min-h-0">
                 <SidebarProvider
                   style={{
                     '--sidebar-width': '100%',
                     '--sidebar-width-icon': '3rem',
                   } as React.CSSProperties}
                 >
-                  <div className="flex-1 overflow-y-auto overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background min-h-0 w-full">
+                  <div className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full">
                     {!tenant ? (
                       <div className="p-4 space-y-2">
                         <Skeleton className="h-12 w-full" />
