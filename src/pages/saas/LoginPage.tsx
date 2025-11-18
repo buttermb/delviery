@@ -215,7 +215,7 @@ export default function LoginPage() {
       // Initialize encryption with user's password
       try {
         await clientEncryption.initialize(data.password, authData.user.id);
-        logger.debug('Encryption initialized successfully', { userId: authData.user.id }, { component: 'LoginPage' });
+        logger.debug('Encryption initialized successfully', { userId: authData.user.id, component: 'LoginPage' });
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
         logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'LoginPage' });
@@ -243,7 +243,7 @@ export default function LoginPage() {
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
       
-      logger.error('Login error', errorObj, 'LoginPage');
+      logger.error('Login error', errorObj, { component: 'LoginPage' });
       toast({
         title: 'Login Failed',
         description: getErrorMessage(category, errorObj) || errorObj.message || 'Invalid email or password',

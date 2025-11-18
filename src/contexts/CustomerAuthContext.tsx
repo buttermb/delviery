@@ -130,7 +130,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        logger.error("Token verification failed:", response.status, errorText);
+        logger.error("Token verification failed", new Error(errorText), { status: response.status, component: 'CustomerAuthContext' });
         throw new Error(`Token verification failed: ${response.status}`);
       }
 
@@ -198,7 +198,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         if (data.customer?.id) {
           await clientEncryption.initialize(password, data.customer.id);
-          logger.debug('Encryption initialized successfully', { userId: data.customer.id }, { component: 'CustomerAuthContext' });
+          logger.debug('Encryption initialized successfully', { userId: data.customer.id, component: 'CustomerAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
@@ -275,10 +275,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         setShowTimeoutWarning(true);
       } else if (timeUntilExpiry < oneDay && timeUntilExpiry >= fiveMinutes) {
         // Auto-verify between 5 minutes and 1 day before expiry
-        logger.info("Token expiring soon, verifying...", undefined, 'CustomerAuth');
+        logger.info("Token expiring soon, verifying...", { component: 'CustomerAuth' });
         refreshToken();
       } else if (timeUntilExpiry <= 0) {
-        logger.warn("Token expired, logging out...", undefined, 'CustomerAuth');
+        logger.warn("Token expired, logging out...", { component: 'CustomerAuth' });
         setShowTimeoutWarning(false);
         logout();
       }

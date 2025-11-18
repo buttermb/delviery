@@ -69,33 +69,9 @@ export default function WholesaleClients() {
       
       if (error) throw error;
 
-      // Decrypt client data if encryption is ready
-      let decryptedClients = data || [];
-      if (encryptionIsReady && data && data.length > 0 && (data[0].business_name_encrypted || data[0].license_number_encrypted)) {
-        try {
-          decryptedClients = data.map((client: any) => {
-            try {
-              const decrypted = decryptObject(client);
-              return {
-                ...client,
-                business_name: decrypted.business_name || client.business_name || '',
-                license_number: decrypted.license_number || client.license_number || '',
-                address: decrypted.address || client.address || '',
-                contact_info: decrypted.contact_info || client.contact_info || '',
-              };
-            } catch (decryptError) {
-              logger.warn('Failed to decrypt client, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'WholesaleClients', clientId: client.id });
-              return client;
-            }
-          });
-        } catch (error) {
-          logger.warn('Failed to decrypt clients, using plaintext', error instanceof Error ? error : new Error(String(error)), { component: 'WholesaleClients' });
-          decryptedClients = data || [];
-        }
-      }
-
+      // Wholesale clients are NOT encrypted - use plaintext fields directly
       // Map to expected format
-      return decryptedClients.map(client => ({
+      return (data || []).map(client => ({
         ...client,
         territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,

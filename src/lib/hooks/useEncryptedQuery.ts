@@ -45,8 +45,8 @@ export function useEncryptedQuery<T = any>({
       setLoading(true);
       setError(null);
 
-      // Build query
-      let query = supabase.from(table).select(select);
+      // Build query with type assertion to bypass strict type checking
+      let query = supabase.from(table as any).select(select);
 
       // Apply filters
       Object.entries(filters).forEach(([key, value]) => {
@@ -63,14 +63,15 @@ export function useEncryptedQuery<T = any>({
       // Decrypt data
       if (single) {
         const decrypted = encryptedData 
-          ? decryptObject<T>(encryptedData) 
+          ? decryptObject<T>(encryptedData as any) 
           : null;
         setData(decrypted);
       } else {
-        const decrypted = encryptedData?.map((record: any) =>
-          decryptObject<T>(record)
-        ) || [];
-        setData(decrypted);
+        const dataArray = Array.isArray(encryptedData) ? encryptedData : [];
+        const decrypted = dataArray.map((record: any) =>
+          decryptObject<T>(record as any)
+        );
+        setData(decrypted as any);
       }
     } catch (err) {
       console.error('Query error:', err);

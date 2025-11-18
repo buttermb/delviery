@@ -288,7 +288,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           parsedAdmin = JSON.parse(storedAdmin);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), 'TenantAdminAuthContext');
+          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           clearAuthState();
           setLoading(false);
           return;
@@ -296,7 +296,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           parsedTenant = JSON.parse(storedTenant);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), 'TenantAdminAuthContext');
+          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           clearAuthState();
           setLoading(false);
           return;
@@ -445,7 +445,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           name: errorObj.name,
           component: 'TenantAdminAuthContext'
         });
-        logger.error('[AUTH] Initialization error', errorObj, 'TenantAdminAuthContext');
+        logger.error('[AUTH] Initialization error', errorObj, { component: 'TenantAdminAuthContext' });
         clearAuthState();
       } finally {
         const totalDuration = Date.now() - startTime;
@@ -554,22 +554,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         response = resilientResponse;
         
         const duration = Date.now() - startTime;
-        logger.debug(`Token verification completed in ${duration}ms`, undefined, 'TenantAdminAuthContext');
+        logger.debug(`Token verification completed in ${duration}ms`, { component: 'TenantAdminAuthContext' });
       } catch (fetchError: any) {
         const duration = Date.now() - startTime;
         
         if (fetchError.name === 'AbortError') {
-          logger.warn(`Token verification aborted after ${duration}ms (timeout)`, fetchError, 'TenantAdminAuthContext');
+          logger.warn(`Token verification aborted after ${duration}ms (timeout)`, { error: fetchError.message, component: 'TenantAdminAuthContext' });
           
           // Retry once if not already retried (fail-fast: max 1 retry)
           if (retryCount < maxRetries) {
-            logger.debug(`Retrying token verification (attempt ${retryCount + 1}/${maxRetries + 1})`, undefined, 'TenantAdminAuthContext');
+            logger.debug(`Retrying token verification (attempt ${retryCount + 1}/${maxRetries + 1})`, { component: 'TenantAdminAuthContext' });
             await sleep(Math.pow(2, retryCount) * 100); // Exponential backoff: 100ms, 200ms
             return verifyToken(tokenToVerify, retryCount + 1);
           }
           
           // Clear auth state on timeout after retries exhausted
-          logger.error('Token verification failed after timeout and retries', fetchError, 'TenantAdminAuthContext');
+          logger.error('Token verification failed after timeout and retries', fetchError instanceof Error ? fetchError : new Error(String(fetchError)), { component: 'TenantAdminAuthContext' });
           setLoading(false);
           setToken(null);
           setAccessToken(null);
@@ -642,7 +642,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // Retry with exponential backoff (only if not already retried due to timeout)
         if (retryCount < maxRetries) {
           const backoffMs = Math.pow(2, retryCount) * 100; // 100ms, 200ms
-          logger.debug(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries + 1})`, undefined, 'TenantAdminAuthContext');
+          logger.debug(`Retrying token verification in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries + 1})`, { component: 'TenantAdminAuthContext' });
           await sleep(backoffMs);
           return verifyToken(tokenToVerify, retryCount + 1);
         }
@@ -662,7 +662,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             access_token: currentToken,
             refresh_token: currentRefreshToken,
           }).catch(error => {
-            logger.warn('Failed to set Supabase session during verification', error, 'TenantAdminAuthContext');
+            logger.warn('Failed to set Supabase session during verification', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           });
         }
         
@@ -855,7 +855,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       try {
         if (data.admin?.id) {
           await clientEncryption.initialize(password, data.admin.id);
-          logger.debug('Encryption initialized successfully', { userId: data.admin.id }, { component: 'TenantAdminAuthContext' });
+          logger.debug('Encryption initialized successfully', { userId: data.admin.id, component: 'TenantAdminAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
@@ -873,7 +873,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         ? ErrorCategory.NETWORK 
         : ErrorCategory.AUTH;
       authFlowLogger.failFlow(flowId, errorObj, category);
-      logger.error("Login error", errorObj, 'TenantAdminAuthContext');
+      logger.error("Login error", errorObj, { component: 'TenantAdminAuthContext' });
       
       // Show user-friendly error messages
       const { showErrorToast } = await import('@/lib/toastUtils');

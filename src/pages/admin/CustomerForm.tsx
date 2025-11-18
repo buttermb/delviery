@@ -57,36 +57,18 @@ export default function CustomerForm() {
       if (error) throw error;
       
       if (data) {
-        // Try to decrypt if encryption is ready and encrypted fields exist
-        let decryptedData = data;
-        if (encryptionIsReady && (data.name_encrypted || data.email_encrypted || data.phone_encrypted)) {
-          try {
-            decryptedData = decryptObject(data);
-          } catch (decryptError) {
-            logger.warn('Failed to decrypt customer data, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerForm' });
-            // Fall back to plaintext fields
-          }
-        }
-
-        // Map to form fields (handle both encrypted and plaintext during hybrid migration)
-        const firstName = decryptedData.name_encrypted ? 
-          (typeof decryptedData.name === 'string' ? decryptedData.name.split(' ')[0] : '') : 
-          (decryptedData.first_name || '');
-        const lastName = decryptedData.name_encrypted ? 
-          (typeof decryptedData.name === 'string' ? decryptedData.name.split(' ').slice(1).join(' ') : '') : 
-          (decryptedData.last_name || '');
-
+        // Customer data is NOT encrypted - use plaintext fields directly
         setFormData({
-          first_name: firstName,
-          last_name: lastName,
-          email: decryptedData.email_encrypted ? decryptedData.email : (decryptedData.email || ''),
-          phone: decryptedData.phone_encrypted ? decryptedData.phone : (decryptedData.phone || ''),
-          date_of_birth: decryptedData.date_of_birth || '',
-          address: decryptedData.address_encrypted ? decryptedData.address : (decryptedData.address || ''),
-          customer_type: decryptedData.customer_type || 'recreational',
-          medical_card_number: decryptedData.medical_card_number || '',
-          medical_card_expiration: decryptedData.medical_card_expiration || '',
-          status: decryptedData.status || 'active'
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          date_of_birth: data.date_of_birth || '',
+          address: data.address || '',
+          customer_type: data.customer_type || 'recreational',
+          medical_card_number: data.medical_card_number || '',
+          medical_card_expiration: data.medical_card_expiration || '',
+          status: data.status || 'active'
         });
       }
     } catch (error: any) {

@@ -80,7 +80,7 @@ export function useEncryptedMutation({
     try {
       const encryptedData = encryptRecord(data);
       const { data: result, error: insertError } = await supabase
-        .from(table)
+        .from(table as any)
         .insert(encryptedData)
         .select()
         .single();
@@ -107,7 +107,7 @@ export function useEncryptedMutation({
     try {
       const encryptedData = encryptRecord(data);
       const { data: result, error: updateError } = await supabase
-        .from(table)
+        .from(table as any)
         .update(encryptedData)
         .eq('id', id)
         .select()
@@ -135,7 +135,7 @@ export function useEncryptedMutation({
     try {
       const encryptedData = encryptRecord(data);
       const { data: result, error: upsertError } = await supabase
-        .from(table)
+        .from(table as any)
         .upsert(encryptedData)
         .select()
         .single();

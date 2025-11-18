@@ -42,7 +42,7 @@ export default function CourierLoginPage() {
           sessionStorage.setItem('floraiq_user_id', authData.user.id);
           localStorage.setItem('floraiq_user_id', authData.user.id);
           await clientEncryption.initialize(password, authData.user.id);
-          logger.debug('Encryption initialized successfully', { userId: authData.user.id }, { component: 'CourierLoginPage' });
+          logger.debug('Encryption initialized successfully', { userId: authData.user.id, component: 'CourierLoginPage' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now

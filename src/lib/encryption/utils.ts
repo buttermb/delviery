@@ -6,14 +6,14 @@ import type { EncryptionMetadata } from './types';
 /**
  * Get list of fields that should be encrypted for a table
  */
-export function getEncryptedFields(tableName: string): string[] {
+export function getEncryptedFields(tableName: string): readonly string[] {
   return ENCRYPTED_FIELDS[tableName as keyof typeof ENCRYPTED_FIELDS] || [];
 }
 
 /**
  * Get list of searchable fields for a table
  */
-export function getSearchableFields(tableName: string): string[] {
+export function getSearchableFields(tableName: string): readonly string[] {
   return SEARCHABLE_FIELDS[tableName as keyof typeof SEARCHABLE_FIELDS] || [];
 }
 

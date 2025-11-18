@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ENCRYPTED_TABLES } from '../encryption/constants';
 import { logger } from '../logger';
 
-interface MigrationStatus {
+export interface MigrationStatus {
   table: string;
   totalRecords: number;
   encryptedRecords: number;
@@ -25,7 +25,7 @@ export async function getTableMigrationStatus(tableName: string): Promise<Migrat
   try {
     // Get total count
     const { count: totalCount, error: countError } = await supabase
-      .from(tableName)
+      .from(tableName as any)
       .select('*', { count: 'exact', head: true });
 
     if (countError) {
@@ -35,7 +35,7 @@ export async function getTableMigrationStatus(tableName: string): Promise<Migrat
 
     // Get encrypted count (has encryption_metadata)
     const { count: encryptedCount, error: encryptedError } = await supabase
-      .from(tableName)
+      .from(tableName as any)
       .select('*', { count: 'exact', head: true })
       .not('encryption_metadata', 'is', null);
 

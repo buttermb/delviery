@@ -142,11 +142,11 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
           supabase.auth.setSession({
             access_token: session.access_token,
             refresh_token: session.refresh_token || '',
-          }).then(({ data, error }) => {
+            }).then(({ data, error }) => {
             if (error) {
-              logger.error('Failed to restore Supabase session', error);
+              logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
             } else {
-              logger.info('Supabase session restored successfully', undefined, 'SuperAdminAuth');
+              logger.info('Supabase session restored successfully', { component: 'SuperAdminAuth' });
             }
           });
         }
@@ -225,7 +225,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       try {
         if (data.superAdmin?.id) {
           await clientEncryption.initialize(password, data.superAdmin.id);
-          logger.debug('Encryption initialized successfully', { userId: data.superAdmin.id }, { component: 'SuperAdminAuthContext' });
+          logger.debug('Encryption initialized successfully', { userId: data.superAdmin.id, component: 'SuperAdminAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
@@ -236,7 +236,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       // PHASE 2: HYBRID AUTH - Store and set Supabase session for RLS access
       // ============================================================================
       if (data.supabaseSession) {
-        logger.info('Setting Supabase session for super admin RLS access', undefined, 'SuperAdminAuth');
+        logger.info('Setting Supabase session for super admin RLS access', { component: 'SuperAdminAuth' });
         setSupabaseSession(data.supabaseSession);
         localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.supabaseSession));
         
@@ -249,7 +249,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         if (sessionError) {
           logger.error('Failed to set Supabase session', sessionError);
         } else {
-          logger.info('Super admin can now access tenant data via RLS', undefined, 'SuperAdminAuth');
+          logger.info('Super admin can now access tenant data via RLS', { component: 'SuperAdminAuth' });
         }
       }
       
@@ -396,10 +396,10 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         setShowTimeoutWarning(true);
       } else if (timeUntilExpiry < fiveMinutes && timeUntilExpiry >= oneMinute) {
         // Auto-refresh between 1-5 minutes before expiry
-        logger.info("Token expiring soon, refreshing...", undefined, 'SuperAdminAuth');
+        logger.info("Token expiring soon, refreshing...", { component: 'SuperAdminAuth' });
         refreshToken();
       } else if (timeUntilExpiry <= 0) {
-        logger.warn("Token expired, logging out...", undefined, 'SuperAdminAuth');
+        logger.warn("Token expired, logging out...", { component: 'SuperAdminAuth' });
         setShowTimeoutWarning(false);
         logout();
       }
