@@ -49,7 +49,28 @@ export const ENCRYPTED_TABLES = [
 
 // Fields to encrypt per table
 export const ENCRYPTED_FIELDS = {
-  customers: ['name', 'email', 'phone', 'address', 'notes'],
+  customers: [
+    'first_name', 
+    'last_name', 
+    'email', 
+    'phone', 
+    'address',
+    'city',
+    'state',
+    'zip_code',
+    'date_of_birth', // PHI - HIPAA
+    'medical_card_number', // PHI - HIPAA
+    'medical_card_state', // PHI - HIPAA
+    'medical_card_expiration', // PHI - HIPAA
+    'physician_name', // PHI - HIPAA
+    'qualifying_conditions', // PHI - HIPAA
+    'caregiver_name',
+    'caregiver_phone',
+    'medical_card_photo_url', // PHI - HIPAA
+    'allergies',
+    'preferred_products',
+    'preferred_strains'
+  ],
   businesses: ['business_name', 'license_number', 'address', 'contact_info', 'bank_details'],
   products: ['name', 'description', 'price', 'sku', 'supplier_info'],
   orders: ['items', 'total', 'customer_notes', 'delivery_address', 'payment_info'],
@@ -61,7 +82,7 @@ export const ENCRYPTED_FIELDS = {
 
 // Searchable fields (create search indexes)
 export const SEARCHABLE_FIELDS = {
-  customers: ['email', 'phone'],
+  customers: ['email', 'phone', 'medical_card_number'],
   businesses: ['business_name', 'license_number'],
   products: ['name', 'sku'],
 } as const;
