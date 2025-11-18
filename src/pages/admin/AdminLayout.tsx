@@ -151,7 +151,7 @@ const AdminLayout = () => {
               </div>
             </header>
             <main 
-              className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom" 
+              className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom -webkit-overflow-scrolling-touch"
               style={{ 
                 WebkitOverflowScrolling: 'touch',
                 height: '100%',

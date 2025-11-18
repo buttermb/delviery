@@ -9,7 +9,7 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
@@ -66,11 +66,20 @@ export function MobileBottomNav() {
   };
 
   // Close sheet when route changes (user navigates)
+  // Use a ref to track if we just opened the sheet to prevent immediate closing
+  const justOpenedRef = useRef(false);
+  
   useEffect(() => {
+    // Don't close if we just opened (give it time to render)
+    if (justOpenedRef.current) {
+      justOpenedRef.current = false;
+      return;
+    }
+    
     if (open) {
       setOpen(false);
     }
-  }, [location.pathname, open]); // Close sheet on any route change
+  }, [location.pathname]); // Close sheet on route change, but not on open state change
 
   return (
     <nav 
@@ -119,12 +128,16 @@ export function MobileBottomNav() {
           open={open} 
           onOpenChange={(isOpen) => {
             setOpen(isOpen);
-            // Phase 2: Force preferences refresh when sheet opens
-            if (isOpen && tenant?.id) {
-              queryClient.invalidateQueries({ 
-                queryKey: ['sidebar-preferences', tenant.id] 
-              });
-              setSidebarError(null);
+            // Mark that we just opened to prevent immediate closing
+            if (isOpen) {
+              justOpenedRef.current = true;
+              // Phase 2: Force preferences refresh when sheet opens
+              if (tenant?.id) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['sidebar-preferences', tenant.id] 
+                });
+                setSidebarError(null);
+              }
             }
           }}
         >
