@@ -126,6 +126,12 @@ export interface DecryptedCustomer {
   allergies?: string[]; // PHI
   preferred_products?: string[];
   preferred_strains?: string[];
+  customer_type?: string;
+  status?: string;
+  total_spent?: number;
+  loyalty_points?: number;
+  loyalty_tier?: string;
+  last_purchase_at?: string;
   created_at: string;
   updated_at: string;
   tenant_id: string;
