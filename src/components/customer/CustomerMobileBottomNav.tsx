@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { useEffect, useState } from "react";
 import { useMobileNavigation } from "@/hooks/useMobileNavigation";
+import { MobileErrorBoundary } from "@/components/mobile/MobileErrorBoundary";
+import { OfflineIndicator } from "@/components/mobile/OfflineIndicator";
 
 export function CustomerMobileBottomNav() {
   const navigate = useNavigate();
@@ -101,23 +103,26 @@ export function CustomerMobileBottomNav() {
   ];
 
   return (
-    <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" 
-      style={{ zIndex: 50 }}
-      role="navigation"
-      aria-label="Customer mobile navigation"
-    >
-      {/* Loading indicator */}
-      {isNavigating && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[hsl(var(--customer-primary))]/30 overflow-hidden">
-          <div className="h-full bg-[hsl(var(--customer-primary))] animate-[shimmer_1s_ease-in-out_infinite]" style={{
-            backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--customer-primary)), transparent)',
-            backgroundSize: '200% 100%'
-          }} />
-        </div>
-      )}
-      
-      <div className="grid grid-cols-6 h-full items-center px-2">
+    <>
+      <OfflineIndicator />
+      <MobileErrorBoundary>
+        <nav 
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" 
+          style={{ zIndex: 50 }}
+          role="navigation"
+          aria-label="Customer mobile navigation"
+        >
+          {/* Loading indicator */}
+          {isNavigating && (
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-[hsl(var(--customer-primary))]/30 overflow-hidden">
+              <div className="h-full bg-[hsl(var(--customer-primary))] animate-[shimmer_1s_ease-in-out_infinite]" style={{
+                backgroundImage: 'linear-gradient(90deg, transparent, hsl(var(--customer-primary)), transparent)',
+                backgroundSize: '200% 100%'
+              }} />
+            </div>
+          )}
+          
+          <div className="grid grid-cols-6 h-full items-center px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -159,6 +164,8 @@ export function CustomerMobileBottomNav() {
         })}
       </div>
     </nav>
+    </MobileErrorBoundary>
+    </>
   );
 }
 

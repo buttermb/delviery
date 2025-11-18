@@ -17,6 +17,8 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SaasAdminSidebar } from './SaasAdminSidebar';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
+import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
 
 export function SuperAdminMobileBottomNav() {
   const location = useLocation();
@@ -54,12 +56,15 @@ export function SuperAdminMobileBottomNav() {
   };
 
   return (
-    <nav 
-      className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
-      style={{ zIndex: 50 }}
-      role="navigation"
-      aria-label="Super admin mobile navigation"
-    >
+    <>
+      <OfflineIndicator />
+      <MobileErrorBoundary>
+        <nav 
+          className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
+          style={{ zIndex: 50 }}
+          role="navigation"
+          aria-label="Super admin mobile navigation"
+        >
       <div className="grid grid-cols-5 h-full items-center">
         {quickLinks.map((link) => {
           const Icon = link.icon;
@@ -107,5 +112,7 @@ export function SuperAdminMobileBottomNav() {
         </Sheet>
       </div>
     </nav>
+    </MobileErrorBoundary>
+    </>
   );
 }
