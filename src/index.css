@@ -68,10 +68,18 @@ section {
     }
   }
   
-  /* REMOVED: body.keyboard-open position:fixed was preventing all scrolling
-     This was blocking admin panel navigation - main content already handles scroll */
+  /* REMOVED: body.keyboard-open scroll lock - was causing admin layout to be stuck
+   * The position: fixed and overflow: hidden on body was preventing scrolling
+   * even after navigation. Main content scrolling is handled by individual containers.
+   */
   
-  /* Main content is already scrollable, no keyboard-specific override needed */
+  /* Ensure main content is scrollable when keyboard opens */
+  body.keyboard-open main,
+  body.keyboard-open [role="main"] {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Removed height: 100vh constraint - let content determine height */
+  }
   
   /* Dialog content should be scrollable when keyboard opens */
   body.keyboard-open [role="dialog"],
@@ -571,8 +579,7 @@ section {
   body.keyboard-open [role="main"] {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    height: 100vh;
-    max-height: 100vh;
+    /* Removed height: 100vh constraint - let content determine height */
   }
   
   /* Dialog content should be scrollable when keyboard opens */
@@ -1274,7 +1281,11 @@ section {
       position: relative;
     }
     
-    /* Keyboard handling is managed by JavaScript in useKeyboardDetection hook */
+    /* REMOVED: body.keyboard-open scroll lock - was causing admin layout to be stuck
+     * The position: fixed and overflow: hidden on body was preventing scrolling.
+     * Main content containers handle their own scrolling.
+     * Keyboard handling is managed by JavaScript in useKeyboardDetection hook.
+     */
     
     /* Smooth scroll for inputs into view */
     input:focus,
@@ -1327,14 +1338,18 @@ section {
       overflow-y: auto;
     }
     
-    /* Prevent bounce scroll effects while allowing normal scrolling */
+    /* REMOVED: Global html/body scroll lock - was preventing admin layout scrolling
+     * Instead, let body scroll naturally and main content containers handle their own scrolling
+     * Prevent bounce scroll effects while allowing normal scrolling
+     */
     html, body {
       overscroll-behavior: none;
     }
     
+    /* Ensure main content can scroll independently */
     main {
       overflow-y: auto;
-      height: 100vh;
+      /* Removed fixed height constraint - let content determine height */
     }
   }
 

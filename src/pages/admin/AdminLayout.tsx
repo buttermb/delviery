@@ -108,7 +108,7 @@ const AdminLayout = () => {
           <SidebarErrorBoundary>
             <AdaptiveSidebar />
           </SidebarErrorBoundary>
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
             <AccountSwitcher />
             <header className="h-12 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
               <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform z-50" />
@@ -150,7 +150,7 @@ const AdminLayout = () => {
                 <ThemeToggle />
               </div>
             </header>
-            <main className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom min-h-screen lg:min-h-0 -webkit-overflow-scrolling-touch">
+            <main className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom min-h-0 -webkit-overflow-scrolling-touch">
               <AdminErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <Outlet />

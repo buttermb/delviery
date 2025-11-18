@@ -26,18 +26,16 @@ export function useKeyboardDetection() {
         if (keyboardOpen) {
           scrollYRef.current = window.scrollY;
           document.body.classList.add('keyboard-open');
-          // Prevent body scroll when keyboard is open
-          document.body.style.top = `-${scrollYRef.current}px`;
+          // Note: Removed style.top manipulation since we no longer use position: fixed
+          // Main content containers handle their own scrolling
         } else {
           // Always ensure cleanup happens
           document.body.classList.remove('keyboard-open');
+          // Clean up any style properties that might have been set
           document.body.style.position = '';
-          // Restore scroll position
-          const scrollY = scrollYRef.current;
           document.body.style.top = '';
-          if (scrollY > 0) {
-            window.scrollTo(0, scrollY);
-          }
+          document.body.style.overflow = '';
+          // Note: Scroll restoration handled by browser or main content containers
         }
         
         setViewportHeight(currentHeight);
@@ -71,12 +69,12 @@ export function useKeyboardDetection() {
       if (keyboardOpen) {
         scrollYRef.current = window.scrollY;
         document.body.classList.add('keyboard-open');
-        document.body.style.top = `-${scrollYRef.current}px`;
+        // Note: Removed style.top manipulation since we no longer use position: fixed
+        // Main content containers handle their own scrolling
       } else {
         document.body.classList.remove('keyboard-open');
-        const scrollY = scrollYRef.current;
-        document.body.style.top = '';
-        window.scrollTo(0, scrollY);
+        // Note: Removed style.top manipulation since we no longer use position: fixed
+        // Scroll restoration handled by browser or main content containers
       }
       
       setViewportHeight(currentHeight);

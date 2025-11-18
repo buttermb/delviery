@@ -65,6 +65,13 @@ export function MobileBottomNav() {
     return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   };
 
+  // Close sheet when route changes (user navigates)
+  useEffect(() => {
+    if (open) {
+      setOpen(false);
+    }
+  }, [location.pathname, open]); // Close sheet on any route change
+
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur border-t lg:hidden h-[60px] pb-safe shadow-lg"
