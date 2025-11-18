@@ -2534,131 +2534,206 @@ export type Database = {
         Row: {
           account_id: string
           address: string | null
+          address_encrypted: string | null
           allergies: string[] | null
+          allergies_encrypted: string | null
           business_name: string | null
           caregiver_name: string | null
+          caregiver_name_encrypted: string | null
           caregiver_phone: string | null
+          caregiver_phone_encrypted: string | null
           cbd_preference: string | null
           city: string | null
+          city_encrypted: string | null
           created_at: string | null
           customer_type: string | null
           date_of_birth: string | null
+          date_of_birth_encrypted: string | null
           email: string | null
+          email_encrypted: string | null
           email_opt_in: boolean | null
+          email_search_index: string | null
+          encryption_metadata: Json | null
           first_name: string
+          first_name_encrypted: string | null
           flavor_preferences: string[] | null
           id: string
+          is_encrypted: boolean | null
           last_name: string
+          last_name_encrypted: string | null
           last_purchase_at: string | null
           loyalty_points: number | null
           loyalty_tier: string | null
           marketing_opt_in: boolean | null
           medical_card_expiration: string | null
+          medical_card_expiration_encrypted: string | null
           medical_card_number: string | null
+          medical_card_number_encrypted: string | null
+          medical_card_number_search_index: string | null
           medical_card_photo_url: string | null
+          medical_card_photo_url_encrypted: string | null
           medical_card_state: string | null
+          medical_card_state_encrypted: string | null
           monthly_allotment_limit: number | null
           phone: string | null
+          phone_encrypted: string | null
+          phone_search_index: string | null
           physician_name: string | null
+          physician_name_encrypted: string | null
           preferred_consumption_method: string[] | null
           preferred_products: string[] | null
+          preferred_products_encrypted: string | null
           preferred_strains: string[] | null
+          preferred_strains_encrypted: string | null
           qualifying_conditions: string[] | null
+          qualifying_conditions_encrypted: string | null
           referral_source: string | null
           sms_opt_in: boolean | null
           state: string | null
+          state_encrypted: string | null
           status: string | null
           tenant_id: string | null
           thc_preference: string | null
           total_spent: number | null
           updated_at: string | null
           zip_code: string | null
+          zip_code_encrypted: string | null
         }
         Insert: {
           account_id: string
           address?: string | null
+          address_encrypted?: string | null
           allergies?: string[] | null
+          allergies_encrypted?: string | null
           business_name?: string | null
           caregiver_name?: string | null
+          caregiver_name_encrypted?: string | null
           caregiver_phone?: string | null
+          caregiver_phone_encrypted?: string | null
           cbd_preference?: string | null
           city?: string | null
+          city_encrypted?: string | null
           created_at?: string | null
           customer_type?: string | null
           date_of_birth?: string | null
+          date_of_birth_encrypted?: string | null
           email?: string | null
+          email_encrypted?: string | null
           email_opt_in?: boolean | null
+          email_search_index?: string | null
+          encryption_metadata?: Json | null
           first_name: string
+          first_name_encrypted?: string | null
           flavor_preferences?: string[] | null
           id?: string
+          is_encrypted?: boolean | null
           last_name: string
+          last_name_encrypted?: string | null
           last_purchase_at?: string | null
           loyalty_points?: number | null
           loyalty_tier?: string | null
           marketing_opt_in?: boolean | null
           medical_card_expiration?: string | null
+          medical_card_expiration_encrypted?: string | null
           medical_card_number?: string | null
+          medical_card_number_encrypted?: string | null
+          medical_card_number_search_index?: string | null
           medical_card_photo_url?: string | null
+          medical_card_photo_url_encrypted?: string | null
           medical_card_state?: string | null
+          medical_card_state_encrypted?: string | null
           monthly_allotment_limit?: number | null
           phone?: string | null
+          phone_encrypted?: string | null
+          phone_search_index?: string | null
           physician_name?: string | null
+          physician_name_encrypted?: string | null
           preferred_consumption_method?: string[] | null
           preferred_products?: string[] | null
+          preferred_products_encrypted?: string | null
           preferred_strains?: string[] | null
+          preferred_strains_encrypted?: string | null
           qualifying_conditions?: string[] | null
+          qualifying_conditions_encrypted?: string | null
           referral_source?: string | null
           sms_opt_in?: boolean | null
           state?: string | null
+          state_encrypted?: string | null
           status?: string | null
           tenant_id?: string | null
           thc_preference?: string | null
           total_spent?: number | null
           updated_at?: string | null
           zip_code?: string | null
+          zip_code_encrypted?: string | null
         }
         Update: {
           account_id?: string
           address?: string | null
+          address_encrypted?: string | null
           allergies?: string[] | null
+          allergies_encrypted?: string | null
           business_name?: string | null
           caregiver_name?: string | null
+          caregiver_name_encrypted?: string | null
           caregiver_phone?: string | null
+          caregiver_phone_encrypted?: string | null
           cbd_preference?: string | null
           city?: string | null
+          city_encrypted?: string | null
           created_at?: string | null
           customer_type?: string | null
           date_of_birth?: string | null
+          date_of_birth_encrypted?: string | null
           email?: string | null
+          email_encrypted?: string | null
           email_opt_in?: boolean | null
+          email_search_index?: string | null
+          encryption_metadata?: Json | null
           first_name?: string
+          first_name_encrypted?: string | null
           flavor_preferences?: string[] | null
           id?: string
+          is_encrypted?: boolean | null
           last_name?: string
+          last_name_encrypted?: string | null
           last_purchase_at?: string | null
           loyalty_points?: number | null
           loyalty_tier?: string | null
           marketing_opt_in?: boolean | null
           medical_card_expiration?: string | null
+          medical_card_expiration_encrypted?: string | null
           medical_card_number?: string | null
+          medical_card_number_encrypted?: string | null
+          medical_card_number_search_index?: string | null
           medical_card_photo_url?: string | null
+          medical_card_photo_url_encrypted?: string | null
           medical_card_state?: string | null
+          medical_card_state_encrypted?: string | null
           monthly_allotment_limit?: number | null
           phone?: string | null
+          phone_encrypted?: string | null
+          phone_search_index?: string | null
           physician_name?: string | null
+          physician_name_encrypted?: string | null
           preferred_consumption_method?: string[] | null
           preferred_products?: string[] | null
+          preferred_products_encrypted?: string | null
           preferred_strains?: string[] | null
+          preferred_strains_encrypted?: string | null
           qualifying_conditions?: string[] | null
+          qualifying_conditions_encrypted?: string | null
           referral_source?: string | null
           sms_opt_in?: boolean | null
           state?: string | null
+          state_encrypted?: string | null
           status?: string | null
           tenant_id?: string | null
           thc_preference?: string | null
           total_spent?: number | null
           updated_at?: string | null
           zip_code?: string | null
+          zip_code_encrypted?: string | null
         }
         Relationships: [
           {
@@ -6792,6 +6867,63 @@ export type Database = {
           },
         ]
       }
+      phi_access_audit: {
+        Row: {
+          action: string
+          created_at: string
+          customer_id: string
+          fields_accessed: string[] | null
+          id: string
+          ip_address: string | null
+          purpose: string | null
+          session_id: string | null
+          tenant_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          customer_id: string
+          fields_accessed?: string[] | null
+          id?: string
+          ip_address?: string | null
+          purpose?: string | null
+          session_id?: string | null
+          tenant_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          customer_id?: string
+          fields_accessed?: string[] | null
+          id?: string
+          ip_address?: string | null
+          purpose?: string | null
+          session_id?: string | null
+          tenant_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phi_access_audit_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phi_access_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           created_at: string | null
@@ -10857,6 +10989,15 @@ export type Database = {
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
+      }
+      log_phi_access: {
+        Args: {
+          p_action: string
+          p_customer_id: string
+          p_fields_accessed: string[]
+          p_purpose?: string
+        }
+        Returns: string
       }
       log_pin_verification: {
         Args: { courier_user_id: string; success: boolean }

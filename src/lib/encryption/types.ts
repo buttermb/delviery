@@ -73,29 +73,63 @@ export interface FileEncryptionResult {
 // Table-specific types
 export interface EncryptedCustomer {
   id: string;
-  name_encrypted: string;
+  first_name_encrypted: string;
+  last_name_encrypted: string;
   email_encrypted: string;
   phone_encrypted: string;
   address_encrypted: string;
-  notes_encrypted?: string;
+  city_encrypted: string;
+  state_encrypted: string;
+  zip_code_encrypted: string;
+  date_of_birth_encrypted: string; // PHI
+  medical_card_number_encrypted: string; // PHI
+  medical_card_state_encrypted?: string; // PHI
+  medical_card_expiration_encrypted?: string; // PHI
+  physician_name_encrypted?: string; // PHI
+  qualifying_conditions_encrypted?: string; // PHI
+  caregiver_name_encrypted?: string;
+  caregiver_phone_encrypted?: string;
+  medical_card_photo_url_encrypted?: string; // PHI
+  allergies_encrypted?: string; // PHI
+  preferred_products_encrypted?: string;
+  preferred_strains_encrypted?: string;
   email_search_index: string;
   phone_search_index: string;
+  medical_card_number_search_index: string;
   encryption_metadata: EncryptionMetadata;
+  is_encrypted: boolean;
   created_at: string;
   updated_at: string;
-  user_id: string;
+  tenant_id: string;
+  account_id: string;
 }
 
 export interface DecryptedCustomer {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   address: string;
-  notes?: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  date_of_birth?: string; // PHI
+  medical_card_number?: string; // PHI
+  medical_card_state?: string; // PHI
+  medical_card_expiration?: string; // PHI
+  physician_name?: string; // PHI
+  qualifying_conditions?: string[]; // PHI
+  caregiver_name?: string;
+  caregiver_phone?: string;
+  medical_card_photo_url?: string; // PHI
+  allergies?: string[]; // PHI
+  preferred_products?: string[];
+  preferred_strains?: string[];
   created_at: string;
   updated_at: string;
-  user_id: string;
+  tenant_id: string;
+  account_id: string;
 }
 
 export interface EncryptedBusiness {
