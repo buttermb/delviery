@@ -165,7 +165,7 @@ export default function Couriers() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="min-h-[44px] min-w-[44px]"
+                            className="min-h-[48px] min-w-[48px]"
                             onClick={() => navigate(`/admin/couriers/${courier.id}`)}
                           >
                             <Eye className="h-4 w-4" />
@@ -201,7 +201,7 @@ export default function Couriers() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="min-h-[44px] min-w-[44px]"
+                        className="min-h-[48px] min-w-[48px]"
                         onClick={() => navigate(`/admin/couriers/${courier.id}`)}
                       >
                         <Eye className="h-4 w-4" />

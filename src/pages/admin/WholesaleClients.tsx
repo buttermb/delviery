@@ -287,7 +287,7 @@ export default function WholesaleClients() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="min-h-[44px] min-w-[44px] touch-manipulation"
+                        className="min-h-[48px] min-w-[48px] touch-manipulation"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSmsClient(client);
@@ -299,7 +299,7 @@ export default function WholesaleClients() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="min-h-[44px] min-w-[44px] touch-manipulation"
+                        className="min-h-[48px] min-w-[48px] touch-manipulation"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (client.phone) {
@@ -315,7 +315,7 @@ export default function WholesaleClients() {
                         <Button 
                           size="sm" 
                           variant="destructive" 
-                          className="min-h-[44px] min-w-[44px] touch-manipulation"
+                          className="min-h-[48px] min-w-[48px] touch-manipulation"
                           onClick={(e) => {
                             e.stopPropagation();
                             setPaymentDialog({ open: true, client });
@@ -328,7 +328,7 @@ export default function WholesaleClients() {
                       <Button 
                         size="sm" 
                         variant="default" 
-                        className="min-h-[44px] touch-manipulation"
+                        className="min-h-[48px] touch-manipulation"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
@@ -348,7 +348,7 @@ export default function WholesaleClients() {
                   <div className="text-muted-foreground">
                     {searchTerm ? "No clients found matching your search" : "No clients yet"}
                   </div>
-                  <Button className="mt-4 min-h-[44px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
+                  <Button className="mt-4 min-h-[48px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     <span className="text-sm sm:text-base">Add Your First Client</span>
                   </Button>
@@ -358,6 +358,142 @@ export default function WholesaleClients() {
           </TableBody>
         </Table>
           </div>
+        </div>
+      </Card>
+
+      {/* Mobile Card View */}
+      <Card className="md:hidden">
+        <div className="space-y-3 p-4">
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin h-6 w-6 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto" />
+            </div>
+          ) : filteredClients && filteredClients.length > 0 ? (
+            filteredClients.map((client) => (
+              <Card 
+                key={client.id} 
+                className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
+                onClick={() => navigate(`/admin/big-plug-clients/${client.id}`)}
+              >
+                <div className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {getStatusIcon(client.outstanding_balance)}
+                        <h3 className="font-semibold text-base truncate">{client.business_name}</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{client.territory}</p>
+                      <Badge variant="outline" className="text-xs mt-1">{getClientTypeLabel(client.client_type)}</Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
+                      <div className="text-sm">
+                        <p className="truncate">{client.contact_name}</p>
+                        <p className="text-muted-foreground truncate">{client.phone}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Credit Status</div>
+                      <div className={`font-mono font-semibold text-sm ${getStatusColor(client.outstanding_balance)}`}>
+                        ${Number(client.outstanding_balance).toLocaleString()}
+                      </div>
+                      {client.outstanding_balance > 0 ? (
+                        <div className="text-xs text-destructive flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Outstanding
+                        </div>
+                      ) : (
+                        <div className="text-xs text-emerald-500 mt-1">Paid in full ✅</div>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reliability</div>
+                        <CustomerRiskBadge 
+                          score={(client as any).risk_score ?? client.reliability_score ?? null} 
+                          showLabel={true}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">This Month</div>
+                        <div className="text-sm font-mono">{Number(client.monthly_volume_lbs).toFixed(0)} lbs</div>
+                        <div className="text-xs text-muted-foreground">${Number(client.total_spent).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="min-h-[48px] min-w-[48px] flex-1"
+                        onClick={() => {
+                          setSmsClient(client);
+                          setSmsDialogOpen(true);
+                        }}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        <span className="text-xs">Message</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="min-h-[48px] min-w-[48px] flex-1"
+                        onClick={() => {
+                          if (client.phone) {
+                            window.location.href = `tel:${client.phone}`;
+                          } else {
+                            toast.error("No phone number available");
+                          }
+                        }}
+                      >
+                        <Phone className="h-4 w-4 mr-2" />
+                        <span className="text-xs">Call</span>
+                      </Button>
+                      {client.outstanding_balance > 0 && (
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          className="min-h-[48px] flex-1"
+                          onClick={() => {
+                            setPaymentDialog({ open: true, client });
+                          }}
+                        >
+                          <DollarSign className="h-4 w-4 mr-2" />
+                          <span className="text-xs">Collect</span>
+                        </Button>
+                      )}
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="min-h-[48px] flex-1"
+                        onClick={() => {
+                          navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
+                        }}
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        <span className="text-xs">New Order</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-muted-foreground mb-4">
+                {searchTerm ? "No clients found matching your search" : "No clients yet"}
+              </div>
+              <Button className="min-h-[48px] touch-manipulation" onClick={() => setCreateClientDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="text-sm sm:text-base">Add Your First Client</span>
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
 
