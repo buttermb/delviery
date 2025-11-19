@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
@@ -113,7 +114,7 @@ export default function Orders() {
           <div className="flex gap-2">
             <Button 
               variant="default"
-              className="min-h-[44px] touch-manipulation"
+              className="min-h-[48px] touch-manipulation"
               data-tutorial="create-order"
             >
               + New Order
@@ -123,7 +124,7 @@ export default function Orders() {
               steps={ordersTutorial.steps}
               variant="outline"
               size="sm"
-              className="min-h-[44px]"
+              className="min-h-[48px]"
             />
           </div>
         </div>
@@ -153,11 +154,11 @@ export default function Orders() {
                 placeholder="Search by order number or customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 min-h-[44px] text-sm sm:text-base"
+                className="pl-10 text-base"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -210,7 +211,7 @@ export default function Orders() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="min-h-[44px] min-w-[44px] touch-manipulation"
+                        className="min-h-[48px] min-w-[48px] touch-manipulation"
                         onMouseEnter={() => prefetchOnHover(`/admin/orders/${order.id}`)}
                         onClick={() => navigate(`/admin/orders/${order.id}`)}
                       >
@@ -223,6 +224,90 @@ export default function Orders() {
             </TableBody>
           </Table>
             </div>
+          </div>
+        </Card>
+
+        {/* Mobile Card View */}
+        <Card className="md:hidden">
+          <div className="space-y-3 p-4">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="p-4">
+                    <div className="space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-6 w-24" />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground">No orders found</p>
+              </div>
+            ) : (
+              filteredOrders.map((order) => (
+                <Card 
+                  key={order.id} 
+                  className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
+                  onClick={() => navigate(`/admin/orders/${order.id}`)}
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <h3 className="font-semibold text-base truncate">
+                            {order.order_number || order.id.slice(0, 8)}
+                          </h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Customer</p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {getStatusBadge(order.status)}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Method</div>
+                          <div className="text-sm capitalize">{order.delivery_method || 'N/A'}</div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</div>
+                          <div className="text-sm">{new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</div>
+                          <div className="text-lg font-semibold font-mono">${order.total_amount?.toFixed(2)}</div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="min-h-[48px]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/orders/${order.id}`);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          <span className="text-xs">View</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
         </Card>
       </div>
