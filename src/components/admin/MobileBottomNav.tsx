@@ -152,7 +152,13 @@ export function MobileBottomNav() {
             setOpen(isOpen);
             if (isOpen) {
               justOpenedRef.current = true;
-              logger.debug('MobileBottomNav sheet opened', { context: 'admin' });
+              logger.debug('MobileBottomNav sheet opened', { 
+                context: 'admin',
+                tenant: !!tenant,
+                tenantId: tenant?.id,
+                tenantSlug,
+                hasTenantSlug: !!tenantSlug
+              });
               if (tenant?.id) {
                 queryClient.invalidateQueries({ 
                   queryKey: ['sidebar-preferences', tenant.id] 
@@ -190,60 +196,70 @@ export function MobileBottomNav() {
             }}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div className="flex flex-col h-full min-h-0" style={{ height: '100%' }}>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/80 flex-shrink-0">
-                <span className="text-sm font-medium">More navigation</span>
+            <div className="flex flex-col h-full" style={{ height: '100vh', minHeight: '100vh' }}>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0">
+                <span className="text-sm font-semibold">Navigation</span>
+                {tenantSlug && (
+                  <span className="text-xs text-muted-foreground">{tenantSlug}</span>
+                )}
               </div>
               
-              <div className="flex-1 overflow-y-auto pb-safe min-h-0" style={{ height: '100%', minHeight: 0 }}>
-                <SidebarProvider
-                  style={{
-                    '--sidebar-width': '100%',
-                    '--sidebar-width-icon': '3rem',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  } as React.CSSProperties}
-                >
-                  <div className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full flex-1 min-h-0">
-                    {!tenant ? (
-                      <div className="p-4 space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                      </div>
-                    ) : sidebarError ? (
-                      <div className="p-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
-                        <AlertCircle className="h-12 w-12 text-destructive" />
-                        <div className="text-center space-y-2">
-                          <h3 className="font-semibold text-lg">Something went wrong</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {sidebarError.message || 'Failed to load navigation menu'}
-                          </p>
-                        </div>
-                        <Button 
-                          onClick={() => {
-                            setSidebarError(null);
-                            queryClient.invalidateQueries({ 
-                              queryKey: ['sidebar-preferences', tenant.id] 
-                            });
-                          }}
-                          variant="outline"
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Retry
-                        </Button>
-                      </div>
-                    ) : (
-                      <ErrorBoundary onError={setSidebarError}>
-                        <div className="w-full" style={{ height: '100%', minHeight: '100%' }}>
-                          <AdaptiveSidebar collapsible="none" />
-                        </div>
-                      </ErrorBoundary>
-                    )}
+              <div className="flex-1 overflow-y-auto pb-safe" style={{ minHeight: 0, height: '100%' }}>
+                {!tenant || !tenantSlug ? (
+                  <div className="p-4 space-y-2">
+                    <div className="text-sm text-muted-foreground mb-4">Loading navigation...</div>
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
                   </div>
-                </SidebarProvider>
+                ) : sidebarError ? (
+                  <div className="p-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                    <AlertCircle className="h-12 w-12 text-destructive" />
+                    <div className="text-center space-y-2">
+                      <h3 className="font-semibold text-lg">Something went wrong</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {sidebarError.message || 'Failed to load navigation menu'}
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setSidebarError(null);
+                        queryClient.invalidateQueries({ 
+                          queryKey: ['sidebar-preferences', tenant.id] 
+                        });
+                      }}
+                      variant="outline"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <ErrorBoundary onError={setSidebarError}>
+                    <SidebarProvider
+                      style={{
+                        '--sidebar-width': '100%',
+                        '--sidebar-width-icon': '3rem',
+                        height: '100%',
+                        minHeight: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      } as React.CSSProperties}
+                    >
+                      <div 
+                        className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full" 
+                        style={{ 
+                          height: '100%',
+                          minHeight: '100%',
+                          flex: '1 1 auto'
+                        }}
+                      >
+                        <AdaptiveSidebar collapsible="none" />
+                      </div>
+                    </SidebarProvider>
+                  </ErrorBoundary>
+                )}
               </div>
             </div>
           </SheetContent>
