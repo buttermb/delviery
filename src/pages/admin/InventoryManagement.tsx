@@ -125,9 +125,9 @@ export default function InventoryManagement() {
                 </Badge>
               </div>
 
-              <div className="overflow-x-auto -mx-2 sm:mx-0">
-                <div className="inline-block min-w-full align-middle px-2 sm:px-0">
-                  <table className="w-full min-w-[600px] sm:min-w-full" data-tutorial="product-list">
+              <div className="hidden md:block overflow-x-auto">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="w-full" data-tutorial="product-list">
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-2 sm:py-3 text-xs sm:text-sm font-semibold text-foreground">Product</th>
@@ -162,7 +162,7 @@ export default function InventoryManagement() {
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
-                                  className="min-h-[44px] min-w-[44px] px-2 text-xs sm:text-sm touch-manipulation"
+                                  className="min-h-[48px] min-w-[48px] px-2 text-xs sm:text-sm touch-manipulation"
                                   onClick={() => {
                                     setSelectedProduct(product);
                                     setAdjustmentDialogOpen(true);

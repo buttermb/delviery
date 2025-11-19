@@ -108,7 +108,7 @@ export default function Orders() {
         description="Manage customer orders and deliveries"
       />
       
-      <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+      <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
           <div className="flex gap-2">
@@ -173,9 +173,9 @@ export default function Orders() {
             </Select>
           </div>
 
-          <div className="overflow-x-auto -mx-2 sm:mx-0">
-            <div className="inline-block min-w-full align-middle px-2 sm:px-0">
-              <Table data-tutorial="orders-list" className="min-w-[700px] sm:min-w-full">
+          <div className="hidden md:block overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <Table data-tutorial="orders-list" className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-xs sm:text-sm">Order #</TableHead>

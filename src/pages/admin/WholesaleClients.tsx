@@ -109,7 +109,7 @@ export default function WholesaleClients() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
@@ -120,7 +120,7 @@ export default function WholesaleClients() {
           <Button 
             variant="outline"
             size="sm"
-            className="min-h-[44px] touch-manipulation flex-1 sm:flex-initial"
+            className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial"
             onClick={() => {
               toast.info("Import functionality coming soon", {
                 description: "CSV import for bulk client creation will be available in a future update."
@@ -143,7 +143,7 @@ export default function WholesaleClients() {
             steps={customersTutorial.steps}
             variant="outline"
             size="sm"
-            className="min-h-[44px]"
+            className="min-h-[48px]"
           />
         </div>
       </div>
@@ -204,9 +204,9 @@ export default function WholesaleClients() {
 
       {/* Clients Table */}
       <Card className="overflow-hidden">
-        <div className="overflow-x-auto -mx-2 sm:mx-0">
-          <div className="inline-block min-w-full align-middle px-2 sm:px-0">
-            <Table data-tutorial="customer-list" className="min-w-[800px] sm:min-w-full">
+        <div className="hidden md:block overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <Table data-tutorial="customer-list" className="w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="text-xs sm:text-sm">Client</TableHead>

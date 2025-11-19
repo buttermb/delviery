@@ -105,7 +105,7 @@ const DisposableMenus = () => {
               <Button 
                 variant="secondary"
                 onClick={() => setBulkActionsOpen(true)}
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
+                className="min-h-[48px] touch-manipulation text-xs sm:text-sm flex-1 sm:flex-initial"
               >
                 <CheckSquare className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Bulk Actions ({selectedMenuIds.length})</span>

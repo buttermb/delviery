@@ -569,7 +569,7 @@ export default function CustomerManagement() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="min-h-[44px] min-w-[44px]">
+                          <Button variant="ghost" size="sm" className="min-h-[48px] min-w-[48px]">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>

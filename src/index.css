@@ -56,15 +56,28 @@ section {
 }
 
 /* Mobile bottom navigation spacing */
-@media (max-width: 1024px) {
-  main:not(.custom-mobile-padding) {
-    padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom))) !important;
-  }
-  
-  /* Ensure inputs are scrollable into view when keyboard opens */
-  body {
-    position: relative;
-  }
+  @media (max-width: 1024px) {
+    main:not(.custom-mobile-padding) {
+      padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom))) !important;
+    }
+    
+    /* Prevent horizontal scrolling on mobile */
+    html, body {
+      overflow-x: hidden !important;
+      position: relative;
+      width: 100%;
+      max-width: 100vw;
+    }
+    
+    /* Ensure all containers respect viewport width */
+    * {
+      max-width: 100%;
+    }
+    
+    /* Ensure inputs are scrollable into view when keyboard opens */
+    body {
+      position: relative;
+    }
   
   /* Fix for iOS Safari viewport when keyboard opens */
   @supports (-webkit-touch-callout: none) {
@@ -629,7 +642,7 @@ section {
 @layer utilities {
   /* Prevent horizontal overflow on mobile */
   body {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     width: 100%;
     max-width: 100vw;
     position: relative;
@@ -637,13 +650,37 @@ section {
   }
   
   html {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     max-width: 100vw;
     scroll-behavior: smooth;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+  }
+  
+  /* Ensure all page containers respect viewport width */
+  [class*="container"] {
+    max-width: 100% !important;
+    overflow-x: hidden;
+  }
+  
+  /* Prevent any element from causing horizontal scroll */
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Ensure tables and wide content don't break layout */
+  table, .table {
+    max-width: 100%;
+    table-layout: auto;
+  }
+  
+  /* Ensure buttons and interactive elements are fully visible */
+  button, [role="button"], a[href] {
+    min-width: 48px;
+    min-height: 48px;
+    touch-action: manipulation;
   }
   
   /* Better tap target sizes for all interactive elements */

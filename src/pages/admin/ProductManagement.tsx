@@ -859,7 +859,7 @@ export default function ProductManagement() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full max-w-full px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
