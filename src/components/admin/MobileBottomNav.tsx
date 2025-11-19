@@ -85,7 +85,7 @@ export function MobileBottomNav() {
     if (open) {
       setOpen(false);
     }
-  }, [location.pathname]); // Close sheet on route change, but not on open state change
+  }, [location.pathname, open]); // Close sheet on route change
 
   return (
     <>
