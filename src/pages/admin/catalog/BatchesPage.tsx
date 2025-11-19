@@ -324,6 +324,7 @@ export default function BatchesPage() {
                           src={batch.product.image_url}
                           alt={batch.product.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

@@ -321,7 +321,7 @@ export default function PointOfSale() {
                 <CardContent className="p-4">
                   <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" loading="lazy" />
                     ) : (
                       <ShoppingCart className="w-12 h-12 text-muted-foreground" />
                     )}

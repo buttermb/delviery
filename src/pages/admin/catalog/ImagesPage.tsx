@@ -323,6 +323,7 @@ export default function ImagesPage() {
                     src={image.image_url}
                     alt={image.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div className="p-3">

@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -365,8 +366,23 @@ export default function WholesaleClients() {
       <Card className="md:hidden">
         <div className="space-y-3 p-4">
           {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-6 w-6 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto" />
+            <div className="space-y-3 p-4">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="p-4">
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-24" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : filteredClients && filteredClients.length > 0 ? (
             filteredClients.map((client) => (
