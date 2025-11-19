@@ -106,7 +106,7 @@ export default function Couriers() {
                 placeholder="Search by name, email, or phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 min-h-[44px]"
+                className="pl-10"
               />
             </div>
           </div>

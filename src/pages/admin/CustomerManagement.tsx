@@ -546,7 +546,7 @@ export default function CustomerManagement() {
                 <p className="text-muted-foreground mb-4">
                   {searchTerm ? "No customers found matching your search" : "No customers yet"}
                 </p>
-                <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[44px]">
+                <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[48px]">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your First Customer
                 </Button>
