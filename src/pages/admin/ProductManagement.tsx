@@ -1174,43 +1174,73 @@ export default function ProductManagement() {
         </Card>
       </div>
 
-      {/* Filters and View Mode Toggle */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      {/* Filters and View Mode Toggle - Mobile Optimized */}
+      <div className="flex flex-col gap-3">
         {viewMode === "grid" && (
           <>
-            <div className="relative flex-1 w-full sm:min-w-[200px]">
+            {/* Search Bar - Full Width */}
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 min-h-[44px]"
+                className="pl-9 min-h-[48px] w-full"
               />
             </div>
-            <div className="flex gap-2">
+
+            {/* Mobile: Camera Scan Button + Filters */}
+            <div className="flex gap-2 lg:hidden">
+              {/* Camera Scan - Always Visible on Mobile */}
+              <Button
+                onClick={() => {
+                  setBatchScanMode(false);
+                  setScannerOpen(true);
+                }}
+                className="min-h-[48px] min-w-[48px] flex-shrink-0 px-3"
+                aria-label="Scan barcode"
+              >
+                <Barcode className="h-5 w-5" />
+              </Button>
+              
+              {/* Batch Scan */}
+              <Button
+                variant="outline"
+                onClick={startBatchScan}
+                className="min-h-[48px] flex-1"
+              >
+                <Barcode className="h-4 w-4 mr-2" />
+                Batch Scan
+              </Button>
+            </div>
+
+            {/* Desktop: All Actions in Row */}
+            <div className="hidden lg:flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
                   setBatchScanMode(false);
                   setScannerOpen(true);
                 }}
-                className="min-h-[44px] gap-2"
+                className="min-h-[48px] gap-2"
               >
                 <Barcode className="h-4 w-4" />
-                <span className="hidden sm:inline">Scan</span>
+                Scan
               </Button>
               <Button
                 variant="default"
                 onClick={startBatchScan}
-                className="min-h-[44px] gap-2"
+                className="min-h-[48px] gap-2"
               >
                 <Barcode className="h-4 w-4" />
-                <span className="hidden sm:inline">Batch Scan</span>
+                Batch Scan
               </Button>
             </div>
-            <div className="flex gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
+
+            {/* Filters - Responsive Layout */}
+            <div className="flex gap-2 flex-col sm:flex-row">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+                <SelectTrigger className="w-full sm:w-[180px] min-h-[48px]">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -1224,7 +1254,7 @@ export default function ProductManagement() {
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
+                <SelectTrigger className="w-full sm:w-[180px] min-h-[48px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
