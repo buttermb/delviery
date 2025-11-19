@@ -79,6 +79,16 @@ const EXPIRATION_BUFFER_MS = 60 * 1000;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper: Safely store data with sessionStorage fallback for mobile
+const safeStore = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (storageError) {
+    // Mobile browsers may have storage issues - fallback to sessionStorage
+    sessionStorage.setItem(key, value);
+  }
+};
+
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
@@ -146,10 +156,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           if (currentAccessToken !== session.access_token) {
             setAccessToken(session.access_token);
             setToken(session.access_token);
-            localStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
+            safeStore(ACCESS_TOKEN_KEY, session.access_token);
             if (session.refresh_token) {
               setRefreshToken(session.refresh_token);
-              localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+              safeStore(REFRESH_TOKEN_KEY, session.refresh_token);
             }
           }
         }
@@ -198,13 +208,49 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
           
+          // Check if token is expired before attempting verification
+          let tokenToUse = storedToken;
+          if (storedToken) {
+            try {
+              const expiration = getTokenExpiration(storedToken);
+              if (expiration && expiration.getTime() - Date.now() < EXPIRATION_BUFFER_MS) {
+                console.log('[AUTH INIT] ⚠️ Token expired or expiring soon, attempting refresh');
+                const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+                
+                if (storedRefreshToken) {
+                  try {
+                    const refreshResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ refresh_token: storedRefreshToken }),
+                    });
+                    
+                    if (refreshResponse.ok) {
+                       const refreshData = await refreshResponse.json();
+                      // Store with fallback
+                      safeStore(ACCESS_TOKEN_KEY, refreshData.access_token);
+                      safeStore(REFRESH_TOKEN_KEY, refreshData.refresh_token);
+                      tokenToUse = refreshData.access_token;
+                      console.log('[AUTH INIT] ✅ Token refreshed successfully before verification');
+                    }
+                  } catch (refreshError) {
+                    console.log('[AUTH INIT] ⚠️ Token refresh failed, will try verification anyway');
+                  }
+                }
+              }
+            } catch (expirationError) {
+              console.log('[AUTH INIT] ⚠️ Token expiration check failed, proceeding with verification');
+            }
+          }
+          
           const headers: Record<string, string> = {
             'Content-Type': 'application/json',
           };
           
-          // Include Authorization header if token exists in localStorage
-          if (storedToken) {
-            headers['Authorization'] = `Bearer ${storedToken}`;
+          // Include Authorization header if token exists
+          if (tokenToUse) {
+            headers['Authorization'] = `Bearer ${tokenToUse}`;
           }
           
           const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
@@ -232,10 +278,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             
             // Store non-sensitive data in localStorage for quick access
             if (verifyData.admin) {
-              localStorage.setItem(ADMIN_KEY, JSON.stringify(verifyData.admin));
+              safeStore(ADMIN_KEY, JSON.stringify(verifyData.admin));
             }
             if (verifyData.tenant) {
-              localStorage.setItem(TENANT_KEY, JSON.stringify(verifyData.tenant));
+              safeStore(TENANT_KEY, JSON.stringify(verifyData.tenant));
             }
             
             setIsAuthenticated(true);
@@ -250,6 +296,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               status: verifyResponse.status,
             });
             
+            // Handle 401 Unauthorized - invalid or expired token
+            if (verifyResponse.status === 401) {
+              const errorData = await verifyResponse.json().catch(() => ({}));
+              console.log('[AUTH INIT] 🚫 Authentication failed (401)', errorData);
+              
+              // Clear auth state and trigger re-login
+              clearAuthState();
+              setLoading(false);
+              
+              // Don't set navigation here - let the protected route handle it
+              // Just ensure state is clean
+              return;
+            }
+            
             // If 403 "No tenant access found", clear stale localStorage data
             if (verifyResponse.status === 403) {
               const errorData = await verifyResponse.json().catch(() => ({}));
@@ -263,6 +323,27 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           }
         } catch (cookieError) {
           console.log('[AUTH INIT] ⚠️ Cookie verification error, trying localStorage fallback', cookieError);
+          
+          // If it's an auth error (401), don't fall back - clear state
+          if (cookieError instanceof Error && (
+            cookieError.message.includes('401') || 
+            cookieError.message.includes('Unauthorized') ||
+            cookieError.message.includes('Invalid or expired token')
+          )) {
+            console.log('[AUTH INIT] 🚫 Authentication error detected, clearing state');
+            clearAuthState();
+            setLoading(false);
+            return;
+          }
+          
+          // If it's a network error, we should still try localStorage
+          // But if it's an auth error, clear state
+          if (cookieError instanceof Error && cookieError.message.includes('401')) {
+            console.log('[AUTH INIT] 🚫 Authentication error detected in cookie verification');
+            clearAuthState();
+            setLoading(false);
+            return;
+          }
         }
 
       // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
@@ -624,8 +705,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               setRefreshToken(refreshData.refresh_token);
               setToken(refreshData.access_token);
               
-              localStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
-              localStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
+              safeStore(ACCESS_TOKEN_KEY, refreshData.access_token);
+              safeStore(REFRESH_TOKEN_KEY, refreshData.refresh_token);
               
               // Setup proactive refresh timer with new token
               setupRefreshTimer(refreshData.access_token);
@@ -838,17 +919,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setTenant(tenantWithDefaults);
       setIsAuthenticated(true);
       
-      // Store tokens in localStorage for backwards compatibility
+      // Store tokens with mobile fallback
       // Note: With httpOnly cookies, these are not the primary auth mechanism
-      localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      localStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
-      localStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
+      safeStore(ACCESS_TOKEN_KEY, data.access_token);
+      safeStore(REFRESH_TOKEN_KEY, data.refresh_token);
+      safeStore(ADMIN_KEY, JSON.stringify(data.admin));
+      safeStore(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       
-      // Store user ID for encryption
+      // Store user ID for encryption with fallback
       if (data.admin?.id) {
+        safeStore('floraiq_user_id', data.admin.id);
         sessionStorage.setItem('floraiq_user_id', data.admin.id);
-        localStorage.setItem('floraiq_user_id', data.admin.id);
       }
 
       // Initialize encryption with user's password
@@ -1028,8 +1109,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
       
-      localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+      safeStore(ACCESS_TOKEN_KEY, data.access_token);
+      safeStore(REFRESH_TOKEN_KEY, data.refresh_token);
       
       // Setup next proactive refresh
       setupRefreshTimer(data.access_token);
