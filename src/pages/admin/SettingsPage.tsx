@@ -133,32 +133,33 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="general">
+        {/* Vertical tabs on mobile, horizontal on desktop */}
+        <TabsList className="flex flex-col lg:flex-row w-full lg:w-auto h-auto lg:h-10 items-stretch lg:items-center gap-1 bg-muted p-1">
+          <TabsTrigger value="general" className="justify-start lg:justify-center w-full lg:w-auto">
             <Settings className="h-4 w-4 mr-2" />
             General
           </TabsTrigger>
-          <TabsTrigger value="security">
+          <TabsTrigger value="security" className="justify-start lg:justify-center w-full lg:w-auto">
             <Shield className="h-4 w-4 mr-2" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="notifications">
+          <TabsTrigger value="notifications" className="justify-start lg:justify-center w-full lg:w-auto">
             <Bell className="h-4 w-4 mr-2" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="printing">
+          <TabsTrigger value="printing" className="justify-start lg:justify-center w-full lg:w-auto">
             <Printer className="h-4 w-4 mr-2" />
             Printing
           </TabsTrigger>
-          <TabsTrigger value="integrations">
+          <TabsTrigger value="integrations" className="justify-start lg:justify-center w-full lg:w-auto">
             <Plug className="h-4 w-4 mr-2" />
             Integrations
           </TabsTrigger>
-          <TabsTrigger value="sidebar">
+          <TabsTrigger value="sidebar" className="justify-start lg:justify-center w-full lg:w-auto">
             <Layout className="h-4 w-4 mr-2" />
             Sidebar
           </TabsTrigger>
-          <TabsTrigger value="sidebar-customization">
+          <TabsTrigger value="sidebar-customization" className="justify-start lg:justify-center w-full lg:w-auto">
             <Sliders className="h-4 w-4 mr-2" />
             Sidebar Layout
           </TabsTrigger>
