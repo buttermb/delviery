@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { logger } from "@/lib/logger";
@@ -9,6 +9,7 @@ import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
 import { useFeatureFlags } from "@/config/featureFlags";
+import { toast } from "sonner";
 
 interface TenantAdmin {
   id: string;
@@ -113,6 +114,7 @@ if (typeof window !== 'undefined') {
 
 export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { shouldAutoApprove, flags } = useFeatureFlags();
   const [admin, setAdmin] = useState<TenantAdmin | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -301,12 +303,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               const errorData = await verifyResponse.json().catch(() => ({}));
               console.log('[AUTH INIT] 🚫 Authentication failed (401)', errorData);
               
-              // Clear auth state and trigger re-login
+              // Clear auth state
               clearAuthState();
               setLoading(false);
               
-              // Don't set navigation here - let the protected route handle it
-              // Just ensure state is clean
+              // Show user-friendly message
+              toast.error("Your session has expired. Please log in again.", {
+                duration: 5000,
+              });
+              
               return;
             }
             
@@ -333,6 +338,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             console.log('[AUTH INIT] 🚫 Authentication error detected, clearing state');
             clearAuthState();
             setLoading(false);
+            
+            // Show user-friendly message
+            toast.error("Your session has expired. Please log in again.", {
+              duration: 5000,
+            });
+            
             return;
           }
           
@@ -342,6 +353,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             console.log('[AUTH INIT] 🚫 Authentication error detected in cookie verification');
             clearAuthState();
             setLoading(false);
+            
+            // Show user-friendly message
+            toast.error("Your session has expired. Please log in again.", {
+              duration: 5000,
+            });
+            
             return;
           }
         }
@@ -561,6 +578,36 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       clearTimeout(safetyTimeout);
     };
   }, [location.pathname]); // Re-run when route changes
+
+  // Periodic token validation (every 30 seconds)
+  useEffect(() => {
+    if (!isAuthenticated || !token) return;
+    
+    const validateToken = async () => {
+      try {
+        const expiration = getTokenExpiration(token);
+        if (!expiration) return;
+        
+        const timeUntilExpiry = expiration.getTime() - Date.now();
+        
+        // If token expires in less than 5 minutes, refresh it
+        if (timeUntilExpiry < REFRESH_BUFFER_MS) {
+          logger.debug('[AUTH] Token expiring soon, refreshing proactively');
+          await refreshAuthToken();
+        }
+      } catch (error) {
+        logger.error('[AUTH] Periodic token validation failed', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
+      }
+    };
+    
+    // Initial check
+    validateToken();
+    
+    // Check every 30 seconds
+    const interval = setInterval(validateToken, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated, token]);
 
   // Helper function to clear auth state
   const clearAuthState = () => {
