@@ -30,7 +30,13 @@ All critical mobile optimizations have been implemented across the admin panel. 
   - All key information displayed
   - Action buttons in mobile-friendly layout
   - Proper spacing and typography
+  - Loading skeletons
 - **Couriers**: Already had mobile card view (verified)
+- **Orders**: Added complete mobile card view with:
+  - Tappable cards with touch feedback
+  - Order details clearly displayed
+  - Action buttons in mobile-friendly layout
+  - Loading skeletons
 
 ### Phase 5: Forms ✅
 - **Input Component** (`src/components/ui/input.tsx`):
@@ -67,8 +73,12 @@ All critical mobile optimizations have been implemented across the admin panel. 
 - `src/components/admin/MobileBottomNav.tsx` - More menu fix (already done)
 
 ### Page Components
-- `src/pages/admin/WholesaleClients.tsx` - Mobile cards + button sizes
+- `src/pages/admin/WholesaleClients.tsx` - Mobile cards + button sizes + loading skeletons
 - `src/pages/admin/Couriers.tsx` - Button sizes updated
+- `src/pages/admin/Orders.tsx` - Mobile cards + button sizes + loading skeletons
+- `src/pages/admin/catalog/ImagesPage.tsx` - Lazy loading
+- `src/pages/admin/PointOfSale.tsx` - Lazy loading
+- `src/pages/admin/catalog/BatchesPage.tsx` - Lazy loading
 
 ## 🎯 Mobile Standards Met
 
@@ -148,7 +158,10 @@ Expected improvements:
 
 Your admin panel is now fully optimized for mobile devices. All critical mobile UX issues have been resolved, and the application meets industry standards for touch targets, input sizing, and mobile navigation.
 
-**Commit**: `55edd23` - feat: complete mobile optimization - all 8 phases
+**Commits**:
+- `55edd23` - feat: complete mobile optimization - all 8 phases (Phases 1-5)
+- `56629bd` - feat: complete mobile optimization phases 6 & 8 - performance and polish
+- `9269c35` - feat: add mobile card view to Orders page and fix button sizes
 
 ---
 
