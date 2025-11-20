@@ -64,7 +64,7 @@ const capabilities: Capability[] = [
   {
     id: 5,
     title: 'Disposable Menus',
-    description: 'AES-256 encrypted menus for wholesale clients',
+    description: 'AES-256 encrypted menus for cannabis distributors',
     icon: Key,
     metrics: 'Bank-level',
     demo: DisposableMenuDemo,

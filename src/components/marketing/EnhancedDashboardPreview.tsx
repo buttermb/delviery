@@ -27,9 +27,9 @@ export function EnhancedDashboardPreview() {
         animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -20 }}
         className="text-center mb-4 px-4"
       >
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-white">Complete Wholesale Management</h2>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-white">Complete Cannabis Distribution Management</h2>
         <p className="text-slate-300 max-w-2xl mx-auto text-xs sm:text-sm">
-          Everything you need to manage your wholesale operations in one dashboard
+          Everything you need to manage your cannabis distribution operations in one dashboard
         </p>
       </motion.div>
 

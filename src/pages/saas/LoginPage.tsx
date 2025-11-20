@@ -616,7 +616,7 @@ export default function LoginPage() {
           </p>
           <p className="text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
             <Lock className="h-3 w-3" />
-            Secure authentication powered by DevPanel
+            Secure authentication powered by FloraIQ
           </p>
         </div>
       </Card>

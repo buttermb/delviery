@@ -114,7 +114,7 @@ export default function Contact() {
                   <Video className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                 </div>
                 <CardTitle>DEMO</CardTitle>
-                <CardDescription>See DevPanel in action</CardDescription>
+                <CardDescription>See FloraIQ in action</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>

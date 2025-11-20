@@ -279,7 +279,7 @@ export function InteractiveDashboardShowcase() {
                 </h3>
                 <p className="text-muted-foreground mb-6">
                   Our dashboard provides real-time insights, automated workflows, and powerful
-                  analytics to help you grow your wholesale business.
+                  analytics to help you grow your cannabis distribution.
                 </p>
               </motion.div>
 

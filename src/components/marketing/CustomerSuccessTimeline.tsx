@@ -20,7 +20,7 @@ const events: TimelineEvent[] = [
   {
     id: 2,
     title: 'First Major Order',
-    description: 'Processed first large wholesale order',
+    description: 'Processed first large cannabis order',
     metric: '$50K+',
     month: 'Month 2',
   },

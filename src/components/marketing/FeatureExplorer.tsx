@@ -91,7 +91,7 @@ const features: Feature[] = [
   {
     id: 'menus',
     title: 'Disposable Menus',
-    description: 'AES-256 encrypted menus for wholesale clients with expiration and access controls',
+    description: 'AES-256 encrypted menus for cannabis distributors with expiration and access controls',
     icon: Lock,
     benefits: [
       'AES-256 encryption at rest',
@@ -141,7 +141,7 @@ export function FeatureExplorer() {
               Explore Our Features
             </h2>
             <p className="text-xl text-muted-foreground">
-              Powerful tools designed for wholesale distributors
+              Powerful tools designed for cannabis distributors
             </p>
           </motion.div>
 

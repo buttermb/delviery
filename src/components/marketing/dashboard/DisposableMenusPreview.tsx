@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 const activeMenus = [
   {
     id: 'M-A4F8',
-    name: 'Spring 2024 Wholesale',
+    name: 'Spring 2024 Cannabis',
     status: 'active',
     views: 234,
     uniqueVisitors: 89,
