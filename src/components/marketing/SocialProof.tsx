@@ -10,11 +10,11 @@ interface Activity {
 }
 
 const mockActivities: Activity[] = [
-  { id: '1', type: 'signup', message: 'Sarah from New York just signed up', timestamp: new Date() },
-  { id: '2', type: 'purchase', message: 'Team from London upgraded to Pro', timestamp: new Date() },
-  { id: '3', type: 'milestone', message: '1,000+ businesses using FloraIQ', timestamp: new Date() },
-  { id: '4', type: 'signup', message: 'Alex from Singapore joined', timestamp: new Date() },
-  { id: '5', type: 'purchase', message: 'Startup from Berlin went Enterprise', timestamp: new Date() },
+  { id: '1', type: 'signup', message: 'Green Leaf Dispensary just signed up', timestamp: new Date() },
+  { id: '2', type: 'purchase', message: 'High Tide Distribution upgraded to Pro', timestamp: new Date() },
+  { id: '3', type: 'milestone', message: '400+ distributors using FloraIQ', timestamp: new Date() },
+  { id: '4', type: 'signup', message: 'CannaLogistics joined from California', timestamp: new Date() },
+  { id: '5', type: 'purchase', message: 'Emerald Coast expanded to Enterprise', timestamp: new Date() },
 ];
 
 export function SocialProof() {
@@ -53,22 +53,22 @@ export function SocialProof() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
           transition={{ duration: 0.4 }}
-          className="bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-lg p-4 max-w-xs"
+          className="bg-[hsl(var(--marketing-bg-subtle))]/95 backdrop-blur-sm border border-[hsl(var(--marketing-border))] rounded-lg shadow-lg p-4 max-w-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[hsl(var(--marketing-primary))/0.1] flex items-center justify-center text-[hsl(var(--marketing-primary))]">
               {getIcon(currentActivity.type)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+              <p className="text-sm font-medium text-[hsl(var(--marketing-text))] truncate">
                 {currentActivity.message}
               </p>
-              <p className="text-xs text-muted-foreground">Just now</p>
+              <p className="text-xs text-[hsl(var(--marketing-text-light))]">Just now</p>
             </div>
           </div>
-          <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+          <div className="mt-2 h-1 bg-[hsl(var(--marketing-border))] rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-primary"
+              className="h-full bg-[hsl(var(--marketing-primary))]"
               initial={{ width: '0%' }}
               animate={{ width: '100%' }}
               transition={{ duration: 4, ease: 'linear' }}

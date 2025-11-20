@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { 
-  X, 
+import {
+  X,
   Check,
   FileSpreadsheet,
   Clock,
@@ -55,8 +55,11 @@ export function ProblemSolutionSection() {
   const [activeTab, setActiveTab] = useState<'before' | 'after'>('before');
 
   return (
-    <section className="py-12 md:py-20 bg-gradient-to-b from-background to-muted/30">
-      <div className="container mx-auto px-4">
+    <section className="py-12 md:py-20 bg-[hsl(var(--marketing-bg))] relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[hsl(var(--marketing-primary))] opacity-5 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <motion.div
             className="text-center mb-12 md:mb-16"
@@ -64,34 +67,32 @@ export function ProblemSolutionSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
               Stop Managing Spreadsheets, Start Scaling Distribution
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-[hsl(var(--marketing-text-light))]">
               See how FloraIQ transforms your cannabis distribution operations
             </p>
           </motion.div>
 
           {/* Mobile Tab Switcher */}
           {isMobile && (
-            <div className="flex gap-2 mb-6 p-1 bg-muted rounded-lg">
+            <div className="flex gap-2 mb-6 p-1 bg-[hsl(var(--marketing-bg-subtle))] rounded-lg border border-[hsl(var(--marketing-border))]">
               <button
                 onClick={() => setActiveTab('before')}
-                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${
-                  activeTab === 'before'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                }`}
+                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'before'
+                    ? 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] shadow-sm border border-[hsl(var(--marketing-border))]'
+                    : 'text-[hsl(var(--marketing-text-light))]'
+                  }`}
               >
                 Before FloraIQ
               </button>
               <button
                 onClick={() => setActiveTab('after')}
-                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${
-                  activeTab === 'after'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                }`}
+                className={`flex-1 px-4 py-3 rounded-md font-semibold transition-all ${activeTab === 'after'
+                    ? 'bg-[hsl(var(--marketing-primary))] text-white shadow-sm'
+                    : 'text-[hsl(var(--marketing-text-light))]'
+                  }`}
               >
                 With FloraIQ
               </button>
@@ -101,18 +102,17 @@ export function ProblemSolutionSection() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Problems */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border-2 border-red-200 dark:border-red-900/30 ${
-                isMobile && activeTab !== 'before' ? 'hidden' : ''
-              }`}
+              className={`glass-card p-8 rounded-xl border border-red-500/20 bg-red-500/5 ${isMobile && activeTab !== 'before' ? 'hidden' : ''
+                }`}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                  <X className="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                  <X className="h-6 w-6 text-red-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground">Before FloraIQ</h3>
+                <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))]">Before FloraIQ</h3>
               </div>
               <ul className="space-y-4">
                 {problems.map((problem, index) => {
@@ -120,14 +120,14 @@ export function ProblemSolutionSection() {
                   return (
                     <motion.li
                       key={index}
-                      className="flex items-center gap-3 text-muted-foreground"
+                      className="flex items-center gap-3 text-[hsl(var(--marketing-text-light))]"
                       initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-red-400" />
                       </div>
                       <span>{problem.text}</span>
                     </motion.li>
@@ -138,18 +138,17 @@ export function ProblemSolutionSection() {
 
             {/* Solutions */}
             <motion.div
-              className={`glass-card p-8 rounded-xl border-2 border-emerald-200 dark:border-emerald-900/30 ${
-                isMobile && activeTab !== 'after' ? 'hidden' : ''
-              }`}
+              className={`glass-card p-8 rounded-xl border border-[hsl(var(--marketing-primary))/0.3] bg-[hsl(var(--marketing-primary))/0.05] ${isMobile && activeTab !== 'after' ? 'hidden' : ''
+                }`}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
-                  <Check className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-primary))/0.1] flex items-center justify-center border border-[hsl(var(--marketing-primary))/0.2]">
+                  <Check className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground">With FloraIQ</h3>
+                <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))]">With FloraIQ</h3>
               </div>
               <ul className="space-y-4">
                 {solutions.map((solution, index) => {
@@ -157,14 +156,14 @@ export function ProblemSolutionSection() {
                   return (
                     <motion.li
                       key={index}
-                      className="flex items-center gap-3 text-foreground font-medium"
+                      className="flex items-center gap-3 text-[hsl(var(--marketing-text))] font-medium"
                       initial={{ opacity: 0, x: 10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[hsl(var(--marketing-primary))/0.1] flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
                       </div>
                       <span>{solution.text}</span>
                     </motion.li>
@@ -181,11 +180,11 @@ export function ProblemSolutionSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <p className="text-lg font-semibold text-foreground mb-4">
+            <p className="text-lg font-semibold text-[hsl(var(--marketing-text))] mb-4">
               Join 400+ cannabis distributors who've transformed their operations
             </p>
             <Link to="/signup">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white h-12 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300">
                 Start Automating Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

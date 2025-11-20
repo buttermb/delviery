@@ -68,7 +68,9 @@ export function BentoFeatureGrid() {
               className={`
                 group relative overflow-hidden rounded-3xl p-8 
                 bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]
-                hover:border-[hsl(var(--marketing-primary))/0.5] transition-colors duration-300
+                hover:border-[hsl(var(--marketing-primary))/0.5] 
+                hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(16,185,129,0.2)]
+                transition-all duration-300
                 ${feature.className}
               `}
             >
@@ -79,8 +81,8 @@ export function BentoFeatureGrid() {
                 <div className="flex items-start justify-between mb-4">
                   <div className={`
                     p-3 rounded-xl 
-                    ${feature.highlight 
-                      ? 'bg-[hsl(var(--marketing-primary))] text-white' 
+                    ${feature.highlight
+                      ? 'bg-[hsl(var(--marketing-primary))] text-white'
                       : 'bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-primary))] border border-[hsl(var(--marketing-border))]'}
                   `}>
                     <feature.icon className="w-6 h-6" />
@@ -114,14 +116,14 @@ export function BentoFeatureGrid() {
                         </div>
                       </div>
                       <div className="mt-2 flex justify-center">
-                         <div className="text-[10px] text-[hsl(var(--marketing-primary))] font-mono animate-pulse">
-                           Link expires in 00:59:59
-                         </div>
+                        <div className="text-[10px] text-[hsl(var(--marketing-primary))] font-mono animate-pulse">
+                          Link expires in 00:59:59
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div className="mt-auto pt-4 flex items-center text-sm text-[hsl(var(--marketing-primary))] font-medium opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
                   Learn more <ArrowUpRight className="w-4 h-4 ml-1" />
                 </div>

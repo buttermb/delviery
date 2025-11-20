@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   ArrowRight,
   CheckCircle,
 } from "lucide-react";
@@ -19,6 +19,9 @@ import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
+import { WaveDivider } from "@/components/marketing/WaveDivider";
+import { StatsSection } from "@/components/marketing/StatsSection";
+import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
@@ -51,10 +54,10 @@ export default function MarketingHome() {
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] relative overflow-hidden font-sans">
       {/* Performance Monitor - Dev mode only */}
       <PerformanceMonitor />
-      
+
       {/* Parallax Background Effects */}
       <ParallaxBackground />
-      
+
       <SEOHead
         title="FloraIQ - Modern Operating System for Cannabis Distribution"
         description="Secure disposable menus, real-time inventory, and automated logistics. The all-in-one platform for modern wholesale."
@@ -70,13 +73,13 @@ export default function MarketingHome() {
           }
         }}
       />
-      
+
       <ScrollProgressIndicator />
       <MarketingNav />
 
       {/* SECTION 1: MODERN HERO */}
       <ModernHero />
-      
+
       {/* LIVE ACTIVITY TICKER */}
       <LiveActivityTicker />
 
@@ -89,8 +92,15 @@ export default function MarketingHome() {
         </section>
       </SectionTransition>
 
+      import {StatsSection} from "@/components/marketing/StatsSection";
+
+      // ... imports ...
+
       {/* SECTION 3: BENTO FEATURES */}
       <BentoFeatureGrid />
+
+      {/* STATS SECTION */}
+      <StatsSection />
 
       {/* SECTION 4: PLATFORM CAPABILITIES */}
       <SectionTransition variant="fade">
@@ -101,13 +111,16 @@ export default function MarketingHome() {
         </section>
       </SectionTransition>
 
+
       {/* SECTION 5: CUSTOMER SUCCESS */}
-      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30" style={{ contentVisibility: 'auto' }}>
-        <div className="container mx-auto px-4">
+      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative" style={{ contentVisibility: 'auto' }}>
+        <WaveDivider position="top" color="hsl(var(--marketing-bg))" />
+        <div className="container mx-auto px-4 pt-12">
           <Suspense fallback={<SectionLoader />}>
             <CustomerSuccessTimeline />
           </Suspense>
         </div>
+        <WaveDivider position="bottom" color="hsl(var(--marketing-bg))" />
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
@@ -207,11 +220,10 @@ export default function MarketingHome() {
             ].map((plan, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-2xl border transition-transform duration-300 hover:scale-105 ${
-                  plan.popular
-                    ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))/0.05] shadow-[0_0_30px_rgba(16,185,129,0.1)]"
-                    : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
-                }`}
+                className={`p-6 rounded-2xl border transition-transform duration-300 hover:scale-105 ${plan.popular
+                  ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))/0.05] shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+                  : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
+                  }`}
               >
                 {plan.popular && (
                   <div className="text-center mb-4">
@@ -236,11 +248,10 @@ export default function MarketingHome() {
                   <ConfettiButton
                     variant={plan.popular ? "default" : "outline"}
                     size="default"
-                    className={`w-full rounded-xl ${
-                      plan.popular
-                        ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white"
-                        : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))]"
-                    }`}
+                    className={`w-full rounded-xl ${plan.popular
+                      ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white"
+                      : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))]"
+                      }`}
                     confettiConfig={{
                       particleCount: plan.popular ? 150 : 100,
                       colors: ['#10B981', '#34D399', '#059669'],
@@ -322,9 +333,12 @@ export default function MarketingHome() {
 
       {/* Keyboard Navigation Helper */}
       <KeyboardNavigationHelper />
-      
+
       {/* Live Chat Widget */}
       <LiveChatWidget />
+
+      {/* Sticky Mobile CTA */}
+      <StickyMobileCTA />
     </div>
   );
 }

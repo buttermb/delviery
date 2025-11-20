@@ -28,20 +28,20 @@ export function ROICalculator() {
   }, [currentCosts]);
 
   return (
-    <div className="glass-card p-8 rounded-xl border border-border">
+    <div className="glass-card p-8 rounded-xl border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-12 h-12 rounded-full bg-[hsl(var(--marketing-primary))]/10 flex items-center justify-center">
           <Calculator className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground">ROI Calculator</h3>
-          <p className="text-sm text-muted-foreground">See how much you can save</p>
+          <h3 className="text-xl font-bold text-[hsl(var(--marketing-text))]">ROI Calculator</h3>
+          <p className="text-sm text-[hsl(var(--marketing-text-light))]">See how much you can save</p>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-sm font-medium text-[hsl(var(--marketing-text))] mb-2">
             Manual Hours/Week
           </label>
           <input
@@ -50,12 +50,12 @@ export function ROICalculator() {
             onChange={(e) =>
               setCurrentCosts({ ...currentCosts, manualHours: parseInt(e.target.value) || 0 })
             }
-            className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            className="w-full px-4 py-2 border border-[hsl(var(--marketing-border))] rounded-lg bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))]"
             min="0"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-sm font-medium text-[hsl(var(--marketing-text))] mb-2">
             Hourly Rate ($)
           </label>
           <input
@@ -64,12 +64,12 @@ export function ROICalculator() {
             onChange={(e) =>
               setCurrentCosts({ ...currentCosts, hourlyRate: parseInt(e.target.value) || 0 })
             }
-            className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            className="w-full px-4 py-2 border border-[hsl(var(--marketing-border))] rounded-lg bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))]"
             min="0"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-sm font-medium text-[hsl(var(--marketing-text))] mb-2">
             Current Software Cost ($/mo)
           </label>
           <input
@@ -78,12 +78,12 @@ export function ROICalculator() {
             onChange={(e) =>
               setCurrentCosts({ ...currentCosts, monthlySoftware: parseInt(e.target.value) || 0 })
             }
-            className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            className="w-full px-4 py-2 border border-[hsl(var(--marketing-border))] rounded-lg bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))]"
             min="0"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-sm font-medium text-[hsl(var(--marketing-text))] mb-2">
             Error Costs ($/mo)
           </label>
           <input
@@ -92,7 +92,7 @@ export function ROICalculator() {
             onChange={(e) =>
               setCurrentCosts({ ...currentCosts, errors: parseInt(e.target.value) || 0 })
             }
-            className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            className="w-full px-4 py-2 border border-[hsl(var(--marketing-border))] rounded-lg bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))]"
             min="0"
           />
         </div>
@@ -100,7 +100,7 @@ export function ROICalculator() {
 
       {/* Enhanced Results with Animations */}
       <motion.div
-        className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 p-8 rounded-xl border-2 border-emerald-200 dark:border-emerald-800 relative overflow-hidden"
+        className="bg-gradient-to-br from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-accent))]/10 p-8 rounded-xl border-2 border-[hsl(var(--marketing-primary))]/30 relative overflow-hidden"
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -123,31 +123,31 @@ export function ROICalculator() {
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
             >
-              <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <TrendingUp className="h-6 w-6 text-[hsl(var(--marketing-primary))]" />
             </motion.div>
-            <h4 className="font-bold text-lg text-emerald-900 dark:text-emerald-100">Your Potential Savings</h4>
+            <h4 className="font-bold text-lg text-[hsl(var(--marketing-text))]">Your Potential Savings</h4>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-6">
             {/* Monthly Savings */}
             <motion.div
-              className="bg-white/50 dark:bg-black/20 p-4 rounded-lg"
+              className="bg-[hsl(var(--marketing-bg))]/50 p-4 rounded-lg border border-[hsl(var(--marketing-border))]"
               whileHover={{ scale: 1.05, y: -5 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Monthly Savings</div>
+                <DollarSign className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
+                <div className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">Monthly Savings</div>
               </div>
-              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+              <div className="text-3xl font-bold text-[hsl(var(--marketing-text))]">
                 $<CountUpNumber key={savings.monthlySavings} end={savings.monthlySavings} duration={1500} />
               </div>
               {/* Visual bar */}
               <motion.div
-                className="h-1 bg-emerald-500/30 rounded-full mt-3 overflow-hidden"
+                className="h-1 bg-[hsl(var(--marketing-primary))]/30 rounded-full mt-3 overflow-hidden"
               >
                 <motion.div
-                  className="h-full bg-emerald-500"
+                  className="h-full bg-[hsl(var(--marketing-primary))]"
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 1.5, delay: 0.3 }}
@@ -157,22 +157,22 @@ export function ROICalculator() {
 
             {/* Annual Savings */}
             <motion.div
-              className="bg-white/50 dark:bg-black/20 p-4 rounded-lg"
+              className="bg-[hsl(var(--marketing-bg))]/50 p-4 rounded-lg border border-[hsl(var(--marketing-border))]"
               whileHover={{ scale: 1.05, y: -5 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <Target className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Annual Savings</div>
+                <Target className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
+                <div className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">Annual Savings</div>
               </div>
-              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+              <div className="text-3xl font-bold text-[hsl(var(--marketing-text))]">
                 $<CountUpNumber key={savings.annualSavings} end={savings.annualSavings} duration={1500} />
               </div>
               <motion.div
-                className="h-1 bg-emerald-500/30 rounded-full mt-3 overflow-hidden"
+                className="h-1 bg-[hsl(var(--marketing-primary))]/30 rounded-full mt-3 overflow-hidden"
               >
                 <motion.div
-                  className="h-full bg-emerald-500"
+                  className="h-full bg-[hsl(var(--marketing-primary))]"
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 1.5, delay: 0.5 }}
@@ -182,22 +182,22 @@ export function ROICalculator() {
 
             {/* Time Saved */}
             <motion.div
-              className="bg-white/50 dark:bg-black/20 p-4 rounded-lg"
+              className="bg-[hsl(var(--marketing-bg))]/50 p-4 rounded-lg border border-[hsl(var(--marketing-border))]"
               whileHover={{ scale: 1.05, y: -5 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Time Saved/Week</div>
+                <Clock className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
+                <div className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">Time Saved/Week</div>
               </div>
-              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+              <div className="text-3xl font-bold text-[hsl(var(--marketing-text))]">
                 <CountUpNumber key={savings.timeSaved} end={savings.timeSaved} decimals={1} duration={1500} />hrs
               </div>
               <motion.div
-                className="h-1 bg-emerald-500/30 rounded-full mt-3 overflow-hidden"
+                className="h-1 bg-[hsl(var(--marketing-primary))]/30 rounded-full mt-3 overflow-hidden"
               >
                 <motion.div
-                  className="h-full bg-emerald-500"
+                  className="h-full bg-[hsl(var(--marketing-primary))]"
                   initial={{ width: 0 }}
                   animate={{ width: '75%' }}
                   transition={{ duration: 1.5, delay: 0.7 }}
@@ -207,7 +207,7 @@ export function ROICalculator() {
 
             {/* ROI */}
             <motion.div
-              className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-lg text-white relative overflow-hidden"
+              className="bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] p-4 rounded-lg text-white relative overflow-hidden"
               whileHover={{ scale: 1.05, y: -5 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
