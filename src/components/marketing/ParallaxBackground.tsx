@@ -25,11 +25,11 @@ export function ParallaxBackground() {
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.5]);
 
   if (!shouldAnimate) {
-    return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none" />;
+    return <div ref={ref} className="fixed inset-0 overflow-hidden pointer-events-none -z-10" />;
   }
 
   return (
-    <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div ref={ref} className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
       <div ref={inViewRef} className="absolute inset-0" />
       {/* Gradient orbs */}
       <motion.div
