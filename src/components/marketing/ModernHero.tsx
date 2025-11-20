@@ -15,13 +15,13 @@ export function ModernHero() {
   const containerRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center bg-[hsl(var(--marketing-bg))] pt-20 pb-12">
+    <section ref={containerRef} className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-32 pb-20">
       {/* Background Effects */}
       <CursorSpotlight containerRef={containerRef} />
       <AnimatedMeshBackground />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
 
           {/* Left Column: Text */}
           <motion.div
