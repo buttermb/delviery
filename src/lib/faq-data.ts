@@ -105,7 +105,7 @@ export const faqs: FAQ[] = [
     id: 'gen-009',
     category: 'general',
     question: 'Can I try before I buy?',
-    answer: 'Absolutely! We offer a 14-day free trial with full access to all features (no credit card required). You can also schedule a personalized demo with our team to see how BigMike can transform your wholesale business.',
+    answer: 'Absolutely! We offer a 14-day free trial with full access to all features (no credit card required). You can also schedule a personalized demo with our team to see how FloraIQ can transform your cannabis distribution.',
     tags: ['trial', 'demo'],
     popular: true,
     difficulty: 'beginner'

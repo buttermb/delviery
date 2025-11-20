@@ -405,7 +405,7 @@ export default function SignUpPage() {
           <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Start Your Journey Today
           </h1>
-          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your wholesale business in minutes</p>
+          <p className="text-muted-foreground text-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>Transform your cannabis distribution in minutes</p>
           <p className="text-sm text-muted-foreground mt-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             Already have an account?{' '}
             <Link to="/saas/login" className="text-primary font-medium hover:underline">
