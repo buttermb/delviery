@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     if (campaignError) throw campaignError;
 
     // Get customer list based on audience filter
-    let query = supabaseClient
+    const query = supabaseClient
       .from('wholesale_clients')
       .select('id, name, email, phone')
       .eq('tenant_id', campaign.tenant_id)

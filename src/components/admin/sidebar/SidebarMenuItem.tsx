@@ -44,6 +44,12 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
       trackFeatureClick(item.featureId);
     }
     onItemClick(item.id, item.featureId);
+    
+    // Dispatch custom event to close mobile sheet if open
+    // This ensures immediate feedback on mobile devices
+    if (window.innerWidth < 1024) {
+      window.dispatchEvent(new CustomEvent('mobile-nav-close'));
+    }
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {

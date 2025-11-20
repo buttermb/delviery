@@ -53,7 +53,7 @@ serve(async (req) => {
     const reportData: Record<string, any> = {};
 
     for (const dataSource of dataSources) {
-      let query = supabaseClient
+      const query = supabaseClient
         .from(dataSource)
         .select('*')
         .eq('tenant_id', schedule.tenant_id)
@@ -130,7 +130,7 @@ function calculateNextRun(frequency: string, timeOfDay: string): string {
   const now = new Date();
   const [hours, minutes] = timeOfDay.split(':').map(Number);
   
-  let nextRun = new Date(now);
+  const nextRun = new Date(now);
   nextRun.setHours(hours, minutes, 0, 0);
 
   switch (frequency) {

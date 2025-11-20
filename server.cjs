@@ -11,7 +11,7 @@ const DIST_PATH = path.resolve(__dirname, 'dist');
 const INDEX_FILE = path.join(DIST_PATH, 'index.html');
 
 if (!process.env.AIKIDO_TOKEN) {
-  // eslint-disable-next-line no-console
+   
   console.warn(
     '[AikidoSec] AIKIDO_TOKEN environment variable is not set. ' +
       'Requests will fail until the token is configured.',
@@ -19,7 +19,7 @@ if (!process.env.AIKIDO_TOKEN) {
 }
 
 if (!fs.existsSync(DIST_PATH)) {
-  // eslint-disable-next-line no-console
+   
   console.warn(
     '[Server] dist/ folder not found. Run `npm run build` before starting the secure server.',
   );
@@ -52,7 +52,7 @@ app.get('*', (_req, res, next) => {
 });
 
 app.use((err, _req, res, _next) => {
-  // eslint-disable-next-line no-console
+   
   console.error('[Server] Unhandled error', err);
   res.status(err.status || 500).json({
     error: 'Server error',
@@ -61,7 +61,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
+   
   console.log(`[Server] Secure server running on http://localhost:${PORT}`);
 });
 

@@ -47,8 +47,13 @@ import {
 } from 'recharts';
 import { useState, useEffect } from 'react';
 import { AnimatedNumber } from '@/components/shared/AnimatedNumber';
-import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+
+interface TenantPayload {
+  id?: string;
+  subscription_plan?: string;
+  subscription_status?: string;
+}
 
 export default function SuperAdminDashboardPage() {
   const navigate = useNavigate();
@@ -67,12 +72,16 @@ export default function SuperAdminDashboardPage() {
           table: 'tenants',
         },
         (payload) => {
+          // Type-safe payload access
+          const newData = payload.new as TenantPayload | null;
+          const oldData = payload.old as TenantPayload | null;
+          
           logger.debug('Tenant data changed', { 
             event: payload.eventType, 
             component: 'SuperAdminDashboard',
-            tenantId: payload.new?.id || payload.old?.id,
-            subscriptionPlan: payload.new?.subscription_plan,
-            subscriptionStatus: payload.new?.subscription_status,
+            tenantId: newData?.id || oldData?.id,
+            subscriptionPlan: newData?.subscription_plan,
+            subscriptionStatus: newData?.subscription_status,
           });
           
           // Invalidate stats queries to trigger refetch
@@ -81,17 +90,17 @@ export default function SuperAdminDashboardPage() {
           queryClient.invalidateQueries({ queryKey: ['super-admin-recent-activity'] });
           
           // If subscription plan or status changed, also invalidate tenant detail queries
-          if (payload.new?.subscription_plan !== payload.old?.subscription_plan || 
-              payload.new?.subscription_status !== payload.old?.subscription_status) {
+          if (newData?.subscription_plan !== oldData?.subscription_plan || 
+              newData?.subscription_status !== oldData?.subscription_status) {
             logger.info('Subscription tier or status changed', {
-              tenantId: payload.new?.id,
-              oldPlan: payload.old?.subscription_plan,
-              newPlan: payload.new?.subscription_plan,
-              oldStatus: payload.old?.subscription_status,
-              newStatus: payload.new?.subscription_status,
+              tenantId: newData?.id,
+              oldPlan: oldData?.subscription_plan,
+              newPlan: newData?.subscription_plan,
+              oldStatus: oldData?.subscription_status,
+              newStatus: newData?.subscription_status,
               component: 'SuperAdminDashboard',
             });
-            queryClient.invalidateQueries({ queryKey: ['super-admin-tenant', payload.new?.id] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-tenant', newData?.id] });
             queryClient.invalidateQueries({ queryKey: ['super-admin-tenants-list'] });
           }
         }

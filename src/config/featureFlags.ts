@@ -61,7 +61,7 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     // Load runtime overrides once on mount
     refreshFlags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   useEffect(() => {

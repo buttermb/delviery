@@ -49,7 +49,7 @@ export default function SupplierManagementPage() {
   const { data: suppliers, isLoading } = useQuery({
     queryKey: queryKeys.suppliers.list({ filter }),
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from("wholesale_suppliers")
         .select("*")
         .order("created_at", { ascending: false });

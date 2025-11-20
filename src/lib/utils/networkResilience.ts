@@ -345,7 +345,7 @@ export async function resilientFetch(
 export type ConnectionStatus = 'online' | 'offline' | 'slow' | 'unknown';
 
 let connectionStatus: ConnectionStatus = 'unknown';
-let connectionListeners: Set<(status: ConnectionStatus) => void> = new Set();
+const connectionListeners: Set<(status: ConnectionStatus) => void> = new Set();
 
 /**
  * Get current connection status

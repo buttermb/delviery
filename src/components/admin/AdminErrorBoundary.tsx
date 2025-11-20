@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { errorReporter } from '@/utils/errorReporting';
 import bugFinder from '@/utils/bugFinder';
 import { logger } from '@/utils/logger';
+import { clearAllCachesAndServiceWorkers, reloadWithCacheBypass } from '@/utils/serviceWorkerCache';
 
 interface Props {
   children: ReactNode;
@@ -39,12 +40,15 @@ export class AdminErrorBoundary extends Component<Props, State> {
     // Report error to error reporter
     errorReporter.report(error, 'AdminErrorBoundary');
     
-    // Detect chunk loading errors specifically
+    // Detect chunk/module loading errors specifically
     const isChunkError = error.message?.includes('chunk') || 
                         error.message?.includes('Loading') ||
                         error.message?.includes('createContext') ||
                         error.message?.includes('Failed to fetch') ||
-                        errorInfo.componentStack?.includes('chunk');
+                        error.message?.includes('dynamically imported module') ||
+                        error.message?.includes('Failed to fetch dynamically imported module') ||
+                        errorInfo.componentStack?.includes('chunk') ||
+                        errorInfo.componentStack?.includes('lazy');
     
     // Also report to bug finder
     bugFinder.reportRuntimeError(error, 'AdminErrorBoundary', {
@@ -100,18 +104,20 @@ export class AdminErrorBoundary extends Component<Props, State> {
     });
   };
 
-  handleClearCacheAndReload = () => {
-    // Clear all caches and reload
-    if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => caches.delete(name));
-      });
+  handleClearCacheAndReload = async () => {
+    try {
+      logger.info('Clearing cache and reloading', { component: 'AdminErrorBoundary' });
+      
+      // Clear all caches and service workers
+      await clearAllCachesAndServiceWorkers();
+      
+      // Reload with cache bypass
+      reloadWithCacheBypass();
+    } catch (error) {
+      logger.error('Error clearing cache', error, { component: 'AdminErrorBoundary' });
+      // Fallback to simple reload
+      reloadWithCacheBypass();
     }
-    // Clear localStorage cache-related items
-    const keysToRemove = ['js-cache-count', 'chunk-reload-count'];
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    // Reload with cache bypass
-    window.location.href = `${window.location.pathname}?nocache=${Date.now()}`;
   };
 
   render() {
@@ -138,11 +144,14 @@ export class AdminErrorBoundary extends Component<Props, State> {
                   <p className="font-mono text-sm text-destructive font-semibold mb-2">
                     {this.state.error.message}
                   </p>
-                  {this.state.error.message?.includes('chunk') && (
-                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-900 font-semibold mb-1">Chunk Loading Error Detected</p>
-                      <p className="text-xs text-blue-700">
-                        This usually happens when cached JavaScript files are outdated. Try clearing your cache and reloading.
+                  {(this.state.error.message?.includes('chunk') || 
+                     this.state.error.message?.includes('dynamically imported module') ||
+                     this.state.error.message?.includes('Failed to fetch')) && (
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold mb-1">Module Loading Error Detected</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        This usually happens when cached JavaScript files are outdated or the service worker is serving stale code. 
+                        Click "Clear Cache & Reload" to fix this issue.
                       </p>
                     </div>
                   )}
@@ -168,7 +177,9 @@ export class AdminErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
-              {this.state.error?.message?.includes('chunk') && (
+              {(this.state.error?.message?.includes('chunk') || 
+                 this.state.error?.message?.includes('dynamically imported module') ||
+                 this.state.error?.message?.includes('Failed to fetch')) && (
                 <Button onClick={this.handleClearCacheAndReload} variant="destructive" className="flex-1">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Clear Cache & Reload

@@ -84,9 +84,28 @@ export function MobileBottomNav() {
     }
     
     if (open) {
+      logger.debug('Closing sheet due to route change', { 
+        pathname: location.pathname,
+        component: 'MobileBottomNav'
+      });
       setOpen(false);
     }
   }, [location.pathname, open]); // Close sheet on route change
+
+  // Listen for custom navigation events from sidebar (backup to route change)
+  useEffect(() => {
+    const handleNavigation = () => {
+      if (open) {
+        logger.debug('Closing sheet due to navigation event', { component: 'MobileBottomNav' });
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener('mobile-nav-close', handleNavigation);
+    return () => {
+      window.removeEventListener('mobile-nav-close', handleNavigation);
+    };
+  }, [open]);
 
   return (
     <>
@@ -127,8 +146,11 @@ export function MobileBottomNav() {
                 logger.debug('MobileBottomNav click', { 
                   href: link.href, 
                   fullPath,
-                  title: link.title 
+                  title: link.title,
+                  timestamp: Date.now()
                 });
+                // Navigation will be handled by Link component
+                // Sheet will close via route change detection or custom event
               }}
               className={cn(
                 'flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs transition-colors min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50',

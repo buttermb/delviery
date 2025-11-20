@@ -31,7 +31,7 @@ export function useCleanup() {
       } catch (error) {
         // Use logger in production, silent in dev for cleanup errors
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.warn('Cleanup error:', error);
         }
       }
