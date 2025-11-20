@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function AnimatedMeshBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ willChange: 'auto' }}>
       <div className="absolute inset-0 opacity-30">
         {/* Top Left Blob */}
         <div className="absolute top-0 left-0 w-[500px] h-[500px] 
