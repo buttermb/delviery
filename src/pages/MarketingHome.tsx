@@ -51,7 +51,7 @@ export default function MarketingHome() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] relative font-sans">
       {/* Performance Monitor - Dev mode only */}
       <PerformanceMonitor />
 
