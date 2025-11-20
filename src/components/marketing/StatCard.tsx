@@ -21,10 +21,15 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export function StatCard({ value, label, index = 0, icon }: StatCardProps) {
+  // Handle "24/7" specially - don't parse as number
+  const isTimeFormat = typeof value === 'string' && value.includes('/7');
+  
   // Extract numeric value for animation
-  const numericValue = typeof value === 'string' 
-    ? parseFloat(value.replace(/[^0-9.]/g, '')) 
-    : value;
+  const numericValue = isTimeFormat 
+    ? parseFloat(value.split('/')[0]) // Extract "24" from "24/7"
+    : typeof value === 'string' 
+      ? parseFloat(value.replace(/[^0-9.]/g, '')) 
+      : value;
   
   const prefix = typeof value === 'string' && value.includes('$') ? '$' : '';
   const suffix = typeof value === 'string' 
@@ -116,13 +121,22 @@ export function StatCard({ value, label, index = 0, icon }: StatCardProps) {
               damping: 15
             }}
           >
-            {!isNaN(numericValue) ? (
+            {!isNaN(numericValue) && !isTimeFormat ? (
               <>
                 {prefix}
                 <CountUpNumber 
                   end={numericValue} 
                   duration={2000}
                   decimals={decimals}
+                />
+                {suffix}
+              </>
+            ) : isTimeFormat ? (
+              <>
+                <CountUpNumber 
+                  end={numericValue} 
+                  duration={2000}
+                  decimals={0}
                 />
                 {suffix}
               </>
