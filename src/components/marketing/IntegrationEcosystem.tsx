@@ -128,7 +128,7 @@ export function IntegrationEcosystem() {
                 Centralized Integration Hub
               </h3>
               <p className="text-muted-foreground">
-                DevPanel connects all your tools in one unified network
+                FloraIQ connects all your tools in one unified network
               </p>
             </div>
 

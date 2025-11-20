@@ -50,7 +50,7 @@ export function CTASection({
                   : "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white"
               }`}
             >
-              {primaryCta.text}
+              {primaryCta.text.replace(' →', '')}
               <ArrowRight className="ml-2 h-6 w-6" />
             </Button>
           </Link>

@@ -78,8 +78,8 @@ export function HeroSection() {
           >
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
               The Modern CRM for<br />
-              <span className="gradient-text-primary bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-white/70">
-                Wholesale Distributors
+              <span className="text-white">
+                Cannabis Distributors
               </span>
             </h1>
           </motion.div>
@@ -132,17 +132,20 @@ export function HeroSection() {
             style={{ y: y3, opacity }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            <Link to="/signup">
-              <FancyButton
-                variant="primary"
-                size="lg"
-                magnetic
-                glow
-                className="w-full sm:w-auto"
-              >
-                Start Free Trial
-              </FancyButton>
-            </Link>
+            <div className="flex flex-col items-center">
+              <Link to="/signup">
+                <FancyButton
+                  variant="primary"
+                  size="lg"
+                  magnetic
+                  glow
+                  className="w-full sm:w-auto"
+                >
+                  Start Free Trial
+                </FancyButton>
+              </Link>
+              <p className="text-xs text-white/70 mt-2">No credit card required • Cancel anytime</p>
+            </div>
             <Link to="/demo">
               <FancyButton
                 variant="outline"
@@ -160,9 +163,14 @@ export function HeroSection() {
             style={{ opacity }}
             className="mb-8"
           >
-            <p className="text-sm text-white/80 mb-8">
-              Trusted by 400+ distributors • $1.4M orders/month
+            <p className="text-sm text-white/80 mb-4">
+              Trusted by 400+ cannabis distributors • $1.4M orders/month
             </p>
+            
+            {/* Client Logos Placeholder - Add actual logos here */}
+            <div className="flex flex-wrap justify-center items-center gap-6 mb-8 opacity-60">
+              <div className="text-xs text-white/60">Client Logos Coming Soon</div>
+            </div>
 
             {/* Trust Badges */}
             <div className="mb-12">

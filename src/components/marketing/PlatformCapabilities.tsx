@@ -102,7 +102,7 @@ export function PlatformCapabilities() {
     offset: ['start end', 'end start'],
   });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 1, 0.3]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 0.9]);
 
   return (
@@ -127,7 +127,7 @@ export function PlatformCapabilities() {
               Platform Capabilities
             </h2>
             <p className="text-xl text-muted-foreground">
-              Everything you need to run your wholesale business
+              Everything you need to run your cannabis distribution
             </p>
           </motion.div>
 

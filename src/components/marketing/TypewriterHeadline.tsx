@@ -8,7 +8,7 @@ interface TypewriterHeadlineProps {
 
 export function TypewriterHeadline({ benefits, className = '' }: TypewriterHeadlineProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState(benefits[0] || 'Automate your workflow');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {

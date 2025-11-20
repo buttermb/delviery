@@ -107,12 +107,12 @@ export default function MarketingHome() {
       <ParallaxBackground />
       
       <SEOHead
-        title="DevPanel - Modern CRM for Wholesale Distributors"
+        title="FloraIQ - Modern CRM for Cannabis Distributors"
         description="Manage customers, products, orders, and inventory in one powerful platform. Disposable menus, real-time tracking, customer portal. Start free trial."
         structuredData={{
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          "name": "DevPanel",
+          "name": "FloraIQ",
           "applicationCategory": "BusinessApplication",
           "offers": {
             "@type": "Offer",
@@ -137,7 +137,6 @@ export default function MarketingHome() {
         </section>
       </SectionTransition>
 
-
       {/* SECTION 5: PLATFORM CAPABILITIES */}
       <SectionTransition variant="fade">
         <section style={{ contentVisibility: 'auto' }}>
@@ -157,12 +156,12 @@ export default function MarketingHome() {
       </SectionTransition>
 
       {/* SECTION 5C: KEY FEATURES GRID */}
-      <section className="py-20" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4 max-w-7xl">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-                Everything You Need to Run Your Wholesale Business
+                Everything You Need to Run Your Cannabis Distribution
               </h2>
             </div>
           </ScrollReveal>
@@ -219,7 +218,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: CUSTOMER SUCCESS */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <CustomerSuccessTimeline />
@@ -228,7 +227,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 7: HOW IT WORKS */}
-      <section className="py-20 bg-muted/30" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 bg-muted/30" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <AnimatedHowItWorks />
@@ -255,7 +254,7 @@ export default function MarketingHome() {
       </SectionTransition>
 
       {/* SECTION 10: PRICING PREVIEW */}
-      <section className="py-20" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
@@ -382,12 +381,12 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 bg-gradient-to-b from-muted/30 to-background" style={{ contentVisibility: 'auto' }}>
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                See DevPanel in Action
+                See FloraIQ in Action
               </h2>
               <p className="text-xl text-muted-foreground mb-8">
                 Explore our interactive dashboard - click around and see all the features
@@ -432,7 +431,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 7: STATS & NUMBERS */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden">
+      <section className="py-12 md:py-16 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-5">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -454,10 +453,10 @@ export default function MarketingHome() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-primary))] bg-clip-text text-transparent">
-              DevPanel by the Numbers
+              FloraIQ by the Numbers
             </h2>
             <p className="text-xl text-muted-foreground">
-              Trusted by wholesale distributors worldwide
+              Trusted by cannabis distributors worldwide
             </p>
           </motion.div>
 
@@ -466,7 +465,7 @@ export default function MarketingHome() {
             <StatCard value="$1.4M" label="Orders/Month" index={1} icon="Orders/Month" />
             <StatCard value="15hrs" label="Saved/Week" index={2} icon="Saved/Week" />
             <StatCard value="99.9%" label="Uptime" index={3} icon="Uptime" />
-            <StatCard value="4.8" label="Rating" index={4} icon="Rating" />
+            <StatCard value="4.8" label="Rating on Capterra" index={4} icon="Rating" />
             <StatCard value="24/7" label="Support" index={5} icon="Support" />
           </div>
         </div>
@@ -474,10 +473,10 @@ export default function MarketingHome() {
 
       {/* SECTION 8: FINAL CTA */}
       <CTASection
-        title="Ready to Transform Your Wholesale Business?"
+        title="Ready to Transform Your Cannabis Distribution?"
         description="Start your 14-day free trial today. No credit card required."
         primaryCta={{
-          text: "Start Free Trial →",
+          text: "Start Free Trial",
           link: "/signup",
         }}
         secondaryCta={{
