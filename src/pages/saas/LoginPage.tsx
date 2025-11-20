@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { logger } from '@/lib/logger';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
 import { resilientFetch, ErrorCategory, getErrorMessage, onConnectionStatusChange, type ConnectionStatus, isOffline } from '@/lib/utils/networkResilience';
 import { authFlowLogger, AuthFlowStep, AuthAction } from '@/lib/utils/authFlowLogger';
 import {
@@ -99,9 +100,9 @@ export default function LoginPage() {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
     
     // Clear any stale tenant data before login
-    localStorage.removeItem('lastTenantSlug');
-    localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
-    localStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
+    safeStorage.removeItem('lastTenantSlug');
+    safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
+    safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
     
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
@@ -200,16 +201,16 @@ export default function LoginPage() {
       const authResponse = await response.json();
 
       // Store authentication data
-      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
-      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN, authResponse.refresh_token);
-      localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(authResponse.admin));
-      localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(authResponse.tenant));
-      localStorage.setItem('lastTenantSlug', tenant.slug);
+      safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN, authResponse.access_token);
+      safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN, authResponse.refresh_token);
+      safeStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(authResponse.admin));
+      safeStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(authResponse.tenant));
+      safeStorage.setItem('lastTenantSlug', tenant.slug);
 
       // Store user ID for encryption
       if (authData.user?.id) {
         sessionStorage.setItem('floraiq_user_id', authData.user.id);
-        localStorage.setItem('floraiq_user_id', authData.user.id);
+        safeStorage.setItem('floraiq_user_id', authData.user.id);
       }
 
       // Initialize encryption with user's password

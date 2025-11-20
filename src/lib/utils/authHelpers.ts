@@ -5,6 +5,8 @@
 
 import { getTenantSlugFromLocation } from "@/middleware/tenantMiddleware";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { safeStorage } from "@/utils/safeStorage";
+import { logger } from "@/lib/logger";
 
 /**
  * Get the appropriate login URL based on user type and tenant slug
@@ -58,10 +60,10 @@ export function getDashboardUrl(userType: "super_admin" | "tenant_admin" | "cust
  * Check if user is logged in (any tier)
  */
 export function isLoggedIn(): boolean {
-  const superAdminToken = localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
-  const tenantAdminToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
-  const customerToken = localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
-  const courierSession = localStorage.getItem(STORAGE_KEYS.COURIER_PIN_SESSION);
+  const superAdminToken = safeStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
+  const tenantAdminToken = safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+  const customerToken = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+  const courierSession = safeStorage.getItem(STORAGE_KEYS.COURIER_PIN_SESSION);
   
   return !!(superAdminToken || tenantAdminToken || customerToken || courierSession);
 }
@@ -70,13 +72,13 @@ export function isLoggedIn(): boolean {
  * Get current user type from localStorage
  */
 export function getCurrentUserType(): "super_admin" | "tenant_admin" | "customer" | "courier" | null {
-  const tenantToken = localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
-  console.log('[AUTH] Checking tenant token:', !!tenantToken);
+  const tenantToken = safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+  logger.debug('[AUTH] Checking tenant token:', { hasToken: !!tenantToken });
   
-  if (localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN)) return "super_admin";
+  if (safeStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN)) return "super_admin";
   if (tenantToken) return "tenant_admin";
-  if (localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN)) return "customer";
-  if (localStorage.getItem(STORAGE_KEYS.COURIER_PIN_SESSION)) return "courier";
+  if (safeStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN)) return "customer";
+  if (safeStorage.getItem(STORAGE_KEYS.COURIER_PIN_SESSION)) return "courier";
   return null;
 }
 
@@ -84,16 +86,16 @@ export function getCurrentUserType(): "super_admin" | "tenant_admin" | "customer
  * Clear all auth tokens (logout from all tiers)
  */
 export function clearAllAuthTokens(): void {
-  localStorage.removeItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.SUPER_ADMIN_USER);
-  localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
-  localStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
-  localStorage.removeItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.CUSTOMER_USER);
-  localStorage.removeItem(STORAGE_KEYS.CUSTOMER_TENANT_DATA);
-  localStorage.removeItem(STORAGE_KEYS.COURIER_PIN_SESSION);
+  safeStorage.removeItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
+  safeStorage.removeItem(STORAGE_KEYS.SUPER_ADMIN_USER);
+  safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+  safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
+  safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
+  safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
+  safeStorage.removeItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+  safeStorage.removeItem(STORAGE_KEYS.CUSTOMER_USER);
+  safeStorage.removeItem(STORAGE_KEYS.CUSTOMER_TENANT_DATA);
+  safeStorage.removeItem(STORAGE_KEYS.COURIER_PIN_SESSION);
 }
 
 /**

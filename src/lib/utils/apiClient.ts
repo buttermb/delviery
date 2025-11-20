@@ -7,15 +7,16 @@ import { getCurrentUserType } from "./authHelpers";
 import { emitAuthError } from "@/hooks/useAuthError";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeFetch } from "@/utils/safeFetch";
+import { safeStorage } from "@/utils/safeStorage";
 
 const getToken = (): string | null => {
   const userType = getCurrentUserType();
   if (userType === "super_admin") {
-    return localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
+    return safeStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN);
   } else if (userType === "tenant_admin") {
-    return localStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+    return safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
   } else if (userType === "customer") {
-    return localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+    return safeStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
   }
   return null;
 };

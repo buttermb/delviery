@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef, useC
 import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { safeStorage } from "@/utils/safeStorage";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,7 +99,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
       const data = await response.json();
       setSuperAdmin(data.superAdmin);
-      localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
+      safeStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
       
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
@@ -115,8 +116,8 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         : 'Login session expired. Please log in again.';
       
       logger.error(errorMessage, error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(SUPER_ADMIN_KEY);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(SUPER_ADMIN_KEY);
       setToken(null);
       setSuperAdmin(null);
       setLoading(false);
@@ -125,9 +126,9 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
   // Initialize from localStorage and restore Supabase session
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedAdmin = localStorage.getItem(SUPER_ADMIN_KEY);
-    const storedSupabaseSession = localStorage.getItem(SUPABASE_SESSION_KEY);
+    const storedToken = safeStorage.getItem(TOKEN_KEY);
+    const storedAdmin = safeStorage.getItem(SUPER_ADMIN_KEY);
+    const storedSupabaseSession = safeStorage.getItem(SUPABASE_SESSION_KEY);
 
     if (storedToken && storedAdmin) {
       setToken(storedToken);
@@ -155,9 +156,9 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         verifyToken(storedToken);
       } catch (e) {
         // Invalid stored data, clear it
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(SUPER_ADMIN_KEY);
-        localStorage.removeItem(SUPABASE_SESSION_KEY);
+        safeStorage.removeItem(TOKEN_KEY);
+        safeStorage.removeItem(SUPER_ADMIN_KEY);
+        safeStorage.removeItem(SUPABASE_SESSION_KEY);
         setLoading(false);
       }
     } else {
@@ -212,13 +213,13 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       // Store custom JWT token
       setToken(data.token);
       setSuperAdmin(data.superAdmin);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
+      safeStorage.setItem(TOKEN_KEY, data.token);
+      safeStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
 
       // Store user ID for encryption
       if (data.superAdmin?.id) {
-        sessionStorage.setItem('floraiq_user_id', data.superAdmin.id);
-        localStorage.setItem('floraiq_user_id', data.superAdmin.id);
+        safeStorage.setItem('floraiq_user_id', data.superAdmin.id);
+        safeStorage.setItem('floraiq_user_id', data.superAdmin.id);
       }
 
       // Initialize encryption with user's password
@@ -238,7 +239,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       if (data.supabaseSession) {
         logger.info('Setting Supabase session for super admin RLS access', { component: 'SuperAdminAuth' });
         setSupabaseSession(data.supabaseSession);
-        localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.supabaseSession));
+        safeStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.supabaseSession));
         
         // Set the session in Supabase client - this enables RLS access
         const { error: sessionError } = await supabase.auth.setSession({
@@ -305,13 +306,13 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(SUPER_ADMIN_KEY);
-      localStorage.removeItem(SUPABASE_SESSION_KEY);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(SUPER_ADMIN_KEY);
+      safeStorage.removeItem(SUPABASE_SESSION_KEY);
       
       // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      localStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
     }
   };
 
@@ -359,7 +360,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
       const data = await response.json();
       setToken(data.token);
-      localStorage.setItem(TOKEN_KEY, data.token);
+      safeStorage.setItem(TOKEN_KEY, data.token);
       
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, {});

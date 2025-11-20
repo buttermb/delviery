@@ -5,11 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Building2, ShoppingCart, ArrowRight, Users, Cog, Package, Truck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { safeStorage } from "@/utils/safeStorage";
 
 export default function LoginDirectory() {
+  const navigate = useNavigate();
   const loginPortals = [
     {
       icon: Shield,
@@ -172,7 +174,7 @@ export default function LoginDirectory() {
                         onClick={async (e) => {
                           // For business owner login, check if we have a saved tenant
                           if (portal.title === "Business Owner") {
-                            const lastTenant = localStorage.getItem('lastTenantSlug');
+                            const lastTenant = safeStorage.getItem('lastTenantSlug');
                             if (lastTenant) {
                               e.preventDefault();
                               
@@ -185,17 +187,17 @@ export default function LoginDirectory() {
                                 if (error || !data?.valid) {
                                   // Invalid tenant - clear and fall back to generic login
                                   logger.warn('[LoginDirectory] Invalid tenant slug, clearing', { slug: lastTenant });
-                                  localStorage.removeItem('lastTenantSlug');
-                                  window.location.href = '/saas/login';
+                                  safeStorage.removeItem('lastTenantSlug');
+                                  navigate('/saas/login');
                                   return;
                                 }
                                 
                                 // Valid tenant - proceed with redirect
-                                window.location.href = `/${lastTenant}/admin/login`;
+                                navigate(`/${lastTenant}/admin/login`);
                               } catch (err) {
                                 // Network error - fall back to generic login
                                 logger.error('[LoginDirectory] Tenant validation failed', err);
-                                window.location.href = '/saas/login';
+                                navigate('/saas/login');
                               }
                             }
                           }

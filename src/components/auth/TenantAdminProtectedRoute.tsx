@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState, useRef, memo } from 'react';
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { LoadingFallback } from '@/components/LoadingFallback';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
@@ -24,6 +24,7 @@ const VERIFICATION_CACHE_DURATION = 2 * 60 * 1000;
 export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRouteProps) {
   const { admin, tenant, token, loading } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const navigate = useNavigate();
   const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const [verified, setVerified] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -324,7 +325,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
             </Button>
             <Button
               variant="outline"
-              onClick={() => window.location.href = `/${tenantSlug}/admin/login`}
+              onClick={() => navigate(`/${tenantSlug}/admin/login`)}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Return to Login

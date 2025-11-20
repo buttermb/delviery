@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { safeStorage } from "@/utils/safeStorage";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 import { safeFetch } from "@/utils/safeFetch";
@@ -89,9 +90,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedCustomer = localStorage.getItem(CUSTOMER_KEY);
-    const storedTenant = localStorage.getItem(TENANT_KEY);
+    const storedToken = safeStorage.getItem(TOKEN_KEY);
+    const storedCustomer = safeStorage.getItem(CUSTOMER_KEY);
+    const storedTenant = safeStorage.getItem(TENANT_KEY);
 
     if (storedToken && storedCustomer && storedTenant) {
       setToken(storedToken);
@@ -102,9 +103,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         verifyToken(storedToken);
       } catch (e) {
         // Invalid stored data, clear it
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(CUSTOMER_KEY);
-        localStorage.removeItem(TENANT_KEY);
+        safeStorage.removeItem(TOKEN_KEY);
+        safeStorage.removeItem(CUSTOMER_KEY);
+        safeStorage.removeItem(TENANT_KEY);
         setLoading(false);
       }
     } else {
@@ -141,14 +142,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       const data = await response.json();
       setCustomer(data.customer);
       setTenant(data.tenant);
-      localStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
-      localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+      safeStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
+      safeStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
       setLoading(false);
     } catch (error) {
       logger.error("Token verification error", error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(CUSTOMER_KEY);
-      localStorage.removeItem(TENANT_KEY);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(CUSTOMER_KEY);
+      safeStorage.removeItem(TENANT_KEY);
       setToken(null);
       setCustomer(null);
       setTenant(null);
@@ -188,14 +189,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(data.token);
       setCustomer(data.customer);
       setTenant(data.tenant);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
-      localStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
+      safeStorage.setItem(TOKEN_KEY, data.token);
+      safeStorage.setItem(CUSTOMER_KEY, JSON.stringify(data.customer));
+      safeStorage.setItem(TENANT_KEY, JSON.stringify(data.tenant));
 
       // Store user ID for encryption
       if (data.customer?.id) {
-        sessionStorage.setItem('floraiq_user_id', data.customer.id);
-        localStorage.setItem('floraiq_user_id', data.customer.id);
+        safeStorage.setItem('floraiq_user_id', data.customer.id);
+        safeStorage.setItem('floraiq_user_id', data.customer.id);
       }
 
       // Initialize encryption with user's password
@@ -263,13 +264,13 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(null);
       setCustomer(null);
       setTenant(null);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(CUSTOMER_KEY);
-      localStorage.removeItem(TENANT_KEY);
+      safeStorage.removeItem(TOKEN_KEY);
+      safeStorage.removeItem(CUSTOMER_KEY);
+      safeStorage.removeItem(TENANT_KEY);
       
       // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      localStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
+      safeStorage.removeItem('floraiq_user_id');
     }
   };
 

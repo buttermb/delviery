@@ -1,5 +1,5 @@
 import { Home, Search, ShoppingCart, User, LucideIcon } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ interface NavItem {
 
 const MobileBottomNav = ({ onCartClick, onAuthClick }: MobileBottomNavProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { getGuestCartCount } = useGuestCart();
   const isMobile = useIsMobile();
@@ -55,7 +56,7 @@ const MobileBottomNav = ({ onCartClick, onAuthClick }: MobileBottomNavProps) => 
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     } else {
-      window.location.href = '/#products';
+      navigate('/#products');
     }
   };
 

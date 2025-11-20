@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { TopNav } from '@/components/super-admin/navigation/TopNav';
 import { CommandPalette } from '@/components/super-admin/CommandPalette';
 import { NotificationsPanel } from '@/components/super-admin/NotificationsPanel';
@@ -14,9 +14,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { cn } from '@/lib/utils';
+import { safeStorage } from '@/utils/safeStorage';
 
 export function SuperAdminLayout() {
   const { superAdmin } = useSuperAdminAuth();
+  const navigate = useNavigate();
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   
@@ -112,11 +114,11 @@ export function SuperAdminLayout() {
   // Handle notification action (navigate to relevant page)
   const handleNotificationAction = (notification: { tenantId?: string; type: string }) => {
     if (notification.tenantId) {
-      window.location.href = `/super-admin/tenants/${notification.tenantId}`;
+      navigate(`/super-admin/tenants/${notification.tenantId}`);
     } else if (notification.type === 'urgent') {
-      window.location.href = '/super-admin/security';
+      navigate('/super-admin/security');
     } else {
-      window.location.href = '/super-admin/dashboard';
+      navigate('/super-admin/dashboard');
     }
   };
 
@@ -203,18 +205,14 @@ export function SuperAdminLayout() {
             setIsImpersonating(false);
             setImpersonatedTenant(null);
             // Clear impersonation from localStorage
-            try {
-              localStorage.removeItem('impersonating_tenant_id');
-              localStorage.removeItem('impersonating_tenant_name');
-              localStorage.removeItem('impersonation_start_time');
-            } catch (e) {
-              // Ignore localStorage errors
-            }
+            safeStorage.removeItem('impersonating_tenant_id');
+            safeStorage.removeItem('impersonating_tenant_name');
+            safeStorage.removeItem('impersonation_start_time');
             // Redirect to dashboard
-            window.location.href = '/super-admin/dashboard';
+            navigate('/super-admin/dashboard');
           }}
           onOpenInNewTab={() => {
-            const tenantId = localStorage.getItem('impersonating_tenant_id');
+            const tenantId = safeStorage.getItem('impersonating_tenant_id');
             if (tenantId) {
               window.open(`/super-admin/tenants/${tenantId}`, '_blank');
             }
