@@ -130,7 +130,11 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        logger.error("Token verification failed", new Error(errorText), { status: response.status, component: 'CustomerAuthContext' });
+        logger.error("Customer token verification failed", new Error(errorText), {
+          status: response.status,
+          component: 'CustomerAuthContext',
+          hasToken: !!tokenToVerify,
+        });
         throw new Error(`Token verification failed: ${response.status}`);
       }
 
@@ -204,9 +208,33 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         // Log but don't block login - encryption is optional for now
         logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'CustomerAuthContext' });
       }
-    } catch (error) {
-      logger.error("Login error", error);
-      throw error;
+
+      // NOTE: Customers use custom JWT tokens, not Supabase auth sessions
+      // Customer queries manually filter by tenant_id and customer_id for security
+      // If Supabase session support is needed for RLS, we would need to:
+      // 1. Create auth.users records for customers in the signup/login flow
+      // 2. Return Supabase session from customer-auth edge function
+      // 3. Call supabase.auth.setSession() here similar to TenantAdminAuthContext
+      // For now, manual filtering provides security without requiring Supabase auth
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      
+      // Enhanced error logging with context
+      logger.error("Customer login error", errorObj, {
+        component: 'CustomerAuthContext',
+        email: email,
+        tenantSlug: tenantSlug,
+        hasResponse: errorObj instanceof Error && 'response' in errorObj,
+      });
+      
+      // Re-throw with user-friendly message if needed
+      if (errorObj.message?.includes('Network') || errorObj.message?.includes('network')) {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else if (errorObj.message?.includes('timeout') || errorObj.message?.includes('timed out')) {
+        throw new Error('Request timed out. Please try again.');
+      }
+      
+      throw errorObj;
     }
   };
 
@@ -222,8 +250,12 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
           },
         });
       }
-    } catch (error) {
-      logger.error("Logout error", error);
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error("Customer logout error", errorObj, {
+        component: 'CustomerAuthContext',
+        hadToken: !!token,
+      });
     } finally {
       // Destroy encryption session before logout
       clientEncryption.destroy();

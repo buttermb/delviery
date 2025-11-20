@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
+import { logger } from '@/lib/logger';
 
 export function useRealtimeShifts(tenantId: string | undefined) {
   const { loading } = useTenantAdminAuth();
@@ -12,17 +13,17 @@ export function useRealtimeShifts(tenantId: string | undefined) {
   useEffect(() => {
     // Guard 1: Don't subscribe if auth is still loading or tenantId not available
     if (loading || !tenantId) {
-      console.log('[useRealtimeShifts] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      logger.debug('Waiting for authentication', { loading, hasTenantId: !!tenantId, component: 'useRealtimeShifts' });
       return;
     }
 
     // Guard 2: Don't subscribe until verification is complete
     if (!isVerified || isVerifying) {
-      console.log('[useRealtimeShifts] Waiting for verification to complete...', { isVerified, isVerifying });
+      logger.debug('Waiting for verification to complete', { isVerified, isVerifying, component: 'useRealtimeShifts' });
       return;
     }
 
-    console.log('[useRealtimeShifts] Authentication verified, establishing realtime subscription');
+    logger.debug('Authentication verified, establishing realtime subscription', { component: 'useRealtimeShifts' });
 
     const channel = supabase
       .channel('pos-shifts-changes')
@@ -44,14 +45,14 @@ export function useRealtimeShifts(tenantId: string | undefined) {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[useRealtimeShifts] Realtime subscription active');
+          logger.debug('Realtime subscription active', { component: 'useRealtimeShifts' });
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[useRealtimeShifts] Realtime subscription error');
+          logger.warn('Realtime subscription error', { status, component: 'useRealtimeShifts' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
           queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
         } else if (status === 'TIMED_OUT') {
-          console.error('[useRealtimeShifts] Realtime subscription timed out');
+          logger.warn('Realtime subscription timed out', { status, component: 'useRealtimeShifts' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['active-shift', tenantId] });
           queryClient.invalidateQueries({ queryKey: ['recent-shifts', tenantId] });
@@ -59,7 +60,7 @@ export function useRealtimeShifts(tenantId: string | undefined) {
       });
 
     return () => {
-      console.log('[useRealtimeShifts] Cleaning up realtime subscription');
+      logger.debug('Cleaning up realtime subscription', { component: 'useRealtimeShifts' });
       supabase.removeChannel(channel);
     };
   }, [loading, tenantId, isVerified, isVerifying, queryClient]);
@@ -73,17 +74,17 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
   useEffect(() => {
     // Guard 1: Don't subscribe if auth is still loading or tenantId not available
     if (loading || !tenantId) {
-      console.log('[useRealtimeTransactions] Waiting for authentication...', { loading, hasTenantId: !!tenantId });
+      logger.debug('Waiting for authentication', { loading, hasTenantId: !!tenantId, component: 'useRealtimeTransactions' });
       return;
     }
 
     // Guard 2: Don't subscribe until verification is complete
     if (!isVerified || isVerifying) {
-      console.log('[useRealtimeTransactions] Waiting for verification to complete...', { isVerified, isVerifying });
+      logger.debug('Waiting for verification to complete', { isVerified, isVerifying, component: 'useRealtimeTransactions' });
       return;
     }
 
-    console.log('[useRealtimeTransactions] Authentication verified, establishing realtime subscription');
+    logger.debug('Authentication verified, establishing realtime subscription', { component: 'useRealtimeTransactions' });
 
     let filter = `tenant_id=eq.${tenantId}`;
     if (shiftId) {
@@ -109,14 +110,14 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[useRealtimeTransactions] Realtime subscription active');
+          logger.debug('Realtime subscription active', { component: 'useRealtimeTransactions' });
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[useRealtimeTransactions] Realtime subscription error');
+          logger.warn('Realtime subscription error', { status, component: 'useRealtimeTransactions' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
           queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
         } else if (status === 'TIMED_OUT') {
-          console.error('[useRealtimeTransactions] Realtime subscription timed out');
+          logger.warn('Realtime subscription timed out', { status, component: 'useRealtimeTransactions' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['pos-analytics', tenantId] });
           queryClient.invalidateQueries({ queryKey: ['shift-transactions', shiftId] });
@@ -124,7 +125,7 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
       });
 
     return () => {
-      console.log('[useRealtimeTransactions] Cleaning up realtime subscription');
+      logger.debug('Cleaning up realtime subscription', { component: 'useRealtimeTransactions' });
       supabase.removeChannel(channel);
     };
   }, [loading, tenantId, shiftId, isVerified, isVerifying, queryClient]);
@@ -138,17 +139,17 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
   useEffect(() => {
     // Guard 1: Don't subscribe if auth is still loading or shiftId not available
     if (loading || !shiftId) {
-      console.log('[useRealtimeCashDrawer] Waiting for authentication...', { loading, hasShiftId: !!shiftId });
+      logger.debug('Waiting for authentication', { loading, hasShiftId: !!shiftId, component: 'useRealtimeCashDrawer' });
       return;
     }
 
     // Guard 2: Don't subscribe until verification is complete
     if (!isVerified || isVerifying) {
-      console.log('[useRealtimeCashDrawer] Waiting for verification to complete...', { isVerified, isVerifying });
+      logger.debug('Waiting for verification to complete', { isVerified, isVerifying, component: 'useRealtimeCashDrawer' });
       return;
     }
 
-    console.log('[useRealtimeCashDrawer] Authentication verified, establishing realtime subscription');
+    logger.debug('Authentication verified, establishing realtime subscription', { component: 'useRealtimeCashDrawer' });
 
     const channel = supabase
       .channel('cash-drawer-changes')
@@ -182,7 +183,7 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
       });
 
     return () => {
-      console.log('[useRealtimeCashDrawer] Cleaning up realtime subscription');
+      logger.debug('Cleaning up realtime subscription', { component: 'useRealtimeCashDrawer' });
       supabase.removeChannel(channel);
     };
   }, [loading, shiftId, isVerified, isVerifying, queryClient]);

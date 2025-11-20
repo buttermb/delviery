@@ -4,6 +4,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { validateOrder } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
+import { logger } from '@/lib/logger';
 
 interface Order {
   id: string;
@@ -138,21 +139,24 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
                   setOrders(prev => prev.filter(order => order.id !== oldOrder.id));
                 }
               }
-            } catch (error) {
-              console.error('Error processing realtime order update:', error);
+            } catch (error: unknown) {
+              const errorObj = error instanceof Error ? error : new Error(String(error));
+              logger.error('Error processing realtime order update', errorObj, { component: 'useRealtimeOrders' });
               fetchOrders();
             }
           }
         )
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            console.log('Realtime orders subscription active');
+            logger.debug('Realtime orders subscription active', { component: 'useRealtimeOrders' });
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('Realtime orders subscription error, retrying...');
+            logger.warn('Realtime orders subscription error, retrying...', { component: 'useRealtimeOrders', status });
             setTimeout(() => fetchOrders(), 5000);
           } else if (status === 'TIMED_OUT') {
-            console.error('Realtime orders subscription timed out');
+            logger.warn('Realtime orders subscription timed out', { component: 'useRealtimeOrders', status });
             fetchOrders();
+          } else if (status === 'CLOSED') {
+            logger.debug('Realtime orders subscription closed', { component: 'useRealtimeOrders' });
           }
         });
 
@@ -160,7 +164,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
     }, 500);
 
     return () => {
-      console.log('[useRealtimeOrders] Cleaning up realtime subscription');
+      logger.debug('Cleaning up realtime subscription', { component: 'useRealtimeOrders' });
       clearTimeout(connectionTimeout);
       if (channel) {
         channel.unsubscribe();

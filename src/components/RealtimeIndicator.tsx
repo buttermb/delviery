@@ -10,16 +10,21 @@ import {
 } from "@/components/ui/tooltip";
 
 interface RealtimeIndicatorProps {
-  isConnected: boolean;
+  isConnected?: boolean;
   lastUpdate?: Date;
   className?: string;
+  status?: 'connected' | 'disconnected' | 'connecting' | 'error';
 }
 
 export function RealtimeIndicator({ 
-  isConnected, 
+  isConnected: isConnectedProp, 
   lastUpdate,
-  className 
+  className,
+  status: statusProp,
 }: RealtimeIndicatorProps) {
+  // Use status prop if provided, otherwise derive from isConnected
+  const isConnected = statusProp === 'connected' || (isConnectedProp ?? false);
+  const status = statusProp || (isConnected ? 'connected' : 'disconnected');
   const [timeAgo, setTimeAgo] = useState<string>("");
 
   useEffect(() => {
@@ -49,13 +54,22 @@ export function RealtimeIndicator({
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge
-            variant={isConnected ? "default" : "destructive"}
+            variant={
+              status === 'connected' ? "default" : 
+              status === 'error' ? "destructive" : 
+              "secondary"
+            }
             className={cn("gap-1.5 cursor-help", className)}
           >
-            {isConnected ? (
+            {status === 'connected' ? (
               <>
                 <Wifi className="h-3 w-3 animate-pulse" />
                 <span className="text-xs">Live</span>
+              </>
+            ) : status === 'connecting' ? (
+              <>
+                <Wifi className="h-3 w-3 animate-pulse" />
+                <span className="text-xs">Connecting...</span>
               </>
             ) : (
               <>

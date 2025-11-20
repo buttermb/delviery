@@ -12,6 +12,7 @@ import { Users, TrendingUp, DollarSign, Star, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
 import { logger } from '@/utils/logger';
+import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 
 interface Courier {
   id: string;
@@ -67,6 +68,10 @@ export default function Couriers() {
     { label: 'Avg Rating', value: (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length || 0).toFixed(1), icon: Star, color: 'text-accent' },
   ];
 
+  const handleRefresh = async () => {
+    await loadCouriers();
+  };
+
   return (
     <>
       <SEOHead 
@@ -74,7 +79,8 @@ export default function Couriers() {
         description="Manage delivery couriers"
       />
       
-      <div className="w-full max-w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-4 md:space-y-6 overflow-x-hidden">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="w-full max-w-full px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 space-y-4 md:space-y-6 overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">Couriers Management</h1>
         </div>
@@ -249,7 +255,8 @@ export default function Couriers() {
             )}
           </div>
         </Card>
-      </div>
+        </div>
+      </PullToRefresh>
     </>
   );
 }

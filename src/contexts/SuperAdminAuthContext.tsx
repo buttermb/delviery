@@ -255,13 +255,18 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
-    } catch (error) {
-      const category = error instanceof Error && error.message.includes('Network')
+    } catch (error: unknown) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      const category = errorObj.message.includes('Network')
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
-      authFlowLogger.failFlow(flowId, error, category);
-      logger.error("Login error", error);
-      throw error;
+      authFlowLogger.failFlow(flowId, errorObj, category);
+      logger.error("Super admin login error", errorObj, {
+        component: 'SuperAdminAuthContext',
+        category,
+        flowId,
+      });
+      throw errorObj;
     }
   };
 

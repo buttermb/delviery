@@ -47,11 +47,67 @@ import {
 } from 'recharts';
 import { useState, useEffect } from 'react';
 import { AnimatedNumber } from '@/components/shared/AnimatedNumber';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export default function SuperAdminDashboardPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [timeRange, setTimeRange] = useState('30d');
+
+  // Real-time subscription for tenants table (subscription changes, status updates)
+  useEffect(() => {
+    const channel = supabase
+      .channel('super-admin-tenants-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tenants',
+        },
+        (payload) => {
+          logger.debug('Tenant data changed', { 
+            event: payload.eventType, 
+            component: 'SuperAdminDashboard',
+            tenantId: payload.new?.id || payload.old?.id,
+            subscriptionPlan: payload.new?.subscription_plan,
+            subscriptionStatus: payload.new?.subscription_status,
+          });
+          
+          // Invalidate stats queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['super-admin-at-risk-tenants'] });
+          queryClient.invalidateQueries({ queryKey: ['super-admin-recent-activity'] });
+          
+          // If subscription plan or status changed, also invalidate tenant detail queries
+          if (payload.new?.subscription_plan !== payload.old?.subscription_plan || 
+              payload.new?.subscription_status !== payload.old?.subscription_status) {
+            logger.info('Subscription tier or status changed', {
+              tenantId: payload.new?.id,
+              oldPlan: payload.old?.subscription_plan,
+              newPlan: payload.new?.subscription_plan,
+              oldStatus: payload.old?.subscription_status,
+              newStatus: payload.new?.subscription_status,
+              component: 'SuperAdminDashboard',
+            });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-tenant', payload.new?.id] });
+            queryClient.invalidateQueries({ queryKey: ['super-admin-tenants-list'] });
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Super admin tenants realtime subscription active', { component: 'SuperAdminDashboard' });
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.warn('Super admin tenants realtime subscription error', { status, component: 'SuperAdminDashboard' });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -103,6 +159,7 @@ export default function SuperAdminDashboardPage() {
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 30000, // Refetch every 30 seconds for near real-time updates
   });
 
   // Fetch at-risk tenants
@@ -248,6 +305,7 @@ export default function SuperAdminDashboardPage() {
       });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 30000, // Refetch every 30 seconds for near real-time updates
   });
 
   const platformStats = stats || {

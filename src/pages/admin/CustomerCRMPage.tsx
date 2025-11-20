@@ -5,6 +5,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import { decryptCustomerData } from "@/lib/utils/customerEncryption";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -267,38 +268,112 @@ export default function CustomerCRMPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
+                <>
+                  <div className="hidden md:flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                  <div className="md:hidden space-y-3 p-4">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i} className="p-4">
+                        <Skeleton className="h-5 w-3/4 mb-3" />
+                        <Skeleton className="h-4 w-1/2 mb-3" />
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                          <Skeleton className="h-6 w-20" />
+                          <Skeleton className="h-6 w-24" />
+                          <Skeleton className="h-6 w-16" />
+                          <Skeleton className="h-6 w-20" />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               ) : filteredCustomers.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No customers found matching your filters.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Lifecycle</TableHead>
-                        <TableHead>Segment</TableHead>
-                        <TableHead>RFM Score</TableHead>
-                        <TableHead>Total Spent</TableHead>
-                        <TableHead>Last Purchase</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredCustomers.map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">
-                            {customer.first_name} {customer.last_name}
-                            {customer.email && (
-                              <div className="text-xs text-muted-foreground">
-                                {customer.email}
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Lifecycle</TableHead>
+                          <TableHead>Segment</TableHead>
+                          <TableHead>RFM Score</TableHead>
+                          <TableHead>Total Spent</TableHead>
+                          <TableHead>Last Purchase</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredCustomers.map((customer) => (
+                          <TableRow key={customer.id}>
+                            <TableCell className="font-medium">
+                              {customer.first_name} {customer.last_name}
+                              {customer.email && (
+                                <div className="text-xs text-muted-foreground">
+                                  {customer.email}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  customer.lifecycle === "active"
+                                    ? "default"
+                                    : customer.lifecycle === "at-risk"
+                                    ? "destructive"
+                                    : "secondary"
+                                }
+                              >
+                                {customer.lifecycle}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{customer.segment}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <code className="text-sm bg-muted px-2 py-1 rounded">
+                                {customer.rfm.rfm}
+                              </code>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                {customer.total_spent.toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </div>
-                            )}
-                          </TableCell>
-                          <TableCell>
+                            </TableCell>
+                            <TableCell>
+                              {customer.last_purchase_at
+                                ? new Date(customer.last_purchase_at).toLocaleDateString()
+                                : "Never"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-3 p-4">
+                    {filteredCustomers.map((customer) => (
+                      <Card key={customer.id} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-base">
+                                {customer.first_name} {customer.last_name}
+                              </h3>
+                              {customer.email && (
+                                <p className="text-sm text-muted-foreground truncate mt-1">
+                                  {customer.email}
+                                </p>
+                              )}
+                            </div>
                             <Badge
                               variant={
                                 customer.lifecycle === "active"
@@ -307,37 +382,51 @@ export default function CustomerCRMPage() {
                                   ? "destructive"
                                   : "secondary"
                               }
+                              className="ml-2 flex-shrink-0"
                             >
                               {customer.lifecycle}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{customer.segment}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <code className="text-sm bg-muted px-2 py-1 rounded">
-                              {customer.rfm.rfm}
-                            </code>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3 text-muted-foreground" />
-                              {customer.total_spent.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Segment</p>
+                              <Badge variant="outline" className="text-xs">
+                                {customer.segment}
+                              </Badge>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            {customer.last_purchase_at
-                              ? new Date(customer.last_purchase_at).toLocaleDateString()
-                              : "Never"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">RFM Score</p>
+                              <code className="text-xs bg-muted px-2 py-1 rounded">
+                                {customer.rfm.rfm}
+                              </code>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                <span className="font-medium">
+                                  {customer.total_spent.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
+                              <p className="text-sm font-medium">
+                                {customer.last_purchase_at
+                                  ? new Date(customer.last_purchase_at).toLocaleDateString()
+                                  : "Never"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>

@@ -8,7 +8,8 @@ import {
   Map,
   Menu,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -199,9 +200,18 @@ export function MobileBottomNav() {
             <div className="flex flex-col h-full" style={{ height: '100vh', minHeight: '100vh' }}>
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0">
                 <span className="text-sm font-semibold">Navigation</span>
-                {tenantSlug && (
-                  <span className="text-xs text-muted-foreground">{tenantSlug}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {tenantSlug && (
+                    <span className="text-xs text-muted-foreground">{tenantSlug}</span>
+                  )}
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+                    aria-label="Close menu"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
               
               <div className="flex-1 overflow-y-auto pb-safe" style={{ minHeight: 0, height: '100%' }}>

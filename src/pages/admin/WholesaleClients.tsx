@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import { logger } from "@/lib/logger";
+import { PullToRefresh } from "@/components/mobile/PullToRefresh";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export default function WholesaleClients() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string>("all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: any }>({ open: false });
@@ -108,8 +110,13 @@ export default function WholesaleClients() {
     return types[type] || type;
   };
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.list({ filter }) });
+  };
+
   return (
-    <div className="w-full max-w-full space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6 overflow-x-hidden">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="w-full max-w-full space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-6 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
@@ -547,6 +554,7 @@ export default function WholesaleClients() {
           // Query will automatically refetch due to cache invalidation
         }}
       />
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }

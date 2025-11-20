@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import { haptics } from "@/utils/haptics";
+import { triggerHaptic } from "@/lib/utils/mobile";
 
 interface PullToRefreshProps {
   children: React.ReactNode;
@@ -47,7 +47,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false, className
       
       if (pullDistance >= threshold) {
         setIsRefreshing(true);
-        haptics.medium();
+        triggerHaptic('medium');
         
         try {
           await onRefresh();

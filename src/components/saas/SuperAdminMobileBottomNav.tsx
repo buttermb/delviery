@@ -12,7 +12,8 @@ import {
   Building2,
   Activity,
   BarChart3,
-  Menu
+  Menu,
+  X
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -112,12 +113,26 @@ export function SuperAdminMobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="p-0 w-[85vw] max-w-sm bg-[hsl(var(--super-admin-surface))] border-white/10"
-            style={{ zIndex: 120 }}
+            className="p-0 w-[85vw] max-w-sm flex flex-col bg-[hsl(var(--super-admin-surface))] border-white/10"
+            style={{ 
+              zIndex: 120,
+              height: '100vh',
+              maxHeight: '100vh',
+              top: 0,
+              bottom: 0,
+              position: 'fixed'
+            }}
           >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[hsl(var(--super-admin-surface))]/80 flex-shrink-0">
-                <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">More navigation</span>
+                <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">Navigation</span>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5 text-[hsl(var(--super-admin-text))]" />
+                </button>
               </div>
               
               <div className="flex-1 overflow-y-auto pb-safe min-h-0">
