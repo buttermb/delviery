@@ -176,6 +176,12 @@
    - Improved rating display
    - Updated final CTA
 
+8. `src/pages/saas/SignUpPage.tsx`
+   - Updated "wholesale business" → "cannabis distribution" for consistency
+
+9. `src/lib/faq-data.ts`
+   - Updated FAQ answer: "BigMike" → "FloraIQ" and "wholesale business" → "cannabis distribution"
+
 ---
 
 ## Verification Checklist
