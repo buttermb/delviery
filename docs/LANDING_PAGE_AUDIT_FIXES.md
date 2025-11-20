@@ -182,6 +182,32 @@
 9. `src/lib/faq-data.ts`
    - Updated FAQ answer: "BigMike" → "FloraIQ" and "wholesale business" → "cannabis distribution"
 
+10. `src/components/marketing/PlatformCapabilities.tsx`
+    - Updated: "wholesale clients" → "cannabis distributors"
+
+11. `src/components/marketing/FeatureExplorer.tsx`
+    - Updated: "wholesale clients" → "cannabis distributors"
+    - Updated: "wholesale distributors" → "cannabis distributors"
+
+12. `src/components/marketing/InteractiveDashboardShowcase.tsx`
+    - Updated: "wholesale business" → "cannabis distribution"
+
+13. `src/components/marketing/EnhancedDashboardPreview.tsx`
+    - Updated: "Wholesale Management" → "Cannabis Distribution Management"
+    - Updated: "wholesale operations" → "cannabis distribution operations"
+
+14. `src/components/marketing/CustomerSuccessTimeline.tsx`
+    - Updated: "wholesale order" → "cannabis order"
+
+15. `src/components/marketing/dashboard/DisposableMenusPreview.tsx`
+    - Updated: "Spring 2024 Wholesale" → "Spring 2024 Cannabis"
+
+16. `src/pages/saas/LoginPage.tsx`
+    - Updated: "DevPanel" → "FloraIQ"
+
+17. `src/pages/Contact.tsx`
+    - Updated: "DevPanel" → "FloraIQ"
+
 ---
 
 ## Verification Checklist
