@@ -19,7 +19,7 @@ import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
-import { WaveDivider } from "@/components/marketing/WaveDivider";
+
 import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { lazy, Suspense, useEffect } from "react";
@@ -110,13 +110,11 @@ export default function MarketingHome() {
 
       {/* SECTION 5: CUSTOMER SUCCESS */}
       <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative" style={{ contentVisibility: 'auto' }}>
-        <WaveDivider position="top" color="hsl(var(--marketing-bg))" />
-        <div className="container mx-auto px-4 pt-12">
+        <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <CustomerSuccessTimeline />
           </Suspense>
         </div>
-        <WaveDivider position="bottom" color="hsl(var(--marketing-bg))" />
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
