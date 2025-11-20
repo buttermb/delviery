@@ -9,6 +9,7 @@ import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
 import { logger } from "@/utils/logger";
+import { themeColors } from "@/lib/utils/colorConversion";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
@@ -172,7 +173,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           runnerEl.className = "runner-marker";
           runnerEl.style.width = "40px";
           runnerEl.style.height = "40px";
-          runnerEl.style.backgroundColor = "#3b82f6";
+          runnerEl.style.backgroundColor = themeColors.info();
           runnerEl.style.border = "3px solid white";
           runnerEl.style.borderRadius = "50%";
           runnerEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
@@ -240,7 +241,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           destEl.className = "destination-marker";
           destEl.style.width = "36px";
           destEl.style.height = "36px";
-          destEl.style.backgroundColor = "#10b981";
+          destEl.style.backgroundColor = themeColors.success();
           destEl.style.border = "3px solid white";
           destEl.style.borderRadius = "50%";
           destEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
@@ -315,7 +316,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
               'line-cap': 'round'
             },
             paint: {
-              'line-color': '#3b82f6',
+              'line-color': themeColors.info(),
               'line-width': 3,
               'line-dasharray': [2, 2]
             }

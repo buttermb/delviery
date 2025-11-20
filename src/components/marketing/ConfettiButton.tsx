@@ -32,7 +32,12 @@ export function ConfettiButton({
     const {
       particleCount = 100,
       spread = 70,
-      colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'],
+      colors = [
+        'hsl(var(--marketing-primary))',
+        'hsl(var(--marketing-secondary))',
+        'hsl(var(--marketing-accent))',
+        'hsl(var(--primary))'
+      ],
     } = confettiConfig;
 
     confetti({

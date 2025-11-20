@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, Navigation, Layers, Route, Eye, EyeOff, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStatus } from '@/utils/stringHelpers';
+import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -53,15 +54,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
 
 
   const getStatusColor = (status: string) => {
-    const colors: { [key: string]: string } = {
-      'pending': '#9ca3af',
-      'confirmed': '#a855f7',
-      'preparing': '#eab308',
-      'out_for_delivery': '#3b82f6',
-      'delivered': '#10b981',
-      'cancelled': '#ef4444'
-    };
-    return colors[status] || '#9ca3af';
+    return getStatusColorInline(status);
   };
 
   const getMapStyle = () => {
@@ -107,7 +100,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         'type': 'fill-extrusion',
         'minzoom': 15,
         'paint': {
-          'fill-extrusion-color': '#aaa',
+          'fill-extrusion-color': themeColors.muted(),
           'fill-extrusion-height': ['get', 'height'],
           'fill-extrusion-base': ['get', 'min_height'],
           'fill-extrusion-opacity': 0.6
@@ -211,7 +204,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
                 right: -4px;
                 width: 12px;
                 height: 12px;
-                background: #10b981;
+                background: ${themeColors.success()};
                 border-radius: 50%;
                 animation: pulse 2s infinite;
               "></div>
@@ -265,13 +258,13 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         const courierEl = document.createElement('div');
         courierEl.innerHTML = `
           <div style="
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            border: 4px solid white;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+              width: 50px;
+              height: 50px;
+              background: linear-gradient(135deg, ${themeColors.marketingSecondary()}, ${themeColors.info()});
+              border: 4px solid white;
+              border-radius: 50%;
+              cursor: pointer;
+              box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -284,7 +277,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
               position: absolute;
               width: 100%;
               height: 100%;
-              border: 2px solid #8b5cf6;
+              border: 2px solid ${themeColors.marketingSecondary()};
               border-radius: 50%;
               animation: ripple 2s infinite;
             "></div>
@@ -348,7 +341,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
             <div style="
               width: 45px;
               height: 45px;
-              background: linear-gradient(135deg, #10b981, #059669);
+              background: linear-gradient(135deg, ${themeColors.success()}, ${themeColors.primary()});
               border: 3px solid white;
               border-radius: 50%;
               cursor: pointer;
@@ -367,7 +360,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
                 right: -2px;
                 width: 10px;
                 height: 10px;
-                background: #10b981;
+                background: ${themeColors.success()};
                 border: 2px solid white;
                 border-radius: 50%;
                 animation: pulse 2s infinite;

@@ -13,7 +13,13 @@ export function ConfettiCelebration({ trigger, onComplete }: ConfettiCelebration
     const duration = 3000;
     const end = Date.now() + duration;
 
-    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = [
+      'hsl(var(--primary))',       // emerald
+      'hsl(var(--info))',          // blue
+      'hsl(var(--warning))',       // amber
+      'hsl(var(--destructive))',   // red
+      'hsl(var(--marketing-secondary))' // purple
+    ];
 
     const frame = () => {
       confetti({
