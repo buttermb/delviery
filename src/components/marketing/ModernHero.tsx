@@ -15,7 +15,7 @@ export function ModernHero() {
   const containerRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[hsl(var(--marketing-bg))] pt-20 pb-12">
+    <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center bg-[hsl(var(--marketing-bg))] pt-20 pb-12">
       {/* Background Effects */}
       <CursorSpotlight containerRef={containerRef} />
       <AnimatedMeshBackground />

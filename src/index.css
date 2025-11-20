@@ -43,13 +43,7 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* GPU acceleration for transforms */
-* {
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-}
+/* GPU acceleration removed - was causing stacking context issues */
 
 /* Performance optimizations for animations */
 .animate-fade-in,
@@ -64,9 +58,9 @@ body {
   will-change: auto;
 }
 
-/* Optimize rendering for sections */
+/* Section containment adjusted for scroll compatibility */
 section {
-  contain: layout style paint;
+  contain: style;
 }
 
 /* Hide scrollbar for bottom nav */

@@ -82,7 +82,7 @@ export function ParticleBackground() {
   }
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ willChange: 'auto' }}>
       {particles.map((particle) => (
         <motion.div
           key={particle.id}

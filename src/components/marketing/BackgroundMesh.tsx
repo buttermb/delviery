@@ -8,7 +8,7 @@ interface BackgroundMeshProps {
 export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
   usePerformanceMonitor('BackgroundMesh');
   return (
-    <div className={`absolute inset-0 w-full h-full overflow-hidden ${className}`}>
+    <div className={`absolute inset-0 w-full h-full overflow-hidden pointer-events-none ${className}`}>
       {/* Multiple gradient layers - desktop only for performance */}
       <motion.div
         className="absolute inset-0 opacity-30 hidden md:block"

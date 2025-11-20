@@ -19,7 +19,7 @@ export function FloatingUIElements() {
   ];
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20" style={{ willChange: 'auto' }}>
       {cards.map((card) => (
         <motion.div
           key={card.id}
