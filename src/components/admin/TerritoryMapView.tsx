@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { MapPin, AlertCircle } from "lucide-react";
 import { logger } from "@/utils/logger";
+import { themeColors } from "@/lib/utils/colorConversion";
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
@@ -62,11 +63,11 @@ export function TerritoryMapView() {
       const { lat, lng } = coords;
 
       // Color code by credit status
-      let markerColor = "#10b981"; // green - good
+      let markerColor = themeColors.success(); // green - good
       if (client.outstanding_balance > 10000) {
-        markerColor = "#ef4444"; // red - overdue
+        markerColor = themeColors.destructive(); // red - overdue
       } else if (client.outstanding_balance > 0) {
-        markerColor = "#f59e0b"; // orange - has balance
+        markerColor = themeColors.warning(); // orange - has balance
       }
 
       // Create custom marker element
@@ -128,7 +129,7 @@ export function TerritoryMapView() {
       el.className = "warehouse-marker";
       el.style.width = "40px";
       el.style.height = "40px";
-      el.style.backgroundColor = "#7c3aed";
+      el.style.backgroundColor = themeColors.marketingSecondary();
       el.style.border = "3px solid white";
       el.style.borderRadius = "8px";
       el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";

@@ -13,7 +13,7 @@ export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
       <motion.div
         className="absolute inset-0 opacity-30 hidden md:block"
         style={{
-          background: 'radial-gradient(circle at 20% 50%, hsl(217, 91%, 55%) 0%, transparent 50%), radial-gradient(circle at 80% 80%, hsl(271, 81%, 56%) 0%, transparent 50%), radial-gradient(circle at 40% 20%, hsl(160, 84%, 35%) 0%, transparent 50%)',
+          background: 'radial-gradient(circle at 20% 50%, hsl(var(--marketing-primary)) 0%, transparent 50%), radial-gradient(circle at 80% 80%, hsl(var(--marketing-secondary)) 0%, transparent 50%), radial-gradient(circle at 40% 20%, hsl(var(--marketing-accent)) 0%, transparent 50%)',
           willChange: 'opacity',
           backfaceVisibility: 'hidden',
         }}
@@ -29,7 +29,7 @@ export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
       <motion.div
         className="absolute inset-0 opacity-20 hidden md:block"
         style={{
-          background: 'radial-gradient(circle at 60% 30%, hsl(271, 81%, 56%) 0%, transparent 40%), radial-gradient(circle at 30% 70%, hsl(217, 91%, 55%) 0%, transparent 40%)',
+          background: 'radial-gradient(circle at 60% 30%, hsl(var(--marketing-secondary)) 0%, transparent 40%), radial-gradient(circle at 30% 70%, hsl(var(--marketing-primary)) 0%, transparent 40%)',
           willChange: 'opacity',
           backfaceVisibility: 'hidden',
         }}
@@ -45,7 +45,7 @@ export function BackgroundMesh({ className = '' }: BackgroundMeshProps) {
       <motion.div
         className="absolute inset-0 opacity-20"
         style={{
-          background: 'radial-gradient(circle at 50% 50%, hsl(160, 84%, 35%) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at 50% 50%, hsl(var(--marketing-accent)) 0%, transparent 60%)',
           willChange: 'transform, opacity',
           backfaceVisibility: 'hidden',
           transform: 'translate3d(0, 0, 0)',

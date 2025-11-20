@@ -92,10 +92,6 @@ export default function MarketingHome() {
         </section>
       </SectionTransition>
 
-      import {StatsSection} from "@/components/marketing/StatsSection";
-
-      // ... imports ...
-
       {/* SECTION 3: BENTO FEATURES */}
       <BentoFeatureGrid />
 

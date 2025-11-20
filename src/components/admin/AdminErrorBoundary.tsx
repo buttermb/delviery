@@ -114,7 +114,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
       // Reload with cache bypass
       reloadWithCacheBypass();
     } catch (error) {
-      logger.error('Error clearing cache', error, { component: 'AdminErrorBoundary' });
+      logger.error('Error clearing cache', error, 'AdminErrorBoundary');
       // Fallback to simple reload
       reloadWithCacheBypass();
     }
