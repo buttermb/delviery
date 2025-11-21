@@ -28,6 +28,33 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+
+// Extended type for marketplace listings with additional properties
+interface ExtendedMarketplaceListing {
+  id: string;
+  created_at: string;
+  description: string;
+  images: string[];
+  base_price: number;
+  cbd_content: number;
+  available_states: string[];
+  lab_results_encrypted: string;
+  lab_results_url: string;
+  lab_results?: {
+    thc_percent?: number;
+    cbd_percent?: number;
+    batch_number?: string;
+    lab_name?: string;
+    lab_certificate_url?: string;
+  };
+  visibility?: string;
+  tags?: string[];
+  unit_type?: string;
+  min_order_quantity?: number;
+  max_order_quantity?: number;
+  bulk_pricing?: Array<{ quantity: number; price: number }>;
+  [key: string]: any;
+}
 import { decryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { useState } from 'react';
 import { generateEncryptionKey } from '@/lib/encryption/aes256';

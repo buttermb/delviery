@@ -52,7 +52,7 @@ class Logger {
    */
   error(message: string, errorOrContext?: unknown, context?: LogContext): void {
     let errorDetails = null;
-    let actualContext = context;
+    let actualContext: Record<string, unknown> = {};
 
     if (errorOrContext instanceof Error) {
       errorDetails = {
@@ -64,11 +64,20 @@ class Logger {
       if ('message' in errorOrContext) {
         errorDetails = errorOrContext;
       } else {
-        actualContext = errorOrContext as LogContext;
+        actualContext = errorOrContext as Record<string, unknown>;
       }
     }
 
-    console.error(`[ERROR] ${message}`, errorDetails, actualContext || '');
+    // Merge context if provided
+    if (context) {
+      if (typeof context === 'string') {
+        actualContext = { ...actualContext, context };
+      } else {
+        actualContext = { ...actualContext, ...context };
+      }
+    }
+
+    console.error(`[ERROR] ${message}`, errorDetails, actualContext);
     
     if (this.isProduction) {
       this.sendToMonitoring('error', message, {

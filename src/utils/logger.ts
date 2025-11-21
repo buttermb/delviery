@@ -20,9 +20,10 @@ class Logger {
   /**
    * Log debug messages (only in development)
    */
-  debug(message: string, data?: unknown, source?: string): void {
+  debug(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
+    const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
     if (this.isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, data || '');
+      console.debug(`[DEBUG] ${message}`, data || '', sourceOrContext);
       this.logToService('debug', message, data, source);
     }
   }
@@ -30,9 +31,10 @@ class Logger {
   /**
    * Log info messages (development + production)
    */
-  info(message: string, data?: unknown, source?: string): void {
+  info(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
+    const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
     if (this.isDevelopment) {
-      console.info(`[INFO] ${message}`, data || '');
+      console.info(`[INFO] ${message}`, data || '', sourceOrContext);
     }
     this.logToService('info', message, data, source);
   }
@@ -40,20 +42,23 @@ class Logger {
   /**
    * Log warnings (always logged)
    */
-  warn(message: string, data?: unknown, source?: string): void {
-    console.warn(`[WARN] ${message}`, data || '');
+  warn(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
+    const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
+    console.warn(`[WARN] ${message}`, data || '', sourceOrContext);
     this.logToService('warn', message, data, source);
   }
 
   /**
    * Log errors (always logged, sent to error tracking)
    */
-  error(message: string, error?: Error | unknown, source?: string): void {
+  error(message: string, error?: Error | unknown, sourceOrContext?: string | Record<string, unknown>): void {
     const errorData = error instanceof Error 
       ? { message: error.message, stack: error.stack, name: error.name }
       : error;
 
-    console.error(`[ERROR] ${message}`, errorData || '');
+    const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
+
+    console.error(`[ERROR] ${message}`, errorData || '', sourceOrContext);
     this.logToService('error', message, errorData, source);
     
     // In production, send to error tracking service
@@ -145,10 +150,10 @@ export const logger = new Logger();
 
 // Export convenience functions
 export const log = {
-  debug: (message: string, data?: unknown, source?: string) => logger.debug(message, data, source),
-  info: (message: string, data?: unknown, source?: string) => logger.info(message, data, source),
-  warn: (message: string, data?: unknown, source?: string) => logger.warn(message, data, source),
-  error: (message: string, error?: Error | unknown, source?: string) => logger.error(message, error, source),
+  debug: (message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>) => logger.debug(message, data, sourceOrContext),
+  info: (message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>) => logger.info(message, data, sourceOrContext),
+  warn: (message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>) => logger.warn(message, data, sourceOrContext),
+  error: (message: string, error?: Error | unknown, sourceOrContext?: string | Record<string, unknown>) => logger.error(message, error, sourceOrContext),
 };
 
 
