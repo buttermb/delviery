@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InsightCard } from './InsightCard';
 import { LiveActivityFeed } from './LiveActivityFeed';
-import { MenuWizard } from './MenuWizard';
+import { MenuCreationWizard } from './MenuCreationWizard';
 import { EnhancedMenuDashboard } from './EnhancedMenuDashboard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSmartDashboard } from '@/hooks/useSmartDashboard';
@@ -211,7 +211,7 @@ export function SmartDashboard() {
                 </div>
             </div>
 
-            <MenuWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+            <MenuCreationWizard open={wizardOpen} onOpenChange={setWizardOpen} />
             <EncryptionMigrationTool open={encryptionToolOpen} onOpenChange={setEncryptionToolOpen} tenantId={tenant?.id || ''} />
         </div>
     );
