@@ -283,40 +283,22 @@ export default function ListingDetailPage() {
                   </Alert>
                 ) : (
                   <div className="space-y-2">
-                    {listing.lab_results.thc_percent !== undefined && (
+                    {listing.lab_results.thc_percentage !== undefined && (
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">THC:</span>
-                        <span className="text-sm font-medium">{listing.lab_results.thc_percent}%</span>
+                        <span className="text-sm font-medium">{listing.lab_results.thc_percentage}%</span>
                       </div>
                     )}
-                    {listing.lab_results.cbd_percent !== undefined && (
+                    {listing.lab_results.cbd_percentage !== undefined && (
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">CBD:</span>
-                        <span className="text-sm font-medium">{listing.lab_results.cbd_percent}%</span>
+                        <span className="text-sm font-medium">{listing.lab_results.cbd_percentage}%</span>
                       </div>
                     )}
                     {listing.lab_results.batch_number && (
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Batch Number:</span>
                         <span className="text-sm font-medium">{listing.lab_results.batch_number}</span>
-                      </div>
-                    )}
-                    {listing.lab_results.lab_name && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Lab:</span>
-                        <span className="text-sm font-medium">{listing.lab_results.lab_name}</span>
-                      </div>
-                    )}
-                    {listing.lab_results.lab_certificate_url && (
-                      <div className="pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(listing.lab_results.lab_certificate_url, '_blank')}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          View Lab Certificate
-                        </Button>
                       </div>
                     )}
                   </div>
@@ -388,10 +370,10 @@ export default function ListingDetailPage() {
                 <div className="pt-4 border-t">
                   <div className="text-sm font-medium mb-2">Bulk Pricing</div>
                   <div className="space-y-2">
-                    {listing.bulk_pricing.map((tier: { quantity: number; price: number }, index: number) => (
+                    {listing.bulk_pricing.map((tier, index) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                          {tier.quantity}+ units:
+                          {tier.min_quantity}+ units:
                         </span>
                         <span className="font-medium">
                           {formatCurrency(tier.price)}

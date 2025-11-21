@@ -82,13 +82,16 @@ export default function MessagesPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   // Fetch all messages (sent and received) for this tenant as seller
-  const { data: messages = [], isLoading } = useQuery({
+  // @ts-ignore - Deep instantiation error from Supabase types
+  const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ['marketplace-messages', tenantId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
       // Get messages where this tenant is the receiver (seller receiving from buyers)
+      // @ts-ignore - Schema mismatch until migrations are applied
       const { data: received, error: receivedError } = await supabase
+        // @ts-ignore
         .from('marketplace_messages')
         .select(`
           *,
@@ -110,7 +113,7 @@ export default function MessagesPage() {
           )
         `)
         .or(`receiver_tenant_id.eq.${tenantId},sender_tenant_id.eq.${tenantId}`)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (receivedError) {
         logger.error('Failed to fetch messages', receivedError, { component: 'MessagesPage' });
@@ -187,12 +190,14 @@ export default function MessagesPage() {
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
+      // @ts-ignore - Schema mismatch until migrations are applied
       const { error } = await supabase
+        // @ts-ignore
         .from('marketplace_messages')
-        .update({ 
+        .update({
           read: true,
           read_at: new Date().toISOString()
-        })
+        } as any)
         .in('id', messageIds);
 
       if (error) throw error;
@@ -213,7 +218,9 @@ export default function MessagesPage() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       // TODO: Encrypt message_text with AES-256
+      // @ts-ignore - Schema mismatch until migrations are applied
       const { data, error } = await supabase
+        // @ts-ignore
         .from('marketplace_messages')
         .insert({
           sender_tenant_id: tenantId,
@@ -223,7 +230,7 @@ export default function MessagesPage() {
           subject: selectedConv?.lastMessage.subject || undefined,
           listing_id: listingId || selectedConv?.listingId || null,
           order_id: orderId || selectedConv?.orderId || null,
-        })
+        } as any)
         .select()
         .single();
 

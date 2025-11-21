@@ -45,7 +45,7 @@ export default function TrialExpiredPage() {
       const usage = (tenant as any)?.usage || {};
 
       // Get revenue if any
-      
+      // @ts-ignore - Deep instantiation error from Supabase types
       const ordersQuery = await supabase
         .from("menu_orders")
         .select("total_amount")

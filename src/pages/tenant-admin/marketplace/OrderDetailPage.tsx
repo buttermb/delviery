@@ -487,10 +487,10 @@ export default function OrderDetailPage() {
                 <Label className="text-xs text-muted-foreground mb-1">Payment Terms</Label>
                 <div className="text-sm">{order.payment_terms || 'Prepaid'}</div>
               </div>
-              {order.paid_at && (
+              {(order as any).paid_at && (
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1">Paid At</Label>
-                  <div className="text-sm">{formatSmartDate(order.paid_at as string)}</div>
+                  <div className="text-sm">{formatSmartDate((order as any).paid_at as string)}</div>
                 </div>
               )}
               {order.payment_status !== 'paid' && (
@@ -615,7 +615,7 @@ export default function OrderDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="text-sm">
-                <div className="font-medium mb-1">{order.buyer_business_name || 'Unknown Buyer'}</div>
+                <div className="font-medium mb-1">{(order as any).buyer_business_name || 'Unknown Buyer'}</div>
                 <div className="text-muted-foreground">Order #{order.order_number}</div>
               </div>
             </CardContent>

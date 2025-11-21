@@ -95,6 +95,7 @@ export default function TenantAdminBillingPage() {
   const { data: subscriptionPlans = [] } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
+      // @ts-ignore - Deep instantiation error from Supabase types
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')

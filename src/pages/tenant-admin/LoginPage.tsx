@@ -35,6 +35,7 @@ export default function TenantAdminLoginPage() {
     // @ts-ignore - Complex query return type
     const fetchTenant = async (): Promise<void> => {
       if (tenantSlug) {
+        // @ts-ignore - Deep instantiation error from Supabase types
         const { data, error } = await supabase
           .from("tenants")
           .select("*, white_label:white_label_settings(*)")
