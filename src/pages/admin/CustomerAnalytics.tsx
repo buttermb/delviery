@@ -7,6 +7,19 @@ import { Users, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
+interface Customer {
+  id: string;
+  customer_type?: string;
+  tenant_id: string;
+}
+
+interface Order {
+  id: string;
+  total: number | string;
+  customer_id: string;
+  tenant_id: string;
+}
+
 export default function CustomerAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -64,10 +77,10 @@ export default function CustomerAnalytics() {
   }
 
   const customerCount = customers?.length || 0;
-  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0;
+  const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total || 0)), 0) || 0;
   const avgCustomerValue = customerCount > 0 ? totalRevenue / customerCount : 0;
 
-  const customerTypes = (customers || []).reduce((acc: any, customer: any) => {
+  const customerTypes = (customers || []).reduce((acc: Record<string, number>, customer: Customer) => {
     const type = customer.customer_type || 'regular';
     acc[type] = (acc[type] || 0) + 1;
     return acc;

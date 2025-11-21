@@ -8,6 +8,7 @@ import { MapPin, Truck, Layers, Map as MapIcon } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { logger } from '@/lib/logger';
 
 interface CourierLocation {
   id: string;
@@ -56,7 +57,7 @@ export default function LiveMap() {
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      
+
       // Add 3D buildings
       if (map.current) {
         const layers = map.current.getStyle().layers;
@@ -115,7 +116,7 @@ export default function LiveMap() {
   // Load couriers
   useEffect(() => {
     loadCourierLocations();
-    
+
     // Set up realtime subscription
     const channel = supabase
       .channel('couriers-changes')
@@ -132,12 +133,12 @@ export default function LiveMap() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[LiveMap] Realtime subscription active');
+          logger.info('Realtime subscription active', { component: 'LiveMap', table: 'couriers' });
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[LiveMap] Realtime subscription error, retrying...');
+          logger.warn('Realtime subscription error, retrying', { component: 'LiveMap' });
           setTimeout(() => loadCourierLocations(), 5000);
         } else if (status === 'TIMED_OUT') {
-          console.error('[LiveMap] Realtime subscription timed out');
+          logger.error('Realtime subscription timed out', null, { component: 'LiveMap' });
           loadCourierLocations();
         }
       });
@@ -155,11 +156,11 @@ export default function LiveMap() {
         .eq('is_online', true)
         .not('current_lat', 'is', null)
         .not('current_lng', 'is', null);
-      
+
       if (error) throw error;
       setCouriers(data || []);
-    } catch (error: any) {
-      console.error('Error loading courier locations:', error);
+    } catch (error) {
+      logger.error('Error loading courier locations', error, { component: 'LiveMap' });
       toast.error('Failed to load courier locations');
     } finally {
       setLoading(false);
@@ -277,7 +278,7 @@ export default function LiveMap() {
   if (!mapboxToken) {
     return (
       <>
-        <SEOHead 
+        <SEOHead
           title="Live Map | Admin"
           description="Real-time courier tracking"
         />
@@ -295,11 +296,11 @@ export default function LiveMap() {
 
   return (
     <>
-      <SEOHead 
+      <SEOHead
         title="Live Map | Admin"
         description="Real-time courier tracking"
       />
-      
+
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Live Courier Map</h1>
@@ -342,8 +343,8 @@ export default function LiveMap() {
             </Button>
           </div>
 
-          <div 
-            ref={mapContainer} 
+          <div
+            ref={mapContainer}
             className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg"
           />
 

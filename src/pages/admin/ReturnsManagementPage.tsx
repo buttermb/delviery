@@ -1,4 +1,3 @@
-// @ts-nocheck - Return authorizations table types not yet regenerated
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,7 +106,7 @@ export default function ReturnsManagementPage() {
       }
 
       const { data, error } = await query;
-        
+
       if (error) {
         logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
         return [];

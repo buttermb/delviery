@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Advanced Barcode & QR Code Generator
  * Generate barcodes for products, packages, batches, and custom labels
@@ -20,12 +19,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
 import { logger } from '@/lib/logger';
-import { 
-  ArrowLeft, 
-  Download, 
-  Printer, 
-  Barcode, 
-  QrCode, 
+import {
+  ArrowLeft,
+  Download,
+  Printer,
+  Barcode,
+  QrCode,
   Package,
   Layers,
   FileText,
@@ -34,7 +33,7 @@ import {
   Grid3x3
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   generateBarcodeDataURL,
   createPackageQRData,
   type QRCodeData
@@ -58,26 +57,26 @@ export default function GenerateBarcodes() {
   const navigate = useNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { toast } = useToast();
-  
+
   // Generation mode
   const [mode, setMode] = useState<GenerationMode>('product');
   const [barcodeType, setBarcodeType] = useState<BarcodeType>('CODE128');
   const [labelType, setLabelType] = useState<LabelType>('product');
-  
+
   // Product mode
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [productQuantity, setProductQuantity] = useState(10);
   const [includeQR, setIncludeQR] = useState(true);
-  
+
   // Package mode
   const [selectedBatch, setSelectedBatch] = useState<string>('');
   const [packageSizes, setPackageSizes] = useState<string>('10,8,5,2'); // comma-separated lbs
-  
+
   // Custom mode
   const [customPrefix, setCustomPrefix] = useState('');
   const [customQuantity, setCustomQuantity] = useState(10);
   const [customLabel, setCustomLabel] = useState('');
-  
+
   // Generated barcodes
   const [generatedBarcodes, setGeneratedBarcodes] = useState<GeneratedBarcode[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,7 +99,7 @@ export default function GenerateBarcodes() {
 
   // Fetch batches
   // Temporarily disabled - inventory_batches table not yet created
-  const batches: Array<{ id: string; [key: string]: unknown }> = [];
+  const batches: Array<{ id: string;[key: string]: unknown }> = [];
 
   // Generate barcodes based on mode
   const handleGenerate = async () => {
@@ -123,10 +122,10 @@ export default function GenerateBarcodes() {
 
         // Generate barcodes for product
         for (let i = 1; i <= productQuantity; i++) {
-          const barcodeValue = product.sku 
+          const barcodeValue = product.sku
             ? `${product.sku}-${String(i).padStart(4, '0')}`
             : `PRD-${selectedProduct.substring(0, 8).toUpperCase()}-${String(i).padStart(4, '0')}`;
-          
+
           newBarcodes.push({
             id: `barcode-${i}`,
             value: barcodeValue,
@@ -144,7 +143,7 @@ export default function GenerateBarcodes() {
         // Generate package numbers and barcodes
         for (let i = 0; i < sizes.length; i++) {
           const packageNumber = `PKG-${batch.batch_number}-${String(i + 1).padStart(3, '0')}`;
-          
+
           // Create QR data for package
           const qrData = createPackageQRData({
             packageId: `temp-${i}`,
@@ -171,7 +170,7 @@ export default function GenerateBarcodes() {
         }
       } else if (mode === 'custom') {
         if (!customPrefix) throw new Error('Prefix required');
-        
+
         for (let i = 1; i <= customQuantity; i++) {
           const barcodeValue = `${customPrefix}-${String(i).padStart(6, '0')}`;
           newBarcodes.push({
@@ -206,7 +205,7 @@ export default function GenerateBarcodes() {
   // Print all labels as PDF
   const handlePrintAll = async () => {
     if (generatedBarcodes.length === 0) return;
-    
+
     setPdfGenerating(true);
     toast({
       title: 'Generating PDF...',
@@ -216,7 +215,7 @@ export default function GenerateBarcodes() {
     try {
       // Defer heavy operation to avoid blocking UI
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       // For now, use print sheet for all labels
       // Individual label printing can be added later with proper QR code rendering
       await handlePrintSheet();
@@ -237,7 +236,7 @@ export default function GenerateBarcodes() {
     if (generatedBarcodes.length === 0) return;
 
     setPdfGenerating(true);
-    
+
     try {
       // Process in chunks to avoid blocking
       const pdf = new jsPDF({
@@ -260,10 +259,10 @@ export default function GenerateBarcodes() {
       const chunkSize = 10;
       for (let i = 0; i < generatedBarcodes.length; i += chunkSize) {
         const chunk = generatedBarcodes.slice(i, i + chunkSize);
-        
+
         // Yield to browser between chunks
         await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)));
-        
+
         for (const barcode of chunk) {
           if (index >= rows * cols) {
             pdf.addPage();
@@ -273,7 +272,7 @@ export default function GenerateBarcodes() {
 
           const col = index % cols;
           const row = Math.floor(index / cols);
-          
+
           const x = margin + col * (cardWidth + spacing);
           const y = margin + row * (cardHeight + spacing) + (page * 11);
 
@@ -300,7 +299,7 @@ export default function GenerateBarcodes() {
       setPdfGenerating(false);
     }
   };
-  
+
   // Handle print preview with async loading
   const handlePrintPreview = async () => {
     setPdfGenerating(true);
@@ -308,7 +307,7 @@ export default function GenerateBarcodes() {
       title: 'Preparing preview...',
       description: 'Please wait',
     });
-    
+
     try {
       // Small delay to show loading state
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -442,8 +441,8 @@ export default function GenerateBarcodes() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="includeQR" 
+                <Checkbox
+                  id="includeQR"
                   checked={includeQR}
                   onCheckedChange={(checked) => setIncludeQR(checked === true)}
                 />
@@ -608,8 +607,8 @@ export default function GenerateBarcodes() {
                 >
                   {previewMode === 'grid' ? <Grid3x3 className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handlePrintSheet}
                   disabled={pdfGenerating}
                 >
@@ -625,8 +624,8 @@ export default function GenerateBarcodes() {
                     </>
                   )}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handlePrintAll}
                   disabled={pdfGenerating}
                 >
@@ -642,7 +641,7 @@ export default function GenerateBarcodes() {
                     </>
                   )}
                 </Button>
-                <Button 
+                <Button
                   onClick={handlePrintPreview}
                   disabled={pdfGenerating}
                 >
@@ -668,10 +667,10 @@ export default function GenerateBarcodes() {
                   <Card key={barcode.id} className="p-4">
                     <div className="text-center space-y-3">
                       <p className="font-semibold text-sm">{barcode.label || barcode.value}</p>
-                      
+
                       {barcode.type === 'QR' ? (
                         <div className="flex justify-center">
-                          <QRCodeSVG 
+                          <QRCodeSVG
                             value={barcode.value}
                             size={150}
                             level="M"
@@ -679,7 +678,7 @@ export default function GenerateBarcodes() {
                         </div>
                       ) : (
                         <>
-                          <BarcodeGenerator 
+                          <BarcodeGenerator
                             value={barcode.value}
                             format={barcode.type as 'CODE128' | 'EAN13' | 'CODE39'}
                             height={60}
@@ -688,7 +687,7 @@ export default function GenerateBarcodes() {
                           {barcode.qrData && (
                             <div className="pt-2 border-t">
                               <p className="text-xs text-muted-foreground mb-1">Package QR Code</p>
-                              <QRCodeSVG 
+                              <QRCodeSVG
                                 value={JSON.stringify(barcode.qrData)}
                                 size={100}
                                 level="M"
@@ -697,7 +696,7 @@ export default function GenerateBarcodes() {
                           )}
                         </>
                       )}
-                      
+
                       <p className="text-xs font-mono text-muted-foreground break-all">
                         {barcode.value}
                       </p>
@@ -715,14 +714,14 @@ export default function GenerateBarcodes() {
                     </div>
                     <div className="flex gap-2 items-center">
                       {barcode.type === 'QR' ? (
-                        <QRCodeSVG 
+                        <QRCodeSVG
                           value={barcode.value}
                           size={80}
                           level="M"
                         />
                       ) : (
                         <div className="w-32">
-                          <BarcodeGenerator 
+                          <BarcodeGenerator
                             value={barcode.value}
                             format={barcode.type as 'CODE128' | 'EAN13' | 'CODE39'}
                             height={50}
@@ -731,7 +730,7 @@ export default function GenerateBarcodes() {
                         </div>
                       )}
                       {barcode.qrData && barcode.type !== 'QR' && (
-                        <QRCodeSVG 
+                        <QRCodeSVG
                           value={JSON.stringify(barcode.qrData)}
                           size={80}
                           level="M"

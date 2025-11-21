@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validateChatSession, validateChatMessage } from '@/utils/realtimeValidation';
 import { useDebounce } from '@/hooks/useDebounce';
+import { logger } from '@/lib/logger';
 
 interface ChatSession {
   id: string;
@@ -44,14 +45,14 @@ const AdminLiveChat = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       if (data) {
         // Validate sessions before setting state
         const validSessions = data.filter(validateChatSession);
         setSessions(validSessions as ChatSession[]);
       }
     } catch (error) {
-      console.error('Error loading chat sessions:', error);
+      logger.error('Error loading chat sessions', error, { component: 'AdminLiveChat' });
       toast({
         title: "Error",
         description: "Failed to load chat sessions",
@@ -64,7 +65,7 @@ const AdminLiveChat = () => {
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let retryTimeout: NodeJS.Timeout;
-    
+
     debouncedLoadSessions();
 
     const setupChannel = () => {
@@ -90,20 +91,20 @@ const AdminLiveChat = () => {
                   debouncedLoadSessions();
                 }
               } catch (error) {
-                console.error('Error processing chat session update:', error);
+                logger.error('Error processing chat session update', error, { component: 'AdminLiveChat' });
               }
             }
           )
           .subscribe((status) => {
             if (status === 'CHANNEL_ERROR') {
-              console.error('Failed to subscribe to chat sessions channel, retrying...');
+              logger.warn('Failed to subscribe to chat sessions channel, retrying', { component: 'AdminLiveChat' });
               retryTimeout = setTimeout(setupChannel, 5000);
             } else if (status === 'SUBSCRIBED') {
-              console.log('Chat sessions subscription active');
+              logger.info('Chat sessions subscription active', { component: 'AdminLiveChat' });
             }
           });
       } catch (error) {
-        console.error('Error setting up chat sessions channel:', error);
+        logger.error('Error setting up chat sessions channel', error, { component: 'AdminLiveChat' });
         retryTimeout = setTimeout(setupChannel, 5000);
       }
     };
@@ -115,7 +116,7 @@ const AdminLiveChat = () => {
       if (channel) {
         supabase.removeChannel(channel).then(() => {
           channel = null;
-        }).catch(console.error);
+        }).catch((err) => logger.error('Error removing channel', err, { component: 'AdminLiveChat' }));
       }
     };
   }, [debouncedLoadSessions]);
@@ -136,14 +137,14 @@ const AdminLiveChat = () => {
           .order('created_at', { ascending: true });
 
         if (error) throw error;
-        
+
         if (data) {
           // Validate messages before setting state
           const validMessages = data.filter(validateChatMessage);
           setMessages(validMessages as Message[]);
         }
       } catch (error) {
-        console.error('Error loading messages:', error);
+        logger.error('Error loading messages', error, { component: 'AdminLiveChat', sessionId: selectedSession });
         toast({
           title: "Error",
           description: "Failed to load messages",
@@ -178,20 +179,20 @@ const AdminLiveChat = () => {
                   setMessages(prev => [...prev, newMessage]);
                 }
               } catch (error) {
-                console.error('Error processing new message:', error);
+                logger.error('Error processing new message', error, { component: 'AdminLiveChat' });
               }
             }
           )
           .subscribe((status) => {
             if (status === 'CHANNEL_ERROR') {
-              console.error('Failed to subscribe to chat messages channel, retrying...');
+              logger.warn('Failed to subscribe to chat messages channel, retrying', { component: 'AdminLiveChat', sessionId: selectedSession });
               retryTimeout = setTimeout(setupChannel, 5000);
             } else if (status === 'SUBSCRIBED') {
-              console.log(`Chat messages subscription active for session ${selectedSession}`);
+              logger.info('Chat messages subscription active', { component: 'AdminLiveChat', sessionId: selectedSession });
             }
           });
       } catch (error) {
-        console.error('Error setting up chat messages channel:', error);
+        logger.error('Error setting up chat messages channel', error, { component: 'AdminLiveChat' });
         retryTimeout = setTimeout(setupChannel, 5000);
       }
     };
@@ -203,7 +204,7 @@ const AdminLiveChat = () => {
       if (channel) {
         supabase.removeChannel(channel).then(() => {
           channel = null;
-        }).catch(console.error);
+        }).catch((err) => logger.error('Error removing channel', err, { component: 'AdminLiveChat' }));
       }
     };
   }, [selectedSession, toast]);
@@ -219,7 +220,7 @@ const AdminLiveChat = () => {
     if (!input.trim() || !selectedSession) return;
 
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     const { error } = await supabase.from('chat_messages').insert({
       session_id: selectedSession,
       sender_type: 'admin',
@@ -241,10 +242,10 @@ const AdminLiveChat = () => {
 
   const takeOver = async (sessionId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     await supabase
       .from('chat_sessions')
-      .update({ 
+      .update({
         mode: 'human',
         assigned_admin_id: user?.id
       })
@@ -288,7 +289,7 @@ const AdminLiveChat = () => {
                   ))}
                 </div>
               )}
-              
+
               {aiSessions.length > 0 && (
                 <div className="p-4 space-y-2">
                   <p className="text-sm font-semibold text-muted-foreground">AI Assisted</p>
@@ -309,7 +310,7 @@ const AdminLiveChat = () => {
                   ))}
                 </div>
               )}
-              
+
               {sessions.length === 0 && (
                 <p className="p-4 text-center text-muted-foreground">
                   No active chats
@@ -334,23 +335,21 @@ const AdminLiveChat = () => {
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${
-                          msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'
+                          }`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
-                            msg.sender_type === 'admin'
+                          className={`max-w-[80%] rounded-lg p-3 ${msg.sender_type === 'admin'
                               ? 'bg-primary text-primary-foreground'
                               : msg.sender_type === 'ai'
-                              ? 'bg-blue-100 dark:bg-blue-900'
-                              : 'bg-muted'
-                          }`}
+                                ? 'bg-blue-100 dark:bg-blue-900'
+                                : 'bg-muted'
+                            }`}
                         >
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="text-xs">
-                              {msg.sender_type === 'admin' ? 'You' : 
-                               msg.sender_type === 'ai' ? 'AI' : 'Customer'}
+                              {msg.sender_type === 'admin' ? 'You' :
+                                msg.sender_type === 'ai' ? 'AI' : 'Customer'}
                             </Badge>
                           </div>
                           <p className="text-sm whitespace-pre-wrap">{msg.message}</p>

@@ -10,6 +10,56 @@ import { Search, User, Package, ShoppingCart, MapPin, Mail, Phone } from "lucide
 import { useNavigate } from "react-router-dom";
 import { formatStatus } from "@/utils/stringHelpers";
 
+interface UserSearchResult {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  trust_level?: string;
+  total_orders?: number;
+  risk_score?: string;
+  user_roles?: { role: string }[];
+}
+
+interface OrderSearchResult {
+  id: string;
+  order_number: string;
+  tracking_code?: string;
+  customer_name?: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  profiles?: {
+    full_name: string;
+  };
+}
+
+interface ProductSearchResult {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  stock_quantity?: number;
+  average_rating?: number;
+  image_url?: string;
+}
+
+interface AddressSearchResult {
+  id: string;
+  user_id: string;
+  street: string;
+  neighborhood?: string;
+  borough?: string;
+  zip_code?: string;
+  is_default?: boolean;
+  risk_zone?: string;
+  profiles?: {
+    full_name: string;
+  };
+}
+
 const GlobalSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -56,10 +106,10 @@ const GlobalSearch = () => {
         orders: orders.data || [],
         products: products.data || [],
         addresses: addresses.data || [],
-        totalResults: 
-          (users.data?.length || 0) + 
-          (orders.data?.length || 0) + 
-          (products.data?.length || 0) + 
+        totalResults:
+          (users.data?.length || 0) +
+          (orders.data?.length || 0) +
+          (products.data?.length || 0) +
           (addresses.data?.length || 0),
       };
     },
@@ -119,7 +169,7 @@ const GlobalSearch = () => {
               </TabsList>
 
               <TabsContent value="users" className="space-y-4">
-                {searchResults.users.map((user: any) => (
+                {searchResults.users.map((user: UserSearchResult) => (
                   <Card key={user.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/users/${user.user_id}`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
@@ -157,7 +207,7 @@ const GlobalSearch = () => {
               </TabsContent>
 
               <TabsContent value="orders" className="space-y-4">
-                {searchResults.orders.map((order: any) => (
+                {searchResults.orders.map((order: OrderSearchResult) => (
                   <Card key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/orders`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
@@ -184,7 +234,7 @@ const GlobalSearch = () => {
               </TabsContent>
 
               <TabsContent value="products" className="space-y-4">
-                {searchResults.products.map((product: any) => (
+                {searchResults.products.map((product: ProductSearchResult) => (
                   <Card key={product.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/products`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
@@ -214,7 +264,7 @@ const GlobalSearch = () => {
               </TabsContent>
 
               <TabsContent value="addresses" className="space-y-4">
-                {searchResults.addresses.map((address: any) => (
+                {searchResults.addresses.map((address: AddressSearchResult) => (
                   <Card key={address.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/users/${address.user_id}`)}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">

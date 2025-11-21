@@ -8,6 +8,7 @@ import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 interface ScannedSale {
   barcode: string;
@@ -25,13 +26,12 @@ export default function RecordFrontedSale() {
 
   const handleBarcodeScan = async (barcode: string) => {
     try {
-      // @ts-ignore
       const result = await supabase
         .from('products')
         .select('id, name')
         .eq('barcode', barcode)
         .single();
-      
+
       const product = result.data;
 
       if (!product) {
@@ -58,7 +58,7 @@ export default function RecordFrontedSale() {
 
       toast({ title: 'Scanned', description: `${product.name} added` });
     } catch (error) {
-      console.error('Error:', error);
+      logger.error('Error scanning barcode', error, { component: 'RecordFrontedSale', barcode });
     }
   };
 
@@ -70,7 +70,6 @@ export default function RecordFrontedSale() {
       const totalSold = scannedItems.reduce((sum, i) => sum + i.quantity, 0);
 
       // Update fronted inventory - increment quantity_sold
-      // @ts-ignore
       const { data: currentFront } = await supabase
         .from('fronted_inventory')
         .select('quantity_sold')
@@ -101,7 +100,7 @@ export default function RecordFrontedSale() {
       toast({ title: 'Success!', description: `${totalSold} units recorded as sold` });
       navigate(`/admin/inventory/fronted/${id}`);
     } catch (error) {
-      console.error('Error:', error);
+      logger.error('Error recording sale', error, { component: 'RecordFrontedSale', frontedInventoryId: id });
       toast({ title: 'Error', description: 'Failed to record sales', variant: 'destructive' });
     } finally {
       setLoading(false);

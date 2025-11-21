@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Plus, Search, Bell, Settings, Menu as MenuIcon, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { EnhancedMenuDashboard } from './EnhancedMenuDashboard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSmartDashboard } from '@/hooks/useSmartDashboard';
 import { Shield, Activity, MessageSquare } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { MenuCard } from './MenuCard';
 import { SecurityAlertsPanel } from './SecurityAlertsPanel';
 import { SecurityMonitoringPanel } from './SecurityMonitoringPanel';
@@ -29,6 +31,32 @@ export function SmartDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const { insights, metrics, isLoading } = useSmartDashboard();
     const { data: menus } = useDisposableMenus(tenant?.id);
+    const [systemHealth, setSystemHealth] = useState<'checking' | 'healthy' | 'degraded' | 'offline'>('checking');
+
+    useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                // Invoke with empty body to trigger validation error (which means function is reachable)
+                const { error } = await supabase.functions.invoke('create-encrypted-menu', {
+                    body: {}
+                });
+
+                // If we get a validation error (usually 400), it means the function is deployed and running
+                // If we get a 500 or 404, it's likely an issue
+                if (!error || (error && error.context?.status === 400) || (error && error.message?.includes('validation'))) {
+                    setSystemHealth('healthy');
+                } else {
+                    logger.warn('Health check warning', { error, component: 'SmartDashboard' });
+                    setSystemHealth('degraded');
+                }
+            } catch (err) {
+                logger.error('System offline', err instanceof Error ? err : new Error(String(err)), { component: 'SmartDashboard' });
+                setSystemHealth('offline');
+            }
+        };
+
+        checkHealth();
+    }, []);
 
     const activeMenus = menus?.filter(m => m.status === 'active') || [];
 
@@ -41,7 +69,12 @@ export function SmartDashboard() {
                         <Zap className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-2xl font-bold tracking-tight">Command Center</h1>
+                            {systemHealth === 'healthy' && <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50">System Online</Badge>}
+                            {systemHealth === 'degraded' && <Badge variant="outline" className="text-yellow-600 border-yellow-600 bg-yellow-50">System Degraded</Badge>}
+                            {systemHealth === 'offline' && <Badge variant="destructive">System Offline</Badge>}
+                        </div>
                         <p className="text-muted-foreground text-sm">Welcome back, {tenant?.business_name || 'Admin'}</p>
                     </div>
                 </div>

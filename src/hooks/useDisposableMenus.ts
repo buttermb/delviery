@@ -19,11 +19,11 @@ export const useDisposableMenus = (tenantId?: string) => {
           menu_access_logs(count),
           menu_orders(*)
         `);
-      
+
       if (tenantId) {
         query = query.eq('tenant_id', tenantId);
       }
-      
+
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -37,6 +37,7 @@ export const useCreateDisposableMenu = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    retry: 2,
     mutationFn: async (menuData: {
       name: string;
       description?: string;
@@ -54,11 +55,11 @@ export const useCreateDisposableMenu = () => {
       // Transform product_ids and custom_prices into products array (only if products exist)
       const products = menuData.product_ids && menuData.product_ids.length > 0
         ? menuData.product_ids.map(productId => ({
-            product_id: productId,
-            custom_price: menuData.custom_prices?.[productId],
-            display_availability: true,
-            display_order: 0,
-          }))
+          product_id: productId,
+          custom_price: menuData.custom_prices?.[productId],
+          display_availability: true,
+          display_order: 0,
+        }))
         : undefined; // Don't pass empty array, use undefined for forum menus
 
       // Build request body, only including optional fields if they have values
@@ -104,13 +105,27 @@ export const useCreateDisposableMenu = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
       showSuccessToast(
-        'Menu Created & Encrypted', 
+        'Menu Created & Encrypted',
         `AES-256 encrypted menu created successfully${data?.encrypted ? ' 🔐' : ''}`
       );
     },
     onError: (error: unknown) => {
-      logger.error('Menu creation error', error, { component: 'useDisposableMenus' });
-      showErrorToast('Creation Failed', error instanceof Error ? error.message : 'Could not create menu');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorDetails = error instanceof Error ? error.stack : String(error);
+
+      logger.error('Menu creation error', {
+        error,
+        errorMessage,
+        errorDetails,
+        component: 'useDisposableMenus'
+      });
+
+      showErrorToast(
+        'Creation Failed',
+        errorMessage.includes('validation')
+          ? 'Please check all required fields'
+          : errorMessage
+      );
     }
   });
 };
@@ -142,7 +157,7 @@ export const useBurnMenu = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      
+
       if (data.regenerated_menu_id && data.customers_to_notify?.length > 0) {
         showSuccessToast(
           'Menu Burned & Regenerated',
@@ -158,8 +173,9 @@ export const useBurnMenu = () => {
       }
     },
     onError: (error: unknown) => {
-      logger.error('Burn error', error, { component: 'useDisposableMenus' });
-      showErrorToast('Burn Failed', error instanceof Error ? error.message : 'Could not burn menu');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Burn error', { error, errorMessage, component: 'useDisposableMenus' });
+      showErrorToast('Burn Failed', errorMessage);
     }
   });
 };
@@ -207,18 +223,19 @@ export const useManageWhitelist = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['menu-whitelist', variables.menu_id] });
-      
+
       const messages = {
         add: 'Customer invited successfully',
         revoke: 'Access revoked successfully',
         regenerate_token: 'New access link generated'
       };
-      
+
       showSuccessToast('Success', messages[variables.action]);
     },
     onError: (error: unknown) => {
-      logger.error('Menu action failed', error, { component: 'useDisposableMenus' });
-      showErrorToast('Action Failed', error instanceof Error ? error.message : 'Could not complete action');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Menu action failed', { error, errorMessage, component: 'useDisposableMenus' });
+      showErrorToast('Action Failed', errorMessage);
     }
   });
 };

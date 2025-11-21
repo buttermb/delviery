@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
+import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
   MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload
 } from "lucide-react";
@@ -91,7 +90,7 @@ export default function CustomerManagement() {
       const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
-      
+
       // Decrypt customer data if encryption is ready and encrypted fields exist
       let decryptedCustomers = data || [];
       if (encryptionIsReady && data && data.length > 0 && (data[0].name_encrypted || data[0].email_encrypted)) {
@@ -119,7 +118,7 @@ export default function CustomerManagement() {
           decryptedCustomers = data || [];
         }
       }
-      
+
       setCustomers(decryptedCustomers);
       toast.success("Customers loaded");
     } catch (error: unknown) {
@@ -219,7 +218,7 @@ export default function CustomerManagement() {
 
   const getCustomerStatus = (customer: Customer) => {
     if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
-    
+
     const daysSince = Math.floor(
       (Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -239,7 +238,7 @@ export default function CustomerManagement() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-6">
-      <SEOHead 
+      <SEOHead
         title="Customer Management | Admin"
         description="Manage your customers and CRM"
       />
@@ -261,7 +260,7 @@ export default function CustomerManagement() {
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        <Button 
+        <Button
           onClick={() => navigate("/admin/customers/new")}
           className="min-h-[44px] touch-manipulation flex-shrink-0"
         >
@@ -292,7 +291,7 @@ export default function CustomerManagement() {
           <CardContent>
             <div className="text-2xl font-bold">{medicalPatients}</div>
             <p className="text-xs text-muted-foreground">
-              {totalCustomers > 0 ? Math.round((medicalPatients/totalCustomers)*100) : 0}% of total
+              {totalCustomers > 0 ? Math.round((medicalPatients / totalCustomers) * 100) : 0}% of total
             </p>
           </CardContent>
         </Card>
@@ -372,7 +371,7 @@ export default function CustomerManagement() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial">
               <Download className="w-4 h-4 mr-2" />
@@ -402,8 +401,8 @@ export default function CustomerManagement() {
               <thead className="bg-muted/50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="rounded"
                       onChange={(e) => {
                         if (e.target.checked) {
@@ -441,8 +440,8 @@ export default function CustomerManagement() {
                 {paginatedCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="rounded"
                         checked={selectedCustomers.includes(customer.id)}
                         onChange={(e) => {
@@ -482,7 +481,7 @@ export default function CustomerManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {customer.last_purchase_at 
+                      {customer.last_purchase_at
                         ? new Date(customer.last_purchase_at).toLocaleDateString()
                         : 'Never'}
                     </td>
@@ -509,7 +508,7 @@ export default function CustomerManagement() {
                             <DollarSign className="w-4 h-4 mr-2" />
                             New Order
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-red-600"
                             onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
                           >
@@ -586,7 +585,7 @@ export default function CustomerManagement() {
                             <DollarSign className="w-4 h-4 mr-2" />
                             New Order
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-red-600"
                             onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
                           >
@@ -596,7 +595,7 @@ export default function CustomerManagement() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    
+
                     <div className="space-y-2 pt-2 border-t">
                       <div className="flex items-center justify-between">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</div>
@@ -604,7 +603,7 @@ export default function CustomerManagement() {
                           {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Spent</div>
@@ -618,16 +617,16 @@ export default function CustomerManagement() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Order</div>
                         <div className="text-sm text-muted-foreground">
-                          {customer.last_purchase_at 
+                          {customer.last_purchase_at
                             ? new Date(customer.last_purchase_at).toLocaleDateString()
                             : 'Never'}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</div>
                         <div>{getCustomerStatus(customer)}</div>

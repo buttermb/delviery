@@ -8,6 +8,40 @@ import { useRealtimeShifts, useRealtimeTransactions } from '@/hooks/useRealtimeP
 import { POSCharts } from '@/components/analytics/POSCharts';
 import { ChartExport } from '@/components/analytics/ChartExport';
 
+interface POSTransaction {
+  id: string;
+  created_at: string;
+  total_amount: string | number;
+  payment_method?: string;
+  payment_status: string;
+  tenant_id: string;
+}
+
+interface POSShift {
+  id: string;
+  tenant_id: string;
+  status: 'open' | 'closed';
+  started_at: string;
+  ended_at?: string;
+}
+
+interface DailySalesData {
+  date: string;
+  revenue: number;
+  count: number;
+}
+
+interface HourlyData {
+  hour: string;
+  transactions: number;
+  revenue: number;
+}
+
+interface PaymentMethodData {
+  name: string;
+  value: number;
+}
+
 export default function PosAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -64,10 +98,10 @@ export default function PosAnalytics() {
   }
 
   // Process daily sales data
-  const dailySales = (transactions || []).reduce((acc: any, transaction: any) => {
+  const dailySales = (transactions || []).reduce((acc: DailySalesData[], transaction: POSTransaction) => {
     const date = new Date(transaction.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const existing = acc.find((item: any) => item.date === date);
-    const revenue = parseFloat(transaction.total_amount || 0);
+    const existing = acc.find((item) => item.date === date);
+    const revenue = parseFloat(String(transaction.total_amount || 0));
     if (existing) {
       existing.revenue += revenue;
       existing.count += 1;
@@ -75,15 +109,15 @@ export default function PosAnalytics() {
       acc.push({ date, revenue, count: 1 });
     }
     return acc;
-  }, []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [] as DailySalesData[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Process hourly data
-  const hourlyData = (transactions || []).reduce((acc: any, transaction: any) => {
+  const hourlyData = (transactions || []).reduce((acc: HourlyData[], transaction: POSTransaction) => {
     const hour = new Date(transaction.created_at).getHours();
     const hourLabel = `${hour}:00`;
-    const existing = acc.find((item: any) => item.hour === hourLabel);
-    const revenue = parseFloat(transaction.total_amount || 0);
-    
+    const existing = acc.find((item) => item.hour === hourLabel);
+    const revenue = parseFloat(String(transaction.total_amount || 0));
+
     if (existing) {
       existing.transactions += 1;
       existing.revenue += revenue;
@@ -91,23 +125,23 @@ export default function PosAnalytics() {
       acc.push({ hour: hourLabel, transactions: 1, revenue });
     }
     return acc;
-  }, []).sort((a: any, b: any) => parseInt(a.hour) - parseInt(b.hour));
+  }, [] as HourlyData[]).sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
 
-  const totalRevenue = transactions?.reduce((sum: number, t: any) => sum + parseFloat(t.total_amount || 0), 0) || 0;
+  const totalRevenue = transactions?.reduce((sum: number, t: POSTransaction) => sum + parseFloat(String(t.total_amount || 0)), 0) || 0;
   const totalTransactions = transactions?.length || 0;
   const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
-  
+
   // Calculate payment method breakdown for pie chart
-  const paymentMethodData = Object.entries(
-    (transactions || []).reduce((acc: any, t: any) => {
+  const paymentMethodData: PaymentMethodData[] = Object.entries(
+    (transactions || []).reduce((acc: Record<string, number>, t: POSTransaction) => {
       const method = (t.payment_method || 'other').charAt(0).toUpperCase() + (t.payment_method || 'other').slice(1);
-      acc[method] = (acc[method] || 0) + parseFloat(t.total_amount || 0);
+      acc[method] = (acc[method] || 0) + parseFloat(String(t.total_amount || 0));
       return acc;
-    }, {})
+    }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value: value as number }));
 
   const totalShifts = shifts?.length || 0;
-  const openShifts = shifts?.filter((s: any) => s.status === 'open').length || 0;
+  const openShifts = shifts?.filter((s) => s.status === 'open').length || 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -117,9 +151,9 @@ export default function PosAnalytics() {
           <p className="text-muted-foreground">Point of sale performance metrics</p>
         </div>
         <div className="flex items-center gap-3">
-          <ChartExport 
-            data={transactions || []} 
-            filename="pos-analytics" 
+          <ChartExport
+            data={transactions || []}
+            filename="pos-analytics"
             title="POS Analytics Report"
           />
           <Badge variant="outline" className="gap-2">
@@ -173,7 +207,7 @@ export default function PosAnalytics() {
       </div>
 
       {/* Comprehensive Charts */}
-      <POSCharts 
+      <POSCharts
         dailySales={dailySales}
         paymentMethods={paymentMethodData}
         hourlyData={hourlyData}

@@ -26,18 +26,42 @@ import { PageHeader } from '@/components/shared/PageHeader';
 
 const PAGE_SIZE = 25;
 
+interface LineItem {
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
+interface Customer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  customer_id: string;
+  status: string;
+  total: number;
+  due_date?: string;
+  created_at: string;
+}
+
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { toast } = useToast();
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [allInvoices, setAllInvoices] = useState<any[]>([]); // Store all invoices when using client-side pagination
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]); // Store all invoices when using client-side pagination
   const [lineItems, setLineItems] = useState([
     { description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
@@ -80,12 +104,12 @@ export default function CustomerInvoices() {
 
       if (!error && data) {
         const newData = data || [];
-        
+
         // Clear client-side cache when using direct query (server-side pagination)
         if (!append) {
           setAllInvoices([]);
         }
-        
+
         if (append) {
           setInvoices(prev => {
             const updated = [...prev, ...newData];
@@ -100,9 +124,9 @@ export default function CustomerInvoices() {
           const totalCount = count || 0;
           setHasMore(newData.length < totalCount);
         }
-        
+
         setCurrentPage(page);
-        
+
         if (!append) {
           setLoading(false);
         }
@@ -155,13 +179,13 @@ export default function CustomerInvoices() {
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE;
         const paginatedData = allInvoices.slice(from, to);
-        
+
         if (append) {
           setInvoices(prev => [...prev, ...paginatedData]);
         } else {
           setInvoices(paginatedData);
         }
-        
+
         setHasMore(to < allInvoices.length);
         setCurrentPage(page);
         setIsLoadingMore(false);
@@ -213,15 +237,15 @@ export default function CustomerInvoices() {
     }
   };
 
-  const updateLineItem = (index: number, field: string, value: any) => {
+  const updateLineItem = (index: number, field: string, value: string | number) => {
     const updated = [...lineItems];
     updated[index] = { ...updated[index], [field]: value };
-    
+
     // Calculate amount
     if (field === 'quantity' || field === 'rate') {
       updated[index].amount = updated[index].quantity * updated[index].rate;
     }
-    
+
     setLineItems(updated);
   };
 
@@ -254,8 +278,8 @@ export default function CustomerInvoices() {
       } catch (_e) {
         // Fallback to timestamp-based number
       }
-      
-      const invoiceData: any = {
+
+      const invoiceData = {
         tenant_id: tenant.id,
         customer_id: formData.customer_id,
         invoice_number: invoiceNumber,
@@ -280,19 +304,19 @@ export default function CustomerInvoices() {
 
       if (edgeError) {
         // Fallback to direct insert
-      const { error } = await supabase
-        .from('customer_invoices')
-        .insert({
-          tenant_id: tenant.id,
-          customer_id: formData.customer_id,
-          invoice_number: invoiceNumber,
-          subtotal,
-          tax,
-          total,
-          status: 'unpaid',
-          due_date: formData.due_date || null,
-          notes: formData.notes || null,
-        } as any);
+        const { error } = await supabase
+          .from('customer_invoices')
+          .insert({
+            tenant_id: tenant.id,
+            customer_id: formData.customer_id,
+            invoice_number: invoiceNumber,
+            subtotal,
+            tax,
+            total,
+            status: 'unpaid',
+            due_date: formData.due_date || null,
+            notes: formData.notes || null,
+          } as any);
 
         if (error) throw error;
       }
@@ -303,9 +327,9 @@ export default function CustomerInvoices() {
       });
 
       setIsDialogOpen(false);
-      setFormData({ 
-        customer_id: '', 
-        due_date: '', 
+      setFormData({
+        customer_id: '',
+        due_date: '',
         payment_terms: 'net_30',
         notes: '',
         reference_number: '',
@@ -316,10 +340,11 @@ export default function CustomerInvoices() {
       setCurrentPage(1);
       setAllInvoices([]); // Clear stored invoices
       loadInvoices(1, false);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: 'Error',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -346,7 +371,7 @@ export default function CustomerInvoices() {
 
   return (
     <div className="space-y-6">
-      <SEOHead 
+      <SEOHead
         title="Customer Invoices"
         description="Manage customer invoices and payments"
       />
@@ -383,7 +408,7 @@ export default function CustomerInvoices() {
                     required
                   >
                     <option value="">Select customer</option>
-                    {customers.map((customer: any) => (
+                    {customers.map((customer: Customer) => (
                       <option key={customer.id} value={customer.id}>
                         {customer.first_name} {customer.last_name} ({customer.email})
                       </option>
@@ -416,8 +441,8 @@ export default function CustomerInvoices() {
 
                 <div>
                   <Label htmlFor="payment_terms">Payment Terms</Label>
-                  <Select 
-                    value={formData.payment_terms} 
+                  <Select
+                    value={formData.payment_terms}
                     onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
                   >
                     <SelectTrigger>

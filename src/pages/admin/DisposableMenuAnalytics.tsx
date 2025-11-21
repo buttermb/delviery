@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,56 @@ import { AdvancedReportsCard } from '@/components/admin/disposable-menus/Advance
 import { SecurityAuditLog } from '@/components/admin/disposable-menus/SecurityAuditLog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, parseISO } from 'date-fns';
+
+interface AccessLog {
+  id: string;
+  accessed_at: string;
+  access_whitelist_id?: string;
+  ip_address?: string;
+  access_code_correct?: boolean;
+  whitelist?: {
+    customer_name?: string;
+  };
+}
+
+interface MenuOrder {
+  id: string;
+  created_at: string;
+  total_amount: number;
+  status: string;
+}
+
+interface DisposableMenu {
+  id: string;
+  name: string;
+  menu_orders?: MenuOrder[];
+}
+
+interface ViewsByDate {
+  date: string;
+  views: number;
+  uniqueVisitors: Set<string>;
+}
+
+interface ChartDataPoint {
+  date: string;
+  views: number;
+  uniqueVisitors: number;
+}
+
+interface AnalyticsStat {
+  label: string;
+  value: string | number;
+  change: number;
+  trend: 'up' | 'down';
+}
+
+interface SecurityEvent {
+  id: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  event_type: string;
+  created_at: string;
+}
 
 const DisposableMenuAnalytics = () => {
   const { tenant } = useTenantAdminAuth();
@@ -34,7 +83,7 @@ const DisposableMenuAnalytics = () => {
     return sum + 180; // Mock: 3 minutes average
   }, 0) / (totalViews || 1);
 
-  const conversionRate = menu?.menu_orders?.length 
+  const conversionRate = menu?.menu_orders?.length
     ? ((menu.menu_orders.length / totalViews) * 100).toFixed(1)
     : '0';
 
@@ -42,14 +91,14 @@ const DisposableMenuAnalytics = () => {
   const viewsByDate = accessLogs?.reduce((acc, log) => {
     const date = format(parseISO(log.accessed_at), 'MMM dd');
     if (!acc[date]) {
-      acc[date] = { date, views: 0, uniqueVisitors: new Set() };
+      acc[date] = { date, views: 0, uniqueVisitors: new Set<string>() };
     }
     acc[date].views++;
-    acc[date].uniqueVisitors.add(log.access_whitelist_id || log.ip_address);
+    acc[date].uniqueVisitors.add(log.access_whitelist_id || log.ip_address || 'unknown');
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, ViewsByDate>);
 
-  const chartData = Object.values(viewsByDate || {}).map((d: any) => ({
+  const chartData: ChartDataPoint[] = Object.values(viewsByDate || {}).map((d) => ({
     date: d.date,
     views: d.views,
     uniqueVisitors: d.uniqueVisitors.size,
@@ -131,27 +180,27 @@ const DisposableMenuAnalytics = () => {
             label: 'Total Views',
             value: totalViews,
             change: 23,
-            trend: 'up',
+            trend: 'up' as const,
           },
           {
             label: 'Unique Visitors',
             value: uniqueVisitors,
             change: 15,
-            trend: 'up',
+            trend: 'up' as const,
           },
           {
             label: 'Conversion Rate',
             value: `${conversionRate}%`,
             change: -5,
-            trend: 'down',
+            trend: 'down' as const,
           },
           {
             label: 'Avg Duration',
             value: `${Math.round(avgViewDuration)}s`,
             change: 8,
-            trend: 'up',
+            trend: 'up' as const,
           },
-        ]}
+        ] as AnalyticsStat[]}
       />
 
       {/* Tabs */}
@@ -228,8 +277,8 @@ const DisposableMenuAnalytics = () => {
         </TabsContent>
 
         <TabsContent value="security">
-          <SecurityEventsTable 
-            events={securityEvents || []} 
+          <SecurityEventsTable
+            events={securityEvents || []}
             onRefresh={refetchEvents}
           />
         </TabsContent>
@@ -239,7 +288,7 @@ const DisposableMenuAnalytics = () => {
             <h3 className="text-lg font-semibold mb-4">Orders</h3>
             {menu.menu_orders?.length ? (
               <div className="space-y-2">
-                {menu.menu_orders.map((order: any) => (
+                {menu.menu_orders.map((order: MenuOrder) => (
                   <div key={order.id} className="flex justify-between items-center p-3 border rounded">
                     <div>
                       <p className="font-medium">Order #{order.id.slice(0, 8)}</p>

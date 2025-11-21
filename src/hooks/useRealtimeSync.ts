@@ -27,6 +27,19 @@ const DEFAULT_TABLES = [
 const connectionFailures = new Map<string, number>();
 const MAX_FAILURES = 3; // Disable after 3 failures
 
+// Type guards
+function hasId(obj: unknown): obj is { id: string } {
+  return typeof obj === 'object' && obj !== null && 'id' in obj;
+}
+
+function hasProductId(obj: unknown): obj is { product_id: string } {
+  return typeof obj === 'object' && obj !== null && 'product_id' in obj;
+}
+
+function hasCourierId(obj: unknown): obj is { courier_id: string } {
+  return typeof obj === 'object' && obj !== null && 'courier_id' in obj;
+}
+
 /**
  * Unified hook for real-time synchronization across multiple tables
  * Handles INSERT, UPDATE, DELETE events and invalidates relevant query caches
@@ -82,7 +95,7 @@ export function useRealtimeSync({
     tables.forEach(table => {
       const failureKey = `${table}-${tenantId}`;
       const failures = connectionFailures.get(failureKey) || 0;
-      
+
       // Skip if too many failures (disable realtime for this table)
       if (failures >= MAX_FAILURES) {
         logger.debug(`Skipping realtime for ${table} (too many failures)`, { failures, component: 'useRealtimeSync' });
@@ -90,9 +103,9 @@ export function useRealtimeSync({
       }
 
       const channelKey = `realtime-sync-${table}-${tenantId}`;
-      
+
       let channel: RealtimeChannel;
-      
+
       try {
         channel = supabase
           .channel(channelKey, {
@@ -111,124 +124,120 @@ export function useRealtimeSync({
               // The filter will be applied server-side by RLS policies if they exist
               filter: undefined, // Remove tenant_id filter to avoid 400 errors
             },
-          (payload) => {
-            try {
-              logger.debug(`Realtime update: ${table}`, {
-                event: payload.eventType,
-                table,
-                tenantId,
-                component: 'useRealtimeSync',
-              });
+            (payload) => {
+              try {
+                logger.debug(`Realtime update: ${table}`, {
+                  event: payload.eventType,
+                  table,
+                  tenantId,
+                  component: 'useRealtimeSync',
+                });
 
-              // Invalidate relevant query caches based on table
-              switch (table) {
-                case 'wholesale_orders':
-                  queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-                  queryClient.invalidateQueries({ queryKey: ['orders'] });
-                  queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
-                  // Also invalidate related queries
-                  if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
-                    const orderId = (payload.new as any).id;
-                    queryClient.invalidateQueries({ queryKey: ['order', orderId] });
-                  }
-                  break;
+                // Invalidate relevant query caches based on table
+                switch (table) {
+                  case 'wholesale_orders':
+                    queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['dashboard-orders'] });
+                    // Also invalidate related queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['order', payload.new.id] });
+                    }
+                    break;
 
-                case 'wholesale_inventory':
-                  queryClient.invalidateQueries({ queryKey: ['inventory'] });
-                  queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
-                  queryClient.invalidateQueries({ queryKey: ['products'] });
-                  queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
-                  // Invalidate product-specific queries
-                  if (payload.new && typeof payload.new === 'object' && 'product_id' in payload.new) {
-                    const productId = (payload.new as any).product_id;
-                    queryClient.invalidateQueries({ queryKey: ['product', productId] });
-                  }
-                  break;
+                  case 'wholesale_inventory':
+                    queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                    queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+                    queryClient.invalidateQueries({ queryKey: ['products'] });
+                    queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
+                    // Invalidate product-specific queries
+                    if (payload.new && hasProductId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['product', payload.new.product_id] });
+                    }
+                    break;
 
-                case 'deliveries':
-                  queryClient.invalidateQueries({ queryKey: ['deliveries'] });
-                  queryClient.invalidateQueries({ queryKey: ['active-deliveries'] });
-                  queryClient.invalidateQueries({ queryKey: ['delivery-map'] });
-                  queryClient.invalidateQueries({ queryKey: ['fleet-management'] });
-                  // Invalidate delivery-specific queries
-                  if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
-                    const deliveryId = (payload.new as any).id;
-                    queryClient.invalidateQueries({ queryKey: ['delivery', deliveryId] });
-                  }
-                  break;
+                  case 'deliveries':
+                    queryClient.invalidateQueries({ queryKey: ['deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['active-deliveries'] });
+                    queryClient.invalidateQueries({ queryKey: ['delivery-map'] });
+                    queryClient.invalidateQueries({ queryKey: ['fleet-management'] });
+                    // Invalidate delivery-specific queries
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['delivery', payload.new.id] });
+                    }
+                    break;
 
-                case 'courier_earnings':
-                  queryClient.invalidateQueries({ queryKey: ['courier-earnings'] });
-                  queryClient.invalidateQueries({ queryKey: ['courier-stats'] });
-                  queryClient.invalidateQueries({ queryKey: ['financial-center'] });
-                  queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
-                  // Invalidate courier-specific queries
-                  if (payload.new && typeof payload.new === 'object' && 'courier_id' in payload.new) {
-                    const courierId = (payload.new as any).courier_id;
-                    queryClient.invalidateQueries({ queryKey: ['courier', courierId] });
-                  }
-                  break;
+                  case 'courier_earnings':
+                    queryClient.invalidateQueries({ queryKey: ['courier-earnings'] });
+                    queryClient.invalidateQueries({ queryKey: ['courier-stats'] });
+                    queryClient.invalidateQueries({ queryKey: ['financial-center'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+                    // Invalidate courier-specific queries
+                    if (payload.new && hasCourierId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['courier', payload.new.courier_id] });
+                    }
+                    break;
 
-                default:
-                  // Generic invalidation for unknown tables
-                  queryClient.invalidateQueries({ queryKey: [table] });
-                  queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+                  default:
+                    // Generic invalidation for unknown tables
+                    queryClient.invalidateQueries({ queryKey: [table] });
+                    queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+                }
+
+                // Also invalidate dashboard and summary queries
+                queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+                queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+                queryClient.invalidateQueries({ queryKey: ['summary'] });
+              } catch (error) {
+                logger.error(`Error processing realtime update for ${table}`, error, { component: 'useRealtimeSync' });
+              }
+            }
+          )
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              // Reset failure count on successful subscription
+              connectionFailures.delete(failureKey);
+              logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
+            } else if (status === 'CHANNEL_ERROR') {
+              // Increment failure count
+              const currentFailures = connectionFailures.get(failureKey) || 0;
+              connectionFailures.set(failureKey, currentFailures + 1);
+
+              // Only log if not too many failures (to reduce noise)
+              if (currentFailures < MAX_FAILURES) {
+                logger.warn(
+                  `Realtime subscription error: ${table} (tenant: ${tenantId})`,
+                  { table, tenantId, failures: currentFailures + 1, component: 'useRealtimeSync' }
+                );
               }
 
-              // Also invalidate dashboard and summary queries
-              queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-              queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-              queryClient.invalidateQueries({ queryKey: ['summary'] });
-            } catch (error) {
-              logger.error(`Error processing realtime update for ${table}`, error, { component: 'useRealtimeSync' });
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            // Reset failure count on successful subscription
-            connectionFailures.delete(failureKey);
-            logger.debug(`Realtime subscription active: ${table}`, { tenantId, component: 'useRealtimeSync' });
-          } else if (status === 'CHANNEL_ERROR') {
-            // Increment failure count
-            const currentFailures = connectionFailures.get(failureKey) || 0;
-            connectionFailures.set(failureKey, currentFailures + 1);
-            
-            // Only log if not too many failures (to reduce noise)
-            if (currentFailures < MAX_FAILURES) {
-              logger.warn(
-                `Realtime subscription error: ${table} (tenant: ${tenantId})`,
-                { table, tenantId, failures: currentFailures + 1, component: 'useRealtimeSync' }
-              );
-            }
-            
-            // Invalidate queries to trigger refetch
-            queryClient.invalidateQueries({ queryKey: [table] });
-            queryClient.invalidateQueries({ queryKey: [table, tenantId] });
-          } else if (status === 'TIMED_OUT') {
-            // Increment failure count
-            const currentFailures = connectionFailures.get(failureKey) || 0;
-            connectionFailures.set(failureKey, currentFailures + 1);
-            
-            if (currentFailures < MAX_FAILURES) {
-              logger.warn(
-                `Realtime subscription timed out: ${table}`,
-                { tenantId, table, failures: currentFailures + 1, component: 'useRealtimeSync' }
-              );
-            }
-            
-            // Invalidate queries to trigger refetch
-            queryClient.invalidateQueries({ queryKey: [table] });
-            queryClient.invalidateQueries({ queryKey: [table, tenantId] });
-          }
-        });
+              // Invalidate queries to trigger refetch
+              queryClient.invalidateQueries({ queryKey: [table] });
+              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+            } else if (status === 'TIMED_OUT') {
+              // Increment failure count
+              const currentFailures = connectionFailures.get(failureKey) || 0;
+              connectionFailures.set(failureKey, currentFailures + 1);
 
-      channelsRef.current.push(channel);
+              if (currentFailures < MAX_FAILURES) {
+                logger.warn(
+                  `Realtime subscription timed out: ${table}`,
+                  { tenantId, table, failures: currentFailures + 1, component: 'useRealtimeSync' }
+                );
+              }
+
+              // Invalidate queries to trigger refetch
+              queryClient.invalidateQueries({ queryKey: [table] });
+              queryClient.invalidateQueries({ queryKey: [table, tenantId] });
+            }
+          });
+
+        channelsRef.current.push(channel);
       } catch (error) {
         // Catch any errors during channel creation
         const currentFailures = connectionFailures.get(failureKey) || 0;
         connectionFailures.set(failureKey, currentFailures + 1);
-        
+
         if (currentFailures < MAX_FAILURES) {
           logger.warn(`Failed to create realtime channel for ${table}`, error, { component: 'useRealtimeSync' });
         }

@@ -5,6 +5,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ShoppingCart, DollarSign, TrendingUp, Clock } from 'lucide-react';
 
+interface Order {
+  id: string;
+  created_at: string;
+  total: number | string;
+  status: string;
+  tenant_id: string;
+}
+
+interface DayData {
+  day: string;
+  orders: number;
+  revenue: number;
+}
+
 export default function OrderAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -25,8 +39,8 @@ export default function OrderAnalytics() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -41,20 +55,20 @@ export default function OrderAnalytics() {
     );
   }
 
-  const ordersByDay = (orders || []).reduce((acc: any[], order: any) => {
+  const ordersByDay = (orders || []).reduce((acc: DayData[], order: Order) => {
     const day = new Date(order.created_at).toLocaleDateString('en-US', { weekday: 'short' });
     const existing = acc.find(item => item.day === day);
     if (existing) {
       existing.orders += 1;
-      existing.revenue += parseFloat(order.total || 0);
+      existing.revenue += parseFloat(String(order.total || 0));
     } else {
-      acc.push({ day, orders: 1, revenue: parseFloat(order.total || 0) });
+      acc.push({ day, orders: 1, revenue: parseFloat(String(order.total || 0)) });
     }
     return acc;
   }, []);
 
   const totalOrders = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0;
+  const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total || 0)), 0) || 0;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   return (

@@ -7,12 +7,20 @@ import { Badge } from '@/components/ui/badge';
 import { Activity, ShoppingCart, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { logger } from '@/lib/logger';
+
+interface LiveOrder {
+  id: string;
+  created_at: string;
+  total: number;
+  status: string;
+}
 
 export default function RealtimeDashboard() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const [liveOrders, setLiveOrders] = useState<any[]>([]);
+  const [liveOrders, setLiveOrders] = useState<LiveOrder[]>([]);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['realtime-dashboard', tenantId],
@@ -45,7 +53,8 @@ export default function RealtimeDashboard() {
           totalCustomers: customers.length,
           avgOrderValue: orders.length > 0 ? totalRevenue / orders.length : 0,
         };
-      } catch (error: any) {
+      } catch (error) {
+        logger.error('Error loading realtime dashboard stats', error, { component: 'RealtimeDashboard' });
         return null;
       }
     },
@@ -69,7 +78,7 @@ export default function RealtimeDashboard() {
         (payload) => {
           if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
             setLiveOrders((prev) => {
-              const newOrder = payload.new as any;
+              const newOrder = payload.new as LiveOrder;
               const exists = prev.find((o) => o.id === newOrder.id);
               if (exists) {
                 return prev.map((o) => (o.id === newOrder.id ? newOrder : o));
@@ -81,13 +90,13 @@ export default function RealtimeDashboard() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[RealtimeDashboard] Realtime subscription active');
+          logger.info('Realtime subscription active', { component: 'RealtimeDashboard' });
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[RealtimeDashboard] Realtime subscription error');
+          logger.warn('Realtime subscription error', null, { component: 'RealtimeDashboard' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
         } else if (status === 'TIMED_OUT') {
-          console.error('[RealtimeDashboard] Realtime subscription timed out');
+          logger.error('Realtime subscription timed out', null, { component: 'RealtimeDashboard' });
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
         }
@@ -176,7 +185,7 @@ export default function RealtimeDashboard() {
         <CardContent>
           {liveOrders.length > 0 ? (
             <div className="space-y-2">
-              {liveOrders.map((order: any) => (
+              {liveOrders.map((order: LiveOrder) => (
                 <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <div className="font-medium">Order #{order.id.slice(0, 8)}</div>

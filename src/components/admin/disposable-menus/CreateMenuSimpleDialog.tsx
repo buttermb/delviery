@@ -18,6 +18,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 
 interface CreateMenuSimpleDialogProps {
@@ -56,7 +57,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
         .from('customers')
         .select('id, first_name, last_name, email, business_name')
         .eq('tenant_id', tenant.id)
-        .order('business_name', { ascending: true});
+        .order('business_name', { ascending: true });
       if (error) {
         // Column may not exist yet, return empty array
         return [];
@@ -116,7 +117,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
       const current = getCurrent('menus');
       const limit = getLimit('menus');
       toast.error('Menu Limit Reached', {
-        description: limit === Infinity 
+        description: limit === Infinity
           ? 'Unable to create menu. Please contact support.'
           : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
       });
@@ -156,7 +157,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
 
       toast.success("Menu created successfully!");
       onOpenChange(false);
-      
+
       // Reset form
       setCurrentStep(1);
       setName('');
@@ -165,7 +166,8 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
       setSelectedCustomers([]);
       setAccessType('specific_customers');
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to create menu");
+      // Error toast handled by useCreateDisposableMenu hook
+      logger.error('Dialog creation error', error instanceof Error ? error : new Error(String(error)), { component: 'CreateMenuSimpleDialog' });
     }
   };
 
@@ -186,16 +188,14 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             {STEPS.map((step, idx) => (
               <div key={step.id} className="flex items-center">
-                <div className={`flex items-center gap-2 ${
-                  currentStep > step.id ? 'text-primary' : 
-                  currentStep === step.id ? 'text-primary font-medium' : 
-                  'text-muted-foreground'
-                }`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                    currentStep > step.id ? 'bg-primary border-primary text-primary-foreground' :
-                    currentStep === step.id ? 'border-primary text-primary' :
-                    'border-muted-foreground'
+                <div className={`flex items-center gap-2 ${currentStep > step.id ? 'text-primary' :
+                  currentStep === step.id ? 'text-primary font-medium' :
+                    'text-muted-foreground'
                   }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${currentStep > step.id ? 'bg-primary border-primary text-primary-foreground' :
+                    currentStep === step.id ? 'border-primary text-primary' :
+                      'border-muted-foreground'
+                    }`}>
                     {currentStep > step.id ? (
                       <CheckCircle2 className="h-4 w-4" />
                     ) : (
@@ -205,9 +205,8 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                   <span className="hidden sm:inline">{step.name}</span>
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className={`h-0.5 w-12 sm:w-24 mx-2 ${
-                    currentStep > step.id ? 'bg-primary' : 'bg-muted'
-                  }`} />
+                  <div className={`h-0.5 w-12 sm:w-24 mx-2 ${currentStep > step.id ? 'bg-primary' : 'bg-muted'
+                    }`} />
                 )}
               </div>
             ))}
@@ -297,9 +296,8 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                   return (
                     <Card
                       key={product.id}
-                      className={`cursor-pointer transition-all ${
-                        isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                      }`}
+                      className={`cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                        }`}
                       onClick={() => toggleProduct(product.id)}
                     >
                       <CardContent className="p-4">
@@ -368,9 +366,8 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                         return (
                           <div
                             key={customer.id}
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                              isSelected ? 'bg-primary/10 border border-primary' : 'hover:bg-muted'
-                            }`}
+                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-primary/10 border border-primary' : 'hover:bg-muted'
+                              }`}
                             onClick={() => toggleCustomer(customer.id)}
                           >
                             <Checkbox
@@ -413,7 +410,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
               </>
             )}
           </Button>
-          
+
           <div className="flex gap-2">
             {currentStep < STEPS.length ? (
               <Button onClick={handleNext}>

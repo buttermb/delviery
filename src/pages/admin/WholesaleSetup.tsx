@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2, Package, Users, Truck } from "lucide-react";
 import { createSampleWholesaleData } from "@/utils/sampleWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 export default function WholesaleSetup() {
   const navigate = useNavigate();
@@ -14,17 +15,17 @@ export default function WholesaleSetup() {
   const handleSetup = async () => {
     setLoading(true);
     try {
-      console.log("Starting sample data creation...");
+      logger.info("Starting sample data creation...", { component: 'WholesaleSetup' });
       const result = await createSampleWholesaleData();
-      console.log("Sample data created:", result);
+      logger.info("Sample data created", { result, component: 'WholesaleSetup' });
       setCompleted(true);
       showSuccessToast("Setup Complete", "Sample wholesale data has been created");
-      
+
       setTimeout(() => {
         navigate("/admin/wholesale-dashboard");
       }, 2000);
     } catch (error) {
-      console.error("Setup error:", error);
+      logger.error("Setup error", error, { component: 'WholesaleSetup' });
       showErrorToast("Setup Failed", error instanceof Error ? error.message : "Failed to create sample data");
     } finally {
       setLoading(false);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -847,8 +846,8 @@ export default function AdminUserDetails() {
                 <Alert className="mt-4">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription className="text-xs">
-                    <strong>Ban</strong> blocks all devices and IPs permanently. 
-                    <strong> Suspend</strong> is temporary. 
+                    <strong>Ban</strong> blocks all devices and IPs permanently.
+                    <strong> Suspend</strong> is temporary.
                     <strong> Lock</strong> is for security review.
                   </AlertDescription>
                 </Alert>

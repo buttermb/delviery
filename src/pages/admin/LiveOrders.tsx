@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Truck, Clock, CheckCircle, Package } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { subscribeWithErrorTracking } from '@/utils/realtimeHelper';
+import { logger } from '@/lib/logger';
 
 interface LiveOrder {
   id: string;
@@ -22,7 +23,7 @@ export default function LiveOrders() {
 
   useEffect(() => {
     loadLiveOrders();
-    
+
     // Subscribe to real-time updates with proper validation and error tracking
     const channel = supabase
       .channel('live-orders')
@@ -37,11 +38,11 @@ export default function LiveOrders() {
           // Validate payload structure before processing
           if (payload && typeof payload === 'object') {
             if (payload.new) {
-              console.log('[APP] Order update received:', payload);
+              logger.info('Order update received', { component: 'LiveOrders', orderNumber: payload.new.order_number });
               loadLiveOrders();
             } else if (payload.old) {
               // Handle DELETE events
-              console.log('[APP] Order deleted:', payload);
+              logger.info('Order deleted', { component: 'LiveOrders', orderId: payload.old.id });
               loadLiveOrders();
             }
           }
@@ -53,11 +54,11 @@ export default function LiveOrders() {
       channelName: 'live-orders',
       onSubscribe: (status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[APP] Subscribed to live orders');
+          logger.info('Subscribed to live orders', { component: 'LiveOrders' });
         }
       },
       onError: (error) => {
-        console.error('[APP] Realtime error:', error);
+        logger.error('Realtime error', error, { component: 'LiveOrders' });
         toast.error('Connection issue. Please refresh if orders stop updating.');
       }
     });
@@ -74,11 +75,11 @@ export default function LiveOrders() {
         .select('*')
         .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setOrders(data || []);
-    } catch (error: any) {
-      console.error('Error loading live orders:', error);
+    } catch (error) {
+      logger.error('Error loading live orders', error, { component: 'LiveOrders' });
       toast.error('Failed to load live orders');
     } finally {
       setLoading(false);
@@ -97,11 +98,11 @@ export default function LiveOrders() {
 
   return (
     <>
-      <SEOHead 
+      <SEOHead
         title="Live Orders | Admin"
         description="Real-time order tracking"
       />
-      
+
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Live Orders</h1>
@@ -123,10 +124,10 @@ export default function LiveOrders() {
               return (
                 <Card key={order.id} className="p-4 hover:shadow-lg transition-shadow">
                   <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-bold">#{order.order_number || order.id.slice(0, 8)}</p>
-                    <p className="text-sm text-muted-foreground">Order</p>
-                  </div>
+                    <div>
+                      <p className="font-bold">#{order.order_number || order.id.slice(0, 8)}</p>
+                      <p className="text-sm text-muted-foreground">Order</p>
+                    </div>
                     <StatusIcon className="h-5 w-5 text-primary" />
                   </div>
                   <div className="space-y-2">

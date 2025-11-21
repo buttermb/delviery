@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -148,7 +147,7 @@ export default function TeamManagement() {
 
       setPendingInvitations(data?.invitations || []);
     } catch (error) {
-      console.error('Error loading pending invitations:', error);
+      logger.error('Error loading pending invitations', error, { component: 'TeamManagement' });
     }
   };
 
@@ -224,7 +223,7 @@ export default function TeamManagement() {
   };
 
   const getRoleLabel = (role: string) => {
-    return role.split('_').map(word => 
+    return role.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
@@ -248,7 +247,7 @@ export default function TeamManagement() {
 
   return (
     <div className="space-y-6">
-      <SEOHead 
+      <SEOHead
         title="Team Management"
         description="Manage your team members and permissions"
       />
@@ -340,7 +339,7 @@ export default function TeamManagement() {
       </div>
 
       {/* Pending Invitations */}
-      <PendingInvitations 
+      <PendingInvitations
         invitations={pendingInvitations}
         tenantId={tenant.id}
         onInvitationsChange={loadPendingInvitations}

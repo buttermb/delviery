@@ -1,4 +1,3 @@
-// @ts-nocheck - Quality control tests table types not yet regenerated
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,9 +227,8 @@ export default function QualityControlPage() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`${
-                            COMPLIANCE_COLORS[batch.compliance_status || "pending"]
-                          } text-white border-0`}
+                          className={`${COMPLIANCE_COLORS[batch.compliance_status || "pending"]
+                            } text-white border-0`}
                         >
                           {(batch.compliance_status || "pending")
                             .charAt(0)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [minOrder, setMinOrder] = useState('5');
   const [maxOrder, setMaxOrder] = useState('50');
-  
+
   // Step 3: Access Control
   const [accessType, setAccessType] = useState<'invite_only' | 'shared' | 'hybrid'>('invite_only');
   const [requireAccessCode, setRequireAccessCode] = useState(true);
@@ -58,7 +58,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   };
 
   const [accessCode, setAccessCode] = useState(generateAccessCode());
-  
+
   // Step 4: Security Options
   const [requireGeofence, setRequireGeofence] = useState(false);
   const [geofenceRadius, setGeofenceRadius] = useState('25');
@@ -71,21 +71,21 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
   const [screenshotWatermark, setScreenshotWatermark] = useState(true);
   const [deviceLocking, setDeviceLocking] = useState(false);
   const [autoBurnHours, setAutoBurnHours] = useState<string>('never');
-  
+
   // Step 5: Notifications
   const [notifyOnSuspiciousIp, setNotifyOnSuspiciousIp] = useState(true);
   const [notifyOnFailedCode, setNotifyOnFailedCode] = useState(true);
   const [notifyOnHighViews, setNotifyOnHighViews] = useState(true);
   const [notifyOnShareAttempt, setNotifyOnShareAttempt] = useState(true);
   const [notifyOnGeofenceViolation, setNotifyOnGeofenceViolation] = useState(true);
-  
+
   // Step 6: Appearance
   const [appearanceStyle, setAppearanceStyle] = useState<'professional' | 'minimal' | 'anonymous'>('professional');
   const [showProductImages, setShowProductImages] = useState(true);
   const [showAvailability, setShowAvailability] = useState(true);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [customMessage, setCustomMessage] = useState('');
-  
+
   // Created menu details for display
   const [createdMenuDetails, setCreatedMenuDetails] = useState<{
     accessCode: string;
@@ -127,6 +127,18 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
     }
   };
 
+  const [showLongLoadingMessage, setShowLongLoadingMessage] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (createMenu.isPending) {
+      timer = setTimeout(() => setShowLongLoadingMessage(true), 5000);
+    } else {
+      setShowLongLoadingMessage(false);
+    }
+    return () => clearTimeout(timer);
+  }, [createMenu.isPending]);
+
   const handleCreate = async () => {
     if (!name || selectedProducts.length === 0) return;
 
@@ -135,7 +147,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
       const current = getCurrent('menus');
       const limit = getLimit('menus');
       toast.error('Menu Limit Reached', {
-        description: limit === Infinity 
+        description: limit === Infinity
           ? 'Unable to create menu. Please contact support.'
           : `You've reached your menu limit (${current}/${limit === Infinity ? '∞' : limit}). Upgrade to Professional for unlimited menus.`,
       });
@@ -157,53 +169,53 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           require_geofence: requireGeofence,
           geofence_radius: requireGeofence ? parseFloat(geofenceRadius) : null,
           geofence_location: requireGeofence ? geofenceLocation : null,
-        time_restrictions: timeRestrictions,
-        allowed_hours: timeRestrictions ? {
-          start: parseInt(allowedHoursStart),
-          end: parseInt(allowedHoursEnd),
-        } : null,
-        view_limit: viewLimit !== 'unlimited' ? parseInt(viewLimit) : null,
-        screenshot_protection: { enabled: screenshotProtection, watermark: screenshotWatermark },
-        device_locking: { enabled: deviceLocking },
-        auto_burn_hours: autoBurnHours !== 'never' ? parseInt(autoBurnHours) : null,
-        notification_settings: {
-          suspicious_ip: notifyOnSuspiciousIp,
-          failed_code: notifyOnFailedCode,
-          high_views: notifyOnHighViews,
-          share_attempt: notifyOnShareAttempt,
-          geofence_violation: notifyOnGeofenceViolation,
-        },
-        appearance_style: appearanceStyle,
-        show_product_images: showProductImages,
-        show_availability: showAvailability,
-        show_contact_info: showContactInfo,
-        custom_message: customMessage,
-      }
-    });
-    
-    // Show access details if available
-    if (result.access_code && result.shareable_url) {
-      setCreatedMenuDetails({
-        accessCode: result.access_code,
-        shareableUrl: result.shareable_url,
-        menuName: name,
+          time_restrictions: timeRestrictions,
+          allowed_hours: timeRestrictions ? {
+            start: parseInt(allowedHoursStart),
+            end: parseInt(allowedHoursEnd),
+          } : null,
+          view_limit: viewLimit !== 'unlimited' ? parseInt(viewLimit) : null,
+          screenshot_protection: { enabled: screenshotProtection, watermark: screenshotWatermark },
+          device_locking: { enabled: deviceLocking },
+          auto_burn_hours: autoBurnHours !== 'never' ? parseInt(autoBurnHours) : null,
+          notification_settings: {
+            suspicious_ip: notifyOnSuspiciousIp,
+            failed_code: notifyOnFailedCode,
+            high_views: notifyOnHighViews,
+            share_attempt: notifyOnShareAttempt,
+            geofence_violation: notifyOnGeofenceViolation,
+          },
+          appearance_style: appearanceStyle,
+          show_product_images: showProductImages,
+          show_availability: showAvailability,
+          show_contact_info: showContactInfo,
+          custom_message: customMessage,
+        }
       });
-    }
-    
-    toast.success('Menu created successfully!');
 
-    // Reset all state
-    setCurrentStep(1);
-    setName('');
-    setDescription('');
-    setSelectedProducts([]);
-    setAccessType('invite_only');
-    setRequireAccessCode(true);
-    setAccessCode(generateAccessCode());
-    onOpenChange(false);
+      // Show access details if available
+      if (result.access_code && result.shareable_url) {
+        setCreatedMenuDetails({
+          accessCode: result.access_code,
+          shareableUrl: result.shareable_url,
+          menuName: name,
+        });
+      }
+
+      toast.success('Menu created successfully!');
+
+      // Reset all state
+      setCurrentStep(1);
+      setName('');
+      setDescription('');
+      setSelectedProducts([]);
+      setAccessType('invite_only');
+      setRequireAccessCode(true);
+      setAccessCode(generateAccessCode());
+      onOpenChange(false);
     } catch (error) {
       logger.error('Error creating menu', error, { component: 'CreateMenuDialog' });
-      toast.error('Failed to create menu');
+      // Error toast handled by useCreateDisposableMenu hook
     }
   };
 
@@ -225,9 +237,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
             {STEPS.map((step) => (
               <div
                 key={step.id}
-                className={`flex items-center gap-1 ${
-                  currentStep === step.id ? 'text-primary font-medium' : ''
-                } ${currentStep > step.id ? 'text-green-600' : ''}`}
+                className={`flex items-center gap-1 ${currentStep === step.id ? 'text-primary font-medium' : ''
+                  } ${currentStep > step.id ? 'text-green-600' : ''}`}
               >
                 <step.icon className="h-3 w-3" />
                 <span className="hidden sm:inline">{step.name}</span>
@@ -293,11 +304,11 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                           .filter((p) => !(p.image_url || p.images?.[0]))
                           .map((p) => {
                             const category = p.category?.toLowerCase() || 'flower';
-                            logger.debug('Product to generate', { 
+                            logger.debug('Product to generate', {
                               product: {
-                                name: p.product_name, 
+                                name: p.product_name,
                                 category,
-                                hasCategory: !!p.category 
+                                hasCategory: !!p.category
                               },
                               component: 'CreateMenuDialog'
                             });
@@ -308,14 +319,14 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                               strain_type: p.strain_type || undefined
                             };
                           });
-                        
+
                         logger.debug(`Found ${productsWithoutImages.length} products without images`, { component: 'CreateMenuDialog' });
-                        
+
                         if (productsWithoutImages.length === 0) {
                           toast.error('No products need images');
                           return;
                         }
-                        
+
                         toast.info(`Generating images for ${productsWithoutImages.length} product(s)...`);
                         await bulkGenerateImages.mutateAsync(productsWithoutImages);
                       } catch (error) {
@@ -344,8 +355,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                   {inventory?.map((product: { id: string; product_name: string; image_url?: string | null; images?: string[] | null }) => {
                     const imageUrl = product.image_url || product.images?.[0];
                     return (
-                      <div 
-                        key={product.id} 
+                      <div
+                        key={product.id}
                         className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer"
                         onClick={() => toggleProduct(product.id)}
                       >
@@ -355,8 +366,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         />
                         {imageUrl && (
                           <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                            <img 
-                              src={imageUrl} 
+                            <img
+                              src={imageUrl}
                               alt={product.product_name}
                               className="w-full h-full object-cover"
                             />
@@ -407,7 +418,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
           {currentStep === 3 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Access Control</h3>
-              
+
               <div className="space-y-3">
                 <Label>Access Type</Label>
                 <RadioGroup value={accessType} onValueChange={(value: string) => setAccessType(value as 'invite_only' | 'shared' | 'hybrid')}>
@@ -774,19 +785,27 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button
-              onClick={handleCreate}
-              disabled={createMenu.isPending}
-            >
-              {createMenu.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create Menu'
+            <div className="flex flex-col items-center">
+              <Button
+                onClick={handleCreate}
+                disabled={createMenu.isPending}
+                className="w-full"
+              >
+                {createMenu.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Menu'
+                )}
+              </Button>
+              {showLongLoadingMessage && (
+                <p className="text-xs text-yellow-600 text-center mt-2 animate-pulse">
+                  This is taking longer than usual. Please wait...
+                </p>
               )}
-            </Button>
+            </div>
           )}
         </div>
       </DialogContent>
