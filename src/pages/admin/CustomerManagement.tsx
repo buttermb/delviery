@@ -93,7 +93,7 @@ export default function CustomerManagement() {
 
       // Decrypt customer data if encryption is ready and encrypted fields exist
       let decryptedCustomers = data || [];
-      if (encryptionIsReady && data && data.length > 0 && (data[0].name_encrypted || data[0].email_encrypted)) {
+      if (encryptionIsReady && data && data.length > 0 && (data[0].phone_encrypted || data[0].email_encrypted)) {
         try {
           decryptedCustomers = data.map((customer: any) => {
             try {

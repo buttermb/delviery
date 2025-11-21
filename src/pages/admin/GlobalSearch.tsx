@@ -18,7 +18,7 @@ interface UserSearchResult {
   phone?: string;
   trust_level?: string;
   total_orders?: number;
-  risk_score?: string;
+  risk_score?: string | number;
   user_roles?: { role: string }[];
 }
 
@@ -102,10 +102,10 @@ const GlobalSearch = () => {
       ]);
 
       return {
-        users: users.data || [],
-        orders: orders.data || [],
-        products: products.data || [],
-        addresses: addresses.data || [],
+        users: (users.data || []) as UserSearchResult[],
+        orders: (orders.data || []) as OrderSearchResult[],
+        products: (products.data || []) as ProductSearchResult[],
+        addresses: (addresses.data || []) as AddressSearchResult[],
         totalResults:
           (users.data?.length || 0) +
           (orders.data?.length || 0) +

@@ -142,16 +142,19 @@ export default function GenerateBarcodes() {
 
         // Generate package numbers and barcodes
         for (let i = 0; i < sizes.length; i++) {
-          const packageNumber = `PKG-${batch.batch_number}-${String(i + 1).padStart(3, '0')}`;
+          const batchNumber = String(batch.batch_number || '');
+          const productId = String(batch.product_id || '');
+          const productName = (batch.products as any)?.name || 'Unknown';
+          const packageNumber = `PKG-${batchNumber}-${String(i + 1).padStart(3, '0')}`;
 
           // Create QR data for package
           const qrData = createPackageQRData({
             packageId: `temp-${i}`,
             packageNumber,
-            productId: batch.product_id,
-            productName: ((batch.products as { name?: string })?.name) || 'Unknown',
+            productId,
+            productName,
             batchId: batch.id,
-            batchNumber: batch.batch_number,
+            batchNumber,
             weight: sizes[i],
             unit: 'lbs',
             packagedDate: new Date().toISOString(),
@@ -476,11 +479,16 @@ export default function GenerateBarcodes() {
                       <SelectValue placeholder="Choose a batch" />
                     </SelectTrigger>
                     <SelectContent>
-                      {batches?.map(batch => (
-                        <SelectItem key={batch.id} value={batch.id}>
-                          {batch.batch_number} - {((batch.products as { name?: string })?.name) || 'Unknown'} ({batch.remaining_quantity_lbs} lbs remaining)
-                        </SelectItem>
-                      ))}
+                      {batches?.map(batch => {
+                        const batchNumber = String(batch.batch_number || '');
+                        const productName = (batch.products as any)?.name || 'Unknown';
+                        const remainingQty = String(batch.remaining_quantity_lbs || 0);
+                        return (
+                          <SelectItem key={batch.id} value={batch.id}>
+                            {batchNumber} - {productName} ({remainingQty} lbs remaining)
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

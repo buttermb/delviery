@@ -28,6 +28,7 @@ interface Tenant {
   subscription_status: string;
   trial_ends_at?: string | null;
   next_billing_date?: string | null;
+  created_at?: string;
   limits: {
     customers: number;
     menus: number;

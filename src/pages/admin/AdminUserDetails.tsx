@@ -55,7 +55,13 @@ export default function AdminUserDetails() {
   interface RiskAssessment {
     score?: number;
     level?: string;
-    factors?: unknown[];
+    factors?: {
+      nameRisk: number;
+      addressRisk: number;
+      behaviorRisk: number;
+      paymentRisk: number;
+      deviceRisk: number;
+    };
   }
 
   interface FraudFlag {
@@ -342,7 +348,7 @@ export default function AdminUserDetails() {
   const blockIpAddress = async (ipAddress: string, reason: string, permanent: boolean = true) => {
     try {
       const adminId = (await supabase.auth.getUser()).data.user?.id;
-      const expiresAt = permanent ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      const expiresAt = permanent ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
       const { error } = await supabase
         .from("blocked_ips")

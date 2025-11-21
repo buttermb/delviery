@@ -66,6 +66,16 @@
 - **[ADAPTIVE_SIDEBAR_IMPLEMENTATION_SUMMARY.md](./ADAPTIVE_SIDEBAR_IMPLEMENTATION_SUMMARY.md)** - Implementation summary
 - **[ADAPTIVE_SIDEBAR_QUICK_START.md](./ADAPTIVE_SIDEBAR_QUICK_START.md)** - Developer quick start
 
+### 🔐 Disposable Menus & Encryption (NEW)
+- **[LOVABLE_DISPOSABLE_MENU_INTEGRATION_GUIDE.md](./LOVABLE_DISPOSABLE_MENU_INTEGRATION_GUIDE.md)** ⭐ **ESSENTIAL**
+  - Complete AES-256 encryption setup
+  - Database encryption functions (5 critical functions)
+  - Edge function configuration
+  - Frontend integration with examples
+  - Comprehensive troubleshooting guide
+  - Testing checklist and deployment steps
+  - Common issues and solutions
+
 ### Authentication & Signup Flows
 - **[LOVABLE_VERIFICATION_CHECKLIST.md](./LOVABLE_VERIFICATION_CHECKLIST.md)** - Complete verification checklist for signup/auth
 - **[LOVABLE_COMPLETE_VERIFICATION_PROMPT.md](./LOVABLE_COMPLETE_VERIFICATION_PROMPT.md)** - Single comprehensive verification prompt

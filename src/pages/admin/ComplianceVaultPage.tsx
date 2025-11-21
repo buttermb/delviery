@@ -24,7 +24,7 @@ interface ComplianceDocument {
   id: string;
   name: string;
   document_type: string;
-  file_url: string;
+  file_url?: string;
   expiration_date: string | null;
   status: "active" | "expired" | "expiring_soon";
   created_at: string;

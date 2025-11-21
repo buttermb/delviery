@@ -61,6 +61,7 @@ interface SecurityEvent {
   id: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   event_type: string;
+  event_data?: Record<string, unknown> | string | number | boolean | null;
   created_at: string;
 }
 

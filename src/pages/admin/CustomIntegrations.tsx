@@ -124,11 +124,12 @@ export default function CustomIntegrations() {
 
   const handleEdit = (integration: Integration) => {
     setEditingIntegration(integration);
+    const config = integration.config as Record<string, unknown> | undefined;
     setFormData({
       name: integration.name,
       type: integration.type,
-      api_key: integration.config?.api_key || '',
-      api_secret: integration.config?.api_secret || '',
+      api_key: (config?.api_key as string) || '',
+      api_secret: (config?.api_secret as string) || '',
       config: integration.config || {},
     });
     setIsDialogOpen(true);

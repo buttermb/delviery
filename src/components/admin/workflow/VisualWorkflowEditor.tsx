@@ -361,10 +361,19 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
         onNodeClick={onNodeClick}
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        minZoom={0.5}
+        maxZoom={2}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
         nodesDraggable={!readOnly}
         nodesConnectable={!readOnly}
         elementsSelectable={!readOnly}
+        preventScrolling={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        panOnScroll={false}
+        panOnDrag={true}
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
         <Controls />

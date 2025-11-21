@@ -49,14 +49,20 @@ export default function BatchRecallPage() {
           .from("batch_recalls")
           .select("*")
           .eq("tenant_id", tenant.id)
-          .order("created_at", { ascending: false });
+          .order("initiated_at", { ascending: false });
 
         if (error && error.code !== "42P01") {
           logger.error('Failed to fetch recalls', error, { component: 'BatchRecallPage' });
           return [];
         }
 
-        return (data || []) as Recall[];
+        return (data || []).map((recall: any) => ({
+          ...recall,
+          batch_id: recall.batch_number || recall.batch_id,
+          reason: recall.recall_reason || recall.reason,
+          affected_customers_count: recall.affected_customers ?? 0,
+          created_at: recall.initiated_at || recall.created_at
+        })) as Recall[];
       } catch {
         return [];
       }

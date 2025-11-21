@@ -26,7 +26,7 @@ export default function CustomerAnalytics() {
 
   const { data: customers, isLoading: customersLoading } = useQuery({
     queryKey: ['customers', tenantId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Customer[]> => {
       if (!tenantId) return [];
 
       try {
@@ -37,7 +37,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return (data || []) as Customer[];
       } catch (error: any) {
         if (error.code === '42P01') return [];
         throw error;
@@ -48,7 +48,7 @@ export default function CustomerAnalytics() {
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['customer-orders', tenantId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Order[]> => {
       if (!tenantId) return [];
 
       try {
@@ -59,7 +59,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return (data || []) as Order[];
       } catch (error: any) {
         if (error.code === '42P01') return [];
         throw error;

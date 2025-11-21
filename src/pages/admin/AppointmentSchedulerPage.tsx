@@ -56,7 +56,10 @@ export default function AppointmentSchedulerPage() {
           return [];
         }
 
-        return (data || []) as Appointment[];
+        return (data || []).map((apt: any) => ({
+          ...apt,
+          type: apt.appointment_type || apt.type
+        })) as Appointment[];
       } catch {
         return [];
       }
