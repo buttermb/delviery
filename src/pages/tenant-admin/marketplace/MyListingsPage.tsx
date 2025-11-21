@@ -82,6 +82,7 @@ export default function MyListingsPage() {
     queryFn: async () => {
       if (!tenantId || !profile?.id) return [];
 
+      // @ts-ignore - Deep instantiation error from Supabase types
       let query = supabase
         .from('marketplace_listings')
         .select('*')
@@ -366,8 +367,8 @@ export default function MyListingsPage() {
                           )}
                           <div>
                             <div className="font-medium">{listing.product_name}</div>
-                            {listing.strain_type && (
-                              <div className="text-xs text-muted-foreground">{listing.strain_type}</div>
+                            {(listing as any).strain_type && (
+                              <div className="text-xs text-muted-foreground">{(listing as any).strain_type}</div>
                             )}
                           </div>
                         </div>
@@ -375,10 +376,10 @@ export default function MyListingsPage() {
                       <TableCell className="capitalize">{listing.product_type || '—'}</TableCell>
                       <TableCell>{formatCurrency(listing.base_price as number || 0)}</TableCell>
                       <TableCell>
-                        {listing.quantity_available} {listing.unit_type || 'lb'}
+                        {listing.quantity_available} {(listing as any).unit_type || 'lb'}
                       </TableCell>
                       <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
-                      <TableCell>{listing.views || 0}</TableCell>
+                      <TableCell>{(listing as any).views || 0}</TableCell>
                       <TableCell>{formatSmartDate(listing.created_at as string)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>

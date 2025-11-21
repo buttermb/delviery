@@ -53,6 +53,7 @@ export function LocationMapWidget() {
       }
 
       // Get warehouses from inventory
+      // @ts-ignore - Deep instantiation error from Supabase types
       const { data: inventory } = await supabase
         .from('wholesale_inventory')
         .select('warehouse_location, quantity_lbs')
@@ -77,6 +78,7 @@ export function LocationMapWidget() {
       }
 
       // Get active runners with location data
+      // @ts-ignore - Deep instantiation error from Supabase types
       const { data: runners } = await supabase
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')

@@ -25,4 +25,10 @@ export type MarketplaceListing = Database['public']['Tables']['marketplace_listi
     price: number;
     discount_percentage?: number;
   }>;
+  strain_type?: 'indica' | 'sativa' | 'hybrid' | 'cbd';
+  slug?: string;
+  views?: number;
+  orders_count?: number;
+  favorites_count?: number;
+  published_at?: string | null;
 };

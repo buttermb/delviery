@@ -190,22 +190,23 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   // Load existing listing data or pre-fill from product data
   useEffect(() => {
     if (existingListing) {
+      const listing = existingListing as any;
       form.reset({
-        product_name: existingListing.product_name || '',
-        product_type: existingListing.product_type || '',
-        strain_type: existingListing.strain_type || '',
-        description: existingListing.description || '',
-        base_price: Number(existingListing.base_price) || 0,
-        bulk_pricing: (existingListing.bulk_pricing as Array<{ quantity: number; price: number }>) || [],
-        min_order_quantity: existingListing.min_order_quantity || 1,
-        max_order_quantity: existingListing.max_order_quantity || undefined,
-        quantity_available: Number(existingListing.quantity_available) || 0,
-        unit_type: existingListing.unit_type || 'lb',
-        images: existingListing.images || [],
-        visibility: existingListing.visibility || 'public',
-        tags: existingListing.tags || [],
+        product_name: listing.product_name || '',
+        product_type: listing.product_type || '',
+        strain_type: listing.strain_type || '',
+        description: listing.description || '',
+        base_price: Number(listing.base_price) || 0,
+        bulk_pricing: (listing.bulk_pricing as Array<{ quantity: number; price: number }>) || [],
+        min_order_quantity: listing.min_order_quantity || 1,
+        max_order_quantity: listing.max_order_quantity || undefined,
+        quantity_available: Number(listing.quantity_available) || 0,
+        unit_type: listing.unit_type || 'lb',
+        images: listing.images || [],
+        visibility: listing.visibility || 'public',
+        tags: listing.tags || [],
         lab_results: undefined, // Will be decrypted if needed
-        has_lab_results: !!existingListing.lab_results,
+        has_lab_results: !!listing.lab_results,
       });
     } else if (productData && !listingId) {
       // Pre-fill form with product data from product list
@@ -340,7 +341,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') + `-${Date.now()}`;
 
-      const listingData = {
+      const listingData: any = {
         tenant_id: tenant.id,
         marketplace_profile_id: profile.id,
         product_name: data.product_name,
@@ -357,10 +358,10 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         visibility: data.visibility,
         tags: data.tags || [],
         lab_results: encryptedLabResults ? { encrypted: encryptedLabResults } : null,
-        lab_results_encrypted: !!encryptedLabResults,
+        lab_results_encrypted: encryptedLabResults ? 'true' : 'false',
         // Auto-approve new listings when feature flag is active; preserve existing status on edits
         status: existingListing ? existingListing.status : (shouldAutoApprove('LISTINGS') ? 'approved' : 'draft'),
-        slug: existingListing ? existingListing.slug : slug,
+        slug: (existingListing as any)?.slug || slug,
       };
 
       if (existingListing) {
@@ -375,7 +376,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         // Create new listing
         const { error } = await supabase
           .from('marketplace_listings')
-          .insert(listingData);
+          .insert([listingData]);
 
         if (error) throw error;
       }
