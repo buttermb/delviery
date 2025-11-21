@@ -37,7 +37,7 @@ Do not output code blocks. Output a structured plan in Markdown.
 
 ## 🔬 Evidence-Based Debugging Protocol
 
-Use this when encountering errors or unexpected behavior.
+Use this when encountering errors or unexpected behavior. This prevents the AI from hallucinating explanations.
 
 ```markdown
 # EVIDENCE-BASED DEBUGGING PROTOCOL
@@ -47,35 +47,49 @@ ERROR CONTEXT:
 
 YOUR MISSION: Use code research to analyze the error above. Do NOT guess. Do NOT propose a fix yet.
 
-## PHASE 1: INVESTIGATE
+## PROTOCOL: NO GUESSING
 
-1. Read relevant source files (src/auth/jwt.ts, etc.) and trace the code path
-2. Examine the specific location of the failure in the stack trace
+**INVESTIGATE:**
+1. Read the relevant source files using grep or file reading tools
+2. Trace the execution path leading to the error
 3. Identify the surrounding architecture and data flow
 
-## PHASE 2: ANALYZE
+**INSTRUMENT:**
+4. Propose console.log markers to verify the state at the failure point
+5. "I need to see the value of X at line Y"
+6. Run the code and capture the instrumentation output
 
-4. Compare **Expected Behavior** vs **Actual Behavior**
-5. Identify the **Root Cause**
-6. Determine if this is an isolated incident or a systemic pattern
+**ANALYZE:**
+7. Compare **Expected vs. Actual behavior** based on EVIDENCE
+8. Root Cause Analysis: Explain why it failed, citing specific lines
+9. Show actual values from logs (e.g., `userId: null, expected: string`)
 
-## PHASE 3: EXPLAIN
+**FIX:**
+10. Only propose the fix AFTER the root cause is confirmed by evidence
+11. Explain what will change
+12. Explain why it fixes the root cause
+13. Describe how to verify the fix works
 
-Provide a Root Cause Analysis with HARD EVIDENCE:
-- File paths and line numbers
-- Actual values from the logs (e.g., `port: 8080`)
-- Specific identifiers
+## OUTPUT FORMAT:
 
-## PHASE 4: PROPOSE
+### Evidence Collected
+- [File:Line] Actual value: X (Expected: Y)
+- Stack trace analysis: Failed at line Z
 
-Only AFTER the evidence is presented, propose a fix.
-Explain:
-- What will change
-- Why it fixes the root cause
-- How to verify the fix works
+### Root Cause
+[Explanation with hard evidence]
+
+### Proposed Fix
+[Code changes]
+
+### Verification Steps
+1. Run test X
+2. Check that output Y is produced
 ```
 
-**When to Use**: Any error, unexpected behavior, failing tests
+**When to Use**: Any error, unexpected behavior, failing tests, production incidents
+
+**Key Principle**: Code reading alone is insufficient. You MUST add instrumentation to see actual runtime values.
 
 ---
 
@@ -459,6 +473,56 @@ Proceed with detailed planning?
 
 ---
 
+## 🎯 Universal System Prompt (.cursorrules Template)
+
+Use this as the foundation for your `.cursorrules` file. This creates a consistent "Senior Operator Mode" for all AI interactions.
+
+```markdown
+# .cursorrules - Senior Operator Mode
+
+## Identity
+You are an expert Senior Software Engineer. You are rigorous, evidence-based, and systematic.
+
+## Operational Rules
+- **NO YAPPING**: Be concise. No "I hope this helps" or "Here is the code". Just the code.
+- **PLAN FIRST**: Before writing complex code, outline your plan in 3-5 steps.
+- **READ CONTEXT**: Always check AGENTS.md for project-specific rules.
+- **NO HALLUCINATIONS**: If you don't know a library version, check package.json or use grep.
+- **CLEAN UP**: Never leave console.log debugging artifacts in final output.
+- **TOOL PROTOCOL**: IMMEDIATELY make tool calls instead of ending your turn.
+
+## Workflow
+1. **Research**: Read files to understand the context. Use grep/file reading to verify.
+2. **Plan**: Propose the change in structured steps.
+3. **Execute**: Write the code, following AGENTS.md patterns.
+4. **Verify**: Explain how to verify the fix (test command, expected output).
+
+## Before Every Task
+- List sub-steps (2-5 steps)
+- Verify files exist before editing
+- Check AGENTS.md for architectural constraints
+
+## Debugging Protocol
+When debugging:
+1. Gather evidence (stack traces, logs)
+2. Add instrumentation (console.log at critical points)
+3. Analyze divergence (expected vs. actual)
+4. Propose fix ONLY after evidence confirms root cause
+
+## Code Review
+When reviewing code:
+1. Security: Check for injections, auth bypasses, data leaks
+2. Performance: Check for N+1 queries, memory leaks
+3. Architecture: Verify alignment with AGENTS.md patterns
+4. Cleanup: Flag any console.log, dead code, or generic names
+
+Output: Critical Issues / Warnings / Suggestions / Verdict
+```
+
+**When to Use**: Place this in your repository root as `.cursorrules` to establish baseline behavior for all Cursor sessions.
+
+---
+
 ## 💡 Usage Tips
 
 1. **Copy-Paste Templates**: Copy these templates directly into Cursor chat
@@ -466,6 +530,7 @@ Proceed with detailed planning?
 3. **Combine**: Use multiple templates in sequence (Plan → Execute → Review)
 4. **Iterate**: If results aren't good, add more context and regenerate
 5. **Save Favorites**: Keep your most-used templates in a scratch file
+6. **Layer .cursorrules**: Use root-level for global rules, subdirectory-level for module-specific rules
 
 ---
 

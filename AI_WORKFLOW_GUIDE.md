@@ -11,33 +11,79 @@ This guide documents the systematic approach to AI-assisted software development
 ### 1. The AI is a Tool, Not a Teammate
 
 **Wrong Mental Model**: "The AI is my junior dev teammate"
-- Implies shared context, memory, tribal knowledge
+- Implies shared context and memory of past decisions
+- Assumes understanding of "tribal knowledge"
 - Leads to conversational, vague instructions
 - Results in misaligned output
+- Causes frustration when the AI "forgets" previous context
 
 **Correct Mental Model**: "The AI is a high-variance, high-speed tool"
-- Requires explicit calibration
-- Needs rigid guardrails
-- Demands verification at every step
+- A **stochastic engine** that requires precise calibration
+- A **powerful but unpredictable** operator that needs rigid guardrails
+- An **amnesiac savant** that resets with every new context window
+- Demands verification at every step (verify, never trust)
 
-### 2. Verify, Never Trust
+**Operational Implications**:
+- **Communication Style**: Shift from conversational to authoritative directive
+  - Wrong: "What should we do about authentication?"
+  - Right: "Implement JWT middleware in src/middleware/auth.ts following the pattern in src/middleware/cors.ts"
+- **Validation Strategy**: Don't read for syntax errors (AI is good at that). Validate against your **Mental Model** of the architecture.
+  - Ask: "Does this respect boundaries between layers?"
+  - Ask: "Does error handling propagate correctly?"
+  - If it doesn't fit your mental model → The plan or context was wrong → Regenerate
 
-- **Don't read every line of generated code for syntax**
-- **Do validate against your Mental Model of the architecture**
-- Ask: "Does this respect my boundaries? Does error handling propagate correctly?"
-- If it doesn't fit your mental model → The plan or context was wrong → Regenerate
+### 2. Verify, Never Trust (The Mental Model Principle)
 
-### 3. Fail Fast, Regenerate Often
+The senior engineer's primary role is **architectural validation**, not syntax checking.
+
+**Your Mental Model** is your internal simulation of the system:
+- How data flows through the application
+- Where state is mutated and why
+- How errors propagate through middleware
+- Where security boundaries exist
+- Which components have which responsibilities
+
+**Validation Process**:
+1. **Don't read every line for syntax** - The AI is already better at syntax than you
+2. **Do validate against your Mental Model** - Does this fit the architecture?
+3. **Ask architectural questions**:
+   - "Does this middleware intercept before or after validation?"
+   - "Does this state update trigger unnecessary re-renders?"
+   - "Is business logic leaking into the view layer?"
+4. **If architecture is wrong** → The context was insufficient → Regenerate with better grounding
+
+**Key Insight**: If the generated code contradicts your mental model, don't patch it manually. This is a signal that the AI misunderstood the system. Refine the context (AGENTS.md, better prompts) and regenerate.
+
+### 3. Fail Fast, Regenerate Often (The Iteration Decision)
+
+**The Highest-Leverage Decision**: The choice between "Iterate" and "Regenerate" in the Validate phase is the most critical decision in the entire workflow.
 
 **Anti-Pattern**: Manually patching AI-generated code
-- Symptoms of "Sunk Cost Fallacy"
-- Often takes longer than regenerating with better context
+- Symptom of "Sunk Cost Fallacy" - you've already invested tokens/time
+- Often takes 2-3x longer than regenerating with better context
+- Accumulates technical debt from fundamentally flawed generations
+- Results in fragile code that barely works
 
 **Best Practice**: Discard and regenerate
-- If the implementation reveals misunderstanding → Stop
-- Refine the context or prompt
-- Restart the cycle
-- This prevents technical debt from flawed generations
+- **Recognize the signal**: Implementation reveals architectural misunderstanding
+- **Stop immediately**: Don't try to "coax" the AI into fixing broken code
+- **Improve the input**: Refine context (update AGENTS.md), improve the prompt, add examples
+- **Restart clean**: Regenerate from scratch with better grounding
+- **Result**: Architecturally sound code that fits your mental model
+
+**When to Iterate** (refine existing code):
+- ✅ Implementation is fundamentally sound
+- ✅ Missing edge case handling
+- ✅ Minor stylistic issues
+- ✅ Performance could be improved
+
+**When to Regenerate** (start over):
+- ❌ Misunderstands the architecture
+- ❌ Uses wrong patterns (ignores AGENTS.md)
+- ❌ Violates constraints
+- ❌ Flawed plan revealed during validation
+
+**Expert Discipline**: Abandon sunk costs in favor of architectural correctness. This is what separates high-performance operators from frustrated users.
 
 ---
 
@@ -270,7 +316,7 @@ Most tasks benefit from a hybrid:
 
 ### The Critical Decision: Iterate or Regenerate?
 
-This is the **highest-leverage** decision in the entire workflow.
+**CRITICAL INSIGHT**: This is the **highest-leverage** decision in the entire workflow. Mastering this decision separates 10x operators from struggling users.
 
 #### Iterate (Refine Existing Code)
 
@@ -334,6 +380,32 @@ The workflow is **not strictly sequential**. Common loops:
 ### Loop 3: Plan → Research
 **Trigger**: During planning, realize you need more info
 **Action**: Do more research, then continue planning
+
+---
+
+## 🎓 Second-Order Insights
+
+### Insight 1: The Iteration Decision is Leverage Itself
+
+Novice users fall into the "coaxing trap" - trying to fix confused AI output with more prompts. This consumes time and tokens while degrading code quality. **Expert operators recognize that fundamental misalignment is a signal to stop, adjust context, and regenerate.**
+
+The workflow is a cycle of continuous refinement where each iteration sharpens not just the code, but your mental model of the system.
+
+### Insight 2: Delegate Log Analysis
+
+AI agents excel at pattern recognition in large datasets. Don't manually grep through thousands of log lines. Instead:
+1. Pipe raw logs into the agent's context (paste directly)
+2. "Find the first divergence from the happy path"
+3. The agent correlates timestamps, error codes, and stack traces
+4. Turns "needle in a haystack" into trivial retrieval
+
+**Example**: "Here are 2000 lines of server logs. Find where the auth token validation starts failing."
+
+### Insight 3: Standardization of AI-to-System Interfaces
+
+AGENTS.md and .cursorrules signal a broader trend: **the standardization of AI-to-System interfaces**. Just as libraries include TypeScript definitions (.d.ts) to guide compilers, we can anticipate a future where frameworks ship with `.ai.md` files - context files designed specifically to teach AI agents how to use them correctly.
+
+By adopting these standards now, you're positioning yourself at the forefront of a fundamental architectural shift in software development.
 
 ---
 
