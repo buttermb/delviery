@@ -43,7 +43,7 @@ export function TerritoryMapView() {
         map.current?.remove();
       };
     } catch (error) {
-      logger.error("Mapbox initialization error", error as Error, 'TerritoryMapView');
+      logger.error("Mapbox initialization error", error as Error, { component: 'TerritoryMapView' });
     }
   }, []);
 

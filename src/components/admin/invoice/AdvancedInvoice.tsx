@@ -135,11 +135,42 @@ export function AdvancedInvoice() {
   };
 
   const handleSend = () => {
+    if (!invoice.customerEmail) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter a customer email address',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const subject = encodeURIComponent(`Invoice ${invoice.invoiceNumber} from ${invoice.companyName}`);
+    const body = encodeURIComponent(`
+Dear ${invoice.customerName || 'Customer'},
+
+Please find attached invoice ${invoice.invoiceNumber} for ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(invoice.total)}.
+
+Due Date: ${invoice.dueDate}
+
+${invoice.notes ? `Notes: ${invoice.notes}` : ''}
+
+Thank you for your business.
+
+Sincerely,
+${invoice.companyName}
+    `);
+
+    window.open(`mailto:${invoice.customerEmail}?subject=${subject}&body=${body}`, '_blank');
+
     toast({
-      title: 'Invoice sent',
-      description: `Invoice ${invoice.invoiceNumber} has been sent to ${invoice.customerEmail}`,
+      title: 'Email opened',
+      description: 'Opened default email client with invoice details',
     });
     setInvoice({ ...invoice, status: 'sent' });
+  };
+
+  const handlePreview = () => {
+    window.print();
   };
 
   const getStatusColor = (status: string) => {
@@ -155,7 +186,7 @@ export function AdvancedInvoice() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <FileText className="h-6 w-6" />
@@ -175,26 +206,26 @@ export function AdvancedInvoice() {
           </Button>
           <Button variant="outline" onClick={handleSend}>
             <Send className="h-4 w-4 mr-2" />
-            Send
+            Email
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:block print:grid-cols-1">
         {/* Invoice Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Customer & Company Info */}
-          <Card>
-            <CardHeader>
+          <Card className="print:shadow-none print:border-none">
+            <CardHeader className="print:hidden">
               <CardTitle>Invoice Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 print:p-0">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Invoice Number</Label>
-                  <Input value={invoice.invoiceNumber} readOnly />
+                  <Label className="print:hidden">Invoice Number</Label>
+                  <Input value={invoice.invoiceNumber} readOnly className="print:border-none print:p-0 print:font-bold print:text-xl" />
                 </div>
-                <div>
+                <div className="print:hidden">
                   <Label>Status</Label>
                   <Select
                     value={invoice.status}
@@ -212,52 +243,58 @@ export function AdvancedInvoice() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Issue Date</Label>
+                  <Label className="print:hidden">Issue Date</Label>
                   <Input
                     type="date"
                     value={invoice.issueDate}
                     onChange={(e) => setInvoice({ ...invoice, issueDate: e.target.value })}
+                    className="print:border-none print:p-0"
                   />
                 </div>
                 <div>
-                  <Label>Due Date</Label>
+                  <Label className="print:hidden">Due Date</Label>
                   <Input
                     type="date"
                     value={invoice.dueDate}
                     onChange={(e) => setInvoice({ ...invoice, dueDate: e.target.value })}
+                    className="print:border-none print:p-0"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
-                  <Label>Company Name</Label>
+                  <Label className="print:hidden">Company Name</Label>
                   <Input
                     value={invoice.companyName}
                     onChange={(e) => setInvoice({ ...invoice, companyName: e.target.value })}
+                    className="print:border-none print:p-0 print:font-bold"
                   />
                 </div>
                 <div>
-                  <Label>Customer Name</Label>
+                  <Label className="print:hidden">Customer Name</Label>
                   <Input
                     value={invoice.customerName}
                     onChange={(e) => setInvoice({ ...invoice, customerName: e.target.value })}
+                    className="print:border-none print:p-0 print:font-bold"
                   />
                 </div>
                 <div>
-                  <Label>Company Address</Label>
+                  <Label className="print:hidden">Company Address</Label>
                   <Textarea
                     value={invoice.companyAddress}
                     onChange={(e) => setInvoice({ ...invoice, companyAddress: e.target.value })}
                     rows={2}
+                    className="print:border-none print:p-0 print:resize-none"
                   />
                 </div>
                 <div>
-                  <Label>Customer Email</Label>
+                  <Label className="print:hidden">Customer Email</Label>
                   <Input
                     type="email"
                     value={invoice.customerEmail}
                     onChange={(e) => setInvoice({ ...invoice, customerEmail: e.target.value })}
+                    className="print:border-none print:p-0"
                   />
                 </div>
               </div>
@@ -265,8 +302,8 @@ export function AdvancedInvoice() {
           </Card>
 
           {/* Line Items */}
-          <Card>
-            <CardHeader>
+          <Card className="print:shadow-none print:border-none">
+            <CardHeader className="print:hidden">
               <div className="flex items-center justify-between">
                 <CardTitle>Line Items</CardTitle>
                 <Button size="sm" variant="outline" onClick={addItem}>
@@ -275,43 +312,47 @@ export function AdvancedInvoice() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="print:p-0">
               <div className="space-y-4">
                 {invoice.lineItems.map((item) => (
-                  <div key={item.id} className="grid grid-cols-12 gap-2 items-end">
+                  <div key={item.id} className="grid grid-cols-12 gap-2 items-end print:border-b print:pb-2">
                     <div className="col-span-5">
-                      <Label>Description</Label>
+                      <Label className="print:hidden">Description</Label>
                       <Input
                         value={item.description}
                         onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                         placeholder="Item description"
+                        className="print:border-none print:p-0"
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label>Qty</Label>
+                      <Label className="print:hidden">Qty</Label>
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                        className="print:border-none print:p-0"
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label>Unit Price</Label>
+                      <Label className="print:hidden">Unit Price</Label>
                       <Input
                         type="number"
                         value={item.unitPrice}
                         onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        className="print:border-none print:p-0"
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label>Tax %</Label>
+                      <Label className="print:hidden">Tax %</Label>
                       <Input
                         type="number"
                         value={item.taxRate}
                         onChange={(e) => updateItem(item.id, 'taxRate', parseFloat(e.target.value) || 0)}
+                        className="print:border-none print:p-0"
                       />
                     </div>
-                    <div className="col-span-1">
+                    <div className="col-span-1 print:hidden">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -328,27 +369,29 @@ export function AdvancedInvoice() {
           </Card>
 
           {/* Notes & Terms */}
-          <Card>
-            <CardHeader>
+          <Card className="print:shadow-none print:border-none">
+            <CardHeader className="print:hidden">
               <CardTitle>Additional Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 print:p-0">
               <div>
-                <Label>Notes</Label>
+                <Label className="print:hidden">Notes</Label>
                 <Textarea
                   value={invoice.notes}
                   onChange={(e) => setInvoice({ ...invoice, notes: e.target.value })}
                   rows={3}
                   placeholder="Additional notes for the customer"
+                  className="print:border-none print:p-0 print:resize-none"
                 />
               </div>
               <div>
-                <Label>Payment Terms</Label>
+                <Label className="print:hidden">Payment Terms</Label>
                 <Textarea
                   value={invoice.terms}
                   onChange={(e) => setInvoice({ ...invoice, terms: e.target.value })}
                   rows={2}
                   placeholder="Payment terms and conditions"
+                  className="print:border-none print:p-0 print:resize-none"
                 />
               </div>
             </CardContent>
@@ -356,7 +399,7 @@ export function AdvancedInvoice() {
         </div>
 
         {/* Invoice Preview & Totals */}
-        <div className="space-y-6">
+        <div className="space-y-6 print:hidden">
           <Card>
             <CardHeader>
               <CardTitle>Totals</CardTitle>
@@ -383,11 +426,11 @@ export function AdvancedInvoice() {
             </CardHeader>
             <CardContent className="space-y-2">
               <InvoiceDownloadButton invoice={invoice} />
-              <Button variant="outline" className="w-full" onClick={() => { /* TODO: Implement PDF preview */ }}>
+              <Button variant="outline" className="w-full" onClick={handlePreview}>
                 <Eye className="h-4 w-4 mr-2" />
                 Preview PDF
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => { /* TODO: Implement email invoice */ }}>
+              <Button variant="outline" className="w-full" onClick={handleSend}>
                 <Send className="h-4 w-4 mr-2" />
                 Email Invoice
               </Button>
@@ -398,4 +441,3 @@ export function AdvancedInvoice() {
     </div>
   );
 }
-

@@ -165,7 +165,7 @@ export default function AccountSignup() {
         state: { tenantSlug: urlSlug, name: yourName },
       });
     } catch (error: any) {
-      logger.error("Signup error", error, 'AccountSignup');
+      logger.error("Signup error", error, { component: 'AccountSignup' });
       toast({
         title: "Signup failed",
         description: error.message || "An error occurred. Please try again.",

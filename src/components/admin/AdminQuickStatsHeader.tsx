@@ -50,7 +50,7 @@ export const AdminQuickStatsHeader = () => {
         });
       } catch (error) {
         if (isMounted) {
-          logger.error('Failed to fetch quick stats', error, 'AdminQuickStatsHeader');
+          logger.error('Failed to fetch quick stats', error, { component: 'AdminQuickStatsHeader' });
         }
       } finally {
         if (isMounted) {

@@ -42,7 +42,7 @@ export const AdminNotificationCenter = () => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
         // Validate payload before processing
         if (!payload || !payload.new) {
-          logger.warn('Invalid fraud_flags payload', undefined, 'AdminNotificationCenter');
+          logger.warn('Invalid fraud_flags payload', { component: 'AdminNotificationCenter' });
           return;
         }
         addNotification({
@@ -54,7 +54,7 @@ export const AdminNotificationCenter = () => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, (payload) => {
         // Validate payload before processing
         if (!payload || !payload.new) {
-          logger.warn('Invalid age_verification_requests payload', undefined, 'AdminNotificationCenter');
+          logger.warn('Invalid age_verification_requests payload', { component: 'AdminNotificationCenter' });
           return;
         }
         addNotification({
@@ -66,7 +66,7 @@ export const AdminNotificationCenter = () => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, (payload) => {
         // Validate payload before processing
         if (!payload || !payload.new) {
-          logger.warn('Invalid courier_applications payload', undefined, 'AdminNotificationCenter');
+          logger.warn('Invalid courier_applications payload', { component: 'AdminNotificationCenter' });
           return;
         }
         addNotification({
@@ -77,10 +77,10 @@ export const AdminNotificationCenter = () => {
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to admin notifications', undefined, 'AdminNotificationCenter');
+          logger.debug('Successfully subscribed to admin notifications', { component: 'AdminNotificationCenter' });
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          logger.error('Failed to subscribe to admin notifications', { status }, 'AdminNotificationCenter');
+          logger.error('Failed to subscribe to admin notifications', { status, component: 'AdminNotificationCenter' });
         }
       });
 

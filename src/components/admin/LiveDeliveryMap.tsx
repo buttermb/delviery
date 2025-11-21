@@ -78,7 +78,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         map.current?.remove();
       };
     } catch (error) {
-      logger.error("Mapbox error", error as Error, 'LiveDeliveryMap');
+      logger.error("Mapbox error", error as Error, { component: 'LiveDeliveryMap' });
     }
   }, []);
 
@@ -94,17 +94,17 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           table: 'wholesale_deliveries'
         },
         (payload) => {
-          logger.debug('Delivery updated', payload, 'LiveDeliveryMap');
+          logger.debug('Delivery updated', { payload, component: 'LiveDeliveryMap' });
           refetch();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to delivery updates', undefined, 'LiveDeliveryMap');
+          logger.debug('Successfully subscribed to delivery updates', { component: 'LiveDeliveryMap' });
         } else if (status === 'CHANNEL_ERROR') {
-          logger.error('Channel error - failed to subscribe to delivery updates', undefined, 'LiveDeliveryMap');
+          logger.error('Channel error - failed to subscribe to delivery updates', { component: 'LiveDeliveryMap' });
         } else if (status === 'TIMED_OUT') {
-          logger.error('Subscription timed out - retrying delivery updates', undefined, 'LiveDeliveryMap');
+          logger.error('Subscription timed out - retrying delivery updates', { component: 'LiveDeliveryMap' });
         }
       });
 

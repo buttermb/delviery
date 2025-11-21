@@ -70,7 +70,7 @@ export default function WelcomeOnboarding() {
         };
       } catch (error: any) {
         // If query fails, return defaults
-        logger.warn("Error fetching tenant data", error, 'WelcomeOnboarding');
+        logger.warn("Error fetching tenant data", error, { component: 'WelcomeOnboarding' });
         return {
           usage: {},
           limits: {},
@@ -166,7 +166,7 @@ export default function WelcomeOnboarding() {
       // Refetch tenant data to update usage counts
       await refetchTenant();
     } catch (error: any) {
-      logger.error("Error generating demo data", error, 'WelcomeOnboarding');
+      logger.error("Error generating demo data", error, { component: 'WelcomeOnboarding' });
       toast({
         title: "Error",
         description: error.message || "Failed to generate demo data",

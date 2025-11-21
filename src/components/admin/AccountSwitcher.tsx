@@ -41,7 +41,7 @@ export function AccountSwitcher() {
       if (error) throw error;
       setAccounts(data || []);
     } catch (error) {
-      logger.error('Error loading accounts', error as Error, 'AccountSwitcher');
+      logger.error('Error loading accounts', error as Error, { component: 'AccountSwitcher' });
     }
   };
 

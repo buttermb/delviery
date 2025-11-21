@@ -77,7 +77,7 @@ export function SmartRootRedirect() {
         setRedirectPath("/marketing");
         setChecking(false);
       } catch (error) {
-        logger.error("Error checking auth", error as Error, 'SmartRootRedirect');
+        logger.error("Error checking auth", error as Error, { component: 'SmartRootRedirect' });
         setRedirectPath("/marketing");
         setChecking(false);
       }

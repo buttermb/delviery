@@ -60,11 +60,11 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         const { latitude, longitude } = position.coords;
         lastLat = latitude;
         lastLng = longitude;
-        logger.debug('Location update', { latitude, longitude, accuracy: position.coords.accuracy }, 'CourierContext');
+        logger.debug('Location update', { latitude, longitude, accuracy: position.coords.accuracy, component: 'CourierContext' });
         updateLocation(latitude, longitude);
       },
       (error) => {
-        logger.error('Location error', error, 'CourierContext');
+        logger.error('Location error', error, { component: 'CourierContext' });
         toast({
           title: "Location Error",
           description: "Unable to track your location. Please enable GPS.",
@@ -81,7 +81,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     // Force location update every 10 seconds even if position hasn't changed much
     const forceUpdateInterval = setInterval(() => {
       if (lastLat !== null && lastLng !== null) {
-        logger.debug('Forcing location update', { lastLat, lastLng }, 'CourierContext');
+        logger.debug('Forcing location update', { lastLat, lastLng, component: 'CourierContext' });
         updateLocation(lastLat, lastLng);
       } else {
         // Try to get current position if we don't have one
@@ -90,13 +90,13 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
             const { latitude, longitude } = position.coords;
             lastLat = latitude;
             lastLng = longitude;
-            logger.debug('Got current position', { latitude, longitude }, 'CourierContext');
+            logger.debug('Got current position', { latitude, longitude, component: 'CourierContext' });
             updateLocation(latitude, longitude);
           },
           (error) => {
             // Only log geolocation errors once to avoid console spam
             if (!hasLoggedGeoError) {
-              logger.warn('Geolocation unavailable. Location tracking disabled', { message: error.message }, 'CourierContext');
+              logger.warn('Geolocation unavailable. Location tracking disabled', { message: error.message, component: 'CourierContext' });
               hasLoggedGeoError = true;
             }
           },
@@ -182,7 +182,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       // Not a courier or runner
       setLoading(false);
     } catch (error) {
-      logger.debug('Not a courier/runner user', undefined, 'CourierContext');
+      logger.debug('Not a courier/runner user', { component: 'CourierContext' });
       setLoading(false);
     }
   };
@@ -196,7 +196,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       // Check if user is still authenticated before making the call
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        logger.debug('No active session, skipping status update', undefined, 'CourierContext');
+        logger.debug('No active session, skipping status update', { component: 'CourierContext' });
         return;
       }
 
@@ -223,7 +223,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         description: newStatus ? "You can now receive orders" : "You won't receive new orders"
       });
     } catch (error) {
-      logger.error('Failed to toggle status', error as Error, 'CourierContext');
+      logger.error('Failed to toggle status', error as Error, { component: 'CourierContext' });
       // Only show error if user is still authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -240,7 +240,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
     if (!courier) return;
 
     try {
-      logger.debug('Sending location update to backend', { lat, lng, role: courier.role }, 'CourierContext');
+      logger.debug('Sending location update to backend', { lat, lng, role: courier.role, component: 'CourierContext' });
 
       if (courier.role === 'courier') {
         // Update courier location via edge function
@@ -253,18 +253,18 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          logger.error('Courier location update error', error as Error, 'CourierContext');
+          logger.error('Courier location update error', error as Error, { component: 'CourierContext' });
           throw error;
         }
 
         // Check for error in response body (some edge functions return 200 with error)
         if (data && typeof data === 'object' && 'error' in data && data.error) {
           const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update location';
-          logger.error('Courier location update returned error in response', { error: errorMessage }, 'CourierContext');
+          logger.error('Courier location update returned error in response', { error: errorMessage, component: 'CourierContext' });
           throw new Error(errorMessage);
         }
 
-        logger.debug('Courier location updated successfully', undefined, 'CourierContext');
+        logger.debug('Courier location updated successfully', { component: 'CourierContext' });
       } else if (courier.role === 'runner') {
         // Update runner location via edge function (includes history logging)
         const { data, error } = await supabase.functions.invoke('runner-location-update', {
@@ -278,21 +278,21 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          logger.error('Runner location update error', error as Error, 'CourierContext');
+          logger.error('Runner location update error', error as Error, { component: 'CourierContext' });
           throw error;
         }
 
         // Check for error in response body (some edge functions return 200 with error)
         if (data && typeof data === 'object' && 'error' in data && data.error) {
           const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to update runner location';
-          logger.error('Runner location update returned error in response', { error: errorMessage }, 'CourierContext');
+          logger.error('Runner location update returned error in response', { error: errorMessage, component: 'CourierContext' });
           throw new Error(errorMessage);
         } else {
-          logger.debug('Runner location updated successfully', undefined, 'CourierContext');
+          logger.debug('Runner location updated successfully', { component: 'CourierContext' });
         }
       }
     } catch (error) {
-      logger.error('Failed to update location', error as Error, 'CourierContext');
+      logger.error('Failed to update location', error as Error, { component: 'CourierContext' });
     }
   };
 

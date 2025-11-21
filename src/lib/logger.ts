@@ -8,15 +8,7 @@
  *   logger.error('Error occurred', error, { context });
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-interface LogContext {
-  component?: string;
-  userId?: string;
-  tenantId?: string;
-  action?: string;
-  [key: string]: unknown;
-}
+export type LogContext = string | Record<string, unknown>;
 
 class Logger {
   private isDev = import.meta.env.DEV;
@@ -89,7 +81,7 @@ class Logger {
   /**
    * Send logs to monitoring service (placeholder for Sentry integration)
    */
-  private sendToMonitoring(level: LogLevel, message: string, context?: LogContext): void {
+  private sendToMonitoring(level: 'debug' | 'info' | 'warn' | 'error', message: string, context?: LogContext): void {
     // Placeholder for future Sentry/monitoring integration
     // Example:
     // Sentry.captureMessage(message, {

@@ -9,10 +9,14 @@ import {
   Menu,
   AlertCircle,
   RefreshCw,
-  X
+  X,
+  Settings,
+  LogOut,
+  HelpCircle,
+  User
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -21,7 +25,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { logger } from '@/lib/logger';
-import { Loader2 } from 'lucide-react';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
 import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
@@ -29,7 +32,7 @@ import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
 export function MobileBottomNav() {
   const location = useLocation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, logout } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [sidebarError, setSidebarError] = useState<Error | null>(null);
@@ -73,39 +76,23 @@ export function MobileBottomNav() {
   };
 
   // Close sheet when route changes (user navigates)
-  // Use a ref to track if we just opened the sheet to prevent immediate closing
   const justOpenedRef = useRef(false);
   
   useEffect(() => {
-    // Don't close if we just opened (give it time to render)
     if (justOpenedRef.current) {
       justOpenedRef.current = false;
       return;
     }
     
     if (open) {
-      logger.debug('Closing sheet due to route change', { 
-        pathname: location.pathname,
-        component: 'MobileBottomNav'
-      });
       setOpen(false);
     }
-  }, [location.pathname, open]); // Close sheet on route change
+  }, [location.pathname]);
 
-  // Listen for custom navigation events from sidebar (backup to route change)
-  useEffect(() => {
-    const handleNavigation = () => {
-      if (open) {
-        logger.debug('Closing sheet due to navigation event', { component: 'MobileBottomNav' });
-        setOpen(false);
-      }
-    };
-
-    window.addEventListener('mobile-nav-close', handleNavigation);
-    return () => {
-      window.removeEventListener('mobile-nav-close', handleNavigation);
-    };
-  }, [open]);
+  const handleLogout = async () => {
+    await logout();
+    setOpen(false);
+  };
 
   return (
     <>
@@ -132,174 +119,199 @@ export function MobileBottomNav() {
           )}
           
           <div className="grid grid-cols-5 h-full items-center">
-        {quickLinks.map((link) => {
-          const Icon = link.icon;
-          const fullPath = getFullPath(link.href);
-          const active = isActive(link.href);
+            {quickLinks.map((link) => {
+              const Icon = link.icon;
+              const fullPath = getFullPath(link.href);
+              const active = isActive(link.href);
 
-          return (
-            <Link
-              key={link.href}
-              to={fullPath}
-              onClick={() => {
-                triggerHaptic('light');
-                logger.debug('MobileBottomNav click', { 
-                  href: link.href, 
-                  fullPath,
-                  title: link.title,
-                  timestamp: Date.now()
-                });
-                // Navigation will be handled by Link component
-                // Sheet will close via route change detection or custom event
-              }}
-              className={cn(
-                'flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs transition-colors min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50',
-                active
-                  ? 'text-primary font-medium bg-primary/5'
-                  : 'text-muted-foreground'
-              )}
-              style={{ pointerEvents: 'auto' }}
-              aria-label={`Navigate to ${link.title}`}
-              aria-current={active ? 'page' : undefined}
-            >
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
-              <span className="truncate max-w-full px-1">{link.title}</span>
-            </Link>
-          );
-        })}
-
-        {/* More menu */}
-        <Sheet 
-          open={open} 
-          onOpenChange={(isOpen) => {
-            setOpen(isOpen);
-            if (isOpen) {
-              justOpenedRef.current = true;
-              logger.debug('MobileBottomNav sheet opened', { 
-                context: 'admin',
-                tenant: !!tenant,
-                tenantId: tenant?.id,
-                tenantSlug,
-                hasTenantSlug: !!tenantSlug
-              });
-              if (tenant?.id) {
-                queryClient.invalidateQueries({ 
-                  queryKey: ['sidebar-preferences', tenant.id] 
-                });
-                setSidebarError(null);
-              }
-            }
-          }}
-        >
-          <SheetTrigger asChild>
-            <button 
-              onClick={() => {
-                triggerHaptic('medium');
-                logger.debug('MobileBottomNav More button clicked', { open });
-              }}
-              className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
-              style={{ pointerEvents: 'auto' }}
-              aria-label="Open navigation menu"
-              aria-expanded={open}
-            >
-              <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
-              <span className="truncate max-w-full">More</span>
-            </button>
-          </SheetTrigger>
-          <SheetContent 
-            side="right" 
-            className="p-0 w-[85vw] max-w-sm flex flex-col overflow-hidden bg-background"
-            style={{ 
-              zIndex: 120,
-              height: '100vh',
-              maxHeight: '100vh',
-              top: 0,
-              bottom: 0,
-              position: 'fixed'
-            }}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            <div className="flex flex-col h-full" style={{ height: '100vh', minHeight: '100vh' }}>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0">
-                <span className="text-sm font-semibold">Navigation</span>
-                <div className="flex items-center gap-2">
-                  {tenantSlug && (
-                    <span className="text-xs text-muted-foreground">{tenantSlug}</span>
+              return (
+                <Link
+                  key={link.href}
+                  to={fullPath}
+                  onClick={() => {
+                    triggerHaptic('light');
+                  }}
+                  className={cn(
+                    'flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs transition-colors min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50',
+                    active
+                      ? 'text-primary font-medium bg-primary/5'
+                      : 'text-muted-foreground'
                   )}
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
-                    aria-label="Close menu"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+                  style={{ pointerEvents: 'auto' }}
+                  aria-label={`Navigate to ${link.title}`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
+                  <span className="truncate max-w-full px-1">{link.title}</span>
+                </Link>
+              );
+            })}
+
+            {/* More menu */}
+            <Sheet 
+              open={open} 
+              onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (isOpen) {
+                  justOpenedRef.current = true;
+                  triggerHaptic('medium');
+                  if (tenant?.id) {
+                    queryClient.invalidateQueries({ 
+                      queryKey: ['sidebar-preferences', tenant.id] 
+                    });
+                    setSidebarError(null);
+                  }
+                }
+              }}
+            >
+              <SheetTrigger asChild>
+                <button 
+                  className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
+                  style={{ pointerEvents: 'auto' }}
+                  aria-label="Open navigation menu"
+                  aria-expanded={open}
+                >
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
+                  <span className="truncate max-w-full">More</span>
+                </button>
+              </SheetTrigger>
+              <SheetContent 
+                side="right" 
+                className="p-0 w-[85vw] max-w-sm flex flex-col overflow-hidden bg-background"
+                style={{ 
+                  zIndex: 120,
+                  height: '100vh',
+                  maxHeight: '100vh',
+                  top: 0,
+                  bottom: 0,
+                  position: 'fixed'
+                }}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                {/* Accessibility Title */}
+                <div className="sr-only">
+                  <SheetTitle>Navigation Menu</SheetTitle>
                 </div>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto pb-safe" style={{ minHeight: 0, height: '100%' }}>
-                {!tenant || !tenantSlug ? (
-                  <div className="p-4 space-y-2">
-                    <div className="text-sm text-muted-foreground mb-4">Loading navigation...</div>
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : sidebarError ? (
-                  <div className="p-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
-                    <AlertCircle className="h-12 w-12 text-destructive" />
-                    <div className="text-center space-y-2">
-                      <h3 className="font-semibold text-lg">Something went wrong</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {sidebarError.message || 'Failed to load navigation menu'}
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => {
-                        setSidebarError(null);
-                        queryClient.invalidateQueries({ 
-                          queryKey: ['sidebar-preferences', tenant.id] 
-                        });
-                      }}
-                      variant="outline"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Retry
-                    </Button>
-                  </div>
-                ) : (
-                  <ErrorBoundary onError={setSidebarError}>
-                    <SidebarProvider
-                      style={{
-                        '--sidebar-width': '100%',
-                        '--sidebar-width-icon': '3rem',
-                        height: '100%',
-                        minHeight: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      } as React.CSSProperties}
-                    >
-                      <div 
-                        className="overflow-x-hidden pb-8 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full" 
-                        style={{ 
-                          height: '100%',
-                          minHeight: '100%',
-                          flex: '1 1 auto'
-                        }}
+
+                <div className="flex flex-col h-full" style={{ height: '100vh', minHeight: '100vh' }}>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0 safe-area-top">
+                    <span className="text-sm font-semibold">Navigation</span>
+                    <div className="flex items-center gap-2">
+                      {tenantSlug && (
+                        <span className="text-xs text-muted-foreground">{tenantSlug}</span>
+                      )}
+                      <button
+                        onClick={() => setOpen(false)}
+                        className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                        aria-label="Close menu"
                       >
-                        <AdaptiveSidebar collapsible="none" />
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto pb-safe overscroll-contain" style={{ minHeight: 0, height: '100%' }}>
+                    {!tenant || !tenantSlug ? (
+                      <div className="p-4 space-y-4">
+                        {/* Fallback Menu when tenant data missing */}
+                        <div className="space-y-2">
+                          <Link 
+                            to="/login" 
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                            onClick={() => setOpen(false)}
+                          >
+                            <User className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-medium">Login</span>
+                          </Link>
+                          <Link 
+                            to="/support" 
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                            onClick={() => setOpen(false)}
+                          >
+                            <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-medium">Support</span>
+                          </Link>
+                        </div>
                       </div>
-                    </SidebarProvider>
-                  </ErrorBoundary>
-                )}
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-    </nav>
-    </MobileErrorBoundary>
+                    ) : sidebarError ? (
+                      <div className="p-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                        <AlertCircle className="h-12 w-12 text-destructive" />
+                        <div className="text-center space-y-2">
+                          <h3 className="font-semibold text-lg">Menu Unavailable</h3>
+                          <p className="text-sm text-muted-foreground">
+                            We couldn't load the full menu.
+                          </p>
+                        </div>
+                        
+                        {/* Emergency Links */}
+                        <div className="w-full space-y-2 mt-4">
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-start" 
+                            asChild
+                            onClick={() => setOpen(false)}
+                          >
+                            <Link to={`/${tenantSlug}/admin/settings`}>
+                              <Settings className="h-4 w-4 mr-2" />
+                              Settings
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-start text-destructive" 
+                            onClick={handleLogout}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Logout
+                          </Button>
+                        </div>
+
+                        <Button 
+                          onClick={() => {
+                            setSidebarError(null);
+                            queryClient.invalidateQueries({ 
+                              queryKey: ['sidebar-preferences', tenant.id] 
+                            });
+                          }}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Retry Loading
+                        </Button>
+                      </div>
+                    ) : (
+                      <ErrorBoundary onError={setSidebarError}>
+                        <SidebarProvider
+                          style={{
+                            '--sidebar-width': '100%',
+                            '--sidebar-width-icon': '3rem',
+                            height: '100%',
+                            minHeight: '100%',
+                            display: 'flex',
+                            flexDirection: 'column'
+                          } as React.CSSProperties}
+                        >
+                          <div 
+                            className="overflow-x-hidden pb-20 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full" 
+                            style={{ 
+                              height: '100%',
+                              minHeight: '100%',
+                              flex: '1 1 auto'
+                            }}
+                          >
+                            <AdaptiveSidebar collapsible="none" />
+                          </div>
+                        </SidebarProvider>
+                      </ErrorBoundary>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </nav>
+      </MobileErrorBoundary>
     </>
   );
 }
-

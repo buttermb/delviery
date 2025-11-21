@@ -59,7 +59,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     const timeout = setTimeout(() => {
       if (verificationLockRef.current) {
-        logger.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking', undefined, 'TenantAdminProtectedRoute');
+        logger.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking', { component: 'TenantAdminProtectedRoute' });
         verificationLockRef.current = false;
         setVerifying(false);
       }

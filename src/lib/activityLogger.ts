@@ -32,13 +32,13 @@ export async function logActivity(params: ActivityLogParams): Promise<void> {
     });
 
     if (error) {
-      logger.error('Failed to log activity', error, 'activityLogger');
+      logger.error('Failed to log activity', error, { component: 'activityLogger' });
       // Don't throw - activity logging failures shouldn't break the app
     } else {
-      logger.debug('Activity logged', { action: params.action, resource: params.resource }, 'activityLogger');
+      logger.debug('Activity logged', { action: params.action, resource: params.resource, component: 'activityLogger' });
     }
   } catch (error) {
-    logger.error('Error in logActivity', error, 'activityLogger');
+    logger.error('Error in logActivity', error, { component: 'activityLogger' });
   }
 }
 
@@ -50,7 +50,7 @@ async function getCurrentUserId(): Promise<string | null> {
     const { data: { user } } = await supabase.auth.getUser();
     return user?.id || null;
   } catch (error) {
-    logger.error('Error getting current user', error, 'activityLogger');
+    logger.error('Error getting current user', error, { component: 'activityLogger' });
     return null;
   }
 }
@@ -68,7 +68,7 @@ export async function logActivityAuto(
 ): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) {
-    logger.warn('Cannot log activity: No authenticated user', { action }, 'activityLogger');
+    logger.warn('Cannot log activity: No authenticated user', { action, component: 'activityLogger' });
     return;
   }
 

@@ -60,7 +60,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
     });
     
     // Log error details for debugging
-    logger.error('Admin Error Boundary caught an error', error, 'AdminErrorBoundary');
+    logger.error('Admin Error Boundary caught an error', error, { component: 'AdminErrorBoundary' });
     
     // Detect specific error types
     const isWebSocketError = error.message?.includes('WebSocket') || 
@@ -77,8 +77,9 @@ export class AdminErrorBoundary extends Component<Props, State> {
       isDataError,
       isChunkError,
       errorType: error.name,
-      stack: errorInfo?.componentStack
-    }, 'AdminErrorBoundary');
+      stack: errorInfo?.componentStack,
+      component: 'AdminErrorBoundary'
+    });
     
     this.setState({
       error,
@@ -87,12 +88,12 @@ export class AdminErrorBoundary extends Component<Props, State> {
     
     // Log WebSocket errors but don't auto-recover (prevents reload loops)
     if (isWebSocketError) {
-      logger.warn('WebSocket error detected. Manual recovery required.', undefined, 'AdminErrorBoundary');
+      logger.warn('WebSocket error detected. Manual recovery required.', { component: 'AdminErrorBoundary' });
     }
     
     // Log chunk errors with recovery suggestion
     if (isChunkError) {
-      logger.error('Chunk loading error detected in AdminErrorBoundary', error, 'AdminErrorBoundary');
+      logger.error('Chunk loading error detected in AdminErrorBoundary', error, { component: 'AdminErrorBoundary' });
     }
   }
 
@@ -114,7 +115,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
       // Reload with cache bypass
       reloadWithCacheBypass();
     } catch (error) {
-      logger.error('Error clearing cache', error, 'AdminErrorBoundary');
+      logger.error('Error clearing cache', error, { component: 'AdminErrorBoundary' });
       // Fallback to simple reload
       reloadWithCacheBypass();
     }

@@ -122,7 +122,7 @@ const AuthModal = ({ open, onOpenChange, mode, onModeChange }: AuthModalProps) =
             });
 
           if (profileError) {
-            logger.error('Profile creation error', profileError, 'AuthModal');
+            logger.error('Profile creation error', profileError, { component: 'AuthModal' });
             // Don't throw - user is created, profile can be updated later
           }
         }

@@ -87,16 +87,16 @@ export default function AccountSettings() {
           table: 'profiles',
         },
         () => {
-          logger.debug('Profile updated, refreshing settings', undefined, 'AccountSettings');
+          logger.debug('Profile updated, refreshing settings', { component: 'AccountSettings' });
           init();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to account settings', undefined, 'AccountSettings');
+          logger.debug('Successfully subscribed to account settings', { component: 'AccountSettings' });
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          logger.error('Failed to subscribe to account settings updates', { status }, 'AccountSettings');
+          logger.error('Failed to subscribe to account settings updates', { status, component: 'AccountSettings' });
         }
       });
 

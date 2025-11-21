@@ -27,7 +27,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     root.classList.remove("light", "dark");
     root.classList.add(initialTheme);
     
-    logger.debug('Theme initialized', { theme: initialTheme }, 'ThemeContext');
+    logger.debug('Theme initialized', { theme: initialTheme, component: 'ThemeContext' });
     return initialTheme;
   });
 
@@ -36,7 +36,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     root.classList.remove("light", "dark");
     root.classList.add(theme);
     localStorage.setItem("theme", theme);
-    logger.debug('Theme applied', { theme }, 'ThemeContext');
+    logger.debug('Theme applied', { theme, component: 'ThemeContext' });
   }, [theme]);
 
   const toggleTheme = () => {

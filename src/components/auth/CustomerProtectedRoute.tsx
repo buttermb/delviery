@@ -50,7 +50,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
     
     const timeout = setTimeout(() => {
       if (verificationLockRef.current) {
-        logger.warn('[CustomerProtectedRoute] Verification timeout - unlocking', undefined, 'CustomerProtectedRoute');
+        logger.warn('[CustomerProtectedRoute] Verification timeout - unlocking', { component: 'CustomerProtectedRoute' });
         verificationLockRef.current = false;
         setVerifying(false);
       }
@@ -114,7 +114,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
         verificationLockRef.current = false;
       } catch (err) {
-        logger.error('[CustomerProtectedRoute] Verification error', err, 'CustomerProtectedRoute');
+        logger.error('[CustomerProtectedRoute] Verification error', err, { component: 'CustomerProtectedRoute' });
         setVerifying(false);
         verificationLockRef.current = false;
       }

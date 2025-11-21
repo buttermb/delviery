@@ -36,7 +36,7 @@ export function SuperAdminProtectedRoute({ children }: SuperAdminProtectedRouteP
       
       // Check if we've exceeded max redirects in window
       if (redirectCount.current >= MAX_REDIRECTS_PER_WINDOW) {
-        logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", undefined, 'SuperAdminProtectedRoute');
+        logger.warn("Redirect limit exceeded - preventing further redirects to avoid loop", { component: 'SuperAdminProtectedRoute' });
         return;
       }
       

@@ -71,7 +71,7 @@ export default function InvitationAcceptPage() {
         }
       });
     } catch (err) {
-      logger.error('Error validating invitation', err, 'InvitationAcceptPage');
+      logger.error('Error validating invitation', err, { component: 'InvitationAcceptPage' });
       setError('Failed to validate invitation');
     } finally {
       setLoading(false);

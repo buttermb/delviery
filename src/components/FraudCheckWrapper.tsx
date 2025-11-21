@@ -32,7 +32,7 @@ export function FraudCheckWrapper({
         });
 
         if (error) {
-          logger.error("Fraud check function error", error, 'FraudCheckWrapper');
+          logger.error("Fraud check function error", error, { component: 'FraudCheckWrapper' });
           // Continue processing if fraud check fails - don't block legitimate orders
           return;
         }
@@ -40,7 +40,7 @@ export function FraudCheckWrapper({
         // Check for error in response body (some edge functions return 200 with error)
         if (data && typeof data === 'object' && 'error' in data && data.error) {
           const errorMessage = typeof data.error === 'string' ? data.error : 'Fraud check failed';
-          logger.error("Fraud check returned error in response", { error: errorMessage }, 'FraudCheckWrapper');
+          logger.error("Fraud check returned error in response", { error: errorMessage, component: 'FraudCheckWrapper' });
           // Continue processing if fraud check fails - don't block legitimate orders
           return;
         }
@@ -56,7 +56,7 @@ export function FraudCheckWrapper({
           toast.warning("Your order has been flagged for review");
         }
       } catch (error: unknown) {
-        logger.error("Fraud check error", error, 'FraudCheckWrapper');
+        logger.error("Fraud check error", error, { component: 'FraudCheckWrapper' });
         // Continue processing if fraud check fails
       }
     };

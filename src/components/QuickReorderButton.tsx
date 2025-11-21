@@ -93,7 +93,7 @@ export function QuickReorderButton({ orderId, orderItems, disabled }: QuickReord
         navigate("/cart");
       }
     } catch (error: unknown) {
-      logger.error("Reorder error", error as Error, 'QuickReorderButton');
+      logger.error("Reorder error", error as Error, { component: 'QuickReorderButton' });
       toast.error(error instanceof Error ? error.message : "Failed to reorder");
     }
   };

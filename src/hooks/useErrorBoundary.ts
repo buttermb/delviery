@@ -32,7 +32,7 @@ export const useErrorBoundary = () => {
 
     // Log to console in development
     if (import.meta.env.DEV) {
-      logger.debug('Error caught by boundary', { error, errorInfo }, 'useErrorBoundary');
+      logger.debug('Error caught by boundary', { error, errorInfo, component: 'useErrorBoundary' });
     }
 
     // Show user-friendly toast

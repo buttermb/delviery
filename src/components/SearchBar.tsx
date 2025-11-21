@@ -62,7 +62,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
         
         setProducts(data || []);
       } catch (error) {
-        logger.error('Search error', error, 'SearchBar');
+        logger.error('Search error', error, { component: 'SearchBar' });
       } finally {
         setLoading(false);
       }

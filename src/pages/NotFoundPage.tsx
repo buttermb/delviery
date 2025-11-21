@@ -11,7 +11,7 @@ export default function NotFoundPage() {
   const location = useLocation();
 
   useEffect(() => {
-    logger.error('404 Error: User attempted to access non-existent route', { pathname: location.pathname }, 'NotFoundPage');
+    logger.error('404 Error: User attempted to access non-existent route', { pathname: location.pathname, component: 'NotFoundPage' });
     // Report 404 to bug finder
     bugFinder.report404(location.pathname, {
       timestamp: new Date().toISOString(),

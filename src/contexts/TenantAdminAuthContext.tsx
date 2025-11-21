@@ -168,7 +168,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const startTime = Date.now();
     
     const initializeAuth = async () => {
-      console.log('[AUTH INIT] 🚀 Starting authentication initialization', { timestamp: new Date().toISOString() });
       
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
@@ -177,7 +176,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {
-        console.log('[AUTH INIT] ℹ️ Not on tenant admin route, skipping verification');
         setLoading(false);
         return;
       }
@@ -185,19 +183,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let parsedTenant: Tenant | null = null;
       
       try {
-        // Check if we have any auth tokens or cookies before trying to verify
+      // Check if we have any auth tokens or cookies before trying to verify
         const storedToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
         const hasCookies = document.cookie.includes('tenant_access_token');
         
         // Skip verification if no auth data exists (user not logged in as tenant admin)
         if (!storedToken && !hasCookies) {
-          console.log('[AUTH INIT] ℹ️ No tenant admin auth data found, skipping verification');
           setLoading(false);
           return;
         }
         
         // PRIORITY 1: Try cookie-based verification first (most secure)
-        console.log('[AUTH INIT] 🔐 Attempting cookie-based authentication...');
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
           
@@ -207,7 +203,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             try {
               const expiration = getTokenExpiration(storedToken);
               if (expiration && expiration.getTime() - Date.now() < EXPIRATION_BUFFER_MS) {
-                console.log('[AUTH INIT] ⚠️ Token expired or expiring soon, attempting refresh');
                 const storedRefreshToken = safeStorage.getItem(REFRESH_TOKEN_KEY);
                 
                 if (storedRefreshToken) {
@@ -225,15 +220,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                       safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
                       safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
                       tokenToUse = refreshData.access_token;
-                      console.log('[AUTH INIT] ✅ Token refreshed successfully before verification');
                     }
                   } catch (refreshError) {
-                    console.log('[AUTH INIT] ⚠️ Token refresh failed, will try verification anyway');
+                    // Silent catch
                   }
                 }
               }
             } catch (expirationError) {
-              console.log('[AUTH INIT] ⚠️ Token expiration check failed, proceeding with verification');
+              // Silent catch
             }
           }
           
@@ -254,10 +248,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
-            console.log('[AUTH INIT] ✅ Cookie verification successful', {
-              hasAdmin: !!verifyData.admin,
-              hasTenant: !!verifyData.tenant,
-            });
             
             // Set state from verified cookie data
             if (verifyData.admin) {
@@ -279,21 +269,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             
             setIsAuthenticated(true);
             setLoading(false);
-            logger.info('[AUTH] Authenticated via httpOnly cookies', {
-              userId: verifyData.admin?.id,
-              tenantSlug: verifyData.tenant?.slug,
-            });
             return; // Success - exit early
           } else {
-            console.log('[AUTH INIT] ⚠️ Cookie verification failed', {
-              status: verifyResponse.status,
-            });
             
             // Handle 401 Unauthorized - invalid or expired token
             if (verifyResponse.status === 401) {
-              const errorData = await verifyResponse.json().catch(() => ({}));
-              console.log('[AUTH INIT] 🚫 Authentication failed (401)', errorData);
-              
               // Clear auth state
               clearAuthState();
               setLoading(false);
@@ -310,7 +290,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (verifyResponse.status === 403) {
               const errorData = await verifyResponse.json().catch(() => ({}));
               if (errorData.error === 'No tenant access found') {
-                console.log('[AUTH INIT] 🧹 Clearing stale auth data - user has no tenant access');
                 clearAuthState();
                 setLoading(false);
                 return;
@@ -318,7 +297,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             }
           }
         } catch (cookieError) {
-          console.log('[AUTH INIT] ⚠️ Cookie verification error, trying localStorage fallback', cookieError);
           
           // If it's an auth error (401), don't fall back - clear state
           if (cookieError instanceof Error && (
@@ -326,7 +304,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             cookieError.message.includes('Unauthorized') ||
             cookieError.message.includes('Invalid or expired token')
           )) {
-            console.log('[AUTH INIT] 🚫 Authentication error detected, clearing state');
             clearAuthState();
             setLoading(false);
             
@@ -341,7 +318,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           // If it's a network error, we should still try localStorage
           // But if it's an auth error, clear state
           if (cookieError instanceof Error && cookieError.message.includes('401')) {
-            console.log('[AUTH INIT] 🚫 Authentication error detected in cookie verification');
             clearAuthState();
             setLoading(false);
             
@@ -355,14 +331,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
 
       // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
-      console.log('[AUTH INIT] 📦 Checking localStorage for stored credentials');
       const storedAdmin = safeStorage.getItem(ADMIN_KEY);
       const storedTenant = safeStorage.getItem(TENANT_KEY);
       
       if (!storedAdmin || !storedTenant) {
         // No stored data = not logged in
-        console.log('[AUTH INIT] ❌ No stored credentials found - user not authenticated');
-        logger.debug('[AUTH] No stored user/tenant data, not authenticated');
         // CRITICAL: Clear auth state to ensure redirect works
         setAdmin(null);
         setTenant(null);
@@ -372,12 +345,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         return;
       }
 
-        console.log('[AUTH INIT] ✅ Found stored credentials, parsing...');
         // Parse stored data safely
         try {
           parsedAdmin = JSON.parse(storedAdmin);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored admin data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           clearAuthState();
           setLoading(false);
           return;
@@ -385,29 +356,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         try {
           parsedTenant = JSON.parse(storedTenant);
         } catch (error) {
-          logger.error('[AUTH INIT] Failed to parse stored tenant data', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           clearAuthState();
           setLoading(false);
           return;
         }
-        console.log('[AUTH INIT] 📋 Parsed credentials:', {
-          adminEmail: parsedAdmin?.email,
-          tenantSlug: parsedTenant?.slug,
-          tenantName: parsedTenant?.business_name,
-        });
         
         // Get current tenant slug from URL
         const currentPath = window.location.pathname;
         const urlTenantSlug = currentPath.split('/')[1];
-        console.log('[AUTH INIT] 🔍 URL tenant slug:', urlTenantSlug);
         
         // Validate tenant slug matches URL
         if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
-          console.log('[AUTH INIT] ⚠️ Tenant mismatch detected!', {
-            stored: parsedTenant.slug,
-            url: urlTenantSlug,
-          });
-          logger.debug(`[AUTH] Tenant mismatch: stored=${parsedTenant.slug}, url=${urlTenantSlug}. Clearing auth.`);
           clearAuthState();
           setLoading(false);
           return;
@@ -432,7 +391,6 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           },
         };
         
-        console.log('[AUTH INIT] 🎨 Setting state from localStorage');
         // Set state from localStorage (for quick UI rendering)
         setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
@@ -441,19 +399,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         
         // CRITICAL: Set authenticated to true immediately with localStorage data
         // Use synchronous flag to prevent loading state clearing before auth state updates
-        console.log('[AUTH INIT] ✅ Setting authenticated=true from localStorage');
         setIsAuthenticated(true);
         
         // CRITICAL FIX: Set loading=false immediately to unblock UI
         // The optional verification below should NOT block the dashboard from rendering
-        console.log('[AUTH INIT] ✅ Setting loading=false - UI can render now');
         setLoading(false);
         
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
-        console.log('[AUTH INIT] 🌐 Calling verify endpoint (optional background verification)...');
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-        const verifyStartTime = Date.now();
         
         try {
           // Create AbortController for timeout (more compatible than AbortSignal.timeout)
@@ -473,20 +427,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           );
           
           clearTimeout(timeoutId);
-          const verifyDuration = Date.now() - verifyStartTime;
-          console.log('[AUTH INIT] ⏱️ Verify endpoint responded', {
-            duration: `${verifyDuration}ms`,
-            status: verifyResponse.status,
-            ok: verifyResponse.ok,
-          });
 
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
-            console.log('[AUTH INIT] ✅ Verify endpoint success - updating from server', {
-              hasAdmin: !!verifyData.admin,
-              hasTenant: !!verifyData.tenant,
-              hasToken: !!verifyData.access_token,
-            });
             
             // Update state from verification response (more up-to-date than localStorage)
             if (verifyData.admin) setAdmin(verifyData.admin);
@@ -497,66 +440,28 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               setAccessToken(verifyData.access_token);
               setToken(verifyData.access_token);
             }
-            
-            logger.info('[AUTH] Authenticated via cookies (verified)', {
-              userId: verifyData.admin?.id,
-              tenantSlug: verifyData.tenant?.slug,
-            });
-          } else {
-            // Verification failed - but we already set isAuthenticated=true from localStorage
-            // So just log the failure
-            console.log('[AUTH INIT] ⚠️ Verify endpoint returned non-ok status, using localStorage auth', {
-              status: verifyResponse.status,
-            });
-            logger.warn('[AUTH] Cookie verification failed, continuing with localStorage auth');
           }
         } catch (verifyError: any) {
-          const verifyDuration = Date.now() - verifyStartTime;
-          console.log('[AUTH INIT] 🔥 Verify endpoint error (using localStorage fallback)', {
-            duration: `${verifyDuration}ms`,
-            error: verifyError.message,
-            name: verifyError.name,
-          });
-          
           // We already set isAuthenticated=true above, so just log
-          logger.warn('[AUTH] Verify endpoint unavailable, using localStorage-only auth', {
-            error: verifyError.message,
-            hasAdmin: !!parsedAdmin,
-            hasTenant: !!parsedTenant,
-          });
         }
         
         console.log('[AUTH INIT] 🎉 Authentication complete');
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error(String(error));
-        logger.debug('[AUTH INIT] Initialization error', { 
-          error: errorObj.message, 
-          name: errorObj.name,
-          component: 'TenantAdminAuthContext'
-        });
         logger.error('[AUTH] Initialization error', errorObj, { component: 'TenantAdminAuthContext' });
         clearAuthState();
       } finally {
-        const totalDuration = Date.now() - startTime;
         
         // Small delay to ensure React state updates have processed
         // This prevents loading=false from being set before isAuthenticated=true takes effect
         await new Promise(resolve => setTimeout(resolve, 50));
         
-        console.log('[AUTH INIT] ✨ Initialization complete', {
-          duration: `${totalDuration}ms`,
-          authenticated: isAuthenticated,
-          hasAdmin: !!admin,
-          hasTenant: !!tenant,
-        });
         setLoading(false);
       }
     };
 
     // Safety timeout: force loading to false after 12 seconds
     const safetyTimeout = setTimeout(() => {
-      const duration = Date.now() - startTime;
-      logger.warn(`[AUTH] Initialization timeout after ${duration}ms - forcing loading to false`);
       setLoading(false);
     }, LOADING_TIMEOUT_MS);
 
@@ -695,10 +600,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           setRefreshToken(null);
           setAdmin(null);
           setTenant(null);
-          localStorage.removeItem(ACCESS_TOKEN_KEY);
-          localStorage.removeItem(REFRESH_TOKEN_KEY);
-          localStorage.removeItem(ADMIN_KEY);
-          localStorage.removeItem(TENANT_KEY);
+          safeStorage.removeItem(ACCESS_TOKEN_KEY);
+          safeStorage.removeItem(REFRESH_TOKEN_KEY);
+          safeStorage.removeItem(ADMIN_KEY);
+          safeStorage.removeItem(TENANT_KEY);
           return false;
         }
         

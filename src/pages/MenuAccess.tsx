@@ -121,7 +121,7 @@ export default function MenuAccess() {
           };
         }
       } catch (err) {
-        logger.debug('Geolocation not available', err, 'MenuAccess');
+        logger.debug('Geolocation not available', { error: err, component: 'MenuAccess' });
       }
 
       // Call validation edge function

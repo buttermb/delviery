@@ -55,7 +55,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           .single();
 
         if (error) {
-          logger.error('Error creating session', error as Error, 'LiveChatWidget');
+          logger.error('Error creating session', error as Error, { component: 'LiveChatWidget' });
           toast({
             title: "Error",
             description: "Failed to start chat session",
@@ -113,10 +113,10 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to chat messages', undefined, 'LiveChatWidget');
+          logger.debug('Successfully subscribed to chat messages', { component: 'LiveChatWidget' });
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          logger.error('Failed to subscribe to chat messages', { status }, 'LiveChatWidget');
+          logger.error('Failed to subscribe to chat messages', { status, component: 'LiveChatWidget' });
         }
       });
 
@@ -153,7 +153,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       }
 
     } catch (error) {
-      logger.error('Error sending message', error as Error, 'LiveChatWidget');
+      logger.error('Error sending message', error as Error, { component: 'LiveChatWidget' });
       toast({
         title: "Error",
         description: "Failed to send message",

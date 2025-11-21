@@ -1,33 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
 
 /**
- * Custom hook for managing state that persists to localStorage
+ * Custom hook for managing state that persists to localStorage via safeStorage
  * Perfect for remembering user preferences like filters, sort order, etc.
  */
 export function useLocalStorageState<T>(
   key: string,
   initialValue: T
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
-  // Get initial value from localStorage or use provided initial value
+  // Get initial value from safeStorage or use provided initial value
   const [storedValue, setStoredValue] = useState<T>(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.warn(`Error loading localStorage key "${key}":`, error);
-      return initialValue;
+    const item = safeStorage.getItem(key);
+    if (item) {
+      try {
+        return JSON.parse(item);
+      } catch (error) {
+        console.warn(`Error parsing safeStorage key "${key}":`, error);
+        return initialValue;
+      }
     }
+    return initialValue;
   });
 
-  // Update localStorage when state changes
+  // Update safeStorage when state changes
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       try {
         const valueToStore = value instanceof Function ? value(storedValue) : value;
         setStoredValue(valueToStore);
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        safeStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
-        console.warn(`Error setting localStorage key "${key}":`, error);
+        console.warn(`Error setting safeStorage key "${key}":`, error);
       }
     },
     [key, storedValue]
@@ -35,15 +39,11 @@ export function useLocalStorageState<T>(
 
   // Clear the stored value
   const clearValue = useCallback(() => {
-    try {
-      window.localStorage.removeItem(key);
-      setStoredValue(initialValue);
-    } catch (error) {
-      console.warn(`Error clearing localStorage key "${key}":`, error);
-    }
+    safeStorage.removeItem(key);
+    setStoredValue(initialValue);
   }, [key, initialValue]);
 
-  // Sync across tabs
+  // Sync across tabs (using storage event, which safeStorage doesn't abstract away but still works)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key && e.newValue) {
@@ -55,8 +55,10 @@ export function useLocalStorageState<T>(
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
   }, [key]);
 
   return [storedValue, setValue, clearValue];

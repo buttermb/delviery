@@ -107,7 +107,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
       setOpen(false);
       onSuccess?.();
     } catch (error: unknown) {
-      logger.error('Error adding runner', error as Error, 'AddRunnerDialog');
+      logger.error('Error adding runner', error as Error, { component: 'AddRunnerDialog' });
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to add runner',

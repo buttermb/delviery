@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +10,14 @@ import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/logger";
+import { Database } from "@/integrations/supabase/types";
+
+type Tenant = Database['public']['Tables']['tenants']['Row'] & {
+  white_label?: {
+    logo?: string;
+  };
+};
 
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
@@ -21,7 +27,7 @@ export default function TenantAdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [tenant, setTenant] = useState<any>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
 
 
@@ -30,12 +36,13 @@ export default function TenantAdminLoginPage() {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from("tenants")
-          .select("*")
+          .select("*, white_label:white_label_settings(*)")
           .eq("slug", tenantSlug)
           .maybeSingle();
 
         if (data && !error) {
-          setTenant(data);
+          // Type assertion needed because the join type might not be perfectly inferred or white_label might be an array in some generated types
+          setTenant(data as unknown as Tenant);
         }
         setTenantLoading(false);
       } else {
@@ -46,7 +53,7 @@ export default function TenantAdminLoginPage() {
     fetchTenant();
   }, [tenantSlug]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!tenantSlug) {

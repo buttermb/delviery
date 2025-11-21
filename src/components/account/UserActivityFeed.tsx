@@ -91,7 +91,7 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
 
       setActivities(combinedActivities.slice(0, 15));
     } catch (error) {
-      logger.error('Error fetching activity', error as Error, 'UserActivityFeed');
+      logger.error('Error fetching activity', error as Error, { component: 'UserActivityFeed' });
     } finally {
       setLoading(false);
     }

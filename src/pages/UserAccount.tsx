@@ -51,7 +51,7 @@ export default function UserAccount() {
           table: 'profiles',
         },
         () => {
-          logger.debug('Profile updated, refreshing', undefined, 'UserAccount');
+          logger.debug('Profile updated, refreshing', { component: 'UserAccount' });
           fetchUserData();
         }
       )
@@ -63,16 +63,16 @@ export default function UserAccount() {
           table: 'orders',
         },
         () => {
-          logger.debug('Order updated, refreshing orders', undefined, 'UserAccount');
+          logger.debug('Order updated, refreshing orders', { component: 'UserAccount' });
           fetchUserData();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to user account updates', undefined, 'UserAccount');
+          logger.debug('Successfully subscribed to user account updates', { component: 'UserAccount' });
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          logger.error('Failed to subscribe to user account updates', { status }, 'UserAccount');
+          logger.error('Failed to subscribe to user account updates', { status, component: 'UserAccount' });
         }
       });
 
@@ -112,7 +112,7 @@ export default function UserAccount() {
       setProfile(profileData);
       setOrders(ordersData || []);
     } catch (error: any) {
-      logger.error("Error fetching user data", error, 'UserAccount');
+      logger.error("Error fetching user data", error, { component: 'UserAccount' });
       toast.error("Failed to load account data");
     } finally {
       setLoading(false);

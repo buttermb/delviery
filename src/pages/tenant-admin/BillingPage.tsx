@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +19,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, getFeatureCount, type SubscriptionTier } from "@/lib/featureConfig";
+import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -63,7 +62,7 @@ export default function TenantAdminBillingPage() {
         // Check for error in response body (some edge functions return 200 with error)
         if (edgeData && typeof edgeData === 'object' && 'error' in edgeData && edgeData.error) {
           const errorMessage = typeof edgeData.error === 'string' ? edgeData.error : 'Failed to load invoices';
-          logger.error('Edge function returned error in response', { error: errorMessage, functionName: 'invoice-management' }, 'BillingPage');
+          logger.error('Edge function returned error in response', { error: errorMessage, functionName: 'invoice-management', component: 'BillingPage' });
           throw new Error(errorMessage);
         }
 
@@ -75,7 +74,7 @@ export default function TenantAdminBillingPage() {
           throw edgeError;
         }
       } catch (error) {
-        logger.debug('Edge function call failed, falling back to direct query', { error }, 'BillingPage');
+        logger.debug('Edge function call failed, falling back to direct query', { error, component: 'BillingPage' });
       }
 
       // Fallback to direct query
@@ -164,7 +163,7 @@ export default function TenantAdminBillingPage() {
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     },
     onError: (error: unknown) => {
-      logger.error('Subscription update error', error, { component: 'BillingPage' });
+      logger.error('Error updating subscription', error, { component: 'BillingPage' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to update subscription';
       toast({
         title: 'Update Failed',

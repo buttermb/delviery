@@ -103,7 +103,7 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       setOpen(false);
       onSuccess();
     } catch (error: unknown) {
-      logger.error("Failed to add courier", error as Error, 'AddCourierDialog');
+      logger.error("Failed to add courier", error as Error, { component: 'AddCourierDialog' });
       toast({
         variant: "destructive",
         title: "Error",

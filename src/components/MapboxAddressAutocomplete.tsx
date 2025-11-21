@@ -76,7 +76,7 @@ export default function MapboxAddressAutocomplete({
       setSuggestions(data.features || []);
       setShowSuggestions(true);
     } catch (error) {
-      logger.error("Error fetching address suggestions", error as Error, 'MapboxAddressAutocomplete');
+      logger.error("Error fetching address suggestions", error as Error, { component: 'MapboxAddressAutocomplete' });
       setSuggestions([]);
     } finally {
       setIsLoading(false);

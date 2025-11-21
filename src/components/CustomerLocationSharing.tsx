@@ -68,7 +68,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
               .eq("id", orderId);
           },
           (error) => {
-            logger.error("Location update failed", error, 'CustomerLocationSharing');
+            logger.error("Location update failed", error, { component: 'CustomerLocationSharing' });
           },
           {
             enableHighAccuracy: true,
@@ -122,7 +122,7 @@ export const CustomerLocationSharing = ({ orderId, onLocationShared }: CustomerL
         description: "Your location is no longer being shared",
       });
     } catch (error) {
-      logger.error("Failed to stop location sharing", error as Error, 'CustomerLocationSharing');
+      logger.error("Failed to stop location sharing", error as Error, { component: 'CustomerLocationSharing' });
     }
   };
 

@@ -43,7 +43,7 @@ export async function callAdminFunction<T = any>({
     }
 
     if (!headers.Authorization) {
-      logger.warn('No access token available for Edge Function call', { functionName }, 'adminFunctionHelper');
+      logger.warn('No access token available for Edge Function call', { functionName, component: 'adminFunctionHelper' });
     }
 
     const { data, error } = await supabase.functions.invoke(functionName, {
@@ -52,7 +52,7 @@ export async function callAdminFunction<T = any>({
     });
 
     if (error) {
-      logger.error(`Error calling ${functionName}`, error, 'adminFunctionHelper');
+      logger.error(`Error calling ${functionName}`, error, { component: 'adminFunctionHelper' });
       
       // Report to bug finder
       bugFinder.reportEdgeFunctionError(
@@ -82,9 +82,9 @@ export async function callAdminFunction<T = any>({
           errorMessage.toLowerCase().includes('missing authorization') ||
           errorMessage.toLowerCase().includes('no token')) {
         errorObj.name = 'AuthError';
-        logger.error(`Auth error in ${functionName} response`, errorObj, 'adminFunctionHelper');
+        logger.error(`Auth error in ${functionName} response`, errorObj, { component: 'adminFunctionHelper' });
       } else {
-        logger.error(`Error in ${functionName} response`, errorObj, 'adminFunctionHelper');
+        logger.error(`Error in ${functionName} response`, errorObj, { component: 'adminFunctionHelper' });
       }
       
       bugFinder.reportEdgeFunctionError(
@@ -104,7 +104,7 @@ export async function callAdminFunction<T = any>({
 
     return { data: data as T, error: null };
   } catch (error: any) {
-    logger.error(`Exception calling ${functionName}`, error, 'adminFunctionHelper');
+    logger.error(`Exception calling ${functionName}`, error, { component: 'adminFunctionHelper' });
     
     // Report to bug finder
     const errorObj = error instanceof Error ? error : new Error(String(error));

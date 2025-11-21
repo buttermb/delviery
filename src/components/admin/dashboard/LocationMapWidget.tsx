@@ -10,6 +10,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { LeafletMapWidget } from './LeafletMapWidget';
 
+// Deterministic hash for stable coordinates based on string
+const getDeterministicOffset = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  // Normalize to range -0.05 to 0.05
+  return (hash % 1000) / 10000;
+};
+
 export function LocationMapWidget() {
   const { account } = useAccount();
 
@@ -24,14 +35,13 @@ export function LocationMapWidget() {
       }
 
       // Get warehouses from inventory
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
       const { data: inventory } = await supabase
         .from('wholesale_inventory')
         .select('warehouse_location, quantity_lbs')
         .eq('account_id', account.id);
 
       const warehouses = (inventory || []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
-        const wh = item.warehouse_location || 'Unknown';
+        const wh = item.warehouse_location || 'Main Warehouse';
         if (!acc[wh]) {
           acc[wh] = { lbs: 0, count: 0 };
         }
@@ -44,23 +54,38 @@ export function LocationMapWidget() {
         id: string;
         full_name: string;
         status: string;
+        current_lat: number | null;
+        current_lng: number | null;
       }
 
-      // Get active runners
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      // Get active runners with location data
       const { data: runners } = await supabase
         .from('wholesale_runners')
-        .select('id, full_name, status')
+        .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)
         .eq('status', 'active');
+
+      // Base coordinates (NYC)
+      const BASE_LAT = 40.7128;
+      const BASE_LNG = -74.0060;
 
       return {
         warehouses: Object.entries(warehouses).map(([name, stats]) => ({
           name,
           lbs: stats.lbs,
           count: stats.count,
+          // Use deterministic coordinates based on name if no real address geocoding
+          lat: BASE_LAT + getDeterministicOffset(name),
+          lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
         })),
-        runners: (runners || []) as RunnerRow[],
+        runners: (runners || []).map((runner: any) => ({
+          id: runner.id,
+          full_name: runner.full_name,
+          status: runner.status,
+          // Use real coordinates if available, otherwise fallback to deterministic mock
+          lat: runner.current_lat || (BASE_LAT + getDeterministicOffset(runner.id)),
+          lng: runner.current_lng || (BASE_LNG + getDeterministicOffset(runner.id + '_lng')),
+        })),
       };
     },
     enabled: !!account?.id,
@@ -74,25 +99,25 @@ export function LocationMapWidget() {
       </h3>
 
       {/* Map - Using Leaflet (OpenStreetMap - FREE!) */}
-      {locations && locations.warehouses.length > 0 && (
+      {locations && (locations.warehouses.length > 0 || locations.runners.length > 0) && (
         <LeafletMapWidget
           locations={[
             ...locations.warehouses.map((wh) => ({
               name: wh.name,
-              lat: 40.7128 + (Math.random() - 0.5) * 0.1, // TODO: Get actual coordinates
-              lng: -74.0060 + (Math.random() - 0.5) * 0.1,
+              lat: wh.lat,
+              lng: wh.lng,
               type: 'warehouse' as const,
             })),
             ...locations.runners.map((runner) => ({
               name: runner.full_name,
-              lat: 40.7128 + (Math.random() - 0.5) * 0.1, // TODO: Get actual coordinates
-              lng: -74.0060 + (Math.random() - 0.5) * 0.1,
+              lat: runner.lat,
+              lng: runner.lng,
               type: 'runner' as const,
             })),
           ]}
         />
       )}
-      {(!locations || locations.warehouses.length === 0) && (
+      {(!locations || (locations.warehouses.length === 0 && locations.runners.length === 0)) && (
         <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/20 mb-4">
           <div className="text-center text-muted-foreground">
             <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -149,4 +174,3 @@ export function LocationMapWidget() {
     </Card>
   );
 }
-

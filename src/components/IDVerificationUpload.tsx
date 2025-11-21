@@ -87,7 +87,7 @@ export default function IDVerificationUpload() {
       toast.success("ID verification submitted! We'll review it within 24 hours.");
       setSubmitted(true);
     } catch (error: unknown) {
-      logger.error("Verification error", error, 'IDVerificationUpload');
+      logger.error("Verification error", error, { component: 'IDVerificationUpload' });
       toast.error("Failed to submit verification");
     } finally {
       setLoading(false);

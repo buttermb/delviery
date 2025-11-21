@@ -244,7 +244,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
       setReviewComment("");
       queryClient.invalidateQueries({ queryKey: ["product-reviews", product.id] });
     } catch (error) {
-      logger.error("Error submitting review", error as Error, 'ProductDetailModal');
+      logger.error("Error submitting review", error as Error, { component: 'ProductDetailModal' });
       toast({
         title: "Failed to Submit Review",
         description: "Please try again later.",

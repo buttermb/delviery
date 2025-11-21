@@ -21,6 +21,14 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { UpgradePrompt } from "@/components/shared/UpgradePrompt";
 import { useState } from "react";
+import type { Database } from "@/integrations/supabase/types";
+
+interface TenantStats {
+  products: number;
+  customers: number;
+  menus: number;
+  revenue: number;
+}
 
 export default function TrialExpiredPage() {
   const navigate = useNavigate();
@@ -30,26 +38,31 @@ export default function TrialExpiredPage() {
   // Fetch tenant stats
   const { data: tenantStats } = useQuery({
     queryKey: ["trial-expired-stats", tenant?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<TenantStats | null> => {
       if (!tenant?.id) return null;
 
       const usage = (tenant as any)?.usage || {};
 
       // Get revenue if any
-      // @ts-ignore - Supabase type inference issue
+      
       const ordersQuery = await supabase
         .from("menu_orders")
         .select("total_amount")
         .eq("tenant_id", tenant.id)
         .eq("status", "confirmed");
-      const orders = ordersQuery.data as any;
+      
+      interface OrderWithAmount {
+        total_amount: number | null;
+      }
+      
+      const orders = (ordersQuery.data || []) as OrderWithAmount[];
 
       const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
 
       return {
-        products: usage.products || 0,
-        customers: usage.customers || 0,
-        menus: usage.menus || 0,
+        products: Number(usage.products || 0),
+        customers: Number(usage.customers || 0),
+        menus: Number(usage.menus || 0),
         revenue,
       };
     },

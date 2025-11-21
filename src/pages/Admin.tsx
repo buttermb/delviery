@@ -61,7 +61,7 @@ const Admin = () => {
       });
 
       if (error) {
-        logger.error('Admin verification error', error, 'Admin');
+        logger.error('Admin verification error', error, { component: 'Admin' });
         setIsAdmin(false);
       } else {
         setIsAdmin(isAdminUser === true);

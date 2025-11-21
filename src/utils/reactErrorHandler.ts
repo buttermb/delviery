@@ -8,18 +8,19 @@ import { logger } from './logger';
 
 export const handleComponentError = (error: Error, errorInfo?: React.ErrorInfo) => {
   // Log error
-  logger.error('Component Error', error, 'reactErrorHandler');
+  logger.error('Component Error', error, { component: 'reactErrorHandler' });
   
   if (errorInfo) {
-    logger.debug('Error Info', errorInfo, 'reactErrorHandler');
+    logger.debug('Error Info', { errorInfo, component: 'reactErrorHandler' });
     
     // Log specific details for replace errors
     if (error.message?.includes('replace')) {
       logger.debug('Replace Error Details', {
         error: error.message,
         stack: error.stack,
-        componentStack: errorInfo?.componentStack
-      }, 'reactErrorHandler');
+        componentStack: errorInfo?.componentStack,
+        component: 'reactErrorHandler'
+      });
     }
   }
 
