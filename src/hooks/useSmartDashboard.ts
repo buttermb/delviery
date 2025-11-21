@@ -41,9 +41,10 @@ export function useSmartDashboard() {
         const fetchMetrics = async () => {
             // In a real app, these would be actual DB queries
             // For now, we'll simulate "live" data with some randomness based on actual counts if available
+            // @ts-ignore - Avoid deep type instantiation
             const { count: orderCount } = await supabase
                 .from('menu_orders')
-                .select('*', { count: 'exact', head: true })
+                .select('id', { count: 'exact', head: true })
                 .eq('tenant_id', tenant.id)
                 .gte('created_at', new Date().setHours(0, 0, 0, 0));
 
