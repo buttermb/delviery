@@ -58,14 +58,14 @@ serve(withZenProtection(async (req) => {
     // Generate unique encrypted URL token
     const urlToken = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
 
-    // Hash the access code (never store plaintext)
+    // Hash the access code (for verification)
     const encoder = new TextEncoder();
     const accessCodeData = encoder.encode(menuData.access_code);
     const hashBuffer = await crypto.subtle.digest('SHA-256', accessCodeData);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const accessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Create menu with plaintext data first
+    // Create menu with plaintext data first (including the access_code for later retrieval)
     const { data: menu, error: menuError } = await supabase
       .from('disposable_menus')
       .insert({
@@ -73,6 +73,7 @@ serve(withZenProtection(async (req) => {
         name: menuData.name,
         description: menuData.description,
         encrypted_url_token: urlToken,
+        access_code: menuData.access_code, // Store plaintext for sharing (will be encrypted later)
         access_code_hash: accessCodeHash,
         security_settings: menuData.security_settings || {},
         appearance_settings: menuData.appearance_settings || {},
