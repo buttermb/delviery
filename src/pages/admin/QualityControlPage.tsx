@@ -78,7 +78,7 @@ export default function QualityControlPage() {
 
       try {
         const { data, error } = await supabase
-          .from("inventory_batches")
+          .from("inventory_batches" as any)
           .select(`
             *,
             product:products(name, image_url)
@@ -91,7 +91,7 @@ export default function QualityControlPage() {
           return [];
         }
 
-        return (data || []) as Batch[];
+        return (data || []) as any as Batch[];
       } catch {
         return [];
       }

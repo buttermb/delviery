@@ -279,7 +279,7 @@ const DisposableMenuAnalytics = () => {
 
         <TabsContent value="security">
           <SecurityEventsTable
-            events={securityEvents || []}
+            events={(securityEvents || []) as any}
             onRefresh={refetchEvents}
           />
         </TabsContent>

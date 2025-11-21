@@ -37,12 +37,12 @@ export default function LiveOrders() {
         (payload) => {
           // Validate payload structure before processing
           if (payload && typeof payload === 'object') {
-            if (payload.new) {
-              logger.info('Order update received', { component: 'LiveOrders', orderNumber: payload.new.order_number });
+            if (payload.new && typeof payload.new === 'object') {
+              logger.info('Order update received', { component: 'LiveOrders', orderNumber: (payload.new as any)?.order_number });
               loadLiveOrders();
-            } else if (payload.old) {
+            } else if (payload.old && typeof payload.old === 'object') {
               // Handle DELETE events
-              logger.info('Order deleted', { component: 'LiveOrders', orderId: payload.old.id });
+              logger.info('Order deleted', { component: 'LiveOrders', orderId: (payload.old as any)?.id });
               loadLiveOrders();
             }
           }

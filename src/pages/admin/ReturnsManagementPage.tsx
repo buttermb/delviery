@@ -91,18 +91,16 @@ export default function ReturnsManagementPage() {
 
   // For now, we'll use a mock query since the returns table may not exist
   // In production, this would query the actual returns table
-  // @ts-expect-error - return_authorizations table not in types yet
   const { data: returns, isLoading } = useQuery({
     queryKey: queryKeys.returns.list({ status: statusFilter }),
     queryFn: async () => {
-      // @ts-expect-error - return_authorizations table not in types yet
       let query = supabase
-        .from("return_authorizations")
+        .from("return_authorizations" as any)
         .select("*")
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
+        query = query.eq("status", statusFilter) as any;
       }
 
       const { data, error } = await query;
@@ -112,14 +110,14 @@ export default function ReturnsManagementPage() {
         return [];
       }
 
-      return (data || []) as ReturnAuthorization[];
+      return (data || []) as any as ReturnAuthorization[];
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("returns")
+        .from("returns" as any)
         .delete()
         .eq("id", id);
 

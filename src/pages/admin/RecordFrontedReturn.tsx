@@ -101,8 +101,8 @@ export default function RecordFrontedReturn() {
       const { error: updateError } = await supabase
         .from("fronted_inventory")
         .update({
-          quantity_returned: front.quantity_returned + goodReturns,
-          quantity_damaged: front.quantity_damaged + damagedReturns,
+          quantity_returned: (front as any).quantity_returned + goodReturns,
+          quantity_damaged: (front as any).quantity_damaged + damagedReturns,
         })
         .eq("id", id);
 
@@ -111,14 +111,14 @@ export default function RecordFrontedReturn() {
       // Create scan records
       for (const returnItem of scannedReturns) {
         await supabase.from("fronted_inventory_scans").insert({
-          account_id: front.account_id,
+          account_id: (front as any).account_id,
           fronted_inventory_id: id,
-          product_id: front.product_id,
+          product_id: (front as any).product_id,
           barcode: returnItem.barcode,
           scan_type: returnItem.condition === "good" ? "return" : "damage",
           quantity: 1,
           notes: returnItem.reason || notes,
-        });
+        } as any);
       }
 
       // Update product inventory for good returns
@@ -126,14 +126,14 @@ export default function RecordFrontedReturn() {
         const { data: product } = await supabase
           .from("products")
           .select("available_quantity")
-          .eq("id", front.product_id)
+          .eq("id", (front as any).product_id)
           .single();
 
         if (product) {
           await supabase
             .from("products")
-            .update({ available_quantity: product.available_quantity + goodReturns })
-            .eq("id", front.product_id);
+            .update({ available_quantity: (product as any).available_quantity + goodReturns })
+            .eq("id", (front as any).product_id);
         }
       }
 
@@ -163,7 +163,7 @@ export default function RecordFrontedReturn() {
         <div>
           <h1 className="text-3xl font-bold">Scan Returns</h1>
           <p className="text-muted-foreground">
-            {front.products?.name} • Front #{id.slice(0, 8)}
+            {(front as any).products?.name} • Front #{id.slice(0, 8)}
           </p>
         </div>
       </div>

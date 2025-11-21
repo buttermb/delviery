@@ -28,7 +28,7 @@ export default function LoyaltyProgramPage() {
     queryKey: ["loyalty-config", tenant?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("loyalty_program_config")
+        .from("loyalty_program_config" as any)
         .select("*")
         .eq("tenant_id", tenant?.id)
         .single();
@@ -47,7 +47,7 @@ export default function LoyaltyProgramPage() {
     queryKey: ["loyalty-tiers", tenant?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("loyalty_tiers")
+        .from("loyalty_tiers" as any)
         .select("*")
         .eq("tenant_id", tenant?.id)
         .order("order_index");
@@ -66,7 +66,7 @@ export default function LoyaltyProgramPage() {
     queryKey: ["loyalty-rewards", tenant?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("loyalty_rewards")
+        .from("loyalty_rewards" as any)
         .select("*")
         .eq("tenant_id", tenant?.id)
         .order("points_cost");
@@ -86,19 +86,19 @@ export default function LoyaltyProgramPage() {
     queryFn: async () => {
       try {
         const { data: pointsData } = await supabase
-          .from("customer_loyalty_points")
+          .from("customer_loyalty_points" as any)
           .select("total_points, lifetime_points")
           .eq("tenant_id", tenant?.id);
 
         const { data: redemptionsData } = await supabase
-          .from("loyalty_reward_redemptions")
+          .from("loyalty_reward_redemptions" as any)
           .select("points_spent")
           .eq("tenant_id", tenant?.id);
 
         const totalCustomers = pointsData?.length || 0;
-        const totalPointsAwarded = pointsData?.reduce((sum, p) => sum + (p.lifetime_points || 0), 0) || 0;
-        const totalPointsRedeemed = redemptionsData?.reduce((sum, r) => sum + (r.points_spent || 0), 0) || 0;
-        const activePointsBalance = pointsData?.reduce((sum, p) => sum + (p.total_points || 0), 0) || 0;
+        const totalPointsAwarded = pointsData?.reduce((sum: number, p: any) => sum + (p.lifetime_points || 0), 0) || 0;
+        const totalPointsRedeemed = redemptionsData?.reduce((sum: number, r: any) => sum + (r.points_spent || 0), 0) || 0;
+        const activePointsBalance = pointsData?.reduce((sum: number, p: any) => sum + (p.total_points || 0), 0) || 0;
 
         return {
           totalCustomers,
@@ -128,7 +128,7 @@ export default function LoyaltyProgramPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
             <Trophy className="h-8 w-8 text-emerald-500" />
-            {config?.program_name || "Loyalty Program"}
+            {(config as any)?.program_name || "Loyalty Program"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Reward customers and drive repeat purchases
@@ -214,35 +214,35 @@ export default function LoyaltyProgramPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Points per Dollar</div>
-                  <div className="text-2xl font-bold">{config?.points_per_dollar || 0}x</div>
+                  <div className="text-2xl font-bold">{(config as any)?.points_per_dollar || 0}x</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Points to Dollar Ratio</div>
                   <div className="text-2xl font-bold">
-                    ${(config?.points_to_dollar_ratio || 0).toFixed(2)}
+                    ${((config as any)?.points_to_dollar_ratio || 0).toFixed(2)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Signup Bonus</div>
-                  <div className="text-2xl font-bold">{config?.signup_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{(config as any)?.signup_bonus_points || 0} pts</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Birthday Bonus</div>
-                  <div className="text-2xl font-bold">{config?.birthday_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{(config as any)?.birthday_bonus_points || 0} pts</div>
                 </div>
               </div>
 
               <div className="pt-4 border-t">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Program Status</span>
-                  <Badge variant={config?.is_active ? "default" : "secondary"}>
-                    {config?.is_active ? "Active" : "Inactive"}
+                  <Badge variant={(config as any)?.is_active ? "default" : "secondary"}>
+                    {(config as any)?.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-sm font-medium">Tier System</span>
-                  <Badge variant={config?.tier_enabled ? "default" : "secondary"}>
-                    {config?.tier_enabled ? "Enabled" : "Disabled"}
+                  <Badge variant={(config as any)?.tier_enabled ? "default" : "secondary"}>
+                    {(config as any)?.tier_enabled ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
               </div>
@@ -266,7 +266,7 @@ export default function LoyaltyProgramPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tiers?.map((tier) => (
+            {(tiers as any)?.map((tier: any) => (
               <Card key={tier.id} className="relative overflow-hidden">
                 <div
                   className="absolute top-0 left-0 w-1 h-full"
@@ -289,7 +289,7 @@ export default function LoyaltyProgramPage() {
                   <div className="text-sm">
                     <div className="font-medium mb-2">Benefits:</div>
                     <ul className="space-y-1">
-                      {(tier.benefits as string[])?.map((benefit, i) => (
+                      {(tier.benefits as string[])?.map((benefit: string, i: number) => (
                         <li key={i} className="flex items-center gap-2 text-muted-foreground">
                           <TrendingUp className="h-3 w-3 text-emerald-500" />
                           {benefit}
@@ -319,7 +319,7 @@ export default function LoyaltyProgramPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {rewards?.map((reward) => (
+            {(rewards as any)?.map((reward: any) => (
               <Card key={reward.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">

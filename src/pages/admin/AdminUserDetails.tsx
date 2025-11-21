@@ -171,7 +171,13 @@ export default function AdminUserDetails() {
         setRiskAssessment({
           score: user?.risk_score || 50,
           level: user?.trust_level || 'new',
-          factors: [],
+          factors: {
+            nameRisk: 0,
+            addressRisk: 0,
+            behaviorRisk: 0,
+            paymentRisk: 0,
+            deviceRisk: 0,
+          },
         });
         return;
       }
@@ -183,7 +189,13 @@ export default function AdminUserDetails() {
         setRiskAssessment({
           score: user?.risk_score || 50,
           level: user?.trust_level || 'new',
-          factors: [],
+          factors: {
+            nameRisk: 0,
+            addressRisk: 0,
+            behaviorRisk: 0,
+            paymentRisk: 0,
+            deviceRisk: 0,
+          },
         });
         return;
       }
@@ -194,7 +206,13 @@ export default function AdminUserDetails() {
       setRiskAssessment({
         score: user?.risk_score || 50,
         level: user?.trust_level || 'new',
-        factors: [],
+        factors: {
+          nameRisk: 0,
+          addressRisk: 0,
+          behaviorRisk: 0,
+          paymentRisk: 0,
+          deviceRisk: 0,
+        },
       });
     }
   };

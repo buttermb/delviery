@@ -46,7 +46,7 @@ export default function AppointmentSchedulerPage() {
 
       try {
         const { data, error } = await supabase
-          .from("appointments")
+          .from("appointments" as any)
           .select("*")
           .eq("tenant_id", tenant.id)
           .order("scheduled_at", { ascending: true });

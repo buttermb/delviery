@@ -102,10 +102,10 @@ const GlobalSearch = () => {
       ]);
 
       return {
-        users: (users.data || []) as UserSearchResult[],
-        orders: (orders.data || []) as OrderSearchResult[],
-        products: (products.data || []) as ProductSearchResult[],
-        addresses: (addresses.data || []) as AddressSearchResult[],
+        users: (users.data || []) as any as UserSearchResult[],
+        orders: (orders.data || []) as any as OrderSearchResult[],
+        products: (products.data || []) as any as ProductSearchResult[],
+        addresses: (addresses.data || []) as any as AddressSearchResult[],
         totalResults:
           (users.data?.length || 0) +
           (orders.data?.length || 0) +
