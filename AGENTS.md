@@ -1,5 +1,29 @@
 # Agent Instructions for BigMike Wholesale Platform
 
+## ⚠️ CRITICAL: Always Read This File
+This file MUST be read at the start of EVERY session. It contains essential context for operating effectively in this codebase.
+
+## 🛠️ MCP Server Configurations
+
+### Available Tools
+This project is configured to work with the following MCP servers:
+
+**ChunkHound** (Code Research)
+- Semantic code search across the codebase
+- Use for: Finding patterns, understanding architecture, locating implementations
+- Example: "How is authentication implemented?" "Where is rate limiting configured?"
+
+**ArguSeek** (Domain Research)
+- Retrieves up-to-date documentation and best practices from the web
+- Use for: Latest API docs, framework updates, security best practices
+- Example: "Latest Next.js 14 patterns" "Supabase edge function best practices"
+
+### Non-Interactive Command Modifications
+When running commands in automated/agent contexts:
+- Tests: `npm test -- --run` (no watch mode)
+- Build: `npm run build` (already non-interactive)
+- Linting: `npm run lint` (already non-interactive)
+
 ## Commands
 - **Dev**: `npm run dev` (Vite dev server on port 8080)
 - **Build**: `npm run build` (production build - requires 4GB heap)
@@ -52,6 +76,61 @@
 - `disposable_menus`, `menu_products` - Temporary secure menus
 - `wholesale_payments`, `loyalty_points` - Financial
 - `age_verifications`, `fraud_flags`, `audit_logs` - Security & compliance
+
+## 🏗️ Architectural Constraints
+
+### Critical Design Principles
+1. **Multi-Tenancy First**: Every database query MUST include `tenant_id` filter
+2. **No Direct Auth Access**: Never query `auth.users` - use `public.profiles`
+3. **Edge Functions Only**: All sensitive operations go through edge functions, not client-side
+4. **Type Safety**: Zero `any` types - use proper TypeScript interfaces from `src/types/`
+5. **Query Keys**: Always use the `queryKeys` factory from `@/lib/queryKeys`
+
+### Data Flow Pattern
+```
+Client → TanStack Query → Edge Function → Database (with RLS)
+```
+
+Never bypass this flow for sensitive operations.
+
+### Service Repository Pattern
+- Business logic: `/src/lib/` or `/src/hooks/`
+- Data access: TanStack Query hooks
+- UI: Components are thin, delegate to hooks
+- Edge functions: Validation + RLS-enforced database operations
+
+## ⚠️ Common Pitfalls
+
+### Dependency Warnings
+- **React Router**: We use v6 - routes are defined in `App.tsx`
+- **Supabase Client**: Auto-generated types in `src/integrations/supabase/types.ts` - NEVER edit
+- **TanStack Query**: v5 syntax (not v4) - uses `queryClient.invalidateQueries({ queryKey })`
+- **Vite**: Build requires 4GB heap (configured in package.json)
+
+### Known Issues
+- Build fails if you use `console.log` in frontend code (use `logger` instead)
+- LocalStorage fails in incognito mode (always wrap in try-catch)
+- Supabase types regenerate on schema changes (don't import from other files)
+
+## Environment Variables
+
+### Required for Development
+```bash
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### Required for Edge Functions
+```bash
+SUPABASE_URL=your-project-url
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+### Optional
+- `VITE_STRIPE_PUBLISHABLE_KEY` - For subscription features
+- `VITE_GOOGLE_MAPS_API_KEY` - For delivery mapping
+
+**Never commit these to git** - they're in `.env` which is gitignored.
 
 ## Code Style
 
