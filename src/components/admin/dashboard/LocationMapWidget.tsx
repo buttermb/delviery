@@ -24,9 +24,27 @@ const getDeterministicOffset = (str: string) => {
 export function LocationMapWidget() {
   const { account } = useAccount();
 
-  const { data: locations } = useQuery({
+  interface LocationData {
+    warehouses: Array<{
+      name: string;
+      lbs: number;
+      count: number;
+      lat: number;
+      lng: number;
+    }>;
+    runners: Array<{
+      id: string;
+      full_name: string;
+      status: string;
+      lat: number;
+      lng: number;
+    }>;
+  }
+
+  // @ts-ignore - Complex query return type causing deep instantiation
+  const { data: locations } = useQuery<LocationData | null>({
     queryKey: ['location-map', account?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<LocationData | null> => {
       if (!account?.id) return null;
 
       interface InventoryItem {

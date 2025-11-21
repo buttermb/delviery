@@ -32,7 +32,8 @@ export default function TenantAdminLoginPage() {
 
 
   useEffect(() => {
-    const fetchTenant = async () => {
+    // @ts-ignore - Complex query return type
+    const fetchTenant = async (): Promise<void> => {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from("tenants")

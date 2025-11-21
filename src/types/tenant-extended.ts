@@ -13,4 +13,8 @@ export type Tenant = Database['public']['Tables']['tenants']['Row'] & {
   next_billing_date?: string | null;
   payment_method_added?: boolean;
   phone?: string;
+  detected_operation_size?: string | null;
+  last_size_detection_at?: string | null;
+  monthly_orders?: number;
+  team_size?: number;
 };
