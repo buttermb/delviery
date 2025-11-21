@@ -2934,6 +2934,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "disposable_menu_products_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
             foreignKeyName: "disposable_menu_products_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -4511,6 +4518,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invitations_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       invoices: {
@@ -5409,6 +5423,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_access_code_history_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       menu_access_logs: {
@@ -5481,6 +5502,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_access_logs_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -5561,6 +5589,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_access_whitelist_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       menu_burn_history: {
@@ -5613,6 +5648,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "menu_burn_history_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
             foreignKeyName: "menu_burn_history_regenerated_menu_id_fkey"
             columns: ["regenerated_menu_id"]
             isOneToOne: false
@@ -5625,6 +5667,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_burn_history_regenerated_menu_id_fkey"
+            columns: ["regenerated_menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -5676,6 +5725,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_decryption_audit_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -5734,6 +5790,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_device_locks_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       menu_honeypots: {
@@ -5790,6 +5853,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_honeypots_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -5866,6 +5936,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -5980,6 +6057,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_screenshot_attempts_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       menu_security_events: {
@@ -6041,6 +6125,13 @@ export type Database = {
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "menu_security_events_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
         ]
       }
       menu_view_tracking: {
@@ -6097,6 +6188,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disposable_menus_decrypted"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_view_tracking_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
           },
         ]
       }
@@ -10631,6 +10729,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "disposable_menu_products_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
             foreignKeyName: "disposable_menu_products_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -10705,6 +10810,28 @@ export type Database = {
           security_settings?: never
           status?: Database["public"]["Enums"]["menu_status"] | null
           tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_disposable_menus_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_analytics_summary: {
+        Row: {
+          avg_order_value: number | null
+          conversion_rate: number | null
+          last_accessed_at: string | null
+          menu_id: string | null
+          order_count: number | null
+          revenue: number | null
+          tenant_id: string | null
+          total_views: number | null
+          unique_visitors: number | null
         }
         Relationships: [
           {
@@ -11018,6 +11145,7 @@ export type Database = {
         Args: { p_execution_id: string }
         Returns: string
       }
+      refresh_menu_analytics: { Args: never; Returns: undefined }
       resolve_dead_letter_entry: {
         Args: { p_dlq_id: string; p_notes?: string; p_user_id: string }
         Returns: undefined

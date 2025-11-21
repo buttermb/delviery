@@ -1,5 +1,5 @@
 
-import { Redis } from 'https://deno.land/x/redis@v0.29.0/mod.ts';
+import { connect, Redis } from 'https://deno.land/x/redis@v0.29.0/mod.ts';
 
 export interface MenuCacheItem {
     decryptedData: any;
@@ -9,7 +9,7 @@ export interface MenuCacheItem {
 }
 
 export class MenuCache {
-    private redis: Redis;
+    private redis: Redis | null = null;
     private isConnected = false;
 
     constructor(
@@ -19,10 +19,10 @@ export class MenuCache {
     ) { }
 
     async connect() {
-        if (this.isConnected) return;
+        if (this.isConnected && this.redis) return;
 
         try {
-            this.redis = await new Redis().connect({
+            this.redis = await connect({
                 hostname: this.hostname,
                 port: this.port,
                 password: this.password,
@@ -40,7 +40,8 @@ export class MenuCache {
     }
 
     async get(tenantId: string, menuId: string): Promise<MenuCacheItem | null> {
-        if (!this.isConnected) await this.connect();
+        if (!this.isConnected || !this.redis) await this.connect();
+        if (!this.redis) return null;
 
         const key = this.getCacheKey(tenantId, menuId);
         const data = await this.redis.get(key);
@@ -61,21 +62,25 @@ export class MenuCache {
         data: MenuCacheItem,
         ttlSeconds: number = 3600
     ): Promise<void> {
-        if (!this.isConnected) await this.connect();
+        if (!this.isConnected || !this.redis) await this.connect();
+        if (!this.redis) return;
 
         const key = this.getCacheKey(tenantId, menuId);
         await this.redis.setex(key, ttlSeconds, JSON.stringify(data));
     }
 
     async invalidate(tenantId: string, menuId: string): Promise<void> {
-        if (!this.isConnected) await this.connect();
+        if (!this.isConnected || !this.redis) await this.connect();
+        if (!this.redis) return;
 
         const key = this.getCacheKey(tenantId, menuId);
         await this.redis.del(key);
     }
 
     async incrementAccessCount(tenantId: string, menuId: string): Promise<void> {
-        if (!this.isConnected) await this.connect();
+        if (!this.isConnected || !this.redis) await this.connect();
+        if (!this.redis) return;
+        
         // This is a simplified approach. Ideally we'd update the JSON or use a separate counter key.
         // For now, let's assume we might want to track this separately for speed.
         const statsKey = `menu:stats:${tenantId}:${menuId}`;
