@@ -37,7 +37,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as Customer[];
+        return (data || []) as any as Customer[];
       } catch (error: any) {
         if (error.code === '42P01') return [];
         throw error;
@@ -59,7 +59,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as Order[];
+        return (data || []) as any as Order[];
       } catch (error: any) {
         if (error.code === '42P01') return [];
         throw error;

@@ -55,7 +55,7 @@ export default function OrderAnalytics() {
     );
   }
 
-  const ordersByDay = (orders || []).reduce((acc: DayData[], order: Order) => {
+  const ordersByDay = (orders || []).reduce((acc: DayData[], order: any) => {
     const day = new Date(order.created_at).toLocaleDateString('en-US', { weekday: 'short' });
     const existing = acc.find(item => item.day === day);
     if (existing) {
@@ -68,7 +68,7 @@ export default function OrderAnalytics() {
   }, []);
 
   const totalOrders = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total || 0)), 0) || 0;
+  const totalRevenue = (orders as any)?.reduce((sum: number, o: any) => sum + parseFloat(String(o.total || 0)), 0) || 0;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   return (

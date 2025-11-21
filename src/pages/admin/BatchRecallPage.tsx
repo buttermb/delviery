@@ -121,7 +121,7 @@ export default function BatchRecallPage() {
             <RecallList
               recalls={recalls || []}
               isLoading={isLoading}
-              onSelect={(recall) => setSelectedRecall(recall)}
+              onSelect={(recall) => setSelectedRecall(recall as any)}
             />
           )}
         </TabsContent>

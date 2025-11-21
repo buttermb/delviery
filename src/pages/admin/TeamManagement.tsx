@@ -240,7 +240,7 @@ export default function TeamManagement() {
 
   // Calculate user limit and usage
   const activeUserCount = teamMembers.filter(m => m.status !== 'deleted' && m.status !== 'suspended').length;
-  const userLimit = tenant?.limits?.users || tenant?.limits?.team_members || 3;
+  const userLimit = (tenant?.limits as any)?.users || (tenant?.limits as any)?.team_members || 3;
   const isEnterprise = tenant?.subscription_plan === 'enterprise';
   const isLimitReached = !isEnterprise && activeUserCount >= userLimit;
   const remainingUsers = isEnterprise ? Infinity : Math.max(0, userLimit - activeUserCount);
