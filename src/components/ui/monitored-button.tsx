@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 /**
  * Monitored Button Component
  * Automatically tracks button clicks, errors, and performance

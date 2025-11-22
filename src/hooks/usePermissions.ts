@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 /**
  * usePermissions Hook
  * Role-based permission checking using new permission system
