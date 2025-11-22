@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { CRMInvoice, InvoiceFormValues } from '@/types/crm';
+import type { CRMInvoice, InvoiceFormValues, LineItem } from '@/types/crm';
 import { toast } from 'sonner';
 import { crmClientKeys } from './useClients';
 import { useAccountIdSafe } from './useAccountId';
@@ -48,7 +48,10 @@ export function useInvoices(status?: CRMInvoice['status']) {
                 logger.error('Failed to fetch invoices', error, { component: 'useInvoices', accountId, status });
                 throw error;
             }
-            return data as CRMInvoice[];
+            return (data || []).map((row: any) => ({
+                ...row,
+                line_items: ((row.line_items as any) || []) as LineItem[],
+            })) as CRMInvoice[];
         },
         enabled: !!accountId,
     });
@@ -76,7 +79,10 @@ export function useClientInvoices(clientId: string | undefined) {
                 logger.error('Failed to fetch client invoices', error, { component: 'useClientInvoices', clientId, accountId });
                 throw error;
             }
-            return data as CRMInvoice[];
+            return (data || []).map((row: any) => ({
+                ...row,
+                line_items: ((row.line_items as any) || []) as LineItem[],
+            })) as CRMInvoice[];
         },
         enabled: !!clientId && !!accountId,
     });
@@ -104,7 +110,10 @@ export function useInvoice(invoiceId: string | undefined) {
                 logger.error('Failed to fetch invoice', error, { component: 'useInvoice', invoiceId, accountId });
                 throw error;
             }
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMInvoice;
         },
         enabled: !!invoiceId && !!accountId,
     });
@@ -126,7 +135,10 @@ export function useInvoiceByToken(token: string | undefined) {
                 .single();
 
             if (error) throw error;
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMInvoice;
         },
         enabled: !!token,
     });
@@ -174,7 +186,10 @@ export function useCreateInvoice() {
                 logger.error('Failed to create invoice', error, { component: 'useCreateInvoice', accountId: finalAccountId, clientId: values.client_id });
                 throw error;
             }
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMInvoice;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.lists() });
@@ -234,7 +249,10 @@ export function useUpdateInvoice() {
                 logger.error('Failed to update invoice', error, { component: 'useUpdateInvoice', invoiceId: id, accountId });
                 throw error;
             }
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMInvoice;
         },
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.lists() });
@@ -279,7 +297,10 @@ export function useMarkInvoicePaid() {
                 logger.error('Failed to mark invoice as paid', error, { component: 'useMarkInvoicePaid', invoiceId, accountId });
                 throw error;
             }
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMInvoice;
         },
         onSuccess: (data, invoiceId) => {
             queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.lists() });
@@ -357,7 +378,10 @@ export function useRecentInvoices(limit: number = 10) {
                 logger.error('Failed to fetch recent invoices', error, { component: 'useRecentInvoices', accountId, limit });
                 throw error;
             }
-            return data as CRMInvoice[];
+            return (data || []).map((row: any) => ({
+                ...row,
+                line_items: ((row.line_items as any) || []) as LineItem[],
+            })) as CRMInvoice[];
         },
         enabled: !!accountId,
     });

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { CRMPreOrder, PreOrderFormValues, InvoiceFormValues } from '@/types/crm';
+import type { CRMPreOrder, PreOrderFormValues, InvoiceFormValues, LineItem } from '@/types/crm';
 import { toast } from 'sonner';
 import { crmClientKeys } from './useClients';
 import { crmInvoiceKeys } from './useInvoices';
@@ -48,7 +48,10 @@ export function usePreOrders(status?: CRMPreOrder['status']) {
                 logger.error('Failed to fetch pre-orders', error, { component: 'usePreOrders', accountId, status });
                 throw error;
             }
-            return data as CRMPreOrder[];
+            return (data || []).map((row: any) => ({
+                ...row,
+                line_items: ((row.line_items as any) || []) as LineItem[],
+            })) as CRMPreOrder[];
         },
         enabled: !!accountId,
     });
@@ -76,7 +79,10 @@ export function useClientPreOrders(clientId: string | undefined) {
                 logger.error('Failed to fetch client pre-orders', error, { component: 'useClientPreOrders', clientId, accountId });
                 throw error;
             }
-            return data as CRMPreOrder[];
+            return (data || []).map((row: any) => ({
+                ...row,
+                line_items: ((row.line_items as any) || []) as LineItem[],
+            })) as CRMPreOrder[];
         },
         enabled: !!clientId && !!accountId,
     });
@@ -104,7 +110,10 @@ export function usePreOrder(preOrderId: string | undefined) {
                 logger.error('Failed to fetch pre-order', error, { component: 'usePreOrder', preOrderId, accountId });
                 throw error;
             }
-            return data as CRMPreOrder;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMPreOrder;
         },
         enabled: !!preOrderId && !!accountId,
     });
@@ -148,7 +157,10 @@ export function useCreatePreOrder() {
                 logger.error('Failed to create pre-order', error, { component: 'useCreatePreOrder', accountId: finalAccountId, clientId: values.client_id });
                 throw error;
             }
-            return data as CRMPreOrder;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMPreOrder;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.lists() });
@@ -203,7 +215,10 @@ export function useUpdatePreOrder() {
                 logger.error('Failed to update pre-order', error, { component: 'useUpdatePreOrder', preOrderId: id, accountId });
                 throw error;
             }
-            return data as CRMPreOrder;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMPreOrder;
         },
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.lists() });
@@ -338,7 +353,10 @@ export function useCancelPreOrder() {
                 logger.error('Failed to cancel pre-order', error, { component: 'useCancelPreOrder', preOrderId, accountId });
                 throw error;
             }
-            return data as CRMPreOrder;
+            return {
+                ...data,
+                line_items: ((data.line_items as any) || []) as LineItem[],
+            } as CRMPreOrder;
         },
         onSuccess: (data, preOrderId) => {
             queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.lists() });

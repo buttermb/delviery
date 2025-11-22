@@ -23,6 +23,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCreateClient } from '@/hooks/crm/useClients';
 import { useLogActivity } from '@/hooks/crm/useActivityLog';
+import { useAccountIdSafe } from '@/hooks/crm/useAccountId';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2 } from 'lucide-react';
 
@@ -51,7 +53,7 @@ export function CreateClientDialog({
     const open = isControlled ? controlledOpen : internalOpen;
     const setOpen = isControlled ? setControlledOpen! : setInternalOpen;
 
-    const { account } = useAccount();
+    const accountId = useAccountIdSafe();
     const createClient = useCreateClient();
     const logActivity = useLogActivity();
 
@@ -65,14 +67,14 @@ export function CreateClientDialog({
     });
 
     const onSubmit = async (values: FormValues) => {
-        if (!account?.id) {
+        if (!accountId) {
             toast.error('Account information not available');
             return;
         }
 
         try {
             const client = await createClient.mutateAsync({
-                account_id: account.id,
+                account_id: accountId,
                 name: values.name,
                 email: values.email || undefined,
                 phone: values.phone || undefined,

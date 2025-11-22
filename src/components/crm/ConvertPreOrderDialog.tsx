@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useConvertPreOrderToInvoice } from "@/hooks/crm/usePreOrders";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 const formSchema = z.object({
     issue_date: z.date(),
@@ -68,17 +69,19 @@ export function ConvertPreOrderDialog({ preOrder, trigger, open: controlledOpen,
 
     const onSubmit = async (values: FormValues) => {
         try {
-            const invoice = await convertPreOrder.mutateAsync({
-                id: preOrder.id,
-                issue_date: values.issue_date.toISOString(),
-                due_date: values.due_date.toISOString(),
+            const { invoice, preOrder: updatedPreOrder } = await convertPreOrder.mutateAsync({
+                preOrderId: preOrder.id,
+                invoiceData: {
+                    invoice_date: values.issue_date.toISOString().slice(0, 10),
+                    due_date: values.due_date.toISOString().slice(0, 10),
+                },
             });
 
             // Log activity
             logActivity.mutate({
                 client_id: preOrder.client_id,
-                activity_type: "pre_order_converted",
-                description: `Pre-order #${preOrder.po_number} converted to Invoice #${invoice.invoice_number}`,
+                activity_type: "invoice_created",
+                description: `Pre-order #${preOrder.pre_order_number} converted to Invoice #${invoice.invoice_number}`,
                 reference_id: invoice.id,
                 reference_type: "crm_invoices",
             });

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { clearAllCachesAndServiceWorkers, reloadWithCacheBypass } from './serviceWorkerCache';
 /**
  * Lazy import wrapper with retry and error handling
  * Provides fallback UI for failed module loads
@@ -60,14 +61,10 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         return {
           default: (() => {
             const FallbackComponent: ComponentType<any> = () => {
-              const handleReload = () => {
-                // Clear cache and reload
-                if ('caches' in window) {
-                  caches.keys().then(names => {
-                    names.forEach(name => caches.delete(name));
-                  });
-                }
-                window.location.reload();
+              const handleReload = async () => {
+                // Clear all caches and service workers, then reload
+                await clearAllCachesAndServiceWorkers();
+                reloadWithCacheBypass();
               };
 
               return React.createElement('div', {

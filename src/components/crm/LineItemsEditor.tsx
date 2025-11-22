@@ -43,7 +43,7 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
             description: "",
             quantity: 1,
             unit_price: 0,
-            total: 0,
+            line_total: 0,
         };
         onChange([...items, newItem]);
     };
@@ -75,12 +75,12 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
         }
 
         // Recalculate total
-        item.total = item.quantity * item.unit_price;
+        item.line_total = item.quantity * item.unit_price;
         newItems[index] = item;
         onChange(newItems);
     };
 
-    const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.line_total, 0);
 
     return (
         <div className="space-y-4">
@@ -144,7 +144,7 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
-                                        {formatCurrency(item.total)}
+                                        {formatCurrency(item.line_total)}
                                     </TableCell>
                                     <TableCell>
                                         <Button
