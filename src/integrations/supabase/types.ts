@@ -1904,6 +1904,456 @@ export type Database = {
           },
         ]
       }
+      crm_activity_log: {
+        Row: {
+          account_id: string
+          activity_type: string
+          client_id: string
+          created_at: string | null
+          description: string
+          id: string
+          performed_by_name: string | null
+          performed_by_user_id: string | null
+          reference_id: string | null
+          reference_type: string | null
+        }
+        Insert: {
+          account_id: string
+          activity_type: string
+          client_id: string
+          created_at?: string | null
+          description: string
+          id?: string
+          performed_by_name?: string | null
+          performed_by_user_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Update: {
+          account_id?: string
+          activity_type?: string
+          client_id?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          performed_by_name?: string | null
+          performed_by_user_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activity_log_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activity_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_clients: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          notified_about_menu_update: boolean | null
+          open_balance: number | null
+          phone: string | null
+          portal_last_login: string | null
+          portal_password_hash: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notified_about_menu_update?: boolean | null
+          open_balance?: number | null
+          phone?: string | null
+          portal_last_login?: string | null
+          portal_password_hash?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notified_about_menu_update?: boolean | null
+          open_balance?: number | null
+          phone?: string | null
+          portal_last_login?: string | null
+          portal_password_hash?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_clients_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_invites: {
+        Row: {
+          accepted_at: string | null
+          account_id: string
+          client_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          invite_token: string
+          name: string
+          phone: string | null
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          account_id: string
+          client_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invite_token?: string
+          name: string
+          phone?: string | null
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          account_id?: string
+          client_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invite_token?: string
+          name?: string
+          phone?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_invites_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_invites_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_invoices: {
+        Row: {
+          account_id: string
+          client_id: string
+          created_at: string | null
+          created_from_pre_order_id: string | null
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          line_items: Json | null
+          paid_at: string | null
+          public_token: string
+          status: string | null
+          subtotal: number
+          tax_amount: number | null
+          tax_rate: number | null
+          total: number
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          client_id: string
+          created_at?: string | null
+          created_from_pre_order_id?: string | null
+          due_date: string
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          line_items?: Json | null
+          paid_at?: string | null
+          public_token?: string
+          status?: string | null
+          subtotal: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total: number
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          client_id?: string
+          created_at?: string | null
+          created_from_pre_order_id?: string | null
+          due_date?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          line_items?: Json | null
+          paid_at?: string | null
+          public_token?: string
+          status?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_invoices_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_invoices_created_from_pre_order_id_fkey"
+            columns: ["created_from_pre_order_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pre_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_messages: {
+        Row: {
+          account_id: string
+          client_id: string
+          created_at: string | null
+          id: string
+          message_text: string
+          sender_name: string | null
+          sender_type: string
+          sender_user_id: string | null
+        }
+        Insert: {
+          account_id: string
+          client_id: string
+          created_at?: string | null
+          id?: string
+          message_text: string
+          sender_name?: string | null
+          sender_type: string
+          sender_user_id?: string | null
+        }
+        Update: {
+          account_id?: string
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          message_text?: string
+          sender_name?: string | null
+          sender_type?: string
+          sender_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_messages_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_notes: {
+        Row: {
+          account_id: string
+          client_id: string
+          created_at: string | null
+          created_by_name: string | null
+          created_by_user_id: string | null
+          id: string
+          note_text: string
+        }
+        Insert: {
+          account_id: string
+          client_id: string
+          created_at?: string | null
+          created_by_name?: string | null
+          created_by_user_id?: string | null
+          id?: string
+          note_text: string
+        }
+        Update: {
+          account_id?: string
+          client_id?: string
+          created_at?: string | null
+          created_by_name?: string | null
+          created_by_user_id?: string | null
+          id?: string
+          note_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_notes_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_pre_orders: {
+        Row: {
+          account_id: string
+          client_id: string
+          converted_at: string | null
+          converted_to_invoice_id: string | null
+          created_at: string | null
+          id: string
+          line_items: Json | null
+          pre_order_number: string
+          status: string | null
+          subtotal: number
+          tax: number | null
+          total: number
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          client_id: string
+          converted_at?: string | null
+          converted_to_invoice_id?: string | null
+          created_at?: string | null
+          id?: string
+          line_items?: Json | null
+          pre_order_number: string
+          status?: string | null
+          subtotal: number
+          tax?: number | null
+          total: number
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          client_id?: string
+          converted_at?: string | null
+          converted_to_invoice_id?: string | null
+          created_at?: string | null
+          id?: string
+          line_items?: Json | null
+          pre_order_number?: string
+          status?: string | null
+          subtotal?: number
+          tax?: number | null
+          total?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_pre_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_pre_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "crm_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_pre_orders_converted_to_invoice_id_fkey"
+            columns: ["converted_to_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "crm_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_settings: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          faqs: Json | null
+          id: string
+          menu_last_updated_at: string | null
+          returns_refunds_count: number | null
+          subscription_info: string | null
+          telegram_video_link: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          faqs?: Json | null
+          id?: string
+          menu_last_updated_at?: string | null
+          returns_refunds_count?: number | null
+          subscription_info?: string | null
+          telegram_video_link?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          faqs?: Json | null
+          id?: string
+          menu_last_updated_at?: string | null
+          returns_refunds_count?: number | null
+          subscription_info?: string | null
+          telegram_video_link?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_settings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_integrations: {
         Row: {
           config: Json | null
@@ -11035,6 +11485,14 @@ export type Database = {
       encrypt_menu_numeric: { Args: { plaintext: number }; Returns: string }
       encrypt_menu_text: { Args: { plaintext: string }; Returns: string }
       generate_admin_pin: { Args: never; Returns: string }
+      generate_crm_invoice_number: {
+        Args: { p_account_id: string }
+        Returns: string
+      }
+      generate_crm_pre_order_number: {
+        Args: { p_account_id: string }
+        Returns: string
+      }
       generate_entry_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_otp: { Args: never; Returns: string }
