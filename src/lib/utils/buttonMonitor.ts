@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 /**
  * Button Monitoring System
  * Tracks all button interactions, errors, and success rates

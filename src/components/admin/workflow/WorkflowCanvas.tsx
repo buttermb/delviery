@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 /**
  * Workflow Canvas - Visual workflow builder with drag & drop
  * Database-connected workflow automation

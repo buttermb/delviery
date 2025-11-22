@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 /**
  * Forum API Functions
  * All forum-related database operations
