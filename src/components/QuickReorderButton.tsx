@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { logger } from "@/utils/logger";
 
 interface QuickReorderButtonProps {
   orderId: string;

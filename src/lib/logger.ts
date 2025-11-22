@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Production-ready logging utility
  * Replaces console.log/error throughout the app

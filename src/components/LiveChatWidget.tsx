@@ -7,7 +7,6 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/utils/logger';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useKeyboardDetection } from '@/hooks/useKeyboardDetection';
 import { cn } from '@/lib/utils';

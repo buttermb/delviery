@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import {
   Dialog,
@@ -13,7 +14,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { logger } from '@/utils/logger';
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {

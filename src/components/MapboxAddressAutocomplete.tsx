@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { logger } from "@/utils/logger";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
