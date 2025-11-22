@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Building2, ShoppingCart, ArrowRight, Users, Cog, Package, Truck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
 import { safeStorage } from "@/utils/safeStorage";
 
 export default function LoginDirectory() {

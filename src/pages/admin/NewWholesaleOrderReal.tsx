@@ -13,7 +13,6 @@ import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus,
 import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners, useCreateWholesaleOrder } from "@/hooks/useWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { logger } from "@/lib/logger";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 

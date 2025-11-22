@@ -42,7 +42,6 @@ import {
 import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];

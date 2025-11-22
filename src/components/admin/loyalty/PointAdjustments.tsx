@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { logger } from "@/lib/logger";
 
 export function PointAdjustments() {
   const { tenant } = useTenantAdminAuth();

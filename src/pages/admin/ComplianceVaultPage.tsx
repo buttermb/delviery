@@ -19,7 +19,6 @@ import { DocumentList } from "@/components/admin/compliance/DocumentList";
 import { DocumentUpload } from "@/components/admin/compliance/DocumentUpload";
 import { DocumentDetail } from "@/components/admin/compliance/DocumentDetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface ComplianceDocument {
   id: string;

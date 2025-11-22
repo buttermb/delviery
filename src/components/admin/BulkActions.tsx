@@ -6,7 +6,6 @@ import { X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { logger } from "@/lib/logger";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface BulkActionsProps {

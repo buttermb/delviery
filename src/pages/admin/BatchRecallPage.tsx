@@ -19,7 +19,6 @@ import { RecallForm } from "@/components/admin/recall/RecallForm";
 import { RecallDetail } from "@/components/admin/recall/RecallDetail";
 import { TraceabilityView } from "@/components/admin/recall/TraceabilityView";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Recall {
   id: string;

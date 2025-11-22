@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
-import { logger } from "@/lib/logger";
 import type { Product } from "@/types/product";
 
 const INITIAL_CATEGORIES_TO_SHOW = 2;

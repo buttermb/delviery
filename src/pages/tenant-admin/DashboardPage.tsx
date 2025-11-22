@@ -29,7 +29,6 @@ import { Link } from "react-router-dom";
 import { LimitGuard } from "@/components/whitelabel/LimitGuard";
 import { useTenantLimits } from "@/hooks/useTenantLimits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
-import { logger } from "@/lib/logger";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";

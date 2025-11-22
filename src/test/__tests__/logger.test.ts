@@ -1,11 +1,10 @@
-import { logger } from '@/lib/logger';
 /**
  * Logger Utility Tests
  * Tests for the centralized logging utility
  */
 
+import { logger } from '@/lib/logger';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { logger, log } from '@/utils/logger';
 
 describe('Logger', () => {
   beforeEach(() => {

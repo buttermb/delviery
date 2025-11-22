@@ -12,7 +12,6 @@ import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type WholesaleClientInsert = Database['public']['Tables']['wholesale_clients']['Insert'];

@@ -20,7 +20,6 @@ import { AppointmentList } from "@/components/admin/appointments/AppointmentList
 import { AppointmentForm } from "@/components/admin/appointments/AppointmentForm";
 import { AvailabilitySettings } from "@/components/admin/appointments/AvailabilitySettings";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Appointment {
   id: string;

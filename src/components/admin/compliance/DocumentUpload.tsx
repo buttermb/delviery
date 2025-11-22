@@ -22,7 +22,6 @@ import {
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface DocumentUploadProps {
   open: boolean;

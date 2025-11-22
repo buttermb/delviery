@@ -6,7 +6,6 @@ import { CheckCircle2, Loader2, Package, Users, Truck } from "lucide-react";
 import { createSampleWholesaleData } from "@/utils/sampleWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useNavigate } from "react-router-dom";
-import { logger } from "@/lib/logger";
 
 export default function WholesaleSetup() {
   const navigate = useNavigate();

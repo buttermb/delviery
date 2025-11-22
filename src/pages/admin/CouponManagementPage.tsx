@@ -42,7 +42,6 @@ import { CouponCreateForm } from "@/components/admin/coupons/CouponCreateForm";
 import { CouponAnalytics } from "@/components/admin/coupons/CouponAnalytics";
 import { BulkCouponGenerator } from "@/components/admin/coupons/BulkCouponGenerator";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Coupon = Database['public']['Tables']['coupon_codes']['Row'];

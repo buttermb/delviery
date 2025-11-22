@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { clearAllAuthTokens } from "@/lib/utils/authHelpers";
 import { Link } from "react-router-dom";
-import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;

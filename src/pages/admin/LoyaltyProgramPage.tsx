@@ -18,7 +18,6 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { logger } from "@/lib/logger";
 
 interface LoyaltyConfig {
   program_name?: string;

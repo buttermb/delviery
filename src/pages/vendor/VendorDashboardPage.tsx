@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck - Purchase orders table types not yet regenerated
+import { logger } from '@/lib/logger';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,6 @@ import {
   Eye,
 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 export default function VendorDashboardPage() {
   // This would use a vendor auth context in a real implementation

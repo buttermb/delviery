@@ -40,7 +40,6 @@ import {
 import { RACreateForm } from "@/components/admin/returns/RACreateForm";
 import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface ReturnAuthorization {
   id: string;

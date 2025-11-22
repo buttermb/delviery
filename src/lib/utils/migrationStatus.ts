@@ -1,10 +1,9 @@
-import { logger } from '@/lib/logger';
 // src/lib/utils/migrationStatus.ts
 // Utilities for checking encryption migration status
 
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { ENCRYPTED_TABLES } from '../encryption/constants';
-import { logger } from '../logger';
 
 export interface MigrationStatus {
   table: string;

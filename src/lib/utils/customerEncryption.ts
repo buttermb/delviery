@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Customer Encryption Utilities
  * 
@@ -6,10 +5,10 @@ import { logger } from '@/lib/logger';
  * Includes HIPAA-compliant audit logging
  */
 
+import { logger } from '@/lib/logger';
 import { clientEncryption } from '../encryption/clientEncryption';
 import { getEncryptedFields, getSearchableFields } from '../encryption/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '../logger';
 import type { DecryptedCustomer } from '../encryption/types';
 
 /**

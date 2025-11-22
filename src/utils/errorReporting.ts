@@ -3,8 +3,8 @@
  * Helps track and debug issues in production
  */
 
-import { logger } from './logger';
 
+import { logger } from '@/lib/logger';
 interface ErrorReport {
   message: string;
   stack?: string;

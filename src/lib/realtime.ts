@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Safe Realtime Subscription Utility
  * Handles Supabase Realtime subscriptions with proper status handling, retries, and error recovery
@@ -15,8 +14,8 @@ import { logger } from '@/lib/logger';
  *   });
  */
 
+import { logger } from '@/lib/logger';
 import type { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
-import { logger } from './logger';
 import { toast } from 'sonner';
 
 export type RealtimeStatus = 'SUBSCRIBED' | 'TIMED_OUT' | 'CHANNEL_ERROR' | 'CLOSED';

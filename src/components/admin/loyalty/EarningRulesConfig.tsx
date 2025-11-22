@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
-import { logger } from "@/lib/logger";
 
 export function EarningRulesConfig() {
   const { tenant } = useTenantAdminAuth();

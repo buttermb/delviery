@@ -19,7 +19,6 @@ import { TicketList } from "@/components/admin/support/TicketList";
 import { TicketForm } from "@/components/admin/support/TicketForm";
 import { TicketDetail } from "@/components/admin/support/TicketDetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import { Input } from "@/components/ui/input";
 
 interface Ticket {

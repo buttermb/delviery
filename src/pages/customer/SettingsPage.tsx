@@ -12,7 +12,6 @@ import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { logger } from "@/lib/logger";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";

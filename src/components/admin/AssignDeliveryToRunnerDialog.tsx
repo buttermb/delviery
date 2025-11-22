@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MapPin, DollarSign, Package, Loader2 } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { logger } from "@/lib/logger";
 
 interface AssignDeliveryToRunnerDialogProps {
   open: boolean;

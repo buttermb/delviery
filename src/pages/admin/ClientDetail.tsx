@@ -19,7 +19,6 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { showInfoToast, showSuccessToast } from "@/utils/toastHelpers";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { logger } from "@/lib/logger";
 
 export default function ClientDetail() {
   const { id, tenantSlug } = useParams<{ id: string; tenantSlug: string }>();

@@ -24,7 +24,6 @@ import {
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Coupon = Database['public']['Tables']['coupon_codes']['Row'];

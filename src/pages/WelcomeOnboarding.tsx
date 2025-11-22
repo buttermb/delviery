@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { generateDemoData } from "@/lib/demoData";
 import { OnboardingCompletionModal } from "@/components/onboarding/OnboardingCompletionModal";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { logger } from "@/utils/logger";
 
 export default function WelcomeOnboarding() {
   const location = useLocation();

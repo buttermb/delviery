@@ -34,7 +34,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Reward {
   id?: string;

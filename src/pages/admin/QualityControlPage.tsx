@@ -39,7 +39,6 @@ import { COAUpload } from "@/components/admin/quality/COAUpload";
 import { TestResultsViewer } from "@/components/admin/quality/TestResultsViewer";
 import { QuarantineManager } from "@/components/admin/quality/QuarantineManager";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Batch {
   id: string;

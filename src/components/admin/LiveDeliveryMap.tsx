@@ -9,7 +9,6 @@ import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
 import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
-import { logger } from "@/utils/logger";
 import { themeColors } from "@/lib/utils/colorConversion";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";

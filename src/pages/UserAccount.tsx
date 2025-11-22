@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +30,6 @@ import UserActivityFeed from "@/components/account/UserActivityFeed";
 import AddressBook from "@/components/account/AddressBook";
 import PaymentMethods from "@/components/account/PaymentMethods";
 import NotificationPreferences from "@/components/account/NotificationPreferences";
-import { logger } from "@/utils/logger";
 
 export default function UserAccount() {
   const navigate = useNavigate();

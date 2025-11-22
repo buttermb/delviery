@@ -24,7 +24,6 @@ import {
   DollarSign, Package, TrendingUp, TrendingDown, Loader2
 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
 interface Product {

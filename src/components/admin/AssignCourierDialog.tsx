@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Truck, Loader2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { logger } from "@/lib/logger";
 
 interface Courier {
   id: string;

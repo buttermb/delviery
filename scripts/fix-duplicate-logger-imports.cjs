@@ -39,43 +39,33 @@ function fixLoggerImports(filePath) {
         const content = fs.readFileSync(filePath, 'utf-8');
         const lines = content.split('\n');
 
+        // Regex pattern to match logger imports with any quote style and any path
+        // Matches: @/lib/logger, @/utils/logger, ./logger, ../logger, etc.
+        // Also matches imports that include logger along with other exports: { logger, log }
+        const loggerImportPattern = /^\s*import\s+\{[^}]*\blogger\b[^}]*\}\s+from\s+['"](@\/(lib|utils)\/logger|\.\/logger|\.\.\/.*logger)['"]/;
+
         // Check if file has any logger imports
-        const hasLoggerImport = lines.some(line =>
-            (line.includes("import { logger }") && line.includes("from '@/lib/logger'")) ||
-            (line.includes("import { logger }") && line.includes("from '@/utils/logger'"))
-        );
+        const hasLoggerImport = lines.some(line => loggerImportPattern.test(line));
 
         if (!hasLoggerImport) {
             return false; // No logger imports, nothing to fix
         }
 
         // Count logger imports to detect duplicates
-        const loggerImportCount = lines.filter(line =>
-            (line.trim().startsWith("import { logger }") && line.includes("from '@/lib/logger'")) ||
-            (line.trim().startsWith("import { logger }") && line.includes("from '@/utils/logger'"))
-        ).length;
+        const loggerImportCount = lines.filter(line => loggerImportPattern.test(line)).length;
 
-        if (loggerImportCount <= 1) {
-            // Check if the single import is from the correct location
-            const hasCorrectImport = lines.some(line =>
-                line.trim().startsWith("import { logger }") && line.includes("from '@/lib/logger'")
-            );
+        // Check if there's a correct import from @/lib/logger
+        const hasCorrectImport = lines.some(line => 
+            /^\s*import\s+\{\s*logger\s*\}\s+from\s+['"]@\/lib\/logger['"]/.test(line)
+        );
 
-            if (hasCorrectImport) {
-                return false; // Already correct, nothing to fix
-            }
-
-            // Has import from @/utils/logger, need to fix
+        // If there's exactly one import and it's correct, nothing to fix
+        if (loggerImportCount === 1 && hasCorrectImport) {
+            return false; // Already correct, nothing to fix
         }
 
-        // Remove ALL logger imports
-        const cleanedLines = lines.filter(line => {
-            const trimmed = line.trim();
-            return !(
-                (trimmed.startsWith("import { logger }") && trimmed.includes("from '@/lib/logger'")) ||
-                (trimmed.startsWith("import { logger }") && trimmed.includes("from '@/utils/logger'"))
-            );
-        });
+        // Remove ALL logger imports (handles @/lib/logger, @/utils/logger, ./logger, relative paths, any quote style)
+        const cleanedLines = lines.filter(line => !loggerImportPattern.test(line));
 
         // Find the correct insertion point
         let insertIndex = 0;

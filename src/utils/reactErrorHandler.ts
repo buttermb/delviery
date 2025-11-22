@@ -3,8 +3,8 @@
  * Provides centralized error handling for React components
  */
 
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { logger } from './logger';
 
 export const handleComponentError = (error: Error, errorInfo?: React.ErrorInfo) => {
   // Log error

@@ -3,7 +3,6 @@ import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Loader2 } from "lucide-react";
-import { logger } from "@/utils/logger";
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;

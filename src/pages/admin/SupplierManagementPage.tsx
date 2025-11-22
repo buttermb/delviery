@@ -32,7 +32,6 @@ import {
 import { SupplierForm } from "@/components/admin/suppliers/SupplierForm";
 import { SupplierDetail } from "@/components/admin/suppliers/SupplierDetail";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];

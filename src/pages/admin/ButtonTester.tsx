@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { formatBugType } from "@/utils/stringHelpers";
 import { isValidBugReport } from "@/utils/typeGuards";
-import { logger } from "@/utils/logger";
 
 interface ButtonTest {
   label: string;

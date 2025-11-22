@@ -28,7 +28,6 @@ import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 import { TooltipGuide } from "@/components/shared/TooltipGuide";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { logger } from "@/lib/logger";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";

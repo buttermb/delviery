@@ -9,7 +9,6 @@ import { Shield, Loader2, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
-import { logger } from "@/lib/logger";
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();

@@ -25,7 +25,6 @@ import {
 import { toast } from "sonner";
 import { Loader2, BarChart3 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface ReportBuilderProps {
   open: boolean;

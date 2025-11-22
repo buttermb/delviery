@@ -31,7 +31,6 @@ import { FeatureList } from "@/components/admin/FeatureList";
 import { TenantDataInspector } from "@/components/super-admin/TenantDataInspector";
 import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { logger } from "@/lib/logger";
 import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";

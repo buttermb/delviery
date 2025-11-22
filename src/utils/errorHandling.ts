@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Centralized Error Handling & Obfuscation Utilities
  * E-Commerce Platform
@@ -13,8 +12,8 @@ import { logger } from '@/lib/logger';
  * - Development-only detailed logging
  */
 
+import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
-import { logger } from './logger';
 
 /**
  * Centralized error handling utilities

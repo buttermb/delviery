@@ -21,7 +21,6 @@ import {
   Calendar,
 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import type { Database } from "@/integrations/supabase/types";
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];

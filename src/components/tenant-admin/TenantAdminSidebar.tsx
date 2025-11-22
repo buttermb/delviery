@@ -69,7 +69,6 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
-import { logger } from "@/lib/logger";
 import { UpgradeModal } from "./UpgradeModal";
 import { useState } from "react";
 import { type FeatureId } from "@/lib/featureConfig";

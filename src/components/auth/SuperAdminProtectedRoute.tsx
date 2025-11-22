@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/utils/apiClient";
-import { logger } from "@/utils/logger";
 
 // Prevent redirect loops - don't redirect more than once per 3 seconds
 const REDIRECT_THROTTLE_MS = 3000;

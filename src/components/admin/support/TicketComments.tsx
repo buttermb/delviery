@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
-import { logger } from "@/lib/logger";
 import { format } from "date-fns";
 
 interface TicketCommentsProps {

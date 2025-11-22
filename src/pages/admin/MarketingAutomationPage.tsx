@@ -19,7 +19,6 @@ import { CampaignBuilder } from "@/components/admin/marketing/CampaignBuilder";
 import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Campaign {
   id: string;

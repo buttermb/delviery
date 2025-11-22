@@ -13,7 +13,6 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus, Pencil, Trash2, Package, Users, TrendingUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { logger } from "@/utils/logger";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface Product {

@@ -21,7 +21,6 @@ import { ReportList } from "@/components/admin/reporting/ReportList";
 import { ScheduledReports } from "@/components/admin/reporting/ScheduledReports";
 import { ReportTemplates } from "@/components/admin/reporting/ReportTemplates";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface CustomReport {
   id: string;

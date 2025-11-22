@@ -1,13 +1,12 @@
-import { logger } from '@/lib/logger';
 /**
  * PHI Access Logging Hook
  * 
  * React hook for logging PHI access with HIPAA compliance
  */
 
+import { logger } from '@/lib/logger';
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '../logger';
 
 export function usePHIAccessLogger() {
   const logAccess = useCallback(async (

@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 import { POReceiveDialog } from "./POReceiveDialog";
 import type { Database } from "@/integrations/supabase/types";
 

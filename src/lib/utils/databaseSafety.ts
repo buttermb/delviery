@@ -1,11 +1,10 @@
-import { logger } from '@/lib/logger';
 /**
  * Database Safety Utilities
  * Provides safe access to potentially missing database columns
  */
 
+import { logger } from '@/lib/logger';
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
 
 /**
  * Check if a column exists in a table

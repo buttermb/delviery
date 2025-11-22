@@ -1,9 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * Super Admin / SAAS Platform Login
  * Separate login for managing all tenant accounts
  */
 
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Loader2, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { logger } from "@/utils/logger";
 
 const SuperAdminLogin = () => {
   const navigate = useNavigate();

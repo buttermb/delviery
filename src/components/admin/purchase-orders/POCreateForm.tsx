@@ -23,7 +23,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle2, Package, Building2, FileText } from "lucide-react";
-import { logger } from "@/lib/logger";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import type { Database } from "@/integrations/supabase/types";
 

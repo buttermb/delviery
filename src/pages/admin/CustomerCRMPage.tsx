@@ -43,7 +43,6 @@ import { CustomerSegmentation } from "@/components/admin/crm/CustomerSegmentatio
 import { RFMAnalysis } from "@/components/admin/crm/RFMAnalysis";
 import { CommunicationTimeline } from "@/components/admin/crm/CommunicationTimeline";
 import { queryKeys } from "@/lib/queryKeys";
-import { logger } from "@/lib/logger";
 
 interface Customer {
   id: string;

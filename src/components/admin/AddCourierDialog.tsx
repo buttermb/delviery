@@ -6,7 +6,6 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
-import { logger } from "@/utils/logger";
 import {
   Dialog,
   DialogContent,

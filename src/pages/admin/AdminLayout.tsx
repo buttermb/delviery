@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/tooltip";
 import { TutorialProvider } from "@/components/tutorial/TutorialProvider";
 import { logRouteState } from "@/utils/routeDebugger";
-import { logger } from "@/lib/logger";
 import { useEffect } from "react";
 
 /**

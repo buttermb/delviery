@@ -11,7 +11,6 @@ import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
-import { logger } from "@/lib/logger";
 import { Database } from "@/integrations/supabase/types";
 
 type Tenant = Database['public']['Tables']['tenants']['Row'] & {

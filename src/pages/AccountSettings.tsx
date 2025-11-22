@@ -13,7 +13,6 @@ import CopyButton from "@/components/CopyButton";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArrowLeft, Home } from "lucide-react";
 import CustomerLayout from "@/layouts/CustomerLayout";
-import { logger } from "@/utils/logger";
 
 interface Profile {
   user_id: string;
