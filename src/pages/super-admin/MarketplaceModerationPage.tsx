@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Moderation Page
  * Super Admin can verify licenses and moderate marketplace profiles
@@ -26,7 +27,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,
@@ -112,7 +112,7 @@ export default function MarketplaceModerationPage() {
         .from('marketplace_profiles')
         .select('can_sell')
         .eq('id', profileId)
-        .single();
+        .maybeSingle();
 
       const isSeller = currentProfile?.can_sell !== false; // Default to seller if not explicitly set
 

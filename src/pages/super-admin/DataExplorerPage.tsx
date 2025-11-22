@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Database, Play, Download, History, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 // Store recent queries in localStorage

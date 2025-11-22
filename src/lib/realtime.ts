@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Safe Realtime Subscription Utility
  * Handles Supabase Realtime subscriptions with proper status handling, retries, and error recovery

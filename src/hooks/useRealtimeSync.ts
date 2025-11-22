@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Unified Realtime Sync Hook
  * Subscribes to multiple tables and invalidates TanStack Query caches
@@ -7,7 +8,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface UseRealtimeSyncOptions {

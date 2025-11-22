@@ -33,7 +33,7 @@ export default function WhiteLabel() {
         .from('tenants')
         .select('white_label')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       
@@ -79,7 +79,7 @@ export default function WhiteLabel() {
         .update({ white_label: whiteLabelData })
         .eq('id', tenantId)
         .select('white_label')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

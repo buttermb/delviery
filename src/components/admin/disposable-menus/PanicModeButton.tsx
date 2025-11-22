@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -95,7 +96,7 @@ export const PanicModeButton = () => {
       setConfirmText('');
       setReason('');
     } catch (error) {
-      console.error('Panic mode error:', error);
+      logger.error('Panic mode error:', error);
       toast.error('Failed to activate panic mode');
     } finally {
       setLoading(false);

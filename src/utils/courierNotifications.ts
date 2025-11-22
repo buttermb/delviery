@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { playNotificationSound } from './notificationSound';
 import { 
   notifyNewOrderPersistent, 
@@ -25,7 +26,7 @@ export const vibrateDevice = (pattern: number | number[] = 200) => {
 // Request notification permission
 export const requestNotificationPermission = async (): Promise<boolean> => {
   if (!('Notification' in window)) {
-    console.log('This browser does not support notifications');
+    logger.debug('This browser does not support notifications');
     return false;
   }
 

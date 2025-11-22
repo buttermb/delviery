@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-expect-error - react-map-gl type definitions
 import Map, { Marker, Source, Layer } from 'react-map-gl';
 import { useState, useEffect } from 'react';
@@ -64,7 +65,7 @@ export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps
           setRoute(data.routes[0]);
         }
       } catch (error) {
-        console.error('Error fetching route:', error);
+        logger.error('Error fetching route:', error);
       }
     };
 

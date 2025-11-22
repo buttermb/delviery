@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import QRCode from 'qrcode';
 
 export interface QRCodeOptions {
@@ -34,7 +35,7 @@ export async function generateQRCodeDataURL(
     });
     return dataURL;
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    logger.error('Error generating QR code:', error);
     throw new Error('Failed to generate QR code');
   }
 }
@@ -65,7 +66,7 @@ export async function generateQRCodeSVG(
     });
     return svg;
   } catch (error) {
-    console.error('Error generating QR code SVG:', error);
+    logger.error('Error generating QR code SVG:', error);
     throw new Error('Failed to generate QR code SVG');
   }
 }
@@ -87,7 +88,7 @@ export async function downloadQRCodePNG(
     link.click();
     document.body.removeChild(link);
   } catch (error) {
-    console.error('Error downloading QR code:', error);
+    logger.error('Error downloading QR code:', error);
     throw new Error('Failed to download QR code');
   }
 }

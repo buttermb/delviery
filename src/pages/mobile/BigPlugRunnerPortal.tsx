@@ -8,8 +8,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Truck, Navigation, Phone, CheckCircle2, 
+import {
+  Truck, Navigation, Phone, CheckCircle2,
   AlertCircle, MapPin, DollarSign, Package
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +32,7 @@ export function BigPlugRunnerPortal() {
         .from('wholesale_runners')
         .select('*')
         .eq('id', runnerId)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!runnerId,
@@ -111,7 +111,7 @@ export function BigPlugRunnerPortal() {
         .from('wholesale_deliveries')
         .select('order_id')
         .eq('id', deliveryId)
-        .single();
+        .maybeSingle();
 
       if (delivery?.order_id) {
         await supabase
@@ -126,14 +126,14 @@ export function BigPlugRunnerPortal() {
           .from('wholesale_orders')
           .select('client_id')
           .eq('id', delivery.order_id)
-          .single();
+          .maybeSingle();
 
         if (order?.client_id) {
           const { data: client } = await supabase
             .from('wholesale_clients')
             .select('outstanding_balance')
             .eq('id', order.client_id)
-            .single();
+            .maybeSingle();
 
           if (client) {
             const newBalance = Math.max(0, Number(client.outstanding_balance || 0) - collected);

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck - Purchase orders table types not yet regenerated
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

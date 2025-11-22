@@ -78,7 +78,7 @@ export default function Notifications() {
           enabled: template.enabled ?? true,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {
@@ -119,7 +119,7 @@ export default function Notifications() {
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

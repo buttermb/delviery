@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Mobile Bottom Navigation
  * Fixed bottom navigation bar for mobile devices (hidden on desktop)
@@ -18,7 +19,6 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { logger } from '@/lib/logger';
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;

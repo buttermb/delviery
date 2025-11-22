@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from "react";
 
 interface TrackingUpdate {
@@ -27,7 +28,7 @@ export const useRealtimeTracking = (orderId: string | null) => {
 
     const connect = () => {
       if (isClosing || reconnectAttemptsRef.current >= maxReconnectAttempts) {
-        console.log('Max reconnection attempts reached or closing');
+        logger.debug('Max reconnection attempts reached or closing');
         return;
       }
 
@@ -35,11 +36,11 @@ export const useRealtimeTracking = (orderId: string | null) => {
         ws = new WebSocket(wsUrl);
         wsRef.current = ws;
         
-        console.log(`Attempting WebSocket connection (attempt ${reconnectAttemptsRef.current + 1})`);
+        logger.debug(`Attempting WebSocket connection (attempt ${reconnectAttemptsRef.current + 1})`);
 
 
         ws.onopen = () => {
-          console.log("Real-time tracking connected successfully");
+          logger.debug("Real-time tracking connected successfully");
           setConnected(true);
           reconnectAttemptsRef.current = 0;
           
@@ -55,24 +56,24 @@ export const useRealtimeTracking = (orderId: string | null) => {
               setUpdates((prev) => [...prev, data.data]);
             }
           } catch (error) {
-            console.error("Error parsing WebSocket message:", error);
+            logger.error("Error parsing WebSocket message:", error);
           }
         };
 
         ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
+          logger.error("WebSocket error:", error);
           setConnected(false);
         };
 
         ws.onclose = (event) => {
-          console.log(`WebSocket closed: ${event.code} - ${event.reason}`);
+          logger.debug(`WebSocket closed: ${event.code} - ${event.reason}`);
           setConnected(false);
           wsRef.current = null;
           
           if (!isClosing && reconnectAttemptsRef.current < maxReconnectAttempts) {
             reconnectAttemptsRef.current++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-            console.log(`Reconnecting in ${delay}ms...`);
+            logger.debug(`Reconnecting in ${delay}ms...`);
             
             reconnectTimeoutRef.current = setTimeout(() => {
               connect();
@@ -80,7 +81,7 @@ export const useRealtimeTracking = (orderId: string | null) => {
           }
         };
       } catch (error) {
-        console.error("Failed to create WebSocket:", error);
+        logger.error("Failed to create WebSocket:", error);
         setConnected(false);
         
         if (!isClosing && reconnectAttemptsRef.current < maxReconnectAttempts) {

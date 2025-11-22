@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Tenant Context & Utilities
@@ -309,7 +310,7 @@ export async function trackUsage(
   });
 
   if (error) {
-    console.error('Failed to track usage:', error);
+    logger.error('Failed to track usage:', error);
   }
 }
 

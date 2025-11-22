@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Workflow Engine Helper
  * Execute workflows and manage workflow state
@@ -60,7 +61,7 @@ export async function executeWorkflow(
         execution_log: [],
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (execError || !execution) {
       throw new Error('Failed to create execution record');

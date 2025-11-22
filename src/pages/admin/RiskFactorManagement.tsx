@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,7 @@ export default function RiskFactorManagement() {
       if (error) throw error;
       setRiskFactors(data || []);
     } catch (error: any) {
-      console.error("Error fetching risk factors:", error);
+      logger.error("Error fetching risk factors:", error);
       toast.error("Failed to load risk factors");
     } finally {
       setLoading(false);
@@ -55,7 +56,7 @@ export default function RiskFactorManagement() {
       fetchRiskFactors();
       setEditingId(null);
     } catch (error: any) {
-      console.error("Error updating risk factor:", error);
+      logger.error("Error updating risk factor:", error);
       toast.error("Failed to update risk factor");
     }
   };

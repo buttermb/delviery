@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Mobile Package Scanner Component
  * For runners/couriers to scan packages and manage transfers
@@ -77,7 +78,7 @@ export function PackageScanner({
         setScanner(null);
         setIsScanning(false);
       } catch (err) {
-        console.error('Error stopping scanner:', err);
+        logger.error('Error stopping scanner:', err);
       }
     }
   };

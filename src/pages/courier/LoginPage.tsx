@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Package, Lock, ArrowLeft } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
-import { logger } from '@/lib/logger';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 
 export default function CourierLoginPage() {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Business Verification Card
  * Allows customers to upload business license for wholesale buyer verification
@@ -24,7 +25,6 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

@@ -1,9 +1,9 @@
+import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
-import { logger } from '@/lib/logger';
 
 export function useRealtimeShifts(tenantId: string | undefined) {
   const { loading } = useTenantAdminAuth();
@@ -168,14 +168,14 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[useRealtimeCashDrawer] Realtime subscription active');
+          logger.debug('[useRealtimeCashDrawer] Realtime subscription active');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[useRealtimeCashDrawer] Realtime subscription error');
+          logger.error('[useRealtimeCashDrawer] Realtime subscription error');
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
           queryClient.invalidateQueries({ queryKey: ['active-shift'] });
         } else if (status === 'TIMED_OUT') {
-          console.error('[useRealtimeCashDrawer] Realtime subscription timed out');
+          logger.error('[useRealtimeCashDrawer] Realtime subscription timed out');
           // Invalidate queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['cash-drawer-events', shiftId] });
           queryClient.invalidateQueries({ queryKey: ['active-shift'] });

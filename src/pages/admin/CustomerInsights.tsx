@@ -23,7 +23,7 @@ export default function CustomerInsights() {
           .select('*')
           .eq('id', id)
           .eq('tenant_id', tenantId)
-          .single();
+          .maybeSingle();
 
         if (error && error.code === '42P01') return null;
         if (error) throw error;

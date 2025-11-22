@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Email Verification Banner Component
  * Shows dismissible banner when email is not verified (7-day grace period)
@@ -10,7 +11,6 @@ import { Card } from '@/components/ui/card';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { logger } from '@/lib/logger';
 import { Link } from 'react-router-dom';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { ReactNode, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";

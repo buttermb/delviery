@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Driver Location Sharing Component
  * Allows drivers to share their real-time location
@@ -76,7 +77,7 @@ export function DriverLocationSharing({ driverId, className }: LocationSharingPr
           if (updateError) {
             // Handle missing table gracefully
             if (updateError.code === '42P01') {
-              console.warn('wholesale_runners table does not exist');
+              logger.warn('wholesale_runners table does not exist');
               return;
             }
             throw updateError;
@@ -85,12 +86,12 @@ export function DriverLocationSharing({ driverId, className }: LocationSharingPr
           setError(null);
           setLastUpdate(new Date());
         } catch (err: unknown) {
-          console.error('Error updating location:', err);
+          logger.error('Error updating location:', err);
           setError(err instanceof Error ? err.message : 'Failed to update location');
         }
       },
       (err) => {
-        console.error('Geolocation error:', err);
+        logger.error('Geolocation error:', err);
         let errorMessage = 'Failed to get location';
         
         switch (err.code) {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Advanced Security Obfuscation & Anti-Fingerprinting
  * E-Commerce Platform
@@ -129,7 +130,7 @@ export const obfuscateConsole = () => {
  */
 export const initializeSecurityObfuscation = () => {
   if (import.meta.env.DEV) {
-    console.log('🔒 Security obfuscation disabled in development mode');
+    logger.debug('🔒 Security obfuscation disabled in development mode');
     return;
   }
   

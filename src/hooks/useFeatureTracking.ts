@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * useFeatureTracking Hook
  * 
@@ -7,7 +8,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 
 /**
  * Hook to track feature usage

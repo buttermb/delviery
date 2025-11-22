@@ -82,7 +82,7 @@ export default function Automation() {
           enabled: rule.enabled ?? true,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {
@@ -124,7 +124,7 @@ export default function Automation() {
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Hook to track real-time connection status across all subscriptions
  * Provides a unified connection status for use with RealtimeIndicator component
@@ -5,7 +6,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 export type RealtimeConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
 

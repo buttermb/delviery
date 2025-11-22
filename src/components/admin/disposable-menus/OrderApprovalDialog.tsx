@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -32,7 +33,6 @@ import { cleanProductName } from '@/utils/productName';
 import { formatDistanceToNow } from 'date-fns';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { useFeatureFlags } from '@/config/featureFlags';
-import { logger } from '@/lib/logger'; // Updated: 2025-11-17 - Replaced console.warn with logger
 
 interface OrderItem {
   product_name?: string;

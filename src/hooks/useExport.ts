@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * useExport Hook
  * Simplified data export functionality
@@ -28,7 +29,7 @@ export function useExport() {
         exportToCSV(data, filename, options.headers);
         showSuccessToast('Data exported successfully');
       } catch (error) {
-        console.error('Export error:', error);
+        logger.error('Export error:', error);
         showErrorToast('Failed to export data');
       }
     },
@@ -47,7 +48,7 @@ export function useExport() {
         exportToJSON(data, filename);
         showSuccessToast('Data exported successfully');
       } catch (error) {
-        console.error('Export error:', error);
+        logger.error('Export error:', error);
         showErrorToast('Failed to export data');
       }
     },

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * PHI Access Logging Hook
  * 

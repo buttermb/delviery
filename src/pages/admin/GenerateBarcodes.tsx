@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Advanced Barcode & QR Code Generator
  * Generate barcodes for products, packages, batches, and custom labels
@@ -18,7 +19,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { BarcodeGenerator } from '@/components/inventory/BarcodeGenerator';
 import { QRCodeSVG } from 'qrcode.react';
-import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
   Download,

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
 
 export interface TutorialState {
   isActive: boolean;
@@ -17,20 +18,18 @@ export function useTutorial() {
   });
 
   const isTutorialCompleted = useCallback((tutorialId: string): boolean => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem(`${STORAGE_PREFIX}${tutorialId}`) === 'true';
+    return safeStorage.getItem(`${STORAGE_PREFIX}${tutorialId}`) === 'true';
   }, []);
 
   const markTutorialCompleted = useCallback((tutorialId: string) => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(`${STORAGE_PREFIX}${tutorialId}`, 'true');
-    localStorage.setItem(`${LAST_SHOWN_PREFIX}${tutorialId}`, Date.now().toString());
+    safeStorage.setItem(`${STORAGE_PREFIX}${tutorialId}`, 'true');
+    safeStorage.setItem(`${LAST_SHOWN_PREFIX}${tutorialId}`, Date.now().toString());
   }, []);
 
   const startTutorial = useCallback((tutorialId: string, force = false) => {
     // Don't auto-start if completed recently (unless forced)
     if (!force && isTutorialCompleted(tutorialId)) {
-      const lastShown = localStorage.getItem(`${LAST_SHOWN_PREFIX}${tutorialId}`);
+      const lastShown = safeStorage.getItem(`${LAST_SHOWN_PREFIX}${tutorialId}`);
       if (lastShown) {
         const daysSince = (Date.now() - parseInt(lastShown)) / (1000 * 60 * 60 * 24);
         if (daysSince < 30) {
@@ -64,9 +63,7 @@ export function useTutorial() {
   const skip = useCallback(() => {
     if (state.tutorialId) {
       // Mark as seen but not completed
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${LAST_SHOWN_PREFIX}${state.tutorialId}`, Date.now().toString());
-      }
+      safeStorage.setItem(`${LAST_SHOWN_PREFIX}${state.tutorialId}`, Date.now().toString());
     }
     setState({
       isActive: false,
@@ -87,10 +84,8 @@ export function useTutorial() {
   }, [state.tutorialId, markTutorialCompleted]);
 
   const resetTutorial = useCallback((tutorialId: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(`${STORAGE_PREFIX}${tutorialId}`);
-      localStorage.removeItem(`${LAST_SHOWN_PREFIX}${tutorialId}`);
-    }
+    safeStorage.removeItem(`${STORAGE_PREFIX}${tutorialId}`);
+    safeStorage.removeItem(`${LAST_SHOWN_PREFIX}${tutorialId}`);
   }, []);
 
   return {

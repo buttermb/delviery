@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Command } from 'cmdk';
 import { useState, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';

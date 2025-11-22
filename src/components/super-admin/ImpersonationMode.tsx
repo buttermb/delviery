@@ -33,7 +33,7 @@ export function ImpersonationMode({ tenantId, onStartImpersonation }: Impersonat
         .from('tenants')
         .select('business_name, slug, subscription_status')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

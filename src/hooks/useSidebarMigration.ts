@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Sidebar Migration Hook
  * 
@@ -8,7 +9,6 @@
 import { useEffect, useState } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { migrateLocalStorageToDatabase } from '@/lib/sidebar/migrateLocalStorageToDatabase';
-import { logger } from '@/lib/logger';
 
 export function useSidebarMigration() {
   const { tenant, admin } = useTenantAdminAuth();

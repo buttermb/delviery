@@ -1,6 +1,7 @@
 // src/lib/hooks/useEncryptedQuery.ts
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState } from 'react';
 import { useEncryption } from './useEncryption';
@@ -55,15 +56,15 @@ export function useEncryptedQuery<T = any>({
 
       // Execute query
       const { data: encryptedData, error: queryError } = single
-        ? await query.single()
+        ? await query.maybeSingle()
         : await query;
 
       if (queryError) throw queryError;
 
       // Decrypt data
       if (single) {
-        const decrypted = encryptedData 
-          ? decryptObject<T>(encryptedData as any) 
+        const decrypted = encryptedData
+          ? decryptObject<T>(encryptedData as any)
           : null;
         setData(decrypted);
       } else {
@@ -74,7 +75,7 @@ export function useEncryptedQuery<T = any>({
         setData(decrypted as any);
       }
     } catch (err) {
-      console.error('Query error:', err);
+      logger.error('Query error:', err);
       setError(err as Error);
     } finally {
       setLoading(false);

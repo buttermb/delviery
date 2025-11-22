@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Workflow Canvas - Visual workflow builder with drag & drop
@@ -49,7 +50,6 @@ import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
 import { useWorkflowVersionStats } from '@/hooks/useWorkflowVersions';
 import { Node, Edge } from 'reactflow';
-import { logger } from '@/lib/logger';
 
 interface WorkflowAction {
   id: string;
@@ -205,7 +205,7 @@ export function WorkflowCanvas() {
           .from('workflow_definitions')
           .insert([workflowData])
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setSelectedWorkflow(data as Workflow);
@@ -304,7 +304,7 @@ export function WorkflowCanvas() {
           trigger_data: { test: true, timestamp: new Date().toISOString() },
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

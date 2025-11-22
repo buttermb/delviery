@@ -55,7 +55,7 @@ export default function VerifyEmailPage() {
         .from('tenants')
         .select('slug')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (data.user) {
         // Update tenant user to active

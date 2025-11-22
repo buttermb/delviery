@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Barcode Storage Utilities
  * Handles barcode image generation and storage in Supabase Storage
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 import { generateBarcodeDataURL } from '@/utils/barcodeService';
 
 export interface BarcodeGenerationResult {

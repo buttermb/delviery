@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,7 +64,7 @@ export const useScreenshotProtection = ({
             },
           });
         } catch (error) {
-          console.error('Failed to log screenshot attempt:', error);
+          logger.error('Failed to log screenshot attempt:', error);
         }
 
         // Show toast notification

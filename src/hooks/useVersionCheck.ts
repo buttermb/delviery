@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { safeFetch } from '@/utils/safeFetch';
@@ -11,7 +12,7 @@ const BUILD_TIME: string = __BUILD_TIME__;
 
 async function clearAllCaches() {
   try {
-    console.log('[VersionCheck] Clearing all caches...');
+    logger.debug('[VersionCheck] Clearing all caches...');
     
     // Clear service worker registrations
     if ('serviceWorker' in navigator) {
@@ -38,9 +39,9 @@ async function clearAllCaches() {
     
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
-    console.log('[VersionCheck] Caches cleared successfully');
+    logger.debug('[VersionCheck] Caches cleared successfully');
   } catch (error) {
-    console.error('[VersionCheck] Error clearing caches:', error);
+    logger.error('[VersionCheck] Error clearing caches:', error);
   }
 }
 
@@ -62,7 +63,7 @@ async function checkVersion(): Promise<boolean> {
     });
     
     if (!response.ok) {
-      console.warn('[VersionCheck] Failed to fetch version.json');
+      logger.warn('[VersionCheck] Failed to fetch version.json');
       return false;
     }
     
@@ -73,13 +74,13 @@ async function checkVersion(): Promise<boolean> {
     // First time - just store version
     if (!currentVersion) {
       localStorage.setItem(VERSION_KEY, serverVersion);
-      console.log('[VersionCheck] Version initialized:', serverVersion);
+      logger.debug('[VersionCheck] Version initialized:', serverVersion);
       return false;
     }
     
     // Version changed - update needed
     if (currentVersion !== serverVersion) {
-      console.log('[VersionCheck] Version mismatch detected:', {
+      logger.debug('[VersionCheck] Version mismatch detected:', {
         current: currentVersion,
         server: serverVersion
       });
@@ -88,7 +89,7 @@ async function checkVersion(): Promise<boolean> {
     
     return false;
   } catch (error) {
-    console.error('[VersionCheck] Error checking version:', error);
+    logger.error('[VersionCheck] Error checking version:', error);
     return false;
   }
 }

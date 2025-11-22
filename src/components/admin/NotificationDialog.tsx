@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Send Notification Dialog
  * Allows super admin to send notifications to tenants
@@ -39,7 +40,6 @@ import { Bell, Mail, MessageSquare, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
-import { logger } from '@/lib/logger';
 
 const notificationSchema = z.object({
   recipients: z.enum(['all', 'active', 'trial', 'past_due', 'custom']),

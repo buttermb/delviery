@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { getUserLocation, validateGeofenceAccess, type GeofenceRule, type Coordinates } from '@/utils/geofencing';
 
@@ -40,7 +41,7 @@ export const useGeofencing = ({ geofences, enabled, onViolation }: UseGeofencing
           onViolation?.(violationData);
         }
       } catch (error) {
-        console.error('Geolocation error:', error);
+        logger.error('Geolocation error:', error);
         // On error, deny access for security
         setAccessGranted(false);
         setViolation({

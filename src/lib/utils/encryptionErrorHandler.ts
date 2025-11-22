@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // src/lib/utils/encryptionErrorHandler.ts
 // Centralized error handling for encryption operations
 

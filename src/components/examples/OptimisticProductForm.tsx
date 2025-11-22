@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Example: Product Form with Optimistic Updates
  * Demonstrates complete optimistic UI implementation
@@ -13,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { z } from 'zod';
-import { logger } from '@/lib/logger';
 
 // Validation schema
 const productSchema = z.object({
@@ -101,7 +101,7 @@ export function OptimisticProductForm() {
             thca_percentage: 0, // Required field - set to 0 for demo
           }])
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         return data as Product;

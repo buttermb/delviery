@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Global error handlers for unhandled errors and promise rejections
  * Sets up window.onerror and window.onunhandledrejection

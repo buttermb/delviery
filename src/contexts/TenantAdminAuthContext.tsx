@@ -1,8 +1,9 @@
+import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
-import { logger } from "@/lib/logger";
+
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
@@ -52,6 +53,16 @@ interface Tenant {
   };
 }
 
+interface SignupResult {
+  user: TenantAdmin;
+  tenant: Tenant;
+}
+
+interface AuthError extends Error {
+  status?: number;
+  code?: string;
+}
+
 interface TenantAdminAuthContextType {
   admin: TenantAdmin | null;
   tenant: Tenant | null;
@@ -64,7 +75,7 @@ interface TenantAdminAuthContextType {
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<void>;
-  handleSignupSuccess?: (signupResult: any) => Promise<void>; // For signup flow
+  handleSignupSuccess?: (signupResult: SignupResult) => Promise<void>; // For signup flow
 }
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
@@ -85,17 +96,17 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-  
+
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
   }
-  
+
   try {
     new URL(supabaseUrl);
   } catch {
     return { valid: false, error: 'Invalid VITE_SUPABASE_URL format' };
   }
-  
+
   return { valid: true };
 };
 
@@ -129,13 +140,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Validate environment on mount
   useEffect(() => {
     const envCheck = validateEnvironment();
     if (!envCheck.valid) {
       logger.error('Environment validation failed:', envCheck.error);
-      console.error('[TenantAdminAuth] Configuration error:', envCheck.error);
+      logger.error('[TenantAdminAuth] Configuration error:', envCheck.error);
       setLoading(false);
     }
   }, []);
@@ -167,37 +178,37 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   useEffect(() => {
     const LOADING_TIMEOUT_MS = 12000; // 12-second safety timeout
     const startTime = Date.now();
-    
+
     const initializeAuth = async () => {
-      
+
       // Declare variables outside try block for catch block access
       let parsedAdmin: TenantAdmin | null = null;
       // Check if we're on a tenant admin route
       const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
-      
+
       // Skip all authentication logic if NOT on a tenant admin route
       if (!isTenantAdminRoute) {
         setLoading(false);
         return;
       }
-      
+
       let parsedTenant: Tenant | null = null;
-      
+
       try {
-      // Check if we have any auth tokens or cookies before trying to verify
+        // Check if we have any auth tokens or cookies before trying to verify
         const storedToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
         const hasCookies = document.cookie.includes('tenant_access_token');
-        
+
         // Skip verification if no auth data exists (user not logged in as tenant admin)
         if (!storedToken && !hasCookies) {
           setLoading(false);
           return;
         }
-        
+
         // PRIORITY 1: Try cookie-based verification first (most secure)
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-          
+
           // Check if token is expired before attempting verification
           let tokenToUse = storedToken;
           if (storedToken) {
@@ -205,7 +216,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               const expiration = getTokenExpiration(storedToken);
               if (expiration && expiration.getTime() - Date.now() < EXPIRATION_BUFFER_MS) {
                 const storedRefreshToken = safeStorage.getItem(REFRESH_TOKEN_KEY);
-                
+
                 if (storedRefreshToken) {
                   try {
                     const refreshResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
@@ -214,9 +225,9 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ refresh_token: storedRefreshToken }),
                     });
-                    
+
                     if (refreshResponse.ok) {
-                       const refreshData = await refreshResponse.json();
+                      const refreshData = await refreshResponse.json();
                       // Store with fallback
                       safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
                       safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
@@ -231,16 +242,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               // Silent catch
             }
           }
-          
+
           const headers: Record<string, string> = {
             'Content-Type': 'application/json',
           };
-          
+
           // Include Authorization header if token exists
           if (tokenToUse) {
             headers['Authorization'] = `Bearer ${tokenToUse}`;
           }
-          
+
           const verifyResponse = await fetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`, {
             method: 'GET',
             credentials: 'include', // Include cookies
@@ -249,7 +260,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
-            
+
             // Set state from verified cookie data
             if (verifyData.admin) {
               parsedAdmin = verifyData.admin;
@@ -259,7 +270,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               parsedTenant = verifyData.tenant;
               setTenant(verifyData.tenant);
             }
-            
+
             // Store non-sensitive data in localStorage for quick access
             if (verifyData.admin) {
               safeStorage.setItem(ADMIN_KEY, JSON.stringify(verifyData.admin));
@@ -267,26 +278,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (verifyData.tenant) {
               safeStorage.setItem(TENANT_KEY, JSON.stringify(verifyData.tenant));
             }
-            
+
             setIsAuthenticated(true);
             setLoading(false);
             return; // Success - exit early
           } else {
-            
+
             // Handle 401 Unauthorized - invalid or expired token
             if (verifyResponse.status === 401) {
               // Clear auth state
               clearAuthState();
               setLoading(false);
-              
+
               // Show user-friendly message
               toast.error("Your session has expired. Please log in again.", {
                 duration: 5000,
               });
-              
+
               return;
             }
-            
+
             // If 403 "No tenant access found", clear stale localStorage data
             if (verifyResponse.status === 403) {
               const errorData = await verifyResponse.json().catch(() => ({}));
@@ -298,53 +309,53 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             }
           }
         } catch (cookieError) {
-          
+
           // If it's an auth error (401), don't fall back - clear state
           if (cookieError instanceof Error && (
-            cookieError.message.includes('401') || 
+            cookieError.message.includes('401') ||
             cookieError.message.includes('Unauthorized') ||
             cookieError.message.includes('Invalid or expired token')
           )) {
             clearAuthState();
             setLoading(false);
-            
+
             // Show user-friendly message
             toast.error("Your session has expired. Please log in again.", {
               duration: 5000,
             });
-            
+
             return;
           }
-          
+
           // If it's a network error, we should still try localStorage
           // But if it's an auth error, clear state
           if (cookieError instanceof Error && cookieError.message.includes('401')) {
             clearAuthState();
             setLoading(false);
-            
+
             // Show user-friendly message
             toast.error("Your session has expired. Please log in again.", {
               duration: 5000,
             });
-            
+
             return;
           }
         }
 
-      // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
-      const storedAdmin = safeStorage.getItem(ADMIN_KEY);
-      const storedTenant = safeStorage.getItem(TENANT_KEY);
-      
-      if (!storedAdmin || !storedTenant) {
-        // No stored data = not logged in
-        // CRITICAL: Clear auth state to ensure redirect works
-        setAdmin(null);
-        setTenant(null);
-        setToken(null);
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
+        // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
+        const storedAdmin = safeStorage.getItem(ADMIN_KEY);
+        const storedTenant = safeStorage.getItem(TENANT_KEY);
+
+        if (!storedAdmin || !storedTenant) {
+          // No stored data = not logged in
+          // CRITICAL: Clear auth state to ensure redirect works
+          setAdmin(null);
+          setTenant(null);
+          setToken(null);
+          setIsAuthenticated(false);
+          setLoading(false);
+          return;
+        }
 
         // Parse stored data safely
         try {
@@ -361,11 +372,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           setLoading(false);
           return;
         }
-        
+
         // Get current tenant slug from URL
         const currentPath = window.location.pathname;
         const urlTenantSlug = currentPath.split('/')[1];
-        
+
         // Validate tenant slug matches URL
         if (urlTenantSlug && parsedTenant.slug !== urlTenantSlug) {
           clearAuthState();
@@ -391,30 +402,30 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             users: 0,
           },
         };
-        
+
         // Set state from localStorage (for quick UI rendering)
         setAdmin(parsedAdmin);
         setTenant(tenantWithDefaults);
         // Sync lastTenantSlug
         safeStorage.setItem('lastTenantSlug', tenantWithDefaults.slug);
-        
+
         // CRITICAL: Set authenticated to true immediately with localStorage data
         // Use synchronous flag to prevent loading state clearing before auth state updates
         setIsAuthenticated(true);
-        
+
         // CRITICAL FIX: Set loading=false immediately to unblock UI
         // The optional verification below should NOT block the dashboard from rendering
         setLoading(false);
-        
+
         // Verify authentication via API (cookies sent automatically)
         // This is now optional and runs in background - if it fails, we already have localStorage auth
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-        
+
         try {
           // Create AbortController for timeout (more compatible than AbortSignal.timeout)
           const abortController = new AbortController();
           const timeoutId = setTimeout(() => abortController.abort(), 5000);
-          
+
           const verifyResponse = await safeFetch(
             `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
             {
@@ -426,37 +437,37 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               signal: abortController.signal,
             }
           );
-          
+
           clearTimeout(timeoutId);
 
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
-            
+
             // Update state from verification response (more up-to-date than localStorage)
             if (verifyData.admin) setAdmin(verifyData.admin);
             if (verifyData.tenant) setTenant(verifyData.tenant);
-            
+
             // For backwards compatibility, set token state (but don't store in localStorage)
             if (verifyData.access_token) {
               setAccessToken(verifyData.access_token);
               setToken(verifyData.access_token);
             }
           }
-        } catch (verifyError: any) {
+        } catch (verifyError: unknown) {
           // We already set isAuthenticated=true above, so just log
         }
-        
-        console.log('[AUTH INIT] 🎉 Authentication complete');
+
+        logger.debug('[AUTH INIT] 🎉 Authentication complete');
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error(String(error));
         logger.error('[AUTH] Initialization error', errorObj, { component: 'TenantAdminAuthContext' });
         clearAuthState();
       } finally {
-        
+
         // Small delay to ensure React state updates have processed
         // This prevents loading=false from being set before isAuthenticated=true takes effect
         await new Promise(resolve => setTimeout(resolve, 50));
-        
+
         setLoading(false);
       }
     };
@@ -469,7 +480,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     initializeAuth().finally(() => {
       clearTimeout(safetyTimeout);
     });
-    
+
     // Cleanup timeout on unmount
     return () => {
       clearTimeout(safetyTimeout);
@@ -479,14 +490,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   // Periodic token validation (every 30 seconds)
   useEffect(() => {
     if (!isAuthenticated || !token) return;
-    
+
     const validateToken = async () => {
       try {
         const expiration = getTokenExpiration(token);
         if (!expiration) return;
-        
+
         const timeUntilExpiry = expiration.getTime() - Date.now();
-        
+
         // If token expires in less than 5 minutes, refresh it
         if (timeUntilExpiry < REFRESH_BUFFER_MS) {
           logger.debug('[AUTH] Token expiring soon, refreshing proactively');
@@ -496,13 +507,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         logger.error('[AUTH] Periodic token validation failed', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
       }
     };
-    
+
     // Initial check
     validateToken();
-    
+
     // Check every 30 seconds
     const interval = setInterval(validateToken, 30000);
-    
+
     return () => clearInterval(interval);
   }, [isAuthenticated, token]);
 
@@ -524,15 +535,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const verifyToken = async (tokenToVerify: string, retryCount = 0): Promise<boolean> => {
     const maxRetries = 1; // Fail-fast: only 1 retry
     const VERIFY_TIMEOUT_MS = 8000; // 8-second timeout (fail-fast approach)
-    
+
     try {
       const envCheck = validateEnvironment();
       if (!envCheck.valid) {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
-      
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      
+
       // Check if token will expire soon (within 60 seconds)
       const tokenExpiration = getTokenExpiration(tokenToVerify);
       if (tokenExpiration && tokenExpiration.getTime() - Date.now() < EXPIRATION_BUFFER_MS) {
@@ -546,22 +557,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           }
         }
       }
-      
+
       const startTime = Date.now();
       let response: Response;
-      
+
       try {
         // Use cookies for verification (credentials: 'include')
         // Fall back to Authorization header if token provided (backwards compatibility)
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
         };
-        
+
         // Only add Authorization header if token is provided (for backwards compatibility)
         if (tokenToVerify) {
           headers["Authorization"] = `Bearer ${tokenToVerify}`;
         }
-        
+
         // Use resilientFetch - it handles timeouts and retries internally
         const { response: resilientResponse, category } = await resilientFetch(
           `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
@@ -577,22 +588,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           }
         );
         response = resilientResponse;
-        
+
         const duration = Date.now() - startTime;
         logger.debug(`Token verification completed in ${duration}ms`, { component: 'TenantAdminAuthContext' });
-      } catch (fetchError: any) {
+      } catch (fetchError: unknown) {
         const duration = Date.now() - startTime;
-        
-        if (fetchError.name === 'AbortError') {
+
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
           logger.warn(`Token verification aborted after ${duration}ms (timeout)`, { error: fetchError.message, component: 'TenantAdminAuthContext' });
-          
+
           // Retry once if not already retried (fail-fast: max 1 retry)
           if (retryCount < maxRetries) {
             logger.debug(`Retrying token verification (attempt ${retryCount + 1}/${maxRetries + 1})`, { component: 'TenantAdminAuthContext' });
             await sleep(Math.pow(2, retryCount) * 100); // Exponential backoff: 100ms, 200ms
             return verifyToken(tokenToVerify, retryCount + 1);
           }
-          
+
           // Clear auth state on timeout after retries exhausted
           logger.error('Token verification failed after timeout and retries', fetchError instanceof Error ? fetchError : new Error(String(fetchError)), { component: 'TenantAdminAuthContext' });
           setLoading(false);
@@ -607,7 +618,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           safeStorage.removeItem(TENANT_KEY);
           return false;
         }
-        
+
         throw fetchError; // Re-throw non-abort errors
       }
 
@@ -631,30 +642,30 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                     maxRetries: 1,
                     initialDelay: 500,
                   },
-              });
+                });
 
               if (!refreshResponse.ok) {
                 throw new Error("Token refresh failed");
               }
 
               const refreshData = await refreshResponse.json();
-              
+
               // Sync refreshed tokens with Supabase client
               await supabase.auth.setSession({
                 access_token: refreshData.access_token,
                 refresh_token: refreshData.refresh_token,
               });
-              
+
               setAccessToken(refreshData.access_token);
               setRefreshToken(refreshData.refresh_token);
               setToken(refreshData.access_token);
-              
+
               safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
               safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
-              
+
               // Setup proactive refresh timer with new token
               setupRefreshTimer(refreshData.access_token);
-              
+
               setLoading(false);
               return true; // Successfully refreshed
             } catch (refreshError) {
@@ -663,7 +674,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             }
           }
         }
-        
+
         // Retry with exponential backoff (only if not already retried due to timeout)
         if (retryCount < maxRetries) {
           const backoffMs = Math.pow(2, retryCount) * 100; // 100ms, 200ms
@@ -671,17 +682,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           await sleep(backoffMs);
           return verifyToken(tokenToVerify, retryCount + 1);
         }
-        
+
         throw new Error("Token verification failed");
       }
 
       const data = await response.json();
-      
+
       if (data.admin && data.tenant) {
         // Ensure Supabase client has the session
         const currentToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
         const currentRefreshToken = safeStorage.getItem(REFRESH_TOKEN_KEY);
-        
+
         if (currentToken && currentRefreshToken) {
           await supabase.auth.setSession({
             access_token: currentToken,
@@ -690,7 +701,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             logger.warn('Failed to set Supabase session during verification', error instanceof Error ? error : new Error(String(error)), { component: 'TenantAdminAuthContext' });
           });
         }
-        
+
         // Ensure tenant has limits and usage (fallback to defaults if missing)
         const tenantWithDefaults = {
           ...data.tenant,
@@ -709,14 +720,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             users: 0,
           },
         };
-        
+
         setAdmin(data.admin);
         setTenant(tenantWithDefaults);
         setIsAuthenticated(true);
         safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
         safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
       }
-      
+
       setLoading(false);
       return true;
     } catch (error) {
@@ -758,7 +769,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // Calculate time until refresh (5 minutes before expiration)
     const timeUntilRefresh = expiration.getTime() - Date.now() - REFRESH_BUFFER_MS;
     const timeUntilWarning = expiration.getTime() - Date.now() - (60 * 1000); // 1 minute before expiry
-    
+
     if (timeUntilRefresh <= 0) {
       // Token expires very soon, refresh immediately
       logger.debug("Token expires very soon, refreshing immediately");
@@ -777,7 +788,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
 
     logger.debug(`Setting up proactive token refresh in ${Math.round(timeUntilRefresh / 1000 / 60)} minutes`);
-    
+
     // Set timer to refresh token before it expires
     refreshTimerRef.current = setTimeout(() => {
       logger.debug("Proactively refreshing token before expiration");
@@ -787,16 +798,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
   const login = async (email: string, password: string, tenantSlug: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email, tenantSlug });
-    
+
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
-      
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       authFlowLogger.logFetchAttempt(flowId, url, 1);
-      
+
       const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
@@ -819,7 +830,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Login failed" }));
-        const error: any = new Error(errorData.error || "Login failed");
+        const error: AuthError = new Error(errorData.error || "Login failed");
         error.status = response.status;
         authFlowLogger.failFlow(flowId, error, category);
         throw error;
@@ -830,7 +841,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
-      
+
       // Ensure tenant has limits and usage (fallback to defaults if missing)
       const tenantWithDefaults = {
         ...data.tenant,
@@ -849,27 +860,27 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           users: 0,
         },
       };
-      
+
       // Sync tokens with Supabase client for RLS
       await supabase.auth.setSession({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
       });
-      
+
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
       setAdmin(data.admin);
       setTenant(tenantWithDefaults);
       setIsAuthenticated(true);
-      
+
       // Store tokens with mobile fallback
       // Note: With httpOnly cookies, these are not the primary auth mechanism
       safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
       safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
       safeStorage.setItem(ADMIN_KEY, JSON.stringify(data.admin));
       safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
-      
+
       // Store user ID for encryption with fallback
       if (data.admin?.id) {
         safeStorage.setItem('floraiq_user_id', data.admin.id);
@@ -889,24 +900,24 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
       // Setup proactive refresh timer
       setupRefreshTimer(data.access_token);
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { tenantId: data.tenant?.id });
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      const category = errorObj.message.includes('Network') 
-        ? ErrorCategory.NETWORK 
+      const category = errorObj.message.includes('Network')
+        ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
       authFlowLogger.failFlow(flowId, errorObj, category);
       logger.error("Login error", errorObj, { component: 'TenantAdminAuthContext' });
-      
+
       // Show user-friendly error messages
       const { showErrorToast } = await import('@/lib/toastUtils');
       const { emitAuthError } = await import('@/hooks/useAuthError');
-      
+
       let errorMessage = 'Login failed. Please try again.';
       let errorCode = 'LOGIN_FAILED';
-      
+
       if (errorObj.message?.includes('Invalid email or password') || ('status' in errorObj && errorObj.status === 401)) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
         errorCode = 'INVALID_CREDENTIALS';
@@ -928,10 +939,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       } else if (errorObj.message) {
         errorMessage = errorObj.message;
       }
-      
+
       showErrorToast(errorMessage, `Error code: ${errorCode}`);
       emitAuthError({ message: errorMessage, code: errorCode });
-      
+
       throw error;
     }
   };
@@ -943,7 +954,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
     }
-    
+
     try {
       // Call logout endpoint to clear cookies
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
@@ -964,13 +975,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     } finally {
       // Destroy encryption session before logout
       clientEncryption.destroy();
-      
+
       // Clear Supabase session
       await supabase.auth.signOut();
-      
+
       // Always clear local state
       clearAuthState();
-      
+
       // Clear user ID from storage
       sessionStorage.removeItem('floraiq_user_id');
       safeStorage.removeItem('floraiq_user_id');
@@ -978,16 +989,16 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   // Handle signup success (called from SignUpPage after successful signup)
-  const handleSignupSuccess = async (signupResult: any) => {
+  const handleSignupSuccess = async (signupResult: SignupResult) => {
     // No tokens to store! Cookies already set by edge function
     setAdmin(signupResult.user);
     setTenant(signupResult.tenant);
     setIsAuthenticated(true);
-    
+
     // Store non-sensitive data for quick access
     safeStorage.setItem(ADMIN_KEY, JSON.stringify(signupResult.user));
     safeStorage.setItem(TENANT_KEY, JSON.stringify(signupResult.tenant));
-    
+
     logger.info('[AUTH] Signup success, authenticated via cookies', {
       userId: signupResult.user.id,
       tenantSlug: signupResult.tenant.slug,
@@ -1019,11 +1030,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logger.warn("No refresh token available");
       return;
     }
-    
+
     try {
       logger.debug("Refreshing access token...");
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      
+
       const { response } = await resilientFetch(`${supabaseUrl}/functions/v1/tenant-admin-auth?action=refresh`, {
         method: "POST",
         headers: {
@@ -1042,23 +1053,23 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       }
 
       const data = await response.json();
-      
+
       // Sync refreshed tokens with Supabase client
       await supabase.auth.setSession({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
       });
-      
+
       setAccessToken(data.access_token);
       setRefreshToken(data.refresh_token);
       setToken(data.access_token); // Backwards compatibility
-      
+
       safeStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
       safeStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      
+
       // Setup next proactive refresh
       setupRefreshTimer(data.access_token);
-      
+
       logger.debug("Token refreshed successfully");
     } catch (error) {
       logger.error("Token refresh error", error);
@@ -1072,7 +1083,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const handleTenantChange = () => {
       const currentPath = window.location.pathname;
       const urlTenantSlug = currentPath.split('/')[1];
-      
+
       if (tenant && urlTenantSlug && tenant.slug !== urlTenantSlug) {
         logger.debug(`URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
         logout();
@@ -1081,7 +1092,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
     // Check on mount and when location changes
     handleTenantChange();
-    
+
     // Listen for popstate (back/forward navigation)
     window.addEventListener('popstate', handleTenantChange);
     return () => window.removeEventListener('popstate', handleTenantChange);
@@ -1102,8 +1113,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           filter: `id=eq.${tenant.id}`,
         },
         async (payload) => {
-          const updatedTenant = payload.new as any;
-          
+          const updatedTenant = payload.new as Tenant;
+
           // Check if subscription plan or status changed
           if (
             updatedTenant.subscription_plan !== tenant.subscription_plan ||
@@ -1150,10 +1161,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   };
                   setTenant(tenantWithDefaults);
                   safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantWithDefaults));
-                  
+
                   // Log subscription change
-                  logger.info('Subscription plan changed', { 
-                    from: tenant.subscription_plan, 
+                  logger.info('Subscription plan changed', {
+                    from: tenant.subscription_plan,
                     to: updatedTenant.subscription_plan,
                     component: 'TenantAdminAuthContext'
                   });
@@ -1203,17 +1214,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   };
 
   return (
-    <TenantAdminAuthContext.Provider value={{ 
-      admin, 
-      tenant, 
-      token, 
-      accessToken, 
-      refreshToken: refreshToken, 
+    <TenantAdminAuthContext.Provider value={{
+      admin,
+      tenant,
+      token,
+      accessToken,
+      refreshToken: refreshToken,
       isAuthenticated,
       connectionStatus,
-      loading, 
-      login, 
-      logout, 
+      loading,
+      login,
+      logout,
       refreshAuthToken,
       handleSignupSuccess,
     }}>

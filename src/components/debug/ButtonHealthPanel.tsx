@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Button Health Monitoring Panel
  * Displays button statistics, errors, and broken buttons
@@ -20,7 +21,6 @@ import {
   Activity,
 } from 'lucide-react';
 import { buttonMonitor } from '@/lib/utils/buttonMonitor';
-import { logger } from '@/lib/logger';
 
 export function ButtonHealthPanel() {
   const [stats, setStats] = useState(buttonMonitor.getStats());

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * useOperationSize Hook
  * 
@@ -10,7 +11,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { OperationSize } from '@/types/sidebar';
-import { logger } from '@/lib/logger';
 
 /**
  * Detect operation size from tenant usage metrics

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { safeStorage } from '@/utils/safeStorage';
 
@@ -16,7 +17,7 @@ export function useLocalStorageState<T>(
       try {
         return JSON.parse(item);
       } catch (error) {
-        console.warn(`Error parsing safeStorage key "${key}":`, error);
+        logger.warn(`Error parsing safeStorage key "${key}":`, error);
         return initialValue;
       }
     }
@@ -31,7 +32,7 @@ export function useLocalStorageState<T>(
         setStoredValue(valueToStore);
         safeStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
-        console.warn(`Error setting safeStorage key "${key}":`, error);
+        logger.warn(`Error setting safeStorage key "${key}":`, error);
       }
     },
     [key, storedValue]
@@ -50,7 +51,7 @@ export function useLocalStorageState<T>(
         try {
           setStoredValue(JSON.parse(e.newValue));
         } catch (error) {
-          console.warn(`Error syncing localStorage key "${key}":`, error);
+          logger.warn(`Error syncing localStorage key "${key}":`, error);
         }
       }
     };

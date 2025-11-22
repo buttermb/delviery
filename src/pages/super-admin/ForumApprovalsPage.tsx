@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Forum Approvals Management Page
  * Super admin page to manage forum user approval requests
@@ -15,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, Search, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { logger } from '@/lib/logger';
 
 type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 

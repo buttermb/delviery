@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validateChatSession, validateChatMessage } from '@/utils/realtimeValidation';
 import { useDebounce } from '@/hooks/useDebounce';
-import { logger } from '@/lib/logger';
 
 interface ChatSession {
   id: string;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * useSidebarConfig Hook
  * 
@@ -20,7 +21,6 @@ import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
 import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
-import { logger } from '@/lib/logger';
 import type { SidebarSection, HotItem } from '@/types/sidebar';
 
 /**

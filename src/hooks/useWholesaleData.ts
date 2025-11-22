@@ -9,7 +9,7 @@ export const useWholesaleClients = () => {
       const { data, error } = await supabase
         .from('wholesale_clients')
         .select('*');
-      
+
       if (error) throw error;
       return data || [];
     }
@@ -28,7 +28,7 @@ export const useWholesaleOrders = () => {
           runner:wholesale_runners(full_name, phone)
         `)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data;
     }
@@ -130,7 +130,7 @@ export const useUpdateDeliveryStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { delivery_id: string; status: string; location?: { lat?: number; lng?: number; [key: string]: unknown } | null; notes?: string }) => {
+    mutationFn: async (data: { delivery_id: string; status: string; location?: { lat?: number; lng?: number;[key: string]: unknown } | null; notes?: string }) => {
       const { data: result, error } = await supabase.functions.invoke('wholesale-delivery-update', {
         body: data
       });
@@ -163,13 +163,13 @@ export const useWholesaleInventory = (tenantId?: string) => {
       let query = supabase
         .from("wholesale_inventory")
         .select("*");
-      
+
       if (tenantId) {
         query = query.eq("tenant_id", tenantId);
       }
-      
+
       const { data, error } = await query.order("product_name");
-      
+
       if (error) throw error;
       return data;
     },
@@ -185,7 +185,7 @@ export const useWholesaleRunners = () => {
         .from("wholesale_runners")
         .select("*")
         .order("full_name");
-      
+
       if (error) throw error;
       return data;
     }
@@ -203,7 +203,7 @@ export const useWholesalePayments = () => {
           client:wholesale_clients(business_name)
         `)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data;
     }
@@ -222,7 +222,7 @@ export const useWholesaleDeliveries = () => {
           runner:wholesale_runners(full_name, phone, vehicle_type)
         `)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data;
     }
@@ -237,8 +237,8 @@ export const useClientDetail = (clientId: string) => {
         .from("wholesale_clients")
         .select("*")
         .eq("id", clientId)
-        .single();
-      
+        .maybeSingle();
+
       if (error) throw error;
       return data;
     },
@@ -256,7 +256,7 @@ export const useClientOrders = (clientId: string) => {
         .eq("client_id", clientId)
         .order("created_at", { ascending: false })
         .limit(20);
-      
+
       if (error) throw error;
       return data;
     },
@@ -274,7 +274,7 @@ export const useClientPayments = (clientId: string) => {
         .eq("client_id", clientId)
         .order("created_at", { ascending: false })
         .limit(20);
-      
+
       if (error) throw error;
       return data;
     },

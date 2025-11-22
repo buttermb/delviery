@@ -27,7 +27,7 @@ export function ZReport({ shiftId }: ZReportProps) {
         .from('pos_shifts')
         .select('*')
         .eq('id', shiftId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

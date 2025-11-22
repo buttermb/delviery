@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Lazy import wrapper with retry and error handling
  * Provides fallback UI for failed module loads
  */
 
 import React, { ComponentType, lazy, LazyExoticComponent } from 'react';
-import { logger } from '@/lib/logger';
 
 interface RetryOptions {
   maxRetries?: number;

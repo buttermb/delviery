@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,6 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 
 interface CreateMenuSimpleDialogProps {

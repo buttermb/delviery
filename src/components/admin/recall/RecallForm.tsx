@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,7 +140,7 @@ export function RecallForm({
         .from("inventory_batches")
         .select("product_id, products(name)")
         .eq("id", formData.batch_id)
-        .single();
+        .maybeSingle();
       
       if (batch && (batch as { products?: { name: string } }).products) {
         productName = (batch as { products: { name: string } }).products.name;

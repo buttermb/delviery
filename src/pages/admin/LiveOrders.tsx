@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -6,7 +7,6 @@ import { toast } from 'sonner';
 import { Truck, Clock, CheckCircle, Package } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { subscribeWithErrorTracking } from '@/utils/realtimeHelper';
-import { logger } from '@/lib/logger';
 
 interface LiveOrder {
   id: string;

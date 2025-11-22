@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // src/components/admin/EncryptionMigrationStatus.tsx
 // Component to display encryption migration status
 
@@ -7,7 +8,6 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { getOverallMigrationProgress, type MigrationStatus } from '@/lib/utils/migrationStatus';
 import { Loader2, Lock, Unlock, CheckCircle2, Clock } from 'lucide-react';
-import { logger } from '@/lib/logger';
 
 export function EncryptionMigrationStatus() {
   const [loading, setLoading] = useState(true);

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Wholesale Order Detail Page
  * B2B customers can view detailed information about a specific wholesale order
@@ -25,7 +26,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';

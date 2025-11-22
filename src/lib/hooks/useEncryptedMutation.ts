@@ -83,7 +83,7 @@ export function useEncryptedMutation({
         .from(table as any)
         .insert(encryptedData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (insertError) throw insertError;
       return result;
@@ -111,7 +111,7 @@ export function useEncryptedMutation({
         .update(encryptedData)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) throw updateError;
       return result;
@@ -138,7 +138,7 @@ export function useEncryptedMutation({
         .from(table as any)
         .upsert(encryptedData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (upsertError) throw upsertError;
       return result;

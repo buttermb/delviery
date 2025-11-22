@@ -178,7 +178,7 @@ export default function SuperAdminEnhanced() {
             .from('tenants')
             .select('*')
             .eq('id', tenant.id)
-            .single();
+            .maybeSingle();
 
           const health = fullTenant ? calculateHealthScore(fullTenant as any) : { score: 50, reasons: [] };
 
@@ -237,7 +237,7 @@ export default function SuperAdminEnhanced() {
         .from('tenants')
         .select('slug, business_name')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error || !tenant) {
         throw new Error('Tenant not found');
@@ -685,7 +685,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
         .from('tenants')
         .select('*')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -905,7 +905,7 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
         .from('tenants')
         .select('usage, limits')
         .eq('id', tenant.id)
-        .single();
+        .maybeSingle();
       return data || { usage: {}, limits: {} };
     },
   });

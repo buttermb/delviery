@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Tenant Middleware
  * Extracts tenant slug from URL or subdomain and validates tenant context
@@ -89,7 +90,7 @@ export async function validateTenant(tenantSlug: string): Promise<{ valid: boole
     const data = await response.json();
     return { valid: data.valid, tenant: data.tenant };
   } catch (error) {
-    console.error('Tenant validation error:', error);
+    logger.error('Tenant validation error:', error);
     return { valid: false, error: 'Failed to validate tenant' };
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Network Status Hook
  * Monitors online/offline status and provides retry capabilities
@@ -5,7 +6,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 
 interface UseNetworkStatusReturn {
   isOnline: boolean;

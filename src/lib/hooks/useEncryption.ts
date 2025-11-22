@@ -1,6 +1,7 @@
 // src/lib/hooks/useEncryption.ts
 
 'use client';
+import { logger } from '@/lib/logger';
 
 import { useEffect, useState, useCallback } from 'react';
 import { clientEncryption } from '../encryption/clientEncryption';
@@ -56,7 +57,7 @@ export function useEncryption(): EncryptionHookResult {
         logger.error('Failed to initialize encryption', error instanceof Error ? error : new Error(String(error)), { component: 'useEncryption' });
       } catch {
         // Fallback to console if logger not available
-        console.error('Failed to initialize encryption:', error);
+        logger.error('Failed to initialize encryption:', error);
       }
       throw error;
     }

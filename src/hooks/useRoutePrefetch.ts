@@ -1,6 +1,6 @@
+import { logger } from '@/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { logger } from '@/lib/logger';
 
 /**
  * Hook to prefetch route data on hover/focus

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Global Button Interceptor
@@ -6,7 +7,6 @@
  */
 
 import { buttonMonitor } from './buttonMonitor';
-import { logger } from '@/lib/logger';
 
 let isInitialized = false;
 
@@ -198,7 +198,7 @@ export function initializeGlobalButtonMonitoring() {
     (window as any).buttonMonitor = buttonMonitor;
     (window as any).getButtonHealth = () => buttonMonitor.getHealthReport();
     (window as any).getBrokenButtons = (threshold = 0.3) => buttonMonitor.getBrokenButtons(threshold);
-    console.log('🔍 Button Monitor available in console: window.buttonMonitor');
+    logger.debug('🔍 Button Monitor available in console: window.buttonMonitor');
   }
 
   // Log health report periodically in development
@@ -207,7 +207,7 @@ export function initializeGlobalButtonMonitoring() {
       const report = buttonMonitor.getHealthReport();
       if (report.errorRate > 0.1 || report.brokenButtons > 0) {
         logger.warn('Button health check', { ...report, component: 'globalButtonInterceptor' });
-        console.warn('⚠️ Button Health Alert:', {
+        logger.warn('⚠️ Button Health Alert:', {
           brokenButtons: report.brokenButtons,
           errorRate: `${Math.round(report.errorRate * 100)}%`,
           topErrors: report.topErrors.slice(0, 3),

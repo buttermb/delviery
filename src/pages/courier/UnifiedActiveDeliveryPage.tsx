@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,7 +59,7 @@ export default function UnifiedActiveDeliveryPage() {
             order_items (id, product_name, quantity, price)
           `)
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setData(orderData);
@@ -80,13 +81,13 @@ export default function UnifiedActiveDeliveryPage() {
             )
           `)
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setData(deliveryData);
       }
     } catch (error) {
-      console.error('Failed to load data:', error);
+      logger.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }

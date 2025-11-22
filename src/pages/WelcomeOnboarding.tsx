@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +44,7 @@ export default function WelcomeOnboarding() {
           .from("tenants")
           .select("usage, limits, onboarding_completed")
           .eq("id", effectiveTenantId)
-          .single();
+          .maybeSingle();
         
         // If columns don't exist (error code 42703), return null for those fields
         if (error && error.code === "42703") {
@@ -52,7 +53,7 @@ export default function WelcomeOnboarding() {
             .from("tenants")
             .select("*")
             .eq("id", effectiveTenantId)
-            .single();
+            .maybeSingle();
           return {
             ...basicData,
             usage: basicData?.usage || {},

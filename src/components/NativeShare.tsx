@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Share2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -28,7 +29,7 @@ export function NativeShare({ title, text, url, variant = 'outline', size = 'sm'
         haptics.success();
       } catch (error) {
         // User cancelled, do nothing
-        console.log('Share cancelled');
+        logger.debug('Share cancelled');
       }
     } else {
       // Fallback to copy link

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
@@ -15,7 +16,7 @@ export function useDeviceTracking() {
         
         // Don't log out on network errors
         if (authError && authError.message?.includes('network')) {
-          console.log('Network error in device tracking, skipping');
+          logger.debug('Network error in device tracking, skipping');
           return;
         }
         
@@ -35,14 +36,14 @@ export function useDeviceTracking() {
 
           // Only process block if no network error
           if (error && !error.message?.includes('network')) {
-            console.error('Device tracking error:', error);
+            logger.error('Device tracking error:', error);
             return;
           }
 
           // Check for error in response body (some edge functions return 200 with error)
           if (data && typeof data === 'object' && 'error' in data && data.error) {
             const errorMessage = typeof data.error === 'string' ? data.error : 'Device tracking failed';
-            console.error('Device tracking returned error in response:', errorMessage);
+            logger.error('Device tracking returned error in response:', errorMessage);
             return;
           }
 
@@ -56,7 +57,7 @@ export function useDeviceTracking() {
       } catch (error: any) {
         // Don't disrupt user experience on network errors
         if (!error?.message?.includes('network')) {
-          console.error("Error tracking device:", error);
+          logger.error("Error tracking device:", error);
         }
       }
     };

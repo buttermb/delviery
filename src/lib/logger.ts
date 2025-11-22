@@ -1,9 +1,9 @@
+import { logger } from '@/lib/logger';
 /**
  * Production-ready logging utility
  * Replaces console.log/error throughout the app
  * 
  * Usage:
- *   import { logger } from '@/lib/logger';
  *   logger.debug('Debug message', { data });
  *   logger.error('Error occurred', error, { context });
  */
@@ -36,12 +36,12 @@ class Logger {
    * Warning logging - always logged
    */
   warn(message: string, errorOrContext?: unknown, context?: LogContext): void {
-    const actualContext = typeof errorOrContext === 'object' && errorOrContext !== null && !('message' in errorOrContext) 
-      ? errorOrContext as LogContext 
+    const actualContext = typeof errorOrContext === 'object' && errorOrContext !== null && !('message' in errorOrContext)
+      ? errorOrContext as LogContext
       : context;
-    
+
     console.warn(`[WARN] ${message}`, actualContext || '');
-    
+
     if (this.isProduction) {
       this.sendToMonitoring('warn', message, actualContext);
     }
@@ -78,7 +78,7 @@ class Logger {
     }
 
     console.error(`[ERROR] ${message}`, errorDetails, actualContext);
-    
+
     if (this.isProduction) {
       this.sendToMonitoring('error', message, {
         ...actualContext,

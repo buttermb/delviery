@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 export interface BusinessInsight {
     type: 'opportunity' | 'risk' | 'trend' | 'anomaly';
@@ -24,7 +25,7 @@ export class BusinessIntelligenceEngine {
         const insights: BusinessInsight[] = [];
 
         // Mock data analysis
-        console.log(`Generating BI insights for tenant ${tenantId}...`);
+        logger.debug(`Generating BI insights for tenant ${tenantId}...`);
 
         // 1. Customer Behavior Analysis
         // Mock: Low repeat purchase rate detected

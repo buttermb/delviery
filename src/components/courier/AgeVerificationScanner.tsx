@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck - Temporary type suppression
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,7 @@ export default function AgeVerificationScanner({ open, onClose, onVerified }: Ag
         setMode('select');
       }, 3000);
     } catch (error) {
-      console.error('Camera access error:', error);
+      logger.error('Camera access error:', error);
       toast.error('Unable to access camera. Please use manual entry.');
       setMode('manual');
     }

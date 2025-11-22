@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Seller Profile Page
  * Allows sellers to create and manage their marketplace profile
@@ -15,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ProfileForm } from './ProfileForm';
 import { Building2, CheckCircle, Clock, XCircle, AlertCircle, FileText, Upload } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 
 export default function SellerProfilePage() {
   const { tenant, admin } = useTenantAdminAuth();

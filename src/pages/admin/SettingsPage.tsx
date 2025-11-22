@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Settings Page - Comprehensive settings management
  */
@@ -18,7 +19,6 @@ import {
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 

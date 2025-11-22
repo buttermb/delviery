@@ -64,7 +64,7 @@ export function CourierTracking({ orderId }: CourierTrackingProps) {
           )
         `)
         .eq('id', orderId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

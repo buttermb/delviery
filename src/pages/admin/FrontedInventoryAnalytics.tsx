@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +60,7 @@ export default function FrontedInventoryAnalytics() {
         `);
 
       if (error) {
-        console.error('Error loading fronted inventory:', error);
+        logger.error('Error loading fronted inventory:', error);
         toast.error(`Failed to load analytics: ${error.message}`);
         return;
       }

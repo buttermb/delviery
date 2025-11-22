@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
 import JsBarcode from 'jsbarcode';
 
@@ -33,7 +34,7 @@ export function BarcodeGenerator({
           textMargin: 5
         });
       } catch (error) {
-        console.error('Barcode generation error:', error);
+        logger.error('Barcode generation error:', error);
       }
     }
   }, [value, format, width, height, displayValue]);

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useRef } from 'react';
 import {
   Dialog,
@@ -87,7 +88,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
         });
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
-          console.error('Error sharing:', error);
+          logger.error('Error sharing:', error);
         }
       }
     } else {

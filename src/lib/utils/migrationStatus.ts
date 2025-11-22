@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // src/lib/utils/migrationStatus.ts
 // Utilities for checking encryption migration status
 

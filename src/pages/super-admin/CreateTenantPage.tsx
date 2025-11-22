@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Create Tenant Page
@@ -22,7 +23,6 @@ import {
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 
 export default function CreateTenantPage() {
   const navigate = useNavigate();

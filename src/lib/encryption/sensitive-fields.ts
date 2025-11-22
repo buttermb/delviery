@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Sensitive Field Encryption Helpers
  * 
@@ -6,7 +7,6 @@
  */
 
 import { encryptJSON, decryptJSON, generateEncryptionKey, isEncryptionSupported, EncryptionError } from './aes256';
-import { logger } from '@/lib/logger';
 
 /**
  * Lab Results Interface

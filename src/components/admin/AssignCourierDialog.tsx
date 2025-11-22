@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -68,7 +69,7 @@ export const AssignCourierDialog = ({
       if (error) throw error;
       setCouriers(data || []);
     } catch (error) {
-      console.error("Failed to fetch couriers:", error);
+      logger.error("Failed to fetch couriers:", error);
       toast({
         variant: "destructive",
         title: "Error",

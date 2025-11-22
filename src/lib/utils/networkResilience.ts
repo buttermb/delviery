@@ -1,9 +1,9 @@
+import { logger } from '@/lib/logger';
 /**
  * Network Resilience Utilities
  * Provides retry logic, error categorization, connection status, and offline detection
  */
 
-import { logger } from '@/lib/logger';
 
 // Bound fetch to prevent "Illegal invocation" error in production builds
 export const safeFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;

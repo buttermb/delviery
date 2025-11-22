@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import {
   Dialog,
@@ -15,7 +16,6 @@ import { Mail, MessageSquare, Loader2, Copy, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { logger } from '@/lib/logger';
 
 interface SendAccessLinkDialogProps {
   open: boolean;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Copy to Clipboard Utility
  * Copy text to clipboard with toast notification
@@ -46,7 +47,7 @@ export async function copyToClipboard(
       }
     }
   } catch (err) {
-    console.error('Clipboard error:', err);
+    logger.error('Clipboard error:', err);
     if (showNotification) {
       showErrorToast('Failed to copy to clipboard');
     }

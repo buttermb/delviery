@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * SKU Auto-Generation Utilities
  * Handles automatic SKU generation with category prefixes
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 export interface CategoryPrefix {
   [key: string]: string;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Messages Page
  * View and manage buyer-seller conversations
@@ -26,7 +27,6 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
@@ -232,7 +232,7 @@ export default function MessagesPage() {
           order_id: orderId || selectedConv?.orderId || null,
         } as any)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

@@ -5,9 +5,25 @@
 
 import { Database } from '@/integrations/supabase/types';
 
+export interface TenantLimits {
+  customers: number;
+  menus: number;
+  products: number;
+  locations: number;
+  users: number;
+}
+
+export interface TenantUsage {
+  customers: number;
+  menus: number;
+  products: number;
+  locations: number;
+  users: number;
+}
+
 export type Tenant = Database['public']['Tables']['tenants']['Row'] & {
-  limits?: any;
-  usage?: any;
+  limits?: TenantLimits;
+  usage?: TenantUsage;
   mrr?: number;
   trial_ends_at?: string | null;
   next_billing_date?: string | null;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Optimistic Update Hook
  * Provides immediate UI feedback with background sync and automatic rollback on failure
@@ -5,7 +6,6 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 import { useNetworkStatus } from './useNetworkStatus';
 
 interface OptimisticUpdateOptions<T> {

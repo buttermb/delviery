@@ -31,15 +31,15 @@ export default function CustomerAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('customers' as any)
+          .from('customers')
           .select('*')
           .eq('tenant_id', tenantId);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as any as Customer[];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+        return (data || []) as unknown as Customer[];
+      } catch (error: unknown) {
+        if (error instanceof Error && 'code' in error && (error as any).code === '42P01') return [];
         throw error;
       }
     },
@@ -53,15 +53,15 @@ export default function CustomerAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('orders' as any)
+          .from('orders')
           .select('*, customer_id')
           .eq('tenant_id', tenantId);
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as any as Order[];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+        return (data || []) as unknown as Order[];
+      } catch (error: unknown) {
+        if (error instanceof Error && 'code' in error && (error as any).code === '42P01') return [];
         throw error;
       }
     },

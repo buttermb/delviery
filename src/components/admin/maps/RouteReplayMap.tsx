@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -6,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Navigation, TrendingUp } from 'lucide-react';
 import { LocationPoint, RouteStatistics } from '@/hooks/useRunnerLocationHistory';
 import { RouteReplayControls } from './RouteReplayControls';
-import { logger } from '@/lib/logger';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 

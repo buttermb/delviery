@@ -28,7 +28,7 @@ const LoyaltyPoints = () => {
           .from("loyalty_points")
           .insert({ user_id: user.id, points: 0, lifetime_points: 0 })
           .select()
-          .single();
+          .maybeSingle();
         
         if (insertError) throw insertError;
         return newPoints;

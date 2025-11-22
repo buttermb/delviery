@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -103,7 +104,7 @@ export default function DeliveryManagement() {
       const { data: courierData } = courierResponse;
       setCouriers(courierData || []);
     } catch (error) {
-      console.error('Error loading data:', error);
+      logger.error('Error loading data:', error);
       toast({ title: 'Error loading deliveries', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -122,7 +123,7 @@ export default function DeliveryManagement() {
       toast({ title: 'Courier assigned successfully' });
       loadData();
     } catch (error) {
-      console.error('Error assigning courier:', error);
+      logger.error('Error assigning courier:', error);
       toast({ title: 'Error assigning courier', variant: 'destructive' });
     }
   };
@@ -144,7 +145,7 @@ export default function DeliveryManagement() {
       toast({ title: 'Status updated successfully' });
       loadData();
     } catch (error) {
-      console.error('Error updating status:', error);
+      logger.error('Error updating status:', error);
       toast({ title: 'Error updating status', variant: 'destructive' });
     }
   };

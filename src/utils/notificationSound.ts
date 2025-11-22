@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // Enhanced notification sound system with vibration support
 type SoundType = 'notification' | 'success' | 'urgent';
 
@@ -15,7 +16,7 @@ const playWithVibration = (soundType: SoundType, enableVibration = true) => {
     try {
       navigator.vibrate(VIBRATION_PATTERNS[soundType]);
     } catch (error) {
-      console.error('Vibration error:', error);
+      logger.error('Vibration error:', error);
     }
   }
 };
@@ -26,14 +27,14 @@ export const playNotificationSound = (vibrate = true) => {
     // Use HTML5 audio instead of Web Audio API
     const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
     audio.volume = 0.3;
-    audio.play().catch(e => console.log('Audio play failed:', e));
+    audio.play().catch(e => logger.debug('Audio play failed:', e));
     
     // Vibrate
     playWithVibration('notification', vibrate);
     
-    console.log('🔔 Notification sound played');
+    logger.debug('🔔 Notification sound played');
   } catch (error) {
-    console.error('Error playing notification sound:', error);
+    logger.error('Error playing notification sound:', error);
   }
 };
 
@@ -43,21 +44,21 @@ export const playSuccessSound = (vibrate = true) => {
     // Play first beep
     const audio1 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
     audio1.volume = 0.3;
-    audio1.play().catch(e => console.log('Audio play failed:', e));
+    audio1.play().catch(e => logger.debug('Audio play failed:', e));
     
     // Play second beep after delay
     setTimeout(() => {
       const audio2 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
       audio2.volume = 0.3;
-      audio2.play().catch(e => console.log('Audio play failed:', e));
+      audio2.play().catch(e => logger.debug('Audio play failed:', e));
     }, 200);
     
     // Vibrate
     playWithVibration('success', vibrate);
     
-    console.log('✅ Success sound played');
+    logger.debug('✅ Success sound played');
   } catch (error) {
-    console.error('Error playing success sound:', error);
+    logger.error('Error playing success sound:', error);
   }
 };
 
@@ -67,20 +68,20 @@ export const playUrgentSound = (vibrate = true) => {
     // Play first urgent beep
     const audio1 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
     audio1.volume = 0.4;
-    audio1.play().catch(e => console.log('Audio play failed:', e));
+    audio1.play().catch(e => logger.debug('Audio play failed:', e));
     
     // Play second urgent beep after short pause
     setTimeout(() => {
       const audio2 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
       audio2.volume = 0.4;
-      audio2.play().catch(e => console.log('Audio play failed:', e));
+      audio2.play().catch(e => logger.debug('Audio play failed:', e));
     }, 300);
     
     // Vibrate with urgent pattern
     playWithVibration('urgent', vibrate);
     
-    console.log('🚨 Urgent sound played');
+    logger.debug('🚨 Urgent sound played');
   } catch (error) {
-    console.error('Error playing urgent sound:', error);
+    logger.error('Error playing urgent sound:', error);
   }
 };

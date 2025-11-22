@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Button Monitor Integration
@@ -5,7 +6,6 @@
  */
 
 import { buttonMonitor } from './buttonMonitor';
-import { logger } from '@/lib/logger';
 
 /**
  * Wrap an async function with button monitoring
@@ -70,20 +70,20 @@ export function logButtonHealthReport() {
   // Also log to console in development
   if (import.meta.env.DEV) {
     console.group('🔍 Button Health Report');
-    console.log('Total Buttons:', report.totalButtons);
-    console.log('Total Clicks:', report.totalClicks);
-    console.log('Success Rate:', `${Math.round(report.successRate * 100)}%`);
-    console.log('Error Rate:', `${Math.round(report.errorRate * 100)}%`);
-    console.log('Broken Buttons:', report.brokenButtons);
+    logger.debug('Total Buttons:', report.totalButtons);
+    logger.debug('Total Clicks:', report.totalClicks);
+    logger.debug('Success Rate:', `${Math.round(report.successRate * 100)}%`);
+    logger.debug('Error Rate:', `${Math.round(report.errorRate * 100)}%`);
+    logger.debug('Broken Buttons:', report.brokenButtons);
     if (broken.length > 0) {
       console.group('Broken Buttons');
       broken.forEach((b) => {
         const errorRate = b.totalClicks > 0 ? b.errorCount / b.totalClicks : 0;
-        console.error(
+        logger.error(
           `${b.component}.${b.action}: ${Math.round(errorRate * 100)}% error rate (${b.errorCount}/${b.totalClicks})`
         );
         if (b.lastError) {
-          console.error('  Last Error:', b.lastError);
+          logger.error('  Last Error:', b.lastError);
         }
       });
       console.groupEnd();

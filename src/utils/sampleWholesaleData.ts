@@ -1,24 +1,25 @@
+import { logger } from '@/lib/logger';
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
+
 
 export async function createSampleWholesaleData() {
   try {
     // Get current tenant ID
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
-    
+
     const { data: tenantUser } = await supabase
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
-      .single();
-    
+      .maybeSingle();
+
     const tenant_id = tenantUser?.tenant_id;
     if (!tenant_id) throw new Error("Tenant not found");
 
     // Clear existing sample data first (in reverse order of dependencies)
     logger.debug("Clearing existing wholesale data", { component: 'sampleWholesaleData' });
-    
+
     await supabase.from("wholesale_deliveries").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_payments").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_inventory_movements").delete().neq('id', '00000000-0000-0000-0000-000000000000');
@@ -27,7 +28,7 @@ export async function createSampleWholesaleData() {
     await supabase.from("wholesale_inventory").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_runners").delete().neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_clients").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    
+
     logger.debug("Cleared existing data", { component: 'sampleWholesaleData' });
 
     // Create sample clients with coordinates
@@ -130,14 +131,14 @@ export async function createSampleWholesaleData() {
       .select();
 
     if (clientError) {
-      console.error("Client creation error:", clientError);
+      logger.error("Client creation error:", clientError);
       throw new Error(`Failed to create clients: ${clientError.message}`);
     }
-    
+
     if (!clientData || clientData.length === 0) {
       throw new Error("No client data returned");
     }
-    
+
     logger.debug("Created clients", { count: clientData.length, component: 'sampleWholesaleData' });
 
     // Create sample runners with coordinates
@@ -200,14 +201,14 @@ export async function createSampleWholesaleData() {
       .select();
 
     if (runnerError) {
-      console.error("Runner creation error:", runnerError);
+      logger.error("Runner creation error:", runnerError);
       throw new Error(`Failed to create runners: ${runnerError.message}`);
     }
-    
+
     if (!runnerData || runnerData.length === 0) {
       throw new Error("No runner data returned");
     }
-    
+
     logger.debug("Created runners", { count: runnerData.length, component: 'sampleWholesaleData' });
 
     // Create sample inventory
@@ -259,7 +260,7 @@ export async function createSampleWholesaleData() {
       .insert(inventory.map(i => ({ ...i, tenant_id })));
 
     if (inventoryError) {
-      console.error("Inventory creation error:", inventoryError);
+      logger.error("Inventory creation error:", inventoryError);
       throw new Error(`Failed to create inventory: ${inventoryError.message}`);
     }
 
@@ -322,7 +323,7 @@ export async function createSampleWholesaleData() {
       .select();
 
     if (orderError) {
-      console.error("Order creation error:", orderError);
+      logger.error("Order creation error:", orderError);
       throw new Error(`Failed to create orders: ${orderError.message}`);
     }
 

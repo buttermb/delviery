@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Sidebar Error Boundary
  * 
@@ -9,7 +10,6 @@ import { Component, ReactNode } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;

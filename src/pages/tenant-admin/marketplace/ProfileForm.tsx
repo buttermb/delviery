@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Profile Form Component
  * Form for creating/editing marketplace seller profile
@@ -32,7 +33,6 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
-import { logger } from '@/lib/logger';
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',

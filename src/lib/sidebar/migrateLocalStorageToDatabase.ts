@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Storage Migration Utility
  * 
@@ -8,7 +9,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import type { SidebarPreferences, OperationSize } from '@/types/sidebar';
-import { logger } from '@/lib/logger';
 
 interface MigrationResult {
   success: boolean;

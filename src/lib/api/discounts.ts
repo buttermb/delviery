@@ -7,7 +7,7 @@ export async function getUserWelcomeDiscount(userId: string) {
     .eq('user_id', userId)
     .eq('used', false)
     .gte('expires_at', new Date().toISOString())
-    .single();
+    .maybeSingle();
 
   if (error) return null;
   return data;
@@ -24,7 +24,7 @@ export async function applyWelcomeDiscount(userId: string, orderId: string) {
     .eq('user_id', userId)
     .eq('used', false)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;

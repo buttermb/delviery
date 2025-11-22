@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,6 @@ import { toast } from 'sonner';
 import { Package, TrendingUp, Clock, XCircle, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
-import { logger } from '@/lib/logger';
 import { useDebounce } from '@/hooks/useDebounce';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';

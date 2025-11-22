@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Session Management Component
  * Allows customers to view and manage active sessions
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Monitor, Smartphone, Tablet, LogOut, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 import { apiFetch } from '@/lib/utils/apiClient';
 // Helper function to format time ago
 const formatTimeAgo = (date: string): string => {

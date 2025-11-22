@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Communication History Component
  * Inspired by Chatwoot - displays email and SMS communication thread
@@ -31,7 +32,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { logger } from '@/lib/logger';
 
 interface Communication {
   id: string;
@@ -134,7 +134,7 @@ export function CommunicationHistory({
           metadata: {},
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

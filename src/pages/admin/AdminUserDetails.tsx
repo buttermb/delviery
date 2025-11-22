@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { ArrowLeft, AlertTriangle, Ban, Lock, CheckCircle, Monitor, Globe, History, ShieldAlert } from "lucide-react";
-import { logger } from "@/lib/logger";
+
 
 export default function AdminUserDetails() {
   const { id } = useParams();
@@ -128,7 +129,7 @@ export default function AdminUserDetails() {
         .from("profiles")
         .select("*")
         .eq("user_id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

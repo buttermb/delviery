@@ -23,7 +23,7 @@ export const ComplianceDashboard = () => {
         .from("tenant_users")
         .select("tenant_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!tenantUser) throw new Error("No tenant found");
 
@@ -46,7 +46,7 @@ export const ComplianceDashboard = () => {
         .from("tenant_users")
         .select("tenant_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       const { data, error } = await supabase.functions.invoke("encrypt-all-data", {
         body: { dataType, tenantId: tenantUser?.tenant_id }

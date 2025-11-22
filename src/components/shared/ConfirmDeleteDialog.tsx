@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Standardized Delete Confirmation Dialog
  * Use this component for all delete operations across the app
@@ -14,7 +15,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AlertTriangle } from 'lucide-react';
-import { logger } from '@/lib/logger';
 
 interface ConfirmDeleteDialogProps {
   open: boolean;

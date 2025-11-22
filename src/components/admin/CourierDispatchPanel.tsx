@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Truck, MapPin, Clock, DollarSign } from 'lucide-react';
 import { calculateDistance } from '@/utils/geofenceHelper';
-import { logger } from '@/lib/logger';
 
 interface Courier {
   id: string;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Shield } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { logger } from '@/lib/logger';
 
 export default function CustomerForm() {
   const { id } = useParams();
@@ -51,19 +51,19 @@ export default function CustomerForm() {
         .from('customers')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      
+
       if (data) {
         // Decrypt customer data if encrypted
         const customer = data.is_encrypted ? await decryptCustomerData(data) : data;
-        
+
         // Log PHI access for HIPAA compliance
         if (data.is_encrypted) {
           await logPHIAccess(id, 'view', getPHIFields(), 'Edit form load');
         }
-        
+
         setFormData({
           first_name: customer.first_name || '',
           last_name: customer.last_name || '',
@@ -147,13 +147,13 @@ export default function CustomerForm() {
 
         // Log PHI update
         await logPHIAccess(id, 'update', getPHIFields(), 'Customer update');
-        
+
         toast.success('Customer updated successfully');
       } else {
         // Check tenant limits before creating
         const currentCustomers = ((tenant as any).usage as any)?.customers || 0;
         const customerLimit = ((tenant as any).limits as any)?.customers || 0;
-        
+
         if (customerLimit > 0 && currentCustomers >= customerLimit) {
           toast.error('Customer limit reached', {
             description: `You've reached your customer limit (${currentCustomers}/${customerLimit}). Please upgrade your plan.`,
@@ -166,7 +166,7 @@ export default function CustomerForm() {
           .from('customers')
           .insert([encryptedData as any])
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -213,7 +213,7 @@ export default function CustomerForm() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <SEOHead 
+        <SEOHead
           title={isEdit ? 'Edit Customer' : 'Add Customer'}
           description="Customer form"
         />
@@ -244,147 +244,147 @@ export default function CustomerForm() {
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Basic Information</CardTitle>
               </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => handleChange('first_name', e.target.value)}
-                    required
-                  />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name *</Label>
+                    <Input
+                      id="first_name"
+                      value={formData.first_name}
+                      onChange={(e) => handleChange('first_name', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name *</Label>
+                    <Input
+                      id="last_name"
+                      value={formData.last_name}
+                      onChange={(e) => handleChange('last_name', e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => handleChange('last_name', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      value={formData.date_of_birth}
+                      onChange={(e) => handleChange('date_of_birth', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) => handleChange('status', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                  <Label htmlFor="address">Address</Label>
                   <Input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                    required
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => handleChange('address', e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => handleChange('status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
             {/* Customer Type */}
             <Card className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Customer Type</CardTitle>
               </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="customer_type">Type</Label>
-                <Select
-                  value={formData.customer_type}
-                  onValueChange={(value) => handleChange('customer_type', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recreational">Recreational</SelectItem>
-                    <SelectItem value="medical">Medical</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.customer_type === 'medical' && (
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="space-y-2">
-                    <Label htmlFor="medical_card_number">Medical Card Number</Label>
-                    <Input
-                      id="medical_card_number"
-                      value={formData.medical_card_number}
-                      onChange={(e) => handleChange('medical_card_number', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="medical_card_expiration">Card Expiration Date</Label>
-                    <Input
-                      id="medical_card_expiration"
-                      type="date"
-                      value={formData.medical_card_expiration}
-                      onChange={(e) => handleChange('medical_card_expiration', e.target.value)}
-                    />
-                  </div>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customer_type">Type</Label>
+                  <Select
+                    value={formData.customer_type}
+                    onValueChange={(value) => handleChange('customer_type', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recreational">Recreational</SelectItem>
+                      <SelectItem value="medical">Medical</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                {formData.customer_type === 'medical' && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-2">
+                      <Label htmlFor="medical_card_number">Medical Card Number</Label>
+                      <Input
+                        id="medical_card_number"
+                        value={formData.medical_card_number}
+                        onChange={(e) => handleChange('medical_card_number', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="medical_card_expiration">Card Expiration Date</Label>
+                      <Input
+                        id="medical_card_expiration"
+                        type="date"
+                        value={formData.medical_card_expiration}
+                        onChange={(e) => handleChange('medical_card_expiration', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Actions */}
             <div className="flex gap-4 justify-end pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => navigate('/admin/customer-management')}
                 className="border-gray-300"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={loading}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white"

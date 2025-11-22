@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { supabase } from "@/integrations/supabase/client";
 
 // Calculate distance between two coordinates using Haversine formula
@@ -48,7 +49,7 @@ export async function checkGeofence(
 
     return data;
   } catch (error) {
-    console.error("Geofence check error:", error);
+    logger.error("Geofence check error:", error);
     return {
       success: false,
       error: error.message,

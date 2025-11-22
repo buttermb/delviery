@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * SAAS Login Page
  * Login for existing tenants
@@ -11,7 +12,6 @@ import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { logger } from '@/lib/logger';
 import { clientEncryption } from '@/lib/encryption/clientEncryption';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
@@ -96,17 +96,17 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
     setRetryCount(0);
-    
+
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email: data.email });
-    
+
     // Clear any stale tenant data before login
     safeStorage.removeItem('lastTenantSlug');
     safeStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_USER);
     safeStorage.removeItem(STORAGE_KEYS.TENANT_DATA);
-    
+
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
-      
+
       // Sign in with Supabase Auth first to validate credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -130,7 +130,7 @@ export default function LoginPage() {
         .select('tenant_id')
         .eq('user_id', authData.user.id)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (tenantUserError || !tenantUser) {
         const error = new Error('No tenant found for this account');
@@ -143,7 +143,7 @@ export default function LoginPage() {
         .from('tenants')
         .select('slug')
         .eq('id', tenantUser.tenant_id)
-        .single();
+        .maybeSingle();
 
       if (tenantError || !tenant) {
         const error = new Error('Invalid tenant configuration');
@@ -154,10 +154,10 @@ export default function LoginPage() {
       // Call tenant-admin-auth to set up complete authentication
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/tenant-admin-auth?action=login`;
-      
+
       authFlowLogger.logFetchAttempt(flowId, url, 1);
       const fetchStartTime = performance.now();
-      
+
       const { response, attempts, category } = await resilientFetch(url, {
         method: 'POST',
         headers: {
@@ -235,7 +235,7 @@ export default function LoginPage() {
 
       authFlowLogger.logStep(flowId, AuthFlowStep.REDIRECT);
       authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
-      
+
       // Redirect to tenant admin dashboard using React Router (SPA navigation)
       navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
     } catch (error: unknown) {
@@ -243,7 +243,7 @@ export default function LoginPage() {
       const category = errorObj.message?.includes('Network') || errorObj.message?.includes('fetch')
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
-      
+
       logger.error('Login error', errorObj, { component: 'LoginPage' });
       toast({
         title: 'Login Failed',
@@ -265,74 +265,74 @@ export default function LoginPage() {
 
       {/* Dynamic gradient background with animation */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 transition-colors duration-700" />
-      
+
       {/* Large floating orbs with complex movement - theme aware */}
-      <div 
+      <div
         className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-3xl transition-all duration-700"
-        style={{ 
-          background: theme === 'dark' 
+        style={{
+          background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%)'
             : 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 70%)',
           opacity: theme === 'dark' ? 0.5 : 0.7,
           animation: 'float-complex 20s ease-in-out infinite'
-        }} 
+        }}
       />
-      <div 
+      <div
         className="absolute -bottom-40 -right-40 w-[700px] h-[700px] rounded-full blur-3xl transition-all duration-700"
-        style={{ 
+        style={{
           background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0) 70%)'
             : 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0) 70%)',
           opacity: theme === 'dark' ? 0.5 : 0.7,
           animation: 'float-complex-reverse 25s ease-in-out infinite'
-        }} 
+        }}
       />
-      <div 
+      <div
         className="absolute top-1/3 left-1/2 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-700"
-        style={{ 
+        style={{
           background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 70%)'
             : 'radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%)',
           opacity: theme === 'dark' ? 0.4 : 0.6,
           animation: 'float-diagonal-complex 30s ease-in-out infinite'
-        }} 
+        }}
       />
-      
+
       {/* Medium accent orbs - theme aware */}
-      <div 
+      <div
         className="absolute top-20 right-1/4 w-64 h-64 rounded-full blur-3xl transition-all duration-700"
-        style={{ 
+        style={{
           background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(236, 72, 153, 0) 70%)'
             : 'radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0) 70%)',
           opacity: theme === 'dark' ? 0.35 : 0.5,
           animation: 'float-small 12s ease-in-out infinite'
-        }} 
+        }}
       />
-      <div 
+      <div
         className="absolute bottom-32 left-1/4 w-56 h-56 rounded-full blur-3xl transition-all duration-700"
-        style={{ 
+        style={{
           background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0) 70%)'
             : 'radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%)',
           opacity: theme === 'dark' ? 0.35 : 0.5,
           animation: 'float-small-reverse 14s ease-in-out infinite'
-        }} 
+        }}
       />
-      <div 
+      <div
         className="absolute top-1/2 right-1/3 w-72 h-72 rounded-full blur-3xl transition-all duration-700"
-        style={{ 
+        style={{
           background: theme === 'dark'
             ? 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0) 70%)'
             : 'radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0) 70%)',
           opacity: theme === 'dark' ? 0.3 : 0.4,
           animation: 'float-medium 16s ease-in-out infinite'
-        }} 
+        }}
       />
-      
+
       {/* Animated gradient waves - theme aware */}
       <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: theme === 'dark' ? 0.3 : 0.5 }}>
-        <div 
+        <div
           className="absolute inset-0 transition-all duration-700"
           style={{
             background: theme === 'dark'
@@ -341,7 +341,7 @@ export default function LoginPage() {
             animation: 'wave-movement 20s ease-in-out infinite'
           }}
         />
-        <div 
+        <div
           className="absolute inset-0 transition-all duration-700"
           style={{
             background: theme === 'dark'
@@ -351,14 +351,14 @@ export default function LoginPage() {
           }}
         />
       </div>
-      
+
       {/* Floating sparkle particles - theme aware */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(30)].map((_, i) => {
           const colors = theme === 'dark'
             ? ['rgba(59, 130, 246, 0.5)', 'rgba(168, 85, 247, 0.5)', 'rgba(16, 185, 129, 0.5)', 'rgba(236, 72, 153, 0.5)']
             : ['rgba(59, 130, 246, 0.7)', 'rgba(168, 85, 247, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(236, 72, 153, 0.7)'];
-          
+
           return (
             <div
               key={`particle-${i}`}
@@ -377,19 +377,24 @@ export default function LoginPage() {
           );
         })}
       </div>
-      
+
       {/* Subtle grid overlay with shimmer - theme aware */}
-      <div 
-        className="absolute inset-0 transition-opacity duration-700" 
+      <div
+        className="absolute inset-0 transition-opacity duration-700"
         style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
           backgroundSize: '50px 50px',
           opacity: theme === 'dark' ? 0.04 : 0.015,
           animation: 'shimmer 10s ease-in-out infinite'
-        }} 
+        }}
       />
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      {/* 
+        Safe usage: This style block contains only static CSS animations defined in the code.
+        No user input is interpolated here.
+      */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes float-complex {
           0%, 100% { 
             transform: translate(0, 0) scale(1) rotate(0deg);
@@ -555,11 +560,11 @@ export default function LoginPage() {
                     Email
                   </FormLabel>
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="you@business.com" 
+                    <Input
+                      type="email"
+                      placeholder="you@business.com"
                       className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -577,11 +582,11 @@ export default function LoginPage() {
                     Password
                   </FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
                       className="h-11 bg-background/50 border-2 focus:border-primary transition-colors"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -589,9 +594,9 @@ export default function LoginPage() {
               )}
             />
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8" 
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all hover-scale mt-8"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

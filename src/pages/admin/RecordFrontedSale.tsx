@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
@@ -8,7 +9,6 @@ import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 
 interface ScannedSale {
   barcode: string;
@@ -30,7 +30,7 @@ export default function RecordFrontedSale() {
         .from('products')
         .select('id, name')
         .eq('barcode', barcode)
-        .single();
+        .maybeSingle();
 
       const product = result.data;
 
@@ -74,7 +74,7 @@ export default function RecordFrontedSale() {
         .from('fronted_inventory')
         .select('quantity_sold')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (currentFront) {
         await supabase

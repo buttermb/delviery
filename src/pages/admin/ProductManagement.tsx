@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from "react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,7 +62,7 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor, type PriceUpdate } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
-import { logger } from "@/lib/logger";
+
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -71,7 +72,7 @@ export default function ProductManagement() {
   const navigate = useTenantNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
-  
+
   // Use optimistic list for products
   const {
     items: products,
@@ -81,7 +82,7 @@ export default function ProductManagement() {
     deleteOptimistic,
     setItems: setProducts,
   } = useOptimisticList<Product>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -122,7 +123,7 @@ export default function ProductManagement() {
 
   const loadProducts = async () => {
     if (!tenant?.id) return;
-    
+
     try {
       setLoading(true);
       // Load products filtered by tenant
@@ -133,7 +134,7 @@ export default function ProductManagement() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
+
       // Products are NOT encrypted - use plaintext fields directly
       setProducts(data || []);
     } catch (error: unknown) {
@@ -146,14 +147,14 @@ export default function ProductManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!tenant?.id) {
       toast.error("Tenant not found");
       return;
     }
 
     setIsGenerating(true);
-    
+
     try {
       // Validate category
       if (!formData.category) {
@@ -207,10 +208,10 @@ export default function ProductManagement() {
             logger.debug('Barcode generated', { sku, barcodeImageUrl, component: 'ProductManagement' });
           }
         } catch (error) {
-          logger.warn('Barcode generation failed, continuing without barcode', { 
-            error, 
+          logger.warn('Barcode generation failed, continuing without barcode', {
+            error,
             sku,
-            component: 'ProductManagement' 
+            component: 'ProductManagement'
           });
           barcodeImageUrl = null;
         }
@@ -224,12 +225,12 @@ export default function ProductManagement() {
         category: category,
         vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
-        strain_type: formData.strain_type || 
+        strain_type: formData.strain_type ||
           (formData.strain_name ? (
-            formData.strain_name.toLowerCase().includes('hybrid') ? 'hybrid' : 
-            formData.strain_name.toLowerCase().includes('indica') ? 'indica' : 
-            formData.strain_name.toLowerCase().includes('cbd') ? 'cbd' :
-            'sativa'
+            formData.strain_name.toLowerCase().includes('hybrid') ? 'hybrid' :
+              formData.strain_name.toLowerCase().includes('indica') ? 'indica' :
+                formData.strain_name.toLowerCase().includes('cbd') ? 'cbd' :
+                  'sativa'
           ) : null),
         thc_percent: formData.thc_percent ? parseFloat(formData.thc_percent) : null,
         cbd_percent: formData.cbd_percent ? parseFloat(formData.cbd_percent) : null,
@@ -257,7 +258,7 @@ export default function ProductManagement() {
               .update(updates)
               .eq("id", id)
               .select()
-              .single();
+              .maybeSingle();
 
             if (error) throw error;
             return data;
@@ -265,7 +266,7 @@ export default function ProductManagement() {
         );
 
         if (!updatedProduct) return; // Operation failed, rollback already handled
-        
+
         // Update barcode_image_url separately if it was generated
         if (barcodeImageUrl && updatedProduct) {
           await supabase
@@ -273,19 +274,19 @@ export default function ProductManagement() {
             .update({ barcode_image_url: barcodeImageUrl } as any)
             .eq("id", updatedProduct.id);
         }
-        
+
         // Sync to menus if stock changed
         if (availableQuantity > 0) {
           await syncProductToMenus(updatedProduct.id, tenant.id);
         }
-        
+
         // No need for separate toast - optimistic hook handles it
       } else {
         // Check tenant limits before creating
         if (tenant?.limits?.products !== undefined) {
           const currentProducts = tenant.usage?.products || 0;
           const productLimit = tenant.limits.products;
-          
+
           // -1 means unlimited, so skip check
           if (productLimit !== -1 && productLimit > 0 && currentProducts >= productLimit) {
             toast.error('Product limit reached', {
@@ -310,7 +311,7 @@ export default function ProductManagement() {
               .from("products")
               .insert([productData])
               .select()
-              .single();
+              .maybeSingle();
 
             if (error) throw error;
             return data;
@@ -318,7 +319,7 @@ export default function ProductManagement() {
         );
 
         if (!newProduct) return; // Operation failed, rollback already handled
-        
+
         // Update barcode_image_url separately since it's not in types yet
         if (barcodeImageUrl && newProduct) {
           await supabase
@@ -326,12 +327,12 @@ export default function ProductManagement() {
             .update({ barcode_image_url: barcodeImageUrl } as any)
             .eq("id", newProduct.id);
         }
-        
+
         // Auto-sync to menus if stock > 0
         if (availableQuantity > 0 && newProduct) {
           await syncProductToMenus(newProduct.id, tenant.id);
         }
-        
+
         // Custom success toast with SKU
         toast.success("Product created successfully", {
           description: sku ? `SKU: ${sku}` : undefined,
@@ -342,20 +343,20 @@ export default function ProductManagement() {
       resetForm();
       // No need to loadProducts() - optimistic update already updated the UI
     } catch (error: unknown) {
-      logger.error('Failed to save product', error, { 
+      logger.error('Failed to save product', error, {
         component: 'ProductManagement',
         formData,
         tenantId: tenant?.id,
       });
-      
+
       const errorMessage = error instanceof Error ? error.message : "An error occurred";
       const errorCode = (error as any)?.code;
       const errorDetails = (error as any)?.details;
-      
+
       // Check for specific error types
       let userMessage = errorMessage;
       let errorTitle = "Failed to save product";
-      
+
       if (errorMessage.includes('null value') || errorMessage.includes('NOT NULL')) {
         userMessage = "Missing required fields. Please fill in all required information.";
         errorTitle = "Required Field Missing";
@@ -374,7 +375,7 @@ export default function ProductManagement() {
       } else if (errorDetails) {
         userMessage = `${errorMessage} (Details: ${errorDetails})`;
       }
-      
+
       toast.error(errorTitle, {
         description: userMessage,
         duration: 5000,
@@ -407,7 +408,7 @@ export default function ProductManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Barcode scanner state
   const [scannerOpen, setScannerOpen] = useState(false);
   const [batchScanMode, setBatchScanMode] = useState(false);
@@ -442,7 +443,7 @@ export default function ProductManagement() {
             .delete()
             .eq("id", id)
             .eq("tenant_id", tenant.id);
-          
+
           if (error) throw error;
         }
       );
@@ -462,7 +463,7 @@ export default function ProductManagement() {
 
   const handleScanSuccess = (barcode: string) => {
     logger.info('Barcode scanned, searching products', { barcode, component: 'ProductManagement' });
-    
+
     // Search for product by barcode or SKU
     const matchingProduct = products.find(
       (p) => p.barcode === barcode || p.sku === barcode
@@ -512,21 +513,21 @@ export default function ProductManagement() {
     const confirmDelete = window.confirm(
       `Delete ${batchProducts.length} product${batchProducts.length !== 1 ? 's' : ''}? This cannot be undone.`
     );
-    
+
     if (!confirmDelete) return;
 
     setIsDeleting(true);
     try {
       const productIds = batchProducts.map(p => p.id);
-      
+
       const { error } = await supabase
         .from("products")
         .delete()
         .in("id", productIds)
         .eq("tenant_id", tenant.id);
-      
+
       if (error) throw error;
-      
+
       toast.success(`${batchProducts.length} products deleted`);
       loadProducts();
       setBatchProducts([]);
@@ -571,7 +572,7 @@ export default function ProductManagement() {
       });
 
       const results = await Promise.all(updatePromises);
-      
+
       // Check for errors
       const errors = results.filter(r => r.error);
       if (errors.length > 0) {
@@ -581,7 +582,7 @@ export default function ProductManagement() {
       toast.success(`Updated prices for ${updates.length} products`, {
         description: 'All changes have been applied successfully',
       });
-      
+
       // Reload products and clear batch
       await loadProducts(); // Wait for reload
       setBatchProducts([]);
@@ -607,19 +608,19 @@ export default function ProductManagement() {
 
       // Update all products
       const productIds = batchProducts.map(p => p.id);
-      
+
       const { error } = await supabase
         .from('products')
         .update({ category: newCategory })
         .in('id', productIds)
         .eq('tenant_id', tenant.id);
-      
+
       if (error) throw error;
 
       toast.success(`Updated category for ${batchProducts.length} products`, {
         description: `All products moved to ${newCategory}`,
       });
-      
+
       // Reload products and clear batch
       await loadProducts(); // Wait for reload
       setBatchProducts([]);
@@ -636,7 +637,7 @@ export default function ProductManagement() {
     // Check if tenant has marketplace access
     const subscriptionPlan = tenant?.subscription_plan || 'starter';
     const canAccessMarketplace = subscriptionPlan === 'professional' || subscriptionPlan === 'enterprise' || subscriptionPlan === 'medium';
-    
+
     if (!canAccessMarketplace) {
       toast.error("Marketplace access requires Medium tier or higher", {
         description: "Upgrade your plan to list products on the marketplace",
@@ -689,23 +690,23 @@ export default function ProductManagement() {
         .from("products")
         .insert([duplicatedProduct])
         .select()
-        .single();
-      
+        .maybeSingle();
+
       if (error) throw error;
-      
+
       // Auto-generate SKU and barcode for duplicated product
       if (newProduct) {
         const category = productData.category || "Uncategorized";
         try {
           const newSku = await generateProductSKU(category, tenant.id);
           const barcodeUrl = await generateAndStoreBarcode(newSku, tenant.id);
-          
+
           await supabase
             .from("products")
-            .update({ 
-              sku: newSku, 
+            .update({
+              sku: newSku,
               barcode: newSku, // Set barcode to SKU
-              barcode_image_url: barcodeUrl 
+              barcode_image_url: barcodeUrl
             } as any)
             .eq("id", newProduct.id);
         } catch (error) {
@@ -715,13 +716,13 @@ export default function ProductManagement() {
           });
           // Continue - product is created even without SKU/barcode
         }
-        
+
         // Sync to menus if stock > 0
         if ((productData.available_quantity ?? 0) > 0) {
           await syncProductToMenus(newProduct.id, tenant.id);
         }
       }
-      
+
       toast.success("Product duplicated successfully");
       loadProducts();
     } catch (error: unknown) {
@@ -745,17 +746,17 @@ export default function ProductManagement() {
   const filteredProducts = useMemo(() => {
     const searchLower = debouncedSearchTerm.toLowerCase();
     const applyCategoryFilter = categoryFilter !== "all";
-    
+
     return products
       .filter((p) => {
         // Single filter combining search and category
-        const matchesSearch = !searchLower || 
+        const matchesSearch = !searchLower ||
           p.name?.toLowerCase().includes(searchLower) ||
           p.sku?.toLowerCase().includes(searchLower) ||
           p.category?.toLowerCase().includes(searchLower);
-        
+
         const matchesCategory = !applyCategoryFilter || p.category === categoryFilter;
-        
+
         return matchesSearch && matchesCategory;
       })
       .sort((a, b) => {
@@ -813,15 +814,15 @@ export default function ProductManagement() {
             .eq("id", id)
             .eq("tenant_id", tenant.id)
             .select()
-            .single();
+            .maybeSingle();
 
           if (error) throw error;
-          
+
           // Sync to menus if stock changed
           if ('available_quantity' in updates && updates.available_quantity && updates.available_quantity > 0) {
             await syncProductToMenus(id, tenant.id);
           }
-          
+
           return data;
         }
       );
@@ -1202,7 +1203,7 @@ export default function ProductManagement() {
               >
                 <Barcode className="h-5 w-5" />
               </Button>
-              
+
               {/* Batch Scan */}
               <Button
                 variant="outline"
@@ -1267,7 +1268,7 @@ export default function ProductManagement() {
             </div>
           </>
         )}
-        
+
         {/* View Mode Toggle */}
         <div className={viewMode === "list" ? "ml-auto" : ""}>
           <div className="flex items-center gap-1 border rounded-md overflow-hidden min-h-[44px]">
@@ -1305,20 +1306,20 @@ export default function ProductManagement() {
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
-                <div 
-                  key={product.id}
-                  className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
-                >
-                  <ProductCard
-                    product={product}
-                    onEdit={() => handleEdit(product)}
-                    onDelete={() => handleDelete(product.id)}
-                    onPrintLabel={() => {
-                      setLabelProduct(product as any);
-                      setLabelDialogOpen(true);
-                    }}
-                  />
-                </div>
+                  <div
+                    key={product.id}
+                    className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
+                  >
+                    <ProductCard
+                      product={product}
+                      onEdit={() => handleEdit(product)}
+                      onDelete={() => handleDelete(product.id)}
+                      onPrintLabel={() => {
+                        setLabelProduct(product as any);
+                        setLabelDialogOpen(true);
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -1353,13 +1354,13 @@ export default function ProductManagement() {
               primaryAction={
                 !searchTerm && categoryFilter === "all"
                   ? {
-                      label: "Add Product",
-                      onClick: () => {
-                        resetForm();
-                        setIsDialogOpen(true);
-                      },
-                      icon: <Plus className="h-4 w-4" />,
-                    }
+                    label: "Add Product",
+                    onClick: () => {
+                      resetForm();
+                      setIsDialogOpen(true);
+                    },
+                    icon: <Plus className="h-4 w-4" />,
+                  }
                   : undefined
               }
               designSystem="tenant-admin"

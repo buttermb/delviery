@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Onboarding Completion Modal
  * Shows confetti and "Setup Complete!" message when all onboarding steps are finished
@@ -95,12 +96,12 @@ export function OnboardingCompletionModal({
             .eq("id", tenantId);
           
           if (updateError && updateError.code !== "42703") {
-            console.warn("Error updating onboarding completion:", updateError);
+            logger.warn("Error updating onboarding completion:", updateError);
           }
           
           queryClient.invalidateQueries({ queryKey: ["tenant", tenantId] });
         } catch (error) {
-          console.warn("Error marking onboarding as complete:", error);
+          logger.warn("Error marking onboarding as complete:", error);
           // Don't throw - modal can still close
         }
       }

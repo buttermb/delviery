@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +21,6 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
-import { logger } from '@/lib/logger';
 
 interface Customer {
   id: string;
@@ -73,7 +73,7 @@ export default function CustomerDetails() {
         .from('customers')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (customerError) throw customerError;
       

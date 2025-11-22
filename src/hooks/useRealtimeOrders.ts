@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { validateOrder } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
-import { logger } from '@/lib/logger';
 
 interface Order {
   id: string;
@@ -66,7 +66,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
       // Clear any previous errors on successful fetch
       setError(null);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      logger.error('Error fetching orders:', error);
       // Set empty array on error to prevent stale data
       setOrders([]);
       // Store error for component to display
@@ -80,25 +80,25 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   useEffect(() => {
     // Guard 1: Don't fetch or subscribe if auth is still loading or tenant not available
     if (authLoading || !tenant?.id) {
-      console.log('[useRealtimeOrders] Waiting for authentication...', { authLoading, hasTenant: !!tenant?.id });
+      logger.debug('[useRealtimeOrders] Waiting for authentication...', { authLoading, hasTenant: !!tenant?.id });
       return;
     }
 
     // Guard 2: Don't subscribe until verification is complete
     if (!isVerified || isVerifying) {
-      console.log('[useRealtimeOrders] Waiting for verification to complete...', { isVerified, isVerifying });
+      logger.debug('[useRealtimeOrders] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
-    console.log('[useRealtimeOrders] Authentication verified, establishing realtime subscription');
+    logger.debug('[useRealtimeOrders] Authentication verified, establishing realtime subscription');
 
     // Wrap in try-catch to handle any synchronous errors
     try {
       fetchOrders().catch((error) => {
-        console.error('Unhandled error in fetchOrders:', error);
+        logger.error('Unhandled error in fetchOrders:', error);
       });
     } catch (error) {
-      console.error('Error initializing order fetch:', error);
+      logger.error('Error initializing order fetch:', error);
     }
 
     let connectionTimeout: NodeJS.Timeout;
@@ -126,7 +126,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
                 
                 // Validate before processing
                 if (!validateOrder(newOrder)) {
-                  console.error('Received invalid order data, refetching...');
+                  logger.error('Received invalid order data, refetching...');
                   fetchOrders();
                   return;
                 }

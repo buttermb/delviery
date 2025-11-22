@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +83,7 @@ export default function NewWholesaleOrder() {
       showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
       navigate('/admin/wholesale-dashboard');
     } catch (error) {
-      console.error('Order creation error:', error);
+      logger.error('Order creation error:', error);
       showErrorToast('Order Failed', error instanceof Error ? error.message : 'Failed to create order');
     }
   };

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
@@ -48,8 +49,8 @@ export default function DispatchInventory() {
         .select('id, name, cost_per_unit, wholesale_price')
         .eq('barcode', barcode)
         .eq('account_id', account?.id)
-        .single();
-      
+        .maybeSingle();
+
       const product = result.data;
       const error = result.error;
 
@@ -93,7 +94,7 @@ export default function DispatchInventory() {
         description: `${product.name} added to dispatch`
       });
     } catch (error) {
-      console.error('Error scanning product:', error);
+      logger.error('Error scanning product:', error);
       toast({
         title: 'Error',
         description: 'Failed to scan product',
@@ -216,7 +217,7 @@ export default function DispatchInventory() {
           .from('products')
           .select('fronted_quantity, available_quantity')
           .eq('id', product.product_id)
-          .single<ProductQuantity>();
+          .maybeSingle<ProductQuantity>();
 
         if (currentProduct) {
           await supabase
@@ -238,7 +239,7 @@ export default function DispatchInventory() {
 
       navigate('/admin/inventory/fronted');
     } catch (error) {
-      console.error('Error dispatching inventory:', error);
+      logger.error('Error dispatching inventory:', error);
       toast({
         title: 'Error',
         description: 'Failed to dispatch inventory',

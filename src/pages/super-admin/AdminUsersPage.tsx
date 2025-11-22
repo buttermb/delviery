@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Admin Users Management Page
  * Manage super admin users
@@ -17,7 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserPlus, Shield, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { logger } from '@/lib/logger';
 
 interface AdminUser {
   id: string;

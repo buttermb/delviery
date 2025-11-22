@@ -47,7 +47,7 @@ export function NotificationPreferences() {
         .from("notification_preferences")
         .insert({ user_id: user.id })
         .select()
-        .single();
+        .maybeSingle();
       
       if (!insertError && newPrefs) {
         setPrefs(newPrefs);

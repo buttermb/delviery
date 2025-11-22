@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 import { useState, useEffect } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
@@ -101,7 +102,7 @@ export default function CourierDashboardPage() {
       if (error) throw error;
       setAvailableOrders(data || []);
     } catch (error) {
-      console.error('Failed to load orders:', error);
+      logger.error('Failed to load orders:', error);
     } finally {
       setLoadingOrders(false);
     }
@@ -129,7 +130,7 @@ export default function CourierDashboardPage() {
           completionRate: 98,
         });
       } catch (error) {
-        console.error('Failed to load stats:', error);
+        logger.error('Failed to load stats:', error);
       }
     }
   };

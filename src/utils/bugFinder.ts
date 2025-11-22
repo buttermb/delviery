@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Comprehensive Bug Finder and Error Scanner
  * Monitors, detects, and reports all types of errors across the application
@@ -257,13 +258,13 @@ class BugFinder {
       try {
         listener(bugReport);
       } catch (e) {
-        console.error('Bug listener error:', e);
+        logger.error('Bug listener error:', e);
       }
     });
 
     // Log in development
     if (import.meta.env.DEV) {
-      console.warn('[Bug Finder]', bugReport);
+      logger.warn('[Bug Finder]', bugReport);
     }
   }
 

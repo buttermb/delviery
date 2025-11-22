@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Top Navigation Component
  * Main horizontal navigation bar for super admin panel
@@ -70,7 +71,6 @@ import { SystemStatusIndicator } from '../SystemStatusIndicator';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
 
 interface TopNavProps {

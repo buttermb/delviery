@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 export interface Customer {
     id: string;
@@ -47,11 +48,11 @@ export class OmniChannelMessenger {
             try {
                 if (this.canSend(channel, customer)) {
                     await this.send(channel, customer, message);
-                    console.log(`Successfully sent invite via ${channel}`);
+                    logger.debug(`Successfully sent invite via ${channel}`);
                     return { success: true, channel };
                 }
             } catch (error) {
-                console.warn(`Failed to send via ${channel}:`, error);
+                logger.warn(`Failed to send via ${channel}:`, error);
                 // Continue to next channel
             }
         }
@@ -73,7 +74,7 @@ export class OmniChannelMessenger {
         // Mock implementation of sending logic
         // In production, this would call the respective APIs
 
-        console.log(`[Mock] Sending ${channel} to ${this.getRecipient(channel, customer)}: ${message.body}`);
+        logger.debug(`[Mock] Sending ${channel} to ${this.getRecipient(channel, customer)}: ${message.body}`);
 
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 100));

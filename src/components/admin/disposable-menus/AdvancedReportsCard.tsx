@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,6 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { logger } from '@/lib/logger';
 
 interface AdvancedReportsCardProps {
   menuId: string;

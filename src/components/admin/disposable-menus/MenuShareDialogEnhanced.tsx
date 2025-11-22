@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
@@ -19,7 +20,6 @@ import { formatMenuUrl } from '@/utils/menuHelpers';
 import { generateQRCodeDataURL, downloadQRCodePNG } from '@/lib/utils/qrCode';
 import { useWholesaleClients } from '@/hooks/useWholesaleData';
 import { useMenuWhitelist } from '@/hooks/useDisposableMenus';
-import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { jsonToString, jsonToStringOrNumber, safeJsonAccess } from '@/utils/menuTypeHelpers';
 

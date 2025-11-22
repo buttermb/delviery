@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Product Label PDF Generator
  * Creates printable labels with product info and barcode
  */
 
 import jsPDF from 'jspdf';
-import { logger } from '@/lib/logger';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
 import QRCode from 'qrcode';
 

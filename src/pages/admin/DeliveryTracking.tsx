@@ -25,7 +25,7 @@ export default function DeliveryTracking() {
           orders:wholesale_orders(order_number, total_amount, delivery_address, delivery_notes)
         `)
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

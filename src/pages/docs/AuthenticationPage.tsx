@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { SEOHead } from "@/components/SEOHead";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -200,7 +201,7 @@ const makeAuthenticatedRequest = async () => {
     
     return response.json();
   } catch (error) {
-    console.error('Request failed:', error);
+    logger.error('Request failed:', error);
   }
 };`}
                   language="javascript"

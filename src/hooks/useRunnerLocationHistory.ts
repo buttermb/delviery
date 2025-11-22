@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
@@ -69,7 +70,7 @@ export function useRunnerLocationHistory({
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching location history:', error);
+        logger.error('Error fetching location history:', error);
         throw error;
       }
 
@@ -94,7 +95,7 @@ export function useRunnerLocationHistory({
         });
 
       if (error) {
-        console.error('Error fetching route statistics:', error);
+        logger.error('Error fetching route statistics:', error);
         return null;
       }
 
@@ -107,7 +108,7 @@ export function useRunnerLocationHistory({
   useEffect(() => {
     if (!enableRealtime || !runnerId) return;
 
-    console.log('Setting up realtime subscription for runner:', runnerId);
+    logger.debug('Setting up realtime subscription for runner:', runnerId);
 
     const channel = supabase
       .channel(`runner-location-${runnerId}`)
@@ -120,18 +121,18 @@ export function useRunnerLocationHistory({
           filter: `runner_id=eq.${runnerId}`,
         },
         (payload) => {
-          console.log('New location received:', payload);
+          logger.debug('New location received:', payload);
           const newLocation = payload.new as LocationPoint;
           setRealtimeLocations((prev) => [...prev, newLocation]);
           refetch(); // Also refetch to ensure consistency
         }
       )
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
+        logger.debug('Realtime subscription status:', status);
       });
 
     return () => {
-      console.log('Cleaning up realtime subscription');
+      logger.debug('Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [runnerId, enableRealtime, refetch]);

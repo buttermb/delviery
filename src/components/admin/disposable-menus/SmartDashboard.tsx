@@ -13,7 +13,6 @@ import { EnhancedMenuDashboard } from './EnhancedMenuDashboard';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSmartDashboard } from '@/hooks/useSmartDashboard';
 import { Shield, Activity, MessageSquare } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import { MenuCard } from './MenuCard';
 import { SecurityAlertsPanel } from './SecurityAlertsPanel';
 import { SecurityMonitoringPanel } from './SecurityMonitoringPanel';

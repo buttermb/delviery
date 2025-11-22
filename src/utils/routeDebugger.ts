@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Route Debugger Utility
  * Validates sidebar routes against defined routes
@@ -95,7 +96,7 @@ export function validateAdminRoutes(): RouteValidationResult {
   const status = missingRoutes.length === 0 ? 'ok' : 'warning';
 
   if (import.meta.env.DEV && missingRoutes.length > 0) {
-    console.warn('[Route Debugger] Missing route definitions:', missingRoutes);
+    logger.warn('[Route Debugger] Missing route definitions:', missingRoutes);
   }
 
   return {
@@ -112,7 +113,7 @@ export function validateAdminRoutes(): RouteValidationResult {
 export function logRouteState(tenantSlug: string, pathname: string) {
   if (!import.meta.env.DEV) return;
 
-  console.log('[Route Debug]', {
+  logger.debug('[Route Debug]', {
     tenantSlug,
     pathname,
     timestamp: new Date().toISOString(),

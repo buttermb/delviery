@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Check, ChevronRight, ChevronLeft, ShoppingBag, Truck, CreditCard, FileCheck, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { logger } from '@/lib/logger';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 
 interface ModernCheckoutFlowProps {
@@ -176,7 +176,7 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
           status: 'pending',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (orderError) throw orderError;
 

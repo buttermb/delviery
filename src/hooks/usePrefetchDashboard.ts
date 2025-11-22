@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
@@ -17,7 +18,7 @@ export function usePrefetchDashboard() {
           .from('tenants')
           .select('id')
           .eq('slug', tenantSlug)
-          .single();
+          .maybeSingle();
 
         if (!tenant?.id) {
           logger.warn('[PREFETCH] Could not find tenant for slug', { tenantSlug });
@@ -90,7 +91,7 @@ export function usePrefetchDashboard() {
               .from('tenants')
               .select('usage, limits')
               .eq('id', tenantId)
-              .single();
+              .maybeSingle();
 
             return tenant || null;
           },

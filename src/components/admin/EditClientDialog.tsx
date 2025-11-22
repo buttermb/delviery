@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
         .from("wholesale_clients")
         .select("*")
         .eq("id", clientId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -74,7 +75,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
         });
       }
     } catch (error) {
-      console.error("Error fetching client:", error);
+      logger.error("Error fetching client:", error);
       showErrorToast("Failed to load client data");
     } finally {
       setFetching(false);
@@ -114,7 +115,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (error) {
-      console.error("Error updating client:", error);
+      logger.error("Error updating client:", error);
       showErrorToast("Failed to update client");
     } finally {
       setLoading(false);

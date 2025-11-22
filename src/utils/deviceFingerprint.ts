@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Device fingerprinting utility
  * Generates a unique fingerprint for the user's device
@@ -17,7 +18,7 @@ export function generateDeviceFingerprint(): DeviceInfo {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   let canvasFingerprint = 'unknown';
-  
+
   if (ctx) {
     ctx.textBaseline = 'top';
     ctx.font = '14px Arial';
@@ -104,7 +105,7 @@ export async function recordDeviceFingerprint(userId: string, supabase: any) {
       .select('id')
       .eq('user_id', userId)
       .eq('fingerprint', deviceInfo.fingerprint)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       // Update last seen
@@ -139,6 +140,6 @@ export async function recordDeviceFingerprint(userId: string, supabase: any) {
       }
     }
   } catch (error) {
-    console.error('Error recording device fingerprint:', error);
+    logger.error('Error recording device fingerprint:', error);
   }
 }

@@ -109,7 +109,7 @@ export const useCreditOut = () => {
         client_id: c.id,
         client: c.business_name,
         amount: Number(c.outstanding_balance),
-        days: c.last_payment_date 
+        days: c.last_payment_date
           ? Math.floor((now.getTime() - new Date(c.last_payment_date).getTime()) / (1000 * 60 * 60 * 24))
           : 0
       })) || [];
@@ -140,7 +140,7 @@ export const useCreatePaymentSchedule = () => {
           created_by: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return result;
@@ -170,7 +170,7 @@ export const useCreateCollectionActivity = () => {
           performed_by: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return result;

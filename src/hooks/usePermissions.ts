@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * usePermissions Hook
@@ -10,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { hasPermission, Permission } from '@/lib/permissions/checkPermissions';
 import { ROLES, Role, mapDatabaseRoleToSystemRole, mapSystemRoleToDatabaseRole } from '@/lib/permissions/rolePermissions';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 
 /**
  * Get user role from tenant_users table

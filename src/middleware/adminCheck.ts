@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -12,13 +13,13 @@ export async function verifyAdminAccess(userId: string): Promise<boolean> {
     });
 
     if (error) {
-      console.error('Admin verification error:', error);
+      logger.error('Admin verification error:', error);
       return false;
     }
 
     return data === true;
   } catch (error) {
-    console.error('Admin verification failed:', error);
+    logger.error('Admin verification failed:', error);
     return false;
   }
 }
@@ -33,7 +34,7 @@ export async function checkAdminStatus(): Promise<{
 }> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       return { isAdmin: false, verified: false };
     }
@@ -44,7 +45,7 @@ export async function checkAdminStatus(): Promise<{
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')
-      .single();
+      .maybeSingle();
 
     if (error || !roles) {
       return { isAdmin: false, verified: true };
@@ -52,7 +53,7 @@ export async function checkAdminStatus(): Promise<{
 
     return { isAdmin: true, verified: true };
   } catch (error) {
-    console.error('Client admin check failed:', error);
+    logger.error('Client admin check failed:', error);
     return { isAdmin: false, verified: false };
   }
 }

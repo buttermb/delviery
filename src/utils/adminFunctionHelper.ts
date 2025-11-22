@@ -1,23 +1,24 @@
+import { logger } from '@/lib/logger';
 /**
  * Admin Function Helper
  * Centralized error handling for admin edge function calls
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import bugFinder from './bugFinder';
-import { logger } from './logger';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface FunctionCallOptions {
   functionName: string;
-  body?: Record<string, any>;
-  session?: any;
+  body?: Record<string, unknown>;
+  session?: Session | null;
   errorMessage?: string;
   showToast?: boolean;
 }
 
-export async function callAdminFunction<T = any>({
+export async function callAdminFunction<T = unknown>({
   functionName,
   body = {},
   session,
@@ -26,10 +27,10 @@ export async function callAdminFunction<T = any>({
 }: FunctionCallOptions): Promise<{ data: T | null; error: Error | null }> {
   try {
     const headers: Record<string, string> = {};
-    
+
     // Get current session from Supabase auth
     const { data: { session: currentSession } } = await supabase.auth.getSession();
-    
+
     // Add authorization header - prefer provided session, then current session
     const accessToken = session?.access_token || currentSession?.access_token;
     if (accessToken) {
@@ -53,20 +54,20 @@ export async function callAdminFunction<T = any>({
 
     if (error) {
       logger.error(`Error calling ${functionName}`, error, { component: 'adminFunctionHelper' });
-      
+
       // Report to bug finder
       bugFinder.reportEdgeFunctionError(
         functionName,
         error,
         { body, errorType: 'invoke_error' }
       );
-      
+
       if (showToast) {
         toast.error(errorMessage, {
           description: error.message || 'Please try again later',
         });
       }
-      
+
       return { data: null, error };
     }
 
@@ -74,38 +75,38 @@ export async function callAdminFunction<T = any>({
     if (data && typeof data === 'object' && 'error' in data && data.error) {
       const errorMessage = typeof data.error === 'string' ? data.error : 'Operation failed';
       const errorObj = new Error(errorMessage);
-      
+
       // Check if it's an auth error
-      if (errorMessage.toLowerCase().includes('unauthorized') || 
-          errorMessage.toLowerCase().includes('forbidden') ||
-          errorMessage.toLowerCase().includes('invalid token') ||
-          errorMessage.toLowerCase().includes('missing authorization') ||
-          errorMessage.toLowerCase().includes('no token')) {
+      if (errorMessage.toLowerCase().includes('unauthorized') ||
+        errorMessage.toLowerCase().includes('forbidden') ||
+        errorMessage.toLowerCase().includes('invalid token') ||
+        errorMessage.toLowerCase().includes('missing authorization') ||
+        errorMessage.toLowerCase().includes('no token')) {
         errorObj.name = 'AuthError';
         logger.error(`Auth error in ${functionName} response`, errorObj, { component: 'adminFunctionHelper' });
       } else {
         logger.error(`Error in ${functionName} response`, errorObj, { component: 'adminFunctionHelper' });
       }
-      
+
       bugFinder.reportEdgeFunctionError(
         functionName,
         errorObj,
         { body, response: data, errorType: 'response_error' }
       );
-      
+
       if (showToast) {
         toast.error(errorMessage, {
           description: 'Please check your authentication and try again',
         });
       }
-      
+
       return { data: null, error: errorObj };
     }
 
     return { data: data as T, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error(`Exception calling ${functionName}`, error, { component: 'adminFunctionHelper' });
-    
+
     // Report to bug finder
     const errorObj = error instanceof Error ? error : new Error(String(error));
     bugFinder.reportEdgeFunctionError(
@@ -113,22 +114,22 @@ export async function callAdminFunction<T = any>({
       errorObj,
       { body, errorType: 'exception' }
     );
-    
+
     if (showToast) {
       toast.error(errorMessage, {
-        description: error.message || 'An unexpected error occurred',
+        description: errorObj.message || 'An unexpected error occurred',
       });
     }
-    
-    return { data: null, error };
+
+    return { data: null, error: errorObj };
   }
 }
 
 // Specific helper for admin dashboard calls
 export async function getAdminDashboardData(
   endpoint: string,
-  session: any,
-  additionalParams?: Record<string, any>
+  session: Session | null,
+  additionalParams?: Record<string, unknown>
 ) {
   return callAdminFunction({
     functionName: 'admin-dashboard',
@@ -142,7 +143,7 @@ export async function getAdminDashboardData(
 export async function updateOrderStatusFunction(
   orderId: string,
   status: string,
-  session: any
+  session: Session | null
 ) {
   return callAdminFunction({
     functionName: 'update-order-status',
@@ -153,7 +154,7 @@ export async function updateOrderStatusFunction(
 }
 
 // Helper for risk assessment
-export async function assessUserRisk(userId: string, session: any) {
+export async function assessUserRisk(userId: string, session: Session | null) {
   return callAdminFunction({
     functionName: 'assess-risk',
     body: { userId },
@@ -164,7 +165,7 @@ export async function assessUserRisk(userId: string, session: any) {
 }
 
 // Helper with retry logic
-export async function callAdminFunctionWithRetry<T = any>(
+export async function callAdminFunctionWithRetry<T = unknown>(
   options: FunctionCallOptions,
   maxRetries: number = 2
 ): Promise<{ data: T | null; error: Error | null }> {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +65,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setSession(null);
       }
     } catch (error) {
-      console.error("Admin verification failed:", error);
+      logger.error("Admin verification failed:", error);
       setAdmin(null);
       setSession(null);
     } finally {
@@ -149,7 +150,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         description: `Logged in as ${adminData.full_name}`,
       });
     } catch (error: any) {
-      console.error("Admin sign in error:", error);
+      logger.error("Admin sign in error:", error);
       toast({
         variant: "destructive",
         title: "Login failed",
@@ -179,7 +180,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         description: "You have been logged out successfully",
       });
     } catch (error) {
-      console.error("Sign out error:", error);
+      logger.error("Sign out error:", error);
     }
   };
 

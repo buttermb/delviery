@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Add Runner Dialog
  * Dialog for adding a new delivery runner
@@ -88,7 +89,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
           rating: 5.0,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

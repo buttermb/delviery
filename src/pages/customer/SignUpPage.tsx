@@ -1,4 +1,4 @@
-// @ts-nocheck
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
@@ -6,17 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingBag, Loader2, Sparkles, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
-import { logger } from "@/utils/logger";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { Tenant } from "@/types/tenant-extended";
 
 export default function CustomerSignUpPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   useAuthRedirect();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -33,7 +33,7 @@ export default function CustomerSignUpPage() {
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [ageError, setAgeError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [tenant, setTenant] = useState<any>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function CustomerSignUpPage() {
           .maybeSingle();
 
         if (data && !error) {
-          setTenant(data);
+          setTenant(data as unknown as Tenant);
         }
         setTenantLoading(false);
       } else {
@@ -162,7 +162,8 @@ export default function CustomerSignUpPage() {
   }
 
   const businessName = tenant.business_name || tenantSlug;
-  const logo = tenant.white_label?.logo;
+  const whiteLabel = tenant.white_label as Record<string, any> | null;
+  const logo = whiteLabel?.logo;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -176,7 +177,7 @@ export default function CustomerSignUpPage() {
       <div className="relative z-10 w-full max-w-md">
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           {/* Back Button */}
-          <Link 
+          <Link
             to={`/${tenantSlug}/customer/login`}
             className="inline-flex items-center text-sm text-slate-400 hover:text-white mb-6 transition-colors"
           >

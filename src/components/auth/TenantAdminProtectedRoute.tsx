@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { ReactNode, useEffect, useState, useRef, memo } from 'react';
 import { Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -70,7 +71,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Main verification effect with total wait timeout
   useEffect(() => {
-    console.log('[PROTECTED ROUTE] 🔒 Verification check starting', {
+    logger.debug('[PROTECTED ROUTE] 🔒 Verification check starting', {
       verified,
       skipVerification,
       loading,
@@ -82,14 +83,14 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     // Skip if already verified or skipped - MUST be first check to prevent loops
     if (verified || skipVerification) {
-      console.log('[PROTECTED ROUTE] ⏩ Skipping verification (already verified or skipped)');
+      logger.debug('[PROTECTED ROUTE] ⏩ Skipping verification (already verified or skipped)');
       return;
     }
     
     // CRITICAL FIX: If auth is complete (not loading) and we have admin/tenant, skip verification
     // This prevents infinite loading when auth completes successfully
     if (!loading && admin && tenant && tenant.slug === tenantSlug) {
-      console.log('[PROTECTED ROUTE] ✅ Auth complete and valid - bypassing verification');
+      logger.debug('[PROTECTED ROUTE] ✅ Auth complete and valid - bypassing verification');
       setVerified(true);
       setSkipVerification(true);
       return;
@@ -98,14 +99,14 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // Track total wait time
     if (!totalWaitStartRef.current) {
       totalWaitStartRef.current = Date.now();
-      console.log('[PROTECTED ROUTE] ⏱️ Starting total wait timer');
+      logger.debug('[PROTECTED ROUTE] ⏱️ Starting total wait timer');
     }
     
     // Total wait timeout: skip verification after 15 seconds
     const totalWaitTimeout = setTimeout(() => {
       const totalWait = Date.now() - (totalWaitStartRef.current || Date.now());
       if (totalWait >= TOTAL_WAIT_TIMEOUT_MS && !verified && !skipVerification) {
-        console.log('[PROTECTED ROUTE] ⏰ Total wait timeout triggered', { totalWait });
+        logger.debug('[PROTECTED ROUTE] ⏰ Total wait timeout triggered', { totalWait });
         logger.warn(`Total wait timeout (${totalWait}ms) - skipping verification`, undefined, 'TenantAdminProtectedRoute');
         setSkipVerification(true);
         setVerifying(false);
@@ -116,10 +117,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     // If auth is still loading, wait (but with timeout protection)
     if (loading) {
-      console.log('[PROTECTED ROUTE] ⏳ Auth context still loading, waiting...');
+      logger.debug('[PROTECTED ROUTE] ⏳ Auth context still loading, waiting...');
       const loadingTimeout = setTimeout(() => {
         if (loading && !verified && !skipVerification) {
-          console.log('[PROTECTED ROUTE] ⚠️ Auth context loading timeout (>10s)');
+          logger.debug('[PROTECTED ROUTE] ⚠️ Auth context loading timeout (>10s)');
           logger.warn('Auth context loading timeout (>10s) - skipping verification', undefined, 'TenantAdminProtectedRoute');
           setSkipVerification(true);
           setVerifying(false);
@@ -136,27 +137,27 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     
     // If not authenticated, don't verify - let the redirect happen
     if (!admin || !tenant) {
-      console.log('[PROTECTED ROUTE] ❌ Not authenticated, will redirect to login');
+      logger.debug('[PROTECTED ROUTE] ❌ Not authenticated, will redirect to login');
       clearTimeout(totalWaitTimeout);
       setVerifying(false);
       setVerified(false);
       return;
     }
     
-    console.log('[PROTECTED ROUTE] ✅ Auth context loaded', {
+    logger.debug('[PROTECTED ROUTE] ✅ Auth context loaded', {
       adminEmail: admin.email,
       tenantSlug: tenant.slug,
     });
     
     // Skip if already checking
     if (verifying) {
-      console.log('[PROTECTED ROUTE] 🔄 Already verifying, skipping duplicate check');
+      logger.debug('[PROTECTED ROUTE] 🔄 Already verifying, skipping duplicate check');
       return () => clearTimeout(totalWaitTimeout);
     }
 
     // Use lock to prevent race conditions
     if (verificationLockRef.current) {
-      console.log('[PROTECTED ROUTE] 🔒 Verification locked, skipping duplicate check');
+      logger.debug('[PROTECTED ROUTE] 🔒 Verification locked, skipping duplicate check');
       return () => clearTimeout(totalWaitTimeout);
     }
 
@@ -164,13 +165,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     const cacheKey = `${tenantSlug}-${location.pathname}`;
     const cached = verificationCache.current[cacheKey];
     if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_DURATION) {
-      console.log('[PROTECTED ROUTE] 💾 Using cached verification result');
+      logger.debug('[PROTECTED ROUTE] 💾 Using cached verification result');
       clearTimeout(totalWaitTimeout);
       setVerified(true);
       return;
     }
 
-    console.log('[PROTECTED ROUTE] 🔐 Starting local verification with retry logic...');
+    logger.debug('[PROTECTED ROUTE] 🔐 Starting local verification with retry logic...');
     // Lock verification to prevent concurrent requests
     verificationLockRef.current = true;
     setVerifying(true);
@@ -179,7 +180,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // Set verification timeout (5 seconds)
     const verificationTimeout = setTimeout(() => {
       if (!verified && !skipVerification) {
-        console.log('[PROTECTED ROUTE] ⏰ Verification timeout triggered');
+        logger.debug('[PROTECTED ROUTE] ⏰ Verification timeout triggered');
         logger.warn(`Verification timeout (${VERIFICATION_TIMEOUT_MS}ms)`, undefined, 'TenantAdminProtectedRoute');
         setVerificationError('Verification timed out. Please try again.');
         setVerifying(false);
@@ -194,7 +195,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       try {
         // Local verification: compare tenant slug from URL with authenticated tenant
         const isValidSlug = tenant.slug === tenantSlug;
-        console.log('[PROTECTED ROUTE] 🔍 Slug validation', {
+        logger.debug('[PROTECTED ROUTE] 🔍 Slug validation', {
           urlSlug: tenantSlug,
           tenantSlug: tenant.slug,
           isValid: isValidSlug,
@@ -202,7 +203,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         });
         
         if (!isValidSlug) {
-          console.log('[PROTECTED ROUTE] ❌ Slug mismatch detected!');
+          logger.debug('[PROTECTED ROUTE] ❌ Slug mismatch detected!');
           const { showErrorToast } = await import('@/lib/toastUtils');
           const { emitAuthError } = await import('@/hooks/useAuthError');
           
@@ -215,15 +216,15 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         }
 
         // Verification passed
-        console.log('[PROTECTED ROUTE] ✅ Verification passed!');
+        logger.debug('[PROTECTED ROUTE] ✅ Verification passed!');
         return true;
       } catch (error: any) {
-        console.error('[PROTECTED ROUTE] ❌ Verification error:', error);
+        logger.error('[PROTECTED ROUTE] ❌ Verification error:', error);
         
         // Retry with exponential backoff
         if (retryCount < maxRetries) {
           const delay = Math.pow(2, retryCount) * 500; // 500ms, 1s, 2s
-          console.log(`[PROTECTED ROUTE] 🔄 Retrying verification in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
+          logger.debug(`[PROTECTED ROUTE] 🔄 Retrying verification in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
           
           await new Promise(resolve => setTimeout(resolve, delay));
           return verifyWithRetry(retryCount + 1);
@@ -272,7 +273,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       setVerifying(false);
       verificationLockRef.current = false;
     }).catch((error) => {
-      console.error('[PROTECTED ROUTE] ❌ Unexpected verification error:', error);
+      logger.error('[PROTECTED ROUTE] ❌ Unexpected verification error:', error);
       clearTimeout(verificationTimeout);
       clearTimeout(totalWaitTimeout);
       setVerifying(false);

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import {
   Dialog,
@@ -15,7 +16,6 @@ import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { logger } from '@/lib/logger';
 import type { DisposableMenu } from '@/types/admin';
 
 interface CloneMenuDialogProps {
@@ -63,7 +63,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
           menu_access_whitelist: [],
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (menuError) throw menuError;
 

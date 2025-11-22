@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,6 @@ import {
   MapPin, Clock
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { logger } from '@/lib/logger';
 
 export default function CustomerPortal() {
   const navigate = useNavigate();

@@ -24,7 +24,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
-import { logger } from '@/lib/logger';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
 import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';

@@ -1,9 +1,9 @@
+import { logger } from '@/lib/logger';
 /**
  * Auth Flow Logging Utility
  * Provides detailed logging for authentication flows with performance metrics
  */
 
-import { logger } from '@/lib/logger';
 import { ErrorCategory } from './networkResilience';
 
 /**

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Monitored Button Component
  * Automatically tracks button clicks, errors, and performance
@@ -8,7 +9,6 @@ import React, { useState, useCallback } from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useButtonMonitor } from '@/lib/utils/buttonMonitor';
-import { logger } from '@/lib/logger';
 
 interface MonitoredButtonProps extends Omit<ButtonProps, 'onClick'> {
   component: string;

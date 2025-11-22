@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +18,6 @@ import { Package, Plus, Edit, Trash2, Mail, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { logger } from '@/lib/logger';
 
 export default function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -59,7 +59,7 @@ export default function VendorManagement() {
       if (error) throw error;
       setVendors(data || []);
     } catch (error) {
-      console.error('Error loading vendors:', error);
+      logger.error('Error loading vendors:', error);
       toast({
         title: 'Error',
         description: 'Failed to load vendors',

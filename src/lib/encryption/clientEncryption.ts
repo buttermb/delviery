@@ -1,16 +1,43 @@
+import { logger } from '@/lib/logger';
 // src/lib/encryption/clientEncryption.ts
 
 import CryptoJS from 'crypto-js';
-import { 
-  ENCRYPTION_CONFIG, 
-  STORAGE_KEYS, 
-  ERROR_MESSAGES 
+import {
+  ENCRYPTION_CONFIG,
+  STORAGE_KEYS,
+  ERROR_MESSAGES
 } from './constants';
-import type { 
-  EncryptableValue, 
-  EncryptionMetadata, 
-  EncryptionSession 
+import type {
+  EncryptableValue,
+  EncryptionMetadata,
+  EncryptionSession
 } from './types';
+import { safeStorage } from '@/utils/safeStorage';
+
+// Safe wrapper for sessionStorage
+const safeSession = {
+  setItem: (key: string, value: string) => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('SessionStorage failed', e);
+    }
+  },
+  getItem: (key: string) => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      sessionStorage.removeItem(key);
+    } catch (e) {
+      console.warn('SessionStorage failed', e);
+    }
+  }
+};
 
 /**
  * Zero-knowledge client-side encryption engine
@@ -46,13 +73,13 @@ export class ClientEncryption {
       };
 
       // Store in sessionStorage (cleared on browser close)
-      sessionStorage.setItem(STORAGE_KEYS.sessionKey, this.userKey);
-      sessionStorage.setItem(STORAGE_KEYS.lastActivity, Date.now().toString());
+      safeSession.setItem(STORAGE_KEYS.sessionKey, this.userKey);
+      safeSession.setItem(STORAGE_KEYS.lastActivity, Date.now().toString());
 
       // Clear password from memory (best effort)
       password = '';
     } catch (error) {
-      console.error('❌ Encryption initialization failed:', error);
+      logger.error('❌ Encryption initialization failed:', error);
       throw new Error('Failed to initialize encryption');
     }
   }
@@ -83,14 +110,14 @@ export class ClientEncryption {
    * Store salt in localStorage (salt is not sensitive)
    */
   private storeSalt(userId: string, salt: string): void {
-    localStorage.setItem(`${STORAGE_KEYS.userSalt}_${userId}`, salt);
+    safeStorage.setItem(`${STORAGE_KEYS.userSalt}_${userId}`, salt);
   }
 
   /**
    * Retrieve user's salt from localStorage
    */
   private getSalt(userId: string): string | null {
-    return localStorage.getItem(`${STORAGE_KEYS.userSalt}_${userId}`);
+    return safeStorage.getItem(`${STORAGE_KEYS.userSalt}_${userId}`);
   }
 
   /**
@@ -112,16 +139,16 @@ export class ClientEncryption {
       this.updateActivity();
 
       // Convert to string
-      const plaintext = typeof value === 'object' 
-        ? JSON.stringify(value) 
+      const plaintext = typeof value === 'object'
+        ? JSON.stringify(value)
         : String(value);
 
       // Encrypt using AES-256-GCM
       const encrypted = CryptoJS.AES.encrypt(plaintext, this.userKey!);
-      
+
       return encrypted.toString();
     } catch (error) {
-      console.error('❌ Encryption failed:', error);
+      logger.error('❌ Encryption failed:', error);
       throw new Error(ERROR_MESSAGES.ENCRYPTION_FAILED);
     }
   }
@@ -159,7 +186,7 @@ export class ClientEncryption {
         return plaintext as T;
       }
     } catch (error) {
-      console.error('❌ Decryption failed:', error);
+      logger.error('❌ Decryption failed:', error);
       throw new Error(ERROR_MESSAGES.DECRYPTION_FAILED);
     }
   }
@@ -201,7 +228,7 @@ export class ClientEncryption {
         const originalKey = key.replace('_encrypted', '');
         decrypted[originalKey] = this.decrypt(value as string);
       } else if (
-        !key.includes('search_index') && 
+        !key.includes('search_index') &&
         !key.includes('metadata') &&
         key !== 'encryption_metadata'
       ) {
@@ -226,7 +253,7 @@ export class ClientEncryption {
 
     // Use HMAC for deterministic hashing
     const hash = CryptoJS.HmacSHA256(
-      value.toLowerCase().trim(), 
+      value.toLowerCase().trim(),
       this.userKey!
     );
     return hash.toString();
@@ -250,9 +277,9 @@ export class ClientEncryption {
           const arrayBuffer = reader.result as ArrayBuffer;
           const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
           const encrypted = CryptoJS.AES.encrypt(wordArray, this.userKey!);
-          
+
           const blob = new Blob(
-            [encrypted.toString()], 
+            [encrypted.toString()],
             { type: 'application/octet-stream' }
           );
           resolve(blob);
@@ -273,7 +300,7 @@ export class ClientEncryption {
    * @returns Decrypted blob
    */
   async decryptFile(
-    encryptedBlob: Blob, 
+    encryptedBlob: Blob,
     originalType: string
   ): Promise<Blob> {
     if (!this.isReady()) {
@@ -283,7 +310,7 @@ export class ClientEncryption {
     const text = await encryptedBlob.text();
     const decrypted = CryptoJS.AES.decrypt(text, this.userKey!);
     const arrayBuffer = this.wordArrayToArrayBuffer(decrypted);
-    
+
     return new Blob([arrayBuffer], { type: originalType });
   }
 
@@ -311,8 +338,8 @@ export class ClientEncryption {
   private updateActivity(): void {
     if (this.session) {
       this.session.lastActivity = new Date();
-      sessionStorage.setItem(
-        STORAGE_KEYS.lastActivity, 
+      safeSession.setItem(
+        STORAGE_KEYS.lastActivity,
         Date.now().toString()
       );
     }
@@ -322,8 +349,8 @@ export class ClientEncryption {
    * Check if session has expired
    */
   isSessionExpired(): boolean {
-    const lastActivity = sessionStorage.getItem(STORAGE_KEYS.lastActivity);
-    
+    const lastActivity = safeSession.getItem(STORAGE_KEYS.lastActivity);
+
     if (!lastActivity) return true;
 
     const elapsed = Date.now() - parseInt(lastActivity, 10);
@@ -346,13 +373,13 @@ export class ClientEncryption {
    * Called on page refresh
    */
   restoreSession(): boolean {
-    const sessionKey = sessionStorage.getItem(STORAGE_KEYS.sessionKey);
-    
+    const sessionKey = safeSession.getItem(STORAGE_KEYS.sessionKey);
+
     if (sessionKey && !this.isSessionExpired()) {
       this.userKey = sessionKey;
       return true;
     }
-    
+
     return false;
   }
 
@@ -366,10 +393,10 @@ export class ClientEncryption {
     this.session = null;
 
     // Clear session storage
-    sessionStorage.removeItem(STORAGE_KEYS.sessionKey);
-    sessionStorage.removeItem(STORAGE_KEYS.lastActivity);
+    safeSession.removeItem(STORAGE_KEYS.sessionKey);
+    safeSession.removeItem(STORAGE_KEYS.lastActivity);
 
-    console.log('🔒 Encryption session destroyed');
+    logger.debug('🔒 Encryption session destroyed');
   }
 
   /**

@@ -68,7 +68,7 @@ export default function CustomReportsPage() {
           status: 'completed',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

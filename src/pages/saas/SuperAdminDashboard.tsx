@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Super Admin Dashboard
  * Platform management for SAAS owners
@@ -147,7 +148,7 @@ export default function SuperAdminDashboard() {
       
       // In production, generate temporary JWT and redirect to tenant dashboard
       // window.location.href = `/tenant/${tenant.id}/dashboard?impersonate=true`;
-      console.log('Would navigate to tenant dashboard:', tenant.id);
+      logger.debug('Would navigate to tenant dashboard:', tenant.id);
     } catch (error: any) {
       toast({
         title: 'Session Failed',

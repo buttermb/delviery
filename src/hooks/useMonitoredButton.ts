@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Hook to easily add button monitoring to existing buttons
@@ -5,7 +6,6 @@
 
 import { useCallback, useState } from 'react';
 import { useButtonMonitor } from '@/lib/utils/buttonMonitor';
-import { logger } from '@/lib/logger';
 
 interface UseMonitoredButtonOptions {
   component: string;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Create Tenant Dialog
  * Allows super admin to create new tenants manually
@@ -188,7 +189,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           onboarded: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -202,7 +203,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
       });
 
       if (userError) {
-        console.warn('Failed to create user:', userError);
+        logger.warn('Failed to create user:', userError);
       } else if (userData.user && tenant) {
         // Add user to tenant_users table
         await supabase.from('tenant_users').insert({

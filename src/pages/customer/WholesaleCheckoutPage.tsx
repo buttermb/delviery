@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Wholesale Checkout Page
  * B2B customers can complete wholesale orders
@@ -24,7 +25,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';

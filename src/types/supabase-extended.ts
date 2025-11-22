@@ -14,7 +14,7 @@ export type ExtendedDatabase = Database & {
           id: string;
           metric_type: string;
           value: number;
-          metadata: Record<string, any> | null;
+          metadata: Record<string, unknown> | null;
           timestamp: string;
           created_at: string;
         };
@@ -22,7 +22,7 @@ export type ExtendedDatabase = Database & {
           id?: string;
           metric_type: string;
           value: number;
-          metadata?: Record<string, any> | null;
+          metadata?: Record<string, unknown> | null;
           timestamp?: string;
           created_at?: string;
         };
@@ -30,7 +30,7 @@ export type ExtendedDatabase = Database & {
           id?: string;
           metric_type?: string;
           value?: number;
-          metadata?: Record<string, any> | null;
+          metadata?: Record<string, unknown> | null;
           timestamp?: string;
           created_at?: string;
         };
@@ -80,7 +80,7 @@ export type ExtendedDatabase = Database & {
           entity_id: string;
           action: string;
           user_id: string | null;
-          details: Record<string, any> | null;
+          details: Record<string, unknown> | null;
           ip_address: string | null;
           created_at: string;
           resource_type: string | null;
@@ -89,8 +89,8 @@ export type ExtendedDatabase = Database & {
           actor_id: string | null;
           actor_type: string | null;
           timestamp: string | null;
-          metadata: Record<string, any> | null;
-          changes: Record<string, any> | null;
+          metadata: Record<string, unknown> | null;
+          changes: Record<string, unknown> | null;
         };
         Insert: {
           id?: string;
@@ -98,7 +98,7 @@ export type ExtendedDatabase = Database & {
           entity_id: string;
           action: string;
           user_id?: string | null;
-          details?: Record<string, any> | null;
+          details?: Record<string, unknown> | null;
           ip_address?: string | null;
           created_at?: string;
           resource_type?: string | null;
@@ -107,8 +107,8 @@ export type ExtendedDatabase = Database & {
           actor_id?: string | null;
           actor_type?: string | null;
           timestamp?: string | null;
-          metadata?: Record<string, any> | null;
-          changes?: Record<string, any> | null;
+          metadata?: Record<string, unknown> | null;
+          changes?: Record<string, unknown> | null;
         };
         Update: {
           id?: string;
@@ -116,7 +116,7 @@ export type ExtendedDatabase = Database & {
           entity_id?: string;
           action?: string;
           user_id?: string | null;
-          details?: Record<string, any> | null;
+          details?: Record<string, unknown> | null;
           ip_address?: string | null;
           created_at?: string;
           resource_type?: string | null;
@@ -125,25 +125,25 @@ export type ExtendedDatabase = Database & {
           actor_id?: string | null;
           actor_type?: string | null;
           timestamp?: string | null;
-          metadata?: Record<string, any> | null;
-          changes?: Record<string, any> | null;
+          metadata?: Record<string, unknown> | null;
+          changes?: Record<string, unknown> | null;
         };
       };
       super_admins: {
         Row: {
           id: string;
           email: string;
-          [key: string]: any;
+          [key: string]: unknown;
         };
         Insert: {
           id?: string;
           email: string;
-          [key: string]: any;
+          [key: string]: unknown;
         };
         Update: {
           id?: string;
           email?: string;
-          [key: string]: any;
+          [key: string]: unknown;
         };
       };
     };

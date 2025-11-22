@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,7 @@ export default function CourierPinManagement({ courierId, currentPin, courierNam
       toast.success('PIN generated - remember to save it!');
     } catch (error) {
       toast.error('Failed to generate PIN');
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }
@@ -60,9 +61,9 @@ export default function CourierPinManagement({ courierId, currentPin, courierNam
       
       if (hashError) throw hashError;
       
-      console.log('Saving PIN for courier:', courierId);
-      console.log('Plain PIN (for debugging):', plainPin);
-      console.log('Hashed PIN:', hashedPin);
+      logger.debug('Saving PIN for courier:', courierId);
+      logger.debug('Plain PIN (for debugging):', plainPin);
+      logger.debug('Hashed PIN:', hashedPin);
       
       const { error } = await supabase
         .from('couriers')
@@ -94,7 +95,7 @@ export default function CourierPinManagement({ courierId, currentPin, courierNam
       setPinCopied(false);
     } catch (error) {
       toast.error('Failed to save PIN');
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }

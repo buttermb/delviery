@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Wholesale Orders Page
  * B2B customers can view their wholesale order history
@@ -26,7 +27,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

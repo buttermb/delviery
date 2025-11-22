@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Delivery Platform - Main Entry Point
  * 
@@ -86,10 +87,10 @@ window.addEventListener('error', (event) => {
 });
 
 // Log app initialization
-console.log('[APP] Starting app initialization...');
+logger.debug('[APP] Starting app initialization...');
 
 // Debug: Log theme state during initialization
-console.log('[APP] Theme state:', {
+logger.debug('[APP] Theme state:', {
   localStorage: localStorage.getItem('theme'),
   htmlClasses: document.documentElement.className,
   prefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -100,7 +101,7 @@ if (import.meta.env.PROD) {
   try {
     initializeSecurityObfuscation();
   } catch (error) {
-    console.error('[APP] Security obfuscation failed:', error);
+    logger.error('[APP] Security obfuscation failed:', error);
   }
 }
 
@@ -151,28 +152,28 @@ if (import.meta.env.DEV) {
     // Log performance report after page load
     window.addEventListener('load', () => {
       setTimeout(() => {
-        console.log('[APP] Performance Report:', PerformanceMonitor.getReport());
+        logger.debug('[APP] Performance Report:', PerformanceMonitor.getReport());
       }, 3000);
     });
   } catch (error) {
-    console.error('[APP] Performance monitoring failed:', error);
+    logger.error('[APP] Performance monitoring failed:', error);
   }
 }
 
 // Initialize bug finder (runs in all environments)
 try {
   // BugFinder automatically starts monitoring on instantiation
-  console.log('[APP] Bug Finder initialized');
+  logger.debug('[APP] Bug Finder initialized');
   
   // Log bug scan on initialization
   if (import.meta.env.DEV) {
     const scan = bugFinder.scanBugs();
     if (scan.totalBugs > 0) {
-      console.warn('[APP] Existing bugs detected:', scan);
+      logger.warn('[APP] Existing bugs detected:', scan);
     }
   }
 } catch (error) {
-  console.error('[APP] Bug Finder initialization failed:', error);
+  logger.error('[APP] Bug Finder initialization failed:', error);
 }
 
 // Render application with error handling

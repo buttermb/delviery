@@ -57,7 +57,7 @@ export function ShiftManager() {
         .eq('status', 'open')
         .order('started_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
       return data as Shift | null;
@@ -123,7 +123,7 @@ export function ShiftManager() {
           shift_number: shiftNumber,
         }] as PosShiftInsert[])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -160,7 +160,7 @@ export function ShiftManager() {
         })
         .eq('id', activeShift.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

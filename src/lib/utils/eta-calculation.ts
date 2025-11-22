@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * ETA Calculation Utility
  * Uses Mapbox Directions API to calculate estimated time of arrival
@@ -56,7 +57,7 @@ export async function calculateETA(
       formatted: formatDuration(duration),
     };
   } catch (error) {
-    console.error('Error calculating ETA:', error);
+    logger.error('Error calculating ETA:', error);
     // Fallback to simple calculation
     return calculateFallbackETA(driverLocation, destination);
   }

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Adaptive Sidebar Component
  * 
@@ -38,7 +39,6 @@ import { SidebarFavorites } from './SidebarFavorites';
 import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
 import { useState, Suspense } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
-import { logger } from '@/lib/logger';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AdaptiveSidebarInnerProps {

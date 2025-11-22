@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,7 +125,7 @@ export default function CourierHistoryPage() {
 
       setRecords(allRecords);
     } catch (error) {
-      console.error('Failed to load history:', error);
+      logger.error('Failed to load history:', error);
     } finally {
       setLoading(false);
     }

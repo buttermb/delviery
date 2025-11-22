@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Safe Supabase Query Utilities
  * Handles missing tenant_id columns gracefully to prevent 400 errors
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import { logger } from '@/lib/logger';
 
 /**
  * Check if a column exists in a table

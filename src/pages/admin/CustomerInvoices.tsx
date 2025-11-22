@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // Customer Invoices page with pagination support
 import { useState, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -21,7 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
-import { logger } from '@/lib/logger';
 import { PageHeader } from '@/components/shared/PageHeader';
 
 const PAGE_SIZE = 25;

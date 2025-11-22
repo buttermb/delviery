@@ -25,7 +25,7 @@ export function useRunnerStats(runnerId?: string) {
         .from('wholesale_runners')
         .select('total_deliveries')
         .eq('id', runnerId)
-        .single();
+        .maybeSingle();
 
       if (runnerError) throw runnerError;
 

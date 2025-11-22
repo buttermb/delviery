@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Support Tickets Tab Component
  * Displays and manages support tickets for a tenant
@@ -12,7 +13,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { MessageSquare, AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
 
 interface SupportTicketsTabProps {
   tenantId: string;

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, ShoppingCart, AlertTriangle, CheckCircle } from "lucide-react";
@@ -43,7 +44,7 @@ export function RealtimeActivityFeed({ activities }: RealtimeActivityFeedProps) 
               activities.map((activity, idx) => {
                 // Validate activity before processing
                 if (!isValidActivity(activity)) {
-                  console.warn('Invalid activity object:', activity);
+                  logger.warn('Invalid activity object:', activity);
                   return null;
                 }
                 

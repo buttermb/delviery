@@ -64,7 +64,7 @@ export default function InventoryTransfers() {
           status: 'pending',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

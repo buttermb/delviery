@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * User Activity Feed
  * Shows recent activity across the app

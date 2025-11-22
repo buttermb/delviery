@@ -61,7 +61,7 @@ export default function PrioritySupport() {
           status: 'open',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

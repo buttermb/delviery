@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { Loader2 } from 'lucide-react';
 import { useMenuCart } from '@/contexts/MenuCartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 
 interface OrderFormDialogProps {
   open: boolean;
@@ -30,7 +30,7 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (items.length === 0) {
       toast({
         variant: 'destructive',
@@ -70,7 +70,7 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
           status: 'pending',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (orderError) throw orderError;
 

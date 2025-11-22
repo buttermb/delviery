@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+import { safeStorage } from '@/utils/safeStorage';
 // Analytics tracking utility for signup popup and checkout events
 
 interface AnalyticsEvent {
@@ -22,7 +24,7 @@ class Analytics {
 
     // Log to console in development
     if (import.meta.env.DEV) {
-      console.log('📊 Analytics:', eventData);
+      logger.debug('📊 Analytics:', eventData as unknown as Record<string, unknown>);
     }
 
     // Store in localStorage for demo purposes
@@ -31,30 +33,30 @@ class Analytics {
 
   private storeEvent(eventData: AnalyticsEvent) {
     try {
-      const existingEvents = JSON.parse(localStorage.getItem('analytics_events') || '[]');
+      const existingEvents = JSON.parse(safeStorage.getItem('analytics_events') || '[]');
       existingEvents.push(eventData);
-      
+
       // Keep only last 100 events
       if (existingEvents.length > 100) {
         existingEvents.shift();
       }
-      
-      localStorage.setItem('analytics_events', JSON.stringify(existingEvents));
+
+      safeStorage.setItem('analytics_events', JSON.stringify(existingEvents));
     } catch (error) {
-      console.error('Failed to store analytics event:', error);
+      logger.error('Failed to store analytics event:', error);
     }
   }
 
   getEvents(): AnalyticsEvent[] {
     try {
-      return JSON.parse(localStorage.getItem('analytics_events') || '[]');
+      return JSON.parse(safeStorage.getItem('analytics_events') || '[]');
     } catch {
       return [];
     }
   }
 
   clearEvents() {
-    localStorage.removeItem('analytics_events');
+    safeStorage.removeItem('analytics_events');
   }
 
   // Popup-specific tracking
@@ -123,10 +125,10 @@ class Analytics {
   }
 
   trackAddToCart(productId: string, productName: string, quantity: number) {
-    this.track('add_to_cart', { 
-      product_id: productId, 
-      product_name: productName, 
-      quantity 
+    this.track('add_to_cart', {
+      product_id: productId,
+      product_name: productName,
+      quantity
     });
   }
 
@@ -136,18 +138,18 @@ class Analytics {
   }
 
   trackPurchase(orderId: string, totalAmount: number, itemCount: number) {
-    this.track('purchase', { 
-      order_id: orderId, 
-      total_amount: totalAmount, 
-      item_count: itemCount 
+    this.track('purchase', {
+      order_id: orderId,
+      total_amount: totalAmount,
+      item_count: itemCount
     });
   }
 
   // Giveaway
   trackGiveawayEntry(giveawayId: string, entryCount: number) {
-    this.track('giveaway_entry', { 
-      giveaway_id: giveawayId, 
-      entry_count: entryCount 
+    this.track('giveaway_entry', {
+      giveaway_id: giveawayId,
+      entry_count: entryCount
     });
   }
 
@@ -169,9 +171,9 @@ class Analytics {
   }
 
   trackDeliveryCompleted(orderId: string, earnedAmount: number) {
-    this.track('delivery_completed', { 
-      order_id: orderId, 
-      earned_amount: earnedAmount 
+    this.track('delivery_completed', {
+      order_id: orderId,
+      earned_amount: earnedAmount
     });
   }
 

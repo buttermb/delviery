@@ -50,7 +50,7 @@ export default function RecordFrontedReturn() {
         products (name, sku, barcode)
       `)
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error("Failed to load details");
@@ -127,7 +127,7 @@ export default function RecordFrontedReturn() {
           .from("products")
           .select("available_quantity")
           .eq("id", (front as any).product_id)
-          .single();
+          .maybeSingle();
 
         if (product) {
           await supabase

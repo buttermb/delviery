@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -9,7 +10,6 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } f
 import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn, Leaf, Sparkles, Wind, Coffee } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
-import { logger } from '@/lib/logger';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 // import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
@@ -125,7 +125,7 @@ const SecureMenuView = () => {
       //       parsed.menu_id,
       //       parsed.whitelist_id,
       //       (event) => {
-      //         console.log('Security event detected:', event);
+      //         logger.debug('Security event detected:', event);
       //       }
       //     );
       //   });

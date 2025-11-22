@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Super Admin / SAAS Platform Login
  * Separate login for managing all tenant accounts

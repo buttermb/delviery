@@ -1,9 +1,9 @@
+import { logger } from '@/lib/logger';
 /**
  * Platform Fee Calculation Utilities
  * Calculates 2% transaction fee on marketplace orders
  */
 
-import { logger } from '@/lib/logger';
 
 export interface FeeCalculationResult {
   subtotal: number;

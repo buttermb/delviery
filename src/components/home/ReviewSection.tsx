@@ -114,7 +114,7 @@ export function ReviewSection() {
           comment: comment.trim(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

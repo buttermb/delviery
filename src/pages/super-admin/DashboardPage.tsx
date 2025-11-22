@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Super Admin Dashboard Page
  * Redesigned with horizontal navigation layout
@@ -47,7 +48,6 @@ import {
 } from 'recharts';
 import { useState, useEffect } from 'react';
 import { AnimatedNumber } from '@/components/shared/AnimatedNumber';
-import { logger } from '@/lib/logger';
 
 interface TenantPayload {
   id?: string;

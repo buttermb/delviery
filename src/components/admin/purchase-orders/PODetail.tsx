@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,7 +85,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
         .from("vendors")
         .select("id, name")
         .eq("id", purchaseOrder.vendor_id)
-        .single();
+        .maybeSingle();
 
       if (vendorData) return vendorData;
 
@@ -93,7 +94,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
         .from("wholesale_suppliers")
         .select("id, supplier_name as name")
         .eq("id", purchaseOrder.vendor_id)
-        .single();
+        .maybeSingle();
 
       return supplierData;
     },

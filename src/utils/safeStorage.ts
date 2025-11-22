@@ -1,42 +1,72 @@
+import { logger } from '@/lib/logger';
 /**
  * Safe storage wrapper to handle private browsing mode and storage errors
  */
-export const safeStorage = {
-  getItem: (key: string): string | null => {
-    try {
-      if (typeof window === 'undefined') return null;
-      return window.localStorage.getItem(key);
-    } catch (error) {
-      console.warn('Error accessing localStorage:', error);
-      return null;
-    }
-  },
+class SafeStorage {
+  private memoryStorage: Map<string, string>;
+  private isSupported: boolean;
 
-  setItem: (key: string, value: string): void => {
-    try {
-      if (typeof window === 'undefined') return;
-      window.localStorage.setItem(key, value);
-    } catch (error) {
-      console.warn('Error setting localStorage:', error);
-    }
-  },
+  constructor() {
+    this.memoryStorage = new Map();
+    this.isSupported = this.checkSupport();
+  }
 
-  removeItem: (key: string): void => {
+  private checkSupport(): boolean {
+    if (typeof window === 'undefined') return false;
     try {
-      if (typeof window === 'undefined') return;
-      window.localStorage.removeItem(key);
-    } catch (error) {
-      console.warn('Error removing from localStorage:', error);
-    }
-  },
-
-  clear: (): void => {
-    try {
-      if (typeof window === 'undefined') return;
-      window.localStorage.clear();
-    } catch (error) {
-      console.warn('Error clearing localStorage:', error);
+      const testKey = '__storage_test__';
+      window.localStorage.setItem(testKey, testKey);
+      window.localStorage.removeItem(testKey);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
-};
+
+  getItem(key: string): string | null {
+    if (this.isSupported) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        logger.warn('Error accessing localStorage, falling back to memory:', error);
+      }
+    }
+    return this.memoryStorage.get(key) || null;
+  }
+
+  setItem(key: string, value: string): void {
+    if (this.isSupported) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error) {
+        logger.warn('Error setting localStorage, falling back to memory:', error);
+      }
+    }
+    this.memoryStorage.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    if (this.isSupported) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (error) {
+        logger.warn('Error removing from localStorage:', error);
+      }
+    }
+    this.memoryStorage.delete(key);
+  }
+
+  clear(): void {
+    if (this.isSupported) {
+      try {
+        window.localStorage.clear();
+      } catch (error) {
+        logger.warn('Error clearing localStorage:', error);
+      }
+    }
+    this.memoryStorage.clear();
+  }
+}
+
+export const safeStorage = new SafeStorage();
 

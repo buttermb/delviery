@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // Sitemap generation script
 import fs from "fs";
 import path from "path";
@@ -142,10 +143,10 @@ function createSitemapXml(routes: string[]): string {
  * Main function to generate the sitemap
  */
 async function generateSitemap() {
-  console.log("Generating sitemap...");
+  logger.debug("Generating sitemap...");
 
   if (!BASE_URL.startsWith("http")) {
-    console.error(
+    logger.error(
       'Error: BASE_URL in src/lib/generate-sitemap.ts must be a full URL (e.g., "https://example.com")'
     );
     process.exit(1);
@@ -207,11 +208,11 @@ async function generateSitemap() {
     (route) => !shouldIgnoreRoute(route)
   );
 
-  console.log(`Found ${foundRoutes.length} total routes.`);
-  console.log(`Filtered ${staticRoutes.length - filteredRoutes.length} ignored routes.`);
-  console.log(`Final ${filteredRoutes.length} routes in sitemap.`);
+  logger.debug(`Found ${foundRoutes.length} total routes.`);
+  logger.debug(`Filtered ${staticRoutes.length - filteredRoutes.length} ignored routes.`);
+  logger.debug(`Final ${filteredRoutes.length} routes in sitemap.`);
   if (filteredRoutes.length > 0) {
-    console.log("Routes:", filteredRoutes.join(", "));
+    logger.debug("Routes:", filteredRoutes.join(", "));
   }
 
   // 6. Generate the XML
@@ -223,7 +224,7 @@ async function generateSitemap() {
   }
   fs.writeFileSync(SITEMAP_PATH, sitemapXml);
 
-  console.log(`✅ Sitemap successfully generated at ${SITEMAP_PATH}`);
+  logger.debug(`✅ Sitemap successfully generated at ${SITEMAP_PATH}`);
 }
 
 // Run the script

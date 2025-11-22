@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -78,7 +79,7 @@ export const CourierPinProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error) {
-      console.error('Error checking PIN setup:', error);
+      logger.error('Error checking PIN setup:', error);
     } finally {
       setLoading(false);
     }

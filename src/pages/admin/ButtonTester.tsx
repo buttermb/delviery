@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -435,7 +436,7 @@ const ButtonTester = () => {
         try {
           navigate(route);
         } catch (navError) {
-          console.error(`Navigation error to ${route}:`, navError);
+          logger.error(`Navigation error to ${route}:`, navError);
           allPageResults.push({
             path: route,
             tested: true,
@@ -511,7 +512,7 @@ const ButtonTester = () => {
             
             setResults([...allButtonResults]);
           } catch (batchError) {
-            console.error(`Batch test error:`, batchError);
+            logger.error(`Batch test error:`, batchError);
             // Continue with next batch even if this one fails
           }
         }
@@ -525,7 +526,7 @@ const ButtonTester = () => {
         
         setPageResults([...allPageResults]);
       } catch (pageError) {
-        console.error(`Error testing page ${allRoutes[i]}:`, pageError);
+        logger.error(`Error testing page ${allRoutes[i]}:`, pageError);
         // Continue with next page even if this one fails
         continue;
       }
@@ -875,7 +876,7 @@ const ButtonTester = () => {
                             {page.bugs.map((bug, bugIndex) => {
                               // Validate bug object
                               if (!isValidBugReport(bug)) {
-                                console.warn('Invalid bug report:', bug);
+                                logger.warn('Invalid bug report:', bug);
                                 return null;
                               }
                               

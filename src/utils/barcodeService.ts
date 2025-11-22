@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Advanced Barcode & QR Code Generation Service
  * Supports Code128 barcodes and QR codes with full tracking data
@@ -167,7 +168,7 @@ export function generateBarcodeSVG(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     // Import logger at the top of the file if not already imported
-    console.error('Barcode generation error:', {
+    logger.error('Barcode generation error:', {
       barcodeText,
       width,
       height,
@@ -407,7 +408,7 @@ export function parseQRCodeData(qrDataString: string): QRCodeData {
     
     return data as QRCodeData;
   } catch (error) {
-    console.error('QR code parsing error:', error);
+    logger.error('QR code parsing error:', error);
     throw new Error(`Failed to parse QR code data: ${error}`);
   }
 }

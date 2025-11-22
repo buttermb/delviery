@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Component, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

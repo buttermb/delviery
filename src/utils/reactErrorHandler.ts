@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * React Error Handler Utilities
  * Provides centralized error handling for React components
@@ -34,7 +35,7 @@ export const handleQueryError = (error: unknown) => {
   const message = error instanceof Error ? error.message : 'An error occurred';
   
   if (import.meta.env.DEV) {
-    console.error('Query Error:', error);
+    logger.error('Query Error:', error);
   }
 
   // Don't show toast for network errors during development
@@ -49,7 +50,7 @@ export const handleMutationError = (error: unknown) => {
   const message = error instanceof Error ? error.message : 'An error occurred';
   
   if (import.meta.env.DEV) {
-    console.error('Mutation Error:', error);
+    logger.error('Mutation Error:', error);
   }
 
   toast.error('Action failed', {
@@ -65,7 +66,7 @@ export const setupGlobalErrorHandlers = () => {
     event.preventDefault();
     
     if (import.meta.env.DEV) {
-      console.error('Unhandled Promise Rejection:', event.reason);
+      logger.error('Unhandled Promise Rejection:', event.reason);
     }
 
     toast.error('An unexpected error occurred', {
@@ -77,7 +78,7 @@ export const setupGlobalErrorHandlers = () => {
     event.preventDefault();
     
     if (import.meta.env.DEV) {
-      console.error('Global Error:', event.error);
+      logger.error('Global Error:', event.error);
     }
   });
 };

@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Forum Helper Utilities
  * Common functions for forum operations
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 /**
  * Check if current user can post (has approval + profile)

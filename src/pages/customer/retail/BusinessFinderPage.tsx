@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Business Finder Page
@@ -25,7 +26,6 @@ import {
   ArrowRight,
   ShoppingBag
 } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

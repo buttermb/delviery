@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -8,7 +9,6 @@ import { MapPin, Truck, Layers, Map as MapIcon } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { logger } from '@/lib/logger';
 
 interface CourierLocation {
   id: string;

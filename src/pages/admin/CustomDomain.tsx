@@ -52,7 +52,7 @@ export default function CustomDomain() {
           status: 'pending',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

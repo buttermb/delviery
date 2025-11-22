@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Database Safety Utilities
  * Provides safe access to potentially missing database columns
@@ -81,7 +82,7 @@ export async function safeSelect<T>(
       });
     }
     
-    const { data, error } = await query.single();
+    const { data, error } = await query.maybeSingle();
     
     if (error) {
       // If it's a column error, return null (column doesn't exist)

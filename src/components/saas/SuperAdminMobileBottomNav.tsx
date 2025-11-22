@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Super Admin Mobile Bottom Navigation
  * Fixed bottom nav bar for mobile super admin access
@@ -6,7 +7,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/mobile';
-import { logger } from '@/lib/logger';
 import {
   LayoutDashboard,
   Building2,

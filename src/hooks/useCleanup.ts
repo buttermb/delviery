@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Cleanup Hook
  * Automatically clean up subscriptions, intervals, and event listeners
@@ -32,7 +33,7 @@ export function useCleanup() {
         // Use logger in production, silent in dev for cleanup errors
         if (import.meta.env.DEV) {
            
-          console.warn('Cleanup error:', error);
+          logger.warn('Cleanup error:', error);
         }
       }
     });

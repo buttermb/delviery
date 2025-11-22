@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,10 +51,10 @@ export default function FrontedInventoryDetails() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to fronted inventory updates');
+          logger.debug('Successfully subscribed to fronted inventory updates');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to fronted inventory updates:', status);
+          logger.error('Failed to subscribe to fronted inventory updates:', status);
         }
       });
 
@@ -73,7 +74,7 @@ export default function FrontedInventoryDetails() {
           inventory_locations (location_name, location_type, address)
         `)
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (frontError) throw frontError;
       setFront(frontData);
@@ -138,8 +139,8 @@ export default function FrontedInventoryDetails() {
             front.status === "completed"
               ? "default"
               : front.status === "cancelled"
-              ? "destructive"
-              : "secondary"
+                ? "destructive"
+                : "secondary"
           }
         >
           {front.status.toUpperCase()}

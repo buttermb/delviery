@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +14,6 @@ import {
   DollarSign, TrendingUp, ShoppingCart, Clock, Users, 
   CreditCard, Package, Award, Activity 
 } from 'lucide-react';
-import { logger } from '@/lib/logger';
 
 interface POSTransaction {
   id: string;

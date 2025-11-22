@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -30,7 +31,7 @@ export default function ApiAccess() {
       const { data, error } = await listAdminRecords('api_keys');
       
       if (error) {
-        console.error('Error fetching API keys:', error);
+        logger.error('Error fetching API keys:', error);
         return [];
       }
       

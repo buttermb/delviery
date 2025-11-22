@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -22,7 +23,7 @@ export function usePushNotifications() {
       setSubscription(sub);
       setIsSubscribed(!!sub);
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      logger.error('Error checking subscription:', error);
     }
   };
 
@@ -72,7 +73,7 @@ export function usePushNotifications() {
 
       return true;
     } catch (error) {
-      console.error('Error requesting permission:', error);
+      logger.error('Error requesting permission:', error);
       toast({
         title: "Error",
         description: "Failed to enable notifications",
@@ -97,7 +98,7 @@ export function usePushNotifications() {
         description: "You won't receive push notifications",
       });
     } catch (error) {
-      console.error('Error unsubscribing:', error);
+      logger.error('Error unsubscribing:', error);
       toast({
         title: "Error",
         description: "Failed to disable notifications",

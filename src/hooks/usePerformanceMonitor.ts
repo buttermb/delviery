@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 
 export function usePerformanceMonitor(componentName: string) {
@@ -7,7 +8,7 @@ export function usePerformanceMonitor(componentName: string) {
       
       return () => {
         const endTime = performance.now();
-        console.log(`[Perf] ${componentName} render time: ${(endTime - startTime).toFixed(2)}ms`);
+        logger.debug(`[Perf] ${componentName} render time: ${(endTime - startTime).toFixed(2)}ms`);
       };
     }
   }, [componentName]);

@@ -76,7 +76,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
           email_recipients: emailRecipients.length > 0 ? emailRecipients : null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

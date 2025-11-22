@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Activity, ShoppingCart, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
-import { logger } from '@/lib/logger';
 
 interface LiveOrder {
   id: string;

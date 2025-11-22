@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Wholesale Cart Page
  * B2B customers can view and manage their wholesale shopping cart
@@ -22,7 +23,6 @@ import {
   Package
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';

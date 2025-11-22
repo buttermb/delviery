@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Network Error Handler with Retry Logic
  * Provides standardized error handling and retry functionality
  */
 
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 
 export interface RetryOptions {
   maxRetries?: number;

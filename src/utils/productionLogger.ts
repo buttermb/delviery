@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Production Error Logger
  * Logs critical errors in production where console is stripped
@@ -56,7 +57,7 @@ class ProductionLogger {
 
     // Keep console.error in production for critical issues
     if (typeof console !== 'undefined' && console.error) {
-      console.error('[Production Error]', message, context);
+      logger.error('[Production Error]', message, context);
     }
   }
 

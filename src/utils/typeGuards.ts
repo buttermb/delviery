@@ -6,61 +6,75 @@
 /**
  * Validates that an order object has required properties
  */
-export const isValidOrder = (order: any): boolean => {
+/**
+ * Validates that an order object has required properties
+ */
+export const isValidOrder = (order: unknown): order is { id: string; status: string } => {
   return (
-    order &&
     typeof order === 'object' &&
-    typeof order.id === 'string' &&
-    typeof order.status === 'string'
+    order !== null &&
+    'id' in order &&
+    typeof (order as Record<string, unknown>).id === 'string' &&
+    'status' in order &&
+    typeof (order as Record<string, unknown>).status === 'string'
   );
 };
 
 /**
  * Validates that an activity object has required properties
  */
-export const isValidActivity = (activity: any): boolean => {
+export const isValidActivity = (activity: unknown): activity is { type: string; message: string } => {
   return (
-    activity &&
     typeof activity === 'object' &&
-    typeof activity.type === 'string' &&
-    typeof activity.message === 'string'
+    activity !== null &&
+    'type' in activity &&
+    typeof (activity as Record<string, unknown>).type === 'string' &&
+    'message' in activity &&
+    typeof (activity as Record<string, unknown>).message === 'string'
   );
 };
 
 /**
  * Validates that an audit log object has required properties
  */
-export const isValidAuditLog = (log: any): boolean => {
+export const isValidAuditLog = (log: unknown): log is { action: string; entity_type: string } => {
   return (
-    log &&
     typeof log === 'object' &&
-    typeof log.action === 'string' &&
-    typeof log.entity_type === 'string'
+    log !== null &&
+    'action' in log &&
+    typeof (log as Record<string, unknown>).action === 'string' &&
+    'entity_type' in log &&
+    typeof (log as Record<string, unknown>).entity_type === 'string'
   );
 };
 
 /**
  * Validates that a bug report object has required properties
  */
-export const isValidBugReport = (bug: any): boolean => {
+export const isValidBugReport = (bug: unknown): bug is { type: string; severity: string; message: string } => {
   return (
-    bug &&
     typeof bug === 'object' &&
-    typeof bug.type === 'string' &&
-    typeof bug.severity === 'string' &&
-    typeof bug.message === 'string'
+    bug !== null &&
+    'type' in bug &&
+    typeof (bug as Record<string, unknown>).type === 'string' &&
+    'severity' in bug &&
+    typeof (bug as Record<string, unknown>).severity === 'string' &&
+    'message' in bug &&
+    typeof (bug as Record<string, unknown>).message === 'string'
   );
 };
 
 /**
  * Validates that a courier object has required properties
  */
-export const isValidCourier = (courier: any): boolean => {
+export const isValidCourier = (courier: unknown): courier is { id: string; full_name: string } => {
   return (
-    courier &&
     typeof courier === 'object' &&
-    typeof courier.id === 'string' &&
-    typeof courier.full_name === 'string'
+    courier !== null &&
+    'id' in courier &&
+    typeof (courier as Record<string, unknown>).id === 'string' &&
+    'full_name' in courier &&
+    typeof (courier as Record<string, unknown>).full_name === 'string'
   );
 };
 
@@ -68,14 +82,14 @@ export const isValidCourier = (courier: any): boolean => {
  * Safely extract string property from object
  */
 export const safeString = (
-  obj: any,
+  obj: unknown,
   key: string,
   defaultValue: string = ''
 ): string => {
   if (!obj || typeof obj !== 'object') {
     return defaultValue;
   }
-  const value = obj[key];
+  const value = (obj as Record<string, unknown>)[key];
   return typeof value === 'string' ? value : defaultValue;
 };
 
@@ -83,13 +97,13 @@ export const safeString = (
  * Safely extract number property from object
  */
 export const safeNumber = (
-  obj: any,
+  obj: unknown,
   key: string,
   defaultValue: number = 0
 ): number => {
   if (!obj || typeof obj !== 'object') {
     return defaultValue;
   }
-  const value = obj[key];
+  const value = (obj as Record<string, unknown>)[key];
   return typeof value === 'number' ? value : defaultValue;
 };

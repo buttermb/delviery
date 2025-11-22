@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
@@ -41,13 +42,13 @@ export default function RecordFrontedPayment() {
         .from('fronted_inventory')
         .select('*, product:products(name)')
         .eq('id', id)
-        .single();
-      
+        .maybeSingle();
+
       setFrontedItem(data);
       const amountOwed = (data?.expected_revenue || 0) - (data?.payment_received || 0);
       setAmount(amountOwed.toFixed(2));
     } catch (error) {
-      console.error('Error loading fronted item:', error);
+      logger.error('Error loading fronted item:', error);
     }
   };
 
@@ -78,7 +79,7 @@ export default function RecordFrontedPayment() {
       // Update fronted inventory payment status
       const newTotalReceived = (frontedItem.payment_received || 0) + paymentAmount;
       const expectedRevenue = frontedItem.expected_revenue || 0;
-      
+
       let newPaymentStatus = 'pending';
       if (newTotalReceived >= expectedRevenue) {
         newPaymentStatus = 'paid';
@@ -101,10 +102,10 @@ export default function RecordFrontedPayment() {
         title: 'Success!',
         description: `Payment of $${paymentAmount.toFixed(2)} recorded`
       });
-      
+
       navigate('/admin/inventory/fronted');
     } catch (error) {
-      console.error('Error recording payment:', error);
+      logger.error('Error recording payment:', error);
       toast({
         title: 'Error',
         description: 'Failed to record payment',

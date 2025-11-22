@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle, Mail, Eye, EyeOff, Package, Users, Settings } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { logger } from "@/utils/logger";
+
 
 export default function AccountSignup() {
   const [step, setStep] = useState(1);
@@ -144,7 +145,7 @@ export default function AccountSignup() {
           created_at: new Date().toISOString(),
         } as any)
         .select()
-        .single();
+        .maybeSingle();
 
       if (tenantError) throw tenantError;
 
@@ -184,11 +185,11 @@ export default function AccountSignup() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
+      <SEOHead
         title="Start Your 14-Day Free Trial - DevPanel"
         description="Sign up for DevPanel. No credit card required. Get started in minutes."
       />
-      
+
       <MarketingNav />
 
       <div className="container mx-auto px-4 py-20">
@@ -207,11 +208,10 @@ export default function AccountSignup() {
               {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
-                  className={`h-2 flex-1 rounded-full ${
-                    step >= s
-                      ? "bg-[hsl(var(--marketing-primary))]"
-                      : "bg-[hsl(var(--marketing-border))]"
-                  }`}
+                  className={`h-2 flex-1 rounded-full ${step >= s
+                    ? "bg-[hsl(var(--marketing-primary))]"
+                    : "bg-[hsl(var(--marketing-border))]"
+                    }`}
                 />
               ))}
             </div>
@@ -426,22 +426,20 @@ export default function AccountSignup() {
                     <button
                       type="button"
                       onClick={() => setBillingCycle("monthly")}
-                      className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                        billingCycle === "monthly"
-                          ? "bg-[hsl(var(--marketing-primary))] text-white"
-                          : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
-                      }`}
+                      className={`px-6 py-2 rounded-lg font-medium transition-all ${billingCycle === "monthly"
+                        ? "bg-[hsl(var(--marketing-primary))] text-white"
+                        : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+                        }`}
                     >
                       Monthly
                     </button>
                     <button
                       type="button"
                       onClick={() => setBillingCycle("yearly")}
-                      className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                        billingCycle === "yearly"
-                          ? "bg-[hsl(var(--marketing-primary))] text-white"
-                          : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
-                      }`}
+                      className={`px-6 py-2 rounded-lg font-medium transition-all ${billingCycle === "yearly"
+                        ? "bg-[hsl(var(--marketing-primary))] text-white"
+                        : "bg-[hsl(var(--marketing-bg-subtle))] text-[hsl(var(--marketing-text-light))]"
+                        }`}
                     >
                       Yearly (Save 20%)
                     </button>
@@ -453,11 +451,10 @@ export default function AccountSignup() {
                       return (
                         <div
                           key={plan.id}
-                          className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                            selectedPlan === plan.id
-                              ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5"
-                              : "border-[hsl(var(--marketing-border))]"
-                          }`}
+                          className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPlan === plan.id
+                            ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))]/5"
+                            : "border-[hsl(var(--marketing-border))]"
+                            }`}
                           onClick={() => setSelectedPlan(plan.id)}
                         >
                           <div className="text-center">

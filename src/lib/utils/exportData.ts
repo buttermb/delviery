@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Data Export Utilities
  * Export data to CSV, JSON, Excel formats
@@ -12,7 +13,7 @@ export function exportToCSV<T extends Record<string, any>>(
   headers?: string[]
 ): void {
   if (!data || data.length === 0) {
-    console.warn('No data to export');
+    logger.warn('No data to export');
     return;
   }
 
@@ -56,7 +57,7 @@ export function exportToCSV<T extends Record<string, any>>(
  */
 export function exportToJSON<T>(data: T[], filename: string = 'export.json'): void {
   if (!data || data.length === 0) {
-    console.warn('No data to export');
+    logger.warn('No data to export');
     return;
   }
 

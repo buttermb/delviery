@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
 
       setIsScanning(true);
     } catch (err) {
-      console.error('Scanner start error:', err);
+      logger.error('Scanner start error:', err);
       toast({
         title: 'Camera Error',
         description: 'Could not access camera. Please check permissions.',
@@ -58,7 +59,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
         scannerRef.current = null;
         setIsScanning(false);
       } catch (err) {
-        console.error('Scanner stop error:', err);
+        logger.error('Scanner stop error:', err);
       }
     }
   };

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import { useCourier } from '@/contexts/CourierContext';
 
@@ -20,7 +21,7 @@ export function useLocationTracking(enabled: boolean = true) {
       return;
     }
 
-    console.log('🎯 Starting location tracking for role:', role);
+    logger.debug('🎯 Starting location tracking for role:', role);
 
     const handleSuccess = (position: GeolocationPosition) => {
       const locationData: LocationData = {
@@ -37,7 +38,7 @@ export function useLocationTracking(enabled: boolean = true) {
       // Update location in backend
       updateLocation(locationData.latitude, locationData.longitude);
       
-      console.log('📍 Location tracked:', {
+      logger.debug('📍 Location tracked:', {
         lat: locationData.latitude.toFixed(6),
         lng: locationData.longitude.toFixed(6),
         accuracy: `${locationData.accuracy.toFixed(0)}m`,
@@ -60,7 +61,7 @@ export function useLocationTracking(enabled: boolean = true) {
           break;
       }
 
-      console.error('Location error:', errorMessage, err);
+      logger.error('Location error:', errorMessage, err);
       setError(errorMessage);
     };
 
@@ -79,7 +80,7 @@ export function useLocationTracking(enabled: boolean = true) {
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
-        console.log('🛑 Stopped location tracking');
+        logger.debug('🛑 Stopped location tracking');
       }
     };
   }, [enabled, isOnline, role, updateLocation]);

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,7 +29,7 @@ export const useSendNotification = () => {
         .from('menu_orders')
         .select('*')
         .eq('id', orderId)
-        .single();
+        .maybeSingle();
 
       if (orderError) throw orderError;
 
@@ -62,7 +63,7 @@ export const useSendNotification = () => {
       // In production, this would call an edge function
       // await supabase.functions.invoke('send-notification', { body: notifications });
 
-      console.log('Would send notifications:', notifications);
+      logger.debug('Would send notifications:', { notifications });
 
       return { success: true, notifications };
     }
@@ -71,23 +72,23 @@ export const useSendNotification = () => {
 
 export const useSendBulkNotification = () => {
   return useMutation({
-    mutationFn: async ({ 
-      recipients, 
-      message, 
-      subject, 
-      channel 
-    }: { 
-      recipients: string[]; 
-      message: string; 
-      subject?: string; 
-      channel: 'email' | 'sms' 
+    mutationFn: async ({
+      recipients,
+      message,
+      subject,
+      channel
+    }: {
+      recipients: string[];
+      message: string;
+      subject?: string;
+      channel: 'email' | 'sms'
     }) => {
       // In production, this would call an edge function
       // await supabase.functions.invoke('send-bulk-notification', { 
       //   body: { recipients, message, subject, channel } 
       // });
 
-      console.log('Would send bulk notifications:', {
+      logger.debug('Would send bulk notifications:', {
         channel,
         count: recipients.length,
         message,

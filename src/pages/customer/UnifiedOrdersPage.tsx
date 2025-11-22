@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Unified Orders Page
  * Customers can view all orders (retail + wholesale) in one place
@@ -26,7 +27,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

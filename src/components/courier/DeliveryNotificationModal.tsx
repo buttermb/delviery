@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,7 +37,7 @@ export default function DeliveryNotificationModal() {
           filter: `status=eq.pending_assignment`
         },
         (payload) => {
-          console.log('New order available:', payload);
+          logger.debug('New order available:', payload);
           // For now, just log - full implementation would check if courier is eligible
         }
       )
@@ -88,7 +89,7 @@ export default function DeliveryNotificationModal() {
       window.location.href = `/courier/dashboard?active=${delivery.id}`;
       
     } catch (error) {
-      console.error('Failed to accept delivery:', error);
+      logger.error('Failed to accept delivery:', error);
       toast({
         title: "Error",
         description: "Failed to accept delivery",

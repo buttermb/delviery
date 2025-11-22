@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Browser-Based Barcode Scanner
  * Uses device camera to scan product barcodes
@@ -14,7 +15,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Camera, X, Loader2 } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 interface BarcodeScannerProps {

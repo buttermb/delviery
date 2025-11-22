@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Sidebar Section Component
  * 
@@ -32,7 +33,7 @@ export function SidebarSection({
   const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
 
   // Debug logging
-  console.log(`SidebarSection [${section.section}]:`, {
+  logger.debug(`SidebarSection [${section.section}]:`, {
     itemCount: section.items.length,
     isOpen,
     pinned: section.pinned,
@@ -95,7 +96,7 @@ export function SidebarSection({
               {section.items.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;
                 
-                console.log(`Rendering item [${item.id}] in [${section.section}]:`, {
+                logger.debug(`Rendering item [${item.id}] in [${section.section}]:`, {
                   hasAccess,
                   featureId: item.featureId,
                   name: item.name

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Forum API Functions
@@ -5,7 +6,6 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 import type {
   ForumPost,
   ForumComment,
@@ -113,7 +113,7 @@ export async function getPostById(postId: string): Promise<ForumPost | null> {
         )
       `)
       .eq('id', postId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to fetch post', error, { component: 'forumApi', action: 'getPostById', postId });
@@ -147,7 +147,7 @@ export async function createPost(post: CreatePostRequest): Promise<ForumPost> {
       .from('forum_user_profiles')
       .select('id, tenant_id')
       .eq('customer_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile) {
       throw new Error('Forum profile not found. Please create a username first.');
@@ -168,7 +168,7 @@ export async function createPost(post: CreatePostRequest): Promise<ForumPost> {
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to create post', error, { component: 'forumApi', action: 'createPost' });
@@ -192,7 +192,7 @@ export async function updatePost(postId: string, updates: { title?: string; cont
       })
       .eq('id', postId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to update post', error, { component: 'forumApi', action: 'updatePost', postId });
@@ -266,7 +266,7 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
       .from('forum_user_profiles')
       .select('id')
       .eq('customer_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile) {
       throw new Error('Forum profile not found. Please create a username first.');
@@ -279,7 +279,7 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
         .from('forum_comments')
         .select('depth')
         .eq('id', comment.parent_comment_id)
-        .single();
+        .maybeSingle();
       
       depth = parent ? (parent.depth || 0) + 1 : 0;
       
@@ -303,7 +303,7 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to create comment', error, { component: 'forumApi', action: 'createComment' });
@@ -327,7 +327,7 @@ export async function updateComment(commentId: string, content: string): Promise
       })
       .eq('id', commentId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to update comment', error, { component: 'forumApi', action: 'updateComment', commentId });
@@ -374,7 +374,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
       .from('forum_user_profiles')
       .select('id')
       .eq('customer_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile) {
       throw new Error('Forum profile not found');
@@ -406,7 +406,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
           .update({ vote })
           .eq('id', existingVote.id)
           .select()
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
         return data as ForumVote;
@@ -422,7 +422,7 @@ export async function vote(votableType: 'post' | 'comment', votableId: string, v
           vote,
         })
         .select()
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data as ForumVote;
@@ -582,7 +582,7 @@ export async function createForumProfile(profile: CreateForumProfileRequest): Pr
       .from('customer_users')
       .select('tenant_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     const { data, error } = await supabase
       .from('forum_user_profiles')
@@ -592,7 +592,7 @@ export async function createForumProfile(profile: CreateForumProfileRequest): Pr
         tenant_id: customerUser?.tenant_id || null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to create forum profile', error, { component: 'forumApi', action: 'createForumProfile' });
@@ -617,7 +617,7 @@ export async function updateForumProfile(updates: Partial<CreateForumProfileRequ
       .from('forum_user_profiles')
       .select('id')
       .eq('customer_user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile) {
       throw new Error('Forum profile not found');
@@ -631,7 +631,7 @@ export async function updateForumProfile(updates: Partial<CreateForumProfileRequ
       })
       .eq('id', profile.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to update forum profile', error, { component: 'forumApi', action: 'updateForumProfile' });
@@ -708,7 +708,7 @@ export async function requestForumApproval(request: RequestForumApprovalRequest)
       .from('customer_users')
       .select('tenant_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     const { data, error } = await supabase
       .from('forum_user_approvals')
@@ -718,7 +718,7 @@ export async function requestForumApproval(request: RequestForumApprovalRequest)
         request_message: request.request_message || null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to request approval', error, { component: 'forumApi', action: 'requestForumApproval' });

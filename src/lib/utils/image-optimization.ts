@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Image Optimization Utility
  * Uses Supabase storage transformation for optimized image delivery
@@ -62,7 +63,7 @@ export function optimizeImage(
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
   if (!supabaseUrl) {
     if (import.meta.env.DEV) {
-      console.warn('VITE_SUPABASE_URL not configured, returning original URL');
+      logger.warn('VITE_SUPABASE_URL not configured, returning original URL');
     }
     return url;
   }

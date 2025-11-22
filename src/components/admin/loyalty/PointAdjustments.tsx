@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +42,7 @@ export function PointAdjustments() {
           .select("id")
           .eq("tenant_id", tenant.id)
           .eq("email", data.customer_email)
-          .single();
+          .maybeSingle();
 
         if (!customer) throw new Error("Customer not found");
         customerId = customer.id;
@@ -54,7 +55,7 @@ export function PointAdjustments() {
         .from("customers")
         .select("loyalty_points")
         .eq("id", customerId)
-        .single();
+        .maybeSingle();
 
       if (!customer) throw new Error("Customer not found");
 

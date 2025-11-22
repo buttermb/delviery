@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Button Monitoring System
@@ -5,7 +6,6 @@
  * Helps identify broken buttons and monitor button health
  */
 
-import { logger } from '@/lib/logger';
 
 export interface ButtonInteraction {
   buttonId: string;

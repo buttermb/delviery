@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -73,7 +74,7 @@ export const useGenerateProductImage = () => {
       toast.success('Product image generated successfully');
     },
     onError: (error) => {
-      console.error('Error generating image:', error);
+      logger.error('Error generating image:', error);
       toast.error('Failed to generate image');
     }
   });
@@ -89,14 +90,14 @@ export const useBulkGenerateImages = () => {
       category: string; 
       strain_type?: string; 
     }>) => {
-      console.log('useBulkGenerateImages called with:', products.length, 'products');
+      logger.debug('useBulkGenerateImages called with:', products.length, 'products');
       const results = [];
       
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
         
         try {
-          console.log(`Generating image ${i + 1}/${products.length} for:`, product.name);
+          logger.debug(`Generating image ${i + 1}/${products.length} for:`, product.name);
           
           // Call edge function to generate image
           const { data, error } = await supabase.functions.invoke('generate-product-images', {
@@ -107,7 +108,7 @@ export const useBulkGenerateImages = () => {
             }
           });
 
-          console.log('Edge function response:', { data, error });
+          logger.debug('Edge function response:', { data, error });
 
           if (error) throw error;
 
@@ -130,7 +131,7 @@ export const useBulkGenerateImages = () => {
 
           // Upload to storage
           const fileName = `${product.id}-${Date.now()}.png`;
-          console.log('Uploading to storage:', fileName);
+          logger.debug('Uploading to storage:', fileName);
           
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('product-images')
@@ -140,7 +141,7 @@ export const useBulkGenerateImages = () => {
             });
 
           if (uploadError) {
-            console.error('Upload error:', uploadError);
+            logger.error('Upload error:', uploadError);
             throw uploadError;
           }
 
@@ -149,7 +150,7 @@ export const useBulkGenerateImages = () => {
             .from('product-images')
             .getPublicUrl(fileName);
 
-          console.log('Public URL:', publicUrl);
+          logger.debug('Public URL:', publicUrl);
 
           // Update product with image URL
           const { error: updateError } = await supabase
@@ -158,11 +159,11 @@ export const useBulkGenerateImages = () => {
             .eq('id', product.id);
 
           if (updateError) {
-            console.error('Database update error:', updateError);
+            logger.error('Database update error:', updateError);
             throw updateError;
           }
 
-          console.log(`Successfully generated image for ${product.name}`);
+          logger.debug(`Successfully generated image for ${product.name}`);
           results.push({ productId: product.id, success: true, url: publicUrl });
           
           // Add delay between requests to avoid rate limits
@@ -170,12 +171,12 @@ export const useBulkGenerateImages = () => {
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         } catch (error) {
-          console.error(`Error generating image for ${product.name}:`, error);
+          logger.error(`Error generating image for ${product.name}:`, error);
           results.push({ productId: product.id, success: false, error });
         }
       }
 
-      console.log('Bulk generation complete. Results:', results);
+      logger.debug('Bulk generation complete. Results:', results);
       return results;
     },
     onSuccess: (results) => {
@@ -184,7 +185,7 @@ export const useBulkGenerateImages = () => {
       toast.success(`Generated ${successCount}/${results.length} images successfully`);
     },
     onError: (error) => {
-      console.error('Error in bulk generation:', error);
+      logger.error('Error in bulk generation:', error);
       toast.error('Failed to generate images');
     }
   });

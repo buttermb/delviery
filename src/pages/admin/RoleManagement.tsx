@@ -79,7 +79,7 @@ export default function RoleManagement() {
           description: role.description || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (roleError) {
         if (roleError.code === '42P01') {
@@ -130,7 +130,7 @@ export default function RoleManagement() {
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (roleError) {
         if (roleError.code === '42P01') {

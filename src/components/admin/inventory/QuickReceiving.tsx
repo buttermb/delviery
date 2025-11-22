@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
-import { logger } from '@/lib/logger';
 
 interface ReceivingItem {
   product_id: string;
@@ -79,7 +79,7 @@ export function QuickReceiving() {
           .from('wholesale_inventory')
           .select('quantity_lbs')
           .eq('id', item.product_id)
-          .single();
+          .maybeSingle();
 
         if (fetchError) throw fetchError;
 

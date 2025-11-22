@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Component, ReactNode } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Alert, AlertDescription } from '@/components/ui/alert';

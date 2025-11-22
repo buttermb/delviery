@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Product Label Component
  * Preview and download printable product labels
@@ -22,7 +23,6 @@ import {
 } from '@/components/ui/select';
 import { Download, Printer, Loader2, QrCode, Barcode as BarcodeIcon } from 'lucide-react';
 import { downloadProductLabel, generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
-import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';

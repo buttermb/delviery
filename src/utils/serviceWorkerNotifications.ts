@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Show notification via service worker for home/lock screen support
  */
@@ -13,13 +14,13 @@ export async function showServiceWorkerNotification(
   }
 ) {
   if (!('serviceWorker' in navigator)) {
-    console.log('Service Worker not supported');
+    logger.debug('Service Worker not supported');
     return;
   }
 
   const permission = Notification.permission;
   if (permission !== 'granted') {
-    console.log('Notification permission not granted');
+    logger.debug('Notification permission not granted');
     return;
   }
 
@@ -36,9 +37,9 @@ export async function showServiceWorkerNotification(
       requireInteraction: options.requireInteraction || false
     } as any); // Cast to any to support vibrate at runtime
 
-    console.log('Service worker notification shown:', title);
+    logger.debug('Service worker notification shown:', title);
   } catch (error) {
-    console.error('Error showing service worker notification:', error);
+    logger.error('Error showing service worker notification:', error);
     
     // Fallback to regular notification
     if (Notification.permission === 'granted') {

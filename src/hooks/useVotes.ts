@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Forum Votes Hooks
  * TanStack Query hooks for voting on posts and comments
@@ -6,7 +7,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
-import { logger } from '@/lib/logger';
 
 export function useVote() {
   const queryClient = useQueryClient();

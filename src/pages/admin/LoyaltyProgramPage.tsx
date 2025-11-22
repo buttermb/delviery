@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +20,37 @@ import {
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 
+interface LoyaltyConfig {
+  program_name?: string;
+  points_per_dollar?: number;
+  points_to_dollar_ratio?: number;
+  signup_bonus_points?: number;
+  birthday_bonus_points?: number;
+  is_active?: boolean;
+  tier_enabled?: boolean;
+}
+
+interface LoyaltyTier {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  multiplier: number;
+  min_points: number;
+  max_points?: number;
+  benefits: string[];
+}
+
+interface LoyaltyReward {
+  id: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+  points_cost: number;
+  reward_type: string;
+  redemption_count: number;
+}
+
 export default function LoyaltyProgramPage() {
   const { tenant } = useTenantAdminAuth();
   const [activeTab, setActiveTab] = useState("overview");
@@ -26,18 +58,18 @@ export default function LoyaltyProgramPage() {
   // Fetch loyalty config
   const { data: config } = useQuery({
     queryKey: ["loyalty-config", tenant?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<LoyaltyConfig | null> => {
       const { data, error } = await supabase
-        .from("loyalty_program_config" as any)
+        .from("loyalty_program_config")
         .select("*")
         .eq("tenant_id", tenant?.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "42P01") {
         logger.error("Failed to fetch loyalty config", error, { component: "LoyaltyProgramPage" });
       }
 
-      return data || null;
+      return (data as unknown as LoyaltyConfig) || null;
     },
     enabled: !!tenant?.id,
   });
@@ -45,9 +77,9 @@ export default function LoyaltyProgramPage() {
   // Fetch loyalty tiers
   const { data: tiers } = useQuery({
     queryKey: ["loyalty-tiers", tenant?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<LoyaltyTier[]> => {
       const { data, error } = await supabase
-        .from("loyalty_tiers" as any)
+        .from("loyalty_tiers")
         .select("*")
         .eq("tenant_id", tenant?.id)
         .order("order_index");
@@ -56,7 +88,7 @@ export default function LoyaltyProgramPage() {
         logger.error("Failed to fetch loyalty tiers", error, { component: "LoyaltyProgramPage" });
       }
 
-      return data || [];
+      return (data as unknown as LoyaltyTier[]) || [];
     },
     enabled: !!tenant?.id,
   });
@@ -64,9 +96,9 @@ export default function LoyaltyProgramPage() {
   // Fetch loyalty rewards
   const { data: rewards } = useQuery({
     queryKey: ["loyalty-rewards", tenant?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<LoyaltyReward[]> => {
       const { data, error } = await supabase
-        .from("loyalty_rewards" as any)
+        .from("loyalty_rewards")
         .select("*")
         .eq("tenant_id", tenant?.id)
         .order("points_cost");
@@ -75,7 +107,7 @@ export default function LoyaltyProgramPage() {
         logger.error("Failed to fetch loyalty rewards", error, { component: "LoyaltyProgramPage" });
       }
 
-      return data || [];
+      return (data as unknown as LoyaltyReward[]) || [];
     },
     enabled: !!tenant?.id,
   });
@@ -128,7 +160,7 @@ export default function LoyaltyProgramPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
             <Trophy className="h-8 w-8 text-emerald-500" />
-            {(config as any)?.program_name || "Loyalty Program"}
+            {config?.program_name || "Loyalty Program"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Reward customers and drive repeat purchases
@@ -214,35 +246,35 @@ export default function LoyaltyProgramPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Points per Dollar</div>
-                  <div className="text-2xl font-bold">{(config as any)?.points_per_dollar || 0}x</div>
+                  <div className="text-2xl font-bold">{config?.points_per_dollar || 0}x</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Points to Dollar Ratio</div>
                   <div className="text-2xl font-bold">
-                    ${((config as any)?.points_to_dollar_ratio || 0).toFixed(2)}
+                    ${(config?.points_to_dollar_ratio || 0).toFixed(2)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Signup Bonus</div>
-                  <div className="text-2xl font-bold">{(config as any)?.signup_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{config?.signup_bonus_points || 0} pts</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Birthday Bonus</div>
-                  <div className="text-2xl font-bold">{(config as any)?.birthday_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{config?.birthday_bonus_points || 0} pts</div>
                 </div>
               </div>
 
               <div className="pt-4 border-t">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Program Status</span>
-                  <Badge variant={(config as any)?.is_active ? "default" : "secondary"}>
-                    {(config as any)?.is_active ? "Active" : "Inactive"}
+                  <Badge variant={config?.is_active ? "default" : "secondary"}>
+                    {config?.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-sm font-medium">Tier System</span>
-                  <Badge variant={(config as any)?.tier_enabled ? "default" : "secondary"}>
-                    {(config as any)?.tier_enabled ? "Enabled" : "Disabled"}
+                  <Badge variant={config?.tier_enabled ? "default" : "secondary"}>
+                    {config?.tier_enabled ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
               </div>
@@ -266,7 +298,7 @@ export default function LoyaltyProgramPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(tiers as any)?.map((tier: any) => (
+            {tiers?.map((tier) => (
               <Card key={tier.id} className="relative overflow-hidden">
                 <div
                   className="absolute top-0 left-0 w-1 h-full"
@@ -289,7 +321,7 @@ export default function LoyaltyProgramPage() {
                   <div className="text-sm">
                     <div className="font-medium mb-2">Benefits:</div>
                     <ul className="space-y-1">
-                      {(tier.benefits as string[])?.map((benefit: string, i: number) => (
+                      {tier.benefits?.map((benefit: string, i: number) => (
                         <li key={i} className="flex items-center gap-2 text-muted-foreground">
                           <TrendingUp className="h-3 w-3 text-emerald-500" />
                           {benefit}
@@ -319,7 +351,7 @@ export default function LoyaltyProgramPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(rewards as any)?.map((reward: any) => (
+            {rewards?.map((reward) => (
               <Card key={reward.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">

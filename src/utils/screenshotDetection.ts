@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Screenshot Detection & Protection
  * Detects screenshot attempts and logs them for security
@@ -105,7 +106,7 @@ const notifyScreenshotAttempt = (
     try {
       callback(attempt);
     } catch (error) {
-      console.error('Error in screenshot callback:', error);
+      logger.error('Error in screenshot callback:', error);
     }
   });
 };

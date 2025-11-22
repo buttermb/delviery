@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
@@ -67,7 +68,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
 
@@ -100,7 +101,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
             .from('accounts')
             .select('*')
             .eq('id', accountId)
-            .single();
+            .maybeSingle();
 
           if (accountData) {
             setAccount(accountData as Account);
@@ -110,7 +111,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
               .from('account_settings')
               .select('*')
               .eq('account_id', accountId)
-              .single();
+              .maybeSingle();
 
             if (settings) {
               setAccountSettings(settings as AccountSettings);
@@ -119,7 +120,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error) {
-      console.error('Error loading account data:', error);
+      logger.error('Error loading account data:', error);
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
   const switchAccount = async (accountId: string) => {
     if (!isSuperAdmin) {
-      console.error('Only super admins can switch accounts');
+      logger.error('Only super admins can switch accounts');
       return;
     }
 
@@ -145,7 +146,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
         .from('accounts')
         .select('*')
         .eq('id', accountId)
-        .single();
+        .maybeSingle();
 
       if (targetAccount) {
         setAccount(targetAccount as Account);
@@ -154,14 +155,14 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
           .from('account_settings')
           .select('*')
           .eq('account_id', accountId)
-          .single();
+          .maybeSingle();
 
         if (settings) {
           setAccountSettings(settings as AccountSettings);
         }
       }
     } catch (error) {
-      console.error('Error switching account:', error);
+      logger.error('Error switching account:', error);
     } finally {
       setLoading(false);
     }

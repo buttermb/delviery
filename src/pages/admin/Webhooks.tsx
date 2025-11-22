@@ -86,7 +86,7 @@ export default function Webhooks() {
           status: webhook.status || 'active',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {
@@ -126,7 +126,7 @@ export default function Webhooks() {
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === '42P01') {

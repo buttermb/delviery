@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,12 +86,12 @@ export default function CourierActiveOrderPage() {
           )
         `)
         .eq('id', orderId)
-        .single();
+        .maybeSingle();
 
       if (orderError) throw orderError;
       setOrder(orderData);
     } catch (error) {
-      console.error('Failed to load order:', error);
+      logger.error('Failed to load order:', error);
       toast({
         title: 'Error',
         description: 'Failed to load order details',
@@ -128,7 +129,7 @@ export default function CourierActiveOrderPage() {
         navigate('/courier/dashboard');
       }
     } catch (error) {
-      console.error('Failed to update status:', error);
+      logger.error('Failed to update status:', error);
       toast({
         title: 'Error',
         description: 'Failed to update order status',

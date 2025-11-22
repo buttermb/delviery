@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Service Worker Cache Clearing Utility
  * Provides functions to clear service worker caches and unregister service workers
  * Used for error recovery when module loading fails
  */
 
-import { logger } from '@/lib/logger';
 
 /**
  * Unregister all service workers

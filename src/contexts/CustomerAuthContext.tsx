@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
@@ -83,7 +84,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     const envCheck = validateEnvironment();
     if (!envCheck.valid) {
       logger.error('Environment validation failed:', envCheck.error);
-      console.error('[CustomerAuth] Configuration error:', envCheck.error);
+      logger.error('[CustomerAuth] Configuration error:', envCheck.error);
       setLoading(false);
     }
   }, []);

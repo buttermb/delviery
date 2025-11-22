@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Protected Route for Super Admin / Platform Admin
  * Uses server-side role validation via user_roles table
@@ -8,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import { LoadingFallback } from '@/components/LoadingFallback';
-import { logger } from '@/lib/logger';
 
 interface SuperAdminProtectedRouteProps {
   children: React.ReactNode;

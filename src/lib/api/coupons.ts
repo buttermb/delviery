@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface CouponValidationResult {
@@ -20,7 +21,7 @@ export async function validateCoupon(
       .select('*')
       .eq('code', code.toUpperCase())
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
 
     if (error || !coupon) {
       return { valid: false, discount: 0, discountType: 'percentage', message: 'Invalid coupon code' };
@@ -88,7 +89,7 @@ export async function validateCoupon(
       message: 'Coupon applied successfully'
     };
   } catch (error) {
-    console.error('Error validating coupon:', error);
+    logger.error('Error validating coupon:', error);
     return { valid: false, discount: 0, discountType: 'percentage', message: 'Error validating coupon' };
   }
 }
@@ -113,7 +114,7 @@ export async function applyCoupon(
 
     return { success: true };
   } catch (error) {
-    console.error('Error applying coupon:', error);
+    logger.error('Error applying coupon:', error);
     return { success: false, error };
   }
 }
@@ -124,7 +125,7 @@ export async function getCouponByCode(code: string) {
     .select('*')
     .eq('code', code.toUpperCase())
     .eq('status', 'active')
-    .single();
+    .maybeSingle();
 
   if (error) return null;
   return data;

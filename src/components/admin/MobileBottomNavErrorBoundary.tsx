@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Error Boundary for Mobile Bottom Nav Sidebar
  * Catches and handles errors in the sidebar rendering
@@ -25,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    console.error('MobileBottomNav Sidebar Error:', error);
+    logger.error('MobileBottomNav Sidebar Error:', error);
     this.props.onError(error);
   }
 

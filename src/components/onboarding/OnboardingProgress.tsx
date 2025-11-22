@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Onboarding Progress Widget
  * Shows persistent checklist in sidebar or as a widget
@@ -69,12 +70,12 @@ export function OnboardingProgress({
             .eq("id", effectiveTenantId);
           
           if (updateError && updateError.code !== "42703") {
-            console.warn("Error updating onboarding completion:", updateError);
+            logger.warn("Error updating onboarding completion:", updateError);
           } else {
             queryClient.invalidateQueries({ queryKey: ["tenant", effectiveTenantId] });
           }
         } catch (error) {
-          console.warn("Error marking onboarding as complete:", error);
+          logger.warn("Error marking onboarding as complete:", error);
           // Don't throw - confetti can still show
         }
       })();

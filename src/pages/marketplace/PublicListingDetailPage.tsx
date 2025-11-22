@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Public Listing Detail Page
  * View marketplace listing details without login
@@ -21,7 +22,6 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function PublicListingDetailPage() {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Wholesale Marketplace Page
  * B2B customers can browse and purchase from marketplace listings
@@ -25,7 +26,6 @@ import {
   Minus
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

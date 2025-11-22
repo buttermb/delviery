@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Business Menu Page
@@ -25,7 +26,6 @@ import {
   Minus
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

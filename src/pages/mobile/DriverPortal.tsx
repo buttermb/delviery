@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,10 +49,10 @@ export default function DriverPortal() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to driver fronts');
+          logger.debug('Successfully subscribed to driver fronts');
         }
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Failed to subscribe to driver fronts updates:', status);
+          logger.error('Failed to subscribe to driver fronts updates:', status);
         }
       });
 

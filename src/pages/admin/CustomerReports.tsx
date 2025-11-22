@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
@@ -95,7 +96,7 @@ export default function CustomerReports() {
 
       toast.success('Reports loaded');
     } catch (error: any) {
-      console.error('Error loading reports:', error);
+      logger.error('Error loading reports:', error);
       toast.error('Failed to load reports');
     } finally {
       setLoading(false);

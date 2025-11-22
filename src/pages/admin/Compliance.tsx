@@ -24,7 +24,7 @@ export default function Compliance() {
           .from('compliance_settings' as any)
           .select('*')
           .eq('tenant_id', tenantId)
-          .single();
+          .maybeSingle();
 
         if (error && error.code === '42P01') return null;
         if (error && error.code === 'PGRST116') return null;

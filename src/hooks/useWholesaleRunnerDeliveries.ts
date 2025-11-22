@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -66,7 +67,7 @@ export function useWholesaleRunnerDeliveries(runnerId?: string) {
         .order('scheduled_pickup_time', { ascending: true, nullsFirst: false });
 
       if (error) {
-        console.error('Error fetching runner deliveries:', error);
+        logger.error('Error fetching runner deliveries:', error);
         throw error;
       }
 

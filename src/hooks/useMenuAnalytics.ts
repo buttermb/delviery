@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -43,7 +44,7 @@ export const useMenuAnalytics = (menuId: string) => {
           menu_orders(total_amount)
         `)
         .eq('id', menuId)
-        .single();
+        .maybeSingle();
 
       if (!menu) throw new Error('Menu not found');
 
@@ -68,8 +69,8 @@ export const useMenuAnalytics = (menuId: string) => {
         image_views: 0, // TODO: Track from logs
         image_zooms: 0, // TODO: Track from logs
         avg_time_on_menu: 0, // TODO: Calculate from session data
-        conversion_rate: menu.menu_access_logs?.length > 0 
-          ? ((menu.menu_orders?.length || 0) / menu.menu_access_logs.length) * 100 
+        conversion_rate: menu.menu_access_logs?.length > 0
+          ? ((menu.menu_orders?.length || 0) / menu.menu_access_logs.length) * 100
           : 0
       };
 
@@ -104,7 +105,7 @@ export const useProductImageAnalytics = (menuId: string) => {
       // Calculate per-product analytics
       const analytics: ProductImageAnalytics[] = menuProducts.map((mp: any) => {
         const hasImage = !!(mp.product?.image_url || mp.product?.images?.length > 0);
-        
+
         return {
           product_id: mp.product_id,
           product_name: mp.product?.product_name || 'Unknown',
@@ -138,7 +139,7 @@ export const trackImageView = async (
       accessed_at: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Failed to track image view:', error);
+    logger.error('Failed to track image view:', error);
   }
 };
 
@@ -158,6 +159,6 @@ export const trackImageZoom = async (
       accessed_at: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Failed to track image zoom:', error);
+    logger.error('Failed to track image zoom:', error);
   }
 };

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
@@ -67,7 +68,7 @@ export function useDeliveryStatus() {
 
       return true;
     } catch (error) {
-      console.error('Failed to update status:', error);
+      logger.error('Failed to update status:', error);
       showErrorToast(
         'Update Failed',
         'Failed to update status. Please try again.'

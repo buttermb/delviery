@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Listing Detail Page
  * View detailed information about a marketplace listing
@@ -27,7 +28,6 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { logger } from '@/lib/logger';
 import { MarketplaceListing } from '@/types/marketplace-extended';
 import { decryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { useState } from 'react';

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * SAAS Sign Up Page - Simplified 1-Step Form
  * Registration for new tenants with responsive layout and enhanced UX

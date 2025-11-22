@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Customer Forgot Password Page
  * Allows customers to request a password reset link
@@ -12,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { logger } from '@/lib/logger';
 import { apiFetch } from '@/lib/utils/apiClient';
 
 export default function CustomerForgotPasswordPage() {

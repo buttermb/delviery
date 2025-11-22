@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * SaaS Admin Layout Component - Dark Theme
  * Wraps admin pages with sidebar and header
@@ -27,7 +28,7 @@ export function SaasAdminLayout() {
       });
       navigate('/super-admin/login');
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error:', error);
       toast({
         title: 'Error',
         description: 'Failed to sign out',

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Centralized Logging Utility
  * Replaces console.log with environment-aware logging
@@ -34,7 +35,7 @@ class Logger {
   info(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
     if (this.isDevelopment) {
-      console.info(`[INFO] ${message}`, data || '', sourceOrContext);
+      logger.info(`[INFO] ${message}`, data || '', sourceOrContext);
     }
     this.logToService('info', message, data, source);
   }
@@ -44,7 +45,7 @@ class Logger {
    */
   warn(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
-    console.warn(`[WARN] ${message}`, data || '', sourceOrContext);
+    logger.warn(`[WARN] ${message}`, data || '', sourceOrContext);
     this.logToService('warn', message, data, source);
   }
 
@@ -58,7 +59,7 @@ class Logger {
 
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
 
-    console.error(`[ERROR] ${message}`, errorData || '', sourceOrContext);
+    logger.error(`[ERROR] ${message}`, errorData || '', sourceOrContext);
     this.logToService('error', message, errorData, source);
     
     // In production, send to error tracking service
@@ -128,7 +129,7 @@ class Logger {
     // For now, we'll just format it
     if (error instanceof Error) {
       // Could send to Sentry, LogRocket, etc.
-      console.error('[Error Tracking]', {
+      logger.error('[Error Tracking]', {
         message,
         error: error.message,
         stack: error.stack,

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,7 +9,6 @@ import {
 import { Download, FileText, FileSpreadsheet, FileSpreadsheet as ExcelIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { logger } from '@/lib/logger';
 
 interface AnalyticsExportButtonProps {
   data: Record<string, unknown> | unknown[];

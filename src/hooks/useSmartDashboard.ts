@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { BusinessIntelligenceEngine, BusinessInsight } from '@/lib/analytics/bi-engine';
@@ -33,7 +34,7 @@ export function useSmartDashboard() {
                 const data = await biEngine.generateInsights(tenant.id);
                 setInsights(data);
             } catch (error) {
-                console.error('Failed to generate insights:', error);
+                logger.error('Failed to generate insights:', error);
             }
         };
 

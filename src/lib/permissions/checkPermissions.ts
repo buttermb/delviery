@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Permission Check Utilities
  * Functions for checking user permissions in components and edge functions
  */
 
 import { hasRolePermission, Role, Permission, ROLES, mapDatabaseRoleToSystemRole, getRolePermissions } from './rolePermissions';
-import { logger } from '@/lib/logger';
 
 /**
  * Check if a role has a specific permission

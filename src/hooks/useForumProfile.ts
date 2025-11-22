@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Forum Profile Hooks
  * TanStack Query hooks for forum user profiles
@@ -7,7 +8,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
-import { logger } from '@/lib/logger';
 import type { CreateForumProfileRequest } from '@/types/forum';
 
 export function useForumProfile() {

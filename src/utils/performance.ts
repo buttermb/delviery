@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Performance monitoring utilities
  * Tracks Core Web Vitals and custom metrics
@@ -50,7 +51,7 @@ export class PerformanceMonitor {
       observer.observe({ entryTypes: ['paint'] });
       this.observers.push(observer);
     } catch (e) {
-      console.warn('FCP observation not supported');
+      logger.warn('FCP observation not supported');
     }
   }
 
@@ -65,7 +66,7 @@ export class PerformanceMonitor {
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
       this.observers.push(observer);
     } catch (e) {
-      console.warn('LCP observation not supported');
+      logger.warn('LCP observation not supported');
     }
   }
 
@@ -80,7 +81,7 @@ export class PerformanceMonitor {
       observer.observe({ entryTypes: ['first-input'] });
       this.observers.push(observer);
     } catch (e) {
-      console.warn('FID observation not supported');
+      logger.warn('FID observation not supported');
     }
   }
 
@@ -98,7 +99,7 @@ export class PerformanceMonitor {
       observer.observe({ entryTypes: ['layout-shift'] });
       this.observers.push(observer);
     } catch (e) {
-      console.warn('CLS observation not supported');
+      logger.warn('CLS observation not supported');
     }
   }
 
@@ -114,13 +115,13 @@ export class PerformanceMonitor {
       observer.observe({ entryTypes: ['navigation'] });
       this.observers.push(observer);
     } catch (e) {
-      console.warn('Navigation timing not supported');
+      logger.warn('Navigation timing not supported');
     }
   }
 
   private static logMetric(name: string, value: number) {
     if (import.meta.env.DEV) {
-      console.log(`📊 ${name}:`, Math.round(value), 'ms');
+      logger.debug(`📊 ${name}:`, Math.round(value), 'ms');
     }
   }
 
@@ -155,7 +156,7 @@ export class PerformanceMonitor {
         this.logMetric(name, measure.duration);
         return measure.duration;
       } catch (e) {
-        console.warn(`Could not measure ${name}`);
+        logger.warn(`Could not measure ${name}`);
       }
     }
     return 0;

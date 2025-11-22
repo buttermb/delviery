@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, User } from 'lucide-react';
 import { Button } from './ui/button';
@@ -52,7 +53,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
             status: 'active'
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
           logger.error('Error creating session', error as Error, { component: 'LiveChatWidget' });

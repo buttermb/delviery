@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
           filter: 'status=eq.pending'
         },
         (payload) => {
-          console.log('New order available:', payload);
+          logger.debug('New order available:', payload);
           setOrders((prev) => [payload.new as Order, ...prev]);
           playNotificationSound(true);
           
@@ -91,7 +92,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
       if (error) throw error;
       setOrders(data || []);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      logger.error('Error fetching orders:', error);
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +122,7 @@ export default function AvailableOrdersCard({ courierId, isOnline }: { courierId
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
 
     } catch (error) {
-      console.error('Error accepting order:', error);
+      logger.error('Error accepting order:', error);
       toast({
         title: "Order Taken",
         description: "This order was just accepted by another courier",

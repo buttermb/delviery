@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Forum Posts Hooks
@@ -8,7 +9,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
-import { logger } from '@/lib/logger';
 import type { GetPostsOptions, CreatePostRequest } from '@/types/forum';
 
 export function usePosts(options: GetPostsOptions = {}) {

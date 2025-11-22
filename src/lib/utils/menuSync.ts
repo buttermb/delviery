@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 /**
  * Menu Sync Utilities
  * Handles automatic syncing of products to disposable menus
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
 
 export interface MenuSyncResult {
   message: string;

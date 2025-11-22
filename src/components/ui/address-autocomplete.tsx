@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2 } from "lucide-react";
@@ -55,7 +56,7 @@ export function AddressAutocomplete({
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
       
       if (!mapboxToken) {
-        console.error("Mapbox token not configured");
+        logger.error("Mapbox token not configured");
         setIsLoading(false);
         return;
       }
@@ -75,7 +76,7 @@ export function AddressAutocomplete({
       setSuggestions(data.features || []);
       setShowSuggestions(true);
     } catch (error) {
-      console.error("Error fetching address suggestions:", error);
+      logger.error("Error fetching address suggestions:", error);
       setSuggestions([]);
     } finally {
       setIsLoading(false);

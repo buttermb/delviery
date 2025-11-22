@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Enhanced Invite System
  * Supports SMS, encrypted messaging, email, and manual delivery
@@ -18,7 +19,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 
 interface WhitelistEntry {
   id: string;
@@ -113,7 +113,7 @@ export function EnhancedInviteSystem({
       setCustomMessage('');
       onInviteSent();
     } catch (error: unknown) {
-      console.error('Invite error:', error);
+      logger.error('Invite error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to send invites');
     } finally {
       setSending(false);

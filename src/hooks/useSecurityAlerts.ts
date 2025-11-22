@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -24,17 +25,17 @@ export const useSecurityAlerts = () => {
   useEffect(() => {
     // Guard 1: Don't subscribe if auth is still loading or tenant not available
     if (loading || !tenant?.id) {
-      console.log('[useSecurityAlerts] Waiting for authentication...', { loading, hasTenant: !!tenant?.id });
+      logger.debug('[useSecurityAlerts] Waiting for authentication...', { loading, hasTenant: !!tenant?.id });
       return;
     }
 
     // Guard 2: Don't subscribe until verification is complete
     if (!isVerified || isVerifying) {
-      console.log('[useSecurityAlerts] Waiting for verification to complete...', { isVerified, isVerifying });
+      logger.debug('[useSecurityAlerts] Waiting for verification to complete...', { isVerified, isVerifying });
       return;
     }
 
-    console.log('[useSecurityAlerts] Authentication verified, establishing realtime subscription');
+    logger.debug('[useSecurityAlerts] Authentication verified, establishing realtime subscription');
     // Fetch recent alerts
     const fetchAlerts = async () => {
       const { data } = await supabase
@@ -77,24 +78,24 @@ export const useSecurityAlerts = () => {
         async (payload) => {
           // Validate payload
           if (!payload.new || typeof payload.new !== 'object') {
-            console.error('Invalid realtime payload received');
+            logger.error('Invalid realtime payload received');
             return;
           }
 
           const newEvent = payload.new as any;
-          
+
           // Validate required fields
           if (!newEvent.id || !newEvent.menu_id || !newEvent.event_type) {
-            console.error('Missing required fields in security event');
+            logger.error('Missing required fields in security event');
             return;
           }
-          
+
           // Fetch menu name
           const { data: menu } = await supabase
             .from('disposable_menus')
             .select('name')
             .eq('id', newEvent.menu_id)
-            .single();
+            .maybeSingle();
 
           const alert: SecurityAlert = {
             id: newEvent.id,
@@ -132,24 +133,24 @@ export const useSecurityAlerts = () => {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to security alerts channel');
+          logger.debug('Successfully subscribed to security alerts channel');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('Failed to subscribe to security alerts channel');
+          logger.error('Failed to subscribe to security alerts channel');
           toast.error('Security alerts subscription failed', {
             description: 'Real-time security alerts may not work properly'
           });
         } else if (status === 'TIMED_OUT') {
-          console.error('Security alerts subscription timed out');
+          logger.error('Security alerts subscription timed out');
           toast.warning('Security alerts connection timed out', {
             description: 'Attempting to reconnect...'
           });
         } else if (status === 'CLOSED') {
-          console.log('Security alerts channel closed');
+          logger.debug('Security alerts channel closed');
         }
       });
 
     return () => {
-      console.log('[useSecurityAlerts] Cleaning up realtime subscription');
+      logger.debug('[useSecurityAlerts] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [loading, tenant?.id, isVerified, isVerifying]);

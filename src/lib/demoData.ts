@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Demo Data Generation
  * Generates sample products, customers, and menus for new tenants
@@ -127,7 +128,7 @@ export async function generateDemoData(tenantId: string): Promise<void> {
       .select('id');
 
     if (productsError) {
-      console.error('Error inserting products:', productsError);
+      logger.error('Error inserting products:', productsError);
       throw productsError;
     }
 
@@ -193,7 +194,7 @@ export async function generateDemoData(tenantId: string): Promise<void> {
       .select('id');
 
     if (customersError) {
-      console.error('Error inserting customers:', customersError);
+      logger.error('Error inserting customers:', customersError);
       throw customersError;
     }
 
@@ -231,10 +232,10 @@ export async function generateDemoData(tenantId: string): Promise<void> {
       .from('disposable_menus')
       .insert(menuData)
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (menuError) {
-      console.error('Error creating menu:', menuError);
+      logger.error('Error creating menu:', menuError);
       throw menuError;
     }
 
@@ -252,7 +253,7 @@ export async function generateDemoData(tenantId: string): Promise<void> {
         );
 
       if (menuProductsError) {
-        console.error('Error adding products to menu:', menuProductsError);
+        logger.error('Error adding products to menu:', menuProductsError);
         throw menuProductsError;
       }
     }
@@ -301,16 +302,16 @@ export async function generateDemoData(tenantId: string): Promise<void> {
           .eq('id', tenantId);
 
         if (updateError && updateError.code !== '42703') {
-          console.warn('Error updating tenant data (non-critical):', updateError);
+          logger.warn('Error updating tenant data (non-critical):', updateError);
           // Don't throw - this is not critical for demo data generation
         }
       }
     } catch (error) {
-      console.warn('Error updating tenant usage (non-critical):', error);
+      logger.warn('Error updating tenant usage (non-critical):', error);
       // Don't throw - demo data was created successfully
     }
   } catch (error) {
-    console.error('Error generating demo data:', error);
+    logger.error('Error generating demo data:', error);
     throw error;
   }
 }

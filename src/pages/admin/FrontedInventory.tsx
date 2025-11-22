@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
@@ -87,7 +88,7 @@ export default function FrontedInventory() {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading fronted inventory:', error);
+        logger.error('Error loading fronted inventory:', error);
         toast({
           title: 'Database Error',
           description: `Failed to load fronted inventory: ${error.message}`,
@@ -98,7 +99,7 @@ export default function FrontedInventory() {
       
       setFrontedItems(data || []);
     } catch (error: any) {
-      console.error('Unexpected error loading fronted inventory:', error);
+      logger.error('Unexpected error loading fronted inventory:', error);
       toast({
         title: 'Error',
         description: 'An unexpected error occurred. Please check your connection.',

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // @ts-nocheck
 /**
  * Public Marketplace Page
@@ -24,7 +25,6 @@ import {
   LogIn
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { logger } from '@/lib/logger';
 import {
   Select,
   SelectContent,

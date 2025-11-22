@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Forum Approval Hooks
  * TanStack Query hooks for forum user approval workflow
@@ -7,7 +8,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import * as forumApi from '@/lib/api/forum';
 import { queryKeys } from '@/lib/queryKeys';
-import { logger } from '@/lib/logger';
 import type { RequestForumApprovalRequest } from '@/types/forum';
 
 export function useForumApproval() {

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Marketplace Listing Form Component
  * Form for creating/editing marketplace product listings
@@ -33,7 +34,6 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Loader2, Plus, Trash2, FileText, Image as ImageIcon, Lock } from 'lucide-react';
-import { logger } from '@/lib/logger';
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

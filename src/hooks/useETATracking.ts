@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -54,7 +55,7 @@ export const useETATracking = (orderId: string | null) => {
         route: data.route
       });
     } catch (error) {
-      console.error('ETA calculation error:', error);
+      logger.error('ETA calculation error:', error);
       // Fallback: try to use existing order ETA from DB, otherwise provide a safe default
       try {
         const { data: order } = await supabase
@@ -73,7 +74,7 @@ export const useETATracking = (orderId: string | null) => {
           route: null,
         });
       } catch (fallbackErr) {
-        console.warn('ETA fallback failed, using default:', fallbackErr);
+        logger.warn('ETA fallback failed, using default:', fallbackErr);
         setEta({
           eta_minutes: 20,
           distance_miles: 0,

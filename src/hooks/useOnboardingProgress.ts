@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Hook to calculate onboarding progress
  * Tracks completion of setup steps
@@ -30,8 +31,8 @@ export function useOnboardingProgress(tenantId: string | undefined): UseOnboardi
           .from("tenants")
           .select("usage, limits, onboarding_completed")
           .eq("id", tenantId)
-          .single();
-        
+          .maybeSingle();
+
         // If columns don't exist (error code 42703), return defaults
         if (error && error.code === "42703") {
           return {
@@ -40,12 +41,12 @@ export function useOnboardingProgress(tenantId: string | undefined): UseOnboardi
             onboarding_completed: false,
           };
         }
-        
+
         if (error) throw error;
         return data;
       } catch (error: any) {
         // Return safe defaults if query fails
-        console.warn("Error fetching onboarding progress:", error);
+        logger.warn("Error fetching onboarding progress:", error);
         return {
           usage: {},
           limits: {},

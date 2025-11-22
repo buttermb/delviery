@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 export interface MenuPrediction {
     predictedOrders: number;
@@ -23,7 +24,7 @@ export class MenuAnalyticsEngine {
         // Mock implementation of predictive logic
         // In a real system, this would query historical data and run statistical models
 
-        console.log(`Generating predictions for menu ${menuId}...`);
+        logger.debug(`Generating predictions for menu ${menuId}...`);
 
         // 1. Forecast Orders
         const predictedOrders = Math.floor(Math.random() * 50) + 10; // Mock: 10-60 orders

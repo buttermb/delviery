@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 export interface FeatureFlags {
     enable_screenshot_protection: boolean;
@@ -36,7 +37,7 @@ export class FeatureFlagService {
 
     // In a real app, this would fetch from LaunchDarkly or DB
     async fetchFlags(tenantId: string) {
-        console.log(`Fetching feature flags for tenant ${tenantId}`);
+        logger.debug(`Fetching feature flags for tenant ${tenantId}`);
         // Mock logic for progressive rollout
         if (tenantId === 'beta-tester') {
             this.flags.enable_redis_cache = true;
