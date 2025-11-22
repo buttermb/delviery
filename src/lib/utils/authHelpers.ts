@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger';
 import { getTenantSlugFromLocation } from "@/middleware/tenantMiddleware";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
-import { logger } from "@/lib/logger";
 
 /**
  * Get the appropriate login URL based on user type and tenant slug
@@ -65,7 +64,7 @@ export function isLoggedIn(): boolean {
   const tenantAdminToken = safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
   const customerToken = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
   const courierSession = safeStorage.getItem(STORAGE_KEYS.COURIER_PIN_SESSION);
-  
+
   return !!(superAdminToken || tenantAdminToken || customerToken || courierSession);
 }
 
@@ -75,7 +74,7 @@ export function isLoggedIn(): boolean {
 export function getCurrentUserType(): "super_admin" | "tenant_admin" | "customer" | "courier" | null {
   const tenantToken = safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
   logger.debug('[AUTH] Checking tenant token:', { hasToken: !!tenantToken });
-  
+
   if (safeStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN)) return "super_admin";
   if (tenantToken) return "tenant_admin";
   if (safeStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN)) return "customer";
@@ -104,7 +103,7 @@ export function clearAllAuthTokens(): void {
  */
 export function getTenantSlugFromUrl(): string | null {
   if (typeof window === "undefined") return null;
-  
+
   const pathname = window.location.pathname;
   const match = pathname.match(/^\/([^/]+)\/(admin|shop)/);
   return match ? match[1] : null;
