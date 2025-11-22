@@ -18,7 +18,16 @@ import {
   Trophy,
   Star,
   Zap,
+  Edit,
+  Trash2,
+  Save,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface LoyaltyConfig {
   program_name?: string;
@@ -53,7 +62,142 @@ interface LoyaltyReward {
 
 export default function LoyaltyProgramPage() {
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Dialog States
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isTierOpen, setIsTierOpen] = useState(false);
+  const [isRewardOpen, setIsRewardOpen] = useState(false);
+
+  // Editing States
+  const [editingTier, setEditingTier] = useState<LoyaltyTier | null>(null);
+  const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
+
+  // Form States
+  const [configForm, setConfigForm] = useState<LoyaltyConfig>({});
+  const [tierForm, setTierForm] = useState<Partial<LoyaltyTier>>({
+    name: "",
+    color: "#000000",
+    multiplier: 1,
+    min_points: 0,
+    benefits: [],
+  });
+  const [rewardForm, setRewardForm] = useState<Partial<LoyaltyReward>>({
+    name: "",
+    description: "",
+    points_cost: 100,
+    reward_type: "discount",
+    is_active: true,
+  });
+
+  // Mutations
+  const updateConfigMutation = useMutation({
+    mutationFn: async (data: LoyaltyConfig) => {
+      const { error } = await supabase
+        .from("loyalty_program_config")
+        .upsert({ ...data, tenant_id: tenant?.id })
+        .select();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["loyalty-config"] });
+      toast({ title: "Success", description: "Program configuration saved" });
+      setIsConfigOpen(false);
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const upsertTierMutation = useMutation({
+    mutationFn: async (data: Partial<LoyaltyTier>) => {
+      const { error } = await supabase
+        .from("loyalty_tiers")
+        .upsert({ ...data, tenant_id: tenant?.id })
+        .select();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
+      toast({ title: "Success", description: "Tier saved successfully" });
+      setIsTierOpen(false);
+      setEditingTier(null);
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const upsertRewardMutation = useMutation({
+    mutationFn: async (data: Partial<LoyaltyReward>) => {
+      const { error } = await supabase
+        .from("loyalty_rewards")
+        .upsert({ ...data, tenant_id: tenant?.id })
+        .select();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
+      toast({ title: "Success", description: "Reward saved successfully" });
+      setIsRewardOpen(false);
+      setEditingReward(null);
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteTierMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("loyalty_tiers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
+      toast({ title: "Success", description: "Tier deleted" });
+    },
+  });
+
+  const deleteRewardMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("loyalty_rewards").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
+      toast({ title: "Success", description: "Reward deleted" });
+    },
+  });
+
+  // Handlers
+  const handleOpenConfig = () => {
+    if (config) setConfigForm(config);
+    setIsConfigOpen(true);
+  };
+
+  const handleOpenTier = (tier?: LoyaltyTier) => {
+    if (tier) {
+      setEditingTier(tier);
+      setTierForm(tier);
+    } else {
+      setEditingTier(null);
+      setTierForm({ name: "", color: "#000000", multiplier: 1, min_points: 0, benefits: [] });
+    }
+    setIsTierOpen(true);
+  };
+
+  const handleOpenReward = (reward?: LoyaltyReward) => {
+    if (reward) {
+      setEditingReward(reward);
+      setRewardForm(reward);
+    } else {
+      setEditingReward(null);
+      setRewardForm({ name: "", description: "", points_cost: 100, reward_type: "discount", is_active: true });
+    }
+    setIsRewardOpen(true);
+  };
 
   // Fetch loyalty config
   const { data: config } = useQuery({
@@ -166,7 +310,7 @@ export default function LoyaltyProgramPage() {
             Reward customers and drive repeat purchases
           </p>
         </div>
-        <Button className="bg-emerald-500 hover:bg-emerald-600">
+        <Button className="bg-emerald-500 hover:bg-emerald-600" onClick={handleOpenConfig}>
           <Settings className="h-4 w-4 mr-2" />
           Configure Program
         </Button>
@@ -291,7 +435,7 @@ export default function LoyaltyProgramPage() {
                 {tiers?.length || 0} tier(s) configured
               </p>
             </div>
-            <Button>
+            <Button onClick={() => handleOpenTier()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Tier
             </Button>
@@ -305,13 +449,23 @@ export default function LoyaltyProgramPage() {
                   style={{ backgroundColor: tier.color }}
                 />
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <span>{tier.icon}</span>
-                    {tier.name}
-                    <Badge variant="outline" className="ml-auto">
-                      {tier.multiplier}x points
-                    </Badge>
-                  </CardTitle>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="flex items-center gap-2">
+                      <span>{tier.icon}</span>
+                      {tier.name}
+                      <Badge variant="outline" className="ml-auto">
+                        {tier.multiplier}x points
+                      </Badge>
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenTier(tier)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => deleteTierMutation.mutate(tier.id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </div>
                   <CardDescription>
                     {tier.min_points?.toLocaleString()} -{" "}
                     {tier.max_points ? tier.max_points.toLocaleString() : "∞"} points
@@ -344,7 +498,7 @@ export default function LoyaltyProgramPage() {
                 {rewards?.length || 0} reward(s) available
               </p>
             </div>
-            <Button>
+            <Button onClick={() => handleOpenReward()}>
               <Plus className="h-4 w-4 mr-2" />
               Add Reward
             </Button>
@@ -356,9 +510,17 @@ export default function LoyaltyProgramPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-base">{reward.name}</CardTitle>
-                    <Badge variant={reward.is_active ? "default" : "secondary"}>
-                      {reward.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={reward.is_active ? "default" : "secondary"}>
+                        {reward.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenReward(reward)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => deleteRewardMutation.mutate(reward.id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
                   </div>
                   <CardDescription className="line-clamp-2">
                     {reward.description}
@@ -390,6 +552,168 @@ export default function LoyaltyProgramPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+
+      {/* Config Dialog */}
+      <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configure Loyalty Program</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Program Name</Label>
+              <Input
+                value={configForm.program_name || ""}
+                onChange={(e) => setConfigForm({ ...configForm, program_name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Points per Dollar</Label>
+                <Input
+                  type="number"
+                  value={configForm.points_per_dollar || 0}
+                  onChange={(e) => setConfigForm({ ...configForm, points_per_dollar: parseFloat(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Points Value ($)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={configForm.points_to_dollar_ratio || 0}
+                  onChange={(e) => setConfigForm({ ...configForm, points_to_dollar_ratio: parseFloat(e.target.value) })}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>Program Active</Label>
+              <Switch
+                checked={configForm.is_active}
+                onCheckedChange={(c) => setConfigForm({ ...configForm, is_active: c })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
+            <Button onClick={() => updateConfigMutation.mutate(configForm)}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tier Dialog */}
+      <Dialog open={isTierOpen} onOpenChange={setIsTierOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingTier ? "Edit Tier" : "Add Tier"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Tier Name</Label>
+              <Input
+                value={tierForm.name || ""}
+                onChange={(e) => setTierForm({ ...tierForm, name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Min Points</Label>
+                <Input
+                  type="number"
+                  value={tierForm.min_points || 0}
+                  onChange={(e) => setTierForm({ ...tierForm, min_points: parseInt(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Multiplier</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={tierForm.multiplier || 1}
+                  onChange={(e) => setTierForm({ ...tierForm, multiplier: parseFloat(e.target.value) })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 p-1"
+                  value={tierForm.color || "#000000"}
+                  onChange={(e) => setTierForm({ ...tierForm, color: e.target.value })}
+                />
+                <Input
+                  value={tierForm.color || "#000000"}
+                  onChange={(e) => setTierForm({ ...tierForm, color: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
+            <Button onClick={() => upsertTierMutation.mutate(tierForm)}>Save Tier</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reward Dialog */}
+      <Dialog open={isRewardOpen} onOpenChange={setIsRewardOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingReward ? "Edit Reward" : "Add Reward"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Reward Name</Label>
+              <Input
+                value={rewardForm.name || ""}
+                onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input
+                value={rewardForm.description || ""}
+                onChange={(e) => setRewardForm({ ...rewardForm, description: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Points Cost</Label>
+                <Input
+                  type="number"
+                  value={rewardForm.points_cost || 0}
+                  onChange={(e) => setRewardForm({ ...rewardForm, points_cost: parseInt(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={rewardForm.reward_type}
+                  onChange={(e) => setRewardForm({ ...rewardForm, reward_type: e.target.value })}
+                >
+                  <option value="discount">Discount</option>
+                  <option value="free_item">Free Item</option>
+                  <option value="cashback">Cashback</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Label>Active</Label>
+              <Switch
+                checked={rewardForm.is_active}
+                onCheckedChange={(c) => setRewardForm({ ...rewardForm, is_active: c })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
+            <Button onClick={() => upsertRewardMutation.mutate(rewardForm)}>Save Reward</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

@@ -216,7 +216,10 @@ export default function CustomReports() {
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(report)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      toast({ title: "Downloading...", description: "Report download started." });
+                      // TODO: Implement actual download logic via Edge Function
+                    }}>
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>

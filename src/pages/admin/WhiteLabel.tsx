@@ -36,7 +36,7 @@ export default function WhiteLabel() {
         .maybeSingle();
 
       if (error) throw error;
-      
+
       // Extract and return the white_label JSONB data
       return data?.white_label || null;
     },
@@ -148,7 +148,42 @@ export default function WhiteLabel() {
                   onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
                   placeholder="https://example.com/logo.png"
                 />
-                <Button variant="outline">
+                <input
+                  type="file"
+                  id="logo-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    try {
+                      const fileExt = file.name.split('.').pop();
+                      const fileName = `${Math.random()}.${fileExt}`;
+                      const filePath = `${fileName}`;
+
+                      const { error: uploadError } = await supabase.storage
+                        .from('branding')
+                        .upload(filePath, file);
+
+                      if (uploadError) throw uploadError;
+
+                      const { data } = supabase.storage
+                        .from('branding')
+                        .getPublicUrl(filePath);
+
+                      setFormData({ ...formData, logo_url: data.publicUrl });
+                      toast({ title: "Success", description: "Logo uploaded successfully" });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to upload logo. Ensure 'branding' bucket exists.",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                />
+                <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
                   <Upload className="h-4 w-4" />
                 </Button>
               </div>
