@@ -22,7 +22,6 @@ import { PerformanceMonitor } from "./utils/performance";
 import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
-import { logger } from "@/lib/logger";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
 
 // Setup global error handlers
