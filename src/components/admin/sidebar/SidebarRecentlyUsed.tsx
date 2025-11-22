@@ -50,7 +50,7 @@ export function SidebarRecentlyUsed() {
                 // Check submenus if they exist
                 if (!found) {
                     for (const i of section.items) {
-                        if (i.submenu) {
+                        if ('submenu' in i && i.submenu) {
                             const sub = i.submenu.find(s => s.featureId === access.id);
                             if (sub) {
                                 found = { ...sub, id: sub.id || sub.path } as SidebarItem;
