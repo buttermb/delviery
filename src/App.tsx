@@ -190,6 +190,17 @@ const LoyaltyProgramPage = lazy(() => import("./pages/admin/LoyaltyProgramPage")
 const CouponManagementPage = lazy(() => import("./pages/admin/CouponManagementPage"));
 const QualityControlPage = lazy(() => import("./pages/admin/QualityControlPage"));
 const CustomerCRMPage = lazy(() => import("./pages/admin/CustomerCRMPage"));
+const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
+const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
+const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage"));
+const CreateInvoicePage = lazy(() => import("./pages/admin/CreateInvoicePage"));
+const InvoiceDetailPage = lazy(() => import("./pages/admin/InvoiceDetailPage"));
+const PreOrdersPage = lazy(() => import("./pages/admin/PreOrdersPage"));
+const CreatePreOrderPage = lazy(() => import("./pages/admin/CreatePreOrderPage"));
+const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage"));
+const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
+const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
+const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
 const MarketingAutomationPage = lazy(() => import("./pages/admin/MarketingAutomationPage"));
 const AppointmentSchedulerPage = lazy(() => import("./pages/admin/AppointmentSchedulerPage"));
 const SupportTicketsPage = lazy(() => import("./pages/admin/SupportTicketsPage"));
@@ -628,6 +639,16 @@ const App = () => {
                                       <Route path="coupons" element={<FeatureProtectedRoute featureId="coupons"><CouponManagementPage /></FeatureProtectedRoute>} />
                                       <Route path="quality-control" element={<FeatureProtectedRoute featureId="quality-control"><QualityControlPage /></FeatureProtectedRoute>} />
                                       <Route path="customer-crm" element={<FeatureProtectedRoute featureId="customer-crm"><CustomerCRMPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/clients" element={<FeatureProtectedRoute featureId="customer-crm"><ClientsPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/clients/:clientId" element={<FeatureProtectedRoute featureId="customer-crm"><ClientDetailPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/invoices" element={<FeatureProtectedRoute featureId="customer-crm"><InvoicesPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/invoices/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreateInvoicePage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/invoices/:invoiceId" element={<FeatureProtectedRoute featureId="customer-crm"><InvoiceDetailPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/pre-orders" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrdersPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/pre-orders/new" element={<FeatureProtectedRoute featureId="customer-crm"><CreatePreOrderPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/pre-orders/:preOrderId" element={<FeatureProtectedRoute featureId="customer-crm"><PreOrderDetailPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/settings" element={<FeatureProtectedRoute featureId="customer-crm"><CRMSettingsPage /></FeatureProtectedRoute>} />
+                                      <Route path="crm/invites" element={<FeatureProtectedRoute featureId="customer-crm"><InvitesPage /></FeatureProtectedRoute>} />
                                       <Route path="marketing-automation" element={<FeatureProtectedRoute featureId="marketing-automation"><MarketingAutomationPage /></FeatureProtectedRoute>} />
                                       <Route path="appointments" element={<FeatureProtectedRoute featureId="appointments"><AppointmentSchedulerPage /></FeatureProtectedRoute>} />
                                       <Route path="support-tickets" element={<FeatureProtectedRoute featureId="support-tickets"><SupportTicketsPage /></FeatureProtectedRoute>} />
@@ -723,6 +744,8 @@ const App = () => {
                                     <Route path="/:tenantSlug/customer/reset-password" element={<CustomerResetPasswordPage />} />
                                     <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
                                     <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
+                                    {/* Public Routes */}
+                                    <Route path="/portal/invoice/:token" element={<InvoicePublicPage />} />
                                     <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
                                       <Route index element={<Navigate to="dashboard" replace />} />
                                       <Route path="dashboard" element={<CustomerDashboardPage />} />

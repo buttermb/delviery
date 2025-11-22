@@ -43,6 +43,10 @@ import { CustomerSegmentation } from "@/components/admin/crm/CustomerSegmentatio
 import { RFMAnalysis } from "@/components/admin/crm/RFMAnalysis";
 import { CommunicationTimeline } from "@/components/admin/crm/CommunicationTimeline";
 import { queryKeys } from "@/lib/queryKeys";
+import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
+import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
+import { formatCurrency } from "@/utils/formatters";
+import { useNavigate } from "react-router-dom";
 
 interface Customer {
   id: string;
@@ -60,10 +64,13 @@ interface Customer {
 export default function CustomerCRMPage() {
   const { tenant } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
   const [segmentFilter, setSegmentFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  const { data: dashboardMetrics, isLoading: isDashboardLoading } = useCRMDashboard();
 
   const { data: customers, isLoading } = useQuery({
     queryKey: queryKeys.customers.list({ lifecycle: lifecycleFilter, segment: segmentFilter }),
@@ -90,9 +97,9 @@ export default function CustomerCRMPage() {
                 try {
                   return await decryptCustomerData(c);
                 } catch (err) {
-                  logger.error('Failed to decrypt customer', err as Error, { 
+                  logger.error('Failed to decrypt customer', err as Error, {
                     component: 'CustomerCRMPage',
-                    customerId: c.id 
+                    customerId: c.id
                   });
                   return c; // Return plaintext fallback
                 }
@@ -114,7 +121,7 @@ export default function CustomerCRMPage() {
   // Calculate lifecycle stage for each customer
   const getLifecycleStage = (customer: Customer): string => {
     if (!customer.last_purchase_at) return "prospect";
-    
+
     const daysSince = Math.floor(
       (Date.now() - new Date(customer.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -131,14 +138,14 @@ export default function CustomerCRMPage() {
     const lastPurchase = customer.last_purchase_at
       ? new Date(customer.last_purchase_at).getTime()
       : 0;
-    
+
     const recency = lastPurchase
       ? Math.floor((now - lastPurchase) / (1000 * 60 * 60 * 24))
       : 999;
-    
+
     // Frequency would need order count - simplified for now
     const frequency = 1; // Placeholder
-    
+
     const monetary = customer.total_spent || 0;
 
     // Score from 1-5 (5 is best)
@@ -243,9 +250,12 @@ export default function CustomerCRMPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="dashboard" className="min-h-[44px] touch-manipulation">
+            Dashboard
+          </TabsTrigger>
           <TabsTrigger value="overview" className="min-h-[44px] touch-manipulation">
-            Overview
+            Customers
           </TabsTrigger>
           <TabsTrigger value="segmentation" className="min-h-[44px] touch-manipulation">
             Segmentation
@@ -257,6 +267,84 @@ export default function CustomerCRMPage() {
             Communication
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{dashboardMetrics?.totalClients || 0}</div>
+                <p className="text-xs text-muted-foreground">Active CRM clients</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Invoices</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.activeInvoicesValue || 0)}</div>
+                <p className="text-xs text-muted-foreground">
+                  {dashboardMetrics?.activeInvoicesCount || 0} outstanding invoices
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending Pre-Orders</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.pendingPreOrdersValue || 0)}</div>
+                <p className="text-xs text-muted-foreground">
+                  {dashboardMetrics?.pendingPreOrdersCount || 0} orders pending
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigate("/admin/crm/invoices/new")}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Quick Action</CardTitle>
+                <Tag className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">Create Invoice</div>
+                <p className="text-xs text-muted-foreground">Click to start</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest actions across your CRM</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ActivityTimeline activities={dashboardMetrics?.recentActivity || []} />
+              </CardContent>
+            </Card>
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle>Quick Links</CardTitle>
+                <CardDescription>Navigate to key areas</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/clients")}>
+                  <Users className="mr-2 h-4 w-4" /> Manage Clients
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/invoices")}>
+                  <DollarSign className="mr-2 h-4 w-4" /> View Invoices
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/pre-orders")}>
+                  <TrendingUp className="mr-2 h-4 w-4" /> Manage Pre-Orders
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <Card>
@@ -323,8 +411,8 @@ export default function CustomerCRMPage() {
                                   customer.lifecycle === "active"
                                     ? "default"
                                     : customer.lifecycle === "at-risk"
-                                    ? "destructive"
-                                    : "secondary"
+                                      ? "destructive"
+                                      : "secondary"
                                 }
                               >
                                 {customer.lifecycle}
@@ -379,15 +467,15 @@ export default function CustomerCRMPage() {
                                 customer.lifecycle === "active"
                                   ? "default"
                                   : customer.lifecycle === "at-risk"
-                                  ? "destructive"
-                                  : "secondary"
+                                    ? "destructive"
+                                    : "secondary"
                               }
                               className="ml-2 flex-shrink-0"
                             >
                               {customer.lifecycle}
                             </Badge>
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-3 pt-2 border-t">
                             <div>
                               <p className="text-xs text-muted-foreground mb-1">Segment</p>

@@ -28,6 +28,7 @@ import {
   FileText,
   Building2,
   Truck,
+  Mail,
   MapPin,
   Bell,
   BarChart3,
@@ -167,6 +168,11 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
     section: '👥 Customers',
     items: [
+      createItem('customer-crm', 'CRM Clients', '/admin/crm/clients', Users, { hot: true }),
+      createItem('customer-crm', 'CRM Pre-Orders', '/admin/crm/pre-orders', ShoppingCart),
+      createItem('customer-crm', 'CRM Invoices', '/admin/crm/invoices', FileText),
+      createItem('customer-crm', 'Portal Invites', '/admin/crm/invites', Mail),
+      createItem('customer-crm', 'CRM Settings', '/admin/crm/settings', Settings),
       createItem('customers', 'Customer List', '/admin/big-plug-clients', Users),
       createItem('disposable-menus', 'Share Menu', '/admin/disposable-menus', Share2, { hot: true }),
       createItem('customers', 'Credit Balances', '/admin/big-plug-clients', DollarSign),
@@ -262,6 +268,11 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
     section: '👥 Customers',
     items: [
+      createItem('customer-crm', 'CRM Clients', '/admin/crm/clients', Users, { hot: true }),
+      createItem('customer-crm', 'CRM Pre-Orders', '/admin/crm/pre-orders', ShoppingCart),
+      createItem('customer-crm', 'CRM Invoices', '/admin/crm/invoices', FileText),
+      createItem('customer-crm', 'Portal Invites', '/admin/crm/invites', Mail),
+      createItem('customer-crm', 'CRM Settings', '/admin/crm/settings', Settings),
       createItem('customers', 'Customer List', '/admin/big-plug-clients', Users),
       createItem('disposable-menus', 'Disposable Menus', '/admin/disposable-menus', Lock, { hot: true }),
       createItem('customer-insights', 'Customer Insights', '/admin/customer-insights', TrendingUp),

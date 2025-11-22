@@ -367,6 +367,65 @@ export const queryKeys = {
       posts: (query: string) => [...queryKeys.forum.search.all(), 'posts', query] as const,
     },
   },
+  // CRM System
+  crm: {
+    all: ['crm'] as const,
+    clients: {
+      all: () => [...queryKeys.crm.all, 'clients'] as const,
+      lists: () => [...queryKeys.crm.clients.all(), 'list'] as const,
+      list: (status?: string) => [...queryKeys.crm.clients.lists(), { status }] as const,
+      detail: (id: string) => [...queryKeys.crm.clients.all(), id] as const,
+      search: (term: string) => [...queryKeys.crm.clients.all(), 'search', term] as const,
+    },
+    invoices: {
+      all: () => [...queryKeys.crm.all, 'invoices'] as const,
+      lists: () => [...queryKeys.crm.invoices.all(), 'list'] as const,
+      list: (status?: string) => [...queryKeys.crm.invoices.lists(), { status }] as const,
+      detail: (id: string) => [...queryKeys.crm.invoices.all(), id] as const,
+      byToken: (token: string) => [...queryKeys.crm.invoices.all(), 'token', token] as const,
+      byClient: (clientId: string) => [...queryKeys.crm.invoices.all(), 'client', clientId] as const,
+      recent: (limit: number) => [...queryKeys.crm.invoices.lists(), 'recent', limit] as const,
+    },
+    preOrders: {
+      all: () => [...queryKeys.crm.all, 'pre-orders'] as const,
+      lists: () => [...queryKeys.crm.preOrders.all(), 'list'] as const,
+      list: (status?: string) => [...queryKeys.crm.preOrders.lists(), { status }] as const,
+      detail: (id: string) => [...queryKeys.crm.preOrders.all(), id] as const,
+      byClient: (clientId: string) => [...queryKeys.crm.preOrders.all(), 'client', clientId] as const,
+      count: () => [...queryKeys.crm.preOrders.lists(), 'count'] as const,
+    },
+    notes: {
+      all: () => [...queryKeys.crm.all, 'notes'] as const,
+      byClient: (clientId: string) => [...queryKeys.crm.notes.all(), 'client', clientId] as const,
+    },
+    messages: {
+      all: () => [...queryKeys.crm.all, 'messages'] as const,
+      byClient: (clientId: string) => [...queryKeys.crm.messages.all(), 'client', clientId] as const,
+    },
+    invites: {
+      all: () => [...queryKeys.crm.all, 'invites'] as const,
+      lists: () => [...queryKeys.crm.invites.all(), 'list'] as const,
+      list: (status?: string) => [...queryKeys.crm.invites.lists(), { status }] as const,
+    },
+    activity: {
+      all: () => [...queryKeys.crm.all, 'activity'] as const,
+      byClient: (clientId: string) => [...queryKeys.crm.activity.all(), 'client', clientId] as const,
+      recent: (limit: number) => [...queryKeys.crm.activity.all(), 'recent', limit] as const,
+    },
+    settings: {
+      all: () => [...queryKeys.crm.all, 'settings'] as const,
+      detail: () => [...queryKeys.crm.settings.all(), 'detail'] as const,
+    },
+    products: {
+      all: () => [...queryKeys.crm.all, 'products'] as const,
+      lists: () => [...queryKeys.crm.products.all(), 'list'] as const,
+    },
+    dashboard: {
+      all: () => [...queryKeys.crm.all, 'dashboard'] as const,
+      metrics: () => [...queryKeys.crm.dashboard.all(), 'metrics'] as const,
+    },
+  },
+
   portal: {
     all: ['portal'] as const,
     client: (token: string) => [...queryKeys.portal.all, 'client', token] as const,
