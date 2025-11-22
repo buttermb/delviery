@@ -74,7 +74,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
+        scannerRef.current.stop().catch((err) => logger.error('Scanner cleanup failed', err, { component: 'BarcodeScanner' }));
       }
     };
   }, []);

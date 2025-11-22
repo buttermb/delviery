@@ -59,9 +59,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       
-      // Clear user ID from storage
-      sessionStorage.removeItem('floraiq_user_id');
-      localStorage.removeItem('floraiq_user_id');
+      // Clear user ID from storage (wrapped for incognito mode safety)
+      try {
+        sessionStorage.removeItem('floraiq_user_id');
+        localStorage.removeItem('floraiq_user_id');
+      } catch (storageError) {
+        logger.warn('Storage cleanup failed during signout', { error: storageError });
+      }
     } catch (error) {
       logger.error("Error signing out", error instanceof Error ? error : new Error(String(error)), { component: 'AuthContext' });
     }
