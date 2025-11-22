@@ -6,7 +6,6 @@ import { logger } from '@/lib/logger';
  * Usage: Call setupGlobalErrorHandlers() in main.tsx
  */
 
-import { logger } from './logger';
 import { showErrorToast } from './toastUtils';
 
 let isSetup = false;
