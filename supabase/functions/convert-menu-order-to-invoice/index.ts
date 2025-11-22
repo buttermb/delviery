@@ -122,7 +122,7 @@ serve(
         total: Number(item.quantity || 1) * Number(item.price || item.unit_price || 0),
       }));
 
-      const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
+      const subtotal = lineItems.reduce((sum: number, item: { total: number }) => sum + item.total, 0);
       const tax = Number(orderData.tax || 0);
       const total = subtotal + tax;
 
