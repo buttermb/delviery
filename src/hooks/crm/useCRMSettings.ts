@@ -45,12 +45,15 @@ export function useCRMSettings() {
                     logger.error('Failed to create CRM settings', createError, { component: 'useCRMSettings', accountId });
                     throw createError;
                 }
-                return newData as CRMSettings;
+                return {
+                    ...newData,
+                    faqs: Array.isArray(newData.faqs) ? (newData.faqs as unknown as FAQ[]) : [],
+                } as CRMSettings;
             }
 
             return {
                 ...data,
-                faqs: ((data.faqs as any) || []) as FAQ[],
+                faqs: Array.isArray(data.faqs) ? (data.faqs as unknown as FAQ[]) : [],
             } as CRMSettings;
         },
         enabled: !!accountId,
@@ -98,7 +101,7 @@ export function useUpdateCRMSettings() {
                 }
                 return {
                     ...newData,
-                    faqs: ((newData.faqs as any) || []) as FAQ[],
+                    faqs: Array.isArray(newData.faqs) ? (newData.faqs as unknown as FAQ[]) : [],
                 } as CRMSettings;
             }
 
@@ -121,7 +124,7 @@ export function useUpdateCRMSettings() {
             }
             return {
                 ...data,
-                faqs: ((data.faqs as any) || []) as FAQ[],
+                faqs: Array.isArray(data.faqs) ? (data.faqs as unknown as FAQ[]) : [],
             } as CRMSettings;
         },
         onSuccess: () => {

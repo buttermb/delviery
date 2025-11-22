@@ -248,7 +248,7 @@ export default function InvoicesPage() {
                                             {invoice.client?.name || "Unknown Client"}
                                         </TableCell>
                                         <TableCell>
-                                            {format(new Date(invoice.issue_date), "MMM d, yyyy")}
+                                            {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
                                         </TableCell>
                                         <TableCell>
                                             {format(new Date(invoice.due_date), "MMM d, yyyy")}

@@ -42,7 +42,7 @@ export default function InvoiceDetailPage() {
     const navigate = useNavigate();
     const { useInvoiceQuery, useMarkInvoicePaid, useDeleteInvoice } = useInvoices();
 
-    const { data: invoice, isLoading } = useInvoiceQuery(invoiceId!);
+    const { data: invoice, isLoading } = useInvoiceQuery(invoiceId || '');
     const markAsPaid = useMarkInvoicePaid();
     const deleteInvoice = useDeleteInvoice();
 
@@ -204,7 +204,7 @@ export default function InvoiceDetailPage() {
                                             </TableCell>
                                             <TableCell className="text-right">{item.quantity}</TableCell>
                                             <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                            <TableCell className="text-right pr-6">{formatCurrency(item.total)}</TableCell>
+                                            <TableCell className="text-right pr-6">{formatCurrency(item.line_total)}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -217,7 +217,7 @@ export default function InvoiceDetailPage() {
                                 </div>
                                 <div className="flex justify-between w-48">
                                     <span className="text-muted-foreground">Tax:</span>
-                                    <span>{formatCurrency(invoice.tax)}</span>
+                                    <span>{formatCurrency(invoice.tax_amount)}</span>
                                 </div>
                                 <Separator className="my-2 w-48" />
                                 <div className="flex justify-between w-48 font-bold text-lg">

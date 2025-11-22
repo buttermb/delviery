@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { CRMInvoice } from "@/types/crm";
+import type { CRMInvoice, LineItem } from "@/types/crm";
 
 export function usePublicInvoice(token: string | undefined) {
     return useQuery({
@@ -15,7 +15,12 @@ export function usePublicInvoice(token: string | undefined) {
                 .single();
 
             if (error) throw error;
-            return data as CRMInvoice;
+            return {
+                ...data,
+                line_items: Array.isArray(data.line_items) ? (data.line_items as unknown as LineItem[]) : [],
+                issue_date: data.invoice_date,
+                tax: data.tax_amount,
+            } as CRMInvoice;
         },
         enabled: !!token,
     });

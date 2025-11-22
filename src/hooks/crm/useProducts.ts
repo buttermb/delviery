@@ -13,33 +13,15 @@ export interface Product {
 
 export const useProducts = () => {
     const accountId = useAccountIdSafe();
-
-    const useProductsQuery = () => {
-        return useQuery({
-            queryKey: ["crm-products"],
-            queryFn: async () => {
-                if (!accountId) {
-                    throw new Error('Account ID is required');
-                }
-
-                const { data, error } = await supabase
-                    .from("products")
-                    .select("id, name, price, sku, description")
-                    .eq("account_id", accountId)
-                    .eq("status", "active")
-                    .order("name");
-
-                if (error) {
-                    logger.error('Failed to fetch products', error, { component: 'useProducts', accountId });
-                    throw error;
-                }
-                return data as Product[];
-            },
-            enabled: !!accountId,
-        });
-    };
-
-    return {
-        useProductsQuery,
-    };
+    
+    return useQuery({
+        queryKey: ["crm-products", accountId],
+        queryFn: async (): Promise<Product[]> => {
+            if (!accountId) throw new Error('Account ID required');
+            const { data, error } = await supabase.from("products").select("id, name, price, sku, description").eq("account_id", accountId).eq("status", "active").order("name");
+            if (error) throw error;
+            return (data || []) as Product[];
+        },
+        enabled: !!accountId,
+    });
 };
