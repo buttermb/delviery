@@ -36,7 +36,7 @@ serve(
       // 1. Fetch client by portal_token (will fail if invalid)
       const { data: client, error: clientError } = await supabase
         .from('wholesale_clients')
-        .select('id, tenant_id, business_name, contact_name, email, phone, portal_token')
+        .select('id, tenant_id, business_name, contact_name, email, phone, portal_token, created_at')
         .eq('portal_token', portal_token)
         .maybeSingle();
 

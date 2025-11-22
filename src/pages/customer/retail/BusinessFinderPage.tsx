@@ -66,7 +66,8 @@ export default function BusinessFinderPage() {
   const { data: businesses = [], isLoading } = useQuery({
     queryKey: ['retail-businesses', stateFilter, deliveryFilter],
     queryFn: async () => {
-      let query = supabase
+      // @ts-ignore - Deep type instantiation from Supabase types
+      const query = supabase
         .from('tenants')
         .select(`
           id,
@@ -84,11 +85,9 @@ export default function BusinessFinderPage() {
         .order('business_name');
 
       // Filter by state if selected
-      if (stateFilter !== 'all') {
-        query = query.eq('state', stateFilter);
-      }
-
-      const { data, error } = await query;
+      const { data, error } = await (stateFilter !== 'all' 
+        ? query.eq('state', stateFilter) 
+        : query);
 
       if (error) {
         logger.error('Failed to fetch businesses', error, { component: 'BusinessFinderPage' });

@@ -4533,6 +4533,7 @@ export type Database = {
           amount_paid: number | null
           billing_period_end: string | null
           billing_period_start: string | null
+          client_id: string | null
           created_at: string | null
           due_date: string
           id: string
@@ -4554,6 +4555,7 @@ export type Database = {
           amount_paid?: number | null
           billing_period_end?: string | null
           billing_period_start?: string | null
+          client_id?: string | null
           created_at?: string | null
           due_date: string
           id?: string
@@ -4575,6 +4577,7 @@ export type Database = {
           amount_paid?: number | null
           billing_period_end?: string | null
           billing_period_start?: string | null
+          client_id?: string | null
           created_at?: string | null
           due_date?: string
           id?: string
@@ -4592,6 +4595,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -5866,7 +5876,10 @@ export type Database = {
       menu_orders: {
         Row: {
           access_whitelist_id: string | null
+          client_id: string | null
           contact_phone: string
+          converted_at: string | null
+          converted_to_invoice_id: string | null
           created_at: string
           customer_notes: string | null
           delivery_address: string | null
@@ -5884,7 +5897,10 @@ export type Database = {
         }
         Insert: {
           access_whitelist_id?: string | null
+          client_id?: string | null
           contact_phone: string
+          converted_at?: string | null
+          converted_to_invoice_id?: string | null
           created_at?: string
           customer_notes?: string | null
           delivery_address?: string | null
@@ -5902,7 +5918,10 @@ export type Database = {
         }
         Update: {
           access_whitelist_id?: string | null
+          client_id?: string | null
           contact_phone?: string
+          converted_at?: string | null
+          converted_to_invoice_id?: string | null
           created_at?: string
           customer_notes?: string | null
           delivery_address?: string | null
@@ -5924,6 +5943,20 @@ export type Database = {
             columns: ["access_whitelist_id"]
             isOneToOne: false
             referencedRelation: "menu_access_whitelist"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_orders_converted_to_invoice_id_fkey"
+            columns: ["converted_to_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
           {
@@ -9696,6 +9729,7 @@ export type Database = {
           outstanding_balance: number
           payment_terms: number
           phone: string
+          portal_token: string | null
           reliability_score: number
           status: string
           tenant_id: string
@@ -9718,6 +9752,7 @@ export type Database = {
           outstanding_balance?: number
           payment_terms?: number
           phone: string
+          portal_token?: string | null
           reliability_score?: number
           status?: string
           tenant_id: string
@@ -9740,6 +9775,7 @@ export type Database = {
           outstanding_balance?: number
           payment_terms?: number
           phone?: string
+          portal_token?: string | null
           reliability_score?: number
           status?: string
           tenant_id?: string
