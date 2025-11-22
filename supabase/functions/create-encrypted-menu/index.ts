@@ -151,6 +151,7 @@ serve(withZenProtection(async (req) => {
         success: true,
         menu_id: menu.id,
         url_token: urlToken,
+        access_code: menuData.access_code, // Return access code for admin to share
         encrypted: true,
         message: 'Menu created and encrypted successfully',
       }),
