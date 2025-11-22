@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +59,7 @@ export default function Automation() {
         if (error) throw error;
         return data || [];
       } catch (error: any) {
+        logger.error('Failed to fetch automation rules', error, { component: 'Automation' });
         if (error.code === '42P01') return [];
         throw error;
       }
