@@ -34,7 +34,7 @@ class Logger {
   info(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
     if (this.isDevelopment) {
-      logger.info(`[INFO] ${message}`, data || '', sourceOrContext);
+      console.info(`[INFO] ${message}`, data || '', sourceOrContext);
     }
     this.logToService('info', message, data, source);
   }
@@ -44,7 +44,7 @@ class Logger {
    */
   warn(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
-    logger.warn(`[WARN] ${message}`, data || '', sourceOrContext);
+    console.warn(`[WARN] ${message}`, data || '', sourceOrContext);
     this.logToService('warn', message, data, source);
   }
 
@@ -58,7 +58,7 @@ class Logger {
 
     const source = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext?.component as string;
 
-    logger.error(`[ERROR] ${message}`, errorData || '', sourceOrContext);
+    console.error(`[ERROR] ${message}`, errorData || '', sourceOrContext);
     this.logToService('error', message, errorData, source);
     
     // In production, send to error tracking service
@@ -128,7 +128,7 @@ class Logger {
     // For now, we'll just format it
     if (error instanceof Error) {
       // Could send to Sentry, LogRocket, etc.
-      logger.error('[Error Tracking]', {
+      console.error('[Error Tracking]', {
         message,
         error: error.message,
         stack: error.stack,

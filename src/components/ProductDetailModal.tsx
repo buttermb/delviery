@@ -32,7 +32,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { logger } from "@/utils/logger";
 
 interface Review {
   id: string;

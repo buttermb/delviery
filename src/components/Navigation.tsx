@@ -27,7 +27,6 @@ import { haptics } from "@/utils/haptics";
 import type { DbCartItem } from "@/types/cart";
 import type { Numeric } from "@/types/money";
 import { toNumber } from "@/utils/productTypeGuards";
-import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
 const Navigation = () => {

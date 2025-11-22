@@ -1,10 +1,10 @@
+import { logger } from '@/lib/logger';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 import { analytics } from '@/utils/analytics';
 import bugFinder from '@/utils/bugFinder';
-import { logger } from '@/utils/logger';
 
 interface Props {
   children: ReactNode;

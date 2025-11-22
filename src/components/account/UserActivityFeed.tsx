@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 import type { LucideIcon } from 'lucide-react';
 

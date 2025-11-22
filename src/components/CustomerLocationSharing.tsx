@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { logger } from "@/utils/logger";
 
 interface CustomerLocationSharingProps {
   orderId: string;

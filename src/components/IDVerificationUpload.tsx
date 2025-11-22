@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Shield, Upload, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { logger } from "@/utils/logger";
 
 export default function IDVerificationUpload() {
   const { user } = useAuth();

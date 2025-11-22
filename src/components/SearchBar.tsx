@@ -8,7 +8,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useDebounce } from '@/hooks/useDebounce';
 import { RecentSearches } from './RecentSearches';
 import { cleanProductName } from '@/utils/productName';
-import { logger } from '@/utils/logger';
 
 interface SearchBarProps {
   variant?: 'full' | 'icon';
