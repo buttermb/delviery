@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Settings, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { logger } from "@/lib/logger";
 
 interface FeatureToggleProps {
   feature: {
@@ -167,7 +168,7 @@ export function FeatureToggle({
                           className="mt-2"
                           onClick={() => {
                             setExpirationDate("");
-                            onSetExpiration("").catch(console.error);
+                            onSetExpiration("").catch((err) => logger.error('Expiration removal failed', err, { component: 'FeatureToggle' }));
                           }}
                         >
                           Remove Expiration

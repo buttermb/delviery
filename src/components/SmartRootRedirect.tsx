@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useEffect, useState, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { LoadingFallback } from "./LoadingFallback";

@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { NavLink, useParams, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {

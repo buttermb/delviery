@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { Bell, CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';

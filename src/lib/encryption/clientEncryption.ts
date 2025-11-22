@@ -15,12 +15,13 @@ import type {
 import { safeStorage } from '@/utils/safeStorage';
 
 // Safe wrapper for sessionStorage
+// Note: console.warn intentionally used here as fallback when logger may not be available during storage failures
 const safeSession = {
   setItem: (key: string, value: string) => {
     try {
       sessionStorage.setItem(key, value);
     } catch (e) {
-      console.warn('SessionStorage failed', e);
+      console.warn('SessionStorage failed', e); // Intentional: fallback when sessionStorage unavailable
     }
   },
   getItem: (key: string) => {
@@ -34,7 +35,7 @@ const safeSession = {
     try {
       sessionStorage.removeItem(key);
     } catch (e) {
-      console.warn('SessionStorage failed', e);
+      console.warn('SessionStorage failed', e); // Intentional: fallback when sessionStorage unavailable
     }
   }
 };

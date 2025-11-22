@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Database Safety Utilities
  * Provides safe access to potentially missing database columns

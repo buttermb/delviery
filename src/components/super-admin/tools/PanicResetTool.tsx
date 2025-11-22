@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Panic Reset Tool Component
  * Allows super admins to reset tenant data with confirmation

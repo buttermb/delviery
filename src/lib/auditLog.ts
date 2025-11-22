@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Audit Log Helper
  * Centralized audit logging system for super admin actions

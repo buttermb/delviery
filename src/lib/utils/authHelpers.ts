@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Authentication Helper Functions
  * Utilities for working with the three-tier auth system
