@@ -6342,6 +6342,8 @@ export type Database = {
           processed_at: string | null
           processed_by: string | null
           status: Database["public"]["Enums"]["menu_order_status"]
+          synced_invoice_id: string | null
+          synced_order_id: string | null
           tenant_id: string
           total_amount: number
         }
@@ -6363,6 +6365,8 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           status?: Database["public"]["Enums"]["menu_order_status"]
+          synced_invoice_id?: string | null
+          synced_order_id?: string | null
           tenant_id: string
           total_amount: number
         }
@@ -6384,6 +6388,8 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           status?: Database["public"]["Enums"]["menu_order_status"]
+          synced_invoice_id?: string | null
+          synced_order_id?: string | null
           tenant_id?: string
           total_amount?: number
         }
@@ -6429,6 +6435,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "menu_analytics_summary"
             referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "menu_orders_synced_invoice_id_fkey"
+            columns: ["synced_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "crm_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_orders_synced_order_id_fkey"
+            columns: ["synced_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "menu_orders_tenant_id_fkey"
