@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";

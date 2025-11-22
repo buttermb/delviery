@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";

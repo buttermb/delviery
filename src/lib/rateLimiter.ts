@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Rate Limiter Helper
  * Check and enforce rate limits for API requests

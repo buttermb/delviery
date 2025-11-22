@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Add Runner Dialog
  * Dialog for adding a new delivery runner

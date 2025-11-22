@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { Outlet, useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";

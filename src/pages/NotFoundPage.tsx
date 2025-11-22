@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

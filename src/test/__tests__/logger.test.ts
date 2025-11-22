@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Logger Utility Tests
  * Tests for the centralized logging utility

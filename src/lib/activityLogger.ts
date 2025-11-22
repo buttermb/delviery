@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Activity Logger Utility
  * Centralized activity logging for user actions

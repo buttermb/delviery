@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Production Error Logger
  * Logs critical errors in production where console is stripped

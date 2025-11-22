@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";

@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Centralized Error Handling & Obfuscation Utilities
  * E-Commerce Platform

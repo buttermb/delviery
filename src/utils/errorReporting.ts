@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Centralized error reporting for admin panel
  * Helps track and debug issues in production
