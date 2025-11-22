@@ -83,7 +83,7 @@ export default function AgeVerificationScanner({ open, onClose, onVerified }: Ag
       onVerified(verificationResult.isOver21, {
         age: verificationResult.age,
         dob,
-        verificationMethod: mode === 'scan' ? 'barcode' : 'manual',
+        verificationMethod: mode === 'scan' ? 'scan' : 'manual',
         verifiedAt: new Date().toISOString()
       });
     }

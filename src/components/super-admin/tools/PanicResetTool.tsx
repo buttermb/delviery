@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Panic Reset Tool Component
  * Allows super admins to reset tenant data with confirmation

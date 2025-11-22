@@ -1,10 +1,10 @@
 import { logger } from '@/lib/logger';
+// @ts-nocheck
 /**
  * Monitored Button Component
  * Automatically tracks button clicks, errors, and performance
  */
 
-// @ts-nocheck
 import React, { useState, useCallback } from 'react';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';

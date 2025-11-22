@@ -61,7 +61,10 @@ export function useLocationTracking(enabled: boolean = true) {
           break;
       }
 
-      logger.error('Location error:', errorMessage, err);
+      logger.error('Location error:', errorMessage, { 
+        code: err.code,
+        message: err.message 
+      });
       setError(errorMessage);
     };
 

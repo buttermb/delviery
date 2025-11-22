@@ -15,73 +15,56 @@ class Logger {
 
   /**
    * Debug logging - only in development
+   * Supports both 2-param and 3-param signatures for compatibility
    */
-  debug(message: string, context?: LogContext): void {
+  debug(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     if (this.isDev) {
-      console.log(`[DEBUG] ${message}`, context || '');
+      const context = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext;
+      console.log(`[DEBUG] ${message}`, data || '', context || '');
     }
   }
 
   /**
    * Info logging - only in development
+   * Supports both 2-param and 3-param signatures for compatibility
    */
-  info(message: string, context?: LogContext): void {
+  info(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
     if (this.isDev) {
-      console.info(`[INFO] ${message}`, context || '');
+      const context = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext;
+      console.info(`[INFO] ${message}`, data || '', context || '');
     }
   }
 
   /**
    * Warning logging - always logged
+   * Supports both 2-param and 3-param signatures for compatibility
    */
-  warn(message: string, errorOrContext?: unknown, context?: LogContext): void {
-    const actualContext = typeof errorOrContext === 'object' && errorOrContext !== null && !('message' in errorOrContext)
-      ? errorOrContext as LogContext
-      : context;
-
-    console.warn(`[WARN] ${message}`, actualContext || '');
+  warn(message: string, data?: unknown, sourceOrContext?: string | Record<string, unknown>): void {
+    const context = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext;
+    console.warn(`[WARN] ${message}`, data || '', context || '');
 
     if (this.isProduction) {
-      this.sendToMonitoring('warn', message, actualContext);
+      this.sendToMonitoring('warn', message, context);
     }
   }
 
   /**
    * Error logging - always logged
+   * Supports both 2-param and 3-param signatures for compatibility
    */
-  error(message: string, errorOrContext?: unknown, context?: LogContext): void {
-    let errorDetails = null;
-    let actualContext: Record<string, unknown> = {};
+  error(message: string, error?: Error | unknown, sourceOrContext?: string | Record<string, unknown>): void {
+    const errorData = error instanceof Error 
+      ? { message: error.message, stack: error.stack, name: error.name }
+      : error;
 
-    if (errorOrContext instanceof Error) {
-      errorDetails = {
-        message: errorOrContext.message,
-        stack: errorOrContext.stack,
-        name: errorOrContext.name
-      };
-    } else if (typeof errorOrContext === 'object' && errorOrContext !== null) {
-      if ('message' in errorOrContext) {
-        errorDetails = errorOrContext;
-      } else {
-        actualContext = errorOrContext as Record<string, unknown>;
-      }
-    }
+    const context = typeof sourceOrContext === 'string' ? sourceOrContext : sourceOrContext;
 
-    // Merge context if provided
-    if (context) {
-      if (typeof context === 'string') {
-        actualContext = { ...actualContext, context };
-      } else {
-        actualContext = { ...actualContext, ...context };
-      }
-    }
+    console.error(`[ERROR] ${message}`, errorData || '', context || '');
 
-    console.error(`[ERROR] ${message}`, errorDetails, actualContext);
-
-    if (this.isProduction) {
+    if (this.isProduction && error) {
       this.sendToMonitoring('error', message, {
-        ...actualContext,
-        error: errorDetails
+        error: errorData,
+        context
       });
     }
   }

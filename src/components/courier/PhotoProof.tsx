@@ -21,7 +21,9 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
   const takePhoto = () => {
     if (camera.current) {
       const photo = camera.current.takePhoto();
-      setImage(photo);
+      if (typeof photo === 'string') {
+        setImage(photo);
+      }
     }
   };
 
