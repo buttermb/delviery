@@ -5879,6 +5879,7 @@ export type Database = {
           processed_at: string | null
           processed_by: string | null
           status: Database["public"]["Enums"]["menu_order_status"]
+          tenant_id: string
           total_amount: number
         }
         Insert: {
@@ -5896,6 +5897,7 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           status?: Database["public"]["Enums"]["menu_order_status"]
+          tenant_id: string
           total_amount: number
         }
         Update: {
@@ -5913,6 +5915,7 @@ export type Database = {
           processed_at?: string | null
           processed_by?: string | null
           status?: Database["public"]["Enums"]["menu_order_status"]
+          tenant_id?: string
           total_amount?: number
         }
         Relationships: [
@@ -5943,6 +5946,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "menu_analytics_summary"
             referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "menu_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
           },
         ]
       }
