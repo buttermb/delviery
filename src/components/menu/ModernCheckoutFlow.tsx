@@ -163,22 +163,32 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
         contact_email: formData.contactEmail,
       };
 
-      const { data: order, error: orderError } = await supabase
-        .from('menu_orders')
-        .insert({
+      // NUCLEAR OPTION: Invoke Edge Function for atomic order creation
+      const { data: response, error: functionError } = await supabase.functions.invoke('menu-order-place', {
+        body: {
           menu_id: menuId,
           access_whitelist_id: whitelistEntryId || null,
-          order_data: orderData,
+          order_items: items.map(item => ({
+            product_id: item.productId,
+            quantity: item.quantity,
+            price: item.price
+          })),
           total_amount: totalAmount + formData.tip,
+          delivery_method: formData.deliveryMethod,
+          payment_method: formData.paymentMethod,
           contact_phone: formData.contactPhone,
           delivery_address: `${formData.deliveryAddress}, ${formData.deliveryCity}, ${formData.deliveryState} ${formData.deliveryZip}`,
           customer_notes: formData.notes,
-          status: 'pending',
-        } as any)
-        .select()
-        .maybeSingle();
+          contact_name: formData.contactName,
+          contact_email: formData.contactEmail,
+        }
+      });
 
-      if (orderError) throw orderError;
+      if (functionError) throw functionError;
+      if (response && response.error) throw new Error(response.error);
+
+      // Map response to expected format for UI
+      const order = { id: response.order_id };
 
       // Trigger confetti
       confetti({
@@ -191,21 +201,29 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
       setOrderConfirmed(true);
       clearCart();
 
-      // Send notification (fire-and-forget, but still check for errors)
-      supabase.functions.invoke('notify-order-placed', {
-        body: { orderId: order.id },
-      }).then(({ data, error }) => {
-        if (error) {
-          logger.error('Notification error', error, { component: 'ModernCheckoutFlow', orderId: order.id });
-          return;
+      // Phase 3: Robust Notification Handling
+      try {
+        const { error: notifyError } = await supabase.functions.invoke(
+          'notify-order-placed',
+          {
+            body: { orderId: order.id },
+          }
+        );
+
+        if (notifyError) {
+          logger.error('Notification failed', notifyError, {
+            component: 'ModernCheckoutFlow',
+            orderId: order.id
+          });
+        } else {
+          logger.info('Notification sent', {
+            component: 'ModernCheckoutFlow',
+            orderId: order.id
+          });
         }
-        // Check for error in response body (some edge functions return 200 with error)
-        if (data && typeof data === 'object' && 'error' in data && data.error) {
-          logger.error('Notification returned error in response', new Error(String(data.error)), { component: 'ModernCheckoutFlow', orderId: order.id });
-        }
-      }).catch((err: unknown) => {
-        logger.error('Notification error', err instanceof Error ? err : new Error(String(err)), { component: 'ModernCheckoutFlow', orderId: order.id });
-      });
+      } catch (err) {
+        logger.error('Notification error', err, { component: 'ModernCheckoutFlow' });
+      }
 
       toast({
         title: 'Order Placed Successfully! 🎉',
@@ -453,11 +471,10 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
                     <button
                       key={method}
                       onClick={() => setFormData({ ...formData, paymentMethod: method })}
-                      className={`p-4 border rounded-lg text-left transition-all ${
-                        formData.paymentMethod === method
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                      className={`p-4 border rounded-lg text-left transition-all ${formData.paymentMethod === method
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                        }`}
                     >
                       <p className="font-medium capitalize">{method}</p>
                       <p className="text-sm text-muted-foreground">
@@ -501,11 +518,11 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
           {currentStep === 'legal' && (
             <div className="space-y-6">
               <h3 className="font-semibold text-lg">Legal Confirmations</h3>
-              
+
               {/* Cannabis Warning Banner */}
               <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                 <p className="text-sm font-medium text-orange-700">
-                  ⚠️ Cannabis products may only be purchased by adults 21+ with valid identification. 
+                  ⚠️ Cannabis products may only be purchased by adults 21+ with valid identification.
                   Consumption is prohibited while pregnant or breastfeeding.
                 </p>
               </div>

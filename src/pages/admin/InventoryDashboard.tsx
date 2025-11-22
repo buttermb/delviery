@@ -4,19 +4,20 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Package, 
-  Warehouse, 
-  Truck, 
-  MapPin, 
-  TrendingUp, 
+import {
+  Package,
+  Warehouse,
+  Truck,
+  MapPin,
+  TrendingUp,
   AlertTriangle,
   Plus,
   Scan,
   Printer,
-  ArrowRightLeft
+  ArrowRightLeft,
+  RefreshCcw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -52,6 +53,39 @@ export default function InventoryDashboard() {
   const navigate = useNavigate();
   const { admin, tenant, loading: authLoading } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Realtime Subscription for Inventory Updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('inventory-dashboard-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wholesale_inventory'
+        },
+        () => {
+          // Invalidate queries to trigger refetch
+          queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+    // Add a small delay to show the spinner interaction
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setRefreshing(false);
+  };
 
   // Fetch inventory summary
   const { data: summary, isLoading: summaryLoading } = useQuery({
@@ -85,7 +119,7 @@ export default function InventoryDashboard() {
         batch_count: batchCount || 0,
       };
     },
-    enabled: !!tenantId && !authLoading,
+    enabled: !!tenantId,
   });
 
   // Temporarily disabled - inventory_packages table not yet created
@@ -340,11 +374,11 @@ export default function InventoryDashboard() {
                           {transfer.from_location?.location_name} → {transfer.to_location?.location_name}
                         </CardDescription>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={
                           transfer.status === 'completed' ? 'default' :
-                          transfer.status === 'in_transit' ? 'secondary' :
-                          'outline'
+                            transfer.status === 'in_transit' ? 'secondary' :
+                              'outline'
                         }
                       >
                         {transfer.status.replace('_', ' ')}
@@ -364,7 +398,7 @@ export default function InventoryDashboard() {
                       <div>
                         <p className="text-muted-foreground">Scheduled</p>
                         <p className="font-semibold">
-                          {transfer.scheduled_at 
+                          {transfer.scheduled_at
                             ? new Date(transfer.scheduled_at).toLocaleDateString()
                             : 'Not scheduled'}
                         </p>

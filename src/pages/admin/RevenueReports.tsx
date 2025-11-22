@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,29 @@ import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
 export default function RevenueReports() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
+  const queryClient = useQueryClient();
+
+  // Realtime Subscription for Revenue Updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('revenue-reports-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['revenue-reports', tenantId],

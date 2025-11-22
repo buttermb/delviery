@@ -1,322 +1,232 @@
-# Deployment Guide - Complete Implementation
+# Deployment Guide: Menu Order Integration
 
-## 🚀 Quick Start
+## Overview
+This guide walks through deploying the database triggers that sync disposable menu orders into the main orders system.
 
-This guide will help you deploy all the fixes and improvements from the complete implementation plan.
-
----
-
-## 📋 Pre-Deployment Checklist
-
-- [ ] Supabase project is set up and accessible
-- [ ] Supabase CLI is installed (`npm install -g supabase` or via package manager)
-- [ ] You have admin access to your Supabase project
-- [ ] Backup your database (recommended before applying migrations)
+## Prerequisites
+- Access to Supabase SQL Editor
+- At least one active disposable menu (for testing)
+- At least one product in `wholesale_inventory` (for testing)
 
 ---
 
-## Step 1: Apply Database Migrations
+## Step 1: Deploy Migrations
 
-### Option A: Using Supabase CLI (Recommended)
+Run migrations in **exact order** in Supabase SQL Editor:
 
+### Migration 1: Add tenant_id Column
 ```bash
-# Navigate to project root
-cd /path/to/delviery-main
-
-# Link to your Supabase project (if not already linked)
-supabase link --project-ref your-project-ref
-
-# Apply all pending migrations
-supabase db push
-
-# Or apply specific migrations in order:
-supabase migration up
+File: supabase/migrations/20250122000001_add_tenant_id_to_disposable_menus.sql
+```
+**Expected Output:**
+```
+NOTICE: Added tenant_id column to disposable_menus
+NOTICE: Backfilled tenant_id for X existing menus
 ```
 
-### Option B: Using Supabase Dashboard
+### Migration 2: Create Order Sync Trigger
+```bash
+File: supabase/migrations/20250122000002_sync_menu_orders_to_orders.sql
+```
+**Expected Output:**
+```
+NOTICE: Created triggers to sync menu_orders to main orders table
+```
 
-1. Go to your Supabase Dashboard
-2. Navigate to **SQL Editor**
-3. Run each migration file in order:
+### Migration 3: Backfill Existing Orders
+```bash
+File: supabase/migrations/20250122000003_backfill_menu_orders.sql
+```
+**Expected Output:**
+```
+NOTICE: Backfilled X existing menu_orders into main orders table
+```
 
-   **Migration 1:** `supabase/migrations/20250128000005_create_missing_tables.sql`
-   - Creates `categories`, `warehouses`, `receiving_records` tables
-   - Adds indexes and RLS policies
-
-   **Migration 2:** `supabase/migrations/20250128000006_fix_existing_tables.sql`
-   - Adds missing columns to `inventory_batches`
-   - Adds `category_id` to `products`
-
-   **Migration 3:** `supabase/migrations/20250128000007_add_missing_rls_policies.sql`
-   - Adds RLS policies to all tables that need them
-
-### Verify Migrations Applied
-
-```sql
--- Check tables exist
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
-AND table_name IN ('categories', 'warehouses', 'receiving_records')
-ORDER BY table_name;
-
--- Check columns added
-SELECT column_name 
-FROM information_schema.columns 
-WHERE table_name = 'inventory_batches' 
-AND column_name IN ('quantity', 'location', 'notes');
-
-SELECT column_name 
-FROM information_schema.columns 
-WHERE table_name = 'products' 
-AND column_name = 'category_id';
-
--- Check RLS policies
-SELECT tablename, policyname 
-FROM pg_policies 
-WHERE schemaname = 'public' 
-AND tablename IN ('categories', 'warehouses', 'receiving_records')
-ORDER BY tablename, policyname;
+### Migration 4: Inventory Sync Trigger
+```bash
+File: supabase/migrations/20250122000004_menu_orders_inventory_sync.sql
+```
+**Expected Output:**
+```
+NOTICE: Created trigger to automatically decrement inventory when menu orders are confirmed
 ```
 
 ---
 
-## Step 2: Deploy Edge Functions
+## Step 2: Run Test Suite
 
-### Deploy Generate Report Function
+Open `supabase/migrations/TESTING_GUIDE.sql` and run each test section:
 
-```bash
-supabase functions deploy generate-report
+### ✅ TEST 1: Verify Triggers Exist
+**Expected:** 3 triggers on `menu_orders` table
+
+### ✅ TEST 2: Check tenant_id Column
+**Expected:** Column exists with UUID type
+
+### ✅ TEST 3: Test Order Sync
+**Expected:** 
+```
+NOTICE: ✓ Created test menu_order: <uuid>
+NOTICE: ✓ Order successfully synced to main orders table
 ```
 
-**Test the function:**
-```bash
-curl -i --location --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/generate-report' \
-  --header 'Authorization: Bearer YOUR_ANON_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "report_type": "sales",
-    "tenant_id": "your-tenant-id",
-    "date_range": {
-      "start": "2024-01-01",
-      "end": "2024-12-31"
-    }
-  }'
+### ✅ TEST 4: Check Backfilled Orders
+**Expected:** See existing orders with `order_number` like `MENU-XXXXXXXX`
+
+### ✅ TEST 5: Compare Counts
+**Expected:** `menu_orders` count = `orders (from menus)` count
+
+### ✅ TEST 6: Test Inventory Decrement
+**Expected:**
 ```
-
-### Deploy Optimize Route Function
-
-```bash
-supabase functions deploy optimize-route
-```
-
-**Test the function:**
-```bash
-curl -i --location --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/optimize-route' \
-  --header 'Authorization: Bearer YOUR_ANON_KEY' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "deliveries": [
-      {
-        "id": "delivery-1",
-        "address": "123 Main St",
-        "coordinates": {"lat": 37.7749, "lng": -122.4194}
-      }
-    ],
-    "runner_id": "runner-id"
-  }'
+NOTICE: ✓ Inventory correctly decremented: X → Y lbs
 ```
 
 ---
 
-## Step 3: Verify Frontend Changes
+## Step 3: User Acceptance Testing
 
-### Check Navigation
+### Test Scenario 1: Place New Order
 
-1. **Before migrations:** Navigation should hide:
-   - Categories & Tags
-   - Warehouses
-   - Receiving & Packaging
-   - Batches & Lots (if inventory_batches table missing)
+1. **Navigate to disposable menu** (use public URL from menu management)
+2. **Add products to cart**
+3. **Complete checkout** and submit order
+4. **Immediately check Live Orders panel** (`/admin/live-orders`)
+   - ✅ Order should appear within 1-2 seconds
+   - ✅ Order number should be `MENU-XXXXXXXX`
+   - ✅ Status should be `pending`
 
-2. **After migrations:** All navigation items should appear
+### Test Scenario 2: Confirm Order
+1. **Update menu order status to confirmed** in database:
+   ```sql
+   UPDATE menu_orders 
+   SET status = 'confirmed' 
+   WHERE id = '<order_id>';
+   ```
+2. **Check Live Orders panel**
+   - ✅ Status should update to `confirmed` automatically
+3. **Check Inventory panel**
+   - ✅ Product quantities should decrease
 
-### Test Pages
-
-1. **Categories Page** (`/admin/catalog/categories`)
-   - Before migration: Should show "Feature Not Available" message
-   - After migration: Should allow creating/editing categories
-
-2. **Warehouses Page** (`/admin/locations/warehouses`)
-   - Before migration: Should show "Feature Not Available" message
-   - After migration: Should show warehouse locations
-
-3. **Receiving Page** (`/admin/operations/receiving`)
-   - Before migration: Should show "Feature Not Available" message
-   - After migration: Should allow creating receiving records
-
-4. **Batches Page** (`/admin/catalog/batches`)
-   - Should work with `quantity_lbs` and `warehouse_location` columns
-   - Should display batches correctly
-
-5. **Bulk Operations** (`/admin/bulk-operations`)
-   - Should use `stock_quantity` instead of `stock`
-   - Should update products correctly
+### Test Scenario 3: Real-Time Updates
+1. **Open Live Orders panel** in one browser tab
+2. **Place order via disposable menu** in another tab
+3. **Watch Live Orders panel** (do NOT refresh)
+   - ✅ Order should appear automatically without refresh
+   - ✅ "Live" badge should be pulsing
 
 ---
 
-## Step 4: Verify RLS Policies
+## Step 4: Verify Dashboard Panels
 
-### Test Tenant Isolation
-
-```sql
--- As a tenant admin user, verify you can only see your tenant's data
-SELECT COUNT(*) FROM categories WHERE tenant_id = 'your-tenant-id';
-
--- Verify you cannot see other tenants' data
-SELECT COUNT(*) FROM categories WHERE tenant_id != 'your-tenant-id';
--- Should return 0 (or only accessible via service role)
-```
-
-### Check Policy Existence
-
-```sql
--- List all tables with RLS enabled
-SELECT 
-  schemaname,
-  tablename,
-  COUNT(*) as policy_count
-FROM pg_policies
-WHERE schemaname = 'public'
-GROUP BY schemaname, tablename
-HAVING COUNT(*) > 0
-ORDER BY tablename;
-```
-
----
-
-## Step 5: Post-Deployment Verification
-
-### Functionality Tests
-
-- [ ] Categories can be created and assigned to products
-- [ ] Warehouses can be managed and batches assigned to locations
-- [ ] Receiving records can be created with QC status
-- [ ] Batches display correctly with quantity_lbs and warehouse_location
-- [ ] Bulk operations update stock_quantity correctly
-- [ ] Navigation items hide/show based on table existence
-- [ ] Error messages appear when tables are missing
-
-### Performance Checks
-
-- [ ] Navigation loads quickly (feature availability checks are cached)
-- [ ] Pages load without errors
-- [ ] No console errors in browser
-- [ ] Database queries are optimized (indexes exist)
-
-### Security Verification
-
-- [ ] RLS policies are active on all tables
-- [ ] Users can only see their tenant's data
-- [ ] Cross-tenant access is blocked
-- [ ] Edge functions require authentication
+| Panel | Test | Expected Result |
+|-------|------|-----------------|
+| **Live Orders** | Place menu order | ✅ Appears immediately |
+| **Orders** (main) | Check order list | ✅ Shows menu orders with `MENU-` prefix |
+| **Inventory** | Confirm order | ✅ Quantities decrement |
+| **CRM Pre-Orders** | n/a | ⚠️ Requires Phase 3 (optional) |
+| **Finance Revenue** | Check totals | ✅ Menu order amounts included |
+| **Analytics** | View sales data | ✅ Menu orders counted |
 
 ---
 
 ## Troubleshooting
 
-### Migration Errors
+### Issue: Orders Not Appearing in Live Orders
 
-**Issue:** Migration fails with "relation already exists"
-- **Solution:** Migrations use `IF NOT EXISTS`, so this shouldn't happen. If it does, the table already exists and you can skip that part.
+**Check 1:** Verify trigger exists
+```sql
+SELECT * FROM information_schema.triggers 
+WHERE trigger_name = 'trigger_sync_menu_order_to_main';
+```
 
-**Issue:** RLS policy already exists
-- **Solution:** Migrations use `DROP POLICY IF EXISTS`, so this is handled automatically.
+**Check 2:** Manually check if order was synced
+```sql
+SELECT * FROM orders WHERE metadata->>'source' = 'disposable_menu';
+```
 
-### Edge Function Errors
+**Check 3:** Look for errors in Supabase logs
+- Navigate to Database → Logs
+- Filter for "sync_menu_order"
 
-**Issue:** Function not found after deployment
-- **Solution:** Verify deployment with `supabase functions list`
-- Check function logs: `supabase functions logs generate-report`
+### Issue: Inventory Not Decrementing
 
-**Issue:** Function returns 401 Unauthorized
-- **Solution:** Ensure you're passing the Authorization header with a valid JWT token
+**Check:** Verify order status is `confirmed`
+```sql
+SELECT id, status FROM menu_orders WHERE id = '<order_id>';
+```
 
-### Frontend Issues
+**Check:** Manual inventory update
+```sql
+UPDATE wholesale_inventory 
+SET quantity_lbs = quantity_lbs - 5 
+WHERE id = '<product_id>';
+```
 
-**Issue:** Navigation items not hiding
-- **Solution:** Clear browser cache, check that `featureAvailability.ts` is loading
-- Verify tenant is authenticated: Check `useTenantAdminAuth()` returns valid tenant
+### Issue: Duplicate Orders
 
-**Issue:** Error messages not showing
-- **Solution:** Check browser console for errors
-- Verify table existence check is working (check network tab for Supabase queries)
+**Cause:** Trigger ran multiple times or backfill re-ran
+
+**Fix:** Remove duplicates
+```sql
+DELETE FROM orders o1
+USING orders o2
+WHERE o1.id = o2.id 
+  AND o1.ctid > o2.ctid
+  AND o1.metadata->>'source' = 'disposable_menu';
+```
 
 ---
 
 ## Rollback Plan
 
-If you need to rollback:
-
-### Rollback Migrations
+If something goes wrong, rollback in reverse order:
 
 ```sql
--- Drop tables (if needed)
-DROP TABLE IF EXISTS receiving_records CASCADE;
-DROP TABLE IF EXISTS warehouses CASCADE;
-DROP TABLE IF EXISTS categories CASCADE;
+-- Step 1: Drop triggers
+DROP TRIGGER IF EXISTS trigger_update_inventory_from_menu_order ON menu_orders;
+DROP TRIGGER IF EXISTS trigger_sync_menu_order_status ON menu_orders;
+DROP TRIGGER IF EXISTS trigger_sync_menu_order_to_main ON menu_orders;
 
--- Remove columns (if needed)
-ALTER TABLE inventory_batches DROP COLUMN IF EXISTS quantity;
-ALTER TABLE inventory_batches DROP COLUMN IF EXISTS location;
-ALTER TABLE inventory_batches DROP COLUMN IF EXISTS notes;
-ALTER TABLE products DROP COLUMN IF EXISTS category_id;
+-- Step 2: Drop functions
+DROP FUNCTION IF EXISTS update_inventory_from_menu_order();
+DROP FUNCTION IF EXISTS sync_menu_order_status_update();
+DROP FUNCTION IF EXISTS sync_menu_order_to_main_orders();
+
+-- Step 3: Remove synced orders (optional - only if corrupt data)
+-- DELETE FROM orders WHERE metadata->>'source' = 'disposable_menu';
+
+-- Step 4: Remove tenant_id column (optional - only if major issues)
+-- ALTER TABLE disposable_menus DROP COLUMN IF EXISTS tenant_id;
 ```
-
-### Rollback Edge Functions
-
-```bash
-# Delete functions (if needed)
-supabase functions delete generate-report
-supabase functions delete optimize-route
-```
-
-**Note:** Frontend code changes don't need rollback - they gracefully handle missing tables.
 
 ---
 
 ## Success Criteria
 
-✅ All migrations applied successfully  
-✅ Edge functions deployed and accessible  
-✅ Navigation items show/hide correctly  
-✅ Pages display error messages when tables are missing  
-✅ Pages work correctly when tables exist  
-✅ RLS policies are active  
-✅ No console errors  
-✅ All functionality tested and working  
+✅ All triggers created successfully  
+✅ Existing menu orders backfilled into orders table  
+✅ New menu orders appear in Live Orders within 2 seconds  
+✅ Order status updates propagate automatically  
+✅ Inventory decrements when orders confirmed  
+✅ No duplicate orders created  
+✅ Real-time subscriptions working  
 
 ---
 
-## Support
+## Post-Deployment Monitoring
 
-If you encounter issues:
+Monitor for 24 hours after deployment:
 
-1. Check the troubleshooting section above
-2. Review migration logs in Supabase Dashboard
-3. Check edge function logs: `supabase functions logs <function-name>`
-4. Verify RLS policies in Supabase Dashboard > Authentication > Policies
-5. Check browser console for frontend errors
-
----
-
-## Additional Resources
-
-- [Supabase Migration Guide](https://supabase.com/docs/guides/cli/local-development#database-migrations)
-- [Supabase Edge Functions Guide](https://supabase.com/docs/guides/functions)
-- [RLS Policies Documentation](https://supabase.com/docs/guides/auth/row-level-security)
+1. **Check Supabase logs** for trigger errors
+2. **Monitor inventory levels** for accuracy
+3. **Verify order counts** match between tables
+4. **Test with real customer orders** (if applicable)
 
 ---
 
-**Last Updated:** 2025-01-28  
-**Status:** Production Ready ✅
+## Next Steps (Optional)
+
+- **Phase 3: CRM Integration** - Convert menu orders to pre-orders automatically
+- **Enhanced Analytics** - Create views joining menu_orders with customer data
+- **Reporting** - Build dashboards showing menu-specific performance

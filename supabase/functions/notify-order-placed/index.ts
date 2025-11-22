@@ -32,6 +32,10 @@ serve(async (req) => {
           id,
           title,
           business_name
+        ),
+        synced_order:orders (
+          id,
+          order_number
         )
       `)
       .eq('id', orderId)
@@ -46,9 +50,12 @@ serve(async (req) => {
     // Get business name with fallback hierarchy
     const businessName = menu.business_name || menu.title || 'Our Business';
 
+    // Use synced order number if available, otherwise fallback to short ID
+    const orderNumber = (order as any).synced_order?.order_number || `MENU-${order.id.slice(0, 8).toUpperCase()}`;
+
     // Prepare customer notification
     const customerMessage = `
-Order Confirmation
+Order Confirmation #${orderNumber}
 
 Thank you for your order from ${businessName}!
 
@@ -69,7 +76,7 @@ Status: ${order.status}
 
     // Prepare admin notification
     const adminMessage = `
-New Order Received!
+New Order Received! #${orderNumber}
 
 Business: ${businessName}
 Menu: ${menu.title}
@@ -150,7 +157,7 @@ Please review and process this order.
     console.error('Error sending order notifications:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
