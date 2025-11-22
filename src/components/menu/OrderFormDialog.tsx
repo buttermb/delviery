@@ -68,7 +68,7 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
           delivery_address: formData.deliveryAddress,
           customer_notes: formData.notes,
           status: 'pending',
-        })
+        } as any)
         .select()
         .maybeSingle();
 

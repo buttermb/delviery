@@ -174,7 +174,7 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
           delivery_address: `${formData.deliveryAddress}, ${formData.deliveryCity}, ${formData.deliveryState} ${formData.deliveryZip}`,
           customer_notes: formData.notes,
           status: 'pending',
-        })
+        } as any)
         .select()
         .maybeSingle();
 
