@@ -51,9 +51,10 @@ export function EnhancedInviteSystem({
   const [sending, setSending] = useState(false);
 
   // Default message template
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const defaultMessage = inviteMethod === 'sms' 
-    ? `New catalog available.\n\nLink: ${window.location.origin}/menu/${menu.encrypted_url_token}${whitelist.find(w => w.id === selectedCustomers[0])?.unique_access_token ? `?u=${whitelist.find(w => w.id === selectedCustomers[0])?.unique_access_token}` : ''}\nAccess Code: ${menu.access_code || 'N/A'}\n\nKeep private.`
-    : `Check out the new selection. Link expires in 30 days.\n\nLink: ${window.location.origin}/menu/${menu.encrypted_url_token}\nAccess Code: ${menu.access_code || 'N/A'}\n\nKeep this private. Do not share.`;
+    ? `New catalog available.\n\nLink: ${baseUrl}/m/${menu.encrypted_url_token}${whitelist.find(w => w.id === selectedCustomers[0])?.unique_access_token ? `?u=${whitelist.find(w => w.id === selectedCustomers[0])?.unique_access_token}` : ''}\nAccess Code: ${menu.access_code || 'N/A'}\n\nKeep private.`
+    : `Check out the new selection. Link expires in 30 days.\n\nLink: ${baseUrl}/m/${menu.encrypted_url_token}\nAccess Code: ${menu.access_code || 'N/A'}\n\nKeep this private. Do not share.`;
 
   const message = customMessage || defaultMessage;
 
