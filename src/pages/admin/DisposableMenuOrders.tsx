@@ -17,18 +17,22 @@ import {
   XCircle,
   ArrowLeft,
   Package,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import { exportOrders } from '@/utils/exportHelpers';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { OrderDetailsDialog } from '@/components/admin/disposable-menus/OrderDetailsDialog';
 import { OrderStatusBadge } from '@/components/admin/disposable-menus/OrderStatusBadge';
+import { ConvertToInvoiceDialog } from '@/components/admin/disposable-menus/ConvertToInvoiceDialog';
 
 const DisposableMenuOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'cancelled'>('all');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [convertOrder, setConvertOrder] = useState<any>(null);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
 
   const { data: orders, isLoading } = useMenuOrders();
 
@@ -279,13 +283,29 @@ const DisposableMenuOrders = () => {
                         <div className="text-xl font-bold mb-1">
                           ${parseFloat(String(order.total_amount || 0)).toFixed(2)}
                         </div>
-                        <Button size="sm" variant="ghost" onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewOrder(order);
-                        }}>
-                          <Eye className="h-3 w-3 mr-1" />
-                          View Details
-                        </Button>
+                        <div className="flex gap-2 justify-end">
+                          {!order.converted_to_invoice_id && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConvertOrder(order);
+                                setConvertDialogOpen(true);
+                              }}
+                            >
+                              <FileText className="h-3 w-3 mr-1" />
+                              Convert
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewOrder(order);
+                          }}>
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
@@ -326,6 +346,23 @@ const DisposableMenuOrders = () => {
           onUpdate={() => {
             // Refetch orders after update
             setDetailsOpen(false);
+          }}
+        />
+      )}
+
+      {/* Convert to Invoice Dialog */}
+      {convertOrder && (
+        <ConvertToInvoiceDialog
+          order={convertOrder}
+          open={convertDialogOpen}
+          onOpenChange={(open) => {
+            setConvertDialogOpen(open);
+            if (!open) setConvertOrder(null);
+          }}
+          onSuccess={() => {
+            // Orders will be refetched via query invalidation
+            setConvertDialogOpen(false);
+            setConvertOrder(null);
           }}
         />
       )}

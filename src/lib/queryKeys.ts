@@ -367,4 +367,11 @@ export const queryKeys = {
       posts: (query: string) => [...queryKeys.forum.search.all(), 'posts', query] as const,
     },
   },
+  portal: {
+    all: ['portal'] as const,
+    client: (token: string) => [...queryKeys.portal.all, 'client', token] as const,
+    invoices: (token: string) => [...queryKeys.portal.all, 'invoices', token] as const,
+    orders: (token: string) => [...queryKeys.portal.all, 'orders', token] as const,
+    history: (token: string) => [...queryKeys.portal.all, 'history', token] as const,
+  },
 } as const;

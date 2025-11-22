@@ -99,6 +99,7 @@ const Cookie = lazy(() => import("./pages/Cookie"));
 const LoginDirectory = lazy(() => import("./pages/LoginDirectory"));
 const PublicMarketplacePage = lazy(() => import("./pages/marketplace/PublicMarketplacePage"));
 const PublicListingDetailPage = lazy(() => import("./pages/marketplace/PublicListingDetailPage"));
+const ClientPortalPage = lazy(() => import("./pages/customer/ClientPortalPage"));
 
 // Three-Tier Auth System Pages
 const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
@@ -433,6 +434,7 @@ const App = () => {
                                   <Routes>
                                     {/* Marketing & Public Routes */}
                                     <Route path="/" element={<SmartRootRedirect />} />
+                                    <Route path="/p/:portalToken" element={<ClientPortalPage />} />
                                     <Route path="/marketing" element={<MarketingHome />} />
                                     <Route path="/features" element={<Features />} />
                                     <Route path="/pricing" element={<PricingPage />} />

@@ -37,6 +37,8 @@ import { queryKeys } from "@/lib/queryKeys";
 // SendSMS removed per plan - can be re-added if needed
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
+import { SendPortalLinkDialog } from "@/components/admin/wholesale/SendPortalLinkDialog";
+import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function WholesaleClients() {
@@ -50,6 +52,8 @@ export default function WholesaleClients() {
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [smsClient, setSmsClient] = useState<any>(null);
   const [createClientDialogOpen, setCreateClientDialogOpen] = useState(false);
+  const [portalLinkDialogOpen, setPortalLinkDialogOpen] = useState(false);
+  const [portalLinkClient, setPortalLinkClient] = useState<any>(null);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter }),
@@ -292,6 +296,19 @@ export default function WholesaleClients() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="min-h-[48px] min-w-[48px] touch-manipulation"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPortalLinkClient(client);
+                          setPortalLinkDialogOpen(true);
+                        }}
+                        title="Send Portal Link"
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </Button>
                       <Button 
                         size="sm" 
                         variant="ghost" 
@@ -544,6 +561,18 @@ export default function WholesaleClients() {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Send Portal Link Dialog */}
+      {portalLinkClient && (
+        <SendPortalLinkDialog
+          open={portalLinkDialogOpen}
+          onOpenChange={(open) => {
+            setPortalLinkDialogOpen(open);
+            if (!open) setPortalLinkClient(null);
+          }}
+          client={portalLinkClient}
+        />
       )}
 
       {/* Create Client Dialog */}
