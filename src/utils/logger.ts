@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Centralized Logging Utility
  * Replaces console.log with environment-aware logging

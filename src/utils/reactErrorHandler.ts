@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * React Error Handler Utilities
  * Provides centralized error handling for React components
