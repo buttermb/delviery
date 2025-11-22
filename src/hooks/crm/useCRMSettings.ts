@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { CRMSettings } from '@/types/crm';
+import type { CRMSettings, FAQ } from '@/types/crm';
+import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
@@ -47,7 +48,10 @@ export function useCRMSettings() {
                 return newData as CRMSettings;
             }
 
-            return data as CRMSettings;
+            return {
+                ...data,
+                faqs: ((data.faqs as any) || []) as FAQ[],
+            } as CRMSettings;
         },
         enabled: !!accountId,
     });
@@ -77,9 +81,14 @@ export function useUpdateCRMSettings() {
 
             if (!currentSettings) {
                 // Create settings if they don't exist
+                const payload: any = { ...values, account_id: accountId };
+                if (values.faqs !== undefined) {
+                    payload.faqs = values.faqs as unknown as Json;
+                }
+                
                 const { data: newData, error: createError } = await supabase
                     .from('crm_settings')
-                    .insert({ account_id: accountId, ...values })
+                    .insert(payload)
                     .select()
                     .single();
 
@@ -87,12 +96,20 @@ export function useUpdateCRMSettings() {
                     logger.error('Failed to create CRM settings', createError, { component: 'useUpdateCRMSettings', accountId });
                     throw createError;
                 }
-                return newData as CRMSettings;
+                return {
+                    ...newData,
+                    faqs: ((newData.faqs as any) || []) as FAQ[],
+                } as CRMSettings;
+            }
+
+            const payload: any = { ...values };
+            if (values.faqs !== undefined) {
+                payload.faqs = values.faqs as unknown as Json;
             }
 
             const { data, error } = await supabase
                 .from('crm_settings')
-                .update(values)
+                .update(payload)
                 .eq('id', currentSettings.id)
                 .eq('account_id', accountId)
                 .select()
@@ -102,7 +119,10 @@ export function useUpdateCRMSettings() {
                 logger.error('Failed to update CRM settings', error, { component: 'useUpdateCRMSettings', accountId, settingsId: currentSettings.id });
                 throw error;
             }
-            return data as CRMSettings;
+            return {
+                ...data,
+                faqs: ((data.faqs as any) || []) as FAQ[],
+            } as CRMSettings;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: crmSettingsKeys.detail() });

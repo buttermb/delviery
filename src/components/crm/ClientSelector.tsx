@@ -29,8 +29,7 @@ export function ClientSelector({ value, onChange, error }: ClientSelectorProps) 
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-    const { useClientsQuery } = useClients();
-    const { data: clients, isLoading } = useClientsQuery();
+    const { data: clients, isLoading } = useClients();
 
     // Filter clients based on search query
     const filteredClients = clients?.filter((client) =>
