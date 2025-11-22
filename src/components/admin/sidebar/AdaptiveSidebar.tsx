@@ -36,6 +36,7 @@ import { SidebarProvider as ContextProvider, useSidebar } from './SidebarContext
 import { SidebarSection } from './SidebarSection';
 import { SidebarHotItems } from './SidebarHotItems';
 import { SidebarFavorites } from './SidebarFavorites';
+import { SidebarRecentlyUsed } from './SidebarRecentlyUsed';
 import { UpgradeModal } from '@/components/tenant-admin/UpgradeModal';
 import { useState, Suspense } from 'react';
 import type { FeatureId } from '@/lib/featureConfig';
@@ -56,7 +57,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   const { sidebarConfig, hotItems, favorites, operationSize } = useSidebarConfig();
   const { trackFeatureClick, toggleFavorite, preferences } = useSidebar();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
-  
+
   // Run storage migration on mount
   useSidebarMigration();
 
@@ -118,7 +119,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <button className="w-full p-3 sm:p-4 flex items-center gap-2 hover:bg-accent/50 transition-colors group cursor-pointer relative overflow-hidden">
                 {/* Subtle pulse animation on the background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 relative z-10 group-hover:scale-110 transition-transform">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
@@ -126,8 +127,8 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
                   <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] sm:text-xs text-muted-foreground">Business Admin</span>
-                    <Badge 
-                      variant="secondary" 
+                    <Badge
+                      variant="secondary"
                       className="text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:bg-primary/10 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -163,7 +164,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarHeader>
-        
+
         <SidebarContent>
           <Suspense fallback={
             <div className="p-4 space-y-2">
@@ -172,6 +173,9 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               ))}
             </div>
           }>
+            {/* Recently Used Section */}
+            <SidebarRecentlyUsed />
+
             {/* Hot Items Section */}
             {Array.isArray(hotItems) && hotItems.length > 0 && (
               <SidebarHotItems />

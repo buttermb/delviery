@@ -6,6 +6,8 @@
  * - Small: Small business (20-25 items)
  * - Medium: Medium business (40-50 items)
  * - Enterprise: Large operation (120+ items)
+ * 
+ * UPDATED: Consolidated into user-journey based groups
  */
 
 import type { SidebarSection } from '@/types/sidebar';
@@ -60,6 +62,8 @@ import {
   ClipboardList,
   ArrowRightLeft,
   MessageSquare,
+  Layers,
+  Briefcase
 } from 'lucide-react';
 import { FEATURES, type FeatureId } from '@/lib/featureConfig';
 
@@ -105,7 +109,7 @@ function createItem(
  */
 export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
   {
-    section: '📦 Quick Actions',
+    section: '🚀 Quick Actions',
     pinned: true,
     defaultExpanded: true,
     items: [
@@ -115,7 +119,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     ],
   },
   {
-    section: '💰 Money',
+    section: '💼 Business',
     items: [
       createItem('reports', "Today's Sales", '/admin/reports', TrendingUp, { hot: true }),
       createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
@@ -124,7 +128,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     ],
   },
   {
-    section: '📋 Essential',
+    section: '⚙️ Manage',
     items: [
       createItem('products', 'My Products', '/admin/inventory/products', Box),
       createItem('customers', 'My Customers', '/admin/big-plug-clients', Users),
@@ -140,67 +144,53 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
  */
 export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
-    section: '🏠 Home',
+    section: '🏠 Dashboard',
     items: [
-      createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
+      createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
+      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity, { hot: true }),
     ],
   },
   {
-    section: '📦 Orders & Sales',
+    section: '🛍️ Sales & Orders',
     defaultExpanded: true,
     items: [
-      createItem('basic-orders', "Today's Orders", '/admin/disposable-menu-orders', ShoppingCart, { hot: true }),
-      createItem('wholesale-orders', 'All Orders', '/admin/wholesale-orders', FileText),
-      createItem('pos-system', 'POS / Cash Register', '/admin/pos-system', CreditCard),
-      createItem('fronted-inventory', 'Fronted Inventory', '/admin/fronted-inventory', AlertCircle),
+      createItem('basic-orders', 'Orders', '/admin/disposable-menu-orders', ShoppingCart),
+      createItem('pos-system', 'POS Register', '/admin/pos-system', CreditCard),
+      createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
+      createItem('wholesale-orders', 'Wholesale', '/admin/wholesale-orders', FileText),
     ],
   },
   {
-    section: '📊 Inventory',
+    section: '📦 Inventory',
     items: [
       createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Package),
-      createItem('products', 'Add Products', '/admin/inventory/products', Package),
-      createItem('stock-alerts', 'Restock Alerts', '/admin/stock-alerts', Bell),
-      createItem('inventory-dashboard', 'Quick Stock Count', '/admin/inventory-dashboard', Package),
+      createItem('products', 'Products', '/admin/inventory/products', Box),
+      createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', Bell),
     ],
   },
   {
     section: '👥 Customers',
     items: [
-      createItem('customer-crm', 'CRM Clients', '/admin/crm/clients', Users, { hot: true }),
-      createItem('customer-crm', 'CRM Pre-Orders', '/admin/crm/pre-orders', ShoppingCart),
-      createItem('customer-crm', 'CRM Invoices', '/admin/crm/invoices', FileText),
-      createItem('customer-crm', 'Portal Invites', '/admin/crm/invites', Mail),
-      createItem('customer-crm', 'CRM Settings', '/admin/crm/settings', Settings),
+      createItem('customer-crm', 'CRM', '/admin/crm/clients', Users),
       createItem('customers', 'Customer List', '/admin/big-plug-clients', Users),
-      createItem('disposable-menus', 'Share Menu', '/admin/disposable-menus', Share2, { hot: true }),
-      createItem('customers', 'Credit Balances', '/admin/big-plug-clients', DollarSign),
+      createItem('customer-crm', 'Invoices', '/admin/crm/invoices', FileText),
     ],
   },
   {
-    section: '🚗 Delivery',
-    items: [
-      createItem('delivery-management', 'Active Deliveries', '/admin/delivery-management', Truck),
-      createItem('delivery-management', 'Assign Drivers', '/admin/delivery-management', UserCog),
-      createItem('live-map', 'Delivery Map', '/admin/live-map', MapPin),
-    ],
-  },
-  {
-    section: '💰 Money',
+    section: '📊 Reports',
     collapsed: true,
     items: [
-      createItem('reports', "Today's Revenue", '/admin/reports', TrendingUp),
-      createItem('reports', 'This Week', '/admin/reports', Calendar),
+      createItem('reports', 'Sales Reports', '/admin/reports', TrendingUp),
       createItem('revenue-reports', 'Expenses', '/admin/revenue-reports', Receipt),
-      createItem('billing', 'Billing', '/admin/billing', DollarSign),
     ],
   },
   {
-    section: '👥 Team',
+    section: '⚙️ Settings',
     collapsed: true,
     items: [
       createItem('team-members', 'Staff', '/admin/staff-management', Users),
-      createItem('settings', 'Settings', '/admin/settings', Settings),
+      createItem('settings', 'General Settings', '/admin/settings', Settings),
+      createItem('billing', 'Billing', '/admin/billing', DollarSign),
     ],
   },
 ];
@@ -208,133 +198,83 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
 /**
  * MEDIUM BUSINESS SIDEBAR (40-50 items)
  * For multi-location operations, 5-20 employees
+ * CONSOLIDATED STRUCTURE
  */
 export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
-    section: '🎯 Command Center',
+    section: '🏠 Dashboard',
     pinned: true,
     defaultExpanded: true,
     items: [
-      createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
+      createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
+      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity, { hot: true }),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPin),
       createItem('notifications', 'Notifications', '/admin/notifications', Bell),
     ],
   },
   {
-    section: '📦 Operations',
+    section: '🛍️ Catalog & Sales',
     defaultExpanded: true,
     items: [
+      createItem('products', 'Products', '/admin/inventory/products', Box),
       createItem('basic-orders', 'Orders', '/admin/disposable-menu-orders', ShoppingCart, {
         submenu: [
           { name: 'All Orders', path: '/admin/disposable-menu-orders' },
           { name: 'New Orders', path: '/admin/disposable-menu-orders' },
           { name: 'Processing', path: '/admin/disposable-menu-orders' },
-          { name: 'Ready for Delivery', path: '/admin/disposable-menu-orders' },
-          { name: 'Order History', path: '/admin/disposable-menu-orders' },
+          { name: 'Ready', path: '/admin/disposable-menu-orders' },
         ],
       }),
-      createItem('inventory-dashboard', 'Inventory', '/admin/inventory-dashboard', Package, {
-        submenu: [
-          { name: 'All Products', path: '/admin/inventory/products' },
-          { name: 'Low Stock', path: '/admin/stock-alerts' },
-          { name: 'Out of Stock', path: '/admin/stock-alerts' },
-          { name: 'Transfers', path: '/admin/inventory-transfers' },
-          { name: 'Receiving', path: '/admin/operations/receiving' },
-          { name: 'Batch Operations', path: '/admin/bulk-operations' },
-        ],
-      }),
-      createItem('delivery-management', 'Delivery & Fleet', '/admin/delivery-management', Truck, {
-        submenu: [
-          { name: 'Active Deliveries', path: '/admin/delivery-management' },
-          { name: 'Driver Management', path: '/admin/fleet-management' },
-          { name: 'Route Optimization', path: '/admin/route-optimizer' },
-          { name: 'Delivery Zones', path: '/admin/delivery-management' },
-          { name: 'Fleet Tracking', path: '/admin/fleet-management' },
-        ],
-      }),
-    ],
-  },
-  {
-    section: '🏷️ Catalog',
-    items: [
-      createItem('products', 'Products', '/admin/inventory/products', Box),
-      createItem('products', 'Categories', '/admin/catalog/categories', Tag),
-      createItem('sales-dashboard', 'Pricing & Deals', '/admin/sales-dashboard', DollarSign),
-      createItem('bulk-operations', 'Bulk Updates', '/admin/bulk-operations', FolderKanban),
-      createItem('generate-barcodes', 'Generate Barcodes', '/admin/generate-barcodes', Barcode),
+      createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
+      createItem('pos-system', 'Point of Sale', '/admin/pos-system', Store),
+      createItem('marketplace', 'Marketplace', '/admin/marketplace/listings', Globe),
+      createItem('sales-dashboard', 'Deals & Pricing', '/admin/sales-dashboard', Tag),
     ],
   },
   {
     section: '👥 Customers',
     items: [
-      createItem('customer-crm', 'CRM Clients', '/admin/crm/clients', Users, { hot: true }),
-      createItem('customer-crm', 'CRM Pre-Orders', '/admin/crm/pre-orders', ShoppingCart),
-      createItem('customer-crm', 'CRM Invoices', '/admin/crm/invoices', FileText),
-      createItem('customer-crm', 'Portal Invites', '/admin/crm/invites', Mail),
-      createItem('customer-crm', 'CRM Settings', '/admin/crm/settings', Settings),
-      createItem('customers', 'Customer List', '/admin/big-plug-clients', Users),
-      createItem('disposable-menus', 'Disposable Menus', '/admin/disposable-menus', Lock, { hot: true }),
-      createItem('customer-insights', 'Customer Insights', '/admin/customer-insights', TrendingUp),
-      createItem('customers', 'Credit Management', '/admin/big-plug-clients', CreditCard),
-      createItem('fronted-inventory', 'Fronted Inventory', '/admin/fronted-inventory', AlertCircle),
+      createItem('customer-crm', 'CRM', '/admin/crm/clients', Users, { hot: true }),
+      createItem('customer-crm', 'Invoices', '/admin/crm/invoices', FileText),
+      createItem('customer-insights', 'Insights', '/admin/customer-insights', TrendingUp),
+      createItem('marketing-automation', 'Marketing', '/admin/marketing-automation', Mail),
+      createItem('loyalty-program', 'Loyalty', '/admin/loyalty-program', Star),
     ],
   },
   {
-    section: '📍 Locations',
+    section: '⚙️ Operations',
     items: [
-      createItem('locations', 'Warehouses', '/admin/locations/warehouses', Warehouse),
-      createItem('location-analytics', 'Location Analytics', '/admin/location-analytics', MapPin),
-      createItem('inventory-dashboard', 'Inventory by Location', '/admin/inventory-dashboard', Package),
+      createItem('inventory-dashboard', 'Inventory', '/admin/inventory-dashboard', Warehouse, {
+        submenu: [
+          { name: 'Stock Levels', path: '/admin/inventory-dashboard' },
+          { name: 'Transfers', path: '/admin/inventory-transfers' },
+          { name: 'Receiving', path: '/admin/operations/receiving' },
+          { name: 'Alerts', path: '/admin/stock-alerts' },
+        ],
+      }),
+      createItem('delivery-management', 'Delivery', '/admin/delivery-management', Truck),
+      createItem('team-members', 'Team', '/admin/staff-management', Users),
+      createItem('locations', 'Locations', '/admin/locations', Building),
+      createItem('quality-control', 'Quality Control', '/admin/quality-control', Shield),
     ],
   },
   {
-    section: '💰 Finance',
+    section: '📊 Analytics & Finance',
     items: [
-      createItem('revenue-reports', 'Revenue Dashboard', '/admin/revenue-reports', TrendingUp),
-      createItem('invoice-management', 'Payments & Invoices', '/admin/financial-center', FileText),
-      createItem('revenue-reports', 'Expenses', '/admin/revenue-reports', Receipt),
-      createItem('commission-tracking', 'Commission Tracking', '/admin/commission-tracking', DollarSign),
-      createItem('pos-system', 'POS Sessions', '/admin/pos-system', CreditCard),
-      createItem('pos-analytics', 'Z-Reports', '/admin/pos-analytics', FileText),
+      createItem('analytics', 'Analytics', '/admin/analytics/comprehensive', BarChart3),
+      createItem('revenue-reports', 'Revenue', '/admin/revenue-reports', DollarSign),
+      createItem('invoice-management', 'Financial Center', '/admin/financial-center', Briefcase),
+      createItem('reports', 'Reports', '/admin/reports', FileSpreadsheet),
     ],
   },
   {
-    section: '📈 Analytics',
-    items: [
-      createItem('analytics', 'Business Intelligence', '/admin/analytics/comprehensive', BarChart3),
-      createItem('sales-dashboard', 'Sales Analytics', '/admin/sales-dashboard', TrendingUp),
-      createItem('menu-analytics', 'Menu Performance', '/admin/menu-analytics', PieChart),
-      createItem('delivery-analytics', 'Delivery Analytics', '/admin/delivery-analytics', Truck),
-      createItem('advanced-reporting', 'Custom Reports', '/admin/advanced-reporting', FileSpreadsheet),
-    ],
-  },
-  {
-    section: '👤 Team & Security',
-    items: [
-      createItem('team-members', 'Staff Management', '/admin/staff-management', Users),
-      createItem('role-management', 'Roles & Permissions', '/admin/role-management', Shield),
-      createItem('activity-logs', 'Activity Logs', '/admin/activity-logs', ScrollText),
-      createItem('audit-trail', 'Audit Trail', '/admin/audit-trail', Lock),
-    ],
-  },
-  {
-    section: '🌐 Marketplace',
-    items: [
-      createItem('marketplace', 'My Listings', '/admin/marketplace/listings', Store),
-      createItem('marketplace', 'Create Listing', '/admin/marketplace/listings/new', Store),
-      createItem('marketplace', 'Wholesale Orders', '/admin/marketplace/orders', ShoppingCart),
-      createItem('marketplace', 'Messages', '/admin/marketplace/messages', MessageSquare, { hot: true }),
-      createItem('marketplace', 'Seller Profile', '/admin/marketplace/profile', User),
-    ],
-  },
-  {
-    section: '⚙️ Admin',
+    section: '🔧 Settings',
     collapsed: true,
     items: [
-      createItem('billing', 'Billing & Plans', '/admin/billing', DollarSign),
+      createItem('settings', 'General', '/admin/settings', Settings),
+      createItem('billing', 'Billing', '/admin/billing', CreditCard),
       createItem('custom-integrations', 'Integrations', '/admin/custom-integrations', Zap),
-      createItem('generate-barcodes', 'Printing & Labels', '/admin/generate-barcodes', Barcode),
-      createItem('settings', 'Settings', '/admin/settings', Settings),
+      createItem('help', 'Support', '/admin/help', HelpCircle),
     ],
   },
 ];
@@ -342,64 +282,74 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
 /**
  * ENTERPRISE SIDEBAR (120+ items)
  * For large-scale operations, multiple departments
+ * CONSOLIDATED STRUCTURE
  */
 export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
-    section: '🎯 Mission Control',
+    section: '🚀 Mission Control',
     pinned: true,
     defaultExpanded: true,
     items: [
       createItem('dashboard', 'Executive Dashboard', '/admin/dashboard', LayoutDashboard),
       createItem('realtime-dashboard', 'Real-Time Monitor', '/admin/realtime-dashboard', Activity),
+      createItem('live-map', 'Global Map', '/admin/live-map', Globe),
       createItem('notifications', 'Alert Center', '/admin/notifications', Bell),
     ],
   },
-  // Include all Medium Business items
-  ...MEDIUM_BUSINESS_SIDEBAR.slice(1),
   {
-    section: '🤖 Automation',
+    section: '🛍️ Catalog & Sales',
+    defaultExpanded: true,
     items: [
-      createItem('automation', 'Workflow Automation', '/admin/workflow-automation', Zap),
-      createItem('automation', 'Auto-Reordering', '/admin/workflow-automation', Zap),
-      createItem('predictive-analytics', 'Smart Pricing', '/admin/predictive-analytics', Brain),
-      createItem('route-optimization', 'Route Optimization', '/admin/route-optimizer', MapPinned),
+      createItem('products', 'Product Catalog', '/admin/inventory/products', Box),
+      createItem('basic-orders', 'Order Management', '/admin/disposable-menu-orders', ShoppingCart),
+      createItem('disposable-menus', 'Menu Management', '/admin/disposable-menus', Menu),
+      createItem('pos-system', 'POS System', '/admin/pos-system', Store),
+      createItem('marketplace', 'Marketplace', '/admin/marketplace/listings', Store),
+      createItem('sales-dashboard', 'Pricing Strategy', '/admin/sales-dashboard', DollarSign),
+      createItem('bulk-operations', 'Bulk Operations', '/admin/bulk-operations', FolderKanban),
     ],
   },
   {
-    section: '🔐 Compliance & Security',
+    section: '👥 Customer Experience',
     items: [
-      createItem('compliance', 'Compliance Dashboard', '/admin/compliance', Shield),
-      createItem('compliance-vault', 'Data Encryption', '/admin/compliance-vault', Lock),
-      createItem('audit-trail', 'Audit Trail', '/admin/audit-trail', ScrollText),
-      createItem('batch-recall', 'Chain of Custody', '/admin/batch-recall', FileText),
-      createItem('activity-logs', 'Access Logs', '/admin/activity-logs', ScrollText),
+      createItem('customer-crm', 'Advanced CRM', '/admin/crm/clients', Users),
+      createItem('customer-insights', 'Customer 360', '/admin/customer-insights', Brain),
+      createItem('marketing-automation', 'Marketing Automation', '/admin/marketing-automation', Mail),
+      createItem('loyalty-program', 'Loyalty & Rewards', '/admin/loyalty-program', Star),
+      createItem('support-tickets', 'Support Desk', '/admin/support-tickets', Headphones),
     ],
   },
   {
-    section: '🔌 Integrations',
+    section: '⚙️ Global Operations',
     items: [
-      createItem('api-access', 'API Dashboard', '/admin/api-access', Zap),
-      createItem('webhooks', 'Webhooks', '/admin/webhooks', Activity),
-      createItem('custom-integrations', 'Connected Apps', '/admin/custom-integrations', Zap),
-      createItem('ai', 'Custom Scripts', '/admin/local-ai', Brain),
+      createItem('inventory-dashboard', 'Inventory Control', '/admin/inventory-dashboard', Warehouse),
+      createItem('delivery-management', 'Fleet Logistics', '/admin/delivery-management', Truck),
+      createItem('locations', 'Location Management', '/admin/locations', Building2),
+      createItem('team-members', 'Workforce', '/admin/staff-management', Users),
+      createItem('automation', 'Workflows', '/admin/workflow-automation', Zap),
+      createItem('compliance', 'Compliance & Safety', '/admin/compliance', Shield),
     ],
   },
   {
-    section: '🧠 Advanced Analytics',
+    section: '📊 Intelligence',
     items: [
-      createItem('advanced-analytics', 'AI Insights', '/admin/advanced-analytics', Brain),
-      createItem('predictive-analytics', 'Predictive Analytics', '/admin/predictive-analytics', TrendingUp),
-      createItem('custom-reports', 'Custom Dashboards', '/admin/custom-reports', LayoutDashboard),
-      createItem('data-export', 'Data Export', '/admin/data-export', Download),
+      createItem('analytics', 'BI Dashboard', '/admin/analytics/comprehensive', BarChart3),
+      createItem('predictive-analytics', 'Predictive AI', '/admin/predictive-analytics', Brain),
+      createItem('advanced-reporting', 'Custom Reports', '/admin/advanced-reporting', FileSpreadsheet),
+      createItem('revenue-reports', 'Financial Performance', '/admin/revenue-reports', TrendingUp),
+      createItem('data-export', 'Data Warehouse', '/admin/data-export', Download),
     ],
   },
   {
-    section: '🏢 Enterprise',
+    section: '🔧 System & Admin',
+    collapsed: true,
     items: [
-      createItem('white-label', 'White Label', '/admin/white-label', Globe),
-      createItem('custom-domain', 'Custom Domain', '/admin/custom-domain', Globe),
-      createItem('priority-support', 'Priority Support', '/admin/priority-support', Headphones),
-      createItem('api-access', 'Developer Portal', '/admin/api-access', Zap),
+      createItem('settings', 'Global Settings', '/admin/settings', Settings),
+      createItem('billing', 'Billing & Contracts', '/admin/billing', CreditCard),
+      createItem('api-access', 'API & Webhooks', '/admin/api-access', Zap),
+      createItem('white-label', 'White Label', '/admin/white-label', Layers),
+      createItem('audit-trail', 'Audit Logs', '/admin/audit-trail', ScrollText),
+      createItem('priority-support', 'Enterprise Support', '/admin/priority-support', Headphones),
     ],
   },
 ];
@@ -499,4 +449,3 @@ export function getSidebarConfig(size: 'street' | 'small' | 'medium' | 'enterpri
       return MEDIUM_BUSINESS_SIDEBAR;
   }
 }
-

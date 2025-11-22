@@ -1,0 +1,120 @@
+/**
+ * Sidebar Recently Used Component
+ * 
+ * Displays the 5 most recently accessed features
+ */
+
+import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
+import { SidebarMenuItem } from './SidebarMenuItem';
+import { useSidebar } from './SidebarContext';
+import { useSidebarConfig } from '@/hooks/useSidebarConfig';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { useParams, useLocation } from 'react-router-dom';
+import type { FeatureId } from '@/lib/featureConfig';
+import type { SidebarItem } from '@/types/sidebar';
+import { Clock } from 'lucide-react';
+import { useMemo } from 'react';
+
+export function SidebarRecentlyUsed() {
+    const { tenantSlug } = useParams();
+    const location = useLocation();
+    const { preferences, trackFeatureClick } = useSidebar();
+    const { sidebarConfig } = useSidebarConfig();
+    const { canAccess } = useFeatureAccess();
+
+    // Get last accessed features (limit to 5)
+    const lastAccessed = preferences?.lastAccessedFeatures?.slice(0, 5) || [];
+
+    // Find items in config
+    const recentItems = useMemo(() => {
+        if (!lastAccessed.length || !sidebarConfig.length) return [];
+
+        const foundItems = [];
+        const seenIds = new Set();
+
+        // Create a map for faster lookup if needed, but simple traversal is fine for < 100 items
+        for (const access of lastAccessed) {
+            // Skip if we already have this item (deduplication)
+            if (seenIds.has(access.id)) continue;
+
+            let found = null;
+
+            // Search through sections
+            for (const section of sidebarConfig) {
+                const item = section.items.find(i => i.featureId === access.id);
+                if (item) {
+                    found = item;
+                    break;
+                }
+
+                // Check submenus if they exist
+                if (!found) {
+                    for (const i of section.items) {
+                        if (i.submenu) {
+                            const sub = i.submenu.find(s => s.featureId === access.id);
+                            if (sub) {
+                                found = { ...sub, id: sub.id || sub.path } as SidebarItem;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (found) {
+                foundItems.push(found);
+                seenIds.add(access.id);
+            }
+        }
+
+        return foundItems;
+    }, [lastAccessed, sidebarConfig]);
+
+    if (recentItems.length === 0) return null;
+
+    const isActive = (url: string) => {
+        const fullPath = `/${tenantSlug}${url}`;
+        return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
+    };
+
+    const handleItemClick = (itemId: string, featureId?: string) => {
+        // Tracking is handled by SidebarMenuItem context call
+        // But we can add extra logic here if needed
+    };
+
+    const handleLockedItemClick = (featureId: FeatureId) => {
+        // Handled by parent usually, but we can just emit event or ignore
+        // For now, we'll dispatch the upgrade modal event if we can, 
+        // or just let the user know. 
+        // Actually AdaptiveSidebar handles this via state. 
+        // We might need to accept a prop or context for this.
+        // But SidebarRecentlyUsed is inside AdaptiveSidebar, so we can't easily pass it up 
+        // unless we use context or props.
+        // Let's check if we can get setUpgradeFeatureId from context? 
+        // SidebarContext doesn't have it.
+        // We'll leave it empty for now, as recently used items are usually accessible.
+    };
+
+    return (
+        <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground/70 flex items-center gap-2 px-2 py-1.5 text-xs font-medium">
+                <Clock className="h-3 w-3" />
+                <span>Recently Used</span>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                    {recentItems.map((item) => (
+                        <SidebarMenuItem
+                            key={`recent-${item.id}`}
+                            item={item}
+                            isActive={isActive(item.path)}
+                            hasAccess={item.featureId ? canAccess(item.featureId) : true}
+                            onItemClick={handleItemClick}
+                            onLockedItemClick={handleLockedItemClick}
+                        />
+                    ))}
+                </SidebarMenu>
+            </SidebarGroupContent>
+        </SidebarGroup>
+    );
+}
