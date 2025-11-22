@@ -327,7 +327,7 @@ export default function CustomerDetails() {
               )}
               {tenantId && customer && (
                 <div className="lg:col-span-2">
-                  <ActivityTimeline customerId={customer.id} tenantId={tenantId} />
+                  <ActivityTimeline clientId={customer.id} />
                 </div>
               )}
             </div>

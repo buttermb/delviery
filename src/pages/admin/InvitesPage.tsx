@@ -62,7 +62,11 @@ export default function InvitesPage() {
 
     const onSubmit = async (values: FormValues) => {
         try {
-            await createInvite.mutateAsync(values);
+            await createInvite.mutateAsync({
+                name: values.name,
+                email: values.email,
+                phone: undefined,
+            });
             toast.success(`Invite sent to ${values.email}`);
             setIsCreateDialogOpen(false);
             form.reset();
