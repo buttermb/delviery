@@ -48,7 +48,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   };
 
   const copyUrl = () => {
-    const url = `${window.location.origin}/m/${menu.encrypted_url_token}`;
+    const url = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`;
     navigator.clipboard.writeText(url);
     showSuccessToast('URL Copied', 'Menu URL copied to clipboard');
   };
@@ -290,7 +290,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         open={qrCodeOpen}
         onClose={() => setQrCodeOpen(false)}
         menuTitle={menu.name}
-        accessUrl={`${window.location.origin}/m/${menu.encrypted_url_token}`}
+        accessUrl={`${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`}
         menuId={menu.id}
       />
 
@@ -305,7 +305,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         open={accessDetailsOpen}
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
-        shareableUrl={`${window.location.origin}/m/${menu.encrypted_url_token}`}
+        shareableUrl={`${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`}
         menuName={menu.name}
       />
     </>

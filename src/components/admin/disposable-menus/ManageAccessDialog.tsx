@@ -83,7 +83,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   };
 
   const copyAccessUrl = (token: string) => {
-    const url = `${window.location.origin}/m/${menu.encrypted_url_token}?u=${token}`;
+    const url = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}?u=${token}`;
     navigator.clipboard.writeText(url);
     showSuccessToast('URL Copied', 'Access URL copied to clipboard');
   };

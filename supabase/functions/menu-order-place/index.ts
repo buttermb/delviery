@@ -96,6 +96,7 @@ serve(async (req) => {
       .from('menu_orders')
       .insert({
         menu_id,
+        tenant_id: menu.tenant_id,
         access_whitelist_id: whitelistEntry?.id || null,
         order_data: { items: order_items },
         total_amount,

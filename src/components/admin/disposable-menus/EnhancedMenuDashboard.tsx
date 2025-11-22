@@ -123,7 +123,6 @@ export function EnhancedMenuDashboard() {
 
   // @ts-expect-error - Menu type mismatch with Supabase generated types
   const activeMenus = menus?.filter((m: Menu) => m.status === 'active') || [];
-  const siteUrl = window.location.origin;
 
   return (
     <div className="space-y-6">
@@ -212,7 +211,8 @@ export function EnhancedMenuDashboard() {
               const viewCount = menu.menu_access_logs?.length || 0;
               const orderCount = menu.menu_orders?.length || 0;
               const customerCount = menu.menu_access_whitelist?.length || 0;
-              const menuUrl = `${siteUrl}/menu/${menu.encrypted_url_token}`;
+              const menuUrl = `/m/${menu.encrypted_url_token}`;
+              const fullMenuUrl = `${window.location.protocol}//${window.location.host}${menuUrl}`;
 
               return (
                 <Card key={menu.id} className="p-6">
@@ -243,13 +243,13 @@ export function EnhancedMenuDashboard() {
                         <div>
                           <span className="font-medium">URL:</span>{' '}
                           <code className="text-xs bg-muted px-2 py-1 rounded">
-                            {siteUrl}/menu/{menu.encrypted_url_token}
+                            {menuUrl}
                           </code>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="ml-2 h-auto p-1"
-                            onClick={() => navigator.clipboard.writeText(menuUrl)}
+                            onClick={() => navigator.clipboard.writeText(fullMenuUrl)}
                           >
                             <ExternalLink className="h-3 w-3" />
                           </Button>
