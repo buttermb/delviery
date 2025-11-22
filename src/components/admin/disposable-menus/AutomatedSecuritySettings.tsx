@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Shield, 
   Ban, 
@@ -244,38 +245,46 @@ export const AutomatedSecuritySettings = () => {
             <div className="ml-6 space-y-4">
               <div className="space-y-2">
                 <Label>Geofence Violation</Label>
-                <select
+                <Select
                   value={settings.geofence_violation_action}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setSettings({
                       ...settings,
-                      geofence_violation_action: e.target.value as 'log' | 'block' | 'burn'
+                      geofence_violation_action: value as 'log' | 'block' | 'burn'
                     })
                   }
-                  className="w-full p-2 border rounded-md bg-background"
                 >
-                  <option value="log">Log Only</option>
-                  <option value="block">Block Access</option>
-                  <option value="burn">Burn Menu</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100]">
+                    <SelectItem value="log">Log Only</SelectItem>
+                    <SelectItem value="block">Block Access</SelectItem>
+                    <SelectItem value="burn">Burn Menu</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Screenshot Attempt</Label>
-                <select
+                <Select
                   value={settings.screenshot_attempt_action}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setSettings({
                       ...settings,
-                      screenshot_attempt_action: e.target.value as 'log' | 'block' | 'burn'
+                      screenshot_attempt_action: value as 'log' | 'block' | 'burn'
                     })
                   }
-                  className="w-full p-2 border rounded-md bg-background"
                 >
-                  <option value="log">Log Only</option>
-                  <option value="block">Block Access</option>
-                  <option value="burn">Burn Menu</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100]">
+                    <SelectItem value="log">Log Only</SelectItem>
+                    <SelectItem value="block">Block Access</SelectItem>
+                    <SelectItem value="burn">Burn Menu</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
