@@ -1,9 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * SAAS Sign Up Page - Simplified 1-Step Form
  * Registration for new tenants with responsive layout and enhanced UX
  */
 
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -35,7 +35,6 @@ import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthInd
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
 import { TurnstileWrapper } from '@/components/signup/TurnstileWrapper';
 import { cn } from '@/lib/utils';
-import { logger } from '@/utils/logger';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';

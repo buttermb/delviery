@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { Users, TrendingUp, DollarSign, Star, Search, Eye } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { CourierLoginInfo } from '@/components/admin/CourierLoginInfo';
-import { logger } from '@/utils/logger';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 
 interface Courier {

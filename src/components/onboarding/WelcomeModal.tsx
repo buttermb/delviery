@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, Sparkles, ArrowRight, X, PlayCircle } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTutorialContext } from '@/components/tutorial/TutorialProvider';
-import { logger } from '@/utils/logger';
 
 interface WelcomeModalProps {
   open: boolean;

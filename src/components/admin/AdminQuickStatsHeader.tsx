@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { logger } from '@/utils/logger';
 
 interface QuickStats {
   activeOrders: number;

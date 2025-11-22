@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/select';
 import { Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/utils/logger';
 
 interface Account {
   id: string;

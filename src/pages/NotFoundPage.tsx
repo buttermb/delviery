@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Home, ArrowLeft, Search, HelpCircle } from 'lucide-react';
 import bugFinder from '@/utils/bugFinder';
 import { useEffect } from 'react';
-import { logger } from '@/utils/logger';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();

@@ -1,7 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 /**
  * Hook to prefetch dashboard data for faster navigation

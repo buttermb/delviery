@@ -1,12 +1,11 @@
-import { logger } from '@/lib/logger';
 /**
  * Activity Logger Utility
  * Centralized activity logging for user actions
  * Phase 4: Create Missing Tables & Logging
  */
 
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 export interface ActivityLogParams {
   userId: string;

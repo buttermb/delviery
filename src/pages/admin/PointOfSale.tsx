@@ -11,7 +11,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Search, ShoppingCart, Trash2, Plus, Minus, DollarSign, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { logger } from '@/utils/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';

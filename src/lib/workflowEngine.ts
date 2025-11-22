@@ -1,12 +1,11 @@
-import { logger } from '@/lib/logger';
 /**
  * Workflow Engine Helper
  * Execute workflows and manage workflow state
  */
 
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { auditActions } from './auditLog';
-import { logger } from '@/utils/logger';
 import { safeFetch } from '@/utils/safeFetch';
 
 export interface WorkflowAction {

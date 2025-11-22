@@ -1,11 +1,10 @@
-import { logger } from '@/lib/logger';
 /**
  * Rate Limiter Helper
  * Check and enforce rate limits for API requests
  */
 
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 export interface RateLimitCheck {
   allowed: boolean;

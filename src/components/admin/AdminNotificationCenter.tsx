@@ -11,7 +11,6 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { logger } from '@/utils/logger';
 
 interface Notification {
   id: string;

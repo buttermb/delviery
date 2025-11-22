@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 // @ts-nocheck
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useGeofencing } from '@/hooks/useGeofencing';
@@ -17,7 +17,6 @@ import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { MenuCartProvider } from '@/contexts/MenuCartContext';
 import { toast } from '@/hooks/use-toast';
 import type { GeofenceRule } from '@/utils/geofencing';
-import { logger } from '@/utils/logger';
 
 interface MenuData {
   id: string;

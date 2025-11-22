@@ -1,9 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * User Activity Feed
  * Shows recent activity across the app
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

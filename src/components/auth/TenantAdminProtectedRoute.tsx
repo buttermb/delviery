@@ -7,7 +7,6 @@ import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
-import { logger } from '@/utils/logger';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;

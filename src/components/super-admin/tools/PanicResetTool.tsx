@@ -1,9 +1,9 @@
-import { logger } from '@/lib/logger';
 /**
  * Panic Reset Tool Component
  * Allows super admins to reset tenant data with confirmation
  */
 
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,6 @@ import { AlertTriangle, RefreshCw, Eye, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 export function PanicResetTool() {
   const { toast } = useToast();

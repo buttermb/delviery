@@ -1,14 +1,13 @@
-import { logger } from '@/lib/logger';
 /**
  * Add Runner Dialog
  * Dialog for adding a new delivery runner
  */
 
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { logger } from '@/utils/logger';
 import {
   Dialog,
   DialogContent,

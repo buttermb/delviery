@@ -1,11 +1,10 @@
-import { logger } from '@/lib/logger';
 /**
  * Audit Log Helper
  * Centralized audit logging system for super admin actions
  */
 
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
 
 export interface AuditLogEvent {
   action: string;
