@@ -84,7 +84,7 @@ export default function PreOrderDetailPage() {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-bold tracking-tight">
-                                Pre-Order #{preOrder.po_number}
+                                Pre-Order #{preOrder.pre_order_number}
                             </h1>
                             {getStatusBadge(preOrder.status)}
                         </div>
@@ -153,12 +153,8 @@ export default function PreOrderDetailPage() {
                                     <h2 className="text-lg font-semibold">Details:</h2>
                                     <div className="mt-2 text-sm space-y-1">
                                         <div className="flex justify-end gap-4">
-                                            <span className="text-muted-foreground">Expected Date:</span>
-                                            <span>
-                                                {preOrder.expected_date
-                                                    ? format(new Date(preOrder.expected_date), "MMM d, yyyy")
-                                                    : "Not specified"}
-                                            </span>
+                                            <span className="text-muted-foreground">Created:</span>
+                                            <span>{format(new Date(preOrder.created_at), "MMM d, yyyy")}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -194,15 +190,6 @@ export default function PreOrderDetailPage() {
                                     <span>{formatCurrency(preOrder.total)}</span>
                                 </div>
                             </div>
-
-                            {preOrder.notes && (
-                                <div className="p-6 bg-muted/10 border-t">
-                                    <h3 className="font-semibold text-sm mb-2">Notes:</h3>
-                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                        {preOrder.notes}
-                                    </p>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 </div>

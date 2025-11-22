@@ -34,8 +34,7 @@ interface LineItemsEditorProps {
 }
 
 export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
-    const { useProductsQuery } = useProducts();
-    const { data: products, isLoading } = useProductsQuery();
+    const { data: products = [], isLoading } = useProducts();
 
     const handleAddItem = () => {
         const newItem: LineItem = {

@@ -35,7 +35,6 @@ import {
   PieChart,
   Activity,
   Calendar,
-  Mail,
   Star,
   Tag,
   Shield,

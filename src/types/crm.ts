@@ -71,6 +71,10 @@ export interface CRMPreOrder {
     converted_to_invoice_id: string | null;
     converted_at: string | null;
 
+    // Additional fields
+    expected_date?: string | null;
+    notes?: string | null;
+
     created_at: string;
     updated_at: string;
 
@@ -92,6 +96,7 @@ export interface CRMInvoice {
     // Dates
     invoice_date: string;
     due_date: string;
+    issue_date?: string; // Alias for invoice_date for compatibility
 
     // Line Items
     line_items: LineItem[];
@@ -100,10 +105,11 @@ export interface CRMInvoice {
     subtotal: number;
     tax_rate: number;
     tax_amount: number;
+    tax: number; // Alias for tax_amount for compatibility
     total: number;
 
     // Status
-    status: 'draft' | 'sent' | 'paid' | 'overdue';
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
     paid_at: string | null;
 
     // Sharing
@@ -111,6 +117,9 @@ export interface CRMInvoice {
 
     // Source
     created_from_pre_order_id: string | null;
+
+    // Additional fields
+    notes?: string | null;
 
     created_at: string;
     updated_at: string;
@@ -233,6 +242,18 @@ export interface CRMSettings {
     id: string;
     account_id: string;
 
+    // Invoice Settings
+    invoice_prefix?: string | null;
+    default_payment_terms?: number | null;
+    default_tax_rate?: number | null;
+
+    // Company Information
+    company_name?: string | null;
+    company_address?: string | null;
+    company_email?: string | null;
+    company_phone?: string | null;
+    logo_url?: string | null;
+
     // Settings
     telegram_video_link: string | null;
     menu_last_updated_at: string | null;
@@ -280,6 +301,7 @@ export interface InvoiceFormValues {
     line_items: LineItem[];
     tax_rate?: number;
     status?: 'draft' | 'sent' | 'paid' | 'overdue';
+    notes?: string;
 }
 
 /**

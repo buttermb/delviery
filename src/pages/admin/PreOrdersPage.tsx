@@ -46,7 +46,7 @@ export default function PreOrdersPage() {
 
     const filteredPreOrders = preOrders?.filter((order) => {
         const matchesSearch =
-            order.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.pre_order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (order.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesStatus = statusFilter ? order.status === statusFilter : true;
@@ -211,7 +211,7 @@ export default function PreOrdersPage() {
                                         onClick={() => navigate(`/admin/crm/pre-orders/${order.id}`)}
                                     >
                                         <TableCell className="font-medium">
-                                            {order.po_number}
+                                            {order.pre_order_number}
                                         </TableCell>
                                         <TableCell>
                                             {order.client?.name || "Unknown Client"}
@@ -220,7 +220,7 @@ export default function PreOrdersPage() {
                                             {format(new Date(order.created_at), "MMM d, yyyy")}
                                         </TableCell>
                                         <TableCell>
-                                            {order.expected_date ? format(new Date(order.expected_date), "MMM d, yyyy") : "-"}
+                                            -
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(order.total)}

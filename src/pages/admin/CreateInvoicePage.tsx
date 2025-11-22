@@ -34,6 +34,7 @@ import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
+import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
 import { logger } from '@/lib/logger';
 import { ClientSelector } from "@/components/crm/ClientSelector";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
@@ -54,7 +55,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateInvoicePage() {
     const navigate = useNavigate();
-    const { account } = useAccount();
+    const accountId = useAccountIdSafe();
     const createInvoice = useCreateInvoice();
     const logActivity = useLogActivity();
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -71,13 +72,13 @@ export default function CreateInvoicePage() {
     });
 
     // Calculate totals
-    const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
     const taxRate = form.watch("tax_rate");
     const taxAmount = subtotal * (taxRate / 100);
     const total = subtotal + taxAmount;
 
     const onSubmit = async (values: FormValues) => {
-        if (!account?.id) {
+        if (!accountId) {
             toast.error('Account information not available');
             return;
         }
@@ -89,14 +90,15 @@ export default function CreateInvoicePage() {
 
         try {
             const invoice = await createInvoice.mutateAsync({
-                account_id: account.id,
+                account_id: accountId,
                 client_id: values.client_id,
-                issue_date: values.issue_date.toISOString(),
-                due_date: values.due_date.toISOString(),
+                invoice_date: values.issue_date.toISOString().split('T')[0],
+                due_date: values.due_date.toISOString().split('T')[0],
                 status: values.status,
                 line_items: lineItems,
                 subtotal,
-                tax: taxAmount,
+                tax_rate: taxRate,
+                tax_amount: taxAmount,
                 total,
                 notes: values.notes,
             });

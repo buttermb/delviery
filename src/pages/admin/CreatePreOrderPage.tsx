@@ -54,7 +54,7 @@ export default function CreatePreOrderPage() {
     });
 
     // Calculate total
-    const total = lineItems.reduce((sum, item) => sum + item.total, 0);
+    const total = lineItems.reduce((sum, item) => sum + item.line_total, 0);
 
     const onSubmit = async (values: FormValues) => {
         if (lineItems.length === 0) {
@@ -65,18 +65,18 @@ export default function CreatePreOrderPage() {
         try {
             const preOrder = await createPreOrder.mutateAsync({
                 client_id: values.client_id,
-                expected_date: values.expected_date?.toISOString(),
                 status: "pending",
                 line_items: lineItems,
+                subtotal: total,
+                tax: 0,
                 total,
-                notes: values.notes,
             });
 
             // Log activity
             logActivity.mutate({
                 client_id: values.client_id,
                 activity_type: "pre_order_created",
-                description: `Pre-order #${preOrder.po_number} created`,
+                description: `Pre-order #${preOrder.pre_order_number} created`,
                 reference_id: preOrder.id,
                 reference_type: "crm_pre_orders",
             });
