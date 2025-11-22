@@ -83,7 +83,7 @@ export default function LiveOrders() {
         supabase
           .from('orders')
           .select('*')
-          .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
+          .in('status', ['pending', 'confirmed', 'rejected'])
           .order('created_at', { ascending: false }),
 
         supabase
@@ -96,7 +96,7 @@ export default function LiveOrders() {
             synced_order_id,
             disposable_menus (title)
           `)
-          .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
+          .in('status', ['pending', 'confirmed', 'rejected'])
           .order('created_at', { ascending: false })
       ]);
 
