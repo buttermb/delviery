@@ -2,7 +2,6 @@ import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 
 interface AuthContextType {
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Get initial session synchronously
     let mounted = true;
-    
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
         logger.debug('Initial session', { hasSession: !!session, component: 'AuthContext' });
@@ -36,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         logger.debug('Auth state change', { event, hasSession: !!session, component: 'AuthContext' });
-        
+
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
@@ -55,11 +54,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Destroy encryption session before signing out
       clientEncryption.destroy();
-      
+
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      
+
       // Clear user ID from storage
       sessionStorage.removeItem('floraiq_user_id');
       localStorage.removeItem('floraiq_user_id');

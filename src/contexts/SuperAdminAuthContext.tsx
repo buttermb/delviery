@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
-import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
@@ -60,19 +59,19 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
   // Wrap verifyToken in useCallback to prevent infinite loops
   const verifyToken = useCallback(async (tokenToVerify: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.VERIFY, {});
-    
+
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=verify`;
-      
+
       authFlowLogger.logFetchAttempt(flowId, url, 1);
       const fetchStartTime = performance.now();
-      
+
       // Detect mobile and use longer timeout
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const timeout = isMobile ? 15000 : 10000;
-      
+
       const { response, attempts, category } = await resilientFetch(url, {
         method: "GET",
         headers: {
@@ -101,7 +100,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       const data = await response.json();
       setSuperAdmin(data.superAdmin);
       safeStorage.setItem(SUPER_ADMIN_KEY, JSON.stringify(data.superAdmin));
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
       setLoading(false);
@@ -110,12 +109,12 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         ? ErrorCategory.NETWORK
         : ErrorCategory.AUTH;
       authFlowLogger.failFlow(flowId, error, category);
-      
+
       // User-friendly error messages
       const errorMessage = category === ErrorCategory.NETWORK
         ? 'Network connection lost. Check your internet and try again.'
         : 'Login session expired. Please log in again.';
-      
+
       logger.error(errorMessage, error);
       safeStorage.removeItem(TOKEN_KEY);
       safeStorage.removeItem(SUPER_ADMIN_KEY);
@@ -135,7 +134,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       setToken(storedToken);
       try {
         setSuperAdmin(JSON.parse(storedAdmin));
-        
+
         // Restore Supabase session if available
         if (storedSupabaseSession) {
           const session = JSON.parse(storedSupabaseSession);
@@ -144,7 +143,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
           supabase.auth.setSession({
             access_token: session.access_token,
             refresh_token: session.refresh_token || '',
-            }).then(({ data, error }) => {
+          }).then(({ data, error }) => {
             if (error) {
               logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
             } else {
@@ -152,7 +151,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
             }
           });
         }
-        
+
         // Verify token is still valid
         verifyToken(storedToken);
       } catch (e) {
@@ -169,16 +168,16 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
   const login = async (email: string, password: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email });
-    
+
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.VALIDATE_INPUT);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=login`;
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       authFlowLogger.logFetchAttempt(flowId, url, 1);
       const fetchStartTime = performance.now();
-      
+
       const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
@@ -210,7 +209,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE);
 
       const data = await response.json();
-      
+
       // Store custom JWT token
       setToken(data.token);
       setSuperAdmin(data.superAdmin);
@@ -241,7 +240,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         logger.info('Setting Supabase session for super admin RLS access', { component: 'SuperAdminAuth' });
         setSupabaseSession(data.supabaseSession);
         safeStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.supabaseSession));
-        
+
         // Set the session in Supabase client - this enables RLS access
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: data.supabaseSession.access_token,
@@ -254,7 +253,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
           logger.info('Super admin can now access tenant data via RLS', { component: 'SuperAdminAuth' });
         }
       }
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, { superAdminId: data.superAdmin?.id });
     } catch (error: unknown) {
@@ -274,7 +273,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
   const logout = async () => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGOUT, {});
-    
+
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
@@ -294,7 +293,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
       // Sign out from Supabase session as well
       await supabase.auth.signOut();
-      
+
       authFlowLogger.completeFlow(flowId, {});
     } catch (error) {
       const category = ErrorCategory.NETWORK;
@@ -303,14 +302,14 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     } finally {
       // Destroy encryption session before logout
       clientEncryption.destroy();
-      
+
       setToken(null);
       setSuperAdmin(null);
       setSupabaseSession(null);
       safeStorage.removeItem(TOKEN_KEY);
       safeStorage.removeItem(SUPER_ADMIN_KEY);
       safeStorage.removeItem(SUPABASE_SESSION_KEY);
-      
+
       // Clear user ID from storage
       safeStorage.removeItem('floraiq_user_id');
       safeStorage.removeItem('floraiq_user_id');
@@ -321,15 +320,15 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
     if (!token) return;
 
     const flowId = authFlowLogger.startFlow(AuthAction.REFRESH, {});
-    
+
     try {
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const url = `${supabaseUrl}/functions/v1/super-admin-auth?action=refresh`;
-      
+
       authFlowLogger.logFetchAttempt(flowId, url, 1);
       const fetchStartTime = performance.now();
-      
+
       const { response, attempts, category } = await resilientFetch(url, {
         method: "POST",
         headers: {
@@ -362,7 +361,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       const data = await response.json();
       setToken(data.token);
       safeStorage.setItem(TOKEN_KEY, data.token);
-      
+
       authFlowLogger.logStep(flowId, AuthFlowStep.COMPLETE);
       authFlowLogger.completeFlow(flowId, {});
     } catch (error) {
@@ -378,7 +377,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
 
   // Token expiration monitoring - refresh 5 minutes before expiry
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   useEffect(() => {
     if (!token) {
       if (refreshIntervalRef.current) {

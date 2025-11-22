@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
-import { logger } from "@/lib/logger";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
@@ -57,17 +56,17 @@ const TENANT_KEY = STORAGE_KEYS.CUSTOMER_TENANT_DATA;
 // Validate environment variables
 const validateEnvironment = (): { valid: boolean; error?: string } => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-  
+
   if (!supabaseUrl) {
     return { valid: false, error: 'Missing VITE_SUPABASE_URL environment variable' };
   }
-  
+
   try {
     new URL(supabaseUrl);
   } catch {
     return { valid: false, error: 'Invalid VITE_SUPABASE_URL format' };
   }
-  
+
   return { valid: true };
 };
 
@@ -78,7 +77,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(300);
-  
+
   // Validate environment on mount
   useEffect(() => {
     const envCheck = validateEnvironment();
@@ -120,7 +119,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       if (!envCheck.valid) {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
-      
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
         method: "GET",
@@ -164,7 +163,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       if (!envCheck.valid) {
         throw new Error(envCheck.error || 'Environment configuration error');
       }
-      
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
         method: "POST",
@@ -220,7 +219,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // For now, manual filtering provides security without requiring Supabase auth
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      
+
       // Enhanced error logging with context
       logger.error("Customer login error", errorObj, {
         component: 'CustomerAuthContext',
@@ -228,14 +227,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         tenantSlug: tenantSlug,
         hasResponse: errorObj instanceof Error && 'response' in errorObj,
       });
-      
+
       // Re-throw with user-friendly message if needed
       if (errorObj.message?.includes('Network') || errorObj.message?.includes('network')) {
         throw new Error('Network error. Please check your internet connection and try again.');
       } else if (errorObj.message?.includes('timeout') || errorObj.message?.includes('timed out')) {
         throw new Error('Request timed out. Please try again.');
       }
-      
+
       throw errorObj;
     }
   };
@@ -261,14 +260,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       // Destroy encryption session before logout
       clientEncryption.destroy();
-      
+
       setToken(null);
       setCustomer(null);
       setTenant(null);
       safeStorage.removeItem(TOKEN_KEY);
       safeStorage.removeItem(CUSTOMER_KEY);
       safeStorage.removeItem(TENANT_KEY);
-      
+
       // Clear user ID from storage
       safeStorage.removeItem('floraiq_user_id');
       safeStorage.removeItem('floraiq_user_id');
@@ -284,7 +283,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Token expiration monitoring - check and verify token before expiry
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   useEffect(() => {
     if (!token) {
       if (refreshIntervalRef.current) {
