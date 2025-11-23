@@ -204,12 +204,19 @@ export default function TenantAdminBillingPage() {
   const confirmPlanChange = async () => {
     if (!selectedPlan || !subscriptionPlans) return;
     
-    // Find the plan ID from the subscription plans
-    const targetPlan = subscriptionPlans.find(p => p.name === selectedPlan);
+    // Find the plan ID from the subscription plans - match by name (case-insensitive)
+    const targetPlan = subscriptionPlans.find(p => 
+      p.name.toLowerCase() === selectedPlan.toLowerCase()
+    );
+    
     if (!targetPlan) {
+      console.error('Plan not found:', { 
+        selectedPlan, 
+        availablePlans: subscriptionPlans.map(p => ({ id: p.id, name: p.name }))
+      });
       toast({
         title: 'Error',
-        description: 'Selected plan not found',
+        description: `Selected plan "${selectedPlan}" not found. Available plans: ${subscriptionPlans.map(p => p.name).join(', ')}`,
         variant: 'destructive',
       });
       return;
