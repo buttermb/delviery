@@ -1,5 +1,17 @@
 project_id = "aejugtmhwwknrowfyzie"
 
+[functions.start-trial]
+verify_jwt = true
+
+[functions.send-trial-reminder]
+verify_jwt = false
+
+[functions.check-trial-reminders]
+verify_jwt = false
+
+[functions.cancel-trial]
+verify_jwt = true
+
 [functions.track-access]
 verify_jwt = false
 
