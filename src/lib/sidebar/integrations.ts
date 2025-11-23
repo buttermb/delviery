@@ -29,10 +29,20 @@ export async function checkIntegrationConnection(integrationId: string): Promise
         
         if (!tenantUser) return false;
         
+        // Get account.id from accounts table first
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('id')
+          .eq('tenant_id', tenantUser.tenant_id)
+          .single();
+        
+        if (!account) return false;
+        
+        // Now query account_settings using the correct account.id
         const { data: settings } = await supabase
           .from('account_settings')
           .select('integration_settings')
-          .eq('account_id', tenantUser.tenant_id)
+          .eq('account_id', account.id)
           .single();
         
         const integrationSettings = settings?.integration_settings as Record<string, any> | null;
