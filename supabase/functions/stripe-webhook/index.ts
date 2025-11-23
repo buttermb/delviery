@@ -44,14 +44,40 @@ serve(async (req) => {
           return new Response('Missing tenant_id or plan_id', { status: 400 });
         }
 
+        // Check if this is a trial subscription
+        const subscriptionId = object.subscription as string;
+        let subscriptionStatus = 'active';
+        let trialEndsAt = null;
+        let paymentMethodAdded = false;
+
+        if (subscriptionId) {
+          // Fetch subscription details from Stripe to check trial
+          const Stripe = (await import('https://esm.sh/stripe@14.21.0')).default;
+          const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+            apiVersion: '2023-10-16',
+          });
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          
+          if (subscription.status === 'trialing' && subscription.trial_end) {
+            subscriptionStatus = 'trial';
+            trialEndsAt = new Date(subscription.trial_end * 1000).toISOString();
+          }
+          
+          // Check if payment method was added
+          paymentMethodAdded = !!subscription.default_payment_method;
+        }
+
         // Update tenant subscription
         await supabase
           .from('tenants')
           .update({
             subscription_plan: planId,
-            subscription_status: 'active',
+            subscription_status: subscriptionStatus,
             subscription_starts_at: new Date().toISOString(),
-            stripe_subscription_id: object.subscription,
+            stripe_subscription_id: subscriptionId,
+            trial_ends_at: trialEndsAt,
+            trial_started_at: trialEndsAt ? new Date().toISOString() : null,
+            payment_method_added: paymentMethodAdded,
             updated_at: new Date().toISOString(),
           })
           .eq('id', tenantId);
@@ -59,13 +85,45 @@ serve(async (req) => {
         // Log subscription event
         await supabase.from('subscription_events').insert({
           tenant_id: tenantId,
-          event_type: 'subscription_created',
+          event_type: subscriptionStatus === 'trial' ? 'trial_started' : 'subscription_created',
           metadata: {
             plan_id: planId,
-            subscription_id: object.subscription,
+            subscription_id: subscriptionId,
+            trial_ends_at: trialEndsAt,
           },
         });
 
+        // Log trial event
+        if (subscriptionStatus === 'trial') {
+          await supabase.from('trial_events').insert({
+            tenant_id: tenantId,
+            event_type: 'trial_started',
+            event_data: {
+              plan_id: planId,
+              subscription_id: subscriptionId,
+              trial_ends_at: trialEndsAt,
+              payment_method_added: paymentMethodAdded,
+            },
+          });
+        }
+
+        break;
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        const tenantId = object.metadata?.tenant_id;
+        
+        if (tenantId) {
+          await supabase.from('trial_events').insert({
+            tenant_id: tenantId,
+            event_type: 'trial_ending_soon',
+            event_data: {
+              subscription_id: object.id,
+              trial_end: object.trial_end,
+            },
+          });
+        }
+        
         break;
       }
 
@@ -75,13 +133,32 @@ serve(async (req) => {
 
         if (tenantId) {
           const status = type.includes('deleted') ? 'cancelled' : object.status;
+          
+          // Check if trial converted to active
+          const wasTrialing = object.status === 'active' && object.trial_end;
+          
+          const updateData: any = {
+            subscription_status: status,
+            updated_at: new Date().toISOString(),
+          };
+
+          // If trial converted to active
+          if (wasTrialing) {
+            updateData.trial_converted_at = new Date().toISOString();
+            
+            await supabase.from('trial_events').insert({
+              tenant_id: tenantId,
+              event_type: 'trial_converted',
+              event_data: {
+                subscription_id: object.id,
+                converted_at: new Date().toISOString(),
+              },
+            });
+          }
 
           await supabase
             .from('tenants')
-            .update({
-              subscription_status: status,
-              updated_at: new Date().toISOString(),
-            })
+            .update(updateData)
             .eq('id', tenantId);
 
           await supabase.from('subscription_events').insert({
@@ -90,6 +167,7 @@ serve(async (req) => {
             metadata: {
               status,
               subscription_id: object.id,
+              trial_converted: wasTrialing,
             },
           });
         }
@@ -118,10 +196,15 @@ serve(async (req) => {
         const tenantId = object.metadata?.tenant_id;
 
         if (tenantId) {
+          // Grant 7-day grace period
+          const gracePeriodEnds = new Date();
+          gracePeriodEnds.setDate(gracePeriodEnds.getDate() + 7);
+
           await supabase
             .from('tenants')
             .update({
               subscription_status: 'past_due',
+              grace_period_ends_at: gracePeriodEnds.toISOString(),
               updated_at: new Date().toISOString(),
             })
             .eq('id', tenantId);
@@ -131,8 +214,67 @@ serve(async (req) => {
             event_type: 'payment_failed',
             metadata: {
               invoice_id: object.id,
+              grace_period_ends_at: gracePeriodEnds.toISOString(),
             },
           });
+
+          await supabase.from('trial_events').insert({
+            tenant_id: tenantId,
+            event_type: 'payment_failed_grace_period',
+            event_data: {
+              invoice_id: object.id,
+              grace_period_ends_at: gracePeriodEnds.toISOString(),
+            },
+          });
+        }
+
+        break;
+      }
+
+      case 'payment_method.attached': {
+        const customerId = object.customer;
+        
+        if (customerId) {
+          await supabase
+            .from('tenants')
+            .update({
+              payment_method_added: true,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_customer_id', customerId);
+        }
+
+        break;
+      }
+
+      case 'payment_method.detached': {
+        const customerId = object.customer;
+        
+        if (customerId) {
+          await supabase
+            .from('tenants')
+            .update({
+              payment_method_added: false,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_customer_id', customerId);
+            
+          // Log warning event
+          const { data: tenant } = await supabase
+            .from('tenants')
+            .select('id')
+            .eq('stripe_customer_id', customerId)
+            .single();
+            
+          if (tenant) {
+            await supabase.from('trial_events').insert({
+              tenant_id: tenant.id,
+              event_type: 'payment_method_removed',
+              event_data: {
+                payment_method_id: object.id,
+              },
+            });
+          }
         }
 
         break;

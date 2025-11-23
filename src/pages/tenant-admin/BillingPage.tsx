@@ -27,6 +27,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
+import { TrialBanner } from "@/components/tenant-admin/TrialBanner";
+import { TrialCountdown } from "@/components/tenant-admin/TrialCountdown";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -266,6 +268,13 @@ export default function TenantAdminBillingPage() {
   // Check if platform Stripe is in test mode
   const isTestMode = import.meta.env.VITE_STRIPE_SECRET_KEY?.startsWith('sk_test_');
 
+  // Calculate trial days remaining
+  const trialDaysRemaining = tenant?.trial_ends_at 
+    ? Math.ceil((new Date(tenant.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  const isOnTrial = tenant?.subscription_status === 'trial';
+
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
@@ -274,6 +283,15 @@ export default function TenantAdminBillingPage() {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">💳 Billing & Subscription</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
+
+        {/* Trial Banner */}
+        {isOnTrial && tenant?.trial_ends_at && trialDaysRemaining > 0 && (
+          <TrialBanner 
+            daysRemaining={trialDaysRemaining}
+            trialEndsAt={tenant.trial_ends_at}
+            tenantSlug={tenant.slug}
+          />
+        )}
 
         {isTestMode && (
           <Alert>
@@ -293,6 +311,11 @@ export default function TenantAdminBillingPage() {
 
           {/* CURRENT PLAN TAB */}
           <TabsContent value="current" className="space-y-6">
+            {/* Trial Countdown */}
+            {isOnTrial && tenant?.trial_ends_at && trialDaysRemaining > 0 && (
+              <TrialCountdown trialEndsAt={tenant.trial_ends_at} />
+            )}
+
             {/* Current Plan */}
             <Card>
               <CardHeader className="p-3 sm:p-4 md:p-6">
