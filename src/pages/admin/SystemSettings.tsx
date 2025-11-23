@@ -114,8 +114,9 @@ const SystemSettings = () => {
       const usersPromise = supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
       const ordersPromise = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
       const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
-      // @ts-expect-error - Complex query chain causes deep type instantiation
-      const fraudFlagsPromise: any = (supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId)) as any;
+      // @ts-ignore - Supabase type inference too deep
+      const fraudFlagsQuery: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const fraudFlagsPromise: any = fraudFlagsQuery;
 
       const [users, orders, products, fraudFlags]: any = await Promise.all([
         usersPromise,
