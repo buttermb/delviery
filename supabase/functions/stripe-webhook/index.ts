@@ -31,8 +31,6 @@ serve(async (req) => {
     const rawEvent = JSON.parse(body);
     const event: StripeWebhookInput = validateStripeWebhook(rawEvent);
 
-    console.log('Stripe webhook event:', event.type);
-
     const { type, data } = event;
     const object = data.object;
 

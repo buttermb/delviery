@@ -71,8 +71,6 @@ serve(async (req) => {
     const rawBody = await req.json();
     const { action, resource, data, id } = validateAdminApiOperation(rawBody);
 
-    console.log('Admin API operation:', { action, resource, tenant_id: tokenData.tenant_id });
-
     let result;
 
     switch (action) {

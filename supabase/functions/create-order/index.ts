@@ -20,11 +20,6 @@ Deno.serve(async (req) => {
 
     const rawBody = await req.json();
     const orderData: CreateOrderInput = validateCreateOrder(rawBody);
-    console.log('Creating order:', { 
-      userId: orderData.userId, 
-      itemCount: orderData.cartItems.length,
-      total: orderData.totalAmount 
-    })
 
     // Validate required fields
     if (!orderData.deliveryAddress || !orderData.deliveryBorough) {
@@ -83,8 +78,6 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to create order: ${orderError.message}`)
     }
 
-    console.log('Order created:', order.id)
-
     // Insert order items in bulk
     const orderItems = orderData.cartItems.map(item => ({
       order_id: order.id,
@@ -99,9 +92,8 @@ Deno.serve(async (req) => {
       .insert(orderItems)
 
     if (itemsError) {
-      console.error('Order items error:', itemsError)
       // Order was created, so log error but don't fail completely
-      console.error('Order items insertion failed, but order exists:', order.id)
+      console.error('Order items insertion failed')
     }
 
     // Clear cart in background (non-blocking)
@@ -111,11 +103,9 @@ Deno.serve(async (req) => {
         .delete()
         .eq('user_id', orderData.userId)
         .then(({ error }) => {
-          if (error) console.error('Failed to clear cart:', error)
+          if (error) console.error('Failed to clear cart')
         })
     }
-
-    console.log('Order completed successfully:', order.id)
 
     return new Response(
       JSON.stringify({ 
