@@ -232,9 +232,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                       safeStorage.setItem(ACCESS_TOKEN_KEY, refreshData.access_token);
                       safeStorage.setItem(REFRESH_TOKEN_KEY, refreshData.refresh_token);
                       tokenToUse = refreshData.access_token;
+                    } else if (refreshResponse.status === 401) {
+                      // Refresh token is invalid - clear everything
+                      logger.warn('[AUTH] Refresh token invalid during init - clearing state');
+                      clearAuthState();
+                      safeStorage.removeItem(ACCESS_TOKEN_KEY);
+                      safeStorage.removeItem(REFRESH_TOKEN_KEY);
+                      setLoading(false);
+                      return;
                     }
                   } catch (refreshError) {
-                    // Silent catch
+                    // Silent catch for network errors, but still clear if 401
                   }
                 }
               }
@@ -689,6 +697,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 });
 
               if (!refreshResponse.ok) {
+                // Refresh token is invalid - clear all state
+                if (refreshResponse.status === 401) {
+                  logger.warn("Refresh token invalid during verification - clearing state");
+                  safeStorage.removeItem(ADMIN_KEY);
+                  safeStorage.removeItem(TENANT_KEY);
+                  safeStorage.removeItem(ACCESS_TOKEN_KEY);
+                  safeStorage.removeItem(REFRESH_TOKEN_KEY);
+                  safeStorage.removeItem('lastTenantSlug');
+                  
+                  clearAuthState();
+                  setLoading(false);
+
+                  toast.error("Your session has expired. Please log in again.", {
+                    duration: 5000,
+                  });
+
+                  logger.warn('[AUTH] Refresh failed with 401 during verification - cleared credentials');
+                  return false;
+                }
+                
                 throw new Error("Token refresh failed");
               }
 
@@ -712,8 +740,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
               setLoading(false);
               return true; // Successfully refreshed
-            } catch (refreshError) {
-              logger.error("Token refresh failed", refreshError);
+                  } catch (refreshError) {
+              logger.error("Token refresh failed during verification", refreshError);
+              
+              // Clear all auth state if refresh fails
+              safeStorage.removeItem(ACCESS_TOKEN_KEY);
+              safeStorage.removeItem(REFRESH_TOKEN_KEY);
+              safeStorage.removeItem(ADMIN_KEY);
+              safeStorage.removeItem(TENANT_KEY);
+              safeStorage.removeItem('lastTenantSlug');
+              
+              clearAuthState();
+              
+              toast.error("Your session has expired. Please log in again.", {
+                duration: 5000,
+              });
+              
               throw new Error("Token expired and refresh failed");
             }
           }
@@ -1093,6 +1135,36 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       });
 
       if (!response.ok) {
+        // If 401, refresh token is invalid - clear everything and force re-login
+        if (response.status === 401) {
+          logger.warn("Refresh token invalid - clearing auth state and redirecting to login");
+          
+          // Clear all stored tokens immediately
+          safeStorage.removeItem(ACCESS_TOKEN_KEY);
+          safeStorage.removeItem(REFRESH_TOKEN_KEY);
+          safeStorage.removeItem(ADMIN_KEY);
+          safeStorage.removeItem(TENANT_KEY);
+          safeStorage.removeItem('lastTenantSlug');
+          
+          // Clear state
+          clearAuthState();
+          
+          // Clear Supabase session
+          await supabase.auth.signOut();
+          
+          // Show error message
+          toast.error("Your session has expired. Please log in again.", {
+            duration: 5000,
+          });
+          
+          // Force redirect to login if we have tenant slug
+          if (tenant?.slug) {
+            navigate(`/${tenant.slug}/admin/login`, { replace: true });
+          }
+          
+          return;
+        }
+        
         throw new Error("Token refresh failed");
       }
 
@@ -1117,8 +1189,15 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logger.debug("Token refreshed successfully");
     } catch (error) {
       logger.error("Token refresh error", error);
-      // If refresh fails, clear everything
-      logout();
+      
+      // Clear tokens but don't call logout() edge function as it may fail too
+      safeStorage.removeItem(ACCESS_TOKEN_KEY);
+      safeStorage.removeItem(REFRESH_TOKEN_KEY);
+      clearAuthState();
+      
+      toast.error("Session refresh failed. Please log in again.", {
+        duration: 5000,
+      });
     }
   };
 
