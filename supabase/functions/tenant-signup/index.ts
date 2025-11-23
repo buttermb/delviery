@@ -249,6 +249,19 @@ serve(async (req) => {
 
     console.log('[SIGNUP] Auth user created', { userId: authData.user.id });
 
+    // Generate Supabase session for immediate login
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email.toLowerCase(),
+    });
+
+    if (sessionError || !sessionData) {
+      console.error('[SIGNUP] Failed to generate session', sessionError);
+      // Continue with signup but warn about login requirement
+    }
+
+    console.log('[SIGNUP] Supabase session generated');
+
     // Call atomic function to create all database records in single transaction
     console.log('[SIGNUP] Creating tenant records atomically', { slug });
 
@@ -365,7 +378,11 @@ serve(async (req) => {
           role: tenantUser.role,
           tenant_id: tenantUser.tenant_id,
         },
-        // ⚠️ NO tokens in body anymore! Cookies set via headers
+        // Include Supabase session tokens for immediate authentication
+        session: sessionData ? {
+          access_token: sessionData.properties.access_token,
+          refresh_token: sessionData.properties.refresh_token,
+        } : null,
       }),
       {
         status: 200,
