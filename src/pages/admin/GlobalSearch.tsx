@@ -95,12 +95,13 @@ const GlobalSearch = () => {
         .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
         .limit(10);
 
-      const addressesPromise = supabase
+      // @ts-expect-error - Complex query chain causes deep type instantiation
+      const addressesPromise = (supabase
         .from("addresses")
         .select("*, profiles(full_name)")
         .eq("tenant_id", tenant.id)
         .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
-        .limit(10);
+        .limit(10)) as any;
 
       const [users, orders, products, addresses]: any = await Promise.all([
         usersPromise,
