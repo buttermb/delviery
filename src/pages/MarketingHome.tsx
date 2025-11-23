@@ -19,6 +19,7 @@ import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
+import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
@@ -88,13 +89,15 @@ export default function MarketingHome() {
       <TrustedBy />
 
       {/* SECTION 2: PROBLEM/SOLUTION */}
-      <SectionTransition variant="fade" delay={0}>
-        <section>
-          <Suspense fallback={<SectionLoader />}>
-            <ProblemSolutionSection />
-          </Suspense>
-        </section>
-      </SectionTransition>
+      <MarketingErrorBoundary section="ProblemSolution">
+        <SectionTransition variant="fade" delay={0}>
+          <section>
+            <Suspense fallback={<SectionLoader />}>
+              <ProblemSolutionSection />
+            </Suspense>
+          </section>
+        </SectionTransition>
+      </MarketingErrorBoundary>
 
       {/* SECTION 3: BENTO FEATURES */}
       <BentoFeatureGrid />
@@ -103,23 +106,27 @@ export default function MarketingHome() {
       <StatsSection />
 
       {/* SECTION 4: PLATFORM CAPABILITIES */}
-      <SectionTransition variant="fade">
-        <section>
-          <Suspense fallback={<SectionLoader />}>
-            <PlatformCapabilities />
-          </Suspense>
-        </section>
-      </SectionTransition>
+      <MarketingErrorBoundary section="PlatformCapabilities">
+        <SectionTransition variant="fade">
+          <section>
+            <Suspense fallback={<SectionLoader />}>
+              <PlatformCapabilities />
+            </Suspense>
+          </section>
+        </SectionTransition>
+      </MarketingErrorBoundary>
 
 
       {/* SECTION 5: CUSTOMER SUCCESS */}
-      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative">
-        <div className="container mx-auto px-4">
-          <Suspense fallback={<SectionLoader />}>
-            <CustomerSuccessTimeline />
-          </Suspense>
-        </div>
-      </section>
+      <MarketingErrorBoundary section="CustomerSuccess">
+        <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative">
+          <div className="container mx-auto px-4">
+            <Suspense fallback={<SectionLoader />}>
+              <CustomerSuccessTimeline />
+            </Suspense>
+          </div>
+        </section>
+      </MarketingErrorBoundary>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
       <section className="py-12 md:py-16 relative">
@@ -136,9 +143,11 @@ export default function MarketingHome() {
             </div>
 
             {/* Full Interactive Dashboard */}
-            <Suspense fallback={<SectionLoader />}>
-              <EnhancedDashboardPreview />
-            </Suspense>
+            <MarketingErrorBoundary section="DashboardPreview">
+              <Suspense fallback={<SectionLoader />}>
+                <EnhancedDashboardPreview />
+              </Suspense>
+            </MarketingErrorBoundary>
 
             {/* Feature Highlights */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
@@ -168,22 +177,26 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 7: INTEGRATION */}
-      <SectionTransition variant="fade" delay={0}>
-        <section>
-          <Suspense fallback={<SectionLoader />}>
-            <IntegrationEcosystem />
-          </Suspense>
-        </section>
-      </SectionTransition>
+      <MarketingErrorBoundary section="IntegrationEcosystem">
+        <SectionTransition variant="fade" delay={0}>
+          <section>
+            <Suspense fallback={<SectionLoader />}>
+              <IntegrationEcosystem />
+            </Suspense>
+          </section>
+        </SectionTransition>
+      </MarketingErrorBoundary>
 
       {/* SECTION 8: COMPARISON */}
-      <SectionTransition variant="fade" delay={0}>
-        <section>
-          <Suspense fallback={<SectionLoader />}>
-            <ComparisonSection />
-          </Suspense>
-        </section>
-      </SectionTransition>
+      <MarketingErrorBoundary section="Comparison">
+        <SectionTransition variant="fade" delay={0}>
+          <section>
+            <Suspense fallback={<SectionLoader />}>
+              <ComparisonSection />
+            </Suspense>
+          </section>
+        </SectionTransition>
+      </MarketingErrorBoundary>
 
       {/* SECTION 9: PRICING PREVIEW */}
       <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
@@ -298,11 +311,13 @@ export default function MarketingHome() {
           </div>
 
           {/* ROI Calculator */}
-          <div className="max-w-2xl mx-auto mt-12">
-            <Suspense fallback={<SectionLoader />}>
-              <ROICalculator />
-            </Suspense>
-          </div>
+          <MarketingErrorBoundary section="ROICalculator">
+            <div className="max-w-2xl mx-auto mt-12">
+              <Suspense fallback={<SectionLoader />}>
+                <ROICalculator />
+              </Suspense>
+            </div>
+          </MarketingErrorBoundary>
         </div>
       </section>
 
@@ -325,9 +340,11 @@ export default function MarketingHome() {
       <MarketingFooter />
 
       {/* Floating Chat Button */}
-      <Suspense fallback={null}>
-        <FloatingChatButton />
-      </Suspense>
+      <MarketingErrorBoundary section="FloatingChat">
+        <Suspense fallback={null}>
+          <FloatingChatButton />
+        </Suspense>
+      </MarketingErrorBoundary>
 
       {/* Keyboard Navigation Helper */}
       <KeyboardNavigationHelper />
