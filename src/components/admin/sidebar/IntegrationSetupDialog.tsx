@@ -16,8 +16,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Loader2, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface IntegrationSetupDialogProps {
@@ -350,6 +351,13 @@ export function IntegrationSetupDialog({
               ? 'Enter your own Stripe API keys to accept payments from your customers. This is separate from the platform subscription billing.'
               : `Enter your ${integrationName} credentials to enable this integration.`}
           </DialogDescription>
+          {integrationId === 'stripe' && formData.TENANT_STRIPE_SECRET_KEY?.startsWith('sk_test_') && (
+            <div className="mt-2 flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+              <AlertCircle className="h-4 w-4" />
+              <span className="font-medium">Test Mode Active</span>
+              <Badge variant="secondary">No real charges will be made</Badge>
+            </div>
+          )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
