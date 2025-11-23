@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { FileKey2, Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight, MapPin, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CountdownTimer } from "./CountdownTimer";
-import { BurningEffect } from "./BurningEffect";
+import { FloatingUIElements } from "./FloatingUIElements";
 
 const features = [
   {
@@ -12,18 +12,21 @@ const features = [
     highlight: true,
     className: "md:col-span-2 md:row-span-2",
     visual: (
-      <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10">
-        <BurningEffect />
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.05] via-transparent to-[hsl(var(--marketing-accent))/0.05]">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 z-30">
-          <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden">
-            <div className="w-8 h-8 rounded bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white relative z-10">
+          <motion.div 
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden"
+          >
+            <div className="w-8 h-8 rounded bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center text-white relative z-10">
               <Lock className="w-4 h-4" />
             </div>
             <div className="flex-1 relative z-10">
               <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
               <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
             </div>
-          </div>
+          </motion.div>
           <div className="mt-2">
             <CountdownTimer />
           </div>
@@ -90,11 +93,17 @@ const features = [
 
 export function BentoFeatureGrid() {
   return (
-    <section className="py-24 bg-[hsl(var(--marketing-bg))] relative">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <section className="py-24 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg))] relative">
+      {/* Floating background elements */}
+      <FloatingUIElements />
+      
+      <div className="container mx-auto px-4 max-w-7xl relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-[hsl(var(--marketing-text))] mb-6">
-            Everything You Need. <br />
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            <span className="bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-primary))] bg-clip-text text-transparent">
+              Everything You Need.
+            </span>
+            <br />
             <span className="text-[hsl(var(--marketing-text-light))]">Purpose-Built.</span>
           </h2>
           <p className="text-lg text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
@@ -109,18 +118,23 @@ export function BentoFeatureGrid() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ 
+                opacity: { duration: 0.5, delay: index * 0.1 },
+                y: { duration: 0.5, delay: index * 0.1 },
+                scale: { type: "spring", stiffness: 300, damping: 20 }
+              }}
               className={`
                 group relative overflow-hidden rounded-3xl p-8 
-                bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]
+                bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md border border-[hsl(var(--marketing-border))]
                 hover:border-[hsl(var(--marketing-primary))/0.5] 
-                hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(16,185,129,0.2)]
-                transition-all duration-300
+                hover:shadow-[0_20px_50px_-12px_rgba(16,185,129,0.25)]
+                transition-all duration-300 cursor-pointer
                 ${feature.className}
               `}
             >
               {/* Background Glow on Hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br from-[hsl(var(--marketing-primary))] via-transparent to-transparent" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.08] via-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-accent))/0.06]" />
 
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-start justify-between mb-4">

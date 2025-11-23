@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, CheckCircle, ShoppingBag, Wallet, Target, CreditCard, MessageSquare, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StreamlinedIntegrationHub } from './StreamlinedIntegrationHub';
+import { FloatingUIElements } from './FloatingUIElements';
 
 interface Integration {
   name: string;
@@ -48,8 +49,14 @@ export function IntegrationEcosystem() {
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
 
   return (
-    <section className="py-20 bg-[hsl(var(--marketing-bg))]">
-      <div className="container mx-auto px-4">
+    <section className="py-24 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg))] relative overflow-hidden">
+      {/* Floating background elements */}
+      <FloatingUIElements />
+      
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-transparent to-[hsl(var(--marketing-bg))] opacity-30" />
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <motion.div
             className="text-center mb-12"
@@ -57,8 +64,8 @@ export function IntegrationEcosystem() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
-              Works with Your Tools
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[hsl(var(--marketing-text))]">
+              Streamlined Integration Hub
             </h2>
             <p className="text-xl text-[hsl(var(--marketing-text-light))]">
               Seamlessly integrate with your existing workflow
