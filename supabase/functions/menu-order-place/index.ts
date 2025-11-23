@@ -77,6 +77,35 @@ serve(async (req) => {
       );
     }
 
+    // 3.5 CREATE OR UPDATE CUSTOMER RECORD
+    const { data: menu } = await supabaseClient
+      .from('disposable_menus')
+      .select('tenant_id, account_id')
+      .eq('id', menu_id)
+      .single();
+
+    if (menu && body.contact_email) {
+      // Check if customer exists
+      const { data: existingCustomer } = await supabaseClient
+        .from('customers')
+        .select('id')
+        .eq('email', body.contact_email)
+        .eq('tenant_id', menu.tenant_id)
+        .maybeSingle();
+
+      if (!existingCustomer) {
+        // Create new customer
+        await supabaseClient.from('customers').insert({
+          tenant_id: menu.tenant_id,
+          account_id: menu.account_id,
+          email: body.contact_email,
+          phone: contact_phone,
+          first_name: body.customer_name || 'Menu Customer',
+          customer_type: 'recreational'
+        });
+      }
+    }
+
     // 4. CONFIRM ORDER (Atomic RPC)
     const { data: order, error: confirmError } = await supabaseClient
       .rpc('confirm_menu_order', {
