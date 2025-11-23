@@ -87,7 +87,7 @@ export default function PurchaseOrdersPage() {
         query = query.eq("status", statusFilter);
       }
 
-      const { data, error } = await query;
+      const { data, error }: any = await query;
 
       if (error) {
         logger.error('Failed to fetch purchase orders', error, { component: 'PurchaseOrdersPage' });

@@ -318,10 +318,18 @@ export default function Orders() {
               filteredOrders.map((order) => (
                 <SwipeableItem
                   key={order.id}
-                  onSwipeLeft={() => handleDelete(order.id)}
-                  onSwipeRight={() => handleArchive(order.id)}
-                  leftAction={{ icon: <Trash2 className="h-5 w-5" />, color: 'bg-destructive', label: 'Delete' }}
-                  rightAction={{ icon: <Archive className="h-5 w-5" />, color: 'bg-blue-500', label: 'Archive' }}
+                  leftAction={{ 
+                    icon: <Trash2 className="h-5 w-5" />, 
+                    color: 'bg-destructive', 
+                    label: 'Delete',
+                    onClick: () => handleDelete(order.id)
+                  }}
+                  rightAction={{ 
+                    icon: <Archive className="h-5 w-5" />, 
+                    color: 'bg-blue-500', 
+                    label: 'Archive',
+                    onClick: () => handleArchive(order.id)
+                  }}
                 >
                   <Card
                     className="overflow-hidden cursor-pointer active:scale-[0.98] transition-transform border-none shadow-sm"

@@ -132,7 +132,7 @@ export function IntegrationEcosystem() {
               </p>
             </div>
 
-            <EnhancedIntegrationHub integrations={integrations} />
+            <SimplifiedIntegrationHub integrations={integrations} />
           </motion.div>
 
           {/* Request Integration */}
