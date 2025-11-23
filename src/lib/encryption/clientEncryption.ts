@@ -20,7 +20,7 @@ const safeSession = {
     try {
       sessionStorage.setItem(key, value);
     } catch (e) {
-      console.warn('SessionStorage failed', e);
+      logger.warn('SessionStorage failed', e);
     }
   },
   getItem: (key: string) => {
@@ -34,7 +34,7 @@ const safeSession = {
     try {
       sessionStorage.removeItem(key);
     } catch (e) {
-      console.warn('SessionStorage failed', e);
+      logger.warn('SessionStorage failed', e);
     }
   }
 };

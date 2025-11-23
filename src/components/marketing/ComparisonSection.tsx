@@ -100,7 +100,7 @@ export function ComparisonSection() {
                 <thead>
                   <tr className="border-b border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))]">
                     <th className="text-left p-4 font-semibold text-[hsl(var(--marketing-text))]">Feature</th>
-                    <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text))]">
+                    <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text))] bg-[hsl(var(--marketing-primary))/0.05] rounded-t-xl">
                       <span className="text-[hsl(var(--marketing-primary))]">FloraIQ</span>
                     </th>
                     <th className="text-center p-4 font-semibold text-[hsl(var(--marketing-text-light))]">
@@ -122,7 +122,7 @@ export function ComparisonSection() {
                       transition={{ delay: index * 0.05 }}
                     >
                       <td className="p-4 font-medium text-[hsl(var(--marketing-text))]">{feature.name}</td>
-                      <td className="p-4 text-center">
+                      <td className="p-4 text-center bg-[hsl(var(--marketing-primary))/0.05]">
                         <div className="flex justify-center">
                           {renderValue(feature.floraiq)}
                         </div>

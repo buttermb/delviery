@@ -2,8 +2,12 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useTenantAdminAuth, Tenant } from '@/contexts/TenantAdminAuthContext';
 import { useEncryption } from '@/lib/hooks/useEncryption';
+import { Database } from '@/integrations/supabase/types';
+
+type CustomerInsert = Database['public']['Tables']['customers']['Insert'];
+type CustomerUpdate = Database['public']['Tables']['customers']['Update'];
 import { encryptCustomerData, decryptCustomerData, logPHIAccess, getPHIFields } from '@/lib/utils/customerEncryption';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,7 +81,7 @@ export default function CustomerForm() {
           status: customer.status || 'active'
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error loading customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to load customer data');
     } finally {
@@ -140,7 +144,7 @@ export default function CustomerForm() {
         // Update existing customer
         const { error } = await supabase
           .from('customers')
-          .update(encryptedData as any)
+          .update(encryptedData as unknown as CustomerUpdate)
           .eq('id', id);
 
         if (error) throw error;
@@ -151,8 +155,8 @@ export default function CustomerForm() {
         toast.success('Customer updated successfully');
       } else {
         // Check tenant limits before creating
-        const currentCustomers = ((tenant as any).usage as any)?.customers || 0;
-        const customerLimit = ((tenant as any).limits as any)?.customers || 0;
+        const currentCustomers = tenant.usage?.customers || 0;
+        const customerLimit = tenant.limits?.customers || 0;
 
         if (customerLimit > 0 && currentCustomers >= customerLimit) {
           toast.error('Customer limit reached', {
@@ -164,7 +168,7 @@ export default function CustomerForm() {
         // Create new customer
         const { data: newCustomer, error } = await supabase
           .from('customers')
-          .insert([encryptedData as any])
+          .insert([encryptedData as unknown as CustomerInsert])
           .select()
           .maybeSingle();
 
@@ -176,7 +180,7 @@ export default function CustomerForm() {
         }
 
         // Update usage count
-        const currentUsage = ((tenant as any).usage as any) || {};
+        const currentUsage = tenant.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 };
         await supabase
           .from('tenants')
           .update({
@@ -192,7 +196,7 @@ export default function CustomerForm() {
       }
 
       navigate('/admin/customers');
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error saving customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to save customer', {
         description: error.message

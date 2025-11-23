@@ -55,9 +55,9 @@ export default function CustomReports() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to fetch reports', error, { component: 'CustomReports' });
-        if (error.code === '42P01') return [];
+        if (error instanceof Error && (error as any).code === '42P01') return [];
         throw error;
       }
     },
@@ -95,7 +95,7 @@ export default function CustomReports() {
       toast({ title: 'Report created', description: 'Custom report has been created.' });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to create report',
@@ -136,7 +136,7 @@ export default function CustomReports() {
       toast({ title: 'Report updated', description: 'Custom report has been updated.' });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update report',
@@ -206,7 +206,7 @@ export default function CustomReports() {
 
       {reports && reports.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {reports.map((report: any) => (
+          {reports.map((report: CustomReport) => (
             <Card key={report.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

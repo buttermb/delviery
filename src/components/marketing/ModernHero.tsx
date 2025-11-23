@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Zap, Lock, Smartphone } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Lock, Smartphone, CheckCircle } from "lucide-react";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { AnimatedMeshBackground } from "@/components/marketing/AnimatedMeshBackground";
 import { MagneticButton } from "@/components/marketing/MagneticButton";
@@ -43,37 +43,52 @@ export function ModernHero() {
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 text-[hsl(var(--marketing-text))] leading-[1.1]">
               The Operating System for <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--marketing-primary))] via-[hsl(var(--marketing-accent))] to-[hsl(var(--marketing-secondary))]">
-                <TypewriterText text="Modern Distribution" delay={0.5} />
+                <TypewriterText text="Cannabis Distribution" delay={0.5} />
               </span>
             </h1>
 
-            <p className="text-xl text-[hsl(var(--marketing-text-light))] mb-8 max-w-xl leading-relaxed">
-              Secure disposable menus, real-time inventory, and automated logistics.
-              The all-in-one platform built for the next generation of wholesale.
-            </p>
+            <ul className="space-y-3 mb-8 text-lg text-[hsl(var(--marketing-text-light))]">
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-[hsl(var(--marketing-primary))]" />
+                <span>Real-time Inventory & Automated Logistics</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-[hsl(var(--marketing-primary))]" />
+                <span>Secure Auto-Expiring Catalogs</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-[hsl(var(--marketing-primary))]" />
+                <span>Bank-Level Compliance & Security</span>
+              </li>
+            </ul>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/signup">
-                <MagneticButton strength={0.3}>
-                  <ConfettiButton
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link to="/signup">
+                  <MagneticButton strength={0.3}>
+                    <ConfettiButton
+                      size="lg"
+                      className="w-full sm:w-auto bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white font-bold h-14 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300"
+                    >
+                      Start Free Trial
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </ConfettiButton>
+                  </MagneticButton>
+                </Link>
+
+                <Link to="/demo">
+                  <Button
+                    variant="outline"
                     size="lg"
-                    className="w-full sm:w-auto bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white font-bold h-14 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300"
+                    className="w-full sm:w-auto h-14 px-8 rounded-xl border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))]"
                   >
-                    Start Free Trial
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </ConfettiButton>
-                </MagneticButton>
-              </Link>
-
-              <Link to="/demo">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto h-14 px-8 rounded-xl border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))]"
-                >
-                  View Demo
-                </Button>
-              </Link>
+                    View Demo
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-sm text-[hsl(var(--marketing-text-light))] ml-1">
+                No credit card required. 14-day free trial.
+              </p>
             </div>
 
             <div className="mt-10 flex flex-col gap-8">

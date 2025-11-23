@@ -34,7 +34,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   const { tenantSlug } = useParams();
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
   const { prefetchRoute } = useRoutePrefetch();
-  
+
   // Guard: Ensure favorites is an array
   const safeFavorites = Array.isArray(favorites) ? favorites : [];
   const isFavorite = safeFavorites.includes(item.id);
@@ -44,7 +44,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
       trackFeatureClick(item.featureId);
     }
     onItemClick(item.id, item.featureId);
-    
+
     // Dispatch custom event to close mobile sheet if open
     // This ensures immediate feedback on mobile devices
     if (window.innerWidth < 1024) {
@@ -95,13 +95,13 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           to={`/${tenantSlug}${item.path}`}
           onClick={handleClick}
           className={cn(
-            "flex items-center gap-2 w-full",
+            "flex items-center gap-2 w-full transition-transform duration-200 hover:translate-x-1",
             item.hot && "font-semibold"
           )}
         >
           <item.icon className="h-4 w-4" />
           <span className="flex-1">{item.name}</span>
-          
+
           {/* Favorite star */}
           <button
             type="button"

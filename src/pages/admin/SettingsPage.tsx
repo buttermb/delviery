@@ -12,13 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
   Settings, Shield, Bell, Printer, Plug, Save,
   Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+type AccountUpdate = Database['public']['Tables']['accounts']['Update'];
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 
@@ -73,8 +76,8 @@ export default function SettingsPage() {
       }
 
       // Save settings based on section
-      let updateData: any = {};
-      
+      let updateData: AccountUpdate = {};
+
       switch (section) {
         case 'General':
           updateData = {
@@ -119,9 +122,9 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => navigate(-1)}
           className="mb-2"
         >

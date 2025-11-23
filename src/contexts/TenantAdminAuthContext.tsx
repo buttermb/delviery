@@ -21,7 +21,7 @@ interface TenantAdmin {
   tenant_id: string;
 }
 
-interface Tenant {
+export interface Tenant {
   id: string;
   business_name: string;
   slug: string;

@@ -1,21 +1,56 @@
 import { motion } from "framer-motion";
-import { FileKey2, Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight } from "lucide-react";
+import { FileKey2, Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight, MapPin, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const features = [
   {
-    title: "Disposable Menus",
+    title: "Secure Auto-Expiring Catalogs",
     description: "Create encrypted product catalogs that burn after viewing. The ultimate security for high-value wholesale.",
     icon: FileKey2,
     className: "md:col-span-2 md:row-span-2",
-    image: true, // Placeholder for a visual
     highlight: true,
+    visual: (
+      <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4">
+          <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl">
+            <div className="w-8 h-8 rounded bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div className="flex-1">
+              <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
+              <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
+            </div>
+          </div>
+          <div className="mt-2 flex justify-center">
+            <div className="text-[10px] text-[hsl(var(--marketing-primary))] font-mono animate-pulse">
+              Link expires in 00:59:59
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   },
   {
     title: "Real-Time Inventory",
     description: "Sync stock across multiple warehouses and drivers instantly.",
     icon: Layers,
     className: "md:col-span-1 md:row-span-1",
+    visual: (
+      <div className="absolute inset-0 p-4 flex flex-col gap-2 opacity-50">
+        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="h-1.5 w-16 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+        </div>
+        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+        </div>
+        <div className="flex items-center gap-2 p-2 rounded bg-[hsl(var(--marketing-bg))] border border-[hsl(var(--marketing-border))]">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="h-1.5 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded" />
+        </div>
+      </div>
+    )
   },
   {
     title: "Customer Portal",
@@ -25,21 +60,30 @@ const features = [
   },
   {
     title: "End-to-End Encryption",
-    description: "Your data is yours. Zero-knowledge architecture.",
+    description: "Your data is yours. We can never see it.",
     icon: Lock,
     className: "md:col-span-1 md:row-span-1",
   },
   {
     title: "Smart Logistics",
-    description: "Automated routing and courier management.",
+    description: "Cut delivery times with automated routing.",
     icon: Workflow,
     className: "md:col-span-1 md:row-span-1",
   },
   {
     title: "Live Analytics",
-    description: "Revenue, margins, and driver performance in real-time.",
+    description: "Visualize profit margins and driver performance in real-time.",
     icon: TrendingUp,
     className: "md:col-span-1 md:row-span-1",
+    visual: (
+      <div className="absolute inset-0 flex items-end justify-around p-4 pb-0 opacity-50">
+        <div className="w-4 h-12 bg-[hsl(var(--marketing-primary))] rounded-t opacity-40" />
+        <div className="w-4 h-20 bg-[hsl(var(--marketing-primary))] rounded-t opacity-60" />
+        <div className="w-4 h-16 bg-[hsl(var(--marketing-primary))] rounded-t opacity-50" />
+        <div className="w-4 h-24 bg-[hsl(var(--marketing-primary))] rounded-t opacity-80" />
+        <div className="w-4 h-10 bg-[hsl(var(--marketing-primary))] rounded-t opacity-30" />
+      </div>
+    )
   },
 ];
 
@@ -50,7 +94,7 @@ export function BentoFeatureGrid() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-[hsl(var(--marketing-text))] mb-6">
             Everything You Need. <br />
-            <span className="text-[hsl(var(--marketing-text-light))]">Nothing You Don't.</span>
+            <span className="text-[hsl(var(--marketing-text-light))]">Purpose-Built.</span>
           </h2>
           <p className="text-lg text-[hsl(var(--marketing-text-light))] max-w-2xl mx-auto">
             Built specifically for the unique security and operational needs of the cannabis industry.
@@ -101,26 +145,9 @@ export function BentoFeatureGrid() {
                   {feature.description}
                 </p>
 
-                {feature.image && (
+                {feature.visual && (
                   <div className="mt-4 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] aspect-video relative group-hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-shadow">
-                    {/* Simulated Disposable Menu UI */}
-                    <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4">
-                      <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white">
-                          <Lock className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
-                          <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
-                        </div>
-                      </div>
-                      <div className="mt-2 flex justify-center">
-                        <div className="text-[10px] text-[hsl(var(--marketing-primary))] font-mono animate-pulse">
-                          Link expires in 00:59:59
-                        </div>
-                      </div>
-                    </div>
+                    {feature.visual}
                   </div>
                 )}
 

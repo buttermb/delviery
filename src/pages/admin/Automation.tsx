@@ -59,9 +59,9 @@ export default function Automation() {
         if (error) throw error;
         // Cast to unknown first to bypass Supabase type inference issues with new tables
         return (data as unknown as AutomationRule[]) || [];
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to fetch automation rules', error, { component: 'Automation' });
-        if (error.code === '42P01') return [];
+        if (error instanceof Error && (error as any).code === '42P01') return [];
         throw error;
       }
     },
@@ -100,7 +100,7 @@ export default function Automation() {
       toast({ title: 'Rule created', description: 'Automation rule has been created.' });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to create rule',
@@ -142,7 +142,7 @@ export default function Automation() {
       toast({ title: 'Automation updated', description: 'Automation rule has been updated.' });
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update automation',

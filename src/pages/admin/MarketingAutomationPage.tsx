@@ -28,7 +28,7 @@ interface MarketingCampaign {
   status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'paused' | 'failed';
   subject?: string;
   content?: string;
-  audience_config?: Record<string, any>;
+  audience_config?: Record<string, unknown>;
   scheduled_at?: string;
   sent_at?: string;
   created_at: string;
@@ -56,7 +56,7 @@ export default function MarketingAutomationPage() {
 
         if (error) throw error;
         return (data as MarketingCampaign[]) || [];
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Failed to fetch campaigns', error, { component: 'MarketingAutomationPage' });
         return [];
       }

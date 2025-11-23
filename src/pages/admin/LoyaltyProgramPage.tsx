@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -58,6 +57,15 @@ interface LoyaltyReward {
   reward_type: string;
   is_active: boolean;
   redemption_count?: number;
+}
+
+interface CustomerLoyaltyPoints {
+  total_points: number;
+  lifetime_points: number;
+}
+
+interface LoyaltyRewardRedemption {
+  points_spent: number;
 }
 
 interface LoyaltyStats {
@@ -269,19 +277,19 @@ export default function LoyaltyProgramPage() {
     queryFn: async () => {
       try {
         const { data: pointsData } = await supabase
-          .from("customer_loyalty_points" as any)
+          .from("customer_loyalty_points")
           .select("total_points, lifetime_points")
           .eq("tenant_id", tenant?.id);
 
         const { data: redemptionsData } = await supabase
-          .from("loyalty_reward_redemptions" as any)
+          .from("loyalty_reward_redemptions")
           .select("points_spent")
           .eq("tenant_id", tenant?.id);
 
         const totalCustomers = pointsData?.length || 0;
-        const totalPointsAwarded = pointsData?.reduce((sum: number, p: any) => sum + (p.lifetime_points || 0), 0) || 0;
-        const totalPointsRedeemed = redemptionsData?.reduce((sum: number, r: any) => sum + (r.points_spent || 0), 0) || 0;
-        const activePointsBalance = pointsData?.reduce((sum: number, p: any) => sum + (p.total_points || 0), 0) || 0;
+        const totalPointsAwarded = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.lifetime_points || 0), 0) || 0;
+        const totalPointsRedeemed = (redemptionsData as unknown as LoyaltyRewardRedemption[])?.reduce((sum, r) => sum + (r.points_spent || 0), 0) || 0;
+        const activePointsBalance = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.total_points || 0), 0) || 0;
 
         return {
           totalCustomers,

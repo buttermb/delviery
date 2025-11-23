@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from "@/lib/logger";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -39,7 +40,7 @@ export function FeatureToggle({
 
   const handleToggle = async (enabled: boolean) => {
     if (readOnly) return;
-    
+
     setLoading(true);
     try {
       await onToggle(enabled);
@@ -50,7 +51,7 @@ export function FeatureToggle({
 
   const handleSaveCustomLimit = async () => {
     if (!onSetCustomLimit || !customLimit) return;
-    
+
     setLoading(true);
     try {
       await onSetCustomLimit(parseInt(customLimit));
@@ -61,7 +62,7 @@ export function FeatureToggle({
 
   const handleSaveExpiration = async () => {
     if (!onSetExpiration || !expirationDate) return;
-    
+
     setLoading(true);
     try {
       await onSetExpiration(new Date(expirationDate).toISOString());
@@ -71,7 +72,7 @@ export function FeatureToggle({
   };
 
   const isExpired = feature.expires_at && new Date(feature.expires_at) < new Date();
-  const isExpiringSoon = feature.expires_at && 
+  const isExpiringSoon = feature.expires_at &&
     new Date(feature.expires_at) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   return (
@@ -114,7 +115,7 @@ export function FeatureToggle({
               onCheckedChange={handleToggle}
               disabled={loading || readOnly}
             />
-            
+
             {!readOnly && (
               <Dialog>
                 <DialogTrigger asChild>
@@ -167,7 +168,7 @@ export function FeatureToggle({
                           className="mt-2"
                           onClick={() => {
                             setExpirationDate("");
-                            onSetExpiration("").catch(console.error);
+                            onSetExpiration("").catch((err) => logger.error('Failed to clear expiration', err));
                           }}
                         >
                           Remove Expiration

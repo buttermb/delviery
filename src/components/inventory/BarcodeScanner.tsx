@@ -74,7 +74,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.stop().catch(console.error);
+        scannerRef.current.stop().catch((err) => logger.error('Failed to stop scanner', err));
       }
     };
   }, []);
@@ -85,9 +85,8 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
         <>
           <div
             id={readerIdRef.current}
-            className={`w-full rounded-lg overflow-hidden border ${
-              isScanning ? 'border-primary' : 'border-border'
-            }`}
+            className={`w-full rounded-lg overflow-hidden border ${isScanning ? 'border-primary' : 'border-border'
+              }`}
             style={{ minHeight: isScanning ? '300px' : '0' }}
           />
 

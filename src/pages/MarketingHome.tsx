@@ -22,6 +22,7 @@ import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
+import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
 import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
@@ -83,9 +84,12 @@ export default function MarketingHome() {
       {/* LIVE ACTIVITY TICKER */}
       <LiveActivityTicker />
 
+      {/* TRUSTED BY SECTION */}
+      <TrustedBy />
+
       {/* SECTION 2: PROBLEM/SOLUTION */}
       <SectionTransition variant="fade" delay={0}>
-        <section style={{ contentVisibility: 'auto' }}>
+        <section>
           <Suspense fallback={<SectionLoader />}>
             <ProblemSolutionSection />
           </Suspense>
@@ -100,7 +104,7 @@ export default function MarketingHome() {
 
       {/* SECTION 4: PLATFORM CAPABILITIES */}
       <SectionTransition variant="fade">
-        <section style={{ contentVisibility: 'auto' }}>
+        <section>
           <Suspense fallback={<SectionLoader />}>
             <PlatformCapabilities />
           </Suspense>
@@ -109,7 +113,7 @@ export default function MarketingHome() {
 
 
       {/* SECTION 5: CUSTOMER SUCCESS */}
-      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative">
         <div className="container mx-auto px-4">
           <Suspense fallback={<SectionLoader />}>
             <CustomerSuccessTimeline />
@@ -118,7 +122,7 @@ export default function MarketingHome() {
       </section>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
-      <section className="py-12 md:py-16 relative" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-bg-subtle))]/50 pointer-events-none" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-7xl mx-auto">
@@ -139,7 +143,7 @@ export default function MarketingHome() {
             {/* Feature Highlights */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
               {[
-                "Create disposable menu in 2 clicks",
+                "Create secure catalog in 2 clicks",
                 "Track deliveries in real-time",
                 "Manage orders from one dashboard",
                 "Customer portal for self-service"
@@ -165,7 +169,7 @@ export default function MarketingHome() {
 
       {/* SECTION 7: INTEGRATION */}
       <SectionTransition variant="fade" delay={0}>
-        <section style={{ contentVisibility: 'auto' }}>
+        <section>
           <Suspense fallback={<SectionLoader />}>
             <IntegrationEcosystem />
           </Suspense>
@@ -174,7 +178,7 @@ export default function MarketingHome() {
 
       {/* SECTION 8: COMPARISON */}
       <SectionTransition variant="fade" delay={0}>
-        <section style={{ contentVisibility: 'auto' }}>
+        <section>
           <Suspense fallback={<SectionLoader />}>
             <ComparisonSection />
           </Suspense>
@@ -182,7 +186,7 @@ export default function MarketingHome() {
       </SectionTransition>
 
       {/* SECTION 9: PRICING PREVIEW */}
-      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]" style={{ contentVisibility: 'auto' }}>
+      <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg))]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[hsl(var(--marketing-text))]">

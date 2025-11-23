@@ -197,7 +197,7 @@ export default function InvoiceDetailPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {invoice.line_items.map((item: any, index: number) => (
+                                    {invoice.line_items.map((item, index) => (
                                         <TableRow key={index}>
                                             <TableCell className="pl-6 font-medium">
                                                 {item.description}

@@ -67,6 +67,7 @@ import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database['public']['Tables']['products']['Row'];
+type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 export default function ProductManagement() {
   const navigate = useTenantNavigate();
@@ -271,7 +272,7 @@ export default function ProductManagement() {
         if (barcodeImageUrl && updatedProduct) {
           await supabase
             .from("products")
-            .update({ barcode_image_url: barcodeImageUrl } as any)
+            .update({ barcode_image_url: barcodeImageUrl } as Record<string, unknown>)
             .eq("id", updatedProduct.id);
         }
 
@@ -324,7 +325,7 @@ export default function ProductManagement() {
         if (barcodeImageUrl && newProduct) {
           await supabase
             .from("products")
-            .update({ barcode_image_url: barcodeImageUrl } as any)
+            .update({ barcode_image_url: barcodeImageUrl } as Record<string, unknown>)
             .eq("id", newProduct.id);
         }
 
@@ -350,8 +351,8 @@ export default function ProductManagement() {
       });
 
       const errorMessage = error instanceof Error ? error.message : "An error occurred";
-      const errorCode = (error as any)?.code;
-      const errorDetails = (error as any)?.details;
+      const errorCode = (error as Record<string, unknown>)?.code;
+      const errorDetails = (error as Record<string, unknown>)?.details;
 
       // Check for specific error types
       let userMessage = errorMessage;
@@ -556,7 +557,7 @@ export default function ProductManagement() {
     try {
       // Update each product
       const updatePromises = updates.map(update => {
-        const updateData: any = {
+        const updateData: ProductUpdate = {
           wholesale_price: update.newWholesale,
         };
 
@@ -707,7 +708,7 @@ export default function ProductManagement() {
               sku: newSku,
               barcode: newSku, // Set barcode to SKU
               barcode_image_url: barcodeUrl
-            } as any)
+            } as Record<string, unknown>)
             .eq("id", newProduct.id);
         } catch (error) {
           logger.warn('Failed to generate SKU/barcode for duplicated product', error, {
