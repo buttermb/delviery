@@ -8,32 +8,50 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
-import { ExternalLink, RefreshCw, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, XCircle, AlertCircle, Settings, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { IntegrationSetupDialog } from './IntegrationSetupDialog';
+import { CustomIntegrationForm } from './CustomIntegrationForm';
 
 export function IntegrationManager() {
   const { getIntegrationsWithStatus, toggleIntegration, refreshConnectionStatus } = useIntegrationManager();
   const navigate = useNavigate();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const [setupDialogOpen, setSetupDialogOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<{ id: string; name: string } | null>(null);
+  const [customFormOpen, setCustomFormOpen] = useState(false);
+  const [lastChecked, setLastChecked] = useState<Record<string, Date>>({});
 
   const integrations = getIntegrationsWithStatus();
 
   // Helper to identify if an integration is for payment processing (not billing)
   const isPaymentIntegration = (id: string) => id === 'stripe';
 
-  const handleRefreshStatus = async (integrationId: string) => {
+  const handleRefreshStatus = async (integrationId: string, integrationName: string) => {
     setRefreshingId(integrationId);
     try {
       const isConnected = await refreshConnectionStatus(integrationId);
-      toast.success(
-        isConnected 
-          ? `${integrationId} is connected` 
-          : `${integrationId} is not configured`
-      );
+      setLastChecked({ ...lastChecked, [integrationId]: new Date() });
+      
+      if (isConnected) {
+        toast.success(`${integrationName} is connected and working`, {
+          description: 'Connection verified successfully',
+        });
+      } else {
+        toast.warning(`${integrationName} is not configured`, {
+          description: 'Click the configure button to set it up',
+          action: {
+            label: 'Configure',
+            onClick: () => handleConfigureClick(integrationId, integrationName),
+          },
+        });
+      }
     } catch (error) {
-      toast.error('Failed to check connection status');
+      toast.error(`Failed to check ${integrationName} connection`, {
+        description: 'Please try again or check your network connection',
+      });
     } finally {
       setRefreshingId(null);
     }
@@ -46,40 +64,91 @@ export function IntegrationManager() {
     return <XCircle className="h-4 w-4 text-muted-foreground" />;
   };
 
-  const getStatusBadge = (integration: { enabled?: boolean; status?: string; connected?: boolean }) => {
+  const getStatusBadge = (integration: { id: string; enabled?: boolean; status?: string; connected?: boolean }) => {
+    const timeSince = getTimeSinceCheck(integration.id);
+    
     if (!integration.enabled) {
       return (
-        <Badge variant="secondary" className="gap-1">
-          <AlertCircle className="h-3 w-3" />
-          Disabled
-        </Badge>
+        <div className="flex flex-col items-end gap-1">
+          <Badge variant="secondary" className="gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Disabled
+          </Badge>
+          {timeSince && <span className="text-xs text-muted-foreground">{timeSince}</span>}
+        </div>
       );
     }
     
     if (integration.connected) {
       return (
-        <Badge variant="default" className="gap-1 bg-green-500">
-          <CheckCircle2 className="h-3 w-3" />
-          Connected
-        </Badge>
+        <div className="flex flex-col items-end gap-1">
+          <Badge variant="default" className="gap-1 bg-green-500 hover:bg-green-600">
+            <CheckCircle2 className="h-3 w-3" />
+            Connected
+          </Badge>
+          {timeSince && <span className="text-xs text-muted-foreground">{timeSince}</span>}
+        </div>
       );
     }
     
     return (
-      <Badge variant="outline" className="gap-1">
-        <XCircle className="h-3 w-3" />
-        Not Configured
-      </Badge>
+      <div className="flex flex-col items-end gap-1">
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" />
+          Not Configured
+        </Badge>
+        {timeSince && <span className="text-xs text-muted-foreground">{timeSince}</span>}
+      </div>
     );
   };
 
-  const handleToggle = async (integrationId: string, currentlyEnabled: boolean) => {
+  const handleToggle = async (
+    integrationId: string,
+    currentlyEnabled: boolean,
+    isConnected: boolean,
+    integrationName: string
+  ) => {
+    // Warn if enabling without configuration
+    if (!currentlyEnabled && !isConnected) {
+      toast.warning(`${integrationName} is not configured yet`, {
+        description: 'You can enable it, but you\'ll need to configure it before use',
+        action: {
+          label: 'Configure Now',
+          onClick: () => handleConfigureClick(integrationId, integrationName),
+        },
+      });
+    }
+
     await toggleIntegration(integrationId);
     toast.success(
       currentlyEnabled
-        ? `${integrationId} integration disabled`
-        : `${integrationId} integration enabled`
+        ? `${integrationName} disabled`
+        : `${integrationName} enabled`
     );
+  };
+
+  const handleConfigureClick = (integrationId: string, integrationName: string) => {
+    setSelectedIntegration({ id: integrationId, name: integrationName });
+    setSetupDialogOpen(true);
+  };
+
+  const handleSetupComplete = async () => {
+    if (selectedIntegration) {
+      await refreshConnectionStatus(selectedIntegration.id);
+      setLastChecked({ ...lastChecked, [selectedIntegration.id]: new Date() });
+    }
+  };
+
+  const getTimeSinceCheck = (integrationId: string): string => {
+    const lastCheck = lastChecked[integrationId];
+    if (!lastCheck) return '';
+    
+    const seconds = Math.floor((Date.now() - lastCheck.getTime()) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
   };
 
   return (
@@ -139,7 +208,7 @@ export function IntegrationManager() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleRefreshStatus(integration.id)}
+              onClick={() => handleRefreshStatus(integration.id, integration.name)}
               disabled={refreshingId === integration.id}
               className="h-8 w-8"
               title="Check connection status"
@@ -149,32 +218,54 @@ export function IntegrationManager() {
               />
             </Button>
             
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleConfigureClick(integration.id, integration.name)}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Configure
+            </Button>
+            
             <Switch
               checked={integration.enabled}
-              onCheckedChange={() => handleToggle(integration.id, integration.enabled)}
+              onCheckedChange={() =>
+                handleToggle(integration.id, integration.enabled, integration.connected, integration.name)
+              }
             />
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(integration.setupUrl)}
-              className="h-8 w-8"
-              title="Configure integration"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       ))}
 
       <div className="p-4 border border-dashed rounded-lg text-center">
         <p className="text-sm text-muted-foreground mb-2">
-          Want to add more integrations?
+          Need a custom integration?
         </p>
-        <Button variant="outline" size="sm">
-          Request Integration
+        <Button variant="outline" size="sm" onClick={() => setCustomFormOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Custom Integration
         </Button>
       </div>
+
+      {selectedIntegration && (
+        <IntegrationSetupDialog
+          open={setupDialogOpen}
+          onOpenChange={setSetupDialogOpen}
+          integrationId={selectedIntegration.id}
+          integrationName={selectedIntegration.name}
+          onSetupComplete={handleSetupComplete}
+        />
+      )}
+
+      <CustomIntegrationForm
+        open={customFormOpen}
+        onOpenChange={setCustomFormOpen}
+        onIntegrationAdded={() => {
+          toast.success('Custom integration added');
+          // Refresh integrations list if needed
+        }}
+      />
     </div>
   );
 }
