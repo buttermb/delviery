@@ -16,13 +16,13 @@ import { Zap, Plus, Edit, Play } from 'lucide-react';
 interface AutomationRule {
   id: string;
   name: string;
-  description: string | null;
+  description?: string;
   trigger_type: string;
-  trigger_config: any;
+  trigger_config: Record<string, any>;
   action_type: string;
-  action_config: any;
+  action_config: Record<string, any>;
   enabled: boolean;
-  last_run_at: string | null;
+  last_run_at?: string;
   created_at: string;
 }
 
@@ -57,7 +57,8 @@ export default function Automation() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        // Cast to unknown first to bypass Supabase type inference issues with new tables
+        return (data as unknown as AutomationRule[]) || [];
       } catch (error: any) {
         logger.error('Failed to fetch automation rules', error, { component: 'Automation' });
         if (error.code === '42P01') return [];
@@ -198,8 +199,8 @@ export default function Automation() {
     );
   }
 
-  const enabledCount = (rules as any[] || []).filter((r: any) => r.enabled).length;
-  const totalRuns = (rules as any[] || []).reduce((sum: number, r: any) => sum + (r.last_run_at ? 1 : 0), 0);
+  const enabledCount = (rules || []).filter((r) => r.enabled).length;
+  const totalRuns = (rules || []).reduce((sum, r) => sum + (r.last_run_at ? 1 : 0), 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -248,7 +249,7 @@ export default function Automation() {
 
       {rules && rules.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {rules.map((rule: any) => (
+          {rules.map((rule) => (
             <Card key={rule.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

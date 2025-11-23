@@ -43,21 +43,28 @@ interface LoyaltyTier {
   id: string;
   name: string;
   color: string;
-  icon: string;
+  icon?: string;
   multiplier: number;
   min_points: number;
   max_points?: number;
-  benefits: string[];
+  benefits?: string[];
 }
 
 interface LoyaltyReward {
   id: string;
   name: string;
-  description: string;
-  is_active: boolean;
+  description?: string;
   points_cost: number;
   reward_type: string;
-  redemption_count: number;
+  is_active: boolean;
+  redemption_count?: number;
+}
+
+interface LoyaltyStats {
+  total_members: number;
+  points_issued: number;
+  points_redeemed: number;
+  active_rewards: number;
 }
 
 export default function LoyaltyProgramPage() {

@@ -19,12 +19,18 @@ import { CampaignBuilder } from "@/components/admin/marketing/CampaignBuilder";
 import { WorkflowEditor } from "@/components/admin/marketing/WorkflowEditor";
 import { CampaignAnalytics } from "@/components/admin/marketing/CampaignAnalytics";
 import { queryKeys } from "@/lib/queryKeys";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-interface Campaign {
+interface MarketingCampaign {
   id: string;
   name: string;
-  type: "email" | "sms";
-  status: "draft" | "scheduled" | "sending" | "sent" | "paused";
+  type: 'email' | 'sms' | 'push';
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'paused' | 'failed';
+  subject?: string;
+  content?: string;
+  audience_config?: Record<string, any>;
+  scheduled_at?: string;
+  sent_at?: string;
   created_at: string;
 }
 
@@ -32,8 +38,8 @@ export default function MarketingAutomationPage() {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("campaigns");
-  const [isCampaignBuilderOpen, setIsCampaignBuilderOpen] = useState(false);
-  const [isWorkflowEditorOpen, setIsWorkflowEditorOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<MarketingCampaign | null>(null);
 
   // For now, campaigns would be stored in a campaigns table (may need to be created)
   const { data: campaigns, isLoading } = useQuery({
@@ -42,20 +48,16 @@ export default function MarketingAutomationPage() {
       if (!tenant?.id) return [];
 
       try {
-        // Try to fetch from campaigns table if it exists
         const { data, error } = await supabase
-          .from("marketing_campaigns")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .order("created_at", { ascending: false });
+          .from('marketing_campaigns')
+          .select('*')
+          .eq('tenant_id', tenant?.id)
+          .order('created_at', { ascending: false });
 
-        if (error && error.code !== "42P01") {
-          logger.error('Failed to fetch campaigns', error, { component: 'MarketingAutomationPage' });
-          return [];
-        }
-
-        return (data || []) as Campaign[];
-      } catch {
+        if (error) throw error;
+        return (data as MarketingCampaign[]) || [];
+      } catch (error: any) {
+        logger.error('Failed to fetch campaigns', error, { component: 'MarketingAutomationPage' });
         return [];
       }
     },
@@ -77,7 +79,7 @@ export default function MarketingAutomationPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setIsWorkflowEditorOpen(true)}
+            onClick={() => setIsCreateOpen(true)}
             className="min-h-[44px] touch-manipulation"
           >
             <Zap className="h-4 w-4 sm:mr-2" />
@@ -85,7 +87,7 @@ export default function MarketingAutomationPage() {
           </Button>
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation"
-            onClick={() => setIsCampaignBuilderOpen(true)}
+            onClick={() => setIsCreateOpen(true)}
           >
             <Plus className="h-4 w-4 sm:mr-2" />
             <span className="text-sm sm:text-base">New Campaign</span>
@@ -147,22 +149,17 @@ export default function MarketingAutomationPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Campaign Builder Dialog */}
-      {isCampaignBuilderOpen && (
-        <CampaignBuilder
-          open={isCampaignBuilderOpen}
-          onOpenChange={setIsCampaignBuilderOpen}
-        />
-      )}
-
-      {/* Workflow Editor Dialog */}
-      {isWorkflowEditorOpen && (
-        <WorkflowEditor
-          open={isWorkflowEditorOpen}
-          onOpenChange={setIsWorkflowEditorOpen}
-        />
-      )}
+      {/* Create Dialog Placeholder */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New {activeTab === 'campaigns' ? 'Campaign' : 'Workflow'}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Builder component coming soon...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

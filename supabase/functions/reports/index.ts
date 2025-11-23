@@ -37,25 +37,26 @@ serve(async (req) => {
         if (queryError) throw queryError;
 
         // Format results
-        let output = "";
         if (format === "csv") {
             // Simple CSV conversion
-            if (results.length > 0) {
-                const headers = Object.keys(results[0]);
-                output = headers.join(",") + "\n";
-                output += results.map(row => headers.map(h => JSON.stringify(row[h])).join(",")).join("\n");
-            }
+            const headers = Object.keys(results[0] || {});
+            let output = headers.join(",") + "\n";
+            output += results.map((row: any) => headers.map(h => JSON.stringify(row[h])).join(",")).join("\n");
+
+            return new Response(output, {
+                headers: { ...corsHeaders, "Content-Type": "text/csv" },
+            });
         } else {
-            output = JSON.stringify(results);
+            const output = JSON.stringify(results);
+            return new Response(JSON.stringify({ success: true, data: JSON.parse(output) }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
         }
 
-        return new Response(JSON.stringify({ success: true, url: "https://example.com/report.csv" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const message = error instanceof Error ? error.message : 'Failed to generate report';
+        return new Response(JSON.stringify({ error: message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
         });
     }

@@ -22,9 +22,10 @@ serve(async (req) => {
         });
 
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const message = error instanceof Error ? error.message : 'Failed to send webhook';
+        return new Response(JSON.stringify({ error: message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
-        });
+        })
     }
 });
