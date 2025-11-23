@@ -77,13 +77,13 @@ export default function PurchaseOrdersPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      // @ts-ignore - Supabase type inference too deep
-      let baseQuery: any = supabase
+      // Break type inference for complex query
+      const baseQuery: any = (supabase as any)
         .from("purchase_orders")
         .select("*")
-        .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false });
-      let query: any = baseQuery;
+        .eq("tenant_id", tenant.id);
+      
+      let query = baseQuery.order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
