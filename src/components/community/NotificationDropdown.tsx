@@ -78,11 +78,20 @@ export function NotificationDropdown() {
             table: 'forum_notifications',
             filter: `user_id=eq.${profile.id}`,
           },
-          () => {
+          (payload) => {
+            // Validate payload before using
+            if (!payload?.new || typeof payload.new !== 'object') {
+              console.warn('Invalid notification payload received');
+              return;
+            }
             queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('Notifications subscription error:', status);
+          }
+        });
     };
 
     setupSubscription();

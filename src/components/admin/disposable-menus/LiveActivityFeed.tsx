@@ -24,6 +24,11 @@ export function LiveActivityFeed() {
         const channel = supabase
             .channel('dashboard-feed')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_access_logs' }, (payload) => {
+                // Validate payload
+                if (!payload?.new || typeof payload.new !== 'object') {
+                    console.warn('Invalid access log payload');
+                    return;
+                }
                 addActivity({
                     id: payload.new.id,
                     type: 'view',
@@ -33,6 +38,10 @@ export function LiveActivityFeed() {
                 });
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_orders' }, (payload) => {
+                if (!payload?.new || typeof payload.new !== 'object') {
+                    console.warn('Invalid order payload');
+                    return;
+                }
                 addActivity({
                     id: payload.new.id,
                     type: 'order',
@@ -41,6 +50,10 @@ export function LiveActivityFeed() {
                 });
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_security_events' }, (payload) => {
+                if (!payload?.new || typeof payload.new !== 'object') {
+                    console.warn('Invalid security event payload');
+                    return;
+                }
                 addActivity({
                     id: payload.new.id,
                     type: 'security',
@@ -48,7 +61,11 @@ export function LiveActivityFeed() {
                     timestamp: new Date(payload.new.created_at)
                 });
             })
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                    console.error('Activity feed subscription error:', status);
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);

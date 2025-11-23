@@ -71,6 +71,12 @@ export default function CourierDashboardPage() {
             table: 'orders',
           },
           (payload) => {
+            // Validate payload before using
+            if (!payload?.new || typeof payload.new !== 'object') {
+              logger.warn('Invalid order payload received', { component: 'CourierDashboard' });
+              return;
+            }
+            
             // Only show notification if order is actually available (RLS filtered)
             if (payload.new.status === 'pending' && !payload.new.courier_id) {
               loadAvailableOrders();
@@ -81,7 +87,11 @@ export default function CourierDashboardPage() {
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logger.error('Orders subscription error', { status, component: 'CourierDashboard' });
+          }
+        });
 
       return () => {
         supabase.removeChannel(channel);

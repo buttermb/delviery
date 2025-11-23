@@ -26,7 +26,11 @@ export default function RevenueReports() {
           queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Revenue subscription error:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

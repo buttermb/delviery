@@ -65,7 +65,11 @@ export default function CourierActiveOrderPage() {
           loadOrder();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.error('Order subscription error', { status, orderId, component: 'ActiveOrderPage' });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

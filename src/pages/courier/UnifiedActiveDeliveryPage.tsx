@@ -42,7 +42,11 @@ export default function UnifiedActiveDeliveryPage() {
         },
         () => loadData()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.error('Delivery subscription error', { status, id, table, component: 'UnifiedActiveDeliveryPage' });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

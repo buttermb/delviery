@@ -66,7 +66,11 @@ export default function InventoryDashboard() {
           queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Inventory subscription error:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
