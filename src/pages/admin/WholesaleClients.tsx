@@ -48,6 +48,7 @@ interface WholesaleClient extends WholesaleClientRow {
   territory: string;
   monthly_volume_lbs: number;
   total_spent: number;
+  risk_score?: number | null;
 }
 
 export default function WholesaleClients() {
