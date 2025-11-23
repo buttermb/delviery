@@ -116,7 +116,7 @@ export function IntegrationEcosystem() {
             ))}
           </div>
 
-          {/* Simplified Integration Hub */}
+          {/* Enhanced Integration Hub */}
           <motion.div
             className="glass-card p-8 rounded-xl relative overflow-hidden bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]"
             initial={{ opacity: 0, y: 20 }}
@@ -132,7 +132,7 @@ export function IntegrationEcosystem() {
               </p>
             </div>
 
-            <SimplifiedIntegrationHub integrations={integrations} />
+            <EnhancedIntegrationHub integrations={integrations} />
           </motion.div>
 
           {/* Request Integration */}

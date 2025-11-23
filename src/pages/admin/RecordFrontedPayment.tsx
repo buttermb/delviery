@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function RecordFrontedPayment() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { account, userProfile } = useAccount();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [frontedItem, setFrontedItem] = useState<any>(null);
   const [amount, setAmount] = useState('');
@@ -36,12 +36,14 @@ export default function RecordFrontedPayment() {
   }, [id]);
 
   const loadFrontedItem = async () => {
+    if (!tenant?.id) return;
     try {
       // @ts-ignore
       const { data } = await supabase
         .from('fronted_inventory')
         .select('*, product:products(name)')
         .eq('id', id)
+        .eq('account_id', tenant.id)
         .maybeSingle();
 
       setFrontedItem(data);
@@ -53,6 +55,15 @@ export default function RecordFrontedPayment() {
   };
 
   const handleRecordPayment = async () => {
+    if (!tenant?.id) {
+      toast({
+        title: 'Error',
+        description: 'Tenant not found',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     const paymentAmount = parseFloat(amount);
     if (!paymentAmount || paymentAmount <= 0) {
       toast({
@@ -67,12 +78,11 @@ export default function RecordFrontedPayment() {
     try {
       // Create payment record
       await supabase.from('fronted_payments').insert({
-        account_id: account?.id,
+        account_id: tenant.id,
         fronted_inventory_id: id,
         amount: paymentAmount,
         payment_method: paymentMethod,
         payment_reference: reference || null,
-        received_by: userProfile?.id,
         notes
       });
 
@@ -93,10 +103,10 @@ export default function RecordFrontedPayment() {
           payment_received: newTotalReceived,
           payment_status: newPaymentStatus,
           status: newPaymentStatus === 'paid' ? 'completed' : 'active',
-          completed_at: newPaymentStatus === 'paid' ? new Date().toISOString() : null,
-          completed_by: newPaymentStatus === 'paid' ? userProfile?.id : null
+          completed_at: newPaymentStatus === 'paid' ? new Date().toISOString() : null
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('account_id', tenant.id);
 
       toast({
         title: 'Success!',

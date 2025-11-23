@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ interface FrontedInventory {
 export default function RecordFrontedReturn() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [front, setFront] = useState<FrontedInventory | null>(null);
   const [scannedReturns, setScannedReturns] = useState<ScannedReturn[]>([]);
   const [isScanning, setIsScanning] = useState(false);
@@ -39,10 +41,13 @@ export default function RecordFrontedReturn() {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    loadFrontDetails();
-  }, [id]);
+    if (tenant?.id) {
+      loadFrontDetails();
+    }
+  }, [id, tenant]);
 
   const loadFrontDetails = async () => {
+    if (!tenant?.id) return;
     const { data, error } = await supabase
       .from("fronted_inventory")
       .select(`
@@ -50,6 +55,7 @@ export default function RecordFrontedReturn() {
         products (name, sku, barcode)
       `)
       .eq("id", id)
+      .eq("account_id", tenant.id)
       .maybeSingle();
 
     if (error) {
@@ -87,6 +93,11 @@ export default function RecordFrontedReturn() {
   };
 
   const handleProcessReturn = async () => {
+    if (!tenant?.id) {
+      toast.error("Tenant not found");
+      return;
+    }
+
     if (scannedReturns.length === 0) {
       toast.error("No items scanned");
       return;
@@ -104,14 +115,15 @@ export default function RecordFrontedReturn() {
           quantity_returned: (front as any).quantity_returned + goodReturns,
           quantity_damaged: (front as any).quantity_damaged + damagedReturns,
         })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("account_id", tenant.id);
 
       if (updateError) throw updateError;
 
       // Create scan records
       for (const returnItem of scannedReturns) {
         await supabase.from("fronted_inventory_scans").insert({
-          account_id: (front as any).account_id,
+          account_id: tenant.id,
           fronted_inventory_id: id,
           product_id: (front as any).product_id,
           barcode: returnItem.barcode,
@@ -127,13 +139,15 @@ export default function RecordFrontedReturn() {
           .from("products")
           .select("available_quantity")
           .eq("id", (front as any).product_id)
+          .eq("tenant_id", tenant.id)
           .maybeSingle();
 
         if (product) {
           await supabase
             .from("products")
             .update({ available_quantity: (product as any).available_quantity + goodReturns })
-            .eq("id", (front as any).product_id);
+            .eq("id", (front as any).product_id)
+            .eq("tenant_id", tenant.id);
         }
       }
 

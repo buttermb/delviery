@@ -60,22 +60,26 @@ interface AddressSearchResult {
   };
 }
 
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+
 const GlobalSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
 
   const { data: searchResults, isLoading } = useQuery({
-    queryKey: ["global-search", searchTerm],
+    queryKey: ["global-search", searchTerm, tenant?.id],
     queryFn: async () => {
-      if (!searchTerm || searchTerm.length < 2) return null;
+      if (!searchTerm || searchTerm.length < 2 || !tenant) return null;
 
       const searchLower = searchTerm.toLowerCase();
 
       const [users, orders, products, addresses] = await Promise.all([
-        // Search users
+        // Search users (profiles)
         supabase
           .from("profiles")
           .select("*, user_roles(role)")
+          .eq("account_id", tenant.id) // profiles use account_id
           .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
           .limit(10),
 
@@ -83,6 +87,7 @@ const GlobalSearch = () => {
         supabase
           .from("orders")
           .select("*, profiles(full_name)")
+          .eq("tenant_id", tenant.id) // orders use tenant_id
           .or(`order_number.ilike.%${searchLower}%,tracking_code.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
           .limit(10),
 
@@ -90,6 +95,7 @@ const GlobalSearch = () => {
         supabase
           .from("products")
           .select("*")
+          .eq("tenant_id", tenant.id) // products use tenant_id
           .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
           .limit(10),
 
@@ -97,6 +103,7 @@ const GlobalSearch = () => {
         supabase
           .from("addresses")
           .select("*, profiles(full_name)")
+          .eq("tenant_id", tenant.id) // Assuming addresses use tenant_id
           .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
           .limit(10),
       ]);
@@ -113,7 +120,7 @@ const GlobalSearch = () => {
           (addresses.data?.length || 0),
       };
     },
-    enabled: searchTerm.length >= 2,
+    enabled: searchTerm.length >= 2 && !!tenant,
   });
 
   return (

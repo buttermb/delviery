@@ -64,6 +64,8 @@ export default function FleetManagement() {
   const { data: activeDeliveries } = useQuery({
     queryKey: queryKeys.deliveries.active(),
     queryFn: async () => {
+      if (!tenantId) return [];
+
       const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
@@ -71,6 +73,7 @@ export default function FleetManagement() {
           runners:wholesale_runners(full_name, phone, vehicle_type, rating),
           orders:wholesale_orders(order_number, total_amount, delivery_address, delivery_notes)
         `)
+        .eq("tenant_id", tenantId)
         .in("status", ["assigned", "picked_up", "in_transit"])
         .order("created_at", { ascending: false });
 
@@ -85,6 +88,7 @@ export default function FleetManagement() {
         notes_for_runner: delivery.orders?.delivery_notes || delivery.notes
       }));
     },
+    enabled: !!tenantId,
     // Realtime sync is enabled, so we don't need aggressive polling
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -93,9 +97,12 @@ export default function FleetManagement() {
   const { data: runners } = useQuery({
     queryKey: queryKeys.runners.lists(),
     queryFn: async () => {
+      if (!tenantId) return [];
+
       const { data, error } = await supabase
         .from("wholesale_runners")
         .select("*")
+        .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -105,7 +112,8 @@ export default function FleetManagement() {
         // Calculate success rate based on completed vs total deliveries (mock logic for now)
         success_rate: runner.total_deliveries > 0 ? 95 + (Math.random() * 5) : 100
       }));
-    }
+    },
+    enabled: !!tenantId
   });
 
   const getStatusColor = (status: string) => {

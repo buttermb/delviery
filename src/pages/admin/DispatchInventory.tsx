@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ interface ScannedProduct {
 
 export default function DispatchInventory() {
   const navigate = useNavigate();
-  const { account, userProfile } = useAccount();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [scannedProducts, setScannedProducts] = useState<ScannedProduct[]>([]);
   const [frontTo, setFrontTo] = useState('');
@@ -42,13 +42,14 @@ export default function DispatchInventory() {
   const [loading, setLoading] = useState(false);
 
   const handleBarcodeScan = async (barcode: string) => {
+    if (!tenant) return;
     try {
       // @ts-ignore - Avoid deep Supabase type inference
       const result = await supabase
         .from('products')
         .select('id, name, cost_per_unit, wholesale_price')
         .eq('barcode', barcode)
-        .eq('account_id', account?.id)
+        .eq('tenant_id', tenant.id)
         .maybeSingle();
 
       const product = result.data;
@@ -170,6 +171,8 @@ export default function DispatchInventory() {
       return;
     }
 
+    if (!tenant) return;
+
     setLoading(true);
 
     try {
@@ -182,7 +185,7 @@ export default function DispatchInventory() {
         );
 
         const { error } = await supabase.from('fronted_inventory').insert({
-          account_id: account?.id,
+          account_id: tenant.id,
           product_id: product.product_id,
           quantity_fronted: product.quantity,
           fronted_to_customer_name: frontTo,
@@ -192,7 +195,6 @@ export default function DispatchInventory() {
           expected_revenue: expectedRevenue,
           expected_profit: expectedProfit,
           payment_due_date: paymentDueDate || null,
-          dispatched_by: userProfile?.id,
           notes
         });
 
@@ -200,12 +202,11 @@ export default function DispatchInventory() {
 
         // Create scan record
         await supabase.from('fronted_inventory_scans').insert({
-          account_id: account?.id,
+          account_id: tenant.id,
           product_id: product.product_id,
           barcode: product.barcode,
           scan_type: 'dispatch',
           quantity: product.quantity,
-          scanned_by: userProfile?.id
         });
 
         // Update product fronted quantity

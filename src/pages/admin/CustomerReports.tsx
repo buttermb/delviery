@@ -1,19 +1,19 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { 
-  Download, TrendingUp, Users, DollarSign, ShoppingBag, 
-  Award, Calendar, BarChart3 
+import {
+  Download, TrendingUp, Users, DollarSign, ShoppingBag,
+  Award, Calendar, BarChart3
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function CustomerReports() {
-  const { account, loading: accountLoading } = useAccount();
+  const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalCustomers: 0,
@@ -28,15 +28,15 @@ export default function CustomerReports() {
   });
 
   useEffect(() => {
-    if (account && !accountLoading) {
+    if (tenant && !tenantLoading) {
       loadReports();
-    } else if (!accountLoading && !account) {
+    } else if (!tenantLoading && !tenant) {
       setLoading(false);
     }
-  }, [account, accountLoading]);
+  }, [tenant, tenantLoading]);
 
   const loadReports = async () => {
-    if (!account) return;
+    if (!tenant) return;
 
     try {
       setLoading(true);
@@ -45,7 +45,7 @@ export default function CustomerReports() {
       const { data: customers, error } = await supabase
         .from('customers')
         .select('*')
-        .eq('account_id', account.id);
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
 
@@ -55,7 +55,7 @@ export default function CustomerReports() {
 
       // Calculate stats
       const totalCustomers = customers?.length || 0;
-      const newThisMonth = customers?.filter(c => 
+      const newThisMonth = customers?.filter(c =>
         new Date(c.created_at) >= thirtyDaysAgo
       ).length || 0;
       const activeCustomers = customers?.filter(c => c.status === 'active').length || 0;
@@ -71,7 +71,7 @@ export default function CustomerReports() {
       const { data: orders } = await supabase
         .from('orders')
         .select('total_amount')
-        .eq('account_id', account.id);
+        .eq('tenant_id', tenant.id);
 
       const avgOrderValue = orders && orders.length > 0
         ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length
@@ -136,7 +136,7 @@ export default function CustomerReports() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <SEOHead 
+        <SEOHead
           title="Customer Reports | Admin"
           description="Customer analytics and insights"
         />
@@ -147,7 +147,7 @@ export default function CustomerReports() {
             <h1 className="text-3xl font-bold text-gray-900">Customer Reports & Analytics</h1>
             <p className="text-gray-500 mt-1">Insights into your customer base</p>
           </div>
-          <Button 
+          <Button
             onClick={handleExportReport}
             className="bg-emerald-500 hover:bg-emerald-600 text-white"
           >
@@ -265,30 +265,30 @@ export default function CustomerReports() {
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-[hsl(var(--tenant-text))]">Top 10 Customers by Spend</CardTitle>
           </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {stats.topCustomers.map((customer, index) => (
-              <div
-                key={customer.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                    {index + 1}
+          <CardContent>
+            <div className="space-y-3">
+              {stats.topCustomers.map((customer, index) => (
+                <div
+                  key={customer.id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {customer.first_name} {customer.last_name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{customer.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">
-                      {customer.first_name} {customer.last_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{customer.email}</p>
+                  <div className="text-right">
+                    <p className="font-bold text-lg">${customer.total_spent?.toFixed(2)}</p>
+                    <Badge variant="default">{customer.loyalty_tier}</Badge>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-lg">${customer.total_spent?.toFixed(2)}</p>
-                  <Badge variant="default">{customer.loyalty_tier}</Badge>
-                </div>
-              </div>
-            ))}
+              ))}
             </div>
           </CardContent>
         </Card>

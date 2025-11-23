@@ -17,17 +17,28 @@ export async function createSampleWholesaleData() {
     const tenant_id = tenantUser?.tenant_id;
     if (!tenant_id) throw new Error("Tenant not found");
 
-    // Clear existing sample data first (in reverse order of dependencies)
-    logger.debug("Clearing existing wholesale data", { component: 'sampleWholesaleData' });
+    // SAFETY CHECK: Prevent running in production without explicit override
+    const isDev = import.meta.env.DEV;
+    const allowDestructive = import.meta.env.VITE_ALLOW_SAMPLE_DATA_RESET === 'true';
 
-    await supabase.from("wholesale_deliveries").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_payments").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_inventory_movements").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_client_notes").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_orders").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_inventory").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_runners").delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from("wholesale_clients").delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (!isDev && !allowDestructive) {
+      logger.error("Attempted to reset wholesale data in non-dev environment", { component: 'sampleWholesaleData' });
+      throw new Error("Sample data reset is only allowed in development mode");
+    }
+
+    // Clear existing sample data first (in reverse order of dependencies)
+    // CRITICAL: Ensure we only delete data for the current tenant
+    logger.debug("Clearing existing wholesale data for tenant", { component: 'sampleWholesaleData', tenantId: tenant_id });
+
+    // Using tenant_id filter to prevent wiping entire database
+    await (supabase.from("wholesale_deliveries").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
+    await (supabase.from("wholesale_payments").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
+    await (supabase.from("wholesale_inventory_movements").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
+    await supabase.from("wholesale_client_notes").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_orders").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_inventory").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_runners").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from("wholesale_clients").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
 
     logger.debug("Cleared existing data", { component: 'sampleWholesaleData' });
 

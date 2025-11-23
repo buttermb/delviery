@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Truck, MapPin, Clock, CheckCircle2, XCircle, 
+  Truck, MapPin, Clock, CheckCircle2, XCircle,
   Navigation, Phone, User, Package, Search
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
@@ -39,9 +39,12 @@ interface Delivery {
   } | null;
 }
 
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+
 export default function DeliveryManagement() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { tenant } = useTenantAdminAuth();
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [couriers, setCouriers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,10 +53,14 @@ export default function DeliveryManagement() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (tenant) {
+      loadData();
+    }
+  }, [tenant]);
 
   const loadData = async () => {
+    if (!tenant) return;
+
     try {
       // Load deliveries
       const response: any = await (supabase as any)
@@ -69,11 +76,12 @@ export default function DeliveryManagement() {
           courier_id,
           couriers(full_name, phone, vehicle_type)
         `)
+        .eq('tenant_id', tenant.id)
         .in('status', ['pending', 'confirmed', 'out_for_delivery', 'delivered'])
         .order('delivery_scheduled_at', { ascending: false });
 
       const { data: deliveryData } = response;
-      
+
       // Map to Delivery interface
       const mappedDeliveries: Delivery[] = (deliveryData || []).map((d: any) => ({
         id: d.id,
@@ -99,6 +107,7 @@ export default function DeliveryManagement() {
       const courierResponse: any = await (supabase as any)
         .from('couriers')
         .select('id, full_name, phone, vehicle_type, is_online')
+        .eq('tenant_id', tenant.id)
         .eq('is_active', true);
 
       const { data: courierData } = courierResponse;
@@ -112,11 +121,13 @@ export default function DeliveryManagement() {
   };
 
   const assignCourier = async (deliveryId: string, courierId: string) => {
+    if (!tenant) return;
     try {
       const { error } = await (supabase as any)
         .from('orders')
         .update({ courier_id: courierId, status: 'confirmed' })
-        .eq('id', deliveryId);
+        .eq('id', deliveryId)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
 
@@ -129,6 +140,7 @@ export default function DeliveryManagement() {
   };
 
   const updateDeliveryStatus = async (deliveryId: string, status: string) => {
+    if (!tenant) return;
     try {
       const updates: any = { status };
       if (status === 'delivered') {
@@ -138,7 +150,8 @@ export default function DeliveryManagement() {
       const { error } = await (supabase as any)
         .from('orders')
         .update(updates)
-        .eq('id', deliveryId);
+        .eq('id', deliveryId)
+        .eq('tenant_id', tenant.id);
 
       if (error) throw error;
 
@@ -315,7 +328,7 @@ export default function DeliveryManagement() {
                           <span className="ml-1">{delivery.status.replace('_', ' ')}</span>
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-muted-foreground mt-1" />
@@ -324,7 +337,7 @@ export default function DeliveryManagement() {
                             <p className="text-sm text-muted-foreground">{delivery.address}</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-start gap-2">
                           <Clock className="w-4 h-4 text-muted-foreground mt-1" />
                           <div>
@@ -428,7 +441,7 @@ export default function DeliveryManagement() {
                           <span className="ml-1">Out for Delivery</span>
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-muted-foreground mt-1" />
@@ -458,8 +471,8 @@ export default function DeliveryManagement() {
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         Mark Delivered
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => navigate(`/admin/delivery-tracking/${delivery.id}`)}
                       >
@@ -489,7 +502,7 @@ export default function DeliveryManagement() {
                           <span className="ml-1">Delivered</span>
                         </Badge>
                       </div>
-                      
+
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{delivery.address}</span>
                         {delivery.delivered_at && (

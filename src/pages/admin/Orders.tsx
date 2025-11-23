@@ -37,8 +37,11 @@ interface Order {
   order_items?: any[];
 }
 
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+
 export default function Orders() {
   const navigate = useTenantNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,15 +51,19 @@ export default function Orders() {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    if (tenant) {
+      loadOrders();
+    }
+  }, [tenant]);
 
   const loadOrders = async () => {
+    if (!tenant) return;
     try {
       setLoading(true);
       let query = supabase
         .from('orders')
         .select('*, order_items(*)')
+        .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {

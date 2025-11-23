@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,17 +19,19 @@ interface ScannedSale {
 export default function RecordFrontedSale() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { account, userProfile } = useAccount();
+  const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [scannedItems, setScannedItems] = useState<ScannedSale[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleBarcodeScan = async (barcode: string) => {
+    if (!tenant?.id) return;
     try {
       const result = await supabase
         .from('products')
         .select('id, name')
         .eq('barcode', barcode)
+        .eq('tenant_id', tenant.id)
         .maybeSingle();
 
       const product = result.data;
@@ -63,6 +65,11 @@ export default function RecordFrontedSale() {
   };
 
   const handleRecordSale = async () => {
+    if (!tenant?.id) {
+      toast({ title: 'Error', description: 'Tenant not found', variant: 'destructive' });
+      return;
+    }
+
     if (scannedItems.length === 0) return;
 
     setLoading(true);
@@ -74,6 +81,7 @@ export default function RecordFrontedSale() {
         .from('fronted_inventory')
         .select('quantity_sold')
         .eq('id', id)
+        .eq('account_id', tenant.id)
         .maybeSingle();
 
       if (currentFront) {
@@ -82,17 +90,17 @@ export default function RecordFrontedSale() {
           .update({
             quantity_sold: (currentFront.quantity_sold || 0) + totalSold
           })
-          .eq('id', id);
+          .eq('id', id)
+          .eq('account_id', tenant.id);
       }
 
       // Create scan records for each item
       const scanRecords = scannedItems.map(item => ({
-        account_id: account?.id,
+        account_id: tenant.id,
         fronted_inventory_id: id,
         barcode: item.barcode,
         scan_type: 'sold',
-        quantity: item.quantity,
-        scanned_by: userProfile?.id
+        quantity: item.quantity
       }));
 
       await supabase.from('fronted_inventory_scans').insert(scanRecords);

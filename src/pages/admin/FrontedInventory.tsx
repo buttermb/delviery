@@ -64,7 +64,7 @@ export default function FrontedInventory() {
   const loadFrontedInventory = async () => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from('fronted_inventory')
         .select(`
@@ -72,9 +72,9 @@ export default function FrontedInventory() {
           product:products(name)
         `);
 
-      // Only filter by account_id if account exists
-      if (account?.id) {
-        query = query.eq('account_id', account.id);
+      // Only filter by account_id if tenant exists
+      if (tenant?.id) {
+        query = query.eq('account_id', tenant.id);
       }
 
       if (filter === 'pending') {
@@ -96,7 +96,7 @@ export default function FrontedInventory() {
         });
         return;
       }
-      
+
       setFrontedItems(data || []);
     } catch (error: any) {
       logger.error('Unexpected error loading fronted inventory:', error);

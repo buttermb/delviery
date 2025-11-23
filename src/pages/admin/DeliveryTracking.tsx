@@ -9,14 +9,19 @@ import { ArrowLeft, MapPin, Clock, Phone, Truck, Package } from "lucide-react";
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { SEOHead } from "@/components/SEOHead";
 
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+
 export default function DeliveryTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
 
   // Fetch delivery details
   const { data: delivery, isLoading } = useQuery({
     queryKey: ["delivery", id],
     queryFn: async () => {
+      if (!tenant) return null;
+
       const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
@@ -25,12 +30,13 @@ export default function DeliveryTracking() {
           orders:wholesale_orders(order_number, total_amount, delivery_address, delivery_notes)
         `)
         .eq("id", id)
+        .eq("tenant_id", tenant.id)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!tenant,
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 

@@ -31,44 +31,51 @@ interface MenuOrder {
   } | null;
 }
 
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+
 export default function LiveOrders() {
+  const { tenant } = useTenantAdminAuth();
   const [orders, setOrders] = useState<LiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadLiveOrders();
+    if (tenant) {
+      loadLiveOrders();
 
-    // Subscribe to BOTH orders AND menu_orders tables
-    const ordersChannel = supabase
-      .channel('live-orders-main')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'orders'
-      }, () => {
-        logger.info('Order update received', { component: 'LiveOrders' });
-        loadLiveOrders();
-      })
-      .subscribe();
+      // Subscribe to BOTH orders AND menu_orders tables with tenant_id filter
+      const ordersChannel = supabase
+        .channel('live-orders-main')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `tenant_id=eq.${tenant.id}`
+        }, () => {
+          logger.info('Order update received', { component: 'LiveOrders' });
+          loadLiveOrders();
+        })
+        .subscribe();
 
-    const menuOrdersChannel = supabase
-      .channel('live-menu-orders-secondary')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'menu_orders'
-      }, () => {
-        logger.info('Menu Order update received', { component: 'LiveOrders' });
-        loadLiveOrders();
-      })
-      .subscribe();
+      const menuOrdersChannel = supabase
+        .channel('live-menu-orders-secondary')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'menu_orders',
+          filter: `tenant_id=eq.${tenant.id}`
+        }, () => {
+          logger.info('Menu Order update received', { component: 'LiveOrders' });
+          loadLiveOrders();
+        })
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(menuOrdersChannel);
-    };
-  }, []);
+      return () => {
+        supabase.removeChannel(ordersChannel);
+        supabase.removeChannel(menuOrdersChannel);
+      };
+    }
+  }, [tenant]);
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
@@ -77,12 +84,14 @@ export default function LiveOrders() {
   };
 
   const loadLiveOrders = async () => {
+    if (!tenant) return;
     try {
       // Query BOTH tables and union results
       const [ordersResult, menuOrdersResult] = await Promise.all([
         supabase
           .from('orders')
           .select('*')
+          .eq('tenant_id', tenant.id)
           .in('status', ['pending', 'confirmed', 'rejected'])
           .order('created_at', { ascending: false }),
 
@@ -96,6 +105,7 @@ export default function LiveOrders() {
             synced_order_id,
             disposable_menus (title)
           `)
+          .eq('tenant_id', tenant.id)
           .in('status', ['pending', 'confirmed', 'rejected'])
           .order('created_at', { ascending: false })
       ]);

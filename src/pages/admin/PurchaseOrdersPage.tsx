@@ -73,11 +73,14 @@ export default function PurchaseOrdersPage() {
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
 
   const { data: purchaseOrders, isLoading } = useQuery({
-    queryKey: queryKeys.purchaseOrders.list({ status: statusFilter }),
+    queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
+      if (!tenant?.id) return [];
+
       let query = supabase
         .from("purchase_orders")
         .select("*")
+        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
@@ -85,7 +88,7 @@ export default function PurchaseOrdersPage() {
       }
 
       const { data, error } = await query;
-      
+
       if (error) {
         logger.error('Failed to fetch purchase orders', error, { component: 'PurchaseOrdersPage' });
         throw error;
@@ -93,6 +96,7 @@ export default function PurchaseOrdersPage() {
 
       return (data || []) as PurchaseOrder[];
     },
+    enabled: !!tenant?.id,
   });
 
   const deleteMutation = deletePurchaseOrder;

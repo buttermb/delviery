@@ -27,11 +27,14 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+
 const SystemSettings = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
   const [isRunningOperation, setIsRunningOperation] = useState(false);
-  
+
   // Fraud Detection Rules
   const [fraudRules, setFraudRules] = useState({
     max_orders_per_hour: 3,
@@ -47,41 +50,23 @@ const SystemSettings = () => {
 
   // System Health Monitoring
   const { data: systemHealth } = useQuery({
-    queryKey: ["system-health"],
+    queryKey: ["system-health", tenant?.id],
     queryFn: async () => {
+      if (!tenant) return null;
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-      // Get tenant context for filtering
-      const { data: { user } } = await supabase.auth.getUser();
-      let tenantId: string | null = null;
-      
-      if (user) {
-        const { data: tenantUser } = await supabase
-          .from('tenant_users')
-          .select('tenant_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        tenantId = tenantUser?.tenant_id || null;
-      }
+      const tenantId = tenant.id;
 
       // Execute queries with explicit typing to avoid type instantiation depth issues
-      const ordersLastHourQuery = tenantId 
-        ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString())
-        : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneHourAgo.toISOString());
-      
-      const ordersTodayQuery = tenantId
-        ? supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString())
-        : supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", oneDayAgo.toISOString());
-      
+      const ordersLastHourQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString());
+
+      const ordersTodayQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString());
+
       // Execute fraud flags query with type casting to avoid depth issues
       const errorCountPromise = (async () => {
-        if (tenantId) {
-          return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
-        } else {
-          return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).is("resolved_at", null);
-        }
+        return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
       })();
 
       const [
@@ -101,7 +86,7 @@ const SystemSettings = () => {
       ]);
 
       const errorRate = ((errorCount.count || 0) / Math.max((ordersLastHour.count || 1), 1)) * 100;
-      
+
       return {
         ordersPerHour: ordersLastHour.count || 0,
         ordersToday: ordersToday.count || 0,
@@ -115,18 +100,22 @@ const SystemSettings = () => {
         lastBackup: "2 hours ago"
       };
     },
+    enabled: !!tenant,
     refetchInterval: 30000, // Refresh every 30s
   });
 
   // Database statistics
   const { data: dbStats } = useQuery({
-    queryKey: ["db-stats"],
+    queryKey: ["db-stats", tenant?.id],
     queryFn: async () => {
+      if (!tenant) return null;
+      const tenantId = tenant.id;
+
       const [users, orders, products, fraudFlags] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("orders").select("id", { count: "exact", head: true }),
-        supabase.from("products").select("id", { count: "exact", head: true }),
-        supabase.from("fraud_flags").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
       ]);
 
       return {
@@ -136,6 +125,7 @@ const SystemSettings = () => {
         fraudFlags: fraudFlags.count || 0,
       };
     },
+    enabled: !!tenant,
   });
 
   const saveFraudRules = useMutation({
@@ -225,7 +215,7 @@ const SystemSettings = () => {
     };
     const config = variants[status || 'healthy'] || variants.healthy;
     const Icon = config.icon;
-    
+
     return (
       <Badge variant={config.variant} className="gap-1">
         <Icon className="h-3 w-3" />
@@ -557,8 +547,8 @@ const SystemSettings = () => {
               <CardTitle>Database Operations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => handleDatabaseOperation('vacuum')}
                 disabled={isRunningOperation}
@@ -566,8 +556,8 @@ const SystemSettings = () => {
                 <Database className="mr-2 h-4 w-4" />
                 {isRunningOperation ? 'Running...' : 'Run Database Maintenance'}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => handleDatabaseOperation('optimize_indexes')}
                 disabled={isRunningOperation}
@@ -575,8 +565,8 @@ const SystemSettings = () => {
                 <Shield className="mr-2 h-4 w-4" />
                 {isRunningOperation ? 'Optimizing...' : 'Optimize Indexes'}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => handleDatabaseBackup()}
                 disabled={isRunningOperation}

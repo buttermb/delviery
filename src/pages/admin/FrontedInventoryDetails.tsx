@@ -22,9 +22,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+
 export default function FrontedInventoryDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
   const [front, setFront] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
@@ -32,11 +35,14 @@ export default function FrontedInventoryDetails() {
   const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
-    loadFrontDetails();
-    subscribeToUpdates();
-  }, [id]);
+    if (tenant) {
+      loadFrontDetails();
+      subscribeToUpdates();
+    }
+  }, [id, tenant]);
 
   const subscribeToUpdates = () => {
+    if (!tenant) return;
     const channel = supabase
       .channel(`front-${id}`)
       .on(
@@ -64,6 +70,7 @@ export default function FrontedInventoryDetails() {
   };
 
   const loadFrontDetails = async () => {
+    if (!tenant) return;
     try {
       // Load front details
       const { data: frontData, error: frontError } = await supabase
@@ -74,9 +81,12 @@ export default function FrontedInventoryDetails() {
           inventory_locations (location_name, location_type, address)
         `)
         .eq("id", id)
+        .eq("account_id", tenant.id)
         .maybeSingle();
 
       if (frontError) throw frontError;
+      if (!frontData) throw new Error("Fronted inventory not found");
+
       setFront(frontData);
       setProduct(frontData.products);
 
@@ -85,6 +95,7 @@ export default function FrontedInventoryDetails() {
         .from("fronted_inventory_scans")
         .select("*")
         .eq("fronted_inventory_id", id)
+        .eq("account_id", tenant.id)
         .order("scanned_at", { ascending: false });
 
       setScans(scansData || []);
@@ -94,6 +105,7 @@ export default function FrontedInventoryDetails() {
         .from("fronted_payments")
         .select("*")
         .eq("fronted_inventory_id", id)
+        // Assuming fronted_payments also has account_id, if not we rely on fronted_inventory_id linkage which is now secured
         .order("received_at", { ascending: false });
 
       setPayments(paymentsData || []);

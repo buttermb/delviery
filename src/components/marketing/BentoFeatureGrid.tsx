@@ -1,30 +1,31 @@
 import { motion } from "framer-motion";
 import { FileKey2, Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight, MapPin, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CountdownTimer } from "./CountdownTimer";
+import { BurningEffect } from "./BurningEffect";
 
 const features = [
   {
     title: "Secure Auto-Expiring Catalogs",
-    description: "Create encrypted product catalogs that burn after viewing. The ultimate security for high-value wholesale.",
-    icon: FileKey2,
-    className: "md:col-span-2 md:row-span-2",
+    description: "Share live menus that self-destruct. Control access down to the second.",
+    icon: ShieldCheck,
     highlight: true,
+    className: "md:col-span-2 md:row-span-2",
     visual: (
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4">
-          <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl">
-            <div className="w-8 h-8 rounded bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white">
+        <BurningEffect />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 z-30">
+          <div className="bg-[hsl(var(--marketing-bg-subtle))] rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden">
+            <div className="w-8 h-8 rounded bg-[hsl(var(--marketing-primary))] flex items-center justify-center text-white relative z-10">
               <Lock className="w-4 h-4" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 relative z-10">
               <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
               <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
             </div>
           </div>
-          <div className="mt-2 flex justify-center">
-            <div className="text-[10px] text-[hsl(var(--marketing-primary))] font-mono animate-pulse">
-              Link expires in 00:59:59
-            </div>
+          <div className="mt-2">
+            <CountdownTimer />
           </div>
         </div>
       </div>
