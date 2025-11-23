@@ -11866,6 +11866,7 @@ export type Database = {
       }
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      is_tenant_owner: { Args: { p_tenant_id: string }; Returns: boolean }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
