@@ -53,14 +53,36 @@ export async function checkIntegrationConnection(integrationId: string): Promise
       }
     
     case 'stripe':
-      // Check if Stripe secret exists (would need to call edge function)
+      // Check if Tenant Stripe is configured (their own API keys for customer payments)
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase.functions.invoke('check-stripe-config');
-        if (error) {
-          logger.debug('Stripe connection check failed', { error, component: 'integrations' });
-        }
-        return !error && data?.configured === true;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+        
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!tenantUser) return false;
+        
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('id')
+          .eq('tenant_id', tenantUser.tenant_id)
+          .single();
+        
+        if (!account) return false;
+        
+        const { data: settings } = await supabase
+          .from('account_settings')
+          .select('integration_settings')
+          .eq('account_id', account.id)
+          .single();
+        
+        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        return !!(integrationSettings?.stripe_secret_key && integrationSettings?.stripe_publishable_key);
       } catch (error) {
         logger.error('Stripe connection check error', error, { component: 'integrations' });
         return false;
@@ -126,7 +148,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
   stripe: {
     id: 'stripe',
     name: 'Stripe',
-    description: 'Accept customer payments (separate from your platform billing)',
+    description: 'Accept payments from YOUR customers (requires your own Stripe account)',
     icon: CreditCard,
     featuresEnabled: ['subscriptions', 'payment-links', 'invoices'],
     setupUrl: '/admin/settings?tab=integrations&setup=stripe',
