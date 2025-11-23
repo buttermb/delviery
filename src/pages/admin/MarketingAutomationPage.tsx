@@ -149,14 +149,18 @@ export default function MarketingAutomationPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Create Dialog Placeholder */}
+      {/* Create Campaign Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New {activeTab === 'campaigns' ? 'Campaign' : 'Workflow'}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>Builder component coming soon...</p>
+            {activeTab === 'campaigns' ? (
+              <CampaignBuilder onClose={() => setIsCreateOpen(false)} />
+            ) : (
+              <WorkflowEditor />
+            )}
           </div>
         </DialogContent>
       </Dialog>
