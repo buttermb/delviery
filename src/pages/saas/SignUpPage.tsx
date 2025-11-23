@@ -319,13 +319,12 @@ export default function SignUpPage() {
       
       await Promise.race([prefetchPromise, timeoutPromise]);
 
-      // Navigate with React Router (SPA navigation, no page reload)
-      // Note: Tokens are already set as httpOnly cookies by edge function
-      navigate(`/${tenant.slug}/admin/dashboard`, {
+      // Navigate to plan selection for trial signup
+      navigate(`/select-plan?tenant_id=${tenant.id}`, {
         replace: true,
         state: { 
           fromSignup: true,
-          showWelcome: true, // Show welcome modal on dashboard
+          tenantSlug: tenant.slug,
         },
       });
 

@@ -128,6 +128,7 @@ const MarketplaceModerationPage = lazy(() => import("./pages/super-admin/Marketp
 const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
 const SuperAdminLayout = lazyWithRetry(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
 const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
+const SelectPlanPage = lazy(() => import("./pages/saas/SelectPlanPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
@@ -479,6 +480,7 @@ const App = () => {
 
                                     {/* Public Authentication */}
                                     <Route path="/signup" element={<SignUpPage />} />
+                                    <Route path="/select-plan" element={<SelectPlanPage />} />
                                     <Route path="/saas/login" element={<SaasLoginPage />} />
                                     <Route path="/verify-email" element={<VerifyEmailPage />} />
 

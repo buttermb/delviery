@@ -9934,6 +9934,7 @@ export type Database = {
           demo_data_generated: boolean | null
           detected_operation_size: string | null
           features: Json | null
+          grace_period_ends_at: string | null
           id: string
           industry: string | null
           last_activity_at: string | null
@@ -9957,7 +9958,14 @@ export type Database = {
           subscription_status: string
           suspended_reason: string | null
           team_size: number | null
+          trial_cancelled_at: string | null
+          trial_converted_at: string | null
+          trial_days: number | null
           trial_ends_at: string | null
+          trial_reminder_12_sent: boolean | null
+          trial_reminder_13_sent: boolean | null
+          trial_reminder_14_sent: boolean | null
+          trial_started_at: string | null
           updated_at: string | null
           usage: Json | null
           white_label: Json | null
@@ -9971,6 +9979,7 @@ export type Database = {
           demo_data_generated?: boolean | null
           detected_operation_size?: string | null
           features?: Json | null
+          grace_period_ends_at?: string | null
           id?: string
           industry?: string | null
           last_activity_at?: string | null
@@ -9994,7 +10003,14 @@ export type Database = {
           subscription_status: string
           suspended_reason?: string | null
           team_size?: number | null
+          trial_cancelled_at?: string | null
+          trial_converted_at?: string | null
+          trial_days?: number | null
           trial_ends_at?: string | null
+          trial_reminder_12_sent?: boolean | null
+          trial_reminder_13_sent?: boolean | null
+          trial_reminder_14_sent?: boolean | null
+          trial_started_at?: string | null
           updated_at?: string | null
           usage?: Json | null
           white_label?: Json | null
@@ -10008,6 +10024,7 @@ export type Database = {
           demo_data_generated?: boolean | null
           detected_operation_size?: string | null
           features?: Json | null
+          grace_period_ends_at?: string | null
           id?: string
           industry?: string | null
           last_activity_at?: string | null
@@ -10031,12 +10048,51 @@ export type Database = {
           subscription_status?: string
           suspended_reason?: string | null
           team_size?: number | null
+          trial_cancelled_at?: string | null
+          trial_converted_at?: string | null
+          trial_days?: number | null
           trial_ends_at?: string | null
+          trial_reminder_12_sent?: boolean | null
+          trial_reminder_13_sent?: boolean | null
+          trial_reminder_14_sent?: boolean | null
+          trial_started_at?: string | null
           updated_at?: string | null
           usage?: Json | null
           white_label?: Json | null
         }
         Relationships: []
+      }
+      trial_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usage_events: {
         Row: {
@@ -11838,6 +11894,10 @@ export type Database = {
           total_duration: unknown
         }[]
       }
+      get_trial_days_remaining: {
+        Args: { p_tenant_id: string }
+        Returns: number
+      }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -11874,6 +11934,7 @@ export type Database = {
       is_ip_blocked: { Args: { _ip_address: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       is_tenant_owner: { Args: { p_tenant_id: string }; Returns: boolean }
+      is_trial_active: { Args: { p_tenant_id: string }; Returns: boolean }
       log_document_access: {
         Args: { _access_type: string; _verification_id: string }
         Returns: undefined
