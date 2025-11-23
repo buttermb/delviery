@@ -226,16 +226,15 @@ serve(async (req) => {
     }
 
     // Create Supabase Auth user (must be done before atomic function)
-    // Hybrid approach: Allow immediate access but require verification within 7 days
+    // Auto-confirm email for immediate access (B2B SaaS standard practice)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
       password: password,
-      email_confirm: false, // ⭐ Change to false - require email verification
+      email_confirm: true, // ✅ Auto-confirm for immediate login
       user_metadata: {
         name: owner_name,
         business_name: business_name,
         signup_date: new Date().toISOString(),
-        verification_deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       },
     });
 
