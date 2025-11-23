@@ -40,21 +40,28 @@ export function useSmartDashboard() {
 
         // 2. Fetch Initial Metrics
         const fetchMetrics = async () => {
-            // In a real app, these would be actual DB queries
-            // For now, we'll simulate "live" data with some randomness based on actual counts if available
-            // @ts-ignore - Avoid deep type instantiation
-            const { count: orderCount } = await supabase
-                .from('menu_orders')
-                .select('id', { count: 'exact', head: true })
-                .eq('tenant_id', tenant.id)
-                .gte('created_at', new Date().setHours(0, 0, 0, 0));
+            try {
+                // Fix timestamp format - use ISO string instead of milliseconds
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0);
+                
+                // @ts-ignore - Avoid deep type instantiation
+                const { count: orderCount } = await supabase
+                    .from('menu_orders')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('tenant_id', tenant.id)
+                    .gte('created_at', startOfDay.toISOString());
 
-            setMetrics(prev => ({
-                ...prev,
-                ordersToday: orderCount || 0,
-                activeUsers: Math.floor(Math.random() * 10) + 2 // Mock active users
-            }));
-            setIsLoading(false);
+                setMetrics(prev => ({
+                    ...prev,
+                    ordersToday: orderCount || 0,
+                    activeUsers: Math.floor(Math.random() * 10) + 2 // Mock active users
+                }));
+            } catch (error) {
+                logger.error('Failed to fetch metrics:', error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         fetchInsights();

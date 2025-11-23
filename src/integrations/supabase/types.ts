@@ -9462,6 +9462,7 @@ export type Database = {
           display_name: string | null
           features: Json | null
           id: string
+          is_active: boolean
           limits: Json | null
           name: string
           price: number
@@ -9473,6 +9474,7 @@ export type Database = {
           display_name?: string | null
           features?: Json | null
           id?: string
+          is_active?: boolean
           limits?: Json | null
           name: string
           price: number
@@ -9484,6 +9486,7 @@ export type Database = {
           display_name?: string | null
           features?: Json | null
           id?: string
+          is_active?: boolean
           limits?: Json | null
           name?: string
           price?: number
