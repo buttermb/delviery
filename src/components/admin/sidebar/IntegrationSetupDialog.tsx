@@ -144,14 +144,26 @@ export function IntegrationSetupDialog({
         
         if (!tenantUser) throw new Error('Tenant not found');
         
-        // Update or create account_settings with the mapbox token
+        // Get existing settings to merge with new token
+        const { data: existingSettings } = await supabase
+          .from('account_settings')
+          .select('integration_settings')
+          .eq('account_id', tenantUser.tenant_id)
+          .single();
+        
+        // Merge existing integration settings with new mapbox token
+        const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
+        const updatedSettings = {
+          ...currentSettings,
+          mapbox_token: formData['VITE_MAPBOX_TOKEN']
+        };
+        
+        // Update or create account_settings with merged integration settings
         const { error: settingsError } = await supabase
           .from('account_settings')
           .upsert({
             account_id: tenantUser.tenant_id,
-            integration_settings: {
-              mapbox_token: formData['VITE_MAPBOX_TOKEN']
-            }
+            integration_settings: updatedSettings
           }, {
             onConflict: 'account_id',
             ignoreDuplicates: false
