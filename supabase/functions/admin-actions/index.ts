@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateAdminAction, type AdminActionInput } from './validation.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,7 +64,9 @@ serve(async (req) => {
       );
     }
 
-    const { action, orderId, reason, userId, details } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const { action, orderId, reason, userId, details } = validateAdminAction(rawBody);
 
     // ==================== CANCEL ORDER ====================
     if (action === "cancel-order") {

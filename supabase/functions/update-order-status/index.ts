@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateOrderStatus, type OrderStatusInput } from './validation.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,9 @@ serve(async (req) => {
       });
     }
 
-    const { orderId, status, message, lat, lng, courierId } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const { orderId, status, message, lat, lng, courierId } = validateOrderStatus(rawBody);
 
     // Verify user has permission (courier or admin)
     const { data: roles } = await supabase

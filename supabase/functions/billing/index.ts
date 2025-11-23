@@ -4,6 +4,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateBilling, type BillingInput } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,13 +42,9 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
-    let requestBody: any = {};
-    try {
-      requestBody = await req.json();
-    } catch {
-      requestBody = {};
-    }
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const requestBody: BillingInput = validateBilling(rawBody);
 
     const { action, tenant_id } = requestBody;
 
