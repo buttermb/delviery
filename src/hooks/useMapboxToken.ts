@@ -30,10 +30,22 @@ export function useMapboxToken() {
           return;
         }
 
+        // Get account ID from accounts table (account_settings uses accounts.id, not tenant.id)
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('id')
+          .eq('tenant_id', tenantUser.tenant_id)
+          .single();
+
+        if (!account) {
+          setLoading(false);
+          return;
+        }
+
         const { data: settings } = await supabase
           .from('account_settings')
           .select('integration_settings')
-          .eq('account_id', tenantUser.tenant_id)
+          .eq('account_id', account.id)
           .single();
 
         const integrationSettings = settings?.integration_settings as Record<string, any> | null;
