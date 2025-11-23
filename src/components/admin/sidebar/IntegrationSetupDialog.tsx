@@ -44,9 +44,24 @@ type IntegrationConfig = {
 
 const INTEGRATION_CONFIGS: IntegrationConfig = {
   stripe: {
-    fields: [], // No fields needed - configured at platform level
+    fields: [
+      {
+        key: 'TENANT_STRIPE_SECRET_KEY',
+        label: 'Your Stripe Secret Key',
+        type: 'password',
+        placeholder: 'sk_live_... or sk_test_...',
+        helpText: 'Your own Stripe secret key for accepting payments from customers'
+      },
+      {
+        key: 'TENANT_STRIPE_PUBLISHABLE_KEY',
+        label: 'Your Stripe Publishable Key',
+        type: 'text',
+        placeholder: 'pk_live_... or pk_test_...',
+        helpText: 'Your Stripe publishable key for checkout forms'
+      }
+    ],
     docsUrl: 'https://stripe.com/docs/keys',
-    testable: true,
+    testable: false,
   },
   twilio: {
     fields: [
@@ -213,11 +228,51 @@ export function IntegrationSetupDialog({
           
         if (settingsError) throw settingsError;
       } else if (integrationId === 'stripe') {
-        // Stripe is configured at platform level, just verify it works
-        const result = await supabase.functions.invoke('check-stripe-config');
-        if (result.error || !result.data?.configured) {
-          throw new Error('Stripe configuration verification failed');
-        }
+        // Store tenant's own Stripe credentials for customer payments
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!tenantUser) throw new Error('Tenant not found');
+        
+        const { data: account } = await supabase
+          .from('accounts')
+          .select('id')
+          .eq('tenant_id', tenantUser.tenant_id)
+          .single();
+        
+        if (!account) throw new Error('Account not found');
+        
+        // Get existing settings to merge with new Stripe keys
+        const { data: existingSettings } = await supabase
+          .from('account_settings')
+          .select('integration_settings')
+          .eq('account_id', account.id)
+          .single();
+        
+        const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
+        const updatedSettings = {
+          ...currentSettings,
+          stripe_secret_key: formData['TENANT_STRIPE_SECRET_KEY'],
+          stripe_publishable_key: formData['TENANT_STRIPE_PUBLISHABLE_KEY']
+        };
+        
+        const { error: settingsError } = await supabase
+          .from('account_settings')
+          .upsert({
+            account_id: account.id,
+            integration_settings: updatedSettings
+          }, {
+            onConflict: 'account_id',
+            ignoreDuplicates: false
+          });
+          
+        if (settingsError) throw settingsError;
       } else {
         // For customer-configurable integrations (Twilio, SendGrid)
         // Backend secret storage for customers coming soon
@@ -292,7 +347,7 @@ export function IntegrationSetupDialog({
           <DialogTitle>Configure {integrationName}</DialogTitle>
           <DialogDescription>
             {integrationId === 'stripe' 
-              ? 'Stripe is pre-configured at the platform level. Click "Test Connection" to verify it\'s working.'
+              ? 'Enter your own Stripe API keys to accept payments from your customers. This is separate from the platform subscription billing.'
               : `Enter your ${integrationName} credentials to enable this integration.`}
           </DialogDescription>
         </DialogHeader>
