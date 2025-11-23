@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   CreditCard,
   CheckCircle2,
@@ -262,6 +263,9 @@ export default function TenantAdminBillingPage() {
     }
   };
 
+  // Check if platform Stripe is in test mode
+  const isTestMode = import.meta.env.VITE_STRIPE_SECRET_KEY?.startsWith('sk_test_');
+
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
@@ -270,6 +274,15 @@ export default function TenantAdminBillingPage() {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">💳 Billing & Subscription</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
+
+        {isTestMode && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Platform Test Mode:</strong> Subscription billing is using Stripe test mode. Use test card: 4242 4242 4242 4242
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="current" className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-auto">
