@@ -10,7 +10,7 @@ const PLANS = [
   {
     id: "starter",
     name: "Starter",
-    price: 29,
+    price: 79,
     description: "Perfect for small businesses getting started",
     features: [
       "Up to 50 customers",
@@ -23,7 +23,7 @@ const PLANS = [
   {
     id: "professional",
     name: "Professional",
-    price: 99,
+    price: 150,
     description: "For growing businesses with expanding needs",
     features: [
       "Up to 500 customers",
@@ -38,7 +38,7 @@ const PLANS = [
   {
     id: "enterprise",
     name: "Enterprise",
-    price: 299,
+    price: 499,
     description: "For large organizations with complex requirements",
     features: [
       "Unlimited customers",
