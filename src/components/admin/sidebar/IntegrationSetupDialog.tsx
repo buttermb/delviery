@@ -44,15 +44,7 @@ type IntegrationConfig = {
 
 const INTEGRATION_CONFIGS: IntegrationConfig = {
   stripe: {
-    fields: [
-      {
-        key: 'STRIPE_SECRET_KEY',
-        label: 'Secret Key',
-        type: 'password',
-        placeholder: 'sk_test_...',
-        helpText: 'Your Stripe Secret Key (starts with sk_)',
-      },
-    ],
+    fields: [], // No fields needed - configured at platform level
     docsUrl: 'https://stripe.com/docs/keys',
     testable: true,
   },
@@ -181,10 +173,17 @@ export function IntegrationSetupDialog({
           });
           
         if (settingsError) throw settingsError;
+      } else if (integrationId === 'stripe') {
+        // Stripe is configured at platform level, just verify it works
+        const result = await supabase.functions.invoke('check-stripe-config');
+        if (result.error || !result.data?.configured) {
+          throw new Error('Stripe configuration verification failed');
+        }
       } else {
-        // For other integrations (backend secrets), we would use the secrets API
-        // This requires backend implementation
-        toast.info('Backend secret storage not yet implemented');
+        // For customer-configurable integrations (Twilio, SendGrid)
+        // Backend secret storage for customers coming soon
+        toast.info('Customer secret storage coming soon - this feature allows your customers to add their own credentials');
+        return;
       }
       
       toast.success(`${integrationName} configured successfully`);
@@ -253,7 +252,9 @@ export function IntegrationSetupDialog({
         <DialogHeader>
           <DialogTitle>Configure {integrationName}</DialogTitle>
           <DialogDescription>
-            Enter your {integrationName} credentials to enable this integration.
+            {integrationId === 'stripe' 
+              ? 'Stripe is pre-configured at the platform level. Click "Test Connection" to verify it\'s working.'
+              : `Enter your ${integrationName} credentials to enable this integration.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -316,10 +317,12 @@ export function IntegrationSetupDialog({
                 Test Connection
               </Button>
             )}
-            <Button type="submit" disabled={isSubmitting || isTesting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Configuration
-            </Button>
+            {config.fields.length > 0 && (
+              <Button type="submit" disabled={isSubmitting || isTesting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Configuration
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>
