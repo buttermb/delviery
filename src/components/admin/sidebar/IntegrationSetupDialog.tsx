@@ -136,22 +136,48 @@ export function IntegrationSetupDialog({
         
         if (!tenantUser) throw new Error('Tenant not found');
         
-        // Get account ID from accounts table (account_settings uses accounts.id, not tenant.id)
         const { data: account, error: accountError } = await supabase
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
           .single();
         
-        if (accountError || !account) {
-          throw new Error('Account not found for tenant');
+        let accountId = account?.id as string | undefined;
+        
+        // If no account exists yet for this tenant, create a minimal one so settings can be stored
+        if (accountError || !accountId) {
+          const { data: tenant } = await supabase
+            .from('tenants')
+            .select('id, business_name, slug')
+            .eq('id', tenantUser.tenant_id)
+            .single();
+          
+          if (!tenant) {
+            throw new Error('Unable to resolve tenant to create billing account');
+          }
+          
+          const { data: newAccount, error: createError } = await supabase
+            .from('accounts')
+            .insert({
+              company_name: (tenant as any).business_name || (tenant as any).slug || 'Primary Account',
+              slug: (tenant as any).slug,
+              tenant_id: (tenant as any).id,
+            })
+            .select('id')
+            .single();
+          
+          if (createError || !newAccount) {
+            throw new Error('Unable to create billing account for tenant');
+          }
+          
+          accountId = newAccount.id;
         }
         
         // Get existing settings to merge with new token
         const { data: existingSettings } = await supabase
           .from('account_settings')
           .select('integration_settings')
-          .eq('account_id', account.id)
+          .eq('account_id', accountId)
           .single();
         
         // Merge existing integration settings with new mapbox token
@@ -165,7 +191,7 @@ export function IntegrationSetupDialog({
         const { error: settingsError } = await supabase
           .from('account_settings')
           .upsert({
-            account_id: account.id,
+            account_id: accountId,
             integration_settings: updatedSettings
           }, {
             onConflict: 'account_id',
