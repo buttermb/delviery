@@ -11665,6 +11665,7 @@ export type Database = {
         Returns: undefined
       }
       detect_operation_size: { Args: { p_tenant_id: string }; Returns: string }
+      emergency_wipe: { Args: { tenant_id: string }; Returns: undefined }
       emergency_wipe_all_data: { Args: never; Returns: undefined }
       encrypt_disposable_menu: { Args: { menu_id: string }; Returns: boolean }
       encrypt_menu_jsonb: { Args: { plaintext: Json }; Returns: string }
@@ -11846,6 +11847,7 @@ export type Database = {
         Args: { p_execution_id: string }
         Returns: string
       }
+      refresh_dashboard_metrics: { Args: never; Returns: undefined }
       refresh_menu_analytics: { Args: never; Returns: undefined }
       reserve_inventory: {
         Args: { p_items: Json; p_menu_id: string; p_trace_id?: string }

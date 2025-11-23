@@ -4,6 +4,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateWorkflowExecutor, type WorkflowExecutorInput } from './validation.ts';
 
 interface WorkflowAction {
   id: string;
@@ -30,14 +31,8 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { execution_id } = await req.json();
-
-    if (!execution_id) {
-      return new Response(
-        JSON.stringify({ error: 'execution_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const rawBody = await req.json();
+    const { execution_id }: WorkflowExecutorInput = validateWorkflowExecutor(rawBody);
 
     // Get execution details
     const { data: execution, error: execError } = await supabase
