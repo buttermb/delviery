@@ -58,29 +58,29 @@ self.addEventListener('install', (event) => {
 // Activate event - nuclear cache clear
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating new service worker - NUCLEAR CACHE CLEAR');
-  
+
   event.waitUntil(
     (async () => {
       // Delete ALL caches regardless of version
       const cacheNames = await caches.keys();
       console.log('[SW] Deleting all caches:', cacheNames);
-      
+
       await Promise.all(
         cacheNames.map(cacheName => {
           console.log('[SW] Deleting:', cacheName);
           return caches.delete(cacheName);
         })
       );
-      
+
       // Force immediate control
       await self.clients.claim();
-      
+
       // Notify all clients to reload
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
         client.postMessage({ type: 'CACHE_CLEARED', version: CACHE_VERSION });
       });
-      
+
       console.log('[SW] All caches cleared, service worker activated');
     })()
   );
@@ -110,13 +110,13 @@ self.addEventListener('fetch', (event) => {
   // API calls - Stale-while-revalidate for non-admin endpoints
   if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
     const isAdminOrRealtime = ADMIN_ENDPOINTS.some(endpoint => url.pathname.includes(endpoint));
-    
+
     if (isAdminOrRealtime) {
       // Never cache admin API calls
       event.respondWith(fetch(event.request));
       return;
     }
-    
+
     // Stale-while-revalidate for other API calls
     event.respondWith(
       caches.open(RUNTIME_CACHE).then((cache) => {
@@ -240,7 +240,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification handler
 self.addEventListener('push', (event) => {
   console.log('Push notification received:', event);
-  
+
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
@@ -316,11 +316,17 @@ self.addEventListener('notificationclick', (event) => {
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
   console.log('Background sync:', event.tag);
-  
+
   if (event.tag === 'sync-location') {
     event.waitUntil(syncLocationData());
   } else if (event.tag === 'sync-order-status') {
     event.waitUntil(syncOrderStatus());
+  } else if (event.tag === 'sync-queue') {
+    // Generic sync queue handled by the client-side sync-queue.ts 
+    // or we can implement the actual sync logic here if we want true background sync
+    // For now, we'll just log it, as the client-side listener on 'online' handles most cases
+    // effectively. True background sync requires duplicating the API logic here.
+    console.log('Background sync triggered for sync-queue');
   }
 });
 
@@ -328,17 +334,17 @@ async function syncLocationData() {
   try {
     const cache = await caches.open('location-queue');
     const requests = await cache.keys();
-    
+
     for (const request of requests) {
       const response = await cache.match(request);
       const data = await response.json();
-      
+
       await fetch(request.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      
+
       await cache.delete(request);
     }
   } catch (error) {
@@ -350,17 +356,17 @@ async function syncOrderStatus() {
   try {
     const cache = await caches.open('order-queue');
     const requests = await cache.keys();
-    
+
     for (const request of requests) {
       const response = await cache.match(request);
       const data = await response.json();
-      
+
       await fetch(request.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      
+
       await cache.delete(request);
     }
   } catch (error) {
@@ -371,21 +377,21 @@ async function syncOrderStatus() {
 // Message event - handle commands from clients
 self.addEventListener('message', (event) => {
   console.log('[SW] Received message:', event.data);
-  
+
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] Forcing immediate activation');
     self.skipWaiting();
   }
-  
+
   if (event.data && event.data.type === 'CLEAR_CACHES') {
     event.waitUntil(
       caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))))
     );
   }
-  
+
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, tag, icon, badge, data, requireInteraction } = event.data;
-    
+
     event.waitUntil(
       self.registration.showNotification(title, {
         body: body || '',

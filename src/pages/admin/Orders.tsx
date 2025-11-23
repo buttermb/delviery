@@ -10,13 +10,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Search, Eye } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Search, Eye, Archive, Trash2, MoreHorizontal } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
 import { ordersTutorial } from '@/lib/tutorials/tutorialConfig';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { SwipeableItem } from '@/components/mobile/SwipeableItem';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
+import { triggerHaptic } from '@/lib/utils/mobile';
 
 interface Order {
   id: string;
@@ -31,6 +34,7 @@ interface Order {
     full_name: string | null;
     email: string | null;
   };
+  order_items?: any[];
 }
 
 export default function Orders() {
@@ -39,6 +43,8 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
@@ -50,7 +56,7 @@ export default function Orders() {
       setLoading(true);
       let query = supabase
         .from('orders')
-        .select('*')
+        .select('*, order_items(*)')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -131,6 +137,28 @@ export default function Orders() {
 
   const handleRefresh = async () => {
     await loadOrders();
+    triggerHaptic('light');
+  };
+
+  const handleOrderClick = (order: Order) => {
+    // On mobile, open drawer. On desktop, navigate.
+    if (window.innerWidth < 768) {
+      setSelectedOrder(order);
+      setIsDrawerOpen(true);
+      triggerHaptic('light');
+    } else {
+      navigate(`/admin/orders/${order.id}`);
+    }
+  };
+
+  const handleArchive = (id: string) => {
+    toast.success("Order archived (simulated)");
+    triggerHaptic('medium');
+  };
+
+  const handleDelete = (id: string) => {
+    toast.error("Order deleted (simulated)");
+    triggerHaptic('heavy');
   };
 
   return (
@@ -141,13 +169,13 @@ export default function Orders() {
       />
 
       <PullToRefresh onRefresh={handleRefresh}>
-        <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+        <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden pb-24">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
             <div className="flex gap-2">
               <Button
                 variant="default"
-                className="min-h-[48px] touch-manipulation"
+                className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
                 data-tutorial="create-order"
               >
                 + New Order
@@ -162,11 +190,12 @@ export default function Orders() {
             </div>
           </div>
 
+          {/* Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <Card key={stat.label} className="p-3 sm:p-4">
+                <Card key={stat.label} className="p-3 sm:p-4 border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
@@ -179,7 +208,7 @@ export default function Orders() {
             })}
           </div>
 
-          <Card className="p-3 sm:p-4">
+          <Card className="p-3 sm:p-4 border-none shadow-sm">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -187,11 +216,11 @@ export default function Orders() {
                   placeholder="Search by order number or customer..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 text-base"
+                  className="pl-10 text-base bg-muted/30 border-transparent focus:bg-background focus:border-primary transition-all"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-transparent">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -206,18 +235,19 @@ export default function Orders() {
               </Select>
             </div>
 
+            {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <div className="inline-block min-w-full align-middle">
                 <Table data-tutorial="orders-list" className="w-full">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs sm:text-sm">Order #</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Customer</TableHead>
-                      <TableHead className="text-xs sm:text-sm" data-tutorial="order-status">Status</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Method</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Total</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Date</TableHead>
-                      <TableHead className="text-xs sm:text-sm">Actions</TableHead>
+                    <TableRow className="hover:bg-transparent border-b border-border/50">
+                      <TableHead className="text-xs sm:text-sm font-semibold">Order #</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold">Customer</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold" data-tutorial="order-status">Status</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold">Method</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold">Total</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold">Date</TableHead>
+                      <TableHead className="text-xs sm:text-sm font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -231,25 +261,26 @@ export default function Orders() {
                       </TableRow>
                     ) : (
                       filteredOrders.map((order) => (
-                        <TableRow key={order.id} className="touch-manipulation">
+                        <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/admin/orders/${order.id}`)}>
                           <TableCell className="font-medium text-xs sm:text-sm">{order.order_number || order.id.slice(0, 8)}</TableCell>
                           <TableCell className="text-xs sm:text-sm">
                             <div className="flex flex-col">
                               <span className="font-medium">{order.user?.full_name || 'Unknown Customer'}</span>
-                              {/* Email is not available in profiles table */}
                             </div>
                           </TableCell>
                           <TableCell className="text-xs sm:text-sm">{getStatusBadge(order.status)}</TableCell>
                           <TableCell className="capitalize text-xs sm:text-sm">{order.delivery_method || 'N/A'}</TableCell>
-                          <TableCell className="text-xs sm:text-sm font-mono">${order.total_amount?.toFixed(2)}</TableCell>
-                          <TableCell className="text-xs sm:text-sm">{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-xs sm:text-sm font-mono font-medium">${order.total_amount?.toFixed(2)}</TableCell>
+                          <TableCell className="text-xs sm:text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="min-h-[48px] min-w-[48px] touch-manipulation"
-                              onMouseEnter={() => prefetchOnHover(`/admin/orders/${order.id}`)}
-                              onClick={() => navigate(`/admin/orders/${order.id}`)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/admin/orders/${order.id}`);
+                              }}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -263,93 +294,116 @@ export default function Orders() {
             </div>
           </Card>
 
-          {/* Mobile Card View */}
-          <Card className="md:hidden">
-            <div className="space-y-3 p-4">
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Card key={i} className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-5 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                        <div className="flex gap-2">
-                          <Skeleton className="h-6 w-20" />
-                          <Skeleton className="h-6 w-24" />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : filteredOrders.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <p className="text-muted-foreground">No orders found</p>
-                </div>
-              ) : (
-                filteredOrders.map((order) => (
+          {/* Mobile List View with Swipe Actions */}
+          <div className="md:hidden space-y-3">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground">No orders found</p>
+              </div>
+            ) : (
+              filteredOrders.map((order) => (
+                <SwipeableItem
+                  key={order.id}
+                  onSwipeLeft={() => handleDelete(order.id)}
+                  onSwipeRight={() => handleArchive(order.id)}
+                  leftAction={{ icon: <Trash2 className="h-5 w-5" />, color: 'bg-destructive', label: 'Delete' }}
+                  rightAction={{ icon: <Archive className="h-5 w-5" />, color: 'bg-blue-500', label: 'Archive' }}
+                >
                   <Card
-                    key={order.id}
-                    className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
-                    onClick={() => navigate(`/admin/orders/${order.id}`)}
+                    className="overflow-hidden cursor-pointer active:scale-[0.98] transition-transform border-none shadow-sm"
+                    onClick={() => handleOrderClick(order)}
                   >
                     <div className="p-4 space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <h3 className="font-semibold text-base truncate">
-                              {order.order_number || order.id.slice(0, 8)}
-                            </h3>
+                            <span className="font-mono font-bold text-primary">
+                              #{order.order_number || order.id.slice(0, 8)}
+                            </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {order.user?.full_name || order.user?.email || 'Unknown Customer'}
+                          <p className="text-sm font-medium">
+                            {order.user?.full_name || 'Unknown Customer'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(order.created_at).toLocaleDateString()} • {order.delivery_method}
                           </p>
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex flex-col items-end gap-2">
                           {getStatusBadge(order.status)}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 pt-2 border-t">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Method</div>
-                            <div className="text-sm capitalize">{order.delivery_method || 'N/A'}</div>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</div>
-                            <div className="text-sm">{new Date(order.created_at).toLocaleDateString()}</div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t">
-                          <div className="flex flex-col gap-1">
-                            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</div>
-                            <div className="text-lg font-semibold font-mono">${order.total_amount?.toFixed(2)}</div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="min-h-[48px]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/admin/orders/${order.id}`);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            <span className="text-xs">View</span>
-                          </Button>
+                          <span className="font-bold font-mono">${order.total_amount?.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
                   </Card>
-                ))
-              )}
-            </div>
-          </Card>
+                </SwipeableItem>
+              ))
+            )}
+          </div>
         </div>
       </PullToRefresh>
+
+      {/* Mobile Order Details Drawer */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader className="text-left">
+            <DrawerTitle>Order Details</DrawerTitle>
+            <DrawerDescription>
+              #{selectedOrder?.order_number || selectedOrder?.id.slice(0, 8)}
+            </DrawerDescription>
+          </DrawerHeader>
+
+          {selectedOrder && (
+            <div className="p-4 space-y-6 overflow-y-auto pb-safe">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Status</span>
+                {getStatusBadge(selectedOrder.status)}
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Customer</h4>
+                <div className="bg-muted/30 p-3 rounded-lg">
+                  <p className="font-medium">{selectedOrder.user?.full_name || 'Unknown'}</p>
+                  <p className="text-sm text-muted-foreground">{selectedOrder.user?.email || 'No email'}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Order Summary</h4>
+                <div className="bg-muted/30 p-3 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal</span>
+                    <span>${selectedOrder.total_amount?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery</span>
+                    <span>$0.00</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>${selectedOrder.total_amount?.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button className="w-full" onClick={() => navigate(`/admin/orders/${selectedOrder.id}`)}>
+                  Full Details
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full">Close</Button>
+                </DrawerClose>
+              </div>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

@@ -5,9 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, ShoppingCart, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { Activity, ShoppingCart, DollarSign, Users, TrendingUp, Clock } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface LiveOrder {
   id: string;
@@ -83,7 +85,7 @@ export default function RealtimeDashboard() {
               if (exists) {
                 return prev.map((o) => (o.id === newOrder.id ? newOrder : o));
               }
-              return [...prev, newOrder].slice(0, 10);
+              return [newOrder, ...prev].slice(0, 10); // Add new to top
             });
           }
         }
@@ -91,14 +93,6 @@ export default function RealtimeDashboard() {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           logger.info('Realtime subscription active', { component: 'RealtimeDashboard' });
-        } else if (status === 'CHANNEL_ERROR') {
-          logger.warn('Realtime subscription error', null, { component: 'RealtimeDashboard' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
-        } else if (status === 'TIMED_OUT') {
-          logger.error('Realtime subscription timed out', null, { component: 'RealtimeDashboard' });
-          // Invalidate queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['realtime-dashboard', tenantId] });
         }
       });
 
@@ -115,92 +109,134 @@ export default function RealtimeDashboard() {
     );
   }
 
+  const statItems = [
+    {
+      title: "Active Orders",
+      value: stats?.activeOrders || 0,
+      sub: "Real-time count",
+      icon: ShoppingCart,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    },
+    {
+      title: "Total Revenue",
+      value: `$${(stats?.totalRevenue || 0).toFixed(2)}`,
+      sub: "Today",
+      icon: DollarSign,
+      color: "text-green-500",
+      bg: "bg-green-500/10"
+    },
+    {
+      title: "Customers",
+      value: stats?.totalCustomers || 0,
+      sub: "Total",
+      icon: Users,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10"
+    },
+    {
+      title: "Avg Order",
+      value: `$${(stats?.avgOrderValue || 0).toFixed(2)}`,
+      sub: "Average value",
+      icon: TrendingUp,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10"
+    }
+  ];
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
             <Activity className="h-6 w-6 text-green-500 animate-pulse" />
             Realtime Dashboard
           </h1>
           <p className="text-muted-foreground">Live updates and real-time metrics</p>
         </div>
-        <Badge variant="outline" className="bg-green-50 text-green-700">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
           <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse" />
           Live
         </Badge>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.activeOrders || 0}</div>
-            <p className="text-xs text-muted-foreground">Real-time count</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(stats?.totalRevenue || 0).toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Today</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalCustomers || 0}</div>
-            <p className="text-xs text-muted-foreground">Total</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Order</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(stats?.avgOrderValue || 0).toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Average value</p>
-          </CardContent>
-        </Card>
+      {/* Mobile Stats Carousel */}
+      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 snap-x snap-mandatory hide-scrollbar">
+        {statItems.map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="min-w-[240px] sm:min-w-0 snap-center"
+          >
+            <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <div className={cn("p-2 rounded-full", stat.bg)}>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      <Card>
+      <Card className="border-none shadow-md">
         <CardHeader>
-          <CardTitle>Live Orders</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Live Orders
+            <Badge variant="secondary" className="ml-2 text-xs">
+              {liveOrders.length} Recent
+            </Badge>
+          </CardTitle>
           <CardDescription>Orders updated in real-time</CardDescription>
         </CardHeader>
         <CardContent>
           {liveOrders.length > 0 ? (
             <div className="space-y-2">
-              {liveOrders.map((order: LiveOrder) => (
-                <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <div className="font-medium">Order #{order.id.slice(0, 8)}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(order.created_at).toLocaleString()}
+              <AnimatePresence initial={false}>
+                {liveOrders.map((order) => (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, height: 0, y: -20 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between p-3 sm:p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <ShoppingBagIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm sm:text-base">#{order.id.slice(0, 8)}</div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(order.created_at).toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="text-base font-bold">${(order.total || 0).toFixed(2)}</div>
+                        <Badge
+                          variant={order.status === 'completed' ? 'default' : 'secondary'}
+                          className="text-[10px] px-1.5 h-5"
+                        >
+                          {order.status || 'pending'}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-lg font-bold">${(order.total || 0).toFixed(2)}</div>
-                    <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
-                      {order.status || 'pending'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           ) : (
             <BetterEmptyState
@@ -213,5 +249,26 @@ export default function RealtimeDashboard() {
       </Card>
     </div>
   );
+}
+
+function ShoppingBagIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+      <path d="M3 6h18" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+  )
 }
 

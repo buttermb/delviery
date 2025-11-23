@@ -1,97 +1,120 @@
-import { useState, useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
-import { triggerHaptic } from "@/lib/utils/mobile";
+import { useEffect, useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { triggerHaptic } from '@/lib/utils/mobile';
 
 interface PullToRefreshProps {
-  children: React.ReactNode;
   onRefresh: () => Promise<void>;
-  disabled?: boolean;
+  children: React.ReactNode;
   className?: string;
 }
 
-export function PullToRefresh({ children, onRefresh, disabled = false, className }: PullToRefreshProps) {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pullDistance, setPullDistance] = useState(0);
+export function PullToRefresh({ onRefresh, children, className }: PullToRefreshProps) {
   const [isPulling, setIsPulling] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const startY = useRef(0);
-  const threshold = 80;
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || disabled || isRefreshing) return;
+  const THRESHOLD = 80;
+  const MAX_PULL = 150;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (window.scrollY > 0) return;
+  const handleTouchStart = (e: TouchEvent) => {
+    if (window.scrollY === 0 && !isRefreshing) {
       startY.current = e.touches[0].clientY;
-      setIsPulling(false);
-    };
+    }
+  };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (window.scrollY > 0) return;
-      if (!isPulling && e.touches[0].clientY > startY.current) {
-        setIsPulling(true);
-      }
-      
-      if (isPulling && e.touches[0].clientY > startY.current) {
-        const distance = e.touches[0].clientY - startY.current;
-        if (distance > 0) {
-          setPullDistance(Math.min(distance, threshold));
-        }
-      }
-    };
+  const handleTouchMove = (e: TouchEvent) => {
+    if (startY.current === 0 || isRefreshing) return;
 
-    const handleTouchEnd = async () => {
-      if (window.scrollY > 0) return;
-      
-      if (pullDistance >= threshold) {
-        setIsRefreshing(true);
-        triggerHaptic('medium');
-        
-        try {
-          await onRefresh();
-        } finally {
-          setIsRefreshing(false);
-          setPullDistance(0);
-        }
-      } else {
+    const currentY = e.touches[0].clientY;
+    const distance = currentY - startY.current;
+
+    if (distance > 0 && window.scrollY === 0) {
+      // Add resistance
+      const dampedDistance = Math.min(distance * 0.5, MAX_PULL);
+      setPullDistance(dampedDistance);
+      setIsPulling(true);
+
+      // Prevent default pull-to-refresh from browser
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (!isPulling || isRefreshing) return;
+
+    if (pullDistance > THRESHOLD) {
+      setIsRefreshing(true);
+      setPullDistance(THRESHOLD); // Snap to threshold
+      triggerHaptic('medium');
+
+      try {
+        await onRefresh();
+        triggerHaptic('success');
+      } finally {
+        setIsRefreshing(false);
         setPullDistance(0);
         setIsPulling(false);
       }
-    };
+    } else {
+      setPullDistance(0);
+      setIsPulling(false);
+    }
 
-    container.addEventListener("touchstart", handleTouchStart, { passive: true });
-    container.addEventListener("touchmove", handleTouchMove, { passive: true });
-    container.addEventListener("touchend", handleTouchEnd);
+    startY.current = 0;
+  };
+
+  useEffect(() => {
+    const element = contentRef.current;
+    if (!element) return;
+
+    element.addEventListener('touchstart', handleTouchStart, { passive: true });
+    element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    element.addEventListener('touchend', handleTouchEnd);
 
     return () => {
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-      container.removeEventListener("touchend", handleTouchEnd);
+      element.removeEventListener('touchstart', handleTouchStart);
+      element.removeEventListener('touchmove', handleTouchMove);
+      element.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [pullDistance, onRefresh, isPulling, isRefreshing, disabled]);
+  }, [isRefreshing, isPulling, pullDistance]);
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
-      {pullDistance > 0 && (
-        <div 
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center transition-all"
-          style={{ 
-            height: `${Math.min(pullDistance * 1.5, 100)}px`,
-            opacity: Math.min(pullDistance / threshold, 1)
-          }}
-        >
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="text-sm text-muted-foreground">
-              {pullDistance >= threshold ? "Release to refresh" : "Pull down to refresh"}
-            </span>
+    <div ref={contentRef} className={cn("relative min-h-full", className)}>
+      {/* Pull indicator */}
+      <div
+        className="absolute top-0 left-0 right-0 flex justify-center items-center pointer-events-none z-10"
+        style={{
+          height: `${pullDistance}px`,
+          opacity: Math.min(pullDistance / THRESHOLD, 1),
+          transition: isPulling ? 'none' : 'height 0.3s ease-out, opacity 0.3s ease-out'
+        }}
+      >
+        {isRefreshing ? (
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        ) : (
+          <div className={cn(
+            "text-sm font-medium transition-colors",
+            pullDistance > THRESHOLD ? "text-primary" : "text-muted-foreground"
+          )}>
+            {pullDistance > THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
           </div>
-        </div>
-      )}
-      {children}
+        )}
+      </div>
+
+      {/* Content */}
+      <div
+        style={{
+          transform: `translateY(${pullDistance}px)`,
+          transition: isPulling ? 'none' : 'transform 0.3s ease-out'
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
-

@@ -16,7 +16,7 @@ import {
   User
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdaptiveSidebar } from './sidebar/AdaptiveSidebar';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -76,13 +76,13 @@ export function MobileBottomNav() {
 
   // Close sheet when route changes (user navigates)
   const justOpenedRef = useRef(false);
-  
+
   useEffect(() => {
     if (justOpenedRef.current) {
       justOpenedRef.current = false;
       return;
     }
-    
+
     if (open) {
       setOpen(false);
     }
@@ -97,9 +97,9 @@ export function MobileBottomNav() {
     <>
       <OfflineIndicator />
       <MobileErrorBoundary>
-        <nav 
+        <nav
           className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
-          style={{ 
+          style={{
             pointerEvents: 'auto',
             zIndex: 100
           }}
@@ -116,7 +116,7 @@ export function MobileBottomNav() {
               }} />
             </div>
           )}
-          
+
           <div className="grid grid-cols-5 h-full items-center">
             {quickLinks.map((link) => {
               const Icon = link.icon;
@@ -146,25 +146,25 @@ export function MobileBottomNav() {
               );
             })}
 
-            {/* More menu */}
-            <Sheet 
-              open={open} 
+            {/* More menu - using Drawer for native mobile feel */}
+            <Drawer
+              open={open}
               onOpenChange={(isOpen) => {
                 setOpen(isOpen);
                 if (isOpen) {
                   justOpenedRef.current = true;
                   triggerHaptic('medium');
                   if (tenant?.id) {
-                    queryClient.invalidateQueries({ 
-                      queryKey: ['sidebar-preferences', tenant.id] 
+                    queryClient.invalidateQueries({
+                      queryKey: ['sidebar-preferences', tenant.id]
                     });
                     setSidebarError(null);
                   }
                 }
               }}
             >
-              <SheetTrigger asChild>
-                <button 
+              <DrawerTrigger asChild>
+                <button
                   className="flex flex-col items-center justify-center py-2 sm:py-3 px-1 text-[10px] sm:text-xs text-muted-foreground min-h-[48px] w-full touch-manipulation active:scale-95 active:bg-muted/50"
                   style={{ pointerEvents: 'auto' }}
                   aria-label="Open navigation menu"
@@ -173,57 +173,46 @@ export function MobileBottomNav() {
                   <Menu className="h-4 w-4 sm:h-5 sm:w-5 mb-0.5 sm:mb-1" aria-hidden="true" />
                   <span className="truncate max-w-full">More</span>
                 </button>
-              </SheetTrigger>
-              <SheetContent 
-                side="right" 
-                className="p-0 w-[85vw] max-w-sm flex flex-col overflow-hidden bg-background"
-                style={{ 
-                  zIndex: 120,
-                  height: '100vh',
-                  maxHeight: '100vh',
-                  top: 0,
-                  bottom: 0,
-                  position: 'fixed'
-                }}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-              >
+              </DrawerTrigger>
+              <DrawerContent className="h-[85vh] max-h-[85vh] rounded-t-[10px]">
                 {/* Accessibility Title */}
                 <div className="sr-only">
-                  <SheetTitle>Navigation Menu</SheetTitle>
+                  <DrawerTitle>Navigation Menu</DrawerTitle>
                 </div>
 
-                <div className="flex flex-col h-full" style={{ height: '100vh', minHeight: '100vh' }}>
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0 safe-area-top">
+                <div className="flex flex-col h-full overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-shrink-0">
                     <span className="text-sm font-semibold">Navigation</span>
                     <div className="flex items-center gap-2">
                       {tenantSlug && (
                         <span className="text-xs text-muted-foreground">{tenantSlug}</span>
                       )}
-                      <button
-                        onClick={() => setOpen(false)}
-                        className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                        aria-label="Close menu"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
+                      <DrawerClose asChild>
+                        <button
+                          className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                          aria-label="Close menu"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </DrawerClose>
                     </div>
                   </div>
-                  
-                  <div className="flex-1 overflow-y-auto pb-safe overscroll-contain" style={{ minHeight: 0, height: '100%' }}>
+
+                  <div className="flex-1 overflow-y-auto pb-safe overscroll-contain">
                     {!tenant || !tenantSlug ? (
                       <div className="p-4 space-y-4">
                         {/* Fallback Menu when tenant data missing */}
                         <div className="space-y-2">
-                          <Link 
-                            to="/login" 
+                          <Link
+                            to="/login"
                             className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setOpen(false)}
                           >
                             <User className="h-5 w-5 text-muted-foreground" />
                             <span className="font-medium">Login</span>
                           </Link>
-                          <Link 
-                            to="/support" 
+                          <Link
+                            to="/support"
                             className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setOpen(false)}
                           >
@@ -241,12 +230,12 @@ export function MobileBottomNav() {
                             We couldn't load the full menu.
                           </p>
                         </div>
-                        
+
                         {/* Emergency Links */}
                         <div className="w-full space-y-2 mt-4">
-                          <Button 
-                            variant="outline" 
-                            className="w-full justify-start" 
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start"
                             asChild
                             onClick={() => setOpen(false)}
                           >
@@ -255,9 +244,9 @@ export function MobileBottomNav() {
                               Settings
                             </Link>
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            className="w-full justify-start text-destructive" 
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-destructive"
                             onClick={handleLogout}
                           >
                             <LogOut className="h-4 w-4 mr-2" />
@@ -265,15 +254,16 @@ export function MobileBottomNav() {
                           </Button>
                         </div>
 
-                        <Button 
+                        <Button
                           onClick={() => {
                             setSidebarError(null);
-                            queryClient.invalidateQueries({ 
-                              queryKey: ['sidebar-preferences', tenant.id] 
+                            queryClient.invalidateQueries({
+                              queryKey: ['sidebar-preferences', tenant.id]
                             });
                           }}
                           variant="ghost"
                           size="sm"
+                          onClickCapture={() => triggerHaptic('light')}
                         >
                           <RefreshCw className="h-4 w-4 mr-2" />
                           Retry Loading
@@ -291,9 +281,9 @@ export function MobileBottomNav() {
                             flexDirection: 'column'
                           } as React.CSSProperties}
                         >
-                          <div 
-                            className="overflow-x-hidden pb-20 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full" 
-                            style={{ 
+                          <div
+                            className="overflow-x-hidden pb-20 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full"
+                            style={{
                               height: '100%',
                               minHeight: '100%',
                               flex: '1 1 auto'
@@ -306,8 +296,8 @@ export function MobileBottomNav() {
                     )}
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
           </div>
         </nav>
       </MobileErrorBoundary>

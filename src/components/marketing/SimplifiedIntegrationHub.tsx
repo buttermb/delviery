@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { type LucideIcon } from 'lucide-react';
+import { useMemo } from 'react';
 
 interface Integration {
   name: string;
@@ -11,112 +12,99 @@ interface SimplifiedIntegrationHubProps {
 }
 
 export function SimplifiedIntegrationHub({ integrations }: SimplifiedIntegrationHubProps) {
+  // Memoize positions to avoid recalculation on every render
+  const integrationPositions = useMemo(() => {
+    return integrations.map((integration, index) => {
+      const angle = (index * (360 / integrations.length) - 90) * (Math.PI / 180);
+      const radius = 45; // percentage
+      const x = 50 + Math.cos(angle) * radius;
+      const y = 50 + Math.sin(angle) * radius;
+      return { integration, x, y, index };
+    });
+  }, [integrations]);
+
   return (
     <div className="relative w-full max-w-[600px] mx-auto py-12">
       {/* Center Hub */}
       <motion.div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
         initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        whileInView={{ scale: 1, opacity: 1 }}
+        viewport={{ once: true }}
         transition={{ duration: 0.6, type: 'spring' }}
       >
-        <motion.div
-          className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg"
-          animate={{ 
-            boxShadow: [
-              '0 0 20px rgba(var(--marketing-primary-rgb, 99, 102, 241), 0.3)',
-              '0 0 40px rgba(var(--marketing-primary-rgb, 99, 102, 241), 0.5)',
-              '0 0 20px rgba(var(--marketing-primary-rgb, 99, 102, 241), 0.3)',
-            ]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <span className="text-white font-bold text-lg">FloraIQ</span>
-        </motion.div>
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center shadow-lg relative">
+          {/* CSS Pulse Effect for better performance */}
+          <div className="absolute inset-0 rounded-full bg-[hsl(var(--marketing-primary))] opacity-20 animate-ping" />
+          <span className="text-white font-bold text-lg relative z-10">FloraIQ</span>
+        </div>
       </motion.div>
 
       {/* Integration Nodes in Circle */}
       <div className="relative w-full aspect-square">
-        {integrations.map((integration, index) => {
-          const angle = (index * (360 / integrations.length) - 90) * (Math.PI / 180);
-          const radius = 45; // percentage
-          const x = 50 + Math.cos(angle) * radius;
-          const y = 50 + Math.sin(angle) * radius;
-
-          return (
+        {integrationPositions.map(({ integration, x, y, index }) => (
+          <div
+            key={integration.name}
+            className="absolute"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
             <motion.div
-              key={integration.name}
-              className="absolute"
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ 
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{
                 delay: index * 0.1,
                 duration: 0.5,
                 type: 'spring',
                 stiffness: 200
               }}
+              className="relative group"
             >
-              <motion.div
-                className="relative"
-                whileHover={{ scale: 1.2, zIndex: 20 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+              {/* Connection Line - SVG for better performance than div rotation */}
+              <svg
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none overflow-visible"
+                style={{
+                  width: '200px',
+                  height: '200px',
+                  left: '50%',
+                  top: '50%',
+                  transform: `translate(-50%, -50%) rotate(${Math.atan2(50 - y, 50 - x) * (180 / Math.PI) + 180}deg)`,
+                  transformOrigin: 'center center'
+                }}
               >
-                {/* Connection Line */}
-                <motion.div
-                  className="absolute left-1/2 top-1/2 origin-left h-0.5 bg-gradient-to-r from-primary/30 to-transparent"
-                  style={{
-                    width: `${Math.sqrt(Math.pow((50 - x), 2) + Math.pow((50 - y), 2))}%`,
-                    transform: `rotate(${Math.atan2(50 - y, 50 - x) * (180 / Math.PI)}deg)`,
-                  }}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
+                <motion.line
+                  x1="0" y1="100" x2="100" y2="100"
+                  stroke="url(#gradient-line)"
+                  strokeWidth="2"
+                  initial={{ pathLength: 0 }}
+                  whileInView={{ pathLength: 1 }}
+                  viewport={{ once: true }}
                   transition={{ delay: index * 0.1 + 0.3, duration: 0.6 }}
                 />
+                <defs>
+                  <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="hsl(var(--marketing-primary))" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="transparent" />
+                  </linearGradient>
+                </defs>
+              </svg>
 
-                {/* Data Particle Animation */}
-                <motion.div
-                  className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full bg-accent"
-                  style={{
-                    x: '-50%',
-                    y: '-50%',
-                  }}
-                  animate={{
-                    scale: [0, 1, 0],
-                    x: [
-                      '-50%',
-                      `${(50 - x) * 8}px`,
-                    ],
-                    y: [
-                      '-50%',
-                      `${(50 - y) * 8}px`,
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: index * 0.3,
-                    ease: 'linear',
-                  }}
-                />
+              {/* Integration Node */}
+              <div className="w-16 h-16 rounded-full bg-[hsl(var(--marketing-bg-subtle))] border-2 border-[hsl(var(--marketing-border))] flex items-center justify-center shadow-lg group-hover:border-[hsl(var(--marketing-primary))]/50 transition-colors duration-300 z-20 relative">
+                <integration.logo className="h-7 w-7 text-[hsl(var(--marketing-primary))]" />
+              </div>
 
-                {/* Integration Node */}
-                <div className="w-16 h-16 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-primary/50 transition-colors">
-                  <integration.logo className="h-7 w-7 text-primary" />
-                </div>
-                
-                {/* Label */}
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <span className="text-xs font-medium text-foreground">{integration.name}</span>
-                </div>
-              </motion.div>
+              {/* Label */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="text-xs font-medium text-[hsl(var(--marketing-text))]">{integration.name}</span>
+              </div>
             </motion.div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );

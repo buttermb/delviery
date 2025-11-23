@@ -357,6 +357,8 @@ const queryClient = new QueryClient({
 // Setup global error handlers
 setupGlobalErrorHandlers();
 
+const MobileTestPage = lazy(() => import("@/pages/mobile/MobileTestPage"));
+
 const App = () => {
   // Enable automatic version checking and cache busting
   useVersionCheck();
@@ -710,6 +712,16 @@ const App = () => {
                                       {/* Coming Soon Pages for missing features */}
                                       <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
                                     </Route>
+
+                                    {/* Mobile Test Route */}
+                                    <Route
+                                      path="/mobile-test"
+                                      element={
+                                        <Suspense fallback={<LoadingFallback />}>
+                                          <MobileTestPage />
+                                        </Suspense>
+                                      }
+                                    />
 
                                     {/* Catch-all route for /admin/* paths without tenant slug - redirect to login */}
                                     <Route path="/admin/*" element={<Navigate to="/login" replace />} />

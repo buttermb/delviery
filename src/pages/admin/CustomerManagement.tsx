@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Phone, Mail, Calendar
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -31,6 +31,11 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
+import { motion, AnimatePresence } from "framer-motion";
+import { SwipeableItem } from "@/components/mobile/SwipeableItem";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import { triggerHaptic } from "@/lib/utils/mobile";
+import { cn } from "@/lib/utils";
 
 interface Customer {
   id: string;
@@ -60,6 +65,7 @@ export default function CustomerManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
 
   useEffect(() => {
     if (tenant && !accountLoading) {
@@ -120,7 +126,9 @@ export default function CustomerManagement() {
       }
 
       setCustomers(decryptedCustomers);
-      toast.success("Customers loaded");
+      if (decryptedCustomers.length > 0) {
+        // toast.success("Customers loaded"); // Reduced noise
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load customers";
       toast.error(errorMessage);
@@ -130,6 +138,7 @@ export default function CustomerManagement() {
   };
 
   const handleDeleteClick = (customerId: string, customerName: string) => {
+    triggerHaptic('warning');
     setCustomerToDelete({ id: customerId, name: customerName });
     setDeleteDialogOpen(true);
   };
@@ -146,10 +155,12 @@ export default function CustomerManagement() {
 
       if (error) throw error;
 
+      triggerHaptic('success');
       toast.success("Customer deleted successfully");
       loadCustomers(); // Refresh the list
       setDeleteDialogOpen(false);
       setCustomerToDelete(null);
+      setSelectedCustomerForDrawer(null); // Close drawer if open
     } catch (error: unknown) {
       logger.error("Failed to delete customer", error, { component: "CustomerManagement", customerId: customerToDelete.id });
       toast.error("Failed to delete customer", {
@@ -236,8 +247,55 @@ export default function CustomerManagement() {
     );
   }
 
+  const stats = [
+    {
+      title: "Total Customers",
+      value: totalCustomers,
+      sub: `${activeCustomers} active`,
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    },
+    {
+      title: "Medical Patients",
+      value: medicalPatients,
+      sub: `${totalCustomers > 0 ? Math.round((medicalPatients / totalCustomers) * 100) : 0}% of total`,
+      icon: UserCircle,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10"
+    },
+    {
+      title: "Total Revenue",
+      value: `$${totalRevenue.toLocaleString()}`,
+      sub: "Lifetime",
+      icon: DollarSign,
+      color: "text-green-500",
+      bg: "bg-green-500/10"
+    },
+    {
+      title: "Avg LTV",
+      value: `$${avgLifetimeValue.toFixed(0)}`,
+      sub: "Per customer",
+      icon: TrendingUp,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10"
+    },
+    {
+      title: "At Risk",
+      value: customers.filter(c => {
+        if (!c.last_purchase_at) return false;
+        const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+        return days > 60;
+      }).length,
+      sub: "60+ days inactive",
+      icon: Award,
+      color: "text-red-500",
+      bg: "bg-red-500/10"
+    }
+  ];
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-6">
+    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 pb-20">
       <SEOHead
         title="Customer Management | Admin"
         description="Manage your customers and CRM"
@@ -270,106 +328,70 @@ export default function CustomerManagement() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">{activeCustomers} active</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Medical Patients</CardTitle>
-            <UserCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{medicalPatients}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalCustomers > 0 ? Math.round((medicalPatients / totalCustomers) * 100) : 0}% of total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Lifetime</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg LTV</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${avgLifetimeValue.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">Per customer</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {customers.filter(c => {
-                if (!c.last_purchase_at) return false;
-                const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
-                return days > 60;
-              }).length}
-            </div>
-            <p className="text-xs text-muted-foreground">60+ days</p>
-          </CardContent>
-        </Card>
+      {/* Stats Carousel */}
+      <div className="flex overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-5 gap-4 snap-x snap-mandatory hide-scrollbar">
+        {stats.map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="min-w-[240px] sm:min-w-0 snap-center"
+          >
+            <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <div className={cn("p-2 rounded-full", stat.bg)}>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
-          <div className="flex gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search customers by name, email, or phone..."
+                placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Customer Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="medical">Medical</SelectItem>
-                <SelectItem value="recreational">Recreational</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="medical">Medical</SelectItem>
+                  <SelectItem value="recreational">Recreational</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -392,11 +414,10 @@ export default function CustomerManagement() {
         </CardContent>
       </Card>
 
-      {/* Customer Table */}
-      <Card>
+      {/* Customer Table (Desktop) */}
+      <Card className="hidden md:block border-none shadow-md">
         <CardContent className="p-0">
-          {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
                 <tr>
@@ -536,122 +557,84 @@ export default function CustomerManagement() {
               </div>
             )}
           </div>
-
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-3 p-4">
-            {filteredCustomers.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm ? "No customers found matching your search" : "No customers yet"}
-                </p>
-                <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[48px]">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Customer
-                </Button>
-              </div>
-            ) : (
-              filteredCustomers.map((customer) => (
-                <Card key={customer.id} className="overflow-hidden">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-                          {customer.first_name?.[0]}{customer.last_name?.[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base truncate">
-                            {customer.first_name} {customer.last_name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground truncate">{customer.email || customer.phone}</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="min-h-[48px] min-w-[48px]">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/admin/customers/${customer.id}`)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/customer-management/${customer.id}/edit`)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/admin/pos?customer=${customer.id}`)}>
-                            <DollarSign className="w-4 h-4 mr-2" />
-                            New Order
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
-                          >
-                            <Trash className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-2 pt-2 border-t">
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</div>
-                        <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                          {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Spent</div>
-                          <div className="text-sm font-semibold">${customer.total_spent?.toFixed(2) || '0.00'}</div>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Points</div>
-                          <div className="flex items-center gap-1 text-sm">
-                            <Award className="w-4 h-4 text-yellow-600" />
-                            {customer.loyalty_points || 0}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Order</div>
-                        <div className="text-sm text-muted-foreground">
-                          {customer.last_purchase_at
-                            ? new Date(customer.last_purchase_at).toLocaleDateString()
-                            : 'Never'}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</div>
-                        <div>{getCustomerStatus(customer)}</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-
-          {/* Pagination */}
-          {filteredCustomers.length > 0 && (
-            <StandardPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              totalItems={totalItems}
-              pageSizeOptions={pageSizeOptions}
-              onPageChange={goToPage}
-              onPageSizeChange={changePageSize}
-            />
-          )}
         </CardContent>
       </Card>
+
+      {/* Mobile Swipeable List View */}
+      <div className="md:hidden space-y-3">
+        {filteredCustomers.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground mb-4">
+              {searchTerm ? "No customers found matching your search" : "No customers yet"}
+            </p>
+            <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[48px]">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Customer
+            </Button>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {filteredCustomers.map((customer) => (
+              <SwipeableItem
+                key={customer.id}
+                onSwipeLeft={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                onSwipeRight={() => navigate(`/admin/customers/${customer.id}`)}
+                leftAction={{ icon: Trash, color: 'bg-red-500', label: 'Delete' }}
+                rightAction={{ icon: Eye, color: 'bg-blue-500', label: 'View' }}
+              >
+                <div
+                  className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setSelectedCustomerForDrawer(customer);
+                  }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+                        {customer.first_name?.[0]}{customer.last_name?.[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {customer.first_name} {customer.last_name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground truncate">{customer.email || customer.phone}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                            {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
+                          </Badge>
+                          {getCustomerStatus(customer)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="font-bold">${customer.total_spent?.toFixed(0) || '0'}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Award className="w-3 h-3 text-yellow-600" />
+                        {customer.loyalty_points || 0}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SwipeableItem>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {filteredCustomers.length > 0 && (
+        <StandardPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          pageSizeOptions={pageSizeOptions}
+          onPageChange={goToPage}
+          onPageSizeChange={changePageSize}
+        />
+      )}
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}
@@ -661,6 +644,78 @@ export default function CustomerManagement() {
         itemType="customer"
         isLoading={isDeleting}
       />
+
+      {/* Mobile Customer Details Drawer */}
+      <Drawer open={!!selectedCustomerForDrawer} onOpenChange={(open) => !open && setSelectedCustomerForDrawer(null)}>
+        <DrawerContent>
+          {selectedCustomerForDrawer && (
+            <div className="mx-auto w-full max-w-sm">
+              <DrawerHeader>
+                <DrawerTitle className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    {selectedCustomerForDrawer.first_name?.[0]}{selectedCustomerForDrawer.last_name?.[0]}
+                  </div>
+                  <div className="text-left">
+                    <div>{selectedCustomerForDrawer.first_name} {selectedCustomerForDrawer.last_name}</div>
+                    <div className="text-sm font-normal text-muted-foreground">{selectedCustomerForDrawer.email || selectedCustomerForDrawer.phone}</div>
+                  </div>
+                </DrawerTitle>
+                <DrawerDescription>
+                  Customer since {new Date().getFullYear()}
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-muted/30 p-3 rounded-lg text-center">
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Spent</div>
+                    <div className="text-xl font-bold">${selectedCustomerForDrawer.total_spent?.toFixed(2) || '0.00'}</div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-lg text-center">
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Points</div>
+                    <div className="text-xl font-bold flex items-center justify-center gap-1">
+                      <Award className="w-4 h-4 text-yellow-600" />
+                      {selectedCustomerForDrawer.loyalty_points || 0}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => {
+                    if (selectedCustomerForDrawer.phone) window.location.href = `tel:${selectedCustomerForDrawer.phone}`;
+                  }}>
+                    <Phone className="w-4 h-4 mr-2" />
+                    Call {selectedCustomerForDrawer.phone || 'No Phone'}
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline" onClick={() => {
+                    if (selectedCustomerForDrawer.email) window.location.href = `mailto:${selectedCustomerForDrawer.email}`;
+                  }}>
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email {selectedCustomerForDrawer.email || 'No Email'}
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button className="w-full mb-2" onClick={() => navigate(`/admin/pos?customer=${selectedCustomerForDrawer.id}`)}>
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Create New Order
+                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="secondary" onClick={() => navigate(`/admin/customers/${selectedCustomerForDrawer.id}`)}>
+                      View Profile
+                    </Button>
+                    <Button variant="secondary" onClick={() => navigate(`/admin/customer-management/${selectedCustomerForDrawer.id}/edit`)}>
+                      Edit Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <DrawerFooter>
+                <Button variant="ghost" onClick={() => setSelectedCustomerForDrawer(null)}>Close</Button>
+              </DrawerFooter>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
