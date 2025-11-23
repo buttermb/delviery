@@ -11660,7 +11660,12 @@ export type Database = {
         Returns: number
       }
       decrypt_menu_text: { Args: { encrypted_data: string }; Returns: string }
+      delete_product_image: {
+        Args: { p_image_id: string; p_product_id: string }
+        Returns: undefined
+      }
       detect_operation_size: { Args: { p_tenant_id: string }; Returns: string }
+      emergency_wipe_all_data: { Args: never; Returns: undefined }
       encrypt_disposable_menu: { Args: { menu_id: string }; Returns: boolean }
       encrypt_menu_jsonb: { Args: { plaintext: Json }; Returns: string }
       encrypt_menu_numeric: { Args: { plaintext: number }; Returns: string }
@@ -11749,6 +11754,16 @@ export type Database = {
           tracking_code: string
         }[]
       }
+      get_product_with_images: {
+        Args: { p_product_id: string }
+        Returns: {
+          category: string
+          id: string
+          images: Json
+          price_per_lb: number
+          product_name: string
+        }[]
+      }
       get_route_statistics: {
         Args: {
           p_delivery_id?: string
@@ -11764,6 +11779,7 @@ export type Database = {
           total_duration: unknown
         }[]
       }
+      get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

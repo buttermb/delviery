@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateNotifyRecall } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,11 +13,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { recall_id, notification_method } = await req.json();
-
-    if (!recall_id) {
-      throw new Error('Recall ID is required');
-    }
+    const rawBody = await req.json();
+    const { recall_id, notification_method } = validateNotifyRecall(rawBody);
 
     // Get recall details
     const { data: recall, error: recallError } = await supabaseClient

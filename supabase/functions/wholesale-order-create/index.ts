@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateWholesaleOrderCreate } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,15 +13,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { client_id, items, delivery_address, delivery_notes } = await req.json();
-
-    // Validate input
-    if (!client_id || !items || items.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const rawBody = await req.json();
+    const { client_id, items, delivery_address, delivery_notes } = validateWholesaleOrderCreate(rawBody);
 
     // Get client info to check credit
     const { data: client } = await supabaseClient
