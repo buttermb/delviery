@@ -5,7 +5,44 @@ import { logger } from '@/lib/logger';
  * Uses Mapbox Directions API to calculate estimated time of arrival
  */
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+/**
+ * Get Mapbox token from environment or tenant settings
+ */
+async function getMapboxToken(): Promise<string | null> {
+  // First try environment variable
+  const envToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  if (envToken) return envToken;
+
+  // Then try tenant settings
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!tenantUser) return null;
+
+    const { data: settings } = await supabase
+      .from('account_settings')
+      .select('integration_settings')
+      .eq('account_id', tenantUser.tenant_id)
+      .single();
+
+    const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+    if (integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token) {
+      return integrationSettings.mapbox_token as string;
+    }
+  } catch (error) {
+    logger.error('Failed to load Mapbox token', error, { component: 'eta-calculation' });
+  }
+
+  return null;
+}
 
 export interface ETAResult {
   duration: number; // in seconds
@@ -24,6 +61,8 @@ export async function calculateETA(
   driverLocation: [number, number],
   destination: [number, number]
 ): Promise<ETAResult | null> {
+  const MAPBOX_TOKEN = await getMapboxToken();
+  
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
     logger.warn('Mapbox token not configured, using fallback ETA calculation', undefined, { component: 'eta-calculation' });
     return calculateFallbackETA(driverLocation, destination);

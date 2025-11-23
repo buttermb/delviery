@@ -13,8 +13,34 @@ import type { IntegrationConfig } from '@/types/sidebar';
 export async function checkIntegrationConnection(integrationId: string): Promise<boolean> {
   switch (integrationId) {
     case 'mapbox':
-      // Check if Mapbox token exists in environment
-      return !!import.meta.env.VITE_MAPBOX_TOKEN;
+      // Check if Mapbox token exists in environment or account settings
+      if (import.meta.env.VITE_MAPBOX_TOKEN) return true;
+      
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+        
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!tenantUser) return false;
+        
+        const { data: settings } = await supabase
+          .from('account_settings')
+          .select('integration_settings')
+          .eq('account_id', tenantUser.tenant_id)
+          .single();
+        
+        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        return !!(integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token);
+      } catch (error) {
+        logger.error('Mapbox connection check error', error, { component: 'integrations' });
+        return false;
+      }
     
     case 'stripe':
       // Check if Stripe secret exists (would need to call edge function)
