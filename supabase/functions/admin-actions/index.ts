@@ -278,8 +278,6 @@ serve(async (req) => {
         .limit(1)
         .single();
 
-      console.log("Found courier:", courier);
-
       // Update order to accepted status
       const { data: order, error: updateError } = await supabase
         .from("orders")
@@ -293,7 +291,6 @@ serve(async (req) => {
         .single();
 
       if (updateError) {
-        console.error("Update error:", updateError);
         return new Response(
           JSON.stringify({ error: "Failed to accept order" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -321,9 +318,7 @@ serve(async (req) => {
           });
 
         if (deliveryError) {
-          console.error("Delivery creation error:", deliveryError);
-        } else {
-          console.log("Delivery created successfully");
+          console.error("Delivery creation error");
         }
       }
 

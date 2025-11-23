@@ -16,8 +16,6 @@ serve(async (req) => {
   const traceId = req.headers.get('x-trace-id') || crypto.randomUUID();
   const idempotencyKey = req.headers.get('x-idempotency-key');
 
-  console.log(`[${traceId}] Order request received`, { idempotencyKey });
-
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -38,7 +36,6 @@ serve(async (req) => {
     // For now, we'll skip this check to keep it simple, but the architecture supports it.
 
     // 2. RESERVE INVENTORY (Atomic RPC)
-    console.log(`[${traceId}] Reserving inventory...`);
     const { data: reservation, error: reserveError } = await supabaseClient
       .rpc('reserve_inventory', {
         p_menu_id: menu_id,
@@ -47,7 +44,6 @@ serve(async (req) => {
       });
 
     if (reserveError) {
-      console.error(`[${traceId}] Reservation failed:`, reserveError);
       return new Response(
         JSON.stringify({ error: reserveError.message || 'Inventory reservation failed' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -55,7 +51,6 @@ serve(async (req) => {
     }
 
     const { reservation_id, lock_token } = reservation;
-    console.log(`[${traceId}] Inventory reserved: ${reservation_id}`);
 
     // 3. PROCESS PAYMENT
     // Calculate total (should match what was reserved)
@@ -64,14 +59,12 @@ serve(async (req) => {
     // In a real app, we'd re-calculate total from DB prices here.
     const totalAmount = body.total_amount || 0; // Placeholder
 
-    console.log(`[${traceId}] Processing payment...`);
     const paymentResult = await processPayment(totalAmount, payment_method, {
       reservation_id,
       trace_id: traceId
     });
 
     if (!paymentResult.success) {
-      console.warn(`[${traceId}] Payment failed. Rolling back reservation...`);
       // ROLLBACK: Cancel Reservation
       await supabaseClient.rpc('cancel_reservation', {
         p_reservation_id: reservation_id,
@@ -85,7 +78,6 @@ serve(async (req) => {
     }
 
     // 4. CONFIRM ORDER (Atomic RPC)
-    console.log(`[${traceId}] Payment successful. Confirming order...`);
     const { data: order, error: confirmError } = await supabaseClient
       .rpc('confirm_menu_order', {
         p_reservation_id: reservation_id,
@@ -95,19 +87,15 @@ serve(async (req) => {
       });
 
     if (confirmError) {
-      console.error(`[${traceId}] CRITICAL: Order confirmation failed after payment!`, confirmError);
-
       // ZOMBIE ORDER RECOVERY (Nuclear Option Scenario A)
       if (paymentResult.transaction_id) {
-        console.log(`[${traceId}] Initiating automatic refund for Zombie Order...`);
         try {
           const refund = await refundPayment(
             paymentResult.transaction_id,
             'system_error_order_creation_failed'
           );
-          console.log(`[${traceId}] Refund successful: ${refund.refund_id}`);
         } catch (refundError) {
-          console.error(`[${traceId}] FATAL: Refund failed for Zombie Order! Manual intervention required.`, refundError);
+          console.error(`FATAL: Refund failed for Zombie Order! Manual intervention required.`);
           // In a real system, we would insert into a 'critical_alerts' table here
         }
       }
@@ -128,8 +116,6 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[${traceId}] Order confirmed: ${order.order_id}`);
-
     // 5. REALTIME BROADCAST
     // (Handled by DB triggers we created earlier, but we can add explicit broadcast if needed)
 
@@ -144,7 +130,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error(`[${traceId}] Unhandled error:`, error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', trace_id: traceId }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
