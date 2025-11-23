@@ -111,11 +111,18 @@ const SystemSettings = () => {
       if (!tenant) return null;
       const tenantId = tenant.id;
 
-      const [users, orders, products, fraudFlags] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId),
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+      const usersPromise = supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
+      const ordersPromise = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      // @ts-ignore - Supabase type inference too deep
+      const fraudFlagsQuery: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const fraudFlagsPromise: any = fraudFlagsQuery;
+
+      const [users, orders, products, fraudFlags]: any = await Promise.all([
+        usersPromise,
+        ordersPromise,
+        productsPromise,
+        fraudFlagsPromise,
       ]);
 
       return {

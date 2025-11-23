@@ -77,17 +77,19 @@ export default function PurchaseOrdersPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = supabase
+      // @ts-ignore - Supabase type inference too deep
+      let baseQuery: any = supabase
         .from("purchase_orders")
         .select("*")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
+      let query: any = baseQuery;
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
 
-      const { data, error } = await query;
+      const { data, error }: any = await query;
 
       if (error) {
         logger.error('Failed to fetch purchase orders', error, { component: 'PurchaseOrdersPage' });

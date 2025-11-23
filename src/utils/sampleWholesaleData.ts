@@ -31,6 +31,7 @@ export async function createSampleWholesaleData() {
     logger.debug("Clearing existing wholesale data for tenant", { component: 'sampleWholesaleData', tenantId: tenant_id });
 
     // Using tenant_id filter to prevent wiping entire database
+<<<<<<< HEAD
     // Type assertions removed - operations return void
     // @ts-expect-error - Supabase type inference creates excessively deep types for chained delete operations
     await Promise.all([
@@ -42,6 +43,20 @@ export async function createSampleWholesaleData() {
     // @ts-expect-error - Supabase type inference limitation
     await supabase.from("wholesale_client_notes").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
     // @ts-expect-error - Supabase type inference limitation
+=======
+    // @ts-ignore - Supabase type inference too deep
+    const delQuery1: any = supabase.from("wholesale_deliveries").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await delQuery1;
+    // @ts-ignore - Supabase type inference too deep
+    const delQuery2: any = supabase.from("wholesale_payments").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await delQuery2;
+    // @ts-ignore - Supabase type inference too deep
+    const delQuery3: any = supabase.from("wholesale_inventory_movements").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await delQuery3;
+    // @ts-ignore - Supabase type inference too deep
+    const delQuery4: any = supabase.from("wholesale_client_notes").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    await delQuery4;
+>>>>>>> 8942e1a74065336dc01240bd254a30540b5821f9
     await supabase.from("wholesale_orders").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
     // @ts-expect-error - Supabase type inference limitation
     await supabase.from("wholesale_inventory").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
