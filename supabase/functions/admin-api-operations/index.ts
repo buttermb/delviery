@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { validateAdminApiOperation, type AdminApiOperationInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -66,8 +67,9 @@ serve(async (req) => {
       admin_id: user.id
     };
 
-    // Parse request body
-    const { action, resource, data, id } = await req.json();
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const { action, resource, data, id } = validateAdminApiOperation(rawBody);
 
     console.log('Admin API operation:', { action, resource, tenant_id: tokenData.tenant_id });
 

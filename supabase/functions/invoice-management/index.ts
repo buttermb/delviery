@@ -6,6 +6,7 @@
  */
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateInvoiceManagement, type InvoiceManagementInput } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -43,12 +44,19 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
-    let requestBody: any = {};
+    // Parse and validate request body
+    let requestBody: InvoiceManagementInput;
     try {
-      requestBody = await req.json();
-    } catch {
-      requestBody = {};
+      const rawBody = await req.json();
+      requestBody = validateInvoiceManagement(rawBody);
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request body',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { action, tenant_id, invoice_id, invoice_data } = requestBody;
