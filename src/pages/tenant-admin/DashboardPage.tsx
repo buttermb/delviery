@@ -33,6 +33,8 @@ import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
+import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
+import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -53,6 +55,7 @@ export default function TenantAdminDashboardPage() {
   const { getLimit, getCurrent } = useTenantLimits();
   const tenantId = tenant?.id;
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(false);
 
   // Check if user came from signup (with safeguard against multiple calls)
   useEffect(() => {
@@ -72,6 +75,48 @@ export default function TenantAdminDashboardPage() {
     }
     // Only run once per location change, not on every state update
   }, [location.pathname]); // Changed from location.state to location.pathname
+
+  // Auto-show Quick Start for completely empty accounts (new users)
+  useEffect(() => {
+    if (!tenantId || authLoading) return;
+    
+    const checkIfEmpty = async () => {
+      try {
+        // Check if account has ANY data
+        const { data: clients } = await supabase
+          .from("wholesale_clients")
+          .select("id")
+          .limit(1);
+        
+        const { data: products } = await supabase
+          .from("products")
+          .select("id")
+          .limit(1);
+        
+        const { data: menus } = await supabase
+          .from("disposable_menus")
+          .select("id")
+          .limit(1);
+
+        const isEmpty = (!clients || clients.length === 0) && 
+                       (!products || products.length === 0) && 
+                       (!menus || menus.length === 0);
+
+        // If completely empty AND onboarding not completed, show quick start
+        const onboardingCompleted = localStorage.getItem(`onboarding_completed_${tenantId}`);
+        if (isEmpty && !onboardingCompleted && !showWelcomeModal) {
+          // Small delay to avoid conflicting with welcome modal
+          setTimeout(() => {
+            setShowQuickStart(true);
+          }, 3000);
+        }
+      } catch (error) {
+        logger.error('Error checking if account is empty', error, { component: 'DashboardPage' });
+      }
+    };
+
+    checkIfEmpty();
+  }, [tenantId, authLoading, showWelcomeModal]);
   
   // Defensive check: if auth loading takes >15s, show error
   useEffect(() => {
@@ -493,6 +538,9 @@ export default function TenantAdminDashboardPage() {
         {/* Email Verification Banner */}
         <EmailVerificationBanner />
         
+        {/* Data Setup Banner - Prominent for empty accounts */}
+        <DataSetupBanner />
+        
         {/* Trial Countdown Banner */}
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${
@@ -886,6 +934,17 @@ export default function TenantAdminDashboardPage() {
       <WelcomeModal
         open={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
+      />
+
+      {/* Quick Start Wizard for empty accounts */}
+      <QuickStartWizard 
+        open={showQuickStart}
+        onOpenChange={setShowQuickStart}
+        onComplete={() => {
+          setShowQuickStart(false);
+          localStorage.setItem(`onboarding_completed_${tenantId}`, 'true');
+          window.location.reload(); // Refresh to show new data
+        }}
       />
     </div>
   );
