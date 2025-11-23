@@ -54,7 +54,7 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
 
       try {
         await onRefresh();
-        triggerHaptic('success');
+        triggerHaptic('light');
       } finally {
         setIsRefreshing(false);
         setPullDistance(0);

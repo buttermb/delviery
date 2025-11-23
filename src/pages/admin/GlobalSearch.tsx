@@ -74,38 +74,39 @@ const GlobalSearch = () => {
 
       const searchLower = searchTerm.toLowerCase();
 
-      const [users, orders, products, addresses] = await Promise.all([
-        // Search users (profiles)
-        supabase
-          .from("profiles")
-          .select("*, user_roles(role)")
-          .eq("account_id", tenant.id) // profiles use account_id
-          .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
-          .limit(10),
+      const usersPromise = supabase
+        .from("profiles")
+        .select("*, user_roles(role)")
+        .eq("account_id", tenant.id)
+        .or(`full_name.ilike.%${searchLower}%,email.ilike.%${searchLower}%,phone.ilike.%${searchLower}%`)
+        .limit(10);
 
-        // Search orders
-        supabase
-          .from("orders")
-          .select("*, profiles(full_name)")
-          .eq("tenant_id", tenant.id) // orders use tenant_id
-          .or(`order_number.ilike.%${searchLower}%,tracking_code.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
-          .limit(10),
+      const ordersPromise = supabase
+        .from("orders")
+        .select("*, profiles(full_name)")
+        .eq("tenant_id", tenant.id)
+        .or(`order_number.ilike.%${searchLower}%,tracking_code.ilike.%${searchLower}%,customer_name.ilike.%${searchLower}%`)
+        .limit(10);
 
-        // Search products
-        supabase
-          .from("products")
-          .select("*")
-          .eq("tenant_id", tenant.id) // products use tenant_id
-          .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
-          .limit(10),
+      const productsPromise = supabase
+        .from("products")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
+        .limit(10);
 
-        // Search addresses
-        supabase
-          .from("addresses")
-          .select("*, profiles(full_name)")
-          .eq("tenant_id", tenant.id) // Assuming addresses use tenant_id
-          .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
-          .limit(10),
+      const addressesPromise = supabase
+        .from("addresses")
+        .select("*, profiles(full_name)")
+        .eq("tenant_id", tenant.id)
+        .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
+        .limit(10);
+
+      const [users, orders, products, addresses]: any = await Promise.all([
+        usersPromise,
+        ordersPromise,
+        productsPromise,
+        addressesPromise,
       ]);
 
       return {

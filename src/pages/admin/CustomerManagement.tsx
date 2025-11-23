@@ -138,7 +138,7 @@ export default function CustomerManagement() {
   };
 
   const handleDeleteClick = (customerId: string, customerName: string) => {
-    triggerHaptic('warning');
+    triggerHaptic('medium');
     setCustomerToDelete({ id: customerId, name: customerName });
     setDeleteDialogOpen(true);
   };
@@ -155,7 +155,7 @@ export default function CustomerManagement() {
 
       if (error) throw error;
 
-      triggerHaptic('success');
+      triggerHaptic('light');
       toast.success("Customer deleted successfully");
       loadCustomers(); // Refresh the list
       setDeleteDialogOpen(false);
@@ -578,10 +578,18 @@ export default function CustomerManagement() {
             {filteredCustomers.map((customer) => (
               <SwipeableItem
                 key={customer.id}
-                onSwipeLeft={() => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)}
-                onSwipeRight={() => navigate(`/admin/customers/${customer.id}`)}
-                leftAction={{ icon: Trash, color: 'bg-red-500', label: 'Delete' }}
-                rightAction={{ icon: Eye, color: 'bg-blue-500', label: 'View' }}
+                leftAction={{ 
+                  icon: <Trash className="h-5 w-5" />, 
+                  color: 'bg-red-500', 
+                  label: 'Delete',
+                  onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
+                }}
+                rightAction={{ 
+                  icon: <Eye className="h-5 w-5" />, 
+                  color: 'bg-blue-500', 
+                  label: 'View',
+                  onClick: () => navigate(`/admin/customers/${customer.id}`)
+                }}
               >
                 <div
                   className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
