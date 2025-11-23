@@ -95,19 +95,31 @@ export default function TenantAdminBillingPage() {
 
   // Fetch subscription plans
   // @ts-ignore - Complex query return type
-  const { data: subscriptionPlans = [] } = useQuery({
+  const { data: subscriptionPlans = [], isLoading: plansLoading, error: plansError } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
+      console.log('[BillingPage] Fetching subscription plans...');
+      
       // @ts-ignore - Deep instantiation error from Supabase types
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
-        .order('monthly_price');
+        .order('price_monthly');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[BillingPage] Error fetching subscription plans:', error);
+        logger.error('Failed to fetch subscription plans', error, { component: 'BillingPage' });
+        throw error;
+      }
+      
+      console.log('[BillingPage] Subscription plans loaded:', data?.length || 0, 'plans');
+      console.log('[BillingPage] Plans:', data?.map(p => ({ id: p.id, name: p.name, price: p.price_monthly })));
+      
       return data || [];
-    }
+    },
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch subscription plan details
@@ -241,33 +253,46 @@ export default function TenantAdminBillingPage() {
       }
 
       setUpgradeLoading(true);
+      console.log('[BillingPage] Invoking stripe-customer-portal for tenant:', tenantId);
 
       const { data, error } = await supabase.functions.invoke('stripe-customer-portal', {
         body: { tenant_id: tenantId }
       });
 
-      if (error) throw error;
+      console.log('[BillingPage] Portal response:', { data, error });
+
+      if (error) {
+        console.error('[BillingPage] Portal error:', error);
+        throw error;
+      }
 
       // Check for error in response body (some edge functions return 200 with error)
       if (data && typeof data === 'object' && 'error' in data && data.error) {
         const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to open customer portal';
+        console.error('[BillingPage] Portal returned error:', errorMessage);
         throw new Error(errorMessage);
       }
       
       if (data?.url) {
+        console.log('[BillingPage] Opening portal URL:', data.url);
         window.open(data.url, '_blank');
         toast({
           title: 'Success',
           description: 'Opening Stripe Customer Portal...',
         });
+      } else {
+        console.error('[BillingPage] No URL in portal response:', data);
+        throw new Error('No portal URL returned from Stripe');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to open payment method management. Please ensure Stripe is configured.';
+      console.error('[BillingPage] Payment method management error:', errorMessage, error);
       toast({
         title: 'Error',
         description: errorMessage,
         variant: 'destructive',
       });
+    } finally {
       setUpgradeLoading(false);
     }
   };
@@ -312,12 +337,36 @@ export default function TenantAdminBillingPage() {
                   try {
                     setUpgradeLoading(true);
                     
+                    // Check if plans are still loading
+                    if (plansLoading) {
+                      toast({
+                        title: 'Loading Plans',
+                        description: 'Please wait while subscription plans load...',
+                      });
+                      return;
+                    }
+                    
+                    // Check if plans failed to load
+                    if (plansError) {
+                      console.error('[BillingPage] Plans error:', plansError);
+                      toast({
+                        title: 'Error Loading Plans',
+                        description: `Failed to load subscription plans: ${plansError.message}. Please refresh the page.`,
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    
                     // Get current plan
                     const currentPlan = subscriptionPlans?.find(p => p.name === tenant.subscription_plan);
                     if (!currentPlan) {
+                      console.error('[BillingPage] Current plan not found:', {
+                        tenantPlan: tenant.subscription_plan,
+                        availablePlans: subscriptionPlans?.map(p => p.name) || []
+                      });
                       toast({
                         title: 'Error',
-                        description: 'Current plan not found',
+                        description: `Current plan "${tenant.subscription_plan}" not found in database. Available: ${subscriptionPlans?.map(p => p.name).join(', ') || 'none'}`,
                         variant: 'destructive',
                       });
                       return;
@@ -340,6 +389,7 @@ export default function TenantAdminBillingPage() {
                       });
                     }
                   } catch (error: any) {
+                    console.error('[BillingPage] Payment method error:', error);
                     toast({
                       title: 'Error',
                       description: error.message || 'Failed to open payment method setup',
