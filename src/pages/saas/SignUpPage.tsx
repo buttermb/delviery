@@ -261,8 +261,23 @@ export default function SignUpPage() {
       logger.info('[SIGNUP] Tenant created', { 
         tenantId: tenant.id, 
         slug: tenant.slug,
-        hasTokens: !!result.tokens 
+        hasSession: !!result.session 
       });
+
+      // Establish Supabase session if tokens were returned
+      if (result.session?.access_token && result.session?.refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
+
+        if (sessionError) {
+          logger.error('[SIGNUP] Failed to set Supabase session', sessionError);
+          console.error('Account created but login failed. Please try logging in manually.');
+        } else {
+          logger.info('[SIGNUP] Supabase session established');
+        }
+      }
 
       // Always set lastTenantSlug immediately after tenant creation
       try {

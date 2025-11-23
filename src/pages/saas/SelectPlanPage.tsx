@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,11 +58,37 @@ export default function SelectPlanPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const tenantId = searchParams.get("tenant_id");
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please log in to select a plan");
+        // Redirect to login with return URL
+        navigate(`/saas/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
+      
+      setIsAuthenticated(true);
+      setCheckingAuth(false);
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
   const handleSelectPlan = async (planId: string) => {
     if (!tenantId) {
       toast.error("Missing tenant information");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      toast.error("Please log in to start your trial");
       return;
     }
 
@@ -102,6 +128,14 @@ export default function SelectPlanPage() {
       setLoading(null);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
