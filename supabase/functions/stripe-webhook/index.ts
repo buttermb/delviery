@@ -5,6 +5,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateStripeWebhook, type StripeWebhookInput } from './validation.ts';
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -26,8 +27,9 @@ serve(async (req) => {
     // In production, verify signature with Stripe:
     // const event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
     
-    // For now, parse JSON directly
-    const event = JSON.parse(body);
+    // Parse and validate JSON
+    const rawEvent = JSON.parse(body);
+    const event: StripeWebhookInput = validateStripeWebhook(rawEvent);
 
     console.log('Stripe webhook event:', event.type);
 
