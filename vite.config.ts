@@ -78,7 +78,8 @@ export default defineConfig(({ mode }) => ({
     versionGeneratorPlugin(),
     buildTimestampPlugin(),
     deferCssPlugin(),
-    realtimeValidationPlugin(),
+    // Only run realtime validation in dev mode to save memory during builds
+    mode === "development" && realtimeValidationPlugin(),
     // Run sitemap generation only in production to avoid noisy logs and CI/tooling issues
     mode === "production" && sitemapPlugin(),
     viteCompression({
@@ -189,6 +190,7 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     rollupOptions: {
+      maxParallelFileOps: 2, // Limit parallel operations to reduce memory usage
       output: {
         // Add hash to filenames for cache busting  
         entryFileNames: 'assets/entry-[hash].js',
