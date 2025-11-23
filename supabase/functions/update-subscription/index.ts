@@ -107,11 +107,11 @@ serve(async (req) => {
       );
     }
 
-    // Verify it's a secret key, not publishable
-    if (STRIPE_SECRET_KEY.startsWith('pk_')) {
-      logStep('ERROR: Publishable key detected instead of secret key');
+    // Require a real Stripe secret key (must start with sk_)
+    if (!STRIPE_SECRET_KEY.startsWith('sk_')) {
+      logStep('ERROR: Invalid Stripe key prefix', { prefix: STRIPE_SECRET_KEY.substring(0, 4) });
       return new Response(
-        JSON.stringify({ error: "Invalid Stripe configuration - secret key required, not publishable key" }),
+        JSON.stringify({ error: "Invalid STRIPE_SECRET_KEY configured. A Stripe secret key starting with 'sk_' is required." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
