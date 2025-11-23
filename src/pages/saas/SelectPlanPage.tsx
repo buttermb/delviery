@@ -2,57 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
+import { logger } from "@/lib/logger";
 
-const PLANS = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 79,
-    description: "Perfect for small businesses getting started",
-    features: [
-      "Up to 50 customers",
-      "3 disposable menus",
-      "100 products",
-      "Email support",
-      "Basic analytics",
-    ],
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    price: 150,
-    description: "For growing businesses with expanding needs",
-    features: [
-      "Up to 500 customers",
-      "Unlimited menus",
-      "Unlimited products",
-      "Priority support",
-      "Advanced analytics",
-      "API access",
-      "Custom branding",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: 499,
-    description: "For large organizations with complex requirements",
-    features: [
-      "Unlimited customers",
-      "Unlimited menus",
-      "Unlimited products",
-      "24/7 dedicated support",
-      "Advanced analytics",
-      "Full API access",
-      "White label",
-      "Custom integrations",
-      "SLA guarantee",
-    ],
-  },
-];
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  popular?: boolean;
+}
 
 export default function SelectPlanPage() {
   const [searchParams] = useSearchParams();
@@ -60,7 +23,41 @@ export default function SelectPlanPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   const tenantId = searchParams.get("tenant_id");
+
+  // Load plans from database
+  useEffect(() => {
+    const loadPlans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('subscription_plans')
+          .select('id, name, price_monthly, description, features')
+          .order('price_monthly', { ascending: true });
+
+        if (error) throw error;
+
+        const formattedPlans: Plan[] = (data || []).map((plan) => ({
+          id: plan.id,
+          name: plan.name,
+          price: `$${plan.price_monthly}/month`,
+          description: plan.description || '',
+          features: Array.isArray(plan.features) ? plan.features as string[] : [],
+          popular: plan.name === 'Professional',
+        }));
+
+        setPlans(formattedPlans);
+      } catch (error) {
+        logger.error('[SELECT_PLAN] Failed to load plans', error);
+        toast.error("Failed to load subscription plans");
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    loadPlans();
+  }, []);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -129,7 +126,7 @@ export default function SelectPlanPage() {
     }
   };
 
-  if (checkingAuth) {
+  if (checkingAuth || loadingPlans) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -151,20 +148,19 @@ export default function SelectPlanPage() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {PLANS.map((plan) => (
+          {plans.map((plan) => (
             <Card 
               key={plan.id} 
-              className={plan.id === "professional" ? "border-primary shadow-lg scale-105" : ""}
+              className={plan.popular ? "border-primary shadow-lg scale-105" : ""}
             >
               <CardHeader>
-                {plan.id === "professional" && (
-                  <div className="text-xs font-semibold text-primary mb-2">MOST POPULAR</div>
+                {plan.popular && (
+                  <Badge className="w-fit mb-2" variant="default">MOST POPULAR</Badge>
                 )}
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">${plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-4xl font-bold">{plan.price}</span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -183,7 +179,7 @@ export default function SelectPlanPage() {
                   size="lg"
                   onClick={() => handleSelectPlan(plan.id)}
                   disabled={loading !== null}
-                  variant={plan.id === "professional" ? "default" : "outline"}
+                  variant={plan.popular ? "default" : "outline"}
                 >
                   {loading === plan.id ? (
                     <>
