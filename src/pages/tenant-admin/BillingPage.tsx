@@ -284,6 +284,83 @@ export default function TenantAdminBillingPage() {
           <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
 
+        {/* Payment Method Missing Alert */}
+        {tenant?.payment_method_added === false && (
+          <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500 border-2">
+            <AlertCircle className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                  ⚠️ Complete Your Trial Setup
+                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  Add a payment method to avoid service interruption when your trial ends
+                  {tenant?.trial_ends_at && ` on ${new Date(tenant.trial_ends_at).toLocaleDateString()}`}.
+                </p>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (!tenant?.id) return;
+                  
+                  try {
+                    setUpgradeLoading(true);
+                    
+                    // Get current plan
+                    const currentPlan = subscriptionPlans?.find(p => p.name === tenant.subscription_plan);
+                    if (!currentPlan) {
+                      toast({
+                        title: 'Error',
+                        description: 'Current plan not found',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+                    
+                    const { data, error } = await supabase.functions.invoke('start-trial', {
+                      body: {
+                        tenant_id: tenant.id,
+                        plan_id: currentPlan.id,
+                      }
+                    });
+                    
+                    if (error) throw error;
+                    
+                    if (data?.url) {
+                      window.open(data.url, '_blank');
+                      toast({
+                        title: 'Opening Stripe Checkout',
+                        description: 'Add your payment method to complete trial setup',
+                      });
+                    }
+                  } catch (error: any) {
+                    toast({
+                      title: 'Error',
+                      description: error.message || 'Failed to open payment method setup',
+                      variant: 'destructive',
+                    });
+                  } finally {
+                    setUpgradeLoading(false);
+                  }
+                }}
+                disabled={upgradeLoading}
+                className="whitespace-nowrap bg-yellow-600 hover:bg-yellow-700 text-white"
+              >
+                {upgradeLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Add Payment Method
+                  </>
+                )}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Trial Banner */}
         {isOnTrial && tenant?.trial_ends_at && trialDaysRemaining > 0 && (
           <TrialBanner 

@@ -29,6 +29,7 @@ export interface Tenant {
   subscription_status: string;
   trial_ends_at?: string | null;
   next_billing_date?: string | null;
+  payment_method_added?: boolean;
   created_at?: string;
   limits: {
     customers: number;
