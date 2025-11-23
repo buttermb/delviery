@@ -11577,6 +11577,7 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: boolean
       }
+      cleanup_expired_reservations: { Args: never; Returns: Json }
       cleanup_old_location_history: { Args: never; Returns: undefined }
       compare_workflow_versions: {
         Args: {

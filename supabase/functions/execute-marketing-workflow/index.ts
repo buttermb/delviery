@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateExecuteMarketingWorkflow, type ExecuteMarketingWorkflowInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,8 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { workflowId, triggerData } = await req.json();
+    const rawBody = await req.json();
+    const { workflowId, triggerData }: ExecuteMarketingWorkflowInput = validateExecuteMarketingWorkflow(rawBody);
 
     if (!workflowId) {
       throw new Error('Workflow ID is required');

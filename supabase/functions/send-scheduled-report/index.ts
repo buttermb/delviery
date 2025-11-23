@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateSendScheduledReport, type SendScheduledReportInput } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,11 +13,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { schedule_id } = await req.json();
-
-    if (!schedule_id) {
-      throw new Error('Schedule ID is required');
-    }
+    const rawBody = await req.json();
+    const { schedule_id }: SendScheduledReportInput = validateSendScheduledReport(rawBody);
 
     // Get scheduled report configuration
     const { data: schedule, error: scheduleError } = await supabaseClient

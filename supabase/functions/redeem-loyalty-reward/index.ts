@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateRedeemLoyaltyReward, type RedeemLoyaltyRewardInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,11 +22,8 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { rewardId, customerId } = await req.json();
-
-    if (!rewardId || !customerId) {
-      throw new Error('Reward ID and Customer ID are required');
-    }
+    const rawBody = await req.json();
+    const { rewardId, customerId }: RedeemLoyaltyRewardInput = validateRedeemLoyaltyReward(rawBody);
 
     // Get reward details
     const { data: reward, error: rewardError } = await supabaseClient
