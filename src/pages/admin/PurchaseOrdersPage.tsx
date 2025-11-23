@@ -77,11 +77,12 @@ export default function PurchaseOrdersPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = supabase
+      // @ts-expect-error - Complex query chain causes deep type instantiation
+      let query: any = (supabase
         .from("purchase_orders")
         .select("*")
         .eq("tenant_id", tenant.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })) as any;
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
