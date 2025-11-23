@@ -95,21 +95,23 @@ const GlobalSearch = () => {
         .or(`name.ilike.%${searchLower}%,description.ilike.%${searchLower}%,category.ilike.%${searchLower}%`)
         .limit(10);
 
-      // @ts-ignore - Supabase type inference too deep
-      const addressesQuery: any = supabase
+      // Break type inference for complex query
+      const addressesQuery: any = (supabase as any)
         .from("addresses")
         .select("*, profiles(full_name)")
-        .eq("tenant_id", tenant.id)
+        .eq("tenant_id", tenant.id);
+      const addressesPromise = addressesQuery
         .or(`street.ilike.%${searchLower}%,neighborhood.ilike.%${searchLower}%,borough.ilike.%${searchLower}%`)
         .limit(10);
-      const addressesPromise = addressesQuery;
 
-      const [users, orders, products, addresses]: any = await Promise.all([
+      const results: any = await Promise.all([
         usersPromise,
         ordersPromise,
         productsPromise,
         addressesPromise,
       ]);
+
+      const [users, orders, products, addresses] = results;
 
       return {
         users: (users.data || []) as any as UserSearchResult[],

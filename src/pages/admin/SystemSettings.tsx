@@ -114,16 +114,19 @@ const SystemSettings = () => {
       const usersPromise = supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
       const ordersPromise = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
       const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
-      // @ts-ignore - Supabase type inference too deep
-      const fraudFlagsQuery: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
-      const fraudFlagsPromise: any = fraudFlagsQuery;
+      
+      // Break type inference for complex query
+      const fraudBase: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true });
+      const fraudFlagsPromise = fraudBase.eq("tenant_id", tenantId);
 
-      const [users, orders, products, fraudFlags]: any = await Promise.all([
+      const results: any = await Promise.all([
         usersPromise,
         ordersPromise,
         productsPromise,
         fraudFlagsPromise,
       ]);
+
+      const [users, orders, products, fraudFlags] = results;
 
       return {
         users: users.count || 0,
