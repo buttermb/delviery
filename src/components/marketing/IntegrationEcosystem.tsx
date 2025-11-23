@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, CheckCircle, ShoppingBag, Wallet, Target, CreditCard, MessageSquare, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SimplifiedIntegrationHub } from './SimplifiedIntegrationHub';
+import { StreamlinedIntegrationHub } from './StreamlinedIntegrationHub';
 
 interface Integration {
   name: string;
@@ -125,14 +125,14 @@ export function IntegrationEcosystem() {
           >
             <div className="text-center mb-4">
               <h3 className="text-2xl font-bold text-[hsl(var(--marketing-text))] mb-2">
-                Centralized Integration Hub
+                Unified Integration Network
               </h3>
               <p className="text-[hsl(var(--marketing-text-light))]">
-                FloraIQ connects all your tools in one unified network
+                Connect your tools with FloraIQ's powerful integration hub
               </p>
             </div>
 
-            <SimplifiedIntegrationHub integrations={integrations} />
+            <StreamlinedIntegrationHub integrations={integrations} />
           </motion.div>
 
           {/* Request Integration */}
