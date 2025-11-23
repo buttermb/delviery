@@ -11642,6 +11642,10 @@ export type Database = {
         Args: { p_listing_id: string; p_quantity: number }
         Returns: undefined
       }
+      decrement_product_inventory: {
+        Args: { p_product_id: string; p_quantity: number }
+        Returns: undefined
+      }
       decrement_wholesale_inventory: {
         Args: {
           p_product_name: string
@@ -11827,6 +11831,10 @@ export type Database = {
         Returns: string
       }
       refresh_menu_analytics: { Args: never; Returns: undefined }
+      reserve_inventory: {
+        Args: { p_items: Json; p_menu_id: string; p_trace_id?: string }
+        Returns: Json
+      }
       resolve_dead_letter_entry: {
         Args: { p_dlq_id: string; p_notes?: string; p_user_id: string }
         Returns: undefined

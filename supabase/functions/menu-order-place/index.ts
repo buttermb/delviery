@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { processPayment, refundPayment } from "../_shared/payment.ts";
+import { validateMenuOrderPlace, type MenuOrderPlaceInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,13 +24,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const body = await req.json();
+    const rawBody = await req.json();
+    const body: MenuOrderPlaceInput = validateMenuOrderPlace(rawBody);
     const {
       menu_id,
       order_items,
       payment_method,
       contact_phone,
-      // ... other fields
     } = body;
 
     // 1. IDEMPOTENCY CHECK (Basic implementation)

@@ -1,31 +1,5 @@
 import { createClient, corsHeaders } from '../_shared/deps.ts';
-
-interface OrderRequest {
-  userId?: string
-  merchantId?: string
-  deliveryAddress: string
-  deliveryBorough: string
-  paymentMethod: string
-  deliveryFee: number
-  subtotal: number
-  totalAmount: number
-  scheduledDeliveryTime?: string
-  deliveryNotes?: string
-  pickupLat?: number
-  pickupLng?: number
-  dropoffLat?: number
-  dropoffLng?: number
-  customerName?: string
-  customerPhone?: string
-  customerEmail?: string
-  cartItems: Array<{
-    productId: string
-    quantity: number
-    price: number
-    productName: string
-    selectedWeight: string
-  }>
-}
+import { validateCreateOrder, type CreateOrderInput } from './validation.ts';
 
 Deno.serve(async (req) => {
   // Handle CORS
@@ -44,7 +18,8 @@ Deno.serve(async (req) => {
       }
     )
 
-    const orderData: OrderRequest = await req.json()
+    const rawBody = await req.json();
+    const orderData: CreateOrderInput = validateCreateOrder(rawBody);
     console.log('Creating order:', { 
       userId: orderData.userId, 
       itemCount: orderData.cartItems.length,
