@@ -80,7 +80,11 @@ export function useSmartDashboard() {
                     }));
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                    logger.error('Smart dashboard subscription error', { status });
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);

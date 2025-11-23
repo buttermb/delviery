@@ -152,7 +152,11 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.error('Workflow executions subscription error', { status, component: 'useWorkflowExecutions' });
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

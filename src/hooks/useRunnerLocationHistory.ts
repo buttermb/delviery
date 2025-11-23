@@ -129,6 +129,9 @@ export function useRunnerLocationHistory({
       )
       .subscribe((status) => {
         logger.debug('Realtime subscription status:', status);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.error('Location tracking subscription error', { status, runnerId });
+        }
       });
 
     return () => {

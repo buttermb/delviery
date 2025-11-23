@@ -67,7 +67,11 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Order notifications subscription error:', status);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

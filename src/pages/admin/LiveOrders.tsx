@@ -55,7 +55,14 @@ export default function LiveOrders() {
           logger.info('Order update received', { component: 'LiveOrders' });
           loadLiveOrders();
         })
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Orders channel subscribed', { component: 'LiveOrders' });
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logger.error('Orders subscription error', { status, component: 'LiveOrders' });
+            toast.error('Real-time order updates unavailable');
+          }
+        });
 
       const menuOrdersChannel = supabase
         .channel('live-menu-orders-secondary')
@@ -68,7 +75,13 @@ export default function LiveOrders() {
           logger.info('Menu Order update received', { component: 'LiveOrders' });
           loadLiveOrders();
         })
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Menu orders channel subscribed', { component: 'LiveOrders' });
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logger.error('Menu orders subscription error', { status, component: 'LiveOrders' });
+          }
+        });
 
       return () => {
         supabase.removeChannel(ordersChannel);
