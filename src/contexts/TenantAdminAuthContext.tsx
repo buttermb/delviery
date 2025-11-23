@@ -309,13 +309,24 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             }
           }
         } catch (cookieError) {
-
-          // If it's an auth error (401), don't fall back - clear state
-          if (cookieError instanceof Error && (
+          // Check if this is a 401 authentication error
+          const is401Error = cookieError instanceof Response && cookieError.status === 401;
+          const hasAuthErrorMessage = cookieError instanceof Error && (
             cookieError.message.includes('401') ||
             cookieError.message.includes('Unauthorized') ||
-            cookieError.message.includes('Invalid or expired token')
-          )) {
+            cookieError.message.includes('Invalid or expired token') ||
+            cookieError.message.includes('Auth session missing')
+          );
+
+          // If it's an auth error (401), clear all state including localStorage
+          if (is401Error || hasAuthErrorMessage) {
+            // Clear ALL stored auth data
+            safeStorage.removeItem(ADMIN_KEY);
+            safeStorage.removeItem(TENANT_KEY);
+            safeStorage.removeItem(ACCESS_TOKEN_KEY);
+            safeStorage.removeItem(REFRESH_TOKEN_KEY);
+            safeStorage.removeItem('lastTenantSlug');
+            
             clearAuthState();
             setLoading(false);
 
@@ -324,22 +335,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               duration: 5000,
             });
 
+            logger.warn('[AUTH] Session expired - cleared all stored credentials');
             return;
           }
 
-          // If it's a network error, we should still try localStorage
-          // But if it's an auth error, clear state
-          if (cookieError instanceof Error && cookieError.message.includes('401')) {
-            clearAuthState();
-            setLoading(false);
-
-            // Show user-friendly message
-            toast.error("Your session has expired. Please log in again.", {
-              duration: 5000,
-            });
-
-            return;
-          }
+          // For non-auth errors (network issues, etc), we can try localStorage fallback
+          logger.warn('[AUTH] Cookie verification failed, falling back to localStorage', { 
+            error: cookieError instanceof Error ? cookieError.message : String(cookieError) 
+          });
         }
 
         // PRIORITY 2: Fallback to localStorage (for backwards compatibility)
@@ -440,6 +443,25 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
           clearTimeout(timeoutId);
 
+          // If 401, clear localStorage and state
+          if (verifyResponse.status === 401) {
+            safeStorage.removeItem(ADMIN_KEY);
+            safeStorage.removeItem(TENANT_KEY);
+            safeStorage.removeItem(ACCESS_TOKEN_KEY);
+            safeStorage.removeItem(REFRESH_TOKEN_KEY);
+            safeStorage.removeItem('lastTenantSlug');
+            
+            clearAuthState();
+            setLoading(false);
+
+            toast.error("Your session has expired. Please log in again.", {
+              duration: 5000,
+            });
+
+            logger.warn('[AUTH] Background verification failed with 401 - cleared credentials');
+            return;
+          }
+
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json();
 
@@ -454,7 +476,29 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             }
           }
         } catch (verifyError: unknown) {
-          // We already set isAuthenticated=true above, so just log
+          // Check if it's a 401 error
+          if (verifyError instanceof Response && verifyError.status === 401) {
+            safeStorage.removeItem(ADMIN_KEY);
+            safeStorage.removeItem(TENANT_KEY);
+            safeStorage.removeItem(ACCESS_TOKEN_KEY);
+            safeStorage.removeItem(REFRESH_TOKEN_KEY);
+            safeStorage.removeItem('lastTenantSlug');
+            
+            clearAuthState();
+            setLoading(false);
+
+            toast.error("Your session has expired. Please log in again.", {
+              duration: 5000,
+            });
+
+            logger.warn('[AUTH] Background verification error 401 - cleared credentials');
+            return;
+          }
+
+          // For other errors, just log (we already have localStorage auth)
+          logger.debug('[AUTH] Background verification failed (non-auth error)', {
+            error: verifyError instanceof Error ? verifyError.message : String(verifyError)
+          });
         }
 
         logger.debug('[AUTH INIT] 🎉 Authentication complete');
