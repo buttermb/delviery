@@ -144,11 +144,22 @@ export function IntegrationSetupDialog({
         
         if (!tenantUser) throw new Error('Tenant not found');
         
+        // Get account ID from accounts table (account_settings uses accounts.id, not tenant.id)
+        const { data: account, error: accountError } = await supabase
+          .from('accounts')
+          .select('id')
+          .eq('tenant_id', tenantUser.tenant_id)
+          .single();
+        
+        if (accountError || !account) {
+          throw new Error('Account not found for tenant');
+        }
+        
         // Get existing settings to merge with new token
         const { data: existingSettings } = await supabase
           .from('account_settings')
           .select('integration_settings')
-          .eq('account_id', tenantUser.tenant_id)
+          .eq('account_id', account.id)
           .single();
         
         // Merge existing integration settings with new mapbox token
@@ -162,7 +173,7 @@ export function IntegrationSetupDialog({
         const { error: settingsError } = await supabase
           .from('account_settings')
           .upsert({
-            account_id: tenantUser.tenant_id,
+            account_id: account.id,
             integration_settings: updatedSettings
           }, {
             onConflict: 'account_id',
