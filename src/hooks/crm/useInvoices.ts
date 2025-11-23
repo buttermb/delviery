@@ -38,7 +38,7 @@ export function useInvoices() {
     const useInvoiceQuery = (id: string) => useQuery({
         queryKey: crmInvoiceKeys.detail(id),
         queryFn: async () => {
-            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('id', id).single();
+            const { data, error } = await supabase.from('crm_invoices').select('*, client:crm_clients(*)').eq('id', id).maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data);
         },
@@ -49,7 +49,7 @@ export function useInvoices() {
         const queryClient = useQueryClient();
         return useMutation({
             mutationFn: async (invoiceId: string) => {
-                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).select('*, client:crm_clients(*)').single();
+                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).select('*, client:crm_clients(*)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -89,7 +89,7 @@ export function useCreateInvoice() {
         mutationFn: async (values: any) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await supabase.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items }).select('*, client:crm_clients(*)').single();
+            const { data, error } = await supabase.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items }).select('*, client:crm_clients(*)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data);
         },

@@ -39,7 +39,7 @@ export function useCRMSettings() {
                     .from('crm_settings')
                     .insert({ account_id: accountId })
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (createError) {
                     logger.error('Failed to create CRM settings', createError, { component: 'useCRMSettings', accountId });
@@ -88,12 +88,12 @@ export function useUpdateCRMSettings() {
                 if (values.faqs !== undefined) {
                     payload.faqs = values.faqs as unknown as Json;
                 }
-                
+
                 const { data: newData, error: createError } = await supabase
                     .from('crm_settings')
                     .insert(payload)
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (createError) {
                     logger.error('Failed to create CRM settings', createError, { component: 'useUpdateCRMSettings', accountId });
@@ -116,7 +116,7 @@ export function useUpdateCRMSettings() {
                 .eq('id', currentSettings.id)
                 .eq('account_id', accountId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to update CRM settings', error, { component: 'useUpdateCRMSettings', accountId, settingsId: currentSettings.id });

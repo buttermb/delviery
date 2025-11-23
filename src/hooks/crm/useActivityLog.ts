@@ -70,7 +70,7 @@ export function useLogActivity() {
     return useMutation({
         mutationFn: async (activity: Omit<CRMActivityLog, 'id' | 'created_at' | 'account_id' | 'performed_by_user_id' | 'performed_by_name'> & { account_id?: string }) => {
             const finalAccountId = activity.account_id || accountId;
-            
+
             if (!finalAccountId) {
                 throw new Error('Account ID is required to log activity');
             }
@@ -85,7 +85,7 @@ export function useLogActivity() {
                     performed_by_user_id: user?.id,
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to log activity', error, { component: 'useLogActivity', accountId: finalAccountId });

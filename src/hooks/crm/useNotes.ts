@@ -44,7 +44,7 @@ export function useCreateNote() {
     return useMutation({
         mutationFn: async ({ clientId, values }: { clientId: string; values: NoteFormValues & { account_id?: string } }) => {
             const finalAccountId = values.account_id || accountId;
-            
+
             if (!finalAccountId) {
                 throw new Error('Account ID is required to create a note');
             }
@@ -60,7 +60,7 @@ export function useCreateNote() {
                     created_by_user_id: user?.id,
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to create note', error, { component: 'useCreateNote', accountId: finalAccountId, clientId });

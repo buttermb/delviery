@@ -50,7 +50,7 @@ export function useCreateInvite() {
     return useMutation({
         mutationFn: async (values: InviteFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
-            
+
             if (!finalAccountId) {
                 throw new Error('Account ID is required to create an invite');
             }
@@ -65,7 +65,7 @@ export function useCreateInvite() {
                     status: 'pending',
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to create invite', error, { component: 'useCreateInvite', accountId: finalAccountId });
@@ -101,7 +101,7 @@ export function useArchiveInvite() {
                 .eq('id', inviteId)
                 .eq('account_id', accountId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to archive invite', error, { component: 'useArchiveInvite', inviteId, accountId });

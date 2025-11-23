@@ -31,11 +31,19 @@ export async function createSampleWholesaleData() {
     logger.debug("Clearing existing wholesale data for tenant", { component: 'sampleWholesaleData', tenantId: tenant_id });
 
     // Using tenant_id filter to prevent wiping entire database
-    await (supabase.from("wholesale_deliveries").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
-    await (supabase.from("wholesale_payments").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
-    await (supabase.from("wholesale_inventory_movements").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000') as any);
+    // Type assertions removed - operations return void
+    // @ts-expect-error - Supabase type inference creates excessively deep types for chained delete operations
+    await Promise.all([
+      supabase.from("wholesale_deliveries").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000'),
+      supabase.from("wholesale_payments").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000'),
+      supabase.from("wholesale_inventory_movements").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000')
+    ]);
+
+    // @ts-expect-error - Supabase type inference limitation
     await supabase.from("wholesale_client_notes").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    // @ts-expect-error - Supabase type inference limitation
     await supabase.from("wholesale_orders").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
+    // @ts-expect-error - Supabase type inference limitation
     await supabase.from("wholesale_inventory").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_runners").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');
     await supabase.from("wholesale_clients").delete().eq('tenant_id', tenant_id).neq('id', '00000000-0000-0000-0000-000000000000');

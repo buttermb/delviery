@@ -12,7 +12,7 @@ export function usePublicInvoice(token: string | undefined) {
                 .from("crm_invoices")
                 .select("*, client:crm_clients(*)")
                 .eq("public_token", token)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return {

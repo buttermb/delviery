@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tenant, TenantUser } from '@/lib/tenant';
 import { getTenantById } from '@/lib/tenant';
+import { logger } from '@/lib/logger';
 
 interface TenantContextType {
   tenant: Tenant | null;

@@ -1,5 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { clientEncryption } from './encryption/clientEncryption';
+import { logger } from './logger';
 
 interface FloraIQDB extends DBSchema {
     products: {
@@ -126,7 +127,7 @@ export const db = {
                     synced: record.synced
                 };
             } catch (e) {
-                console.error('Failed to decrypt order', e);
+                logger.error('Failed to decrypt order', e, { component: 'IDB', orderId: record.id });
                 return null; // Or throw error
             }
         }

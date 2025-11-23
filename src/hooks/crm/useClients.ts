@@ -67,7 +67,7 @@ export function useClient(clientId: string | undefined) {
                 .select('*')
                 .eq('id', clientId)
                 .eq('account_id', accountId)
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to fetch client', error, { component: 'useClient', clientId, accountId });
@@ -89,7 +89,7 @@ export function useCreateClient() {
     return useMutation({
         mutationFn: async (values: ClientFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
-            
+
             if (!finalAccountId) {
                 throw new Error('Account ID is required to create a client');
             }
@@ -104,7 +104,7 @@ export function useCreateClient() {
                     status: values.status || 'active',
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to create client', error, { component: 'useCreateClient', accountId: finalAccountId, values });
@@ -148,7 +148,7 @@ export function useUpdateClient() {
                 .eq('id', id)
                 .eq('account_id', accountId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to update client', error, { component: 'useUpdateClient', clientId: id, accountId });
@@ -188,7 +188,7 @@ export function useArchiveClient() {
                 .eq('id', clientId)
                 .eq('account_id', accountId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to archive client', error, { component: 'useArchiveClient', clientId, accountId });
@@ -228,7 +228,7 @@ export function useRestoreClient() {
                 .eq('id', clientId)
                 .eq('account_id', accountId)
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to restore client', error, { component: 'useRestoreClient', clientId, accountId });

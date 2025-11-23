@@ -43,7 +43,7 @@ export function useSendMessage() {
     return useMutation({
         mutationFn: async ({ clientId, values }: { clientId: string; values: MessageFormValues & { account_id?: string } }) => {
             const finalAccountId = values.account_id || accountId;
-            
+
             if (!finalAccountId) {
                 throw new Error('Account ID is required to send a message');
             }
@@ -60,7 +60,7 @@ export function useSendMessage() {
                     sender_user_id: user?.id,
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) {
                 logger.error('Failed to send message', error, { component: 'useSendMessage', accountId: finalAccountId, clientId });
