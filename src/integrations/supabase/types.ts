@@ -2743,6 +2743,51 @@ export type Database = {
           },
         ]
       }
+      customer_loyalty_points: {
+        Row: {
+          created_at: string | null
+          customer_id: string
+          id: string
+          points: number | null
+          tenant_id: string
+          tier_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id: string
+          id?: string
+          points?: number | null
+          tenant_id: string
+          tier_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string
+          id?: string
+          points?: number | null
+          tenant_id?: string
+          tier_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_loyalty_points_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_loyalty_points_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_notes: {
         Row: {
           account_id: string
@@ -5200,6 +5245,83 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_program_config: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          points_per_dollar: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          points_per_dollar?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          points_per_dollar?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_program_config_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_reward_redemptions: {
+        Row: {
+          customer_id: string
+          id: string
+          points_spent: number
+          redeemed_at: string | null
+          reward_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          customer_id: string
+          id?: string
+          points_spent: number
+          redeemed_at?: string | null
+          reward_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          customer_id?: string
+          id?: string
+          points_spent?: number
+          redeemed_at?: string | null
+          reward_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_rewards: {
         Row: {
           account_id: string
@@ -5240,6 +5362,41 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_tiers: {
+        Row: {
+          benefits: Json | null
+          created_at: string | null
+          id: string
+          min_points: number
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          benefits?: Json | null
+          created_at?: string | null
+          id?: string
+          min_points: number
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          benefits?: Json | null
+          created_at?: string | null
+          id?: string
+          min_points?: number
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_tiers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
