@@ -11622,6 +11622,10 @@ export type Database = {
         Returns: number
       }
       calculate_risk_score: { Args: { p_user_id: string }; Returns: number }
+      can_manage_tenant_accounts: {
+        Args: { p_tenant_id: string }
+        Returns: boolean
+      }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
       check_tenant_subscription_valid: {
         Args: { p_tenant_id: string }

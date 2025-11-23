@@ -166,9 +166,22 @@ export function IntegrationSetupDialog({
             .select('id')
             .single();
           
-          if (createError || !newAccount) {
-            throw new Error('Unable to create billing account for tenant');
-          }
+      if (createError || !newAccount) {
+        console.error('Failed to create account', createError);
+        const code = (createError as any)?.code;
+        const hint =
+          code === '42501'
+            ? 'Permission denied – your user may not have rights to create billing accounts.'
+            : code === '23505'
+            ? 'An account might already exist for this tenant.'
+            : undefined;
+
+        throw new Error(
+          hint
+            ? `Unable to create billing account for tenant. ${hint}`
+            : 'Unable to create billing account for tenant'
+        );
+      }
           
           accountId = newAccount.id;
         }
