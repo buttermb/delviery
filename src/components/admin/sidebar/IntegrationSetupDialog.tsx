@@ -128,17 +128,48 @@ export function IntegrationSetupDialog({
     setTestResult(null);
 
     try {
-      // Store secrets (this would call your secrets management API)
-      const secretNames = config.fields.map((f) => f.key);
+      const { supabase } = await import('@/integrations/supabase/client');
       
-      // Simulate API call to store secrets
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // For Mapbox (public token), store in tenant settings for runtime access
+      if (integrationId === 'mapbox' && formData['VITE_MAPBOX_TOKEN']) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        // Get tenant ID from tenant_users table
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!tenantUser) throw new Error('Tenant not found');
+        
+        // Update or create account_settings with the mapbox token
+        const { error: settingsError } = await supabase
+          .from('account_settings')
+          .upsert({
+            account_id: tenantUser.tenant_id,
+            integration_settings: {
+              mapbox_token: formData['VITE_MAPBOX_TOKEN']
+            }
+          }, {
+            onConflict: 'account_id',
+            ignoreDuplicates: false
+          });
+          
+        if (settingsError) throw settingsError;
+      } else {
+        // For other integrations (backend secrets), we would use the secrets API
+        // This requires backend implementation
+        toast.info('Backend secret storage not yet implemented');
+      }
       
       toast.success(`${integrationName} configured successfully`);
       onSetupComplete();
       onOpenChange(false);
     } catch (error) {
-      toast.error('Failed to configure integration');
+      console.error('Setup error:', error);
+      toast.error(`Failed to configure integration: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { MapPin, Truck, Layers, Map as MapIcon } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { useMapboxToken } from '@/hooks/useMapboxToken';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -28,7 +29,7 @@ export default function LiveMap() {
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
 
   // Map style URLs
   const mapStyles = {

@@ -10,8 +10,7 @@ import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
 import { themeColors } from "@/lib/utils/colorConversion";
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
+import { useMapboxToken } from "@/hooks/useMapboxToken";
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;
@@ -26,6 +25,7 @@ declare global {
 }
 
 export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMapProps) {
+  const { token: MAPBOX_TOKEN } = useMapboxToken();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, { runner: mapboxgl.Marker; destination: mapboxgl.Marker }>>(new Map());
