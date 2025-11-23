@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateMarketingAutomation, type MarketingAutomationInput } from './validation.ts';
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -17,7 +18,8 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
-        const { action, payload } = await req.json();
+        const rawBody = await req.json();
+        const { action, payload }: MarketingAutomationInput = validateMarketingAutomation(rawBody);
 
         if (action === "send_email") {
             // Placeholder for email sending logic (e.g., Resend)
