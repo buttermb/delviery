@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
+import { validateMenuGenerate } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +19,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const requestBody = await req.json();
+    const rawBody = await req.json();
     const { 
       name, 
       description,
@@ -26,18 +27,15 @@ serve(async (req) => {
       min_order_quantity,
       max_order_quantity,
       security_settings,
-      custom_prices
-    } = requestBody;
+      custom_prices,
+      appearance_style,
+      show_product_images,
+      show_availability,
+      show_contact_info,
+      custom_message
+    } = validateMenuGenerate(rawBody);
 
     console.log('Creating disposable menu:', { name, product_count: product_ids?.length });
-
-    // Validate required fields
-    if (!name || !product_ids || product_ids.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: name and product_ids' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     const generateAccessCode = () => {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -57,7 +55,7 @@ serve(async (req) => {
       return token;
     };
 
-    const accessCode = security_settings?.access_code || generateAccessCode();
+    const accessCode: string = (security_settings?.access_code as string) || generateAccessCode();
     const urlToken = generateUrlToken();
     
     console.log('Generated access code:', accessCode);
@@ -167,11 +165,11 @@ serve(async (req) => {
         min_order_quantity: min_order_quantity || 5,
         max_order_quantity: max_order_quantity || 50,
         security_settings: security_settings || {},
-        appearance_style: requestBody.appearance_style || 'professional',
-        show_product_images: requestBody.show_product_images !== false,
-        show_availability: requestBody.show_availability !== false,
-        show_contact_info: requestBody.show_contact_info || false,
-        custom_message: requestBody.custom_message || null,
+        appearance_style: appearance_style || 'professional',
+        show_product_images: show_product_images !== false,
+        show_availability: show_availability !== false,
+        show_contact_info: show_contact_info || false,
+        custom_message: custom_message || null,
       })
       .select()
       .single();
