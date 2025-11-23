@@ -14,6 +14,7 @@ import { LiveActivityTicker } from "@/components/marketing/LiveActivityTicker";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
 import { ParallaxBackground } from "@/components/marketing/ParallaxBackground";
+import { AnimatedMeshBackground } from "@/components/marketing/AnimatedMeshBackground";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
@@ -57,8 +58,10 @@ export default function MarketingHome() {
       {/* Performance Monitor - Dev mode only */}
       <PerformanceMonitor />
 
-      {/* Parallax Background Effects */}
-      <ParallaxBackground />
+      {/* Parallax Background Effects - only for hero */}
+      <div className="absolute inset-0 pointer-events-none" style={{ height: '100vh' }}>
+        <ParallaxBackground />
+      </div>
 
       <SEOHead
         title="FloraIQ - Modern Operating System for Cannabis Distribution"

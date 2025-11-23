@@ -78,8 +78,6 @@ export default defineConfig(({ mode }) => ({
     versionGeneratorPlugin(),
     buildTimestampPlugin(),
     deferCssPlugin(),
-    // Only run realtime validation in dev mode to save memory during builds
-    mode === "development" && realtimeValidationPlugin(),
     // Run sitemap generation only in production to avoid noisy logs and CI/tooling issues
     mode === "production" && sitemapPlugin(),
     viteCompression({
@@ -175,6 +173,8 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     assetsInlineLimit: 4096,
     cssMinify: true,
+    // Reduce memory pressure during builds
+    reportCompressedSize: false,
     terserOptions: {
       compress: {
         drop_console: ['log'], // Only drop console.log, keep errors/warnings
@@ -190,7 +190,7 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     rollupOptions: {
-      maxParallelFileOps: 2, // Limit parallel operations to reduce memory usage
+      maxParallelFileOps: 1, // Further limit parallel operations to reduce memory usage
       output: {
         // Add hash to filenames for cache busting  
         entryFileNames: 'assets/entry-[hash].js',
