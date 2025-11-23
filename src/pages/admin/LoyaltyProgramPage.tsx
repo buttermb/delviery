@@ -51,9 +51,9 @@ interface LoyaltyTier {
 
 interface LoyaltyReward {
   id: string;
-  name: string;
-  description?: string;
-  points_cost: number;
+  reward_name: string;
+  reward_description?: string;
+  points_required: number;
   reward_type: string;
   is_active: boolean;
   redemption_count?: number;
@@ -100,9 +100,9 @@ export default function LoyaltyProgramPage() {
     benefits: [],
   });
   const [rewardForm, setRewardForm] = useState<Partial<LoyaltyReward>>({
-    name: "",
-    description: "",
-    points_cost: 100,
+    reward_name: "",
+    reward_description: "",
+    points_required: 100,
     reward_type: "discount",
     is_active: true,
   });
@@ -130,7 +130,7 @@ export default function LoyaltyProgramPage() {
     mutationFn: async (data: Partial<LoyaltyTier>) => {
       const { error } = await supabase
         .from("loyalty_tiers")
-        .upsert({ ...data, tenant_id: tenant?.id })
+        .upsert({ ...data, tenant_id: tenant?.id } as any)
         .select();
       if (error) throw error;
     },
@@ -149,7 +149,7 @@ export default function LoyaltyProgramPage() {
     mutationFn: async (data: Partial<LoyaltyReward>) => {
       const { error } = await supabase
         .from("loyalty_rewards")
-        .upsert({ ...data, tenant_id: tenant?.id })
+        .upsert({ ...data, tenant_id: tenant?.id } as any)
         .select();
       if (error) throw error;
     },
@@ -209,7 +209,7 @@ export default function LoyaltyProgramPage() {
       setRewardForm(reward);
     } else {
       setEditingReward(null);
-      setRewardForm({ name: "", description: "", points_cost: 100, reward_type: "discount", is_active: true });
+      setRewardForm({ reward_name: "", reward_description: "", points_required: 100, reward_type: "discount", is_active: true });
     }
     setIsRewardOpen(true);
   };
@@ -253,20 +253,20 @@ export default function LoyaltyProgramPage() {
   });
 
   // Fetch loyalty rewards
-  const { data: rewards } = useQuery({
+  const { data: rewards } = useQuery<LoyaltyReward[]>({
     queryKey: ["loyalty-rewards", tenant?.id],
-    queryFn: async (): Promise<LoyaltyReward[]> => {
-      const { data, error } = await supabase
-        .from("loyalty_rewards")
+    queryFn: async () => {
+      const { data, error } = await (supabase
+        .from("loyalty_rewards") as any)
         .select("*")
         .eq("tenant_id", tenant?.id)
-        .order("points_cost");
+        .order("points_required");
 
       if (error && error.code !== "42P01") {
         logger.error("Failed to fetch loyalty rewards", error, { component: "LoyaltyProgramPage" });
       }
 
-      return (data as unknown as LoyaltyReward[]) || [];
+      return (data as any) || [];
     },
     enabled: !!tenant?.id,
   });
@@ -524,7 +524,7 @@ export default function LoyaltyProgramPage() {
               <Card key={reward.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{reward.name}</CardTitle>
+                    <CardTitle className="text-base">{reward.reward_name}</CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant={reward.is_active ? "default" : "secondary"}>
                         {reward.is_active ? "Active" : "Inactive"}
@@ -538,7 +538,7 @@ export default function LoyaltyProgramPage() {
                     </div>
                   </div>
                   <CardDescription className="line-clamp-2">
-                    {reward.description}
+                    {reward.reward_description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -546,7 +546,7 @@ export default function LoyaltyProgramPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Cost</span>
                       <span className="text-lg font-bold text-emerald-600">
-                        {reward.points_cost} pts
+                        {reward.points_required} pts
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
@@ -682,15 +682,15 @@ export default function LoyaltyProgramPage() {
             <div className="space-y-2">
               <Label>Reward Name</Label>
               <Input
-                value={rewardForm.name || ""}
-                onChange={(e) => setRewardForm({ ...rewardForm, name: e.target.value })}
+                value={rewardForm.reward_name || ""}
+                onChange={(e) => setRewardForm({ ...rewardForm, reward_name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
               <Input
-                value={rewardForm.description || ""}
-                onChange={(e) => setRewardForm({ ...rewardForm, description: e.target.value })}
+                value={rewardForm.reward_description || ""}
+                onChange={(e) => setRewardForm({ ...rewardForm, reward_description: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -698,8 +698,8 @@ export default function LoyaltyProgramPage() {
                 <Label>Points Cost</Label>
                 <Input
                   type="number"
-                  value={rewardForm.points_cost || 0}
-                  onChange={(e) => setRewardForm({ ...rewardForm, points_cost: parseInt(e.target.value) })}
+                  value={rewardForm.points_required || 0}
+                  onChange={(e) => setRewardForm({ ...rewardForm, points_required: parseInt(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
