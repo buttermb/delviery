@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateGenerateCustomReport, type GenerateCustomReportInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,8 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { reportId, startDate, endDate } = await req.json();
+    const rawBody = await req.json();
+    const { reportId, startDate, endDate }: GenerateCustomReportInput = validateGenerateCustomReport(rawBody);
 
     if (!reportId) {
       throw new Error('Report ID is required');

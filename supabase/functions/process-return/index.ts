@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { validateProcessReturn, type ProcessReturnInput } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,15 +13,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { tenant_id, customer_id, order_id, items, reason, notes } = await req.json();
-
-    // Validate input
-    if (!tenant_id || !customer_id || !items || items.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const rawBody = await req.json();
+    const { tenant_id, customer_id, order_id, items, reason, notes }: ProcessReturnInput = validateProcessReturn(rawBody);
 
     // Calculate return total
     let totalAmount = 0;

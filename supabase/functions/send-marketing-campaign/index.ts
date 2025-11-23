@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateSendMarketingCampaign, type SendMarketingCampaignInput } from './validation.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,8 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { campaignId } = await req.json();
+    const rawBody = await req.json();
+    const { campaignId }: SendMarketingCampaignInput = validateSendMarketingCampaign(rawBody);
 
     if (!campaignId) {
       throw new Error('Campaign ID is required');
