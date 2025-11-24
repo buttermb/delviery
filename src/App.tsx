@@ -141,6 +141,7 @@ const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
+const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
 
@@ -542,6 +543,9 @@ const App = () => {
 
                                     {/* Help Page */}
                                     <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
+
+                                    {/* Select Plan Page (for adding payment method) */}
+                                    <Route path="/:tenantSlug/admin/select-plan" element={<TenantAdminProtectedRoute><TenantAdminSelectPlanPage /></TenantAdminProtectedRoute>} />
 
                                     {/* Tenant Admin Portal - Exact redirect */}
                                     <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />

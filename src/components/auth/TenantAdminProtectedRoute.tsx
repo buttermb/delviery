@@ -309,11 +309,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const tenantData = tenant as any;
   const needsPaymentMethod = !tenantData?.payment_method_added;
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
+  const isOnboardingRoute = location.pathname.includes('/admin/welcome') || 
+                           location.pathname.includes('/admin/onboarding');
   
-  // Redirect to plan selection if payment method not added (except if already on select-plan page)
-  if (needsPaymentMethod && !isOnSelectPlanPage) {
+  // Redirect to plan selection if payment method not added (except if already on select-plan or onboarding)
+  if (needsPaymentMethod && !isOnSelectPlanPage && !isOnboardingRoute) {
     logger.debug('[PROTECTED ROUTE] Payment method not added, redirecting to plan selection');
-    return <Navigate to={`/select-plan?tenant_id=${tenant.id}`} replace state={{ fromDashboard: true }} />;
+    return <Navigate to={`/${tenant.slug}/admin/select-plan`} replace state={{ fromDashboard: true }} />;
   }
 
   // Show error UI after multiple failures
