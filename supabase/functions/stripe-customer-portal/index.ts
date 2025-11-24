@@ -122,7 +122,6 @@ serve(async (req) => {
     }
 
     logStep('Initializing Stripe client');
-    logStep('Stripe key prefix', { keyPrefix: STRIPE_SECRET_KEY.substring(0, 7) + '...' });
 
     // Initialize Stripe SDK
     const stripeClient = new Stripe(STRIPE_SECRET_KEY, {

@@ -127,14 +127,20 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                             <div className="grid gap-4">
                                 <div
                                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                 >
                                     <h4 className="font-medium mb-1">Business Profile</h4>
                                     <p className="text-sm text-muted-foreground">Add your logo, address, and contact info.</p>
                                 </div>
                                 <div
                                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                 >
                                     <h4 className="font-medium mb-1">Operating Hours</h4>
                                     <p className="text-sm text-muted-foreground">Set when you're open for business.</p>
@@ -158,14 +164,20 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                             <div className="grid gap-4">
                                 <div
                                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
                                 >
                                     <h4 className="font-medium mb-1">Delivery Zones</h4>
                                     <p className="text-sm text-muted-foreground">Draw your delivery areas on the map.</p>
                                 </div>
                                 <div
                                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                                    onClick={() => navigate(`/${tenant?.slug}/admin/team`)}
+                                    onClick={() => {
+                                        onOpenChange(false);
+                                        navigate(`/${tenant?.slug}/admin/team`);
+                                    }}
                                 >
                                     <h4 className="font-medium mb-1">Driver Management</h4>
                                     <p className="text-sm text-muted-foreground">Invite your drivers or connect 3rd party fleets.</p>

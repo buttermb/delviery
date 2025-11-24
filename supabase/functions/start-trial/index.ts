@@ -58,7 +58,6 @@ serve(async (req) => {
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
-    console.log(`Initializing Stripe with key prefix: ${stripeKey.substring(0, 7)}...`);
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
