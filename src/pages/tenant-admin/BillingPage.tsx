@@ -50,6 +50,18 @@ export default function TenantAdminBillingPage() {
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
+  // Check Stripe configuration health
+  const { data: stripeHealth } = useQuery({
+    queryKey: ['stripe-health'],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-stripe-config');
+      if (error) throw error;
+      return data as { configured: boolean; valid: boolean; error?: string; testMode?: boolean };
+    },
+    retry: 2,
+    staleTime: 60000, // Cache for 1 minute
+  });
+
   // Fetch invoices using Edge Function
   const { data: invoices } = useQuery({
     queryKey: ["tenant-invoices", tenantId],
@@ -178,20 +190,41 @@ export default function TenantAdminBillingPage() {
         });
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      setUpgradeDialogOpen(false);
+      setUpgradeLoading(false);
     },
     onError: (error: unknown) => {
       logger.error('Error updating subscription', error, { component: 'BillingPage' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to update subscription';
+      
+      // Provide specific guidance for Stripe configuration errors
+      let description = errorMessage;
+      if (errorMessage.includes('Invalid STRIPE_SECRET_KEY') || errorMessage.includes('secret key')) {
+        description = '⚠️ Stripe is not properly configured. The secret key must start with "sk_", not "pk_". Please contact support or check your integration settings.';
+      }
+      
       toast({
-        title: 'Update Failed',
-        description: errorMessage,
+        title: 'Upgrade Failed',
+        description,
         variant: 'destructive',
       });
+      
+      setUpgradeLoading(false);
     }
   });
 
   const handlePlanChange = async (targetPlan: SubscriptionTier, useStripe = false) => {
     if (!tenantId) return;
+
+    // Check Stripe health before proceeding
+    if (!stripeHealth?.valid) {
+      toast({
+        title: 'Stripe Not Configured',
+        description: stripeHealth?.error || 'Payment processing is not available. Please contact support.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
     const currentIndex = tierHierarchy.indexOf(currentTier);
@@ -427,7 +460,17 @@ export default function TenantAdminBillingPage() {
           />
         )}
 
-        {isTestMode && (
+        {/* Stripe Configuration Status */}
+        {stripeHealth && !stripeHealth.valid && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>⚠️ Stripe Not Configured:</strong> {stripeHealth.error || 'Payment processing is unavailable. Upgrade and payment features are disabled.'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {stripeHealth?.valid && stripeHealth.testMode && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
