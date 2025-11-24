@@ -9945,6 +9945,7 @@ export type Database = {
           onboarded: boolean | null
           onboarding_completed: boolean | null
           onboarding_completed_at: string | null
+          onboarding_skipped: boolean | null
           owner_email: string
           owner_name: string
           payment_method_added: boolean | null
@@ -9990,6 +9991,7 @@ export type Database = {
           onboarded?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          onboarding_skipped?: boolean | null
           owner_email: string
           owner_name: string
           payment_method_added?: boolean | null
@@ -10035,6 +10037,7 @@ export type Database = {
           onboarded?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
+          onboarding_skipped?: boolean | null
           owner_email?: string
           owner_name?: string
           payment_method_added?: boolean | null
