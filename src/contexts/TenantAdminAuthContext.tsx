@@ -12,6 +12,7 @@ import { resilientFetch, safeFetch, ErrorCategory, getErrorMessage, initConnecti
 import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 
 interface TenantAdmin {
   id: string;
@@ -30,6 +31,8 @@ export interface Tenant {
   trial_ends_at?: string | null;
   next_billing_date?: string | null;
   payment_method_added?: boolean;
+  mrr?: number;
+  onboarding_completed?: boolean;
   created_at?: string;
   limits: {
     customers: number;
@@ -141,6 +144,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(60);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+
+  // Check onboarding status
+  useEffect(() => {
+    if (tenant && !loading && !tenant.onboarding_completed) {
+      // Small delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        setOnboardingOpen(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [tenant, loading]);
 
   // Validate environment on mount
   useEffect(() => {
@@ -335,7 +350,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             safeStorage.removeItem(ACCESS_TOKEN_KEY);
             safeStorage.removeItem(REFRESH_TOKEN_KEY);
             safeStorage.removeItem('lastTenantSlug');
-            
+
             clearAuthState();
             setLoading(false);
 
@@ -349,8 +364,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
           }
 
           // For non-auth errors (network issues, etc), we can try localStorage fallback
-          logger.warn('[AUTH] Cookie verification failed, falling back to localStorage', { 
-            error: cookieError instanceof Error ? cookieError.message : String(cookieError) 
+          logger.warn('[AUTH] Cookie verification failed, falling back to localStorage', {
+            error: cookieError instanceof Error ? cookieError.message : String(cookieError)
           });
         }
 
@@ -459,7 +474,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             safeStorage.removeItem(ACCESS_TOKEN_KEY);
             safeStorage.removeItem(REFRESH_TOKEN_KEY);
             safeStorage.removeItem('lastTenantSlug');
-            
+
             clearAuthState();
             setLoading(false);
 
@@ -492,7 +507,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             safeStorage.removeItem(ACCESS_TOKEN_KEY);
             safeStorage.removeItem(REFRESH_TOKEN_KEY);
             safeStorage.removeItem('lastTenantSlug');
-            
+
             clearAuthState();
             setLoading(false);
 
@@ -706,7 +721,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   safeStorage.removeItem(ACCESS_TOKEN_KEY);
                   safeStorage.removeItem(REFRESH_TOKEN_KEY);
                   safeStorage.removeItem('lastTenantSlug');
-                  
+
                   clearAuthState();
                   setLoading(false);
 
@@ -717,7 +732,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   logger.warn('[AUTH] Refresh failed with 401 during verification - cleared credentials');
                   return false;
                 }
-                
+
                 throw new Error("Token refresh failed");
               }
 
@@ -741,22 +756,22 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
               setLoading(false);
               return true; // Successfully refreshed
-                  } catch (refreshError) {
+            } catch (refreshError) {
               logger.error("Token refresh failed during verification", refreshError);
-              
+
               // Clear all auth state if refresh fails
               safeStorage.removeItem(ACCESS_TOKEN_KEY);
               safeStorage.removeItem(REFRESH_TOKEN_KEY);
               safeStorage.removeItem(ADMIN_KEY);
               safeStorage.removeItem(TENANT_KEY);
               safeStorage.removeItem('lastTenantSlug');
-              
+
               clearAuthState();
-              
+
               toast.error("Your session has expired. Please log in again.", {
                 duration: 5000,
               });
-              
+
               throw new Error("Token expired and refresh failed");
             }
           }
@@ -1139,33 +1154,33 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         // If 401, refresh token is invalid - clear everything and force re-login
         if (response.status === 401) {
           logger.warn("Refresh token invalid - clearing auth state and redirecting to login");
-          
+
           // Clear all stored tokens immediately
           safeStorage.removeItem(ACCESS_TOKEN_KEY);
           safeStorage.removeItem(REFRESH_TOKEN_KEY);
           safeStorage.removeItem(ADMIN_KEY);
           safeStorage.removeItem(TENANT_KEY);
           safeStorage.removeItem('lastTenantSlug');
-          
+
           // Clear state
           clearAuthState();
-          
+
           // Clear Supabase session
           await supabase.auth.signOut();
-          
+
           // Show error message
           toast.error("Your session has expired. Please log in again.", {
             duration: 5000,
           });
-          
+
           // Force redirect to login if we have tenant slug
           if (tenant?.slug) {
             navigate(`/${tenant.slug}/admin/login`, { replace: true });
           }
-          
+
           return;
         }
-        
+
         throw new Error("Token refresh failed");
       }
 
@@ -1190,12 +1205,12 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logger.debug("Token refreshed successfully");
     } catch (error) {
       logger.error("Token refresh error", error);
-      
+
       // Clear tokens but don't call logout() edge function as it may fail too
       safeStorage.removeItem(ACCESS_TOKEN_KEY);
       safeStorage.removeItem(REFRESH_TOKEN_KEY);
       clearAuthState();
-      
+
       toast.error("Session refresh failed. Please log in again.", {
         duration: 5000,
       });
@@ -1355,9 +1370,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}
-        onStayLoggedIn={handleStayLoggedIn}
-        onLogout={handleLogoutFromWarning}
         secondsRemaining={secondsUntilLogout}
+        onExtendSession={refreshAuthToken}
+        onLogout={logout}
+      />
+      <OnboardingWizard
+        open={onboardingOpen}
+        onOpenChange={setOnboardingOpen}
       />
     </TenantAdminAuthContext.Provider>
   );

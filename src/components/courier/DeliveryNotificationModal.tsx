@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, DollarSign, Package } from 'lucide-react';
@@ -22,6 +23,7 @@ interface DeliveryRequest {
 export default function DeliveryNotificationModal() {
   const [delivery, setDelivery] = useState<DeliveryRequest | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
+  const navigate = useNavigate();
   const [isAccepting, setIsAccepting] = useState(false);
 
   useEffect(() => {
@@ -66,14 +68,14 @@ export default function DeliveryNotificationModal() {
 
   const handleAccept = async () => {
     if (!delivery) return;
-    
+
     setIsAccepting(true);
-    
+
     try {
       // Update order to assign to this courier
       const { error } = await supabase
         .from('orders')
-        .update({ 
+        .update({
           courier_id: getCurrentCourierId(),
           status: 'assigned'
         })
@@ -86,8 +88,8 @@ export default function DeliveryNotificationModal() {
         description: "Navigate to pickup location",
       });
 
-      window.location.href = `/courier/dashboard?active=${delivery.id}`;
-      
+      navigate(`/courier/dashboard?active=${delivery.id}`);
+
     } catch (error) {
       logger.error('Failed to accept delivery:', error);
       toast({

@@ -17,7 +17,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useTenantAdminAuth, Tenant } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { UpgradePrompt } from "@/components/shared/UpgradePrompt";
 import { useState } from "react";
@@ -42,7 +42,7 @@ export default function TrialExpiredPage() {
     queryFn: async (): Promise<TenantStats | null> => {
       if (!tenant?.id) return null;
 
-      const usage = (tenant as any)?.usage || {};
+      const usage = tenant?.usage || { products: 0, customers: 0, menus: 0, revenue: 0 };
 
       // Get revenue if any
       // @ts-ignore - Deep instantiation error from Supabase types
@@ -51,11 +51,11 @@ export default function TrialExpiredPage() {
         .select("total_amount")
         .eq("tenant_id", tenant.id)
         .eq("status", "confirmed");
-      
+
       interface OrderWithAmount {
         total_amount: number | null;
       }
-      
+
       const orders = (ordersQuery.data || []) as OrderWithAmount[];
 
       const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
@@ -70,7 +70,7 @@ export default function TrialExpiredPage() {
     enabled: !!tenant?.id,
   });
 
-  const trialEndsAt = (tenant as any)?.trial_ends_at;
+  const trialEndsAt = tenant?.trial_ends_at;
   const daysSinceExpiry = trialEndsAt
     ? Math.floor((Date.now() - new Date(trialEndsAt).getTime()) / (1000 * 60 * 60 * 24))
     : 0;

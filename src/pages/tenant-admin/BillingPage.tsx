@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
+import {
   CreditCard,
   CheckCircle2,
   ExternalLink,
@@ -30,6 +30,7 @@ import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { TrialBanner } from "@/components/tenant-admin/TrialBanner";
 import { TrialCountdown } from "@/components/tenant-admin/TrialCountdown";
+import { AddPaymentMethodDialog } from "@/components/billing/AddPaymentMethodDialog";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -111,24 +112,24 @@ export default function TenantAdminBillingPage() {
   const { data: subscriptionPlans = [], isLoading: plansLoading, error: plansError } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
-      console.log('[BillingPage] Fetching subscription plans...');
-      
+      logger.info('[BillingPage] Fetching subscription plans...', { component: 'BillingPage' });
+
       // @ts-ignore - Deep instantiation error from Supabase types
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
         .order('price_monthly');
-      
+
       if (error) {
-        console.error('[BillingPage] Error fetching subscription plans:', error);
+        logger.error('[BillingPage] Error fetching subscription plans:', error, { component: 'BillingPage' });
         logger.error('Failed to fetch subscription plans', error, { component: 'BillingPage' });
         throw error;
       }
-      
-      console.log('[BillingPage] Subscription plans loaded:', data?.length || 0, 'plans');
-      console.log('[BillingPage] Plans:', data?.map(p => ({ id: p.id, name: p.name, price: p.price_monthly })));
-      
+
+      logger.info('[BillingPage] Subscription plans loaded:', { count: data?.length || 0, component: 'BillingPage' });
+      logger.debug('[BillingPage] Plans:', { plans: data?.map(p => ({ id: p.id, name: p.name, price: p.price_monthly })), component: 'BillingPage' });
+
       return data || [];
     },
     retry: 3,
@@ -166,12 +167,12 @@ export default function TenantAdminBillingPage() {
   const updateSubscriptionMutation = useMutation({
     mutationFn: async (planId: string) => {
       const { data, error } = await supabase.functions.invoke('update-subscription', {
-        body: { 
+        body: {
           tenant_id: tenant?.id,
-          plan_id: planId 
+          plan_id: planId
         }
       });
-      
+
       if (error) throw error;
 
       // Check for error in response body (some edge functions return 200 with error)
@@ -197,19 +198,19 @@ export default function TenantAdminBillingPage() {
     onError: (error: unknown) => {
       logger.error('Error updating subscription', error, { component: 'BillingPage' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to update subscription';
-      
+
       // Provide specific guidance for Stripe configuration errors
       let description = errorMessage;
       if (errorMessage.includes('Invalid STRIPE_SECRET_KEY') || errorMessage.includes('secret key')) {
         description = '⚠️ Stripe is not properly configured. The secret key must start with "sk_", not "pk_". Please contact support or check your integration settings.';
       }
-      
+
       toast({
         title: 'Upgrade Failed',
         description,
         variant: 'destructive',
       });
-      
+
       setUpgradeLoading(false);
     }
   });
@@ -249,16 +250,17 @@ export default function TenantAdminBillingPage() {
 
   const confirmPlanChange = async () => {
     if (!selectedPlan || !subscriptionPlans) return;
-    
+
     // Find the plan ID from the subscription plans - match by name (case-insensitive)
-    const targetPlan = subscriptionPlans.find(p => 
+    const targetPlan = subscriptionPlans.find(p =>
       p.name.toLowerCase() === selectedPlan.toLowerCase()
     );
-    
+
     if (!targetPlan) {
-      console.error('Plan not found:', { 
-        selectedPlan, 
-        availablePlans: subscriptionPlans.map(p => ({ id: p.id, name: p.name }))
+      logger.error('Plan not found:', {
+        plan: selectedPlan,
+        availablePlans: subscriptionPlans.map(p => ({ id: p.id, name: p.name })),
+        component: 'BillingPage'
       });
       toast({
         title: 'Error',
@@ -267,7 +269,7 @@ export default function TenantAdminBillingPage() {
       });
       return;
     }
-    
+
     setUpgradeLoading(true);
     updateSubscriptionMutation.mutate(targetPlan.id);
   };
@@ -287,40 +289,40 @@ export default function TenantAdminBillingPage() {
       }
 
       setUpgradeLoading(true);
-      console.log('[BillingPage] Invoking stripe-customer-portal for tenant:', tenantId);
+      logger.info('[BillingPage] Invoking stripe-customer-portal for tenant:', { tenantId, component: 'BillingPage' });
 
       const { data, error } = await supabase.functions.invoke('stripe-customer-portal', {
         body: { tenant_id: tenantId }
       });
 
-      console.log('[BillingPage] Portal response:', { data, error });
+      logger.info('[BillingPage] Portal response:', { data, error, component: 'BillingPage' });
 
       if (error) {
-        console.error('[BillingPage] Portal error:', error);
+        logger.error('[BillingPage] Portal error:', error, { component: 'BillingPage' });
         throw error;
       }
 
       // Check for error in response body (some edge functions return 200 with error)
       if (data && typeof data === 'object' && 'error' in data && data.error) {
         const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to open customer portal';
-        console.error('[BillingPage] Portal returned error:', errorMessage);
+        logger.error('[BillingPage] Portal returned error:', { errorMessage, component: 'BillingPage' });
         throw new Error(errorMessage);
       }
-      
+
       if (data?.url) {
-        console.log('[BillingPage] Opening portal URL:', data.url);
+        logger.info('[BillingPage] Opening portal URL:', { url: data.url, component: 'BillingPage' });
         window.open(data.url, '_blank');
         toast({
           title: 'Success',
           description: 'Opening Stripe Customer Portal...',
         });
       } else {
-        console.error('[BillingPage] No URL in portal response:', data);
+        logger.error('[BillingPage] No URL in portal response:', data, { component: 'BillingPage' });
         throw new Error('No portal URL returned from Stripe');
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to open payment method management. Please ensure Stripe is configured.';
-      console.error('[BillingPage] Payment method management error:', errorMessage, error);
+      logger.error('[BillingPage] Payment method management error:', { errorMessage, error, component: 'BillingPage' });
       toast({
         title: 'Error',
         description: errorMessage,
@@ -335,7 +337,7 @@ export default function TenantAdminBillingPage() {
   const isTestMode = import.meta.env.VITE_STRIPE_SECRET_KEY?.startsWith('sk_test_');
 
   // Calculate trial days remaining
-  const trialDaysRemaining = tenant?.trial_ends_at 
+  const trialDaysRemaining = tenant?.trial_ends_at
     ? Math.ceil((new Date(tenant.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
@@ -365,88 +367,11 @@ export default function TenantAdminBillingPage() {
                 </p>
               </div>
               <Button
-                onClick={async () => {
-                  if (!tenant?.id) return;
-                  
-                  try {
-                    setUpgradeLoading(true);
-                    
-                    // Check if plans are still loading
-                    if (plansLoading) {
-                      toast({
-                        title: 'Loading Plans',
-                        description: 'Please wait while subscription plans load...',
-                      });
-                      return;
-                    }
-                    
-                    // Check if plans failed to load
-                    if (plansError) {
-                      console.error('[BillingPage] Plans error:', plansError);
-                      toast({
-                        title: 'Error Loading Plans',
-                        description: `Failed to load subscription plans: ${plansError.message}. Please refresh the page.`,
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
-                    
-                    // Get current plan
-                    const currentPlan = subscriptionPlans?.find(p => p.name === tenant.subscription_plan);
-                    if (!currentPlan) {
-                      console.error('[BillingPage] Current plan not found:', {
-                        tenantPlan: tenant.subscription_plan,
-                        availablePlans: subscriptionPlans?.map(p => p.name) || []
-                      });
-                      toast({
-                        title: 'Error',
-                        description: `Current plan "${tenant.subscription_plan}" not found in database. Available: ${subscriptionPlans?.map(p => p.name).join(', ') || 'none'}`,
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
-                    
-                    const { data, error } = await supabase.functions.invoke('start-trial', {
-                      body: {
-                        tenant_id: tenant.id,
-                        plan_id: currentPlan.id,
-                      }
-                    });
-                    
-                    if (error) throw error;
-                    
-                    if (data?.url) {
-                      window.open(data.url, '_blank');
-                      toast({
-                        title: 'Opening Stripe Checkout',
-                        description: 'Add your payment method to complete trial setup',
-                      });
-                    }
-                  } catch (error: any) {
-                    console.error('[BillingPage] Payment method error:', error);
-                    toast({
-                      title: 'Error',
-                      description: error.message || 'Failed to open payment method setup',
-                      variant: 'destructive',
-                    });
-                  } finally {
-                    setUpgradeLoading(false);
-                  }
-                }}
-                disabled={upgradeLoading}
+                onClick={() => setPaymentDialogOpen(true)}
                 className="whitespace-nowrap bg-yellow-600 hover:bg-yellow-700 text-white"
               >
-                {upgradeLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Add Payment Method
-                  </>
-                )}
+                <CreditCard className="h-4 w-4 mr-2" />
+                Add Payment Method
               </Button>
             </AlertDescription>
           </Alert>
@@ -454,7 +379,7 @@ export default function TenantAdminBillingPage() {
 
         {/* Trial Banner */}
         {isOnTrial && tenant?.trial_ends_at && trialDaysRemaining > 0 && (
-          <TrialBanner 
+          <TrialBanner
             daysRemaining={trialDaysRemaining}
             trialEndsAt={tenant.trial_ends_at}
             tenantSlug={tenant.slug}
@@ -504,23 +429,21 @@ export default function TenantAdminBillingPage() {
               </CardHeader>
               <CardContent className="space-y-4 p-3 sm:p-4 md:p-6 pt-0">
                 <div>
-                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-bold">
                       {plan?.display_name || (tenant?.subscription_plan as string)?.toUpperCase() || "No Plan"}
                     </span>
                     <Badge variant="outline">
-                      {/* @ts-ignore - mrr added in pending migration */}
                       {formatCurrency((tenant?.mrr as number) || 0)}/month
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
                     {plan?.description || "Your current subscription plan"}
                   </p>
-                  
+
                   {/* Platform Fee Notice */}
                   <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-purple-900 dark:text-purple-100">
-                      {/* @ts-ignore - mrr added in pending migration */}
                       💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant?.mrr as number) || 0) * 0.02)}/month (2% of subscription)
                     </p>
                     <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
@@ -543,8 +466,8 @@ export default function TenantAdminBillingPage() {
                     <Button variant="outline" onClick={() => document.querySelector('[data-value="plans"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))}>
                       ⬆️ View Plans
                     </Button>
-                    <Button 
-                      variant="default" 
+                    <Button
+                      variant="default"
                       onClick={handlePaymentMethod}
                       disabled={upgradeLoading}
                     >
@@ -586,13 +509,12 @@ export default function TenantAdminBillingPage() {
                         {!isUnlimited && (
                           <div className="w-full bg-muted rounded-full h-2">
                             <div
-                              className={`h-2 rounded-full transition-all ${
-                                isOverLimit 
-                                  ? "bg-red-500" 
-                                  : percentage > 80 
-                                    ? "bg-yellow-500" 
-                                    : "bg-primary"
-                              }`}
+                              className={`h-2 rounded-full transition-all ${isOverLimit
+                                ? "bg-red-500"
+                                : percentage > 80
+                                  ? "bg-yellow-500"
+                                  : "bg-primary"
+                                }`}
                               style={{ width: `${Math.min(percentage, 100)}%` }}
                             />
                           </div>
@@ -637,7 +559,6 @@ export default function TenantAdminBillingPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* @ts-ignore - payment_method_added added in pending migration */}
                 {(tenant?.payment_method_added as boolean) ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -660,8 +581,7 @@ export default function TenantAdminBillingPage() {
                       <CreditCard className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <p className="text-muted-foreground mb-4">No payment method added</p>
-                    <Button onClick={handlePaymentMethod} disabled={upgradeLoading}>
-                      {upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    <Button onClick={() => setPaymentDialogOpen(true)}>
                       Add Payment Method
                     </Button>
                   </div>
@@ -706,9 +626,9 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button 
-                    variant={currentTier === 'starter' ? 'outline' : 'default'} 
-                    className="w-full" 
+                  <Button
+                    variant={currentTier === 'starter' ? 'outline' : 'default'}
+                    className="w-full"
                     disabled={currentTier === 'starter' || upgradeLoading}
                     onClick={() => currentTier !== 'starter' && handlePlanChange('starter')}
                   >
@@ -759,9 +679,9 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button 
-                    variant={currentTier === 'professional' ? 'outline' : 'default'} 
-                    className="w-full" 
+                  <Button
+                    variant={currentTier === 'professional' ? 'outline' : 'default'}
+                    className="w-full"
                     disabled={currentTier === 'professional' || upgradeLoading}
                     onClick={() => currentTier !== 'professional' && handlePlanChange('professional')}
                   >
@@ -812,9 +732,9 @@ export default function TenantAdminBillingPage() {
                       </li>
                     </ul>
                   </div>
-                  <Button 
-                    variant={currentTier === 'enterprise' ? 'outline' : 'default'} 
-                    className="w-full" 
+                  <Button
+                    variant={currentTier === 'enterprise' ? 'outline' : 'default'}
+                    className="w-full"
                     disabled={currentTier === 'enterprise' || upgradeLoading}
                     onClick={() => currentTier !== 'enterprise' && handlePlanChange('enterprise')}
                   >
@@ -840,7 +760,7 @@ export default function TenantAdminBillingPage() {
                         <div className="font-medium text-sm text-muted-foreground text-center">Starter</div>
                         <div className="font-medium text-sm text-muted-foreground text-center">Professional</div>
                         <div className="font-medium text-sm text-muted-foreground text-center">Enterprise</div>
-                        
+
                         {features.map((feature, idx) => (
                           <React.Fragment key={`${feature.name}-${idx}`}>
                             <div className="text-sm py-2">{feature.name}</div>
@@ -895,14 +815,14 @@ export default function TenantAdminBillingPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-medium">{formatCurrency(invoice.total || 0)}</p>
-                          <Badge 
+                          <Badge
                             variant={invoice.status === "paid" ? "default" : "outline"}
                           >
                             {invoice.status?.toUpperCase() || "PENDING"}
                           </Badge>
                         </div>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                         >
                           <ExternalLink className="h-4 w-4" />
@@ -936,9 +856,9 @@ export default function TenantAdminBillingPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {selectedPlan && currentTier && 
-                  (['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > ['starter', 'professional', 'enterprise'].indexOf(currentTier) 
-                    ? 'Confirm Upgrade' 
+                {selectedPlan && currentTier &&
+                  (['starter', 'professional', 'enterprise'].indexOf(selectedPlan) > ['starter', 'professional', 'enterprise'].indexOf(currentTier)
+                    ? 'Confirm Upgrade'
                     : 'Confirm Downgrade')
                 }
               </DialogTitle>
@@ -992,6 +912,12 @@ export default function TenantAdminBillingPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <AddPaymentMethodDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        tenantId={tenantId || ''}
+      />
     </div>
   );
 }

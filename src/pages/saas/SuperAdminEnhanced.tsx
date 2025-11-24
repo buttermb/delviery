@@ -230,7 +230,7 @@ export default function SuperAdminEnhanced() {
     openTickets: 0,
   });
 
-      const handleLoginAsTenant = async (tenantId: string) => {
+  const handleLoginAsTenant = async (tenantId: string) => {
     try {
       // Fetch tenant data to get slug
       const { data: tenant, error } = await supabase
@@ -254,7 +254,7 @@ export default function SuperAdminEnhanced() {
       });
 
       // Navigate to tenant's admin dashboard using their slug
-      window.location.href = `/${tenant.slug}/admin/dashboard`;
+      navigate(`/${tenant.slug}/admin/dashboard`);
     } catch (error: any) {
       toast({
         title: 'Failed to login',
@@ -340,337 +340,337 @@ export default function SuperAdminEnhanced() {
             <p className="text-sm text-muted-foreground">Manage all tenants and platform settings</p>
           </div>
           <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/saas/admin/analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to="/saas/admin/support">
-              <Ticket className="h-4 w-4 mr-2" />
-              Support
-            </Link>
-          </Button>
-        <Button variant="outline" asChild>
-          <Link to="/saas/admin/automation">
-            <Zap className="h-4 w-4 mr-2" />
-            Automation
-          </Link>
-        </Button>
-          <CreateTenantDialog />
+            <Button variant="outline" asChild>
+              <Link to="/saas/admin/analytics">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/saas/admin/support">
+                <Ticket className="h-4 w-4 mr-2" />
+                Support
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/saas/admin/automation">
+                <Zap className="h-4 w-4 mr-2" />
+                Automation
+              </Link>
+            </Button>
+            <CreateTenantDialog />
+          </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="flex gap-2">
-        <NotificationDialog />
-        <Button variant="outline">
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (tenants && tenants.length > 0) {
-              exportTenantsToCSV(tenants);
-            }
-          }}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            if (tenants && tenants.length > 0) {
-              exportTenantsToJSON(tenants);
-            }
-          }}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export JSON
-        </Button>
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          <NotificationDialog />
+          <Button variant="outline">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (tenants && tenants.length > 0) {
+                exportTenantsToCSV(tenants);
+              }
+            }}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (tenants && tenants.length > 0) {
+                exportTenantsToJSON(tenants);
+              }
+            }}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export JSON
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/saas/admin/settings">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </Link>
           </Button>
-      </div>
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">💰 MRR</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(platformStats.mrr)}</div>
-            <p className="text-xs text-green-600 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              +15% ↑
-            </p>
-          </CardContent>
-        </Card>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">💰 MRR</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(platformStats.mrr)}</div>
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                +15% ↑
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">🏢 Tenants</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{platformStats.activeTenants} Active</div>
-            <p className="text-xs text-muted-foreground">
-              {platformStats.totalTenants} total
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">🏢 Tenants</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{platformStats.activeTenants} Active</div>
+              <p className="text-xs text-muted-foreground">
+                {platformStats.totalTenants} total
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">📉 Churn</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{platformStats.churnRate.toFixed(1)}%</div>
-            <p className="text-xs text-green-600 flex items-center gap-1">
-              <TrendingDown className="h-3 w-3" />
-              -0.5% ↓
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">📉 Churn</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{platformStats.churnRate.toFixed(1)}%</div>
+              <p className="text-xs text-green-600 flex items-center gap-1">
+                <TrendingDown className="h-3 w-3" />
+                -0.5% ↓
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">🆓 Trials</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{platformStats.trialTenants} Active</div>
-            <p className="text-xs text-muted-foreground">
-              {platformStats.conversions} converted
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">🆓 Trials</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{platformStats.trialTenants} Active</div>
+              <p className="text-xs text-muted-foreground">
+                {platformStats.conversions} converted
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">💳 Revenue</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(platformStats.arr / 1000)}k ARR</div>
-            <p className="text-xs text-green-600">+18% YoY</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">💳 Revenue</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(platformStats.arr / 1000)}k ARR</div>
+              <p className="text-xs text-green-600">+18% YoY</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">🎫 Support</CardTitle>
-            <Ticket className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{platformStats.openTickets} Open</div>
-            <p className="text-xs text-muted-foreground">15m avg</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">🎫 Support</CardTitle>
+              <Ticket className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{platformStats.openTickets} Open</div>
+              <p className="text-xs text-muted-foreground">15m avg</p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* At-Risk Tenants */}
-      {atRiskTenants && atRiskTenants.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              At-Risk Tenants ({atRiskTenants.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {atRiskTenants.slice(0, 5).map(({ tenant, health }) => (
-                <div
-                  key={tenant.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                  onClick={() => {
-                    setSelectedTenant(tenant.id);
-                    setTenantDetailOpen(true);
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium">{tenant.business_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Health: {health.score} • {health.reasons[0] || 'Low engagement'}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLoginAsTenant(tenant.id);
-                    }}
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <Button variant="outline" className="w-full mt-4">
-              View All At-Risk →
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tenant Management */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>🏢 All Tenants</CardTitle>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filters */}
-          <div className="flex gap-2 mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tenants..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={planFilter} onValueChange={setPlanFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="professional">Professional</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="trial">Trial</SelectItem>
-                <SelectItem value="past_due">Past Due</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Tenant Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-3 text-sm font-medium">Business</th>
-                  <th className="text-left p-3 text-sm font-medium">Plan</th>
-                  <th className="text-left p-3 text-sm font-medium">Status</th>
-                  <th className="text-left p-3 text-sm font-medium">MRR</th>
-                  <th className="text-left p-3 text-sm font-medium">Health</th>
-                  <th className="text-left p-3 text-sm font-medium">Joined</th>
-                  <th className="text-left p-3 text-sm font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tenants?.map((tenant) => (
-                  <tr
+        {/* At-Risk Tenants */}
+        {atRiskTenants && atRiskTenants.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                At-Risk Tenants ({atRiskTenants.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {atRiskTenants.slice(0, 5).map(({ tenant, health }) => (
+                  <div
                     key={tenant.id}
-                    className="border-t hover:bg-muted/50 cursor-pointer"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
                     onClick={() => {
                       setSelectedTenant(tenant.id);
                       setTenantDetailOpen(true);
                     }}
                   >
-                    <td className="p-3">
-                      <div className="font-medium">{tenant.business_name}</div>
-                    </td>
-                    <td className="p-3">
-                      <Badge variant="outline">{tenant.subscription_plan}</Badge>
-                    </td>
-                    <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
-                    <td className="p-3">{formatCurrency(tenant.mrr || 0)}</td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        {getHealthBadge(tenant.health_score)}
-                        <span className="text-sm text-muted-foreground">
-                          ({tenant.health_score})
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium">{tenant.business_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Health: {health.score} • {health.reasons[0] || 'Low engagement'}
+                        </p>
                       </div>
-                    </td>
-                    <td className="p-3 text-sm text-muted-foreground">
-                      {formatSmartDate(tenant.created_at)}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTenant(tenant.id);
-                            setTenantDetailOpen(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLoginAsTenant(tenant.id);
-                          }}
-                        >
-                          <LogIn className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLoginAsTenant(tenant.id);
+                      }}
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+              <Button variant="outline" className="w-full mt-4">
+                View All At-Risk →
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-          {tenants && tenants.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No tenants found</p>
+        {/* Tenant Management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>🏢 All Tenants</CardTitle>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {/* Filters */}
+            <div className="flex gap-2 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tenants..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={planFilter} onValueChange={setPlanFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Plans</SelectItem>
+                  <SelectItem value="starter">Starter</SelectItem>
+                  <SelectItem value="professional">Professional</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="trial">Trial</SelectItem>
+                  <SelectItem value="past_due">Past Due</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Tenant Detail Dialog */}
-      <Dialog open={tenantDetailOpen} onOpenChange={setTenantDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Tenant Details</DialogTitle>
-            <DialogDescription>
-              Complete tenant information and management
-            </DialogDescription>
-          </DialogHeader>
-          {selectedTenant && (
-            <TenantDetailView tenantId={selectedTenant} />
-          )}
-        </DialogContent>
-      </Dialog>
+            {/* Tenant Table */}
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="text-left p-3 text-sm font-medium">Business</th>
+                    <th className="text-left p-3 text-sm font-medium">Plan</th>
+                    <th className="text-left p-3 text-sm font-medium">Status</th>
+                    <th className="text-left p-3 text-sm font-medium">MRR</th>
+                    <th className="text-left p-3 text-sm font-medium">Health</th>
+                    <th className="text-left p-3 text-sm font-medium">Joined</th>
+                    <th className="text-left p-3 text-sm font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tenants?.map((tenant) => (
+                    <tr
+                      key={tenant.id}
+                      className="border-t hover:bg-muted/50 cursor-pointer"
+                      onClick={() => {
+                        setSelectedTenant(tenant.id);
+                        setTenantDetailOpen(true);
+                      }}
+                    >
+                      <td className="p-3">
+                        <div className="font-medium">{tenant.business_name}</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline">{tenant.subscription_plan}</Badge>
+                      </td>
+                      <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
+                      <td className="p-3">{formatCurrency(tenant.mrr || 0)}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {getHealthBadge(tenant.health_score)}
+                          <span className="text-sm text-muted-foreground">
+                            ({tenant.health_score})
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-sm text-muted-foreground">
+                        {formatSmartDate(tenant.created_at)}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTenant(tenant.id);
+                              setTenantDetailOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLoginAsTenant(tenant.id);
+                            }}
+                          >
+                            <LogIn className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {tenants && tenants.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No tenants found</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tenant Detail Dialog */}
+        <Dialog open={tenantDetailOpen} onOpenChange={setTenantDetailOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Tenant Details</DialogTitle>
+              <DialogDescription>
+                Complete tenant information and management
+              </DialogDescription>
+            </DialogHeader>
+            {selectedTenant && (
+              <TenantDetailView tenantId={selectedTenant} />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
@@ -782,7 +782,7 @@ function FeatureManagement({ tenant }: { tenant: any }) {
   const handleToggleFeature = async (featureKey: string, enabled: boolean) => {
     try {
       const updatedFeatures = { ...features, [featureKey]: enabled };
-      
+
       const { error } = await supabase
         .from('tenants')
         .update({ features: updatedFeatures })
@@ -958,9 +958,8 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
             {percentage !== null && (
               <div className="w-full bg-muted rounded-full h-2 mt-2">
                 <div
-                  className={`h-2 rounded-full ${
-                    percentage >= 90 ? 'bg-red-500' : percentage >= 80 ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}
+                  className={`h-2 rounded-full ${percentage >= 90 ? 'bg-red-500' : percentage >= 80 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}
                   style={{ width: `${Math.min(100, percentage)}%` }}
                 />
               </div>
@@ -1040,9 +1039,8 @@ function BillingManagement({ tenant }: { tenant: any }) {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`p-4 border rounded-lg cursor-pointer ${
-                  tenant?.subscription_plan === plan.id ? 'border-primary bg-primary/5' : ''
-                }`}
+                className={`p-4 border rounded-lg cursor-pointer ${tenant?.subscription_plan === plan.id ? 'border-primary bg-primary/5' : ''
+                  }`}
                 onClick={() => handleChangePlan(plan.id as 'starter' | 'professional' | 'enterprise')}
               >
                 <div className="flex items-center justify-between">

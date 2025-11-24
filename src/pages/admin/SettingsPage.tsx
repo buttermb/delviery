@@ -23,7 +23,10 @@ import { Database } from '@/integrations/supabase/types';
 
 type AccountUpdate = Database['public']['Tables']['accounts']['Update'];
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
+import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
+import { useToast } from "@/hooks/use-toast";
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
+import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -442,14 +445,8 @@ export default function SettingsPage() {
                   <Button variant="outline" size="sm">Connect</Button>
                 </div>
               </div>
-              <div className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h4 className="font-medium">Stripe</h4>
-                    <p className="text-sm text-muted-foreground">Payment processing</p>
-                  </div>
-                  <Button variant="outline" size="sm">Connect</Button>
-                </div>
+              <div className="p-0 border-0">
+                <StripeConnectSettings />
               </div>
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center justify-between mb-2">

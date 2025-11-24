@@ -10,6 +10,8 @@ type EventName =
     | 'biometric_auth_used'
     | 'barcode_scan';
 
+import { logger } from '@/lib/logger';
+
 interface AnalyticsEvent {
     name: EventName;
     properties?: Record<string, any>;
@@ -30,7 +32,7 @@ export const mobileAnalytics = {
             timestamp: Date.now(),
         };
 
-        console.log('[Mobile Analytics]', event);
+        logger.info('[Mobile Analytics]', event, { component: 'MobileAnalytics' });
 
         // TODO: Send to your analytics provider (PostHog, Google Analytics, etc.)
         // sendToAnalyticsProvider(event);

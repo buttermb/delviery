@@ -98,7 +98,7 @@ export const db = {
                 dataToStore = clientEncryption.encrypt(sensitiveData);
                 isEncrypted = true;
             } catch (e) {
-                console.warn('Failed to encrypt order, storing plain text', e);
+                logger.warn('Failed to encrypt order, storing plain text', e, { component: 'idb' });
             }
         }
 
@@ -155,7 +155,7 @@ export const db = {
                         synced: record.synced
                     };
                 } catch (e) {
-                    console.error('Failed to decrypt order', record.id);
+                    logger.error('Failed to decrypt order', { id: record.id, component: 'idb' });
                     return null;
                 }
             }

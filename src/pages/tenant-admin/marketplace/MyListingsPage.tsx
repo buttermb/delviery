@@ -14,13 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  Eye, 
+import {
+  Package,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
   EyeOff,
   Pause,
   Play,
@@ -82,7 +82,6 @@ export default function MyListingsPage() {
     queryFn: async () => {
       if (!tenantId || !profile?.id) return [];
 
-      // @ts-ignore - Deep instantiation error from Supabase types
       let query = supabase
         .from('marketplace_listings')
         .select('*')

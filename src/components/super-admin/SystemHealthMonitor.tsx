@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { HealthIndicator } from './dashboard/HealthIndicator';
 import { Activity } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -18,13 +19,14 @@ interface SystemHealthMonitorProps {
 }
 
 export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
+  const navigate = useNavigate();
   // Fetch system metrics from database
   const { data: systemHealth } = useQuery({
     queryKey: ['system-health'],
     queryFn: async () => {
       // Fetch latest metrics for each type
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      
+
       // @ts-ignore - Table exists in DB but types not yet regenerated
       const { data: metrics, error } = await supabase
         .from('system_metrics')
@@ -124,12 +126,12 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
 
   const overallStatus = systemHealth
     ? systemHealth.storage.status === 'critical' ||
-        systemHealth.database.status === 'critical' ||
-        systemHealth.api.status === 'critical'
+      systemHealth.database.status === 'critical' ||
+      systemHealth.api.status === 'critical'
       ? 'critical'
       : systemHealth.storage.status === 'warning' ||
-          systemHealth.database.status === 'warning' ||
-          systemHealth.api.status === 'warning'
+        systemHealth.database.status === 'warning' ||
+        systemHealth.api.status === 'warning'
         ? 'warning'
         : 'healthy'
     : 'healthy';
@@ -208,11 +210,11 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
-          variant="outline" 
-          className="w-full" 
+        <Button
+          variant="outline"
+          className="w-full"
           onClick={() => {
-            window.location.href = '/super-admin/monitoring';
+            navigate('/super-admin/monitoring');
           }}
         >
           <Activity className="mr-2 h-4 w-4" />

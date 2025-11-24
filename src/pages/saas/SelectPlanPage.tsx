@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,9 @@ interface Plan {
 export default function SelectPlanPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromSignup = location.state?.fromSignup;
+  const signupEmail = location.state?.email;
   const [loading, setLoading] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -63,18 +66,18 @@ export default function SelectPlanPage() {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+
+      if (!session && !fromSignup) {
         toast.error("Please log in to select a plan");
         // Redirect to login with return URL
         navigate(`/saas/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`);
         return;
       }
-      
+
       setIsAuthenticated(true);
       setCheckingAuth(false);
     };
-    
+
     checkAuth();
   }, [navigate]);
 
@@ -120,7 +123,7 @@ export default function SelectPlanPage() {
         throw new Error("No checkout URL received");
       }
     } catch (error: any) {
-      console.error("Error starting trial:", error);
+      logger.error("Error starting trial:", error, { component: 'SelectPlanPage' });
       toast.error(error.message || "Failed to start trial");
       setLoading(null);
     }
@@ -138,7 +141,9 @@ export default function SelectPlanPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-6xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+          <h1 className="text-4xl font-bold mb-4">
+            {fromSignup ? "Complete Your Registration" : "Choose Your Plan"}
+          </h1>
           <p className="text-xl text-muted-foreground mb-2">
             Start your 14-day free trial today
           </p>
@@ -149,8 +154,8 @@ export default function SelectPlanPage() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => (
-            <Card 
-              key={plan.id} 
+            <Card
+              key={plan.id}
               className={plan.popular ? "border-primary shadow-lg scale-105" : ""}
             >
               <CardHeader>

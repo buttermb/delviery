@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -45,6 +45,8 @@ const SectionLoader = () => (
 );
 
 export default function MarketingHome() {
+  const navigate = useNavigate();
+
   // Track page view on mount
   useEffect(() => {
     analytics.track('marketing_page_view', {
@@ -268,7 +270,7 @@ export default function MarketingHome() {
                       particleCount: plan.popular ? 150 : 100,
                       colors: ['#10B981', '#34D399', '#059669'],
                     }}
-                    onClick={() => window.location.href = '/signup'}
+                    onClick={() => navigate('/signup')}
                   >
                     {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
                   </ConfettiButton>

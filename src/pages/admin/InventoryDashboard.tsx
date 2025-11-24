@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -68,7 +69,7 @@ export default function InventoryDashboard() {
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Inventory subscription error:', status);
+          logger.error('Inventory subscription error:', status, { component: 'InventoryDashboard' });
         }
       });
 

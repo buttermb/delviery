@@ -162,8 +162,14 @@ export default function AccountSignup() {
         description: "Please check your email to verify your account.",
       });
 
-      navigate("/signup/welcome", {
-        state: { tenantSlug: urlSlug, name: yourName },
+      // Redirect to plan selection instead of welcome
+      navigate("/select-plan", {
+        state: {
+          fromSignup: true,
+          userId: authData.user.id,
+          tenantSlug: urlSlug,
+          email: email
+        },
       });
     } catch (error: any) {
       logger.error("Signup error", error, { component: 'AccountSignup' });

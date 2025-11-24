@@ -171,7 +171,7 @@ export default function WhiteLabelSettings() {
           <p className="text-muted-foreground mb-4">
             White-label branding is available on Enterprise plans only.
           </p>
-          <Button onClick={() => window.location.href = '/saas/billing'}>
+          <Button onClick={() => navigate('/saas/billing')}>
             Upgrade to Enterprise
           </Button>
         </Card>

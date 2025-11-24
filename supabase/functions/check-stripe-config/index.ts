@@ -1,10 +1,10 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+/**
+ * Check Stripe Config Edge Function
+ * Checks if Stripe is properly configured and the secret key is valid
+ */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, corsHeaders } from '../_shared/deps.ts';
+import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,81 +12,62 @@ serve(async (req) => {
   }
 
   try {
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    
-    // Check if key exists
-    if (!stripeKey || stripeKey.length === 0) {
+    const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!STRIPE_SECRET_KEY) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           configured: false,
           valid: false,
-          error: 'STRIPE_SECRET_KEY is not configured'
+          error: 'STRIPE_SECRET_KEY is missing'
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if it's a valid secret key (must start with sk_)
-    if (!stripeKey.startsWith('sk_')) {
-      return new Response(
-        JSON.stringify({ 
-          configured: true,
-          valid: false,
-          error: 'Invalid key format. Must be a secret key starting with "sk_", not a publishable key (pk_)'
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
-    }
+    // Check if it looks like a test key
+    const isTestMode = STRIPE_SECRET_KEY.startsWith('sk_test_');
 
-    // Optionally test the key with a lightweight Stripe API call
+    // Initialize Stripe SDK
+    const stripeClient = new Stripe(STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
+
+    // Verify key by making a lightweight API call
     try {
-      const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-      // Make a lightweight test call - just list customers with limit 1
-      await stripe.customers.list({ limit: 1 });
-      
+      await stripeClient.customers.list({ limit: 1 });
+
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           configured: true,
           valid: true,
-          testMode: stripeKey.startsWith('sk_test_')
+          testMode: isTestMode
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (stripeError: any) {
+      console.error('Stripe validation error:', stripeError);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           configured: true,
           valid: false,
-          error: `Stripe API test failed: ${stripeError.message || 'Unknown error'}`
+          error: stripeError.message || 'Invalid Stripe key',
+          testMode: isTestMode
         }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+  } catch (error: any) {
+    console.error('Check Stripe Config Error:', error);
     return new Response(
-      JSON.stringify({ 
-        configured: false, 
+      JSON.stringify({
+        configured: false,
         valid: false,
-        error: errorMessage 
+        error: error.message || 'Internal server error'
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

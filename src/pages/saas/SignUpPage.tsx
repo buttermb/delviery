@@ -145,11 +145,11 @@ export default function SignUpPage() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
-      
+
       if (saved && expiry) {
         const expiryTime = parseInt(expiry, 10);
         const now = Date.now();
-        
+
         if (now < expiryTime) {
           // Data is still valid
           const parsed = JSON.parse(saved);
@@ -179,7 +179,7 @@ export default function SignUpPage() {
     setLastSubmitTime(now);
 
     setIsSubmitting(true);
-    
+
     // Track analytics: signup attempt
     try {
       if (typeof window !== 'undefined' && 'analytics' in window) {
@@ -197,7 +197,7 @@ export default function SignUpPage() {
 
     try {
       logger.info('[SIGNUP] Starting tenant signup', { email: data.email, business_name: data.business_name });
-      
+
       // Clear saved form data
       try {
         localStorage.removeItem(STORAGE_KEY);
@@ -233,8 +233,8 @@ export default function SignUpPage() {
         },
       });
 
-      logger.info('[SIGNUP] Response received', { 
-        hasError: !!error, 
+      logger.info('[SIGNUP] Response received', {
+        hasError: !!error,
         hasResult: !!result,
         resultKeys: result ? Object.keys(result) : [],
         errorMessage: error?.message
@@ -258,10 +258,10 @@ export default function SignUpPage() {
       }
 
       const tenant = result.tenant;
-      logger.info('[SIGNUP] Tenant created', { 
-        tenantId: tenant.id, 
+      logger.info('[SIGNUP] Tenant created', {
+        tenantId: tenant.id,
         slug: tenant.slug,
-        hasSession: !!result.session 
+        hasSession: !!result.session
       });
 
       // Establish Supabase session if tokens were returned
@@ -273,7 +273,7 @@ export default function SignUpPage() {
 
         if (sessionError) {
           logger.error('[SIGNUP] Failed to set Supabase session', sessionError);
-          console.error('Account created but login failed. Please try logging in manually.');
+          logger.error('Account created but login failed. Please try logging in manually.', null, { component: 'SignUpPage' });
         } else {
           logger.info('[SIGNUP] Supabase session established');
         }
@@ -331,13 +331,13 @@ export default function SignUpPage() {
       });
 
       const timeoutPromise = new Promise(resolve => setTimeout(resolve, 800));
-      
+
       await Promise.race([prefetchPromise, timeoutPromise]);
 
       // Navigate to plan selection for trial signup
       navigate(`/select-plan?tenant_id=${tenant.id}`, {
         replace: true,
-        state: { 
+        state: {
           fromSignup: true,
           tenantSlug: tenant.slug,
         },
@@ -358,7 +358,7 @@ export default function SignUpPage() {
       } catch (e) {
         // Silently fail analytics
       }
-      
+
       // Reset CAPTCHA on error
       if (turnstileRef.current) {
         try {
@@ -368,7 +368,7 @@ export default function SignUpPage() {
           logger.warn('Failed to reset CAPTCHA', captchaError);
         }
       }
-      
+
       // Provide user-friendly error messages
       let errorMessage = 'Failed to create account. Please try again.';
       if (error.message) {
@@ -397,12 +397,12 @@ export default function SignUpPage() {
     <div className="min-h-screen relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20" />
-      
+
       {/* Floating orbs */}
       <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
       <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
       <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
-      
+
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]" style={{
         backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
@@ -435,326 +435,326 @@ export default function SignUpPage() {
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-2xl blur-xl opacity-75" />
             <Card className="relative w-full shadow-2xl backdrop-blur-sm bg-card/95 border-2 border-primary/10">
-            <CardContent className="p-6 sm:p-8">
-              {/* Form Content */}
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold mb-1">Create Your Account</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Get started with your free 14-day trial
-                    </p>
-                  </div>
+              <CardContent className="p-6 sm:p-8">
+                {/* Form Content */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-semibold mb-1">Create Your Account</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Get started with your free 14-day trial
+                      </p>
+                    </div>
 
-                  {/* Required Fields */}
-                  <div className="space-y-5">
-                    <FormField
-                      control={form.control}
-                      name="business_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4" />
-                            Business Name *
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Big Mike's Wholesale"
-                              {...field}
-                              className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="owner_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            Your Name *
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            Email *
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="you@business.com"
-                              {...field}
-                              className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Lock className="h-4 w-4" />
-                            Password *
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
+                    {/* Required Fields */}
+                    <div className="space-y-5">
+                      <FormField
+                        control={form.control}
+                        name="business_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4" />
+                              Business Name *
+                            </FormLabel>
+                            <FormControl>
                               <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
+                                placeholder="Big Mike's Wholesale"
                                 {...field}
-                                className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                               />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                                aria-label={showPassword ? "Hide password" : "Show password"}
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <PasswordStrengthIndicator password={field.value} />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    {/* CAPTCHA Verification - Only render if configured */}
-                    {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
-                      <div className="flex justify-center py-2">
-                        <TurnstileWrapper
-                          siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                          onSuccess={(token) => setCaptchaToken(token)}
-                          onError={() => {
-                            setCaptchaToken('');
-                            toast({
-                              title: 'Verification Failed',
-                              description: 'CAPTCHA verification failed. Please try again.',
-                              variant: 'destructive',
-                            });
-                          }}
-                          onExpire={() => {
-                            setCaptchaToken('');
-                          }}
-                          turnstileRef={turnstileRef}
-                        />
-                      </div>
-                    )}
+                      <FormField
+                        control={form.control}
+                        name="owner_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Your Name *
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="John Doe" {...field} className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    {/* Optional Fields - Collapsible */}
-                    <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="w-full justify-between text-muted-foreground hover:text-foreground"
-                        >
-                          <span className="text-sm">Optional: Business Details</span>
-                          {showOptionalFields ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-5 pt-2">
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Phone className="h-4 w-4" />
-                                Phone
-                              </FormLabel>
-                              <FormControl>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Mail className="h-4 w-4" />
+                              Email *
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="you@business.com"
+                                {...field}
+                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Lock className="h-4 w-4" />
+                              Password *
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
                                 <Input
-                                  placeholder="555-123-4567"
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="••••••••"
                                   {...field}
-                                  className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                  className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
                                 />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                  aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <PasswordStrengthIndicator password={field.value} />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="state"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4" />
-                                  State
-                                </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="h-11">
-                                      <SelectValue placeholder="Select state" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {US_STATES.map((state) => (
-                                      <SelectItem key={state} value={state}>
-                                        {state}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="industry"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2">
-                                  <Briefcase className="h-4 w-4" />
-                                  Industry
-                                </FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="h-11">
-                                      <SelectValue placeholder="Select industry" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {INDUSTRIES.map((industry) => (
-                                      <SelectItem key={industry.value} value={industry.value}>
-                                        {industry.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
+                      {/* CAPTCHA Verification - Only render if configured */}
+                      {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                        <div className="flex justify-center py-2">
+                          <TurnstileWrapper
+                            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                            onSuccess={(token) => setCaptchaToken(token)}
+                            onError={() => {
+                              setCaptchaToken('');
+                              toast({
+                                title: 'Verification Failed',
+                                description: 'CAPTCHA verification failed. Please try again.',
+                                variant: 'destructive',
+                              });
+                            }}
+                            onExpire={() => {
+                              setCaptchaToken('');
+                            }}
+                            turnstileRef={turnstileRef}
                           />
                         </div>
-
-                        <FormField
-                          control={form.control}
-                          name="company_size"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                Company Size
-                              </FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="h-11">
-                                    <SelectValue placeholder="Select company size" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {COMPANY_SIZES.map((size) => (
-                                    <SelectItem key={size.value} value={size.value}>
-                                      {size.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Terms Acceptance */}
-                    <FormField
-                      control={form.control}
-                      name="terms_accepted"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel className="text-sm font-normal cursor-pointer">
-                              I agree to the{' '}
-                              <a
-                                href="/terms"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary underline hover:text-primary/80"
-                              >
-                                Terms of Service
-                              </a>{' '}
-                              and{' '}
-                              <a
-                                href="/privacy"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary underline hover:text-primary/80"
-                              >
-                                Privacy Policy
-                              </a>
-                            </FormLabel>
-                            <FormMessage />
-                          </div>
-                        </FormItem>
                       )}
-                    />
-                  </div>
 
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Account...
-                      </>
-                    ) : (
-                      <>
-                        Start Free Trial
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                      {/* Optional Fields - Collapsible */}
+                      <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="w-full justify-between text-muted-foreground hover:text-foreground"
+                          >
+                            <span className="text-sm">Optional: Business Details</span>
+                            {showOptionalFields ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-5 pt-2">
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4" />
+                                  Phone
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="555-123-4567"
+                                    {...field}
+                                    className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="state"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4" />
+                                    State
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger className="h-11">
+                                        <SelectValue placeholder="Select state" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {US_STATES.map((state) => (
+                                        <SelectItem key={state} value={state}>
+                                          {state}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="industry"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="flex items-center gap-2">
+                                    <Briefcase className="h-4 w-4" />
+                                    Industry
+                                  </FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger className="h-11">
+                                        <SelectValue placeholder="Select industry" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {INDUSTRIES.map((industry) => (
+                                        <SelectItem key={industry.value} value={industry.value}>
+                                          {industry.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="company_size"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Users className="h-4 w-4" />
+                                  Company Size
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-11">
+                                      <SelectValue placeholder="Select company size" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {COMPANY_SIZES.map((size) => (
+                                      <SelectItem key={size.value} value={size.value}>
+                                        {size.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Terms Acceptance */}
+                      <FormField
+                        control={form.control}
+                        name="terms_accepted"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm font-normal cursor-pointer">
+                                I agree to the{' '}
+                                <a
+                                  href="/terms"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary underline hover:text-primary/80"
+                                >
+                                  Terms of Service
+                                </a>{' '}
+                                and{' '}
+                                <a
+                                  href="/privacy"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary underline hover:text-primary/80"
+                                >
+                                  Privacy Policy
+                                </a>
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating Account...
+                        </>
+                      ) : (
+                        <>
+                          Start Free Trial
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column - Features Showcase (Desktop Only) */}

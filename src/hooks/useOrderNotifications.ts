@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { playNotificationSound } from '@/utils/notificationSound';
@@ -69,7 +70,7 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Order notifications subscription error:', status);
+          logger.error('Order notifications subscription error:', status, { component: 'useOrderNotifications' });
         }
       });
 

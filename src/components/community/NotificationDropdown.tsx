@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -81,7 +82,7 @@ export function NotificationDropdown() {
           (payload) => {
             // Validate payload before using
             if (!payload?.new || typeof payload.new !== 'object') {
-              console.warn('Invalid notification payload received');
+              logger.warn('Invalid notification payload received', null, { component: 'NotificationDropdown' });
               return;
             }
             queryClient.invalidateQueries({ queryKey: queryKeys.forum.notifications.lists() });
@@ -89,7 +90,7 @@ export function NotificationDropdown() {
         )
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            console.error('Notifications subscription error:', status);
+            logger.error('Notifications subscription error:', status, { component: 'NotificationDropdown' });
           }
         });
     };

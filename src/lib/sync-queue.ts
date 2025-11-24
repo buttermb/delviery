@@ -1,4 +1,5 @@
 import { db } from './idb';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 export const syncQueue = {
@@ -8,7 +9,7 @@ export const syncQueue = {
         const queue = await db.getSyncQueue();
         if (queue.length === 0) return;
 
-        console.log(`Processing ${queue.length} offline items...`);
+        logger.info(`Processing ${queue.length} offline items...`, null, { component: 'SyncQueue' });
 
         for (const item of queue) {
             try {
@@ -22,13 +23,13 @@ export const syncQueue = {
 
                 if (response.ok) {
                     await db.removeFromSyncQueue(item.timestamp);
-                    console.log(`Synced item: ${item.url}`);
+                    logger.info(`Synced item: ${item.url}`, null, { component: 'SyncQueue' });
                 } else {
-                    console.error(`Failed to sync item: ${item.url}`, response.statusText);
+                    logger.error(`Failed to sync item: ${item.url}`, response.statusText, { component: 'SyncQueue' });
                     // Optional: Implement retry logic or max retries here
                 }
             } catch (error) {
-                console.error(`Error syncing item: ${item.url}`, error);
+                logger.error(`Error syncing item: ${item.url}`, error, { component: 'SyncQueue' });
             }
         }
 
@@ -45,7 +46,7 @@ export const syncQueue = {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await (registration as any).sync.register('sync-queue');
             } catch (err) {
-                console.warn('Background sync registration failed:', err);
+                logger.warn('Background sync registration failed:', err, { component: 'SyncQueue' });
             }
         } else {
             // Fallback: Try to process immediately if online

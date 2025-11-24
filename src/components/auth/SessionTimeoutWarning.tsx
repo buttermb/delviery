@@ -12,14 +12,14 @@ import {
 
 interface SessionTimeoutWarningProps {
   open: boolean;
-  onStayLoggedIn: () => void;
+  onExtendSession: () => void;
   onLogout: () => void;
   secondsRemaining: number;
 }
 
 export const SessionTimeoutWarning = ({
   open,
-  onStayLoggedIn,
+  onExtendSession,
   onLogout,
   secondsRemaining,
 }: SessionTimeoutWarningProps) => {
@@ -57,7 +57,7 @@ export const SessionTimeoutWarning = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onLogout}>Logout Now</AlertDialogCancel>
-          <AlertDialogAction onClick={onStayLoggedIn}>Stay Logged In</AlertDialogAction>
+          <AlertDialogAction onClick={onExtendSession}>Stay Logged In</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

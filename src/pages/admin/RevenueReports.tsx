@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +29,7 @@ export default function RevenueReports() {
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Revenue subscription error:', status);
+          logger.error('Revenue subscription error:', status, { component: 'RevenueReports' });
         }
       });
 
