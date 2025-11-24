@@ -99,7 +99,7 @@ export default function SelectPlanPage() {
       const { data: plans } = await supabase
         .from("subscription_plans")
         .select("*")
-        .eq("name", planId.charAt(0).toUpperCase() + planId.slice(1))
+        .eq("id", planId)
         .single();
 
       if (!plans) {
