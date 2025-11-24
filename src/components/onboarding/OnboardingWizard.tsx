@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -24,6 +25,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
     const { tenant } = useTenantAdminAuth();
+    const navigate = useNavigate();
 
     const totalSteps = 3;
 
@@ -31,6 +33,17 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         if (!tenant?.id) return;
 
         setLoading(true);
+
+        // Create timeout protection
+        const timeoutId = setTimeout(() => {
+            setLoading(false);
+            toast({
+                title: "Request Timeout",
+                description: "The save operation took too long. Please try again.",
+                variant: "destructive",
+            });
+        }, 10000); // 10 second timeout
+
         try {
             const { error } = await supabase
                 .from("tenants")
@@ -40,6 +53,9 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                 })
                 .eq("id", tenant.id);
 
+            // Clear timeout if operation completes
+            clearTimeout(timeoutId);
+
             if (error) throw error;
 
             toast({
@@ -47,12 +63,16 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                 description: "Welcome to your new dashboard.",
             });
 
-            onOpenChange(false);
+            // Close dialog after brief delay to show success message
+            setTimeout(() => {
+                onOpenChange(false);
+            }, 500);
         } catch (error: any) {
+            clearTimeout(timeoutId);
             logger.error("Failed to complete onboarding", error, { component: "OnboardingWizard" });
             toast({
                 title: "Error",
-                description: "Failed to save progress. Please try again.",
+                description: error?.message || "Failed to save progress. Please try again.",
                 variant: "destructive",
             });
         } finally {
@@ -105,11 +125,17 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                             </div>
 
                             <div className="grid gap-4">
-                                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                <div
+                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                >
                                     <h4 className="font-medium mb-1">Business Profile</h4>
                                     <p className="text-sm text-muted-foreground">Add your logo, address, and contact info.</p>
                                 </div>
-                                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                <div
+                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                >
                                     <h4 className="font-medium mb-1">Operating Hours</h4>
                                     <p className="text-sm text-muted-foreground">Set when you're open for business.</p>
                                 </div>
@@ -130,11 +156,17 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                             </div>
 
                             <div className="grid gap-4">
-                                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                <div
+                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    onClick={() => navigate(`/${tenant?.slug}/admin/settings`)}
+                                >
                                     <h4 className="font-medium mb-1">Delivery Zones</h4>
                                     <p className="text-sm text-muted-foreground">Draw your delivery areas on the map.</p>
                                 </div>
-                                <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                <div
+                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    onClick={() => navigate(`/${tenant?.slug}/admin/team`)}
+                                >
                                     <h4 className="font-medium mb-1">Driver Management</h4>
                                     <p className="text-sm text-muted-foreground">Invite your drivers or connect 3rd party fleets.</p>
                                 </div>
