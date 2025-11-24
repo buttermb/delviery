@@ -68,9 +68,12 @@ export default function WholesaleClients() {
   const { data: clients, isLoading } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter }),
     queryFn: async () => {
+      if (!tenant?.id) return [];
+      
       let query = supabase
         .from("wholesale_clients")
         .select("*")
+        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
       // Apply filters
