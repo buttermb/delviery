@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2, CreditCard, AlertCircle } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface CheckoutItem {
   price: string;
@@ -14,9 +16,42 @@ interface CheckoutItem {
 }
 
 export function TenantStripeCheckout() {
+  const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(false);
   const [priceId, setPriceId] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [stripeConfigured, setStripeConfigured] = useState<boolean | null>(null);
+
+  // Check if Stripe is configured
+  useEffect(() => {
+    checkStripeConfiguration();
+  }, [tenant?.id]);
+
+  const checkStripeConfiguration = async () => {
+    if (!tenant?.id) return;
+
+    try {
+      const { data: account } = await supabase
+        .from("accounts")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .single();
+
+      if (!account) return;
+
+      const { data: settings } = await supabase
+        .from("account_settings")
+        .select("integration_settings")
+        .eq("account_id", account.id)
+        .single();
+
+      const integrationSettings = settings?.integration_settings as any;
+      setStripeConfigured(!!integrationSettings?.stripe_secret_key);
+    } catch (error) {
+      console.error("Error checking Stripe configuration:", error);
+      setStripeConfigured(false);
+    }
+  };
 
   const handleCheckout = async () => {
     if (!priceId) {
@@ -65,6 +100,15 @@ export function TenantStripeCheckout() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {stripeConfigured === false && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Stripe Not Configured:</strong> Please configure your Stripe credentials in the Integrations tab first.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="priceId">Stripe Price ID</Label>
           <Input
@@ -89,7 +133,7 @@ export function TenantStripeCheckout() {
           />
         </div>
 
-        <Button onClick={handleCheckout} disabled={loading} className="w-full">
+        <Button onClick={handleCheckout} disabled={loading || stripeConfigured === false} className="w-full">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Checkout Session
         </Button>
