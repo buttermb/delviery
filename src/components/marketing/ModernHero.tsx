@@ -51,7 +51,7 @@ export function ModernHero() {
   }
 
   return (
-    <section ref={containerRef} className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-32 pb-20 overflow-hidden">
+    <section ref={containerRef} className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-32 pb-20">
       {/* Background Effects - Optimized */}
       <div className="absolute inset-0 z-0">
         <CursorSpotlight containerRef={containerRef} />
