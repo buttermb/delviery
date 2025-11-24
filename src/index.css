@@ -37,6 +37,12 @@
 }
 
 /* Optimize scroll performance */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  /* Account for fixed header */
+}
+
 body {
   overflow-y: auto !important;
   will-change: scroll-position;
@@ -61,6 +67,11 @@ body {
 /* Section containment adjusted for scroll compatibility */
 section {
   contain: style;
+}
+
+/* Scroll anchor offset for hash navigation */
+section[id] {
+  scroll-margin-top: 80px;
 }
 
 /* Hide scrollbar for bottom nav */

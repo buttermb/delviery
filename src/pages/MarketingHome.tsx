@@ -47,8 +47,12 @@ const SectionLoader = () => (
 export default function MarketingHome() {
   const navigate = useNavigate();
 
-  // Track page view on mount
+  // Scroll to top on mount and track page view
   useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Track page view
     analytics.track('marketing_page_view', {
       page: 'home',
       referrer: document.referrer,
