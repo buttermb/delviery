@@ -49,12 +49,15 @@ export default function SupplierManagementPage() {
   const { data: suppliers, isLoading } = useQuery({
     queryKey: queryKeys.suppliers.list({ filter }),
     queryFn: async () => {
-      const query = supabase
+      if (!tenant?.id) return [];
+      
+      const baseQuery = supabase
         .from("wholesale_suppliers")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      const { data, error } = await query;
+        .select("*") as any;
+      
+      const tenantQuery = baseQuery.eq("tenant_id", tenant.id);
+      const orderedQuery = tenantQuery.order("created_at", { ascending: false });
+      const { data, error } = await orderedQuery;
       
       if (error) {
         logger.error('Failed to fetch suppliers', error, { component: 'SupplierManagementPage' });
@@ -63,14 +66,20 @@ export default function SupplierManagementPage() {
 
       return (data || []) as Supplier[];
     },
+    enabled: !!tenant?.id,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      if (!tenant?.id) throw new Error("Tenant ID required");
+      
+      const deleteQuery = supabase
         .from("wholesale_suppliers")
-        .delete()
-        .eq("id", id);
+        .delete() as any;
+      
+      const { error } = await deleteQuery
+        .eq("id", id)
+        .eq("tenant_id", tenant.id);
 
       if (error) throw error;
     },

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface ReceivingItem {
   product_id: string;
@@ -23,22 +24,27 @@ interface ReceivingItem {
 }
 
 export function QuickReceiving() {
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [items, setItems] = useState<ReceivingItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('');
 
   const { data: products } = useQuery({
-    queryKey: ['wholesale-inventory'],
+    queryKey: ['wholesale-inventory', tenant?.id],
     queryFn: async () => {
+      if (!tenant?.id) return [];
+      
       const { data, error } = await supabase
         .from('wholesale_inventory')
         .select('id, product_name')
+        .eq('tenant_id', tenant.id)
         .order('product_name');
 
       if (error) throw error;
       return data;
     },
+    enabled: !!tenant?.id,
   });
 
   const addItem = () => {
@@ -75,10 +81,13 @@ export function QuickReceiving() {
 
       // Update inventory for each item
       for (const item of items) {
+        if (!tenant?.id) throw new Error("Tenant ID required");
+        
         const { data: currentInventory, error: fetchError } = await supabase
           .from('wholesale_inventory')
           .select('quantity_lbs')
           .eq('id', item.product_id)
+          .eq('tenant_id', tenant.id)
           .maybeSingle();
 
         if (fetchError) throw fetchError;
@@ -91,7 +100,8 @@ export function QuickReceiving() {
             quantity_lbs: newQuantity,
             last_restock_date: new Date().toISOString(),
           })
-          .eq('id', item.product_id);
+          .eq('id', item.product_id)
+          .eq('tenant_id', tenant.id);
 
         if (updateError) throw updateError;
 
