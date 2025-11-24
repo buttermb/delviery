@@ -13,11 +13,7 @@ import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { Database } from "@/integrations/supabase/types";
 
-type Tenant = Database['public']['Tables']['tenants']['Row'] & {
-  white_label?: {
-    logo?: string;
-  };
-};
+type Tenant = Database['public']['Tables']['tenants']['Row'];
 
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
@@ -32,19 +28,16 @@ export default function TenantAdminLoginPage() {
 
 
   useEffect(() => {
-    // @ts-ignore - Complex query return type
     const fetchTenant = async (): Promise<void> => {
       if (tenantSlug) {
-        // @ts-ignore - Deep instantiation error from Supabase types
         const { data, error } = await supabase
           .from("tenants")
-          .select("*, white_label:white_label_settings(*)")
+          .select("*")
           .eq("slug", tenantSlug)
           .maybeSingle();
 
         if (data && !error) {
-          // Type assertion needed because the join type might not be perfectly inferred or white_label might be an array in some generated types
-          setTenant(data as unknown as Tenant);
+          setTenant(data);
         }
         setTenantLoading(false);
       } else {
@@ -118,7 +111,7 @@ export default function TenantAdminLoginPage() {
   }
 
   const businessName = tenant.business_name || tenantSlug;
-  const logo = tenant.white_label?.logo;
+  const logo = null; // White label settings not implemented yet
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
