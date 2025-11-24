@@ -25,8 +25,13 @@ serve(async (req) => {
       );
     }
 
-    // Check if it looks like a test key
+    // Check if it looks like a test key or live key
     const isTestMode = STRIPE_SECRET_KEY.startsWith('sk_test_');
+    const isLiveMode = STRIPE_SECRET_KEY.startsWith('sk_live_');
+
+    if (!isTestMode && !isLiveMode) {
+      console.warn('Warning: Key does not start with sk_test_ or sk_live_');
+    }
 
     // Initialize Stripe SDK
     const stripeClient = new Stripe(STRIPE_SECRET_KEY, {

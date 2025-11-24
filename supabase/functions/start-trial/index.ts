@@ -15,7 +15,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user } } = await supabaseClient.auth.getUser(token);
-    
+
     if (!user) {
       throw new Error("User not authenticated");
     }
@@ -57,16 +57,8 @@ serve(async (req) => {
       );
     }
 
-    // Validate Stripe secret key
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
-    if (!stripeKey.startsWith("sk_")) {
-      return new Response(
-        JSON.stringify({ 
-          error: "Invalid Stripe configuration. Please use a secret key (starts with 'sk_'), not a publishable key." 
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    console.log(`Initializing Stripe with key prefix: ${stripeKey.substring(0, 7)}...`);
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
@@ -74,7 +66,7 @@ serve(async (req) => {
 
     // Get or create Stripe customer
     let customerId = tenant.stripe_customer_id;
-    
+
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: tenant.owner_email,

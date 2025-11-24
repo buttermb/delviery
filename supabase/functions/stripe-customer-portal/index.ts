@@ -23,7 +23,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-    
+
     if (!supabaseUrl || !supabaseServiceKey) {
       logStep('ERROR: Missing Supabase configuration');
       return new Response(
@@ -91,7 +91,7 @@ serve(async (req) => {
 
     // Verify user has permission - check both owner and tenant_users
     const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
-    
+
     const { data: tenantUser } = await supabase
       .from('tenant_users')
       .select('role')
@@ -112,7 +112,7 @@ serve(async (req) => {
     logStep('User has permission', { isOwner, isAdmin });
 
     const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-    
+
     if (!STRIPE_SECRET_KEY) {
       logStep('ERROR: Stripe not configured');
       return new Response(
@@ -122,6 +122,7 @@ serve(async (req) => {
     }
 
     logStep('Initializing Stripe client');
+    logStep('Stripe key prefix', { keyPrefix: STRIPE_SECRET_KEY.substring(0, 7) + '...' });
 
     // Initialize Stripe SDK
     const stripeClient = new Stripe(STRIPE_SECRET_KEY, {
@@ -131,7 +132,7 @@ serve(async (req) => {
 
     // Get or create Stripe customer
     let stripeCustomerId = tenant.stripe_customer_id;
-    
+
     if (!stripeCustomerId) {
       logStep('Creating new Stripe customer');
       const customer = await stripeClient.customers.create({
@@ -148,7 +149,7 @@ serve(async (req) => {
       await supabase.from('tenants').update({
         stripe_customer_id: stripeCustomerId,
       }).eq('id', tenant_id);
-      
+
       logStep('Tenant updated with Stripe customer ID');
     } else {
       logStep('Using existing Stripe customer', { customerId: stripeCustomerId });
@@ -157,7 +158,7 @@ serve(async (req) => {
     // Get site URL for return URL
     const siteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://app.example.com';
     const returnUrl = `${siteUrl}/${tenant.slug}/admin/billing`;
-    
+
     logStep('Creating Customer Portal session', { returnUrl });
 
     // Create Customer Portal session
@@ -180,7 +181,7 @@ serve(async (req) => {
     logStep('CRITICAL ERROR', { message: error.message, stack: error.stack });
     console.error('[STRIPE-PORTAL] Error creating Customer Portal session:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message || 'Internal server error',
         details: error.stack || 'No stack trace available'
       }),

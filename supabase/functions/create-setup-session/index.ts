@@ -120,6 +120,7 @@ serve(async (req) => {
         }
 
         // Initialize Stripe SDK
+        logStep('Initializing Stripe client', { keyPrefix: STRIPE_SECRET_KEY.substring(0, 7) + '...' });
         const stripeClient = new Stripe(STRIPE_SECRET_KEY, {
             apiVersion: '2025-08-27.basil',
             httpClient: Stripe.createFetchHttpClient(),
