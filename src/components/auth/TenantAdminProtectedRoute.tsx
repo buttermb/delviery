@@ -294,10 +294,26 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Not authenticated
   if (!admin || !tenant) {
-    // Fallback: Use lastTenantSlug from localStorage if tenantSlug is undefined
-    const fallbackSlug = tenantSlug || localStorage.getItem('lastTenantSlug') || 'login';
-    logger.debug('[PROTECTED ROUTE] Redirecting to login', { tenantSlug, fallbackSlug });
-    return <Navigate to={`/${fallbackSlug}/admin/login`} replace />;
+    // Extract tenant slug from URL path
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const tenantSlugFromUrl = pathSegments[0];
+    
+    // Validate slug: not 'undefined', not a UUID, not empty
+    const isValidSlug = tenantSlugFromUrl && 
+                       tenantSlugFromUrl !== 'undefined' && 
+                       !tenantSlugFromUrl.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    
+    // Try URL slug first, then fallback to localStorage, then saas/login
+    const redirectSlug = isValidSlug ? tenantSlugFromUrl : 
+                        localStorage.getItem('lastTenantSlug');
+    
+    if (redirectSlug) {
+      logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug });
+      return <Navigate to={`/${redirectSlug}/admin/login`} replace />;
+    }
+    
+    logger.debug('[PROTECTED ROUTE] No valid slug found, redirecting to saas login');
+    return <Navigate to="/saas/login" replace />;
   }
 
   // Tenant slug mismatch
