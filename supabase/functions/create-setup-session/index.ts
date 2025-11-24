@@ -119,6 +119,15 @@ serve(async (req) => {
             );
         }
 
+        // Validate that we have a secret key, not a publishable key
+        if (!STRIPE_SECRET_KEY.startsWith('sk_')) {
+            logStep('ERROR: Invalid Stripe key format - must use secret key');
+            return new Response(
+                JSON.stringify({ error: 'Invalid Stripe configuration. Please use a secret key (starts with \'sk_\'), not a publishable key.' }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
         // Initialize Stripe SDK
         const stripeClient = new Stripe(STRIPE_SECRET_KEY, {
             apiVersion: '2025-08-27.basil',
