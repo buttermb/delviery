@@ -59,9 +59,7 @@ export default function MarketingHome() {
       <PerformanceMonitor />
 
       {/* Parallax Background Effects - only for hero */}
-      <div className="absolute inset-0 pointer-events-none" style={{ height: '100vh' }}>
-        <ParallaxBackground />
-      </div>
+      <ParallaxBackground />
 
       <SEOHead
         title="FloraIQ - Modern Operating System for Cannabis Distribution"
