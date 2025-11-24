@@ -1,4 +1,5 @@
 import { TenantStripeCheckout } from "@/components/tenant-admin/TenantStripeCheckout";
+import { TenantStripeConfig } from "@/components/tenant-admin/TenantStripeConfig";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -32,23 +33,7 @@ export default function TenantAdminSettingsPage() {
         </TabsContent>
 
         <TabsContent value="integrations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Integration</CardTitle>
-              <CardDescription>
-                Configure your Stripe account to accept payments from your customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  To configure your Stripe credentials, go to the sidebar → Integrations and click on Stripe.
-                  This is separate from the platform subscription billing.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+          <TenantStripeConfig />
         </TabsContent>
 
         <TabsContent value="testing" className="space-y-6">
