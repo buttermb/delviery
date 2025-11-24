@@ -294,7 +294,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Not authenticated
   if (!admin || !tenant) {
-    return <Navigate to={`/${tenantSlug}/admin/login`} replace />;
+    // Fallback: Use lastTenantSlug from localStorage if tenantSlug is undefined
+    const fallbackSlug = tenantSlug || localStorage.getItem('lastTenantSlug') || 'login';
+    logger.debug('[PROTECTED ROUTE] Redirecting to login', { tenantSlug, fallbackSlug });
+    return <Navigate to={`/${fallbackSlug}/admin/login`} replace />;
   }
 
   // Tenant slug mismatch

@@ -211,12 +211,69 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       let parsedTenant: Tenant | null = null;
 
       try {
-        // Check if we have any auth tokens or cookies before trying to verify
+        // PRIORITY 1: Check for active Supabase session first
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          logger.info('[AUTH] Active Supabase session found, fetching admin/tenant data');
+          
+          try {
+            // Fetch admin and tenant data using user ID from session
+            const { data: adminData } = await supabase
+              .from('tenant_users')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .eq('status', 'active')
+              .maybeSingle();
+
+            if (adminData) {
+              const { data: tenantData } = await supabase
+                .from('tenants')
+                .select('*')
+                .eq('id', adminData.tenant_id)
+                .maybeSingle();
+
+              if (tenantData) {
+                parsedAdmin = {
+                  id: adminData.id,
+                  email: adminData.email || session.user.email || '',
+                  name: adminData.email, // tenant_users doesn't have full_name
+                  role: adminData.role,
+                  tenant_id: adminData.tenant_id,
+                };
+                parsedTenant = tenantData as unknown as Tenant;
+
+                setAdmin(parsedAdmin);
+                setTenant(parsedTenant);
+                setAccessToken(session.access_token);
+                setToken(session.access_token);
+                setRefreshToken(session.refresh_token || null);
+                setIsAuthenticated(true);
+
+                // Store in localStorage for quick access
+                safeStorage.setItem(ADMIN_KEY, JSON.stringify(parsedAdmin));
+                safeStorage.setItem(TENANT_KEY, JSON.stringify(parsedTenant));
+                safeStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
+                if (session.refresh_token) {
+                  safeStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+                }
+                safeStorage.setItem('lastTenantSlug', parsedTenant.slug);
+
+                setLoading(false);
+                return; // Success - exit early
+              }
+            }
+          } catch (dbError) {
+            logger.error('[AUTH] Failed to fetch admin/tenant from database', dbError);
+          }
+        }
+
+        // PRIORITY 2: Check if we have any auth tokens or cookies before trying to verify
         const storedToken = safeStorage.getItem(ACCESS_TOKEN_KEY);
         const hasCookies = document.cookie.includes('tenant_access_token');
 
         // Skip verification if no auth data exists (user not logged in as tenant admin)
-        if (!storedToken && !hasCookies) {
+        if (!storedToken && !hasCookies && !session) {
           setLoading(false);
           return;
         }

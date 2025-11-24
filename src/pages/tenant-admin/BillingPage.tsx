@@ -26,11 +26,13 @@ import { TIER_NAMES, TIER_PRICES, getFeaturesForTier, getFeaturesByCategory, typ
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 import { TrialBanner } from "@/components/tenant-admin/TrialBanner";
 import { TrialCountdown } from "@/components/tenant-admin/TrialCountdown";
 import { AddPaymentMethodDialog } from "@/components/billing/AddPaymentMethodDialog";
+import { useStripeRedirectHandler } from "@/hooks/useStripeRedirectHandler";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -47,10 +49,35 @@ export default function TenantAdminBillingPage() {
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
+  // Handle Stripe redirect success
+  useStripeRedirectHandler();
+
+  // Check for Stripe success in URL params
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const paymentMethod = searchParams.get('payment_method');
+
+    if (success === 'true' && paymentMethod === 'true') {
+      logger.info('[BillingPage] Payment method added successfully via Stripe');
+      
+      toast({
+        title: 'Payment Method Added',
+        description: 'Your payment method has been successfully added.',
+      });
+
+      // Clean up URL params
+      setSearchParams({});
+      
+      // Refresh tenant data
+      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+    }
+  }, [searchParams, setSearchParams, queryClient, toast]);
 
   // Check Stripe configuration health
   const { data: stripeHealth } = useQuery({
