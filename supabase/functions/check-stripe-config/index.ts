@@ -13,6 +13,9 @@ serve(async (req) => {
 
   try {
     const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+    
+    // Debug logging for key prefix
+    console.log('Stripe key prefix:', STRIPE_SECRET_KEY?.substring(0, 7) || 'NO_KEY');
 
     if (!STRIPE_SECRET_KEY) {
       return new Response(
@@ -20,6 +23,18 @@ serve(async (req) => {
           configured: false,
           valid: false,
           error: 'STRIPE_SECRET_KEY is missing'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate that it's a secret key, not a publishable key
+    if (!STRIPE_SECRET_KEY.startsWith('sk_')) {
+      return new Response(
+        JSON.stringify({
+          configured: true,
+          valid: false,
+          error: 'Invalid Stripe configuration. The key must be a SECRET key (starts with sk_), not a publishable key (pk_).'
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
