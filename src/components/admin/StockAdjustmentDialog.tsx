@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface StockAdjustmentDialogProps {
   productId: string;
@@ -26,6 +27,7 @@ export function StockAdjustmentDialog({
   open, 
   onOpenChange 
 }: StockAdjustmentDialogProps) {
+  const { tenant } = useTenantAdminAuth();
   const [adjustmentType, setAdjustmentType] = useState<"add" | "subtract">("add");
   const [quantity, setQuantity] = useState("");
   const [reason, setReason] = useState("");
@@ -57,7 +59,8 @@ export function StockAdjustmentDialog({
           quantity_lbs: adjustedQuantity,
           updated_at: new Date().toISOString()
         })
-        .eq("id", productId);
+        .eq("id", productId)
+        .eq("tenant_id", tenant?.id);
 
       if (updateError) throw updateError;
 
