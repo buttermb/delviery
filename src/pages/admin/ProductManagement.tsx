@@ -219,10 +219,14 @@ export default function ProductManagement() {
       }
 
       const availableQuantity = formData.available_quantity ? parseInt(formData.available_quantity) : 0;
+      
+      // Generate unique barcode by appending timestamp to SKU (prevents duplicate key errors)
+      const uniqueBarcode = sku ? `${sku}-${Date.now().toString(36)}` : null;
+      
       const productData = {
         name: formData.name,
         sku: sku,
-        barcode: sku || null, // Set barcode to SKU (database column exists and is UNIQUE)
+        barcode: uniqueBarcode, // Unique barcode based on SKU + timestamp
         category: category,
         vendor_name: formData.vendor_name || null,
         strain_name: formData.strain_name || null,
@@ -368,8 +372,13 @@ export default function ProductManagement() {
         userMessage = "Invalid category selected. Please choose: Flower, Edibles, Vapes, or Concentrates.";
         errorTitle = "Invalid Category";
       } else if (errorMessage.includes('duplicate key') || errorCode === '23505') {
-        userMessage = "A product with this SKU already exists.";
-        errorTitle = "Duplicate Product";
+        if (errorMessage.includes('barcode')) {
+          userMessage = "A product with this barcode already exists. Please try again.";
+          errorTitle = "Duplicate Barcode";
+        } else {
+          userMessage = "A product with this SKU already exists.";
+          errorTitle = "Duplicate Product";
+        }
       } else if (errorCode === '42703') {
         userMessage = "Database column not found. Please contact support.";
         errorTitle = "Database Error";
