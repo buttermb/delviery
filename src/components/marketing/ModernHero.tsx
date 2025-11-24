@@ -51,14 +51,14 @@ export function ModernHero() {
   }
 
   return (
-    <section ref={containerRef} className="relative min-h-[90vh] bg-[hsl(var(--marketing-bg))] pt-32 pb-20">
+    <section ref={containerRef} className="relative min-h-[70vh] bg-[hsl(var(--marketing-bg))] pt-32 pb-20">
       {/* Background Effects - Optimized */}
       <div className="absolute inset-0 z-0">
         <CursorSpotlight containerRef={containerRef} />
         <AnimatedMeshBackground />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
+      <div className="container mx-auto px-4 relative z-10 py-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
 
           {/* Left Column: Text */}
