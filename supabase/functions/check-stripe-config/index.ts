@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,19 +14,75 @@ serve(async (req) => {
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     
-    return new Response(
-      JSON.stringify({ 
-        configured: !!stripeKey && stripeKey.length > 0 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
+    // Check if key exists
+    if (!stripeKey || stripeKey.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          configured: false,
+          valid: false,
+          error: 'STRIPE_SECRET_KEY is not configured'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+
+    // Check if it's a valid secret key (must start with sk_)
+    if (!stripeKey.startsWith('sk_')) {
+      return new Response(
+        JSON.stringify({ 
+          configured: true,
+          valid: false,
+          error: 'Invalid key format. Must be a secret key starting with "sk_", not a publishable key (pk_)'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+
+    // Optionally test the key with a lightweight Stripe API call
+    try {
+      const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+      // Make a lightweight test call - just list customers with limit 1
+      await stripe.customers.list({ limit: 1 });
+      
+      return new Response(
+        JSON.stringify({ 
+          configured: true,
+          valid: true,
+          testMode: stripeKey.startsWith('sk_test_')
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    } catch (stripeError: any) {
+      return new Response(
+        JSON.stringify({ 
+          configured: true,
+          valid: false,
+          error: `Stripe API test failed: ${stripeError.message || 'Unknown error'}`
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+    
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ configured: false, error: errorMessage }),
+      JSON.stringify({ 
+        configured: false, 
+        valid: false,
+        error: errorMessage 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
