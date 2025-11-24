@@ -79,27 +79,28 @@ export default function MyListingsPage() {
   // Fetch listings
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ['marketplace-listings', tenantId, statusFilter],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       if (!tenantId || !profile?.id) return [];
 
-      let query = supabase
+      // @ts-ignore - Deep type instantiation error with Supabase query chains
+      const result = await supabase
         .from('marketplace_listings')
         .select('*')
         .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false});
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      if (result.error) {
+        logger.error('Failed to fetch listings', result.error, { component: 'MyListingsPage' });
+        throw result.error;
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        logger.error('Failed to fetch listings', error, { component: 'MyListingsPage' });
-        throw error;
+      const allListings = result.data || [];
+      
+      if (statusFilter === 'all' || !statusFilter) {
+        return allListings;
       }
-
-      return data || [];
+      
+      return allListings.filter((item: any) => item.status === statusFilter);
     },
     enabled: !!tenantId && !!profile?.id,
   });

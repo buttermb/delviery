@@ -35,6 +35,7 @@ import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardOrderRow {
   total_amount: number | null;

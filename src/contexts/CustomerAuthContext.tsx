@@ -345,7 +345,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}
-        onStayLoggedIn={handleStayLoggedIn}
+        onExtendSession={handleStayLoggedIn}
         onLogout={handleLogoutFromWarning}
         secondsRemaining={secondsUntilLogout}
       />
