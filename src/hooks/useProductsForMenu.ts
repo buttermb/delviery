@@ -26,7 +26,6 @@ export const useProductsForMenu = (tenantId?: string) => {
       
       const { data, error } = await query
         .eq("tenant_id", tenantId)
-        .eq("status", "active")
         .order("name");
 
       if (error) throw error;
