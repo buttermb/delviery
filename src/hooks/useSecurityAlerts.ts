@@ -36,14 +36,15 @@ export const useSecurityAlerts = () => {
     }
 
     logger.debug('[useSecurityAlerts] Authentication verified, establishing realtime subscription');
-    // Fetch recent alerts
+    // Fetch recent alerts filtered by tenant
     const fetchAlerts = async () => {
       const { data } = await supabase
         .from('menu_security_events')
         .select(`
           *,
-          disposable_menus(name)
+          disposable_menus!inner(name, tenant_id)
         `)
+        .eq('disposable_menus.tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -90,12 +91,18 @@ export const useSecurityAlerts = () => {
             return;
           }
 
-          // Fetch menu name
+          // Fetch menu name and verify tenant ownership
           const { data: menu } = await supabase
             .from('disposable_menus')
-            .select('name')
+            .select('name, tenant_id')
             .eq('id', newEvent.menu_id)
             .maybeSingle();
+
+          // Only show alerts for menus owned by this tenant
+          if (!menu || menu.tenant_id !== tenant.id) {
+            logger.debug('Ignoring security event from different tenant');
+            return;
+          }
 
           const alert: SecurityAlert = {
             id: newEvent.id,

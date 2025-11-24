@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useWholesaleInventory } from '@/hooks/useWholesaleData';
+import { useProductsForMenu } from '@/hooks/useProductsForMenu';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -50,7 +50,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
   const [accessType, setAccessType] = useState<'invite_only' | 'shared' | 'hybrid'>('invite_only');
   const [requireAccessCode, setRequireAccessCode] = useState(true);
 
-  const { data: inventory, isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
+  const { data: inventory, isLoading: inventoryLoading } = useProductsForMenu(tenant?.id);
   const createMenu = useCreateDisposableMenu();
 
   // Generate 8-character alphanumeric code
@@ -67,14 +67,13 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
   interface InventoryProduct {
     id: string;
-    product_name?: string;
-    strain?: string;
+    name: string;
+    price: number;
+    sku?: string;
+    description?: string;
+    image_url?: string;
     category?: string;
-    vendor_name?: string;
-    image_url?: string | null;
-    images?: string[] | null;
-    weight_lbs?: number;
-    [key: string]: unknown;
+    stock_quantity?: number;
   }
 
   // Filter products based on search
@@ -84,10 +83,10 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
     
     const query = searchQuery.toLowerCase();
     return (inventory as InventoryProduct[]).filter((p) =>
-      p.product_name?.toLowerCase().includes(query) ||
-      p.strain?.toLowerCase().includes(query) ||
+      p.name?.toLowerCase().includes(query) ||
+      p.sku?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query) ||
-      p.vendor_name?.toLowerCase().includes(query)
+      p.description?.toLowerCase().includes(query)
     );
   }, [inventory, searchQuery]);
 
@@ -359,7 +358,6 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                     ) : (
                       filteredProducts.map((product: InventoryProduct) => {
                         const isSelected = selectedProducts.includes(product.id);
-                        const imageUrl = product.image_url || product.images?.[0];
                         
                         return (
                           <div
@@ -375,19 +373,22 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                               onCheckedChange={() => toggleProduct(product.id)}
                               className="mt-1"
                             />
-                            {imageUrl && (
+                            {product.image_url && (
                               <img
-                                src={imageUrl}
-                                alt={product.product_name}
+                                src={product.image_url}
+                                alt={product.name}
                                 className="w-12 h-12 object-cover rounded"
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium">{product.product_name || product.strain}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {product.strain && <Badge variant="outline" className="mr-1">{product.strain}</Badge>}
-                                {product.category && <Badge variant="outline" className="mr-1">{product.category}</Badge>}
-                                {product.weight_lbs && `${product.weight_lbs} lbs`}
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                {product.sku && <Badge variant="outline">{product.sku}</Badge>}
+                                {product.category && <Badge variant="outline">{product.category}</Badge>}
+                                <span className="text-primary font-medium">${product.price}</span>
+                                {product.stock_quantity !== undefined && (
+                                  <span className="text-xs">Stock: {product.stock_quantity}</span>
+                                )}
                               </div>
                             </div>
                           </div>
