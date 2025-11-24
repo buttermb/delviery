@@ -32,23 +32,34 @@ export function useStripeRedirectHandler() {
 
     const handleStripeSuccess = async () => {
       try {
+        // Get tenant slug from database if we only have tenant ID
+        let tenantSlug = tenant?.slug || safeStorage.getItem('lastTenantSlug');
+        
+        if (!tenantSlug && tenantId) {
+          logger.info('[StripeRedirect] Fetching tenant slug from database');
+          const { data: tenantData } = await supabase
+            .from('tenants')
+            .select('slug')
+            .eq('id', tenantId)
+            .single();
+          
+          if (tenantData) {
+            tenantSlug = tenantData.slug;
+            safeStorage.setItem('lastTenantSlug', tenantSlug);
+          }
+        }
+
         // Check if user session is valid
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
           logger.warn('[StripeRedirect] No active session, redirecting to login');
           
-          // Save tenant slug for login redirect
-          if (tenantId) {
-            safeStorage.setItem('lastTenantSlug', tenantId);
-          }
-          
           toast.error('Session expired. Please log in again.');
           
           // Redirect to login with tenant slug
-          const slug = tenantId || tenant?.slug || safeStorage.getItem('lastTenantSlug');
-          if (slug) {
-            navigate(`/${slug}/admin/login`);
+          if (tenantSlug) {
+            navigate(`/${tenantSlug}/admin/login`);
           } else {
             navigate('/saas/login');
           }
@@ -71,12 +82,12 @@ export function useStripeRedirectHandler() {
           description: 'Your 14-day trial has started.',
         });
 
-        // Clean up URL params
-        const slug = tenant?.slug || safeStorage.getItem('lastTenantSlug');
-        if (slug) {
-          navigate(`/${slug}/admin`, { replace: true });
+        // Clean up URL params and redirect to admin
+        if (tenantSlug) {
+          navigate(`/${tenantSlug}/admin`, { replace: true });
         } else {
-          navigate('/admin', { replace: true });
+          logger.error('[StripeRedirect] No tenant slug available for redirect');
+          navigate('/saas/login', { replace: true });
         }
       } catch (error) {
         logger.error('[StripeRedirect] Failed to update trial status', error);
@@ -84,10 +95,12 @@ export function useStripeRedirectHandler() {
           description: 'Please contact support if this issue persists.',
         });
         
-        // Still redirect to admin, but show error
-        const slug = tenant?.slug || safeStorage.getItem('lastTenantSlug');
-        if (slug) {
-          navigate(`/${slug}/admin`, { replace: true });
+        // Try to get tenant slug from storage as fallback
+        const fallbackSlug = safeStorage.getItem('lastTenantSlug');
+        if (fallbackSlug) {
+          navigate(`/${fallbackSlug}/admin`, { replace: true });
+        } else {
+          navigate('/saas/login', { replace: true });
         }
       }
     };
