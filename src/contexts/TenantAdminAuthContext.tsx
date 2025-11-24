@@ -145,10 +145,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const hasShownOnboardingRef = useRef(false);
 
-  // Check onboarding status
+  // Check onboarding status - only show once per session
   useEffect(() => {
-    if (tenant && !loading && !tenant.onboarding_completed) {
+    if (tenant && !loading && !tenant.onboarding_completed && !hasShownOnboardingRef.current) {
+      // Mark as shown to prevent re-triggering
+      hasShownOnboardingRef.current = true;
+      
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
         setOnboardingOpen(true);

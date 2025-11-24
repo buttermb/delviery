@@ -80,6 +80,41 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         }
     };
 
+    const handleSkipOnboarding = async () => {
+        if (!tenant?.id) return;
+
+        setLoading(true);
+
+        try {
+            const { error } = await supabase
+                .from("tenants")
+                .update({
+                    onboarding_completed: true,
+                    onboarding_skipped: true,
+                    onboarding_completed_at: new Date().toISOString(),
+                })
+                .eq("id", tenant.id);
+
+            if (error) throw error;
+
+            toast({
+                title: "Skipped Setup",
+                description: "You can complete setup anytime from Settings.",
+            });
+
+            onOpenChange(false);
+        } catch (error: any) {
+            logger.error("Failed to skip onboarding", error, { component: "OnboardingWizard" });
+            toast({
+                title: "Error",
+                description: error?.message || "Failed to save. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const nextStep = () => {
         if (step < totalSteps) {
             setStep(step + 1);
@@ -126,20 +161,38 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
                             <div className="grid gap-4">
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => {
                                         onOpenChange(false);
                                         navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                        }
                                     }}
                                 >
                                     <h4 className="font-medium mb-1">Business Profile</h4>
                                     <p className="text-sm text-muted-foreground">Add your logo, address, and contact info.</p>
                                 </div>
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => {
                                         onOpenChange(false);
                                         navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                        }
                                     }}
                                 >
                                     <h4 className="font-medium mb-1">Operating Hours</h4>
@@ -163,20 +216,38 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
 
                             <div className="grid gap-4">
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => {
                                         onOpenChange(false);
                                         navigate(`/${tenant?.slug}/admin/settings`);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/settings`);
+                                        }
                                     }}
                                 >
                                     <h4 className="font-medium mb-1">Delivery Zones</h4>
                                     <p className="text-sm text-muted-foreground">Draw your delivery areas on the map.</p>
                                 </div>
                                 <div
-                                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                                    className="p-4 border rounded-lg hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer touch-manipulation min-h-[44px]"
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => {
                                         onOpenChange(false);
                                         navigate(`/${tenant?.slug}/admin/team`);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            onOpenChange(false);
+                                            navigate(`/${tenant?.slug}/admin/team`);
+                                        }
                                     }}
                                 >
                                     <h4 className="font-medium mb-1">Driver Management</h4>
@@ -213,7 +284,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                     <div className="flex w-full justify-between items-center">
                         <Button
                             variant="ghost"
-                            onClick={() => onOpenChange(false)}
+                            onClick={handleSkipOnboarding}
                             disabled={loading}
                         >
                             Skip for now
