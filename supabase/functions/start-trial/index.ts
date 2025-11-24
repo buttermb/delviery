@@ -57,7 +57,18 @@ serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    // Validate Stripe secret key
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    if (!stripeKey.startsWith("sk_")) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid Stripe configuration. Please use a secret key (starts with 'sk_'), not a publishable key." 
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
