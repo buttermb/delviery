@@ -16,6 +16,7 @@ import {
   Diamond,
   Zap,
   Loader2,
+  Settings,
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -541,6 +542,18 @@ export default function TenantAdminBillingPage() {
                   <div className="flex gap-2 pt-4 border-t">
                     <Button variant="outline" onClick={() => document.querySelector('[data-value="plans"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))}>
                       ⬆️ View Plans
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      onClick={handlePaymentMethod}
+                      disabled={upgradeLoading}
+                    >
+                      {upgradeLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Settings className="h-4 w-4 mr-2" />
+                      )}
+                      Manage Subscription
                     </Button>
                   </div>
                 </div>
