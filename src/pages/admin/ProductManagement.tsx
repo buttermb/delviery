@@ -112,7 +112,12 @@ export default function ProductManagement() {
     wholesale_price: "",
     retail_price: "",
     available_quantity: "",
+    description: "",
+    image_url: "",
   });
+  
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (tenant && !tenantLoading) {
@@ -146,6 +151,36 @@ export default function ProductManagement() {
     }
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Invalid file type', {
+        description: 'Please upload an image file',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large', {
+        description: 'Maximum file size is 5MB',
+      });
+      return;
+    }
+
+    setImageFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -157,6 +192,30 @@ export default function ProductManagement() {
     setIsGenerating(true);
 
     try {
+      // Upload image if provided
+      let uploadedImageUrl = formData.image_url;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${tenant.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, imageFile);
+
+        if (uploadError) {
+          toast.error('Image upload failed', {
+            description: uploadError.message,
+          });
+          setIsGenerating(false);
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+        
+        uploadedImageUrl = publicUrl;
+      }
       // Validate category
       if (!formData.category) {
         toast.error("Category is required", {
@@ -248,6 +307,8 @@ export default function ProductManagement() {
         available_quantity: availableQuantity,
         total_quantity: availableQuantity,
         tenant_id: tenant.id,
+        description: formData.description || null,
+        image_url: uploadedImageUrl || null,
         // menu_visibility will be set by trigger based on available_quantity
         // barcode_image_url will be set via direct SQL update since it's not in types yet
       } as Database['public']['Tables']['products']['Insert'] & { barcode_image_url?: string | null };
@@ -411,7 +472,11 @@ export default function ProductManagement() {
       wholesale_price: product.wholesale_price?.toString() || "",
       retail_price: product.retail_price?.toString() || "",
       available_quantity: product.available_quantity?.toString() || "",
+      description: product.description || "",
+      image_url: product.image_url || "",
     });
+    setImagePreview(product.image_url || null);
+    setImageFile(null);
     setIsDialogOpen(true);
   };
 
@@ -857,8 +922,12 @@ export default function ProductManagement() {
       wholesale_price: "",
       retail_price: "",
       available_quantity: "",
+      description: "",
+      image_url: "",
     });
     setEditingProduct(null);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   if (tenantLoading) {
@@ -907,18 +976,44 @@ export default function ProductManagement() {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  {/* Image Upload */}
                   <div className="space-y-2">
-                    <Label>Product Name *</Label>
-                    <Input
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="Blue Dream 1/8oz"
-                    />
+                    <Label>Product Image</Label>
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1"
+                      />
+                      {imagePreview && (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border">
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Max size: 5MB. Formats: JPG, PNG, WEBP
+                    </p>
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Product Name *</Label>
+                      <Input
+                        required
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        placeholder="Blue Dream 1/8oz"
+                      />
+                    </div>
                   <div className="space-y-2">
                     <Label>SKU {!editingProduct && <span className="text-muted-foreground text-xs">(Auto-generated)</span>}</Label>
                     <Input
@@ -1061,18 +1156,32 @@ export default function ProductManagement() {
                       placeholder="45.00"
                     />
                   </div>
+                    <div className="space-y-2">
+                      <Label>Initial Quantity</Label>
+                      <Input
+                        type="number"
+                        value={formData.available_quantity}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            available_quantity: e.target.value,
+                          })
+                        }
+                        placeholder="50"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Description Field */}
                   <div className="space-y-2">
-                    <Label>Initial Quantity</Label>
-                    <Input
-                      type="number"
-                      value={formData.available_quantity}
+                    <Label>Description</Label>
+                    <Textarea
+                      value={formData.description}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          available_quantity: e.target.value,
-                        })
+                        setFormData({ ...formData, description: e.target.value })
                       }
-                      placeholder="50"
+                      placeholder="Product description for menus and catalogs..."
+                      rows={3}
                     />
                   </div>
                 </div>
