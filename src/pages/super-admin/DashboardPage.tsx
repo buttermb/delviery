@@ -48,6 +48,7 @@ import {
 } from 'recharts';
 import { useState, useEffect } from 'react';
 import { AnimatedNumber } from '@/components/shared/AnimatedNumber';
+import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 
 interface TenantPayload {
   id?: string;
@@ -75,23 +76,23 @@ export default function SuperAdminDashboardPage() {
           // Type-safe payload access
           const newData = payload.new as TenantPayload | null;
           const oldData = payload.old as TenantPayload | null;
-          
-          logger.debug('Tenant data changed', { 
-            event: payload.eventType, 
+
+          logger.debug('Tenant data changed', {
+            event: payload.eventType,
             component: 'SuperAdminDashboard',
             tenantId: newData?.id || oldData?.id,
             subscriptionPlan: newData?.subscription_plan,
             subscriptionStatus: newData?.subscription_status,
           });
-          
+
           // Invalidate stats queries to trigger refetch
           queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
           queryClient.invalidateQueries({ queryKey: ['super-admin-at-risk-tenants'] });
           queryClient.invalidateQueries({ queryKey: ['super-admin-recent-activity'] });
-          
+
           // If subscription plan or status changed, also invalidate tenant detail queries
-          if (newData?.subscription_plan !== oldData?.subscription_plan || 
-              newData?.subscription_status !== oldData?.subscription_status) {
+          if (newData?.subscription_plan !== oldData?.subscription_plan ||
+            newData?.subscription_status !== oldData?.subscription_status) {
             logger.info('Subscription tier or status changed', {
               tenantId: newData?.id,
               oldPlan: oldData?.subscription_plan,
@@ -223,9 +224,9 @@ export default function SuperAdminDashboardPage() {
       if (!tenants) return [];
 
       const planPrices: Record<string, number> = {
-        starter: 99,
-        professional: 299,
-        enterprise: 799,
+        [SUBSCRIPTION_PLANS.STARTER]: 99,
+        [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+        [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
       };
 
       // Calculate monthly revenue for last 12 months
@@ -240,10 +241,10 @@ export default function SuperAdminDashboardPage() {
         tenants.forEach((tenant) => {
           const tenantCreated = new Date(tenant.created_at || 0);
           const tenantMonth = new Date(tenantCreated.getFullYear(), tenantCreated.getMonth(), 1);
-          
+
           // Only count if tenant existed in this month and was active
           if (tenantMonth <= month && tenant.subscription_status === 'active') {
-            const mrr = Number(tenant.mrr) || planPrices[tenant.subscription_plan?.toLowerCase() || 'starter'] || 0;
+            const mrr = Number(tenant.mrr) || planPrices[tenant.subscription_plan?.toLowerCase() || SUBSCRIPTION_PLANS.STARTER] || 0;
             monthlyRevenue[monthKey] += mrr;
           }
         });
@@ -347,12 +348,12 @@ export default function SuperAdminDashboardPage() {
       // Calculate conversion rate: trials that became active
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+
       const recentTrials = allTenants.filter(
         (t) => (t.subscription_status === 'trial' || t.subscription_status === 'trialing') &&
           new Date(t.created_at || 0) > thirtyDaysAgo
       );
-      
+
       // Get all tenants that were trials and are now active
       const { data: convertedTenants } = await supabase
         .from('tenants')

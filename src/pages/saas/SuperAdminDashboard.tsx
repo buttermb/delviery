@@ -36,6 +36,15 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
 import { useState } from 'react';
 
+import {
+  isTrial,
+  isCancelled,
+  isActiveSubscription,
+  getSubscriptionStatusLabel,
+  SUBSCRIPTION_STATUS
+} from '@/utils/subscriptionStatus';
+import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+
 export default function SuperAdminDashboard() {
   const { toast } = useToast();
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
@@ -50,17 +59,17 @@ export default function SuperAdminDashboard() {
       const { data: tenants } = await supabase.from('tenants').select('*');
 
       const totalTenants = tenants?.length || 0;
-      const activeTrials = tenants?.filter((t) => t.subscription_status === 'trial').length || 0;
-      const activeSubscriptions = tenants?.filter((t) => t.subscription_status === 'active').length || 0;
-      
+      const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length || 0;
+      const activeSubscriptions = tenants?.filter((t) => t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE).length || 0;
+
       // Calculate MRR
       const mrr = tenants?.reduce((sum, tenant) => {
         const prices: Record<string, number> = {
-          starter: 99,
-          professional: 299,
-          enterprise: 799,
+          [SUBSCRIPTION_PLANS.STARTER]: 99,
+          [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+          [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
-        if (tenant.subscription_status === 'active') {
+        if (tenant.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
           return sum + (prices[tenant.subscription_plan as string] || 0);
         }
         return sum;
@@ -75,7 +84,7 @@ export default function SuperAdminDashboard() {
 
       // Calculate churn (cancelled this month)
       const churnedThisMonth = tenants?.filter(
-        (t) => t.subscription_status === 'cancelled' &&
+        (t) => isCancelled(t.subscription_status) &&
           t.cancelled_at &&
           new Date(t.cancelled_at) >= thisMonth
       ).length || 0;
@@ -140,12 +149,12 @@ export default function SuperAdminDashboard() {
       // Store super admin context for restoration
       sessionStorage.setItem('super_admin_original', 'true');
       sessionStorage.setItem('impersonated_tenant_id', tenant.id);
-      
+
       toast({
         title: 'Tenant Session Created',
         description: `Now viewing as ${tenant.business_name}. Your super admin access is preserved.`,
       });
-      
+
       // In production, generate temporary JWT and redirect to tenant dashboard
       // window.location.href = `/tenant/${tenant.id}/dashboard?impersonate=true`;
       logger.debug('Would navigate to tenant dashboard:', tenant.id);
@@ -209,10 +218,10 @@ export default function SuperAdminDashboard() {
       cell: ({ row }: any) => {
         const status = row.original.subscription_status;
         const variant =
-          status === 'active' ? 'default' :
-          status === 'trial' ? 'secondary' :
-          status === 'past_due' ? 'destructive' : 'outline';
-        return <Badge variant={variant}>{status.replace('_', ' ')}</Badge>;
+          status === SUBSCRIPTION_STATUS.ACTIVE ? 'default' :
+            isTrial(status) ? 'secondary' :
+              status === SUBSCRIPTION_STATUS.PAST_DUE ? 'destructive' : 'outline';
+        return <Badge variant={variant}>{getSubscriptionStatusLabel(status)}</Badge>;
       },
     },
     {
@@ -220,9 +229,9 @@ export default function SuperAdminDashboard() {
       header: 'MRR',
       cell: ({ row }: any) => {
         const prices: Record<string, number> = {
-          starter: 99,
-          professional: 299,
-          enterprise: 799,
+          [SUBSCRIPTION_PLANS.STARTER]: 99,
+          [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+          [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
         const mrr = prices[row.original.subscription_plan] || 0;
         return formatCurrency(mrr);
@@ -235,16 +244,15 @@ export default function SuperAdminDashboard() {
         const { score } = row.original.healthScore || { score: 100 };
         const color =
           score >= 80 ? 'text-emerald-500' :
-          score >= 60 ? 'text-yellow-500' : 'text-red-500';
+            score >= 60 ? 'text-yellow-500' : 'text-red-500';
         return (
           <div className="flex items-center gap-2">
             <span className={`font-semibold ${color}`}>{score}</span>
             <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className={`h-full ${
-                  score >= 80 ? 'bg-emerald-500' :
+                className={`h-full ${score >= 80 ? 'bg-emerald-500' :
                   score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
+                  }`}
                 style={{ width: `${score}%` }}
               />
             </div>
@@ -407,9 +415,9 @@ export default function SuperAdminDashboard() {
                           .from('feature_flags')
                           .update({ enabled: !flag.enabled })
                           .eq('id', flag.id);
-                        
+
                         if (error) throw error;
-                        
+
                         toast({
                           title: 'Feature flag updated',
                           description: `${flag.name} is now ${!flag.enabled ? 'enabled' : 'disabled'}`,
@@ -463,10 +471,10 @@ export default function SuperAdminDashboard() {
                 <div>
                   <Label>Status</Label>
                   <Badge variant={
-                    selectedTenant.subscription_status === 'active' ? 'default' :
-                    selectedTenant.subscription_status === 'trial' ? 'secondary' : 'destructive'
+                    selectedTenant.subscription_status === SUBSCRIPTION_STATUS.ACTIVE ? 'default' :
+                      isTrial(selectedTenant.subscription_status) ? 'secondary' : 'destructive'
                   }>
-                    {selectedTenant.subscription_status}
+                    {getSubscriptionStatusLabel(selectedTenant.subscription_status)}
                   </Badge>
                 </div>
                 <div>
@@ -524,13 +532,12 @@ export default function SuperAdminDashboard() {
                       </span>
                       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${
-                            selectedTenant.healthScore.score >= 80
-                              ? 'bg-emerald-500'
-                              : selectedTenant.healthScore.score >= 60
+                          className={`h-full ${selectedTenant.healthScore.score >= 80
+                            ? 'bg-emerald-500'
+                            : selectedTenant.healthScore.score >= 60
                               ? 'bg-yellow-500'
                               : 'bg-red-500'
-                          }`}
+                            }`}
                           style={{ width: `${selectedTenant.healthScore.score}%` }}
                         />
                       </div>

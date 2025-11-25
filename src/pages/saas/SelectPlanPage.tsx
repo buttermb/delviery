@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 
 interface Plan {
   id: string;
@@ -47,7 +48,7 @@ export default function SelectPlanPage() {
           price: `$${plan.price_monthly}/month`,
           description: plan.description || '',
           features: Array.isArray(plan.features) ? plan.features as string[] : [],
-          popular: plan.name === 'Professional',
+          popular: plan.name.toLowerCase() === SUBSCRIPTION_PLANS.PROFESSIONAL,
         }));
 
         setPlans(formattedPlans);

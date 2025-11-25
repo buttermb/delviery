@@ -36,20 +36,41 @@ serve(async (req) => {
     for (const tenant of trials) {
       const trialEnds = new Date(tenant.trial_ends_at);
       const daysRemaining = Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const hasPaymentMethod = tenant.payment_method_added === true;
 
-      console.log(`[CHECK TRIAL REMINDERS] Tenant ${tenant.business_name}: ${daysRemaining} days remaining`);
+      console.log(`[CHECK TRIAL REMINDERS] Tenant ${tenant.business_name}: ${daysRemaining} days remaining, payment method: ${hasPaymentMethod}`);
 
-      // Send reminder 2 days before (day 12)
-      if (daysRemaining === 2 && !tenant.trial_reminder_12_sent) {
-        remindersToSend.push({ tenant_id: tenant.id, days_remaining: 2 });
+      // Send reminder 7 days before trial ends
+      if (daysRemaining === 7 && !tenant.trial_reminder_7_days_sent) {
+        remindersToSend.push({
+          tenant_id: tenant.id,
+          days_remaining: 7,
+          has_payment_method: hasPaymentMethod
+        });
       }
-      // Send reminder 1 day before (day 13)
-      else if (daysRemaining === 1 && !tenant.trial_reminder_13_sent) {
-        remindersToSend.push({ tenant_id: tenant.id, days_remaining: 1 });
+      // Send reminder 3 days before trial ends
+      else if (daysRemaining === 3 && !tenant.trial_reminder_3_days_sent) {
+        remindersToSend.push({
+          tenant_id: tenant.id,
+          days_remaining: 3,
+          has_payment_method: hasPaymentMethod
+        });
       }
-      // Send reminder on last day (day 14)
-      else if (daysRemaining === 0 && !tenant.trial_reminder_14_sent) {
-        remindersToSend.push({ tenant_id: tenant.id, days_remaining: 0 });
+      // Send reminder 1 day before trial ends
+      else if (daysRemaining === 1 && !tenant.trial_reminder_1_day_sent) {
+        remindersToSend.push({
+          tenant_id: tenant.id,
+          days_remaining: 1,
+          has_payment_method: hasPaymentMethod
+        });
+      }
+      // Send reminder on last day (day of expiration)
+      else if (daysRemaining === 0 && !tenant.trial_reminder_0_day_sent) {
+        remindersToSend.push({
+          tenant_id: tenant.id,
+          days_remaining: 0,
+          has_payment_method: hasPaymentMethod
+        });
       }
     }
 
@@ -72,9 +93,9 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         message: "Reminder check complete",
-        reminders_sent: remindersToSend.length 
+        reminders_sent: remindersToSend.length
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

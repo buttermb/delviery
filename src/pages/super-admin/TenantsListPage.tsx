@@ -59,6 +59,7 @@ import { getStatusColor, getStatusVariant, getPlanVariant, getHealthTextColor } 
 import { TenantCard } from '@/components/super-admin/TenantCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 
 export default function TenantsListPage() {
   const navigate = useNavigate();
@@ -188,7 +189,7 @@ export default function TenantsListPage() {
           <p className="text-muted-foreground">Manage all customer accounts</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => {/* TODO: Export */}}>
+          <Button variant="outline" onClick={() => {/* TODO: Export */ }}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
@@ -238,9 +239,9 @@ export default function TenantsListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="starter">Starter</SelectItem>
-                <SelectItem value="professional">Professional</SelectItem>
-                <SelectItem value="enterprise">Enterprise</SelectItem>
+                <SelectItem value={SUBSCRIPTION_PLANS.STARTER}>Starter</SelectItem>
+                <SelectItem value={SUBSCRIPTION_PLANS.PROFESSIONAL}>Professional</SelectItem>
+                <SelectItem value={SUBSCRIPTION_PLANS.ENTERPRISE}>Enterprise</SelectItem>
               </SelectContent>
             </Select>
 
@@ -265,9 +266,8 @@ export default function TenantsListPage() {
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Advanced Filters
                 <ChevronDown
-                  className={`ml-2 h-4 w-4 transition-transform ${
-                    showAdvancedFilters ? 'rotate-180' : ''
-                  }`}
+                  className={`ml-2 h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''
+                    }`}
                 />
               </Button>
             </CollapsibleTrigger>
@@ -337,138 +337,138 @@ export default function TenantsListPage() {
         <Card>
           <div className="overflow-x-auto">
             <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={
-                      selectedTenants.length > 0 &&
-                      selectedTenants.length === paginatedTenants.length
-                    }
-                    onCheckedChange={toggleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Tenant</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>MRR</TableHead>
-                <TableHead>Health</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTenants.map((tenant) => {
-                // @ts-ignore - tenant type mismatch will resolve when types regenerate
-                const health = calculateHealthScore(tenant as any);
-                const healthScore = health.score;
-                return (
-                  <TableRow key={tenant.id} className="group">
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedTenants.includes(tenant.id)}
-                        onCheckedChange={() => toggleSelect(tenant.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={(tenant.white_label as any)?.logo} />
-                          <AvatarFallback>
-                            {(tenant.business_name as string)?.charAt(0) || 'T'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{tenant.business_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {tenant.owner_email}
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={
+                        selectedTenants.length > 0 &&
+                        selectedTenants.length === paginatedTenants.length
+                      }
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>Tenant</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>MRR</TableHead>
+                  <TableHead>Health</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedTenants.map((tenant) => {
+                  // @ts-ignore - tenant type mismatch will resolve when types regenerate
+                  const health = calculateHealthScore(tenant as any);
+                  const healthScore = health.score;
+                  return (
+                    <TableRow key={tenant.id} className="group">
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedTenants.includes(tenant.id)}
+                          onCheckedChange={() => toggleSelect(tenant.id)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={(tenant.white_label as any)?.logo} />
+                            <AvatarFallback>
+                              {(tenant.business_name as string)?.charAt(0) || 'T'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{tenant.business_name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {tenant.owner_email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getPlanVariant(tenant.subscription_plan as string)}>
-                        {tenant.subscription_plan}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={getStatusVariant(tenant.subscription_status as string)}
-                        className={getStatusColor(tenant.subscription_status as string)}
-                      >
-                        {tenant.subscription_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        {formatCurrency((tenant.mrr as number) || 0)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress
-                          value={healthScore}
-                          className="w-16 h-2"
-                        />
-                        <span className={`text-sm font-medium ${getHealthTextColor(healthScore)}`}>
-                          {healthScore}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {formatSmartDate(tenant.created_at as string)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>View Details</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
-                                }}
-                              >
-                                <UserCog className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Impersonate</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => navigate(`/super-admin/tenants/${tenant.id}?tab=settings`)}
-                              >
-                                <Settings className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Settings</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getPlanVariant(tenant.subscription_plan as string)}>
+                          {tenant.subscription_plan}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={getStatusVariant(tenant.subscription_status as string)}
+                          className={getStatusColor(tenant.subscription_status as string)}
+                        >
+                          {tenant.subscription_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">
+                          {formatCurrency((tenant.mrr as number) || 0)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Progress
+                            value={healthScore}
+                            className="w-16 h-2"
+                          />
+                          <span className={`text-sm font-medium ${getHealthTextColor(healthScore)}`}>
+                            {healthScore}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {formatSmartDate(tenant.created_at as string)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View Details</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    window.open(`/${tenant.slug}/admin/dashboard`, '_blank');
+                                  }}
+                                >
+                                  <UserCog className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Impersonate</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => navigate(`/super-admin/tenants/${tenant.id}?tab=settings`)}
+                                >
+                                  <Settings className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Settings</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
 
           {/* Pagination */}
@@ -525,15 +525,15 @@ export default function TenantsListPage() {
             <CardContent className="flex items-center gap-4 py-3 px-6">
               <span className="font-medium">{selectedTenants.length} selected</span>
               <Separator orientation="vertical" className="h-6" />
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk change plan */}}>
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk change plan */ }}>
                 <CreditCard className="mr-2 h-4 w-4" />
                 Change Plan
               </Button>
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk suspend */}}>
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk suspend */ }}>
                 <Ban className="mr-2 h-4 w-4" />
                 Suspend
               </Button>
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk export */}}>
+              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk export */ }}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>

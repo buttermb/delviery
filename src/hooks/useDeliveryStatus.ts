@@ -8,7 +8,7 @@ type DeliveryType = 'courier' | 'runner';
 export function useDeliveryStatus() {
   const [updating, setUpdating] = useState(false);
 
-  const updateCourierOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateCourierOrderStatus = async (orderId: string, newStatus: string, tenantId?: string) => {
     const updates: Record<string, string> = { status: newStatus };
 
     if (newStatus === 'picked_up') {
@@ -17,10 +17,16 @@ export function useDeliveryStatus() {
       updates.delivered_at = new Date().toISOString();
     }
 
-    const { error } = await supabase
+    let query = supabase
       .from('orders')
       .update(updates)
       .eq('id', orderId);
+
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { error } = await query;
 
     if (error) throw error;
   };
@@ -45,12 +51,13 @@ export function useDeliveryStatus() {
   const updateStatus = async (
     id: string,
     newStatus: string,
-    type: DeliveryType
+    type: DeliveryType,
+    tenantId?: string
   ) => {
     setUpdating(true);
     try {
       if (type === 'courier') {
-        await updateCourierOrderStatus(id, newStatus);
+        await updateCourierOrderStatus(id, newStatus, tenantId);
       } else {
         await updateRunnerDeliveryStatus(id, newStatus);
       }

@@ -17,6 +17,7 @@ import {
   Zap,
   Loader2,
   Settings,
+  ArrowLeft,
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -27,12 +28,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 import { TrialBanner } from "@/components/tenant-admin/TrialBanner";
 import { TrialCountdown } from "@/components/tenant-admin/TrialCountdown";
 import { AddPaymentMethodDialog } from "@/components/billing/AddPaymentMethodDialog";
 import { useStripeRedirectHandler } from "@/hooks/useStripeRedirectHandler";
+import { IntegrationStatus } from "@/components/integrations/IntegrationStatus";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -54,6 +56,7 @@ export default function TenantAdminBillingPage() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Handle Stripe redirect success
   useStripeRedirectHandler();
@@ -65,7 +68,7 @@ export default function TenantAdminBillingPage() {
 
     if (success === 'true' && paymentMethod === 'true') {
       logger.info('[BillingPage] Payment method added successfully via Stripe');
-      
+
       toast({
         title: 'Payment Method Added',
         description: 'Your payment method has been successfully added.',
@@ -73,7 +76,7 @@ export default function TenantAdminBillingPage() {
 
       // Clean up URL params
       setSearchParams({});
-      
+
       // Refresh tenant data
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     }
@@ -372,12 +375,28 @@ export default function TenantAdminBillingPage() {
   const isOnTrial = tenant?.subscription_status === 'trial';
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1 sm:mb-2">💳 Billing & Subscription</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Back Button and Header */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(`/${tenant?.slug}/admin`)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Billing & Subscription</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              Manage your subscription, payment methods, and billing history
+            </p>
+          </div>
         </div>
 
         {/* Payment Method Missing Alert - Only show for trial users */}
@@ -434,10 +453,11 @@ export default function TenantAdminBillingPage() {
         )}
 
         <Tabs defaultValue="current" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="current" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Current Plan</TabsTrigger>
             <TabsTrigger value="plans" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Compare Plans</TabsTrigger>
             <TabsTrigger value="billing" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Billing History</TabsTrigger>
+            <TabsTrigger value="integrations" className="min-h-[44px] touch-manipulation text-xs sm:text-sm">Integrations</TabsTrigger>
           </TabsList>
 
           {/* CURRENT PLAN TAB */}
@@ -877,6 +897,38 @@ export default function TenantAdminBillingPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* INTEGRATIONS TAB */}
+          <TabsContent value="integrations" className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Payment Integrations</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Manage your payment processing connections and test their status
+                </p>
+              </div>
+
+              <IntegrationStatus
+                name="Stripe Payment Processing"
+                description="Platform-wide Stripe integration for subscription billing"
+                status={
+                  !stripeHealth
+                    ? "checking"
+                    : stripeHealth.valid
+                      ? "connected"
+                      : "error"
+                }
+                error={stripeHealth?.valid === false ? stripeHealth.error : undefined}
+                onTest={async () => {
+                  // Re-check Stripe configuration
+                  const { data, error } = await supabase.functions.invoke('check-stripe-config');
+                  if (error) throw error;
+                  if (!data?.valid) throw new Error(data?.error || 'Stripe configuration is invalid');
+                }}
+                testButtonLabel="Test Stripe Connection"
+              />
+            </div>
+          </TabsContent>
         </Tabs>
 
         {/* Upgrade/Downgrade Confirmation Dialog */}
@@ -946,6 +998,6 @@ export default function TenantAdminBillingPage() {
         onOpenChange={setPaymentDialogOpen}
         tenantId={tenantId || ''}
       />
-    </div>
+    </div >
   );
 }

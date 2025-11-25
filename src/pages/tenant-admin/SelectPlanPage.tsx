@@ -23,19 +23,21 @@ interface Plan {
 export default function SelectPlanPage() {
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
-  const { 
-    isEnterprise, 
-    isProfessional, 
-    isStarter, 
-    isTrial, 
+  const {
+    isEnterprise,
+    isProfessional,
+    isStarter,
+    isTrial,
     isActive,
     currentTier,
-    hasActiveSubscription 
+    hasActiveSubscription
   } = useSubscriptionStatus();
   const [loading, setLoading] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
 
   // Load plans from database
   useEffect(() => {
@@ -72,31 +74,31 @@ export default function SelectPlanPage() {
   // Helper to get button text based on plan and user state
   const getButtonText = (plan: Plan): string => {
     const planTier = plan.name.toLowerCase();
-    
+
     // Current plan
     if (planTier === currentTier) {
       return 'Current Plan';
     }
-    
+
     // Trial users
     if (isTrial) {
       return 'Start 14-Day Free Trial';
     }
-    
+
     // Active subscription users
     if (isActive) {
       // Determine if upgrade or downgrade
       const tierOrder = { starter: 1, professional: 2, enterprise: 3 };
       const currentOrder = tierOrder[currentTier];
       const planOrder = tierOrder[planTier as keyof typeof tierOrder];
-      
+
       if (planOrder > currentOrder) {
         return 'Upgrade Now';
       } else if (planOrder < currentOrder) {
         return 'Downgrade';
       }
     }
-    
+
     return 'Select Plan';
   };
 
@@ -113,15 +115,23 @@ export default function SelectPlanPage() {
     return planOrder > currentOrder;
   };
 
-  const handleSelectPlan = async (planId: string) => {
+  const handleSelectPlan = async (planId: string, isRetry = false) => {
     if (!tenant) {
-      toast.error("Missing tenant information");
+      const errorMsg = "Missing tenant information. Please try logging in again.";
+      toast.error(errorMsg);
+      setError(errorMsg);
       return;
     }
 
     setLoading(planId);
+    setError(null); // Clear previous errors
+    if (isRetry) {
+      setRetryPlanId(null); // Clear retry state
+    }
 
     try {
+      logger.info('[SELECT_PLAN] Starting trial', { planId, tenantId: tenant.id });
+
       // Call start-trial edge function
       const { data, error } = await supabase.functions.invoke("start-trial", {
         body: {
@@ -130,25 +140,92 @@ export default function SelectPlanPage() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        logger.error('[SELECT_PLAN] Edge function error', error, { planId, tenantId: tenant.id });
+        throw error;
+      }
 
       // Redirect to Stripe Checkout
       if (data?.url) {
+        logger.info('[SELECT_PLAN] Redirecting to Stripe checkout', { url: data.url });
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL received");
+        logger.error('[SELECT_PLAN] No checkout URL received', { data });
+        throw new Error("No checkout URL received from Stripe. Please contact support if this persists.");
       }
     } catch (error: any) {
-      logger.error("Error starting trial:", error, { component: 'SelectPlanPage' });
-      toast.error(error.message || "Failed to start trial");
+      const errorMessage = getErrorMessage(error);
+      logger.error('[SELECT_PLAN] Failed to start trial', error, {
+        component: 'SelectPlanPage',
+        planId,
+        tenantId: tenant.id,
+        errorMessage
+      });
+
+      setError(errorMessage);
+      setRetryPlanId(planId); // Enable retry for this plan
+      toast.error(errorMessage);
       setLoading(null);
     }
+  };
+
+  const getErrorMessage = (error: any): string => {
+    // Network errors
+    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+      return "Network error. Please check your internet connection and try again.";
+    }
+
+    // Stripe-specific errors
+    if (error.message?.includes('Stripe')) {
+      return "Payment processing error. Please try again or contact support.";
+    }
+
+    // Invalid plan ID
+    if (error.message?.includes('Plan not found') || error.message?.includes('Invalid plan')) {
+      return "Selected plan is unavailable. Please choose a different plan or contact support.";
+    }
+
+    // Timeout errors
+    if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+      return "Request timed out. Please try again.";
+    }
+
+    // Server errors (500+)
+    if (error.status >= 500) {
+      return "Server error. Our team has been notified. Please try again in a few minutes.";
+    }
+
+    // Default to error message or generic fallback
+    return error.message || "Failed to start trial. Please try again or contact support.";
   };
 
   if (loadingPlans) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading plans...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (plans.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>No Plans Available</CardTitle>
+            <CardDescription>
+              We couldn't find any subscription plans. Please contact support.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button onClick={() => navigate(`/${tenant?.slug}/admin`)} className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -167,10 +244,10 @@ export default function SelectPlanPage() {
               You have access to all features with our Enterprise plan
             </p>
           </div>
-          
+
           <Alert className="mb-6">
             <AlertDescription>
-              <strong>Enterprise Plan Benefits:</strong> Unlimited everything, priority support, 
+              <strong>Enterprise Plan Benefits:</strong> Unlimited everything, priority support,
               custom integrations, and dedicated account management.
             </AlertDescription>
           </Alert>
@@ -231,7 +308,7 @@ export default function SelectPlanPage() {
             {isTrial ? 'Start your 14-day free trial today' : 'Upgrade or change your subscription'}
           </p>
           <p className="text-sm text-muted-foreground">
-            {isTrial 
+            {isTrial
               ? 'Credit card required • No charges for 14 days • Cancel anytime'
               : 'Changes take effect immediately'
             }
@@ -242,16 +319,16 @@ export default function SelectPlanPage() {
           {plans.map((plan) => {
             const isCurrent = isCurrentPlan(plan);
             const isUpgradePlan = isUpgrade(plan);
-            
+
             return (
               <Card
                 key={plan.id}
                 className={
-                  isCurrent 
-                    ? "border-primary shadow-lg scale-105 ring-2 ring-primary" 
-                    : plan.popular 
-                    ? "border-primary shadow-lg scale-105" 
-                    : ""
+                  isCurrent
+                    ? "border-primary shadow-lg scale-105 ring-2 ring-primary"
+                    : plan.popular
+                      ? "border-primary shadow-lg scale-105"
+                      : ""
                 }
               >
                 <CardHeader>
@@ -267,38 +344,83 @@ export default function SelectPlanPage() {
                     <span className="text-4xl font-bold">{plan.price}</span>
                   </div>
                 </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={() => handleSelectPlan(plan.id)}
-                  disabled={loading !== null || isCurrent}
-                  variant={isCurrent ? "outline" : isUpgradePlan ? "default" : "outline"}
-                >
-                  {loading === plan.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isTrial ? 'Starting trial...' : 'Processing...'}
-                    </>
-                  ) : (
-                    getButtonText(plan)
+                <CardContent>
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter className="flex-col gap-2">
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={() => handleSelectPlan(plan.id)}
+                    disabled={loading !== null || isCurrent}
+                    variant={isCurrent ? "outline" : isUpgradePlan ? "default" : "outline"}
+                  >
+                    {loading === plan.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isTrial ? 'Starting trial...' : 'Processing...'}
+                      </>
+                    ) : (
+                      getButtonText(plan)
+                    )}
+                  </Button>
+
+                  {/* Retry button for this specific plan if it failed */}
+                  {error && retryPlanId === plan.id && loading !== plan.id && (
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      onClick={() => handleSelectPlan(plan.id, true)}
+                      variant="outline"
+                    >
+                      Try Again
+                    </Button>
                   )}
-                </Button>
-              </CardFooter>
-            </Card>
+                </CardFooter>
+              </Card>
             );
           })}
         </div>
+
+        {/* Global error message */}
+        {error && (
+          <Card className="mt-8 border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Error Starting Trial</CardTitle>
+              <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setError(null)}
+              >
+                Dismiss
+              </Button>
+              {retryPlanId && (
+                <Button
+                  onClick={() => handleSelectPlan(retryPlanId, true)}
+                  disabled={loading !== null}
+                >
+                  {loading === retryPlanId ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Retrying...
+                    </>
+                  ) : (
+                    "Retry"
+                  )}
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        )}
 
         <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>

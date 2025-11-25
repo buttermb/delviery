@@ -18,19 +18,19 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
  */
 export function usePermissions() {
   const { admin, tenant } = useTenantAdminAuth();
-  
+
   // Fetch user roles from user_roles table
   const { data: userRole } = useQuery<Role>({
-    queryKey: ['user-role', admin?.id, tenant?.id],
+    queryKey: ['user-role', admin?.userId, tenant?.id],
     queryFn: async () => {
-      if (!admin?.id || !tenant?.id) return ROLES.OWNER;
+      if (!admin?.userId || !tenant?.id) return ROLES.OWNER;
 
       try {
         // Check if user is super admin first (highest privilege)
         const { data: superAdminRole } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', admin.id)
+          .eq('user_id', admin.userId)
           .eq('role', 'super_admin')
           .maybeSingle();
 
@@ -53,7 +53,7 @@ export function usePermissions() {
         const { data: userRoles, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', admin.id);
+          .eq('user_id', admin.userId);
 
         if (error) {
           logger.warn('Error fetching user roles', error, { component: 'usePermissions' });
@@ -80,7 +80,7 @@ export function usePermissions() {
         return ROLES.OWNER;
       }
     },
-    enabled: !!admin?.id && !!tenant?.id,
+    enabled: !!admin?.userId && !!tenant?.id,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     retry: 1,
   });
@@ -112,6 +112,6 @@ export function usePermissions() {
     checkAnyPermission,
     checkAllPermissions,
     hasPermission: checkPermission,
-    isLoading: !userRole && !!admin?.id && !!tenant?.id,
+    isLoading: !userRole && !!admin?.userId && !!tenant?.id,
   };
 }

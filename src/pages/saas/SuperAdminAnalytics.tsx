@@ -28,6 +28,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
+import {
+  isTrial,
+  isCancelled,
+  SUBSCRIPTION_STATUS
+} from '@/utils/subscriptionStatus';
+import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+
 export default function SuperAdminAnalytics() {
   const [timeRange, setTimeRange] = useState<string>('30d');
 
@@ -39,12 +46,12 @@ export default function SuperAdminAnalytics() {
 
       if (!tenants) return defaultAnalytics();
 
-      const activeTenants = tenants.filter((t) => t.subscription_status === 'active');
+      const activeTenants = tenants.filter((t) => t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE);
       const mrr = activeTenants.reduce((sum, t) => {
         const prices: Record<string, number> = {
-          starter: 99,
-          professional: 299,
-          enterprise: 799,
+          [SUBSCRIPTION_PLANS.STARTER]: 99,
+          [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+          [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
         return sum + (prices[t.subscription_plan as string] || 0);
       }, 0);
@@ -59,11 +66,11 @@ export default function SuperAdminAnalytics() {
       );
       const newMRR = newTenants.reduce((sum, t) => {
         const prices: Record<string, number> = {
-          starter: 99,
-          professional: 299,
-          enterprise: 799,
+          [SUBSCRIPTION_PLANS.STARTER]: 99,
+          [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+          [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
-        if (t.subscription_status === 'active') {
+        if (t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
           return sum + (prices[t.subscription_plan as string] || 0);
         }
         return sum;
@@ -75,30 +82,30 @@ export default function SuperAdminAnalytics() {
       // Calculate churn (cancelled this period)
       const churnedTenants = tenants.filter(
         (t) =>
-          t.subscription_status === 'cancelled' &&
+          isCancelled(t.subscription_status) &&
           t.cancelled_at &&
           new Date(t.cancelled_at) >= periodStart
       );
       const churnMRR = churnedTenants.reduce((sum, t) => {
         const prices: Record<string, number> = {
-          starter: 99,
-          professional: 299,
-          enterprise: 799,
+          [SUBSCRIPTION_PLANS.STARTER]: 99,
+          [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
+          [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
         return sum + (prices[t.subscription_plan as string] || 0);
       }, 0);
 
       // Conversions
       const trials = tenants.filter(
-        (t) => t.subscription_status === 'trial' || t.subscription_status === 'trialing'
+        (t) => isTrial(t.subscription_status)
       );
       const conversions = Math.round(trials.length * 0.67);
 
       // Plan distribution
       const planDistribution = {
-        starter: tenants.filter((t) => t.subscription_plan === 'starter').length,
-        professional: tenants.filter((t) => t.subscription_plan === 'professional').length,
-        enterprise: tenants.filter((t) => t.subscription_plan === 'enterprise').length,
+        starter: tenants.filter((t) => t.subscription_plan === SUBSCRIPTION_PLANS.STARTER).length,
+        professional: tenants.filter((t) => t.subscription_plan === SUBSCRIPTION_PLANS.PROFESSIONAL).length,
+        enterprise: tenants.filter((t) => t.subscription_plan === SUBSCRIPTION_PLANS.ENTERPRISE).length,
       };
 
       return {
@@ -322,11 +329,10 @@ export default function SuperAdminAnalytics() {
                   <div
                     className="bg-blue-500 h-2 rounded-full"
                     style={{
-                      width: `${
-                        stats.totalTenants > 0
-                          ? (stats.planDistribution.starter / stats.totalTenants) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalTenants > 0
+                        ? (stats.planDistribution.starter / stats.totalTenants) * 100
+                        : 0
+                        }%`,
                     }}
                   />
                 </div>
@@ -345,11 +351,10 @@ export default function SuperAdminAnalytics() {
                   <div
                     className="bg-green-500 h-2 rounded-full"
                     style={{
-                      width: `${
-                        stats.totalTenants > 0
-                          ? (stats.planDistribution.professional / stats.totalTenants) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalTenants > 0
+                        ? (stats.planDistribution.professional / stats.totalTenants) * 100
+                        : 0
+                        }%`,
                     }}
                   />
                 </div>
@@ -368,11 +373,10 @@ export default function SuperAdminAnalytics() {
                   <div
                     className="bg-purple-500 h-2 rounded-full"
                     style={{
-                      width: `${
-                        stats.totalTenants > 0
-                          ? (stats.planDistribution.enterprise / stats.totalTenants) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalTenants > 0
+                        ? (stats.planDistribution.enterprise / stats.totalTenants) * 100
+                        : 0
+                        }%`,
                     }}
                   />
                 </div>

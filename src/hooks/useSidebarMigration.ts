@@ -15,21 +15,21 @@ export function useSidebarMigration() {
   const [migrationStatus, setMigrationStatus] = useState<'pending' | 'running' | 'complete' | 'failed'>('pending');
 
   useEffect(() => {
-    if (!tenant?.id || !admin?.id) return;
+    if (!tenant?.id || !admin?.userId) return;
 
     const runMigration = async () => {
       setMigrationStatus('running');
 
       try {
-        const result = await migrateLocalStorageToDatabase(tenant.id, admin.id);
-        
+        const result = await migrateLocalStorageToDatabase(tenant.id, admin.userId);
+
         if (result.success) {
           setMigrationStatus('complete');
           if (result.migrated) {
             logger.info('Sidebar preferences migrated successfully', {
               component: 'useSidebarMigration',
               tenantId: tenant.id,
-              userId: admin.id,
+              userId: admin.userId,
             });
           }
         } else {
@@ -46,7 +46,7 @@ export function useSidebarMigration() {
     };
 
     runMigration();
-  }, [tenant?.id, admin?.id]);
+  }, [tenant?.id, admin?.userId]);
 
   return { migrationStatus };
 }

@@ -23,8 +23,8 @@ function detectOperationSize(tenant: {
 }): OperationSize {
   // If tenant has detected_operation_size, use it
   const detectedSize = (tenant as any).detected_operation_size;
-  if (detectedSize && 
-      ['street', 'small', 'medium', 'enterprise'].includes(detectedSize)) {
+  if (detectedSize &&
+    ['street', 'small', 'medium', 'enterprise'].includes(detectedSize)) {
     return detectedSize as OperationSize;
   }
 
@@ -54,32 +54,21 @@ function detectOperationSize(tenant: {
  * Hook to get and manage operation size
  */
 export function useOperationSize() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const [authUserId, setAuthUserId] = useState<string | null>(null);
 
-  // Get the actual Supabase auth user ID
-  useEffect(() => {
-    const getAuthUserId = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        setAuthUserId(session.user.id);
-      }
-    };
-    getAuthUserId();
-  }, []);
 
   // Fetch user's manual override preference
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
-    queryKey: ['sidebar-preferences', tenant?.id, authUserId],
+    queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
     queryFn: async () => {
-      if (!tenant?.id || !authUserId) return null;
+      if (!tenant?.id || !admin?.userId) return null;
 
       const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('operation_size')
         .eq('tenant_id', tenant.id)
-        .eq('user_id', authUserId)
+        .eq('user_id', admin.userId)
         .maybeSingle();
 
       if (error) {
@@ -89,7 +78,7 @@ export function useOperationSize() {
 
       return data as any;
     },
-    enabled: !!tenant?.id && !!authUserId,
+    enabled: !!tenant?.id && !!admin?.userId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
@@ -102,7 +91,7 @@ export function useOperationSize() {
   // Use manual override if exists, otherwise use detected
   const operationSize: OperationSize = useMemo(() => {
     const manualSize = (preferences as any)?.operation_size;
-    
+
     logger.debug('Operation size calculation', {
       component: 'useOperationSize',
       manualSize,
@@ -112,7 +101,7 @@ export function useOperationSize() {
       hasPreferences: !!preferences,
       tenantId: tenant?.id
     });
-    
+
     if (manualSize && ['street', 'small', 'medium', 'enterprise'].includes(manualSize)) {
       return manualSize as OperationSize;
     }
@@ -124,13 +113,13 @@ export function useOperationSize() {
   // Mutation to set manual operation size
   const setOperationSizeMutation = useMutation({
     mutationFn: async (size: OperationSize) => {
-      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
+      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
 
       const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
-          user_id: authUserId,
+          user_id: admin.userId,
           operation_size: size,
         }], {
           onConflict: 'tenant_id,user_id',
@@ -139,7 +128,7 @@ export function useOperationSize() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
     },
     onError: (error: unknown) => {
       logger.error('Failed to update operation size', error, { component: 'useOperationSize' });
@@ -149,18 +138,18 @@ export function useOperationSize() {
   // Mutation to reset to auto-detected
   const resetToAutoMutation = useMutation({
     mutationFn: async () => {
-      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
+      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
 
       const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .update({ operation_size: null })
         .eq('tenant_id', tenant.id)
-        .eq('user_id', authUserId);
+        .eq('user_id', admin.userId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
     },
     onError: (error: unknown) => {
       logger.error('Failed to reset operation size', error, { component: 'useOperationSize' });
@@ -176,13 +165,13 @@ export function useOperationSize() {
   };
 
   // Loading guard
-  if (!authUserId) {
+  if (!admin?.userId) {
     return {
       operationSize: detectedSize,
       detectedSize,
       isAutoDetected: true,
-      setOperationSize: () => {},
-      resetToAuto: () => {},
+      setOperationSize: () => { },
+      resetToAuto: () => { },
       isLoading: true,
     };
   }
@@ -193,7 +182,7 @@ export function useOperationSize() {
     isAutoDetected,
     setOperationSize,
     resetToAuto,
-    isLoading: preferencesLoading || !authUserId,
+    isLoading: preferencesLoading || !admin?.userId,
   };
 }
 

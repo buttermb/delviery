@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Building2, 
+import {
+  Building2,
   DollarSign,
   Users,
   Package,
@@ -34,6 +34,7 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
+import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -66,7 +67,7 @@ export default function TenantDetailPage() {
     queryKey: ["super-admin-tenant", tenantId],
     queryFn: async () => {
       if (!tenantId || !isValidUUID) return null;
-      
+
       const { data, error } = await supabase
         .from("tenants")
         .select("*")
@@ -246,9 +247,9 @@ export default function TenantDetailPage() {
         <Card className="max-w-md bg-[hsl(var(--super-admin-surface))]/80 backdrop-blur-xl border-white/10">
           <CardContent className="pt-6">
             <p className="text-center text-[hsl(var(--super-admin-text))]/70">Tenant not found</p>
-            <Button 
-              variant="outline" 
-              className="w-full mt-4 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10" 
+            <Button
+              variant="outline"
+              className="w-full mt-4 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
               onClick={() => navigate("/super-admin/dashboard")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -282,8 +283,8 @@ export default function TenantDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate("/super-admin/dashboard")}
               className="text-[hsl(var(--super-admin-text))]/80 hover:bg-white/10"
             >
@@ -505,9 +506,9 @@ export default function TenantDetailPage() {
                             {formatCurrency(plan.price_monthly || tenant.mrr || 0)} / month
                           </p>
                         </div>
-                        <Badge 
+                        <Badge
                           variant={tenant.subscription_status === "active" ? "default" : "outline"}
-                          className={tenant.subscription_status === "active" 
+                          className={tenant.subscription_status === "active"
                             ? "bg-[hsl(var(--super-admin-secondary))]/20 text-[hsl(var(--super-admin-secondary))] border-[hsl(var(--super-admin-secondary))]/30"
                             : ""}
                         >
@@ -525,13 +526,13 @@ export default function TenantDetailPage() {
                         <div>
                           <p className="text-sm text-[hsl(var(--super-admin-text))]/70 mb-1">Next billing:</p>
                           <p className="text-base font-medium text-[hsl(var(--super-admin-text))]">
-                            {tenant.trial_ends_at 
+                            {tenant.trial_ends_at
                               ? formatSmartDate(tenant.trial_ends_at)
                               : (() => {
-                                  const nextBilling = new Date(tenant.created_at || new Date());
-                                  nextBilling.setMonth(nextBilling.getMonth() + 1);
-                                  return formatSmartDate(nextBilling.toISOString());
-                                })()}
+                                const nextBilling = new Date(tenant.created_at || new Date());
+                                nextBilling.setMonth(nextBilling.getMonth() + 1);
+                                return formatSmartDate(nextBilling.toISOString());
+                              })()}
                             {tenant.trial_ends_at && new Date(tenant.trial_ends_at) > new Date() && (
                               <span className="text-[hsl(var(--super-admin-accent))] ml-2">
                                 (in {Math.ceil((new Date(tenant.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days)
@@ -556,13 +557,13 @@ export default function TenantDetailPage() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            const planOrder = ["starter", "professional", "enterprise"];
-                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || "starter");
+                            const planOrder = [SUBSCRIPTION_PLANS.STARTER, SUBSCRIPTION_PLANS.PROFESSIONAL, SUBSCRIPTION_PLANS.ENTERPRISE];
+                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
                             if (currentIndex < planOrder.length - 1) {
                               changePlanMutation.mutate(planOrder[currentIndex + 1]);
                             }
                           }}
-                          disabled={changePlanMutation.isPending || tenant.subscription_plan === "enterprise"}
+                          disabled={changePlanMutation.isPending || tenant.subscription_plan === SUBSCRIPTION_PLANS.ENTERPRISE}
                           className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                         >
                           ⬆️ UPGRADE
@@ -570,13 +571,13 @@ export default function TenantDetailPage() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            const planOrder = ["starter", "professional", "enterprise"];
-                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || "starter");
+                            const planOrder = [SUBSCRIPTION_PLANS.STARTER, SUBSCRIPTION_PLANS.PROFESSIONAL, SUBSCRIPTION_PLANS.ENTERPRISE];
+                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
                             if (currentIndex > 0) {
                               changePlanMutation.mutate(planOrder[currentIndex - 1]);
                             }
                           }}
-                          disabled={changePlanMutation.isPending || tenant.subscription_plan === "starter"}
+                          disabled={changePlanMutation.isPending || tenant.subscription_plan === SUBSCRIPTION_PLANS.STARTER}
                           className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                         >
                           ⬇️ DOWNGRADE
@@ -701,7 +702,7 @@ export default function TenantDetailPage() {
                                 {formatCurrency(invoice.total || 0)}
                               </td>
                               <td className="py-3 px-4">
-                                <Badge 
+                                <Badge
                                   variant={invoice.status === "paid" ? "default" : "outline"}
                                   className={
                                     invoice.status === "paid"
@@ -765,14 +766,14 @@ export default function TenantDetailPage() {
                                                 </thead>
                                                 <tbody>
                                                   ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
-                                                    ? (invoice.line_items as InvoiceLineItem[]).map((item) => `
+                                            ? (invoice.line_items as InvoiceLineItem[]).map((item) => `
                                                       <tr>
                                                         <td>${item.description || item.name || 'N/A'}</td>
                                                         <td>${item.quantity || 1}</td>
                                                         <td style="text-align: right;">$${Number(item.amount || item.total || 0).toFixed(2)}</td>
                                                       </tr>
                                                     `).join('')
-                                                    : `
+                                            : `
                                                       <tr>
                                                         <td colspan="3" style="text-align: center; color: #999;">No line items available</td>
                                                       </tr>
@@ -862,14 +863,14 @@ export default function TenantDetailPage() {
                                               </thead>
                                               <tbody>
                                                 ${Array.isArray(invoice.line_items) && invoice.line_items.length > 0
-                                                  ? invoice.line_items.map((item: InvoiceLineItem) => `
+                                          ? invoice.line_items.map((item: InvoiceLineItem) => `
                                                     <tr>
                                                       <td>${item.description || item.name || 'N/A'}</td>
                                                       <td>${item.quantity || 1}</td>
                                                       <td style="text-align: right;">$${Number(item.amount || item.total || 0).toFixed(2)}</td>
                                                     </tr>
                                                   `).join('')
-                                                  : `
+                                          : `
                                                     <tr>
                                                       <td colspan="3" style="text-align: center; color: #999;">No line items available</td>
                                                     </tr>

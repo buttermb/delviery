@@ -98,17 +98,20 @@ export default function UnifiedActiveDeliveryPage() {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
-    const success = await updateStatus(id!, newStatus, role);
+    // Extract tenantId for isolation check
+    const tenantId = role === 'courier' ? data?.tenant_id : data?.seller_tenant_id;
+
+    const success = await updateStatus(id!, newStatus, role, tenantId);
     if (success && newStatus === 'delivered') {
       navigate('/courier/dashboard');
     }
   };
 
   const openNavigation = () => {
-    const address = role === 'courier' 
-      ? data?.delivery_address 
+    const address = role === 'courier'
+      ? data?.delivery_address
       : data?.order?.delivery_address;
-    
+
     if (address) {
       window.open(
         `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`,
@@ -192,15 +195,15 @@ export default function UnifiedActiveDeliveryPage() {
                 )}
               </div>
             </div>
-            {((isCourier && data.special_instructions) || 
+            {((isCourier && data.special_instructions) ||
               (!isCourier && data.order?.delivery_instructions)) && (
-              <div className="pt-2 border-t">
-                <p className="text-sm font-medium text-muted-foreground">Special Instructions:</p>
-                <p className="text-sm mt-1">
-                  {isCourier ? data.special_instructions : data.order?.delivery_instructions}
-                </p>
-              </div>
-            )}
+                <div className="pt-2 border-t">
+                  <p className="text-sm font-medium text-muted-foreground">Special Instructions:</p>
+                  <p className="text-sm mt-1">
+                    {isCourier ? data.special_instructions : data.order?.delivery_instructions}
+                  </p>
+                </div>
+              )}
           </CardContent>
         </Card>
 
@@ -263,17 +266,17 @@ export default function UnifiedActiveDeliveryPage() {
           events={
             isCourier
               ? [
-                  { label: 'Order Created', timestamp: data.created_at, icon: 'clock', completed: true },
-                  { label: 'Accepted', timestamp: data.accepted_at, icon: 'check', completed: !!data.accepted_at },
-                  { label: 'Picked Up', timestamp: data.courier_picked_up_at, icon: 'package', completed: !!data.courier_picked_up_at },
-                  { label: 'Delivered', timestamp: data.delivered_at, icon: 'navigation', completed: !!data.delivered_at },
-                ]
+                { label: 'Order Created', timestamp: data.created_at, icon: 'clock', completed: true },
+                { label: 'Accepted', timestamp: data.accepted_at, icon: 'check', completed: !!data.accepted_at },
+                { label: 'Picked Up', timestamp: data.courier_picked_up_at, icon: 'package', completed: !!data.courier_picked_up_at },
+                { label: 'Delivered', timestamp: data.delivered_at, icon: 'navigation', completed: !!data.delivered_at },
+              ]
               : [
-                  { label: 'Assigned', timestamp: data.assigned_at, icon: 'clock', completed: true },
-                  { label: 'Picked Up', timestamp: data.picked_up_at, icon: 'package', completed: !!data.picked_up_at },
-                  { label: 'In Transit', timestamp: data.picked_up_at, icon: 'navigation', completed: data.status === 'in_transit' || data.status === 'delivered' },
-                  { label: 'Delivered', timestamp: data.delivered_at, icon: 'check', completed: !!data.delivered_at },
-                ]
+                { label: 'Assigned', timestamp: data.assigned_at, icon: 'clock', completed: true },
+                { label: 'Picked Up', timestamp: data.picked_up_at, icon: 'package', completed: !!data.picked_up_at },
+                { label: 'In Transit', timestamp: data.picked_up_at, icon: 'navigation', completed: data.status === 'in_transit' || data.status === 'delivered' },
+                { label: 'Delivered', timestamp: data.delivered_at, icon: 'check', completed: !!data.delivered_at },
+              ]
           }
         />
 

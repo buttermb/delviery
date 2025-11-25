@@ -23,13 +23,13 @@ interface OrderUpdate {
   [key: string]: unknown;
 }
 
-export const useETATracking = (orderId: string | null) => {
+export const useETATracking = (orderId: string | null, tenantId?: string) => {
   const [eta, setEta] = useState<ETAData | null>(null);
   const [loading, setLoading] = useState(false);
 
   const calculateETA = async (courierLat?: number, courierLng?: number) => {
     if (!orderId) return;
-    
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('calculate-eta', {
@@ -58,11 +58,17 @@ export const useETATracking = (orderId: string | null) => {
       logger.error('ETA calculation error:', error);
       // Fallback: try to use existing order ETA from DB, otherwise provide a safe default
       try {
-        const { data: order } = await supabase
+        let query = supabase
           .from('orders')
           .select('eta_minutes, eta_updated_at, distance_miles')
-          .eq('id', orderId)
-          .maybeSingle();
+          .eq('id', orderId);
+
+        // Enforce tenant isolation if tenantId is provided
+        if (tenantId) {
+          query = query.eq('tenant_id', tenantId);
+        }
+
+        const { data: order } = await query.maybeSingle();
 
         const fallbackEta = Math.max(15, Number(order?.eta_minutes) || 20);
         const fallbackDistance = Number(order?.distance_miles) || 0;

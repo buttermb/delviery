@@ -32,6 +32,11 @@ import { getPlanPrice, getPlanDisplayName, checkLimit } from '@/lib/tenant';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
+import { isTrial as checkIsTrial, SUBSCRIPTION_STATUS } from '@/utils/subscriptionStatus';
+import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+
+// ... imports
+
 export default function BillingDashboard() {
   const { tenant, refresh } = useTenant();
   const { toast } = useToast();
@@ -83,7 +88,7 @@ export default function BillingDashboard() {
     );
   }
 
-  const isTrial = tenant.subscription_status === 'trial';
+  const isTrial = checkIsTrial(tenant.subscription_status);
   const trialDaysRemaining = tenant.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
@@ -132,20 +137,20 @@ export default function BillingDashboard() {
         .from('tenants')
         .update({
           subscription_plan: selectedPlan,
-          subscription_status: 'active',
+          subscription_status: SUBSCRIPTION_STATUS.ACTIVE,
           limits: {
-            customers: selectedPlan === 'professional' ? 500 : -1,
+            customers: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 500 : -1,
             menus: -1,
             products: -1,
-            locations: selectedPlan === 'professional' ? 10 : -1,
-            users: selectedPlan === 'professional' ? 10 : -1,
+            locations: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 10 : -1,
+            users: selectedPlan === SUBSCRIPTION_PLANS.PROFESSIONAL ? 10 : -1,
           },
           features: {
-            api_access: selectedPlan !== 'starter',
-            custom_branding: selectedPlan !== 'starter',
-            white_label: selectedPlan === 'enterprise',
-            advanced_analytics: selectedPlan !== 'starter',
-            sms_enabled: selectedPlan !== 'starter',
+            api_access: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
+            custom_branding: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
+            white_label: selectedPlan === SUBSCRIPTION_PLANS.ENTERPRISE,
+            advanced_analytics: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
+            sms_enabled: selectedPlan !== SUBSCRIPTION_PLANS.STARTER,
           },
         })
         .eq('id', tenant.id);
@@ -224,8 +229,8 @@ export default function BillingDashboard() {
                     <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="professional">Professional - $299/month</SelectItem>
-                    <SelectItem value="enterprise">Enterprise - $799/month</SelectItem>
+                    <SelectItem value={SUBSCRIPTION_PLANS.PROFESSIONAL}>Professional - $299/month</SelectItem>
+                    <SelectItem value={SUBSCRIPTION_PLANS.ENTERPRISE}>Enterprise - $799/month</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleUpgrade} className="w-full" disabled={!selectedPlan}>

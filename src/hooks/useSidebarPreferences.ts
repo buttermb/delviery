@@ -40,32 +40,21 @@ const DEFAULT_PREFERENCES: SidebarPreferences = {
  * Hook to get and update sidebar preferences
  */
 export function useSidebarPreferences() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const [authUserId, setAuthUserId] = useState<string | null>(null);
 
-  // Get the actual Supabase auth user ID
-  useEffect(() => {
-    const getAuthUserId = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        setAuthUserId(session.user.id);
-      }
-    };
-    getAuthUserId();
-  }, []);
 
   // Fetch preferences
   const { data: preferences, isLoading } = useQuery({
-    queryKey: ['sidebar-preferences', tenant?.id, authUserId],
+    queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
     queryFn: async (): Promise<SidebarPreferences> => {
-      if (!tenant?.id || !authUserId) return DEFAULT_PREFERENCES;
+      if (!tenant?.id || !admin?.userId) return DEFAULT_PREFERENCES;
 
       const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('*')
         .eq('tenant_id', tenant.id)
-        .eq('user_id', authUserId)
+        .eq('user_id', admin.userId)
         .maybeSingle();
 
       if (error) {
@@ -95,7 +84,7 @@ export function useSidebarPreferences() {
         customPresets: ((data as any).custom_presets as any[]) || [],
       };
     },
-    enabled: !!tenant?.id && !!authUserId,
+    enabled: !!tenant?.id && !!admin?.userId,
     staleTime: 1000, // Reduce cache time for faster updates
     refetchOnMount: 'always', // Always fetch fresh data on mount
   });
@@ -103,7 +92,7 @@ export function useSidebarPreferences() {
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<SidebarPreferences>) => {
-      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
+      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
 
       const current = preferences || DEFAULT_PREFERENCES;
       const updated: SidebarPreferences = {
@@ -115,7 +104,7 @@ export function useSidebarPreferences() {
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
-          user_id: authUserId,
+          user_id: admin.userId,
           operation_size: updated.operationSize,
           custom_layout: updated.customLayout,
           favorites: updated.favorites,
@@ -135,31 +124,31 @@ export function useSidebarPreferences() {
         });
 
       if (error) throw error;
-      
+
       // Return the updated data for later use
       return updated;
     },
     onSuccess: async (updatedData) => {
       // Directly set the cache to the confirmed data
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, authUserId],
+        ['sidebar-preferences', tenant?.id, admin?.userId],
         updatedData
       );
-      
+
       // Wait a bit longer for database consistency
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Invalidate related queries
       await queryClient.invalidateQueries({ queryKey: ['sidebar-config'] });
-      
+
       toast.success('Preferences saved');
     },
     onError: (error: unknown) => {
       logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });
       toast.error('Failed to save preferences');
-      
+
       // Refetch to get correct state
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
     },
   });
 
@@ -170,7 +159,7 @@ export function useSidebarPreferences() {
   // Toggle favorite mutation
   const toggleFavoriteMutation = useMutation({
     mutationFn: async (itemId: string) => {
-      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
+      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
 
       const current = preferences || DEFAULT_PREFERENCES;
       const newFavorites = current.favorites.includes(itemId)
@@ -180,11 +169,11 @@ export function useSidebarPreferences() {
       await updatePreferencesMutation.mutateAsync({ favorites: newFavorites });
     },
     onMutate: async (itemId) => {
-      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
-      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, authUserId]);
+      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
+      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.userId]);
 
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, authUserId],
+        ['sidebar-preferences', tenant?.id, admin?.userId],
         (old) => {
           const current = old || DEFAULT_PREFERENCES;
           const newFavorites = current.favorites.includes(itemId)
@@ -199,7 +188,7 @@ export function useSidebarPreferences() {
     onError: (error: unknown, variables, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
-          ['sidebar-preferences', tenant?.id, authUserId],
+          ['sidebar-preferences', tenant?.id, admin?.userId],
           context.previous
         );
       }
@@ -210,7 +199,7 @@ export function useSidebarPreferences() {
   // Toggle collapsed section mutation
   const toggleCollapsedSectionMutation = useMutation({
     mutationFn: async (sectionName: string) => {
-      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
+      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
 
       const current = preferences || DEFAULT_PREFERENCES;
       const newCollapsed = current.collapsedSections.includes(sectionName)
@@ -220,11 +209,11 @@ export function useSidebarPreferences() {
       await updatePreferencesMutation.mutateAsync({ collapsedSections: newCollapsed });
     },
     onMutate: async (sectionName) => {
-      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
-      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, authUserId]);
+      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
+      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.userId]);
 
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, authUserId],
+        ['sidebar-preferences', tenant?.id, admin?.userId],
         (old) => {
           const current = old || DEFAULT_PREFERENCES;
           const newCollapsed = current.collapsedSections.includes(sectionName)
@@ -239,7 +228,7 @@ export function useSidebarPreferences() {
     onError: (error: unknown, variables, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
-          ['sidebar-preferences', tenant?.id, authUserId],
+          ['sidebar-preferences', tenant?.id, admin?.userId],
           context.previous
         );
       }
@@ -249,7 +238,7 @@ export function useSidebarPreferences() {
 
   // Track last accessed feature
   const trackFeatureAccess = (featureId: string) => {
-    if (!tenant?.id || !authUserId) return;
+    if (!tenant?.id || !admin?.userId) return;
 
     const current = preferences || DEFAULT_PREFERENCES;
     const now = Date.now();
@@ -260,7 +249,7 @@ export function useSidebarPreferences() {
 
     // Update optimistically without showing toast
     queryClient.setQueryData<SidebarPreferences>(
-      ['sidebar-preferences', tenant?.id, authUserId],
+      ['sidebar-preferences', tenant?.id, admin?.userId],
       (old) => ({
         ...(old || DEFAULT_PREFERENCES),
         lastAccessedFeatures: newLastAccessed,
@@ -272,20 +261,20 @@ export function useSidebarPreferences() {
   };
 
   // Loading guard
-  if (!authUserId) {
+  if (!admin?.userId) {
     return {
       preferences: DEFAULT_PREFERENCES,
       isLoading: true,
-      updatePreferences: async () => {},
-      toggleFavorite: () => {},
-      toggleCollapsedSection: () => {},
-      trackFeatureAccess: () => {},
+      updatePreferences: async () => { },
+      toggleFavorite: () => { },
+      toggleCollapsedSection: () => { },
+      trackFeatureAccess: () => { },
     };
   }
 
   return {
     preferences: preferences || DEFAULT_PREFERENCES,
-    isLoading: isLoading || !authUserId,
+    isLoading: isLoading || !admin?.userId,
     updatePreferences,
     toggleFavorite: toggleFavoriteMutation.mutate,
     toggleCollapsedSection: toggleCollapsedSectionMutation.mutate,

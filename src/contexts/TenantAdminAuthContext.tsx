@@ -20,6 +20,7 @@ interface TenantAdmin {
   name?: string;
   role: string;
   tenant_id: string;
+  userId: string;
 }
 
 export interface Tenant {
@@ -80,6 +81,8 @@ interface TenantAdminAuthContextType {
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<void>;
   handleSignupSuccess?: (signupResult: SignupResult) => Promise<void>; // For signup flow
+  mfaRequired: boolean;
+  verifyMfa: (code: string) => Promise<void>;
 }
 
 const TenantAdminAuthContext = createContext<TenantAdminAuthContextType | undefined>(undefined);
@@ -146,13 +149,14 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const hasShownOnboardingRef = useRef(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   // Check onboarding status - only show once per session
   useEffect(() => {
     if (tenant && !loading && !tenant.onboarding_completed && !hasShownOnboardingRef.current) {
       // Mark as shown to prevent re-triggering
       hasShownOnboardingRef.current = true;
-      
+
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
         setOnboardingOpen(true);
@@ -217,10 +221,10 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       try {
         // PRIORITY 1: Check for active Supabase session first
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session?.user) {
           logger.info('[AUTH] Active Supabase session found, fetching admin/tenant data');
-          
+
           try {
             // Fetch admin and tenant data using user ID from session
             const { data: adminData } = await supabase
@@ -244,6 +248,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   name: adminData.email, // tenant_users doesn't have full_name
                   role: adminData.role,
                   tenant_id: adminData.tenant_id,
+                  userId: session.user.id,
                 };
                 parsedTenant = tenantData as unknown as Tenant;
 
@@ -252,6 +257,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 setAccessToken(session.access_token);
                 setToken(session.access_token);
                 setRefreshToken(session.refresh_token || null);
+
+                // Check for MFA requirement on initialization
+                const factors = session.user?.factors || [];
+                const hasVerifiedTotp = factors.some((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+
+                if (hasVerifiedTotp) {
+                  const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+                  if (aalData && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2') {
+                    logger.info("MFA required on session initialization");
+                    setMfaRequired(true);
+                    setLoading(false);
+                    return;
+                  }
+                }
                 setIsAuthenticated(true);
 
                 // Store in localStorage for quick access
@@ -959,6 +978,40 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }, timeUntilRefresh);
   };
 
+  const verifyMfa = async (code: string) => {
+    try {
+      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+
+      const totpFactor = factors.totp.find(f => f.status === 'verified');
+      if (!totpFactor) throw new Error("No verified TOTP factor found");
+
+      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: totpFactor.id
+      });
+      if (challengeError) throw challengeError;
+
+      const { data: verify, error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: totpFactor.id,
+        challengeId: challenge.id,
+        code
+      });
+      if (verifyError) throw verifyError;
+
+      // MFA successful
+      setMfaRequired(false);
+      setIsAuthenticated(true);
+
+      // Refresh session to get AAL2
+      await supabase.auth.refreshSession();
+
+      logger.info("MFA verification successful");
+    } catch (error: any) {
+      logger.error("MFA verification failed", error);
+      throw error;
+    }
+  };
+
   const login = async (email: string, password: string, tenantSlug: string) => {
     const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { email, tenantSlug });
 
@@ -1035,7 +1088,18 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setToken(data.access_token); // Backwards compatibility
       setAdmin(data.admin);
       setTenant(tenantWithDefaults);
-      setIsAuthenticated(true);
+
+      // Check for MFA
+      const factors = data.session?.user?.factors || [];
+      const hasVerifiedTotp = factors.some((f: any) => f.factor_type === 'totp' && f.status === 'verified');
+
+      if (hasVerifiedTotp) {
+        logger.info("MFA required for user");
+        setMfaRequired(true);
+        // Do NOT set isAuthenticated(true) yet
+      } else {
+        setIsAuthenticated(true);
+      }
 
       // Store tokens with mobile fallback
       // Note: With httpOnly cookies, these are not the primary auth mechanism
@@ -1427,6 +1491,8 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logout,
       refreshAuthToken,
       handleSignupSuccess,
+      mfaRequired,
+      verifyMfa,
     }}>
       {children}
       <SessionTimeoutWarning

@@ -12,7 +12,7 @@ import { getDashboardUrl } from "@/lib/utils/authHelpers";
 export function useAuthRedirect() {
   const navigate = useNavigate();
   const { superAdmin, loading: superAdminLoading } = useSuperAdminAuth();
-  const { admin, tenant, loading: tenantAdminLoading } = useTenantAdminAuth();
+  const { admin, tenant, loading: tenantAdminLoading, isAuthenticated: isTenantAuthenticated } = useTenantAdminAuth();
   const { customer, tenant: customerTenant, loading: customerLoading } = useCustomerAuth();
 
   useEffect(() => {
@@ -22,11 +22,11 @@ export function useAuthRedirect() {
     // Redirect based on which user type is authenticated (priority order matters)
     if (superAdmin) {
       navigate("/super-admin/dashboard", { replace: true });
-    } else if (admin && tenant) {
+    } else if (admin && tenant && isTenantAuthenticated) {
       navigate(`/${tenant.slug}/admin`, { replace: true });
     } else if (customer && customerTenant) {
       navigate(`/${customerTenant.slug}/shop`, { replace: true });
     }
-  }, [superAdmin, admin, tenant, customer, customerTenant, superAdminLoading, tenantAdminLoading, customerLoading, navigate]);
+  }, [superAdmin, admin, tenant, customer, customerTenant, superAdminLoading, tenantAdminLoading, customerLoading, isTenantAuthenticated, navigate]);
 }
 

@@ -36,6 +36,7 @@ import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBann
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { useToast } from "@/hooks/use-toast";
+import { TrialExpirationBanner } from "@/components/billing/TrialExpirationBanner";
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -58,6 +59,16 @@ export default function TenantAdminDashboardPage() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showQuickStart, setShowQuickStart] = useState(false);
   const [isEmptyAccount, setIsEmptyAccount] = useState(false);
+  const hasAnyData = !isEmptyAccount;
+
+  // Calculate trial expiration info
+  const trialEndsAt = tenant?.trial_ends_at;
+  const trialDaysRemaining = trialEndsAt
+    ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const hasPaymentMethod = tenant?.payment_method_added === true;
+  const isTrialActive = tenant?.subscription_status === 'trial';
+
   const [generatingDemoData, setGeneratingDemoData] = useState(false);
   const { toast } = useToast();
 
@@ -569,8 +580,17 @@ export default function TenantAdminDashboardPage() {
           </div>
         </div>
       </header>
+      {/* Main Content */}
+      <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 lg:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+        {/* Trial Expiration Banner */}
+        {isTrialActive && trialDaysRemaining !== null && tenant?.trial_ends_at && (
+          <TrialExpirationBanner
+            daysRemaining={trialDaysRemaining}
+            hasPaymentMethod={hasPaymentMethod}
+            trialEndsAt={tenant.trial_ends_at}
+          />
+        )}
 
-      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-screen-2xl mx-auto">
         {/* Email Verification Banner */}
         <EmailVerificationBanner />
 
@@ -616,10 +636,10 @@ export default function TenantAdminDashboardPage() {
         {/* Trial Countdown Banner */}
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
           <Card className={`border-2 ${trialInfo.trialDaysRemaining <= 3
-              ? "border-destructive bg-destructive/5"
-              : trialInfo.trialDaysRemaining <= 10
-                ? "border-orange-400 bg-orange-50/50 dark:bg-orange-950/20"
-                : "border-primary bg-primary/5"
+            ? "border-destructive bg-destructive/5"
+            : trialInfo.trialDaysRemaining <= 10
+              ? "border-orange-400 bg-orange-50/50 dark:bg-orange-950/20"
+              : "border-primary bg-primary/5"
             }`}>
             <CardContent className="pt-4 sm:pt-6 p-3 sm:p-4 md:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">

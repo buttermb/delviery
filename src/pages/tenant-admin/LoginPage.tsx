@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { Database } from "@/integrations/supabase/types";
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -18,7 +19,7 @@ type Tenant = Database['public']['Tables']['tenants']['Row'];
 export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { login } = useTenantAdminAuth();
+  const { login, mfaRequired, verifyMfa } = useTenantAdminAuth();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +51,7 @@ export default function TenantAdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!tenantSlug) {
       toast({
         variant: "destructive",
@@ -61,10 +62,10 @@ export default function TenantAdminLoginPage() {
     }
 
     setLoading(true);
-    
+
     try {
       await login(email, password, tenantSlug);
-      
+
       toast({
         title: "Welcome back!",
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
@@ -110,6 +111,24 @@ export default function TenantAdminLoginPage() {
     );
   }
 
+  if (mfaRequired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
+          <TwoFactorVerification
+            onVerified={() => {
+              // Auth context handles state update and redirect
+              toast({
+                title: "Authentication Successful",
+                description: "You have been securely logged in.",
+              });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const businessName = tenant.business_name || tenantSlug;
   const logo = null; // White label settings not implemented yet
 
@@ -117,11 +136,11 @@ export default function TenantAdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
       {/* Animated Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/5 via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-secondary))]/5" />
-      
+
       {/* Floating Orbs */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-[hsl(var(--tenant-primary))]/10 rounded-full blur-3xl animate-pulse-slow" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-[hsl(var(--tenant-secondary))]/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "1s" }} />
-      
+
       {/* Subtle Grid Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
@@ -214,12 +233,12 @@ export default function TenantAdminLoginPage() {
             <ForgotPasswordDialog userType="tenant_admin" tenantSlug={tenantSlug} />
             <div className="pt-3 sm:pt-4 border-t border-border">
               <p className="text-muted-foreground mb-2">Not an admin?</p>
-            <Link 
-              to={`/${tenantSlug}/shop`} 
-              className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors touch-manipulation min-h-[44px]"
-            >
-              <span className="text-xs sm:text-sm">Go to Customer Portal →</span>
-            </Link>
+              <Link
+                to={`/${tenantSlug}/shop`}
+                className="inline-flex items-center gap-1 text-[hsl(var(--tenant-primary))] hover:text-[hsl(var(--tenant-secondary))] font-medium transition-colors touch-manipulation min-h-[44px]"
+              >
+                <span className="text-xs sm:text-sm">Go to Customer Portal →</span>
+              </Link>
             </div>
           </div>
         </div>

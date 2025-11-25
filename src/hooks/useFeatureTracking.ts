@@ -17,7 +17,7 @@ export function useFeatureTracking() {
 
   const trackFeatureUsage = useMutation({
     mutationFn: async (featureId: string) => {
-      if (!tenant?.id || !admin?.id) {
+      if (!tenant?.id || !admin?.userId) {
         logger.warn('Cannot track feature usage: missing tenant or admin', { component: 'useFeatureTracking' });
         return;
       }
@@ -28,7 +28,7 @@ export function useFeatureTracking() {
           .from('feature_usage_tracking')
           .upsert({
             tenant_id: tenant.id,
-            user_id: admin.id,
+            user_id: admin.userId,
             feature_id: featureId,
             usage_count: 1,
             last_used_at: new Date().toISOString(),
@@ -39,14 +39,14 @@ export function useFeatureTracking() {
 
         if (error) {
           // Log error but don't throw (non-critical)
-          logger.warn('Failed to track feature usage', error, { 
+          logger.warn('Failed to track feature usage', error, {
             component: 'useFeatureTracking',
             featureId,
           });
         }
       } catch (error: unknown) {
         // Log error but don't throw (non-critical)
-        logger.warn('Error tracking feature usage', error, { 
+        logger.warn('Error tracking feature usage', error, {
           component: 'useFeatureTracking',
           featureId,
         });

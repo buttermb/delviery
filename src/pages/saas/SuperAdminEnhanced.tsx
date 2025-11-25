@@ -87,6 +87,17 @@ interface TenantSummary {
   last_activity_at: string;
 }
 
+import {
+  isTrial,
+  isCancelled,
+  isActiveSubscription,
+  getSubscriptionStatusLabel,
+  SUBSCRIPTION_STATUS
+} from '@/utils/subscriptionStatus';
+import { SUBSCRIPTION_PLANS, SubscriptionPlan } from '@/utils/subscriptionPlans';
+
+// ... imports
+
 export default function SuperAdminEnhanced() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -107,9 +118,9 @@ export default function SuperAdminEnhanced() {
 
       if (!tenants) return defaultStats();
 
-      const active = tenants.filter((t) => t.subscription_status === 'active');
-      const trials = tenants.filter((t) => t.subscription_status === 'trial' || t.subscription_status === 'trialing');
-      const cancelled = tenants.filter((t) => t.subscription_status === 'cancelled');
+      const active = tenants.filter((t) => t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE);
+      const trials = tenants.filter((t) => isTrial(t.subscription_status));
+      const cancelled = tenants.filter((t) => isCancelled(t.subscription_status));
 
       const mrr = tenants.reduce((sum, t) => sum + (t.mrr || 0), 0);
       const arr = mrr * 12;
@@ -265,18 +276,15 @@ export default function SuperAdminEnhanced() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      active: 'default',
-      trial: 'secondary',
-      trialing: 'secondary',
-      past_due: 'destructive',
-      cancelled: 'outline',
-      suspended: 'destructive',
-    };
+    const variant =
+      status === SUBSCRIPTION_STATUS.ACTIVE ? 'default' :
+        isTrial(status) ? 'secondary' :
+          status === SUBSCRIPTION_STATUS.PAST_DUE ? 'destructive' :
+            isCancelled(status) ? 'outline' : 'outline';
 
     return (
-      <Badge variant={variants[status] || 'outline'}>
-        {status.toUpperCase()}
+      <Badge variant={variant}>
+        {getSubscriptionStatusLabel(status).toUpperCase()}
       </Badge>
     );
   };
@@ -556,9 +564,9 @@ export default function SuperAdminEnhanced() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Plans</SelectItem>
-                  <SelectItem value="starter">Starter</SelectItem>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                  <SelectItem value={SUBSCRIPTION_PLANS.STARTER}>Starter</SelectItem>
+                  <SelectItem value={SUBSCRIPTION_PLANS.PROFESSIONAL}>Professional</SelectItem>
+                  <SelectItem value={SUBSCRIPTION_PLANS.ENTERPRISE}>Enterprise</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -852,7 +860,7 @@ function FeatureManagement({ tenant }: { tenant: any }) {
         <h3 className="text-lg font-semibold mb-4">Advanced Features</h3>
         <div className="space-y-2">
           {advancedFeatures.map((feature) => {
-            const plan = tenant.subscription_plan as 'starter' | 'professional' | 'enterprise';
+            const plan = tenant.subscription_plan as SubscriptionPlan;
             const isPlanEligible = plan === feature.plan || plan === 'enterprise';
             const isEnabled = features[feature.key];
 
@@ -977,7 +985,7 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
 // Billing Management Component
 function BillingManagement({ tenant }: { tenant: any }) {
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || 'starter');
+  const [selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
 
   const plans = [
     { id: 'starter', name: 'Starter', price: 99 },
@@ -1020,7 +1028,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
         <CardContent>
           <div className="space-y-2">
             <p className="text-2xl font-bold">{tenant.subscription_plan?.toUpperCase()} PLAN</p>
-            <p className="text-muted-foreground">
+            const mrr = Number(tenant.mrr) || planPrices[tenant.subscription_plan?.toLowerCase() || SUBSCRIPTION_PLANS.STARTER] || 0;          <p className="text-muted-foreground">
               ${plans.find((p) => p.id === tenant.subscription_plan)?.price || 0}/month
             </p>
             <p className="text-sm text-muted-foreground">
