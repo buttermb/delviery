@@ -108,7 +108,7 @@ function getGreeting(workflow?: string): { greeting: string; context: string } {
 function useTierGreeting(userName: string, tier: string) {
   // Use date as seed so greeting changes daily, not on every render
   const dateKey = format(new Date(), 'yyyy-MM-dd');
-  
+
   return useMemo(() => {
     return generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
   }, [userName, tier, dateKey]);
@@ -166,7 +166,7 @@ export function HotboxDashboard() {
     isPowerUser,
   } = useFeatureTracking();
   const navigate = useNavigate();
-  
+
   // Use centralized attention queue hook (single source of truth)
   const { queue: attentionQueue, isLoading: attentionLoading } = useAttentionQueue();
 
@@ -199,7 +199,7 @@ export function HotboxDashboard() {
           .eq('tenant_id', tenant.id)
           .gte('created_at', today.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
-        
+
         // Yesterday's orders for comparison
         supabase
           .from('orders')
@@ -208,14 +208,14 @@ export function HotboxDashboard() {
           .gte('created_at', yesterday.toISOString())
           .lt('created_at', today.toISOString())
           .not('status', 'in', '("cancelled","rejected","refunded")'),
-        
+
         // Pending orders count
         supabase
           .from('orders')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('status', 'pending'),
-        
+
         // Pending menu orders count
         supabase
           .from('menu_orders')
@@ -227,7 +227,7 @@ export function HotboxDashboard() {
       const todayOrders = todayOrdersResult.data || [];
       const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
       const yesterdayRevenue = (yesterdayOrdersResult.data || []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-      
+
       const revenueChange = yesterdayRevenue > 0
         ? Math.round(((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100)
         : 0;
@@ -271,7 +271,7 @@ export function HotboxDashboard() {
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
   });
-  
+
   // Get attention items from the centralized hook
   const attentionItems = attentionQueue?.items || [];
 
@@ -301,11 +301,8 @@ export function HotboxDashboard() {
 
   const isLoading = tierLoading || pulseLoading || attentionLoading;
 
-  if (isLoading) {
-    return <HotboxSkeleton />;
-  }
-
-  return (
+  // Render logic
+  return isLoading ? <HotboxSkeleton /> : (
     <div className="space-y-6 p-4 md:p-6">
       {/* Header - Personalized Greeting with Tier-Specific Message */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
