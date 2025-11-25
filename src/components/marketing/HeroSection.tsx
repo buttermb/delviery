@@ -13,6 +13,8 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { lazy, Suspense, useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 
 // Lazy load heavy animation components
 const BackgroundMesh = lazy(() => import('./BackgroundMesh').then(m => ({ default: m.BackgroundMesh })));
@@ -26,6 +28,10 @@ export function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = inView && !prefersReducedMotion;
   const [shouldAnimateChart, setShouldAnimateChart] = useState(false);
+  
+  // Auth state for conditional CTAs
+  const { user } = useAuth();
+  const { hasActiveSubscription, isTrial } = useSubscriptionStatus();
   
   // Use throttled scroll for better performance
   const { scrollY } = useThrottledScroll(32);
@@ -132,8 +138,54 @@ export function HeroSection() {
             style={{ y: y3, opacity }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            <div className="flex flex-col items-center">
-              <Link to="/signup">
+            {!user ? (
+              // Not logged in - show signup CTA
+              <>
+                <div className="flex flex-col items-center">
+                  <Link to="/signup">
+                    <FancyButton
+                      variant="primary"
+                      size="lg"
+                      magnetic
+                      glow
+                      className="w-full sm:w-auto"
+                    >
+                      Start Free Trial
+                    </FancyButton>
+                  </Link>
+                  <p className="text-xs text-white/70 mt-2">No credit card required • Cancel anytime</p>
+                </div>
+                <Link to="/demo">
+                  <FancyButton
+                    variant="outline"
+                    size="lg"
+                    magnetic
+                    className="w-full sm:w-auto"
+                  >
+                    <Play className="h-5 w-5 mr-2" />
+                    Schedule Demo
+                  </FancyButton>
+                </Link>
+              </>
+            ) : isTrial ? (
+              // On trial - show complete setup
+              <div className="flex flex-col items-center">
+                <Link to="/saas/select-plan">
+                  <FancyButton
+                    variant="primary"
+                    size="lg"
+                    magnetic
+                    glow
+                    className="w-full sm:w-auto"
+                  >
+                    Complete Trial Setup
+                  </FancyButton>
+                </Link>
+                <p className="text-xs text-white/70 mt-2">Add payment method to continue after trial</p>
+              </div>
+            ) : (
+              // Active subscription - show dashboard link
+              <Link to="/saas/dashboard">
                 <FancyButton
                   variant="primary"
                   size="lg"
@@ -141,22 +193,10 @@ export function HeroSection() {
                   glow
                   className="w-full sm:w-auto"
                 >
-                  Start Free Trial
+                  Go to Dashboard
                 </FancyButton>
               </Link>
-              <p className="text-xs text-white/70 mt-2">No credit card required • Cancel anytime</p>
-            </div>
-            <Link to="/demo">
-              <FancyButton
-                variant="outline"
-                size="lg"
-                magnetic
-                className="w-full sm:w-auto"
-              >
-                <Play className="h-5 w-5 mr-2" />
-                Schedule Demo
-              </FancyButton>
-            </Link>
+            )}
           </motion.div>
 
           <motion.div

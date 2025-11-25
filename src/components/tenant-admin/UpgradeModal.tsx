@@ -26,12 +26,13 @@ interface UpgradeModalProps {
 export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProps) {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { currentTier, currentTierName, checkUpgrade } = useFeatureAccess();
+  const { currentTier, currentTierName, checkUpgrade, subscriptionValid } = useFeatureAccess();
   
   const feature = FEATURES[featureId];
   const upgradeInfo = checkUpgrade(featureId);
   
-  if (!feature || !upgradeInfo.required) return null;
+  // Guard: Don't show if no feature, no upgrade needed, or subscription invalid
+  if (!feature || !upgradeInfo.required || !subscriptionValid) return null;
   
   const handleUpgrade = () => {
     onOpenChange(false);

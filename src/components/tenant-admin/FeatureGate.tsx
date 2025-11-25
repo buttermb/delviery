@@ -45,6 +45,7 @@ export function FeatureGate({ featureId, children, fallback }: FeatureGateProps)
   let message = 'This feature is not included in your current plan.';
   let actionText = 'Upgrade to Unlock';
   let actionHandler = () => setShowUpgradeModal(true);
+  let showUpgradeOption = true; // Can show upgrade modal
   
   if (isTrialExpired) {
     icon = '⏰';
@@ -52,24 +53,28 @@ export function FeatureGate({ featureId, children, fallback }: FeatureGateProps)
     message = 'Your trial has ended. Subscribe to continue using this feature.';
     actionText = 'Subscribe Now';
     actionHandler = () => navigate(`/${tenant?.slug}/admin/billing`);
+    showUpgradeOption = false; // Don't show upgrade modal for expired trial
   } else if (isSuspended) {
     icon = '⚠️';
     title = 'Account Suspended';
     message = 'Your account has been suspended. Please contact support or update your payment method.';
     actionText = 'Reactivate Account';
     actionHandler = () => navigate(`/${tenant?.slug}/admin/billing`);
+    showUpgradeOption = false; // Don't show upgrade modal for suspended
   } else if (isCancelled) {
     icon = '❌';
     title = 'Subscription Cancelled';
     message = 'Your subscription has been cancelled. Reactivate to access this feature.';
     actionText = 'Reactivate Subscription';
     actionHandler = () => navigate(`/${tenant?.slug}/admin/billing`);
+    showUpgradeOption = false; // Don't show upgrade modal for cancelled
   } else if (isPastDue) {
     icon = '💳';
     title = 'Payment Failed';
     message = 'Your payment is past due. Update your payment method to continue.';
     actionText = 'Update Payment';
     actionHandler = () => navigate(`/${tenant?.slug}/admin/billing`);
+    showUpgradeOption = false; // Don't show upgrade modal for past due
   }
   
   return (
@@ -87,7 +92,7 @@ export function FeatureGate({ featureId, children, fallback }: FeatureGateProps)
         </div>
       </div>
       
-      {!isTrialExpired && !isSuspended && !isCancelled && !isPastDue && (
+      {showUpgradeOption && (
         <UpgradeModal
           open={showUpgradeModal}
           onOpenChange={setShowUpgradeModal}
