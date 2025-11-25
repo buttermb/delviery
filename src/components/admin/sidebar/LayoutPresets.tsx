@@ -21,6 +21,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+
+
 export function LayoutPresets() {
   const { preferences, updatePreferences } = useSidebarPreferences();
   const { sidebarConfig } = useSidebarConfig();
@@ -28,32 +30,34 @@ export function LayoutPresets() {
   const currentPreset = preferences?.layoutPreset || 'default';
   const [importing, setImporting] = useState(false);
   const [applyingPreset, setApplyingPreset] = useState<string | null>(null);
-  
+
   // Calculate actual feature counts based on current sidebar state
   const actualFeatureCount = useMemo(() => {
     return sidebarConfig.reduce((acc, section) => acc + section.items.length, 0);
   }, [sidebarConfig]);
-  
+
   const allFeatures = getAllFeatures();
   const totalPossibleFeatures = allFeatures.length;
 
+  const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
+
   const handleSelectPreset = async (presetId: string) => {
     if (applyingPreset) return; // Prevent multiple clicks
-    
+
     setApplyingPreset(presetId);
     const presetName = presets.find(p => p.id === presetId)?.name || 'layout';
-    
+
     try {
       toast.loading(`Applying ${presetName}...`, { id: 'preset-apply' });
-      
+
       await updatePreferences({
         layoutPreset: presetId,
         hiddenFeatures: [], // Reset hidden features when changing preset
       });
-      
+
       // Wait for sidebar to re-render
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
       toast.success(`Applied ${presetName}`, { id: 'preset-apply' });
     } catch (error) {
       toast.error('Failed to apply preset', { id: 'preset-apply' });
@@ -84,7 +88,7 @@ export function LayoutPresets() {
     a.download = `sidebar-config-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast.success('Configuration exported');
   };
 
@@ -92,7 +96,7 @@ export function LayoutPresets() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
-    
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -101,7 +105,7 @@ export function LayoutPresets() {
       try {
         const text = await file.text();
         const config = JSON.parse(text);
-        
+
         if (config.preferences) {
           await updatePreferences(config.preferences);
           toast.success('Configuration imported successfully');
@@ -114,7 +118,7 @@ export function LayoutPresets() {
         setImporting(false);
       }
     };
-    
+
     input.click();
   };
 
@@ -125,9 +129,9 @@ export function LayoutPresets() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium">Quick Presets</h3>
             {currentPreset !== 'default' && (
-              <Button 
-                onClick={() => handleSelectPreset('default')} 
-                variant="outline" 
+              <Button
+                onClick={() => handleSelectPreset('default')}
+                variant="outline"
                 size="sm"
                 disabled={applyingPreset !== null}
               >
@@ -143,14 +147,14 @@ export function LayoutPresets() {
           <div className="grid gap-3 sm:grid-cols-2">
             {presets.map((preset) => {
               const isActive = currentPreset === preset.id;
-              
+
               // Calculate actual feature count for this preset
               let featureCount: string | number;
               if (preset.visibleFeatures === 'all') {
                 featureCount = isActive ? actualFeatureCount : totalPossibleFeatures;
               } else {
                 // For specific presets, count non-essential features + essential features
-                const presetFeatures = preset.visibleFeatures.filter(id => 
+                const presetFeatures = preset.visibleFeatures.filter(id =>
                   allFeatures.some(f => f.id === id)
                 );
                 featureCount = presetFeatures.length + ESSENTIAL_FEATURES.length;
@@ -161,11 +165,10 @@ export function LayoutPresets() {
                   key={preset.id}
                   onClick={() => handleSelectPreset(preset.id)}
                   disabled={applyingPreset !== null}
-                  className={`p-4 border-2 rounded-lg text-left transition-all hover:border-primary hover:shadow-md ${
-                    isActive 
-                      ? 'border-primary bg-primary/10 shadow-sm ring-2 ring-primary/20' 
-                      : 'border-border'
-                  } ${applyingPreset === preset.id ? 'opacity-50 cursor-wait' : ''} ${applyingPreset && applyingPreset !== preset.id ? 'opacity-30' : ''}`}
+                  className={`p-4 border-2 rounded-lg text-left transition-all hover:border-primary hover:shadow-md ${isActive
+                    ? 'border-primary bg-primary/10 shadow-sm ring-2 ring-primary/20'
+                    : 'border-border'
+                    } ${applyingPreset === preset.id ? 'opacity-50 cursor-wait' : ''} ${applyingPreset && applyingPreset !== preset.id ? 'opacity-30' : ''}`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -215,26 +218,26 @@ export function LayoutPresets() {
           </div>
         </div>
 
-      <CustomPresetBuilder />
+        <CustomPresetBuilder />
 
-      <div className="border-t pt-6">
-        <h3 className="font-medium mb-2">Import / Export</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Save your custom configuration or import one from another device
-        </p>
+        <div className="border-t pt-6">
+          <h3 className="font-medium mb-2">Import / Export</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Save your custom configuration or import one from another device
+          </p>
 
-        <div className="flex gap-2">
-          <Button onClick={handleExport} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Config
-          </Button>
-          <Button onClick={handleImport} variant="outline" disabled={importing}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import Config
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleExport} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Config
+            </Button>
+            <Button onClick={handleImport} variant="outline" disabled={importing}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import Config
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
     </TooltipProvider>
   );
 }

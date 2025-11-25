@@ -101,14 +101,16 @@ export function useSidebarPreferences() {
     refetchOnMount: 'always', // Always fetch fresh data on mount
   });
 
-  // Auto-patch missing stripe integration for existing users
+  // Auto-patch missing integrations for existing users
   useEffect(() => {
     if (preferences && !isLoading && tenant?.id && admin?.userId) {
       const currentIntegrations = preferences.enabledIntegrations || [];
-      if (!currentIntegrations.includes('stripe')) {
-        logger.info('Auto-patching missing stripe integration', { component: 'useSidebarPreferences' });
+      const missingDefaults = ['stripe', 'mapbox'].filter(id => !currentIntegrations.includes(id));
+
+      if (missingDefaults.length > 0) {
+        logger.info('Auto-patching missing default integrations', { missing: missingDefaults, component: 'useSidebarPreferences' });
         updatePreferencesMutation.mutate({
-          enabledIntegrations: [...currentIntegrations, 'stripe']
+          enabledIntegrations: [...currentIntegrations, ...missingDefaults]
         });
       }
     }

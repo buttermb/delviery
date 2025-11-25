@@ -63,14 +63,14 @@ export function useSidebarConfig() {
   // Get base config - use enterprise for non-default presets to enable full feature access
   const baseConfig = useMemo(() => {
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
-    
+
     // If user explicitly chose a preset (other than default), use ENTERPRISE config
     // This ensures all features are available for the preset to filter from
     if (currentLayoutPreset !== 'default') {
       logger.info('Using enterprise base config for preset:', currentLayoutPreset, { component: 'useSidebarConfig' });
       return getSidebarConfig('enterprise');
     }
-    
+
     // For 'default' preset, use operation-size-based config
     return getSidebarConfig(operationSize);
   }, [operationSize, preferences?.layoutPreset]);

@@ -28,6 +28,9 @@ const SIZE_DESCRIPTIONS: Record<OperationSize, string> = {
   enterprise: '1000+ orders/month, 20+ team members, 5+ locations',
 };
 
+import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
+import { AlertCircle } from 'lucide-react';
+
 export function OperationSizeSelector() {
   const {
     operationSize,
@@ -38,6 +41,10 @@ export function OperationSizeSelector() {
     isLoading,
   } = useOperationSize();
   
+  const { preferences } = useSidebarPreferences();
+  const currentPreset = preferences?.layoutPreset || 'default';
+  const isPresetOverriding = currentPreset !== 'default';
+
   const { preferences } = useSidebarPreferences();
   const currentPreset = preferences?.layoutPreset || 'default';
   const isPresetOverriding = currentPreset !== 'default';
@@ -72,6 +79,19 @@ export function OperationSizeSelector() {
             Switch to "Default" preset to use operation-based sidebar layout.
           </AlertDescription>
         </Alert>
+      )}
+
+      {isPresetOverriding && (
+        <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium">Layout Preset Active</p>
+            <p className="mt-1 opacity-90">
+              Your selected layout preset "{currentPreset.replace('_', ' ')}" overrides operation size settings.
+              Switch to "Default" preset to use operation-based sidebar layout.
+            </p>
+          </div>
+        </div>
       )}
 
       <RadioGroup

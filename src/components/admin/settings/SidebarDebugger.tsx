@@ -6,8 +6,8 @@ import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
 import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
-import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
-import { CheckCircle, Info, Layers } from 'lucide-react';
+import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrationLogic';
+import { CheckCircle, Info, Layers, AlertCircle, XCircle, ArrowRight } from 'lucide-react';
 
 export function SidebarDebugger() {
     const {
@@ -28,17 +28,19 @@ export function SidebarDebugger() {
     const totalFeatures = allFeatures.length;
     const visibleFeatures = sidebarConfig.reduce((acc, section) => acc + section.items.length, 0);
     const hiddenCount = totalFeatures - visibleFeatures;
-    
+
     // Determine base config source
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
-    const baseConfigSource = currentLayoutPreset !== 'default' 
-      ? 'Enterprise (overridden by preset)' 
-      : `${operationSize.charAt(0).toUpperCase() + operationSize.slice(1)} Operation`;
-    
+    const baseConfigSource = currentLayoutPreset !== 'default'
+        ? 'Enterprise (overridden by preset)'
+        : `${operationSize.charAt(0).toUpperCase() + operationSize.slice(1)} Operation`;
+
     // Calculate filtering stages
     const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
     const integrationHiddenFeatures = getHiddenFeaturesByIntegrations(enabledIntegrations);
     const featuresAfterIntegrationFilter = totalFeatures - integrationHiddenFeatures.length;
+
+
 
     return (
         <div className="space-y-6">
@@ -53,7 +55,7 @@ export function SidebarDebugger() {
                     )}
                 </AlertDescription>
             </Alert>
-            
+
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -82,7 +84,7 @@ export function SidebarDebugger() {
                     </div>
                 </CardContent>
             </Card>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                     <CardHeader className="pb-2">
@@ -111,14 +113,14 @@ export function SidebarDebugger() {
                         <div className="flex items-center justify-between">
                             <span className="text-2xl font-bold capitalize">{businessTier}</span>
                             <Badge variant={businessTier === 'empire' ? 'default' : 'outline'}>
-                                {businessTier || 'street'}
-                            </Badge>
-                        </div>
+                                {businessPreset?.displayName || businessTier || 'Unknown'}
+                            </Badge >
+                        </div >
                         <p className="text-xs text-muted-foreground mt-1">
                             {businessPreset?.enabledFeatures.includes('all') ? 'All Features Unlocked' : 'Restricted Mode'}
                         </p>
-                    </CardContent>
-                </Card>
+                    </CardContent >
+                </Card >
 
                 <Card>
                     <CardHeader className="pb-2">
@@ -136,7 +138,58 @@ export function SidebarDebugger() {
                         </p>
                     </CardContent>
                 </Card>
-            </div>
+            </div >
+
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Filtering Pipeline</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg border">
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Base Config</div>
+                            <Badge variant="outline" className="h-8 px-3">
+                                {baseConfigSource}
+                            </Badge>
+                            <div className="text-xs text-muted-foreground mt-1">{totalFeatures} features</div>
+                        </div>
+
+                        <ArrowRight className="hidden md:block h-4 w-4 text-muted-foreground" />
+
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Integrations</div>
+                            <Badge variant="outline" className="h-8 px-3">
+                                {enabledIntegrations.length} Active
+                            </Badge>
+                            <div className="text-xs text-muted-foreground mt-1">
+                                {enabledIntegrations.includes('stripe') ? 'Billing Active' : 'Billing Hidden'}
+                            </div>
+                        </div>
+
+                        <ArrowRight className="hidden md:block h-4 w-4 text-muted-foreground" />
+
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Preset / Tier</div>
+                            <Badge variant="outline" className="h-8 px-3">
+                                {currentLayoutPreset !== 'default' ? 'Preset Override' : 'Tier Filter'}
+                            </Badge>
+                            <div className="text-xs text-muted-foreground mt-1">
+                                {currentLayoutPreset !== 'default' ? 'Unlocks All' : `${businessTier} Tier`}
+                            </div>
+                        </div>
+
+                        <ArrowRight className="hidden md:block h-4 w-4 text-muted-foreground" />
+
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Final Result</div>
+                            <Badge variant="default" className="h-8 px-3">
+                                {visibleFeatures} Visible
+                            </Badge>
+                            <div className="text-xs text-muted-foreground mt-1">{hiddenCount} Hidden</div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>
@@ -202,7 +255,7 @@ export function SidebarDebugger() {
                                 const isHiddenByIntegration = integrationHiddenFeatures.includes(feature.id);
 
                                 // Find which integration is responsible
-                                const hidingIntegration = integrations.find(int => 
+                                const hidingIntegration = integrations.find(int =>
                                     !int.enabled && int.featuresEnabled.includes(feature.id)
                                 );
 
@@ -244,6 +297,6 @@ export function SidebarDebugger() {
                     </ScrollArea>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }
