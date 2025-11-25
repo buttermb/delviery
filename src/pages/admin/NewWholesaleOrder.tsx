@@ -63,9 +63,27 @@ export default function NewWholesaleOrder() {
         body: {
           client_id: orderData.clientId,
           items: orderData.products.length > 0 ? orderData.products : [
-            { product_name: 'Blue Dream', quantity: 20, unit_price: 3000 },
-            { product_name: 'Wedding Cake', quantity: 10, unit_price: 3200 },
-            { product_name: 'Gelato', quantity: 10, unit_price: 3100 }
+            { 
+              inventory_id: '00000000-0000-0000-0000-000000000001',
+              product_name: 'Blue Dream',
+              quantity_lbs: 20,
+              quantity_units: 20,
+              price_per_lb: 3000
+            },
+            { 
+              inventory_id: '00000000-0000-0000-0000-000000000002',
+              product_name: 'Wedding Cake',
+              quantity_lbs: 10,
+              quantity_units: 10,
+              price_per_lb: 3200
+            },
+            { 
+              inventory_id: '00000000-0000-0000-0000-000000000003',
+              product_name: 'Gelato',
+              quantity_lbs: 10,
+              quantity_units: 10,
+              price_per_lb: 3100
+            }
           ],
           delivery_address: 'Brooklyn East (Big Mike\'s spot)',
           delivery_notes: orderData.notes || 'MUST collect $38k before dropping off new product'
