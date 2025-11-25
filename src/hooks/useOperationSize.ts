@@ -12,23 +12,36 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { OperationSize } from '@/types/sidebar';
 
+import { useBusinessTier } from './useBusinessTier';
+
 /**
- * Detect operation size from tenant usage metrics
+ * Detect operation size from tenant usage metrics and business tier
  */
 function detectOperationSize(tenant: {
   usage?: Record<string, number>;
   detected_operation_size?: string | null;
   monthly_orders?: number;
   team_size?: number;
-}): OperationSize {
-  // If tenant has detected_operation_size, use it
+}, businessTier?: string): OperationSize {
+  // 1. If business tier is available, it takes precedence for auto-detection
+  if (businessTier) {
+    switch (businessTier) {
+      case 'street': return 'street';
+      case 'trap': return 'small';
+      case 'block': return 'medium';
+      case 'hood': return 'medium';
+      case 'empire': return 'enterprise';
+    }
+  }
+
+  // 2. If tenant has detected_operation_size (legacy), use it
   const detectedSize = (tenant as any).detected_operation_size;
   if (detectedSize &&
     ['street', 'small', 'medium', 'enterprise'].includes(detectedSize)) {
     return detectedSize as OperationSize;
   }
 
-  // Extract metrics from usage JSONB or direct columns
+  // 3. Fallback to metrics-based detection
   const usage = tenant.usage || {};
   const monthlyOrders = (tenant as any).monthly_orders || usage.customers || 0;
   const teamSize = (tenant as any).team_size || usage.users || 1;
@@ -56,6 +69,7 @@ function detectOperationSize(tenant: {
 export function useOperationSize() {
   const { tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const { tier: businessTier } = useBusinessTier();
 
 
   // Fetch user's manual override preference
@@ -85,8 +99,8 @@ export function useOperationSize() {
   // Detect operation size
   const detectedSize = useMemo(() => {
     if (!tenant) return 'medium' as OperationSize; // Default fallback
-    return detectOperationSize(tenant);
-  }, [tenant]);
+    return detectOperationSize(tenant, businessTier);
+  }, [tenant, businessTier]);
 
   // Use manual override if exists, otherwise use detected
   const operationSize: OperationSize = useMemo(() => {
@@ -96,6 +110,7 @@ export function useOperationSize() {
       component: 'useOperationSize',
       manualSize,
       detectedSize,
+      businessTier,
       willUse: manualSize && ['street', 'small', 'medium', 'enterprise'].includes(manualSize) ? manualSize : detectedSize,
       preferencesLoading: preferencesLoading,
       hasPreferences: !!preferences,
@@ -106,7 +121,7 @@ export function useOperationSize() {
       return manualSize as OperationSize;
     }
     return detectedSize;
-  }, [preferences, detectedSize, preferencesLoading, tenant?.id]);
+  }, [preferences, detectedSize, preferencesLoading, tenant?.id, businessTier]);
 
   const isAutoDetected = !(preferences as any)?.operation_size;
 

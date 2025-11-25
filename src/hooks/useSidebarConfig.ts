@@ -47,7 +47,7 @@ export function useSidebarConfig() {
     hiddenFeatures: [],
     sectionOrder: [],
     customSections: [],
-    enabledIntegrations: ['mapbox', 'stripe'],
+    enabledIntegrations: ['mapbox', 'stripe', 'twilio', 'sendgrid'], // Added stripe and others by default
     customMenuItems: [],
     layoutPreset: 'default',
     sidebarBehavior: {
@@ -61,51 +61,20 @@ export function useSidebarConfig() {
   // Get base config for operation size
   const baseConfig = useMemo(() => {
     const config = getSidebarConfig(operationSize);
-    logger.debug('Base config loaded', {
-      component: 'useSidebarConfig',
-      operationSize,
-      detectedSize,
-      isAutoDetected,
-      sectionsCount: config.length,
-      totalItems: config.reduce((sum, s) => sum + s.items.length, 0),
-      sections: config.map(s => ({
-        name: s.section,
-        itemCount: s.items.length,
-        items: s.items.map(i => i.id)
-      }))
-    });
     return config;
-  }, [operationSize, detectedSize, isAutoDetected]);
+  }, [operationSize]);
 
-  // Apply filters (role, tier, feature access)
-  const filteredConfig = useMemo(() => {
-    logger.debug('Before filtering', {
-      component: 'useSidebarConfig',
-      sectionsCount: baseConfig.length,
-      totalItems: baseConfig.reduce((sum, s) => sum + s.items.length, 0),
+  // 1. Apply Security Filters (Role, Permissions) - ALWAYS APPLY
+  const securityFilteredConfig = useMemo(() => {
+    return applyAllFilters(baseConfig, {
       role,
-      currentTier,
-      sampleItem: baseConfig[0]?.items[0]
-    });
-
-    const result = applyAllFilters(baseConfig, {
-      role,
-      currentTier: currentTier as any, // Cast to any to bypass strict type check between BusinessTier and SubscriptionTier
+      currentTier: currentTier as any,
       checkPermission,
       canAccessFeature: canAccess,
     });
-
-    logger.debug('After filtering', {
-      component: 'useSidebarConfig',
-      sectionsCount: result.length,
-      totalItems: result.reduce((sum, s) => sum + s.items.length, 0),
-      sections: result.map(s => ({ name: s.section, itemCount: s.items.length }))
-    });
-
-    return result;
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
-  // Filter by hidden features, integration settings, and layout presets
+  // 2. Apply Layout Preset & Integration Filters
   const visibilityFilteredConfig = useMemo(() => {
     const hiddenFeatures = safePreferences.hiddenFeatures || [];
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
@@ -123,9 +92,9 @@ export function useSidebarConfig() {
     const integrationHiddenFeatures: string[] = [];
     Object.entries({
       mapbox: ['logistics', 'route-planning', 'driver-tracking', 'live-map'],
-      stripe: ['subscriptions', 'payment-links', 'invoices'],
+      stripe: ['subscriptions', 'payment-links', 'invoices', 'crm-invoices', 'invoice-management'],
       twilio: ['sms-notifications', '2fa', 'customer-alerts'],
-      sendgrid: ['email-campaigns', 'email-notifications', 'marketing'],
+      sendgrid: ['email-campaigns', 'email-notifications', 'marketing', 'marketing-automation'],
       custom: ['webhooks', 'custom-integrations'],
     }).forEach(([integrationId, features]) => {
       if (!enabledIntegrations.includes(integrationId)) {
@@ -134,42 +103,47 @@ export function useSidebarConfig() {
     });
 
     const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures]
-      .filter(id => !ESSENTIAL_FEATURES.includes(id)); // Never hide essential features
+      .filter(id => !ESSENTIAL_FEATURES.includes(id));
 
-    // Apply preset visibility if it's not 'all'
-    let config = filteredConfig.map(section => ({
+    // Apply preset visibility
+    let config = securityFilteredConfig.map(section => ({
       ...section,
       items: section.items.filter(item => !allHiddenFeatures.includes(item.id)),
     }));
 
-    // Apply custom preset filtering first
+    // Determine visible features from preset
+    let presetVisibleFeatures: string[] | 'all' = 'all';
+
     if (customPreset) {
-      const visibleFeatures = customPreset.visibleFeatures;
-      config = config.map(section => ({
-        ...section,
-        items: section.items.filter(item =>
-          ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
-        ),
-      }));
+      presetVisibleFeatures = customPreset.visibleFeatures;
+    } else if (layoutPreset) {
+      presetVisibleFeatures = layoutPreset.visibleFeatures;
     }
-    // Then apply predefined preset filtering
-    else if (layoutPreset && layoutPreset.visibleFeatures !== 'all') {
-      const visibleFeatures = layoutPreset.visibleFeatures as string[];
+
+    // Filter by preset if not 'all'
+    if (presetVisibleFeatures !== 'all') {
       config = config.map(section => ({
         ...section,
         items: section.items.filter(item =>
-          ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
+          ESSENTIAL_FEATURES.includes(item.id) || (presetVisibleFeatures as string[]).includes(item.id)
         ),
       }));
     }
 
     return config.filter(section => section.items.length > 0);
-  }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
+  }, [securityFilteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
-  // Filter by business tier (5-tier Hotbox system)
+  // 3. Apply Business Tier Filters - ONLY if Default Preset
   const businessTierFilteredConfig = useMemo(() => {
-    // If business tier is not loaded or preset has 'all' enabled, skip filtering
-    if (!businessPreset || businessPreset.enabledFeatures.includes('all')) {
+    const currentLayoutPreset = preferences?.layoutPreset || 'default';
+
+    // If user explicitly chose a preset (other than default), OVERRIDE business tier hiding
+    // We still apply sorting if available, but we don't hide features based on tier
+    const shouldApplyTierFiltering = currentLayoutPreset === 'default';
+
+    if (!shouldApplyTierFiltering || !businessPreset || businessPreset.enabledFeatures.includes('all')) {
+      // Even if we don't filter, we might want to sort?
+      // For now, just return the visibility filtered config
       return visibilityFilteredConfig;
     }
 
@@ -179,46 +153,34 @@ export function useSidebarConfig() {
     // Essential features that should never be hidden regardless of tier
     const TIER_ESSENTIAL = ['dashboard', 'settings', 'billing', 'hotbox'];
 
+    // Filter items
+    const filteredSections = visibilityFilteredConfig.map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        if (TIER_ESSENTIAL.includes(item.id)) return true;
+        if (hiddenFeatures.includes(item.id) || hiddenFeatures.includes(item.featureId || '')) return false;
+        if (enabledFeatures.includes(item.id) || enabledFeatures.includes(item.featureId || '')) return true;
+        return !hiddenFeatures.includes(item.id);
+      }),
+    })).filter(section => section.items.length > 0);
+
     // Map internal section IDs to display titles
     const SECTION_MAPPING: Record<string, string[]> = {
       'operations': ['⚙️ Operations', '⚙️ Manage', '📦 Inventory'],
-      'delivery': ['⚙️ Operations', '⚙️ Global Operations'], // Delivery often inside Operations
+      'delivery': ['⚙️ Operations', '⚙️ Global Operations'],
       'wholesale': ['🛍️ Sales & Orders', '🛍️ Catalog & Sales'],
       'people': ['👥 Customers', '👥 Customer Experience'],
       'analytics': ['📊 Analytics & Finance', '📊 Intelligence', '📊 Reports'],
       'compliance': ['⚙️ Global Operations', '⚙️ Manage'],
       'settings': ['⚙️ Settings', '🔧 Settings', '🔧 System & Admin'],
-      'all': [], // Special case
+      'all': [],
     };
-
-    // Filter items
-    const filteredSections = visibilityFilteredConfig.map(section => ({
-      ...section,
-      items: section.items.filter(item => {
-        // Always show essential features
-        if (TIER_ESSENTIAL.includes(item.id)) return true;
-
-        // Hide if explicitly in hidden features
-        if (hiddenFeatures.includes(item.id) || hiddenFeatures.includes(item.featureId || '')) {
-          return false;
-        }
-
-        // Show if in enabled features
-        if (enabledFeatures.includes(item.id) || enabledFeatures.includes(item.featureId || '')) {
-          return true;
-        }
-
-        // Default: show if not explicitly hidden
-        return !hiddenFeatures.includes(item.id);
-      }),
-    })).filter(section => section.items.length > 0);
 
     // Sort sections based on navSections order
     if (businessPreset.navSections && !businessPreset.navSections.includes('all')) {
       const preferredOrder = businessPreset.navSections;
 
       return filteredSections.sort((a, b) => {
-        // Find which preferred section ID matches the display title
         const getSectionIndex = (title: string) => {
           const index = preferredOrder.findIndex(prefId => {
             const mappedTitles = SECTION_MAPPING[prefId] || [];
@@ -235,7 +197,7 @@ export function useSidebarConfig() {
     }
 
     return filteredSections;
-  }, [visibilityFilteredConfig, businessPreset]);
+  }, [visibilityFilteredConfig, businessPreset, preferences?.layoutPreset]);
 
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {

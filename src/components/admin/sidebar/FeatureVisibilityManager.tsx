@@ -13,20 +13,41 @@ import { useFeatureVisibility } from '@/hooks/useFeatureVisibility';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import type { FeatureId } from '@/lib/featureConfig';
+import { getAllFeatures } from '@/lib/sidebar/featureRegistry';
 import { ChevronDown, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function FeatureVisibilityManager() {
-  const { sidebarConfig } = useSidebarConfig();
+  const { sidebarConfig, operationSize, businessTier } = useSidebarConfig();
   const { isFeatureVisible, toggleFeature, showAll, hideAll, resetToDefault } = useFeatureVisibility();
-  const { currentTier, canAccess } = useFeatureAccess();
+  const { canAccess } = useFeatureAccess();
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
-  // Get all feature IDs
-  const allFeatureIds = sidebarConfig.flatMap(section => 
-    section.items.map(item => item.id)
-  );
+  // Get all features from registry
+  const allFeatures = getAllFeatures();
+
+  // Filter features by operation size
+  const operationSizes = ['street', 'small', 'medium', 'enterprise'];
+  const currentSizeIndex = operationSizes.indexOf(operationSize || 'medium');
+
+  const availableFeatures = allFeatures.filter(f => {
+    const minSizeIndex = operationSizes.indexOf(f.minOperationSize);
+    return minSizeIndex <= currentSizeIndex;
+  });
+
+  // Group by category
+  const groupedFeatures = availableFeatures.reduce((acc, feature) => {
+    if (!acc[feature.category]) {
+      acc[feature.category] = [];
+    }
+    acc[feature.category].push(feature);
+    return acc;
+  }, {} as Record<string, typeof allFeatures>);
+
+  // Business tier ranking
+  const tiers = ['street', 'trap', 'block', 'hood', 'empire'];
+  const currentTierIndex = tiers.indexOf(businessTier || 'street');
 
   const handleShowAll = async () => {
     await showAll();
@@ -34,7 +55,8 @@ export function FeatureVisibilityManager() {
   };
 
   const handleHideAll = async () => {
-    await hideAll(allFeatureIds);
+    const idsToHide = availableFeatures.map(f => f.id);
+    await hideAll(idsToHide);
     toast.success('All non-essential features hidden');
   };
 
@@ -43,11 +65,11 @@ export function FeatureVisibilityManager() {
     toast.success('Reset to default visibility');
   };
 
-  const toggleSection = (sectionName: string) => {
+  const toggleSection = (category: string) => {
     setExpandedSections(prev =>
-      prev.includes(sectionName)
-        ? prev.filter(s => s !== sectionName)
-        : [...prev, sectionName]
+      prev.includes(category)
+        ? prev.filter(s => s !== category)
+        : [...prev, category]
     );
   };
 
@@ -69,48 +91,48 @@ export function FeatureVisibilityManager() {
       </div>
 
       <div className="space-y-2">
-        {sidebarConfig.map((section) => {
-          const isExpanded = expandedSections.includes(section.section);
+        {Object.entries(groupedFeatures).map(([category, features]) => {
+          const isExpanded = expandedSections.includes(category);
 
           return (
             <Collapsible
-              key={section.section}
+              key={category}
               open={isExpanded}
-              onOpenChange={() => toggleSection(section.section)}
+              onOpenChange={() => toggleSection(category)}
             >
               <div className="border rounded-lg">
                 <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-muted/50 transition-colors">
-                  <span className="font-medium">{section.section}</span>
+                  <span className="font-medium">{category}</span>
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform ${
-                      isExpanded ? 'transform rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 transition-transform ${isExpanded ? 'transform rotate-180' : ''
+                      }`}
                   />
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
                   <div className="p-4 pt-0 space-y-2">
-                    {section.items.map((item) => {
-                      const visible = isFeatureVisible(item.id);
-                      const hasAccess = item.featureId ? canAccess(item.featureId as FeatureId) : true;
-                      const isEssential = ['dashboard', 'settings', 'billing'].includes(item.id);
+                    {features.map((feature) => {
+                      const visible = isFeatureVisible(feature.id);
+                      const minTierIndex = tiers.indexOf(feature.minBusinessTier);
+                      const isLocked = minTierIndex > currentTierIndex;
+                      const isEssential = ['dashboard', 'settings', 'billing'].includes(feature.id);
 
                       return (
                         <div
-                          key={item.id}
+                          key={feature.id}
                           className="flex items-center justify-between p-2 rounded hover:bg-muted/30"
                         >
                           <div className="flex items-center gap-2 flex-1">
-                            <item.icon className="h-4 w-4 text-muted-foreground" />
+                            <feature.icon className="h-4 w-4 text-muted-foreground" />
                             <Label
-                              htmlFor={`feature-${item.id}`}
+                              htmlFor={`feature-${feature.id}`}
                               className="cursor-pointer flex-1"
                             >
-                              {item.name}
+                              {feature.name}
                             </Label>
-                            {!hasAccess && (
+                            {isLocked && (
                               <Badge variant="secondary" className="text-xs">
-                                Upgrade
+                                {feature.minBusinessTier} tier
                               </Badge>
                             )}
                             {isEssential && (
@@ -120,10 +142,10 @@ export function FeatureVisibilityManager() {
                             )}
                           </div>
                           <Switch
-                            id={`feature-${item.id}`}
-                            checked={visible}
-                            onCheckedChange={() => toggleFeature(item.id)}
-                            disabled={isEssential}
+                            id={`feature-${feature.id}`}
+                            checked={visible && !isLocked}
+                            onCheckedChange={() => toggleFeature(feature.id)}
+                            disabled={isEssential || isLocked}
                           />
                         </div>
                       );
@@ -137,7 +159,7 @@ export function FeatureVisibilityManager() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Note: Essential features like Dashboard and Settings cannot be hidden.
+        Note: Essential features cannot be hidden. Locked features require a higher business tier.
       </p>
     </div>
   );

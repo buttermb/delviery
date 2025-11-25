@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 /**
  * Default sidebar preferences
  */
+/**
+ * Default sidebar preferences
+ */
 const DEFAULT_PREFERENCES: SidebarPreferences = {
   operationSize: null,
   customLayout: false,
@@ -25,7 +28,7 @@ const DEFAULT_PREFERENCES: SidebarPreferences = {
   hiddenFeatures: [],
   sectionOrder: [],
   customSections: [],
-  enabledIntegrations: ['mapbox', 'stripe'],
+  enabledIntegrations: ['mapbox', 'stripe'], // Ensure stripe is default
   customMenuItems: [],
   layoutPreset: 'default',
   sidebarBehavior: {
@@ -49,14 +52,14 @@ export function useSidebarPreferences() {
     queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
     queryFn: async (): Promise<SidebarPreferences> => {
       if (!tenant?.id) return DEFAULT_PREFERENCES;
-      
+
       // Get auth user ID with defensive fallback
       let userId = admin?.userId;
       if (!userId) {
         const { data: { session } } = await supabase.auth.getSession();
         userId = session?.user?.id;
       }
-      
+
       if (!userId) return DEFAULT_PREFERENCES;
 
       const { data, error } = await (supabase as any)
@@ -98,18 +101,31 @@ export function useSidebarPreferences() {
     refetchOnMount: 'always', // Always fetch fresh data on mount
   });
 
+  // Auto-patch missing stripe integration for existing users
+  useEffect(() => {
+    if (preferences && !isLoading && tenant?.id && admin?.userId) {
+      const currentIntegrations = preferences.enabledIntegrations || [];
+      if (!currentIntegrations.includes('stripe')) {
+        logger.info('Auto-patching missing stripe integration', { component: 'useSidebarPreferences' });
+        updatePreferencesMutation.mutate({
+          enabledIntegrations: [...currentIntegrations, 'stripe']
+        });
+      }
+    }
+  }, [preferences, isLoading, tenant?.id, admin?.userId]);
+
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<SidebarPreferences>) => {
       if (!tenant?.id) throw new Error('Tenant required');
-      
+
       // Get auth user ID with defensive fallback
       let userId = admin?.userId;
       if (!userId) {
         const { data: { session } } = await supabase.auth.getSession();
         userId = session?.user?.id;
       }
-      
+
       if (!userId) throw new Error('User ID required');
 
       const current = preferences || DEFAULT_PREFERENCES;

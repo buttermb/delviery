@@ -3,6 +3,8 @@
  */
 
 import type { LayoutPreset } from '@/types/sidebar';
+import { FEATURE_REGISTRY } from './featureRegistry';
+import { logger } from '@/lib/logger';
 
 export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
   default: {
@@ -83,6 +85,23 @@ export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
 };
 
 /**
+ * Validate that all features in a preset exist in the registry
+ */
+function validatePresetFeatures(presetId: string, features: string[] | 'all'): string[] | 'all' {
+  if (features === 'all') return 'all';
+
+  const validFeatures = features.filter(id => {
+    const exists = !!FEATURE_REGISTRY[id];
+    if (!exists) {
+      logger.warn(`Invalid feature ID in preset ${presetId}: ${id}`, { component: 'layoutPresets' });
+    }
+    return exists;
+  });
+
+  return validFeatures;
+}
+
+/**
  * Get all available presets
  */
 export function getLayoutPresets(): LayoutPreset[] {
@@ -102,5 +121,6 @@ export function getLayoutPreset(id: string): LayoutPreset | undefined {
 export function applyLayoutPreset(presetId: string): string[] | 'all' {
   const preset = LAYOUT_PRESETS[presetId];
   if (!preset) return 'all';
-  return preset.visibleFeatures;
+
+  return validatePresetFeatures(presetId, preset.visibleFeatures);
 }
