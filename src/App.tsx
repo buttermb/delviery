@@ -159,6 +159,9 @@ const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
 const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
+const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
+const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
+const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysisPage"));
 
 // Built pages missing routes (currently locked in sidebar)
 const LiveOrders = lazy(() => import("./pages/admin/LiveOrders"));
@@ -547,15 +550,15 @@ const App = () => {
                                     <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
 
                                     {/* Select Plan Page (for adding payment method) */}
-                                    <Route 
-                                      path="/:tenantSlug/admin/select-plan" 
+                                    <Route
+                                      path="/:tenantSlug/admin/select-plan"
                                       element={
                                         <Suspense fallback={<LoadingFallback />}>
                                           <TenantAdminProtectedRoute>
                                             <TenantAdminSelectPlanPage />
                                           </TenantAdminProtectedRoute>
                                         </Suspense>
-                                      } 
+                                      }
                                     />
 
                                     {/* Tenant Admin Portal - Exact redirect */}
@@ -684,6 +687,9 @@ const App = () => {
                                       <Route path="compliance" element={<FeatureProtectedRoute featureId="compliance"><CompliancePage /></FeatureProtectedRoute>} />
                                       <Route path="advanced-reporting" element={<FeatureProtectedRoute featureId="advanced-reporting"><AdvancedReportingPage /></FeatureProtectedRoute>} />
                                       <Route path="predictive-analytics" element={<FeatureProtectedRoute featureId="predictive-analytics"><PredictiveAnalyticsPage /></FeatureProtectedRoute>} />
+                                      <Route path="board-report" element={<BoardReportPage />} />
+                                      <Route path="strategic-dashboard" element={<StrategicDashboardPage />} />
+                                      <Route path="expansion" element={<ExpansionAnalysisPage />} />
 
                                       {/* Professional Tier - Analytics */}
                                       <Route path="order-analytics" element={<FeatureProtectedRoute featureId="order-analytics"><OrderAnalyticsPage /></FeatureProtectedRoute>} />
@@ -826,8 +832,8 @@ const App = () => {
                               </WhiteLabelProvider>
                             </TenantProvider>
                           </CustomerAuthProvider>
-                        {/* Debug Panel - Only visible to admins or in development */}
-                        <AdminDebugPanel />
+                          {/* Debug Panel - Only visible to admins or in development */}
+                          <AdminDebugPanel />
                         </TenantAdminAuthProvider>
                       </SuperAdminAuthProvider>
                     </BrowserRouter>

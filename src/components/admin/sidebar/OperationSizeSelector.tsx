@@ -37,7 +37,8 @@ export function OperationSizeSelector() {
     resetToAuto,
     isLoading,
   } = useOperationSize();
-  
+
+
   const { preferences } = useSidebarPreferences();
   const currentPreset = preferences?.layoutPreset || 'default';
   const isPresetOverriding = currentPreset !== 'default';
@@ -63,12 +64,12 @@ export function OperationSizeSelector() {
           </span>
         </div>
       )}
-      
+
       {isPresetOverriding && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Your selected layout preset <strong>"{currentPreset.replace('_', ' ')}"</strong> overrides operation size settings. 
+            Your selected layout preset <strong>"{currentPreset.replace('_', ' ')}"</strong> overrides operation size settings.
             Switch to "Default" preset to use operation-based sidebar layout.
           </AlertDescription>
         </Alert>
