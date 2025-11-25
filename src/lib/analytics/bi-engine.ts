@@ -82,7 +82,7 @@ export class BusinessIntelligenceEngine {
 
         if (products && products.length > 0) {
             const slowMovers = [];
-            
+
             // @ts-ignore - Avoid deep type instantiation
             const { data: recentOrders } = await supabase
                 .from('menu_orders')
@@ -127,7 +127,6 @@ export class BusinessIntelligenceEngine {
         const { data: securityEvents } = await supabase
             .from('security_events')
             .select('id, event_type')
-            .eq('tenant_id', tenantId)
             .gte('created_at', thirtyDaysAgo.toISOString())
             .in('event_type', ['failed_login', 'unauthorized_access']);
 
