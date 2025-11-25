@@ -35,6 +35,11 @@ export function SidebarDebugger() {
     const baseConfigSource = currentLayoutPreset !== 'default'
         ? 'Enterprise (overridden by preset)'
         : `${operationSize.charAt(0).toUpperCase() + operationSize.slice(1)} Operation`;
+    
+    // Determine security filter mode
+    const securityFilterMode = currentLayoutPreset !== 'default'
+        ? 'Permissive (Preset Override)'
+        : 'Business Tier Restricted';
 
     // Calculate filtering stages
     const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
@@ -59,6 +64,17 @@ export function SidebarDebugger() {
                             Preset "{currentLayoutPreset}" uses enterprise config to access all {totalFeatures} features
                         </span>
                     )}
+                    <div className="mt-2 pt-2 border-t">
+                        <strong>Security Filter Mode:</strong>{' '}
+                        <Badge variant={currentLayoutPreset !== 'default' ? 'default' : 'secondary'}>
+                            {securityFilterMode}
+                        </Badge>
+                        {currentLayoutPreset !== 'default' && (
+                            <span className="block mt-1 text-xs text-muted-foreground">
+                                Business tier filtering bypassed - preset has full control over feature visibility
+                            </span>
+                        )}
+                    </div>
                 </AlertDescription>
             </Alert>
 
