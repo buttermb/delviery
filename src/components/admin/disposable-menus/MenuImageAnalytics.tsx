@@ -15,6 +15,8 @@ import { AdvancedAnalyticsFilters } from './AdvancedAnalyticsFilters';
 import { useState, useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 import { subDays, format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MenuImageAnalyticsProps {
   menuId: string;
@@ -54,17 +56,58 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     }];
   }, [analytics]);
 
-  // Generate mock trend data (in real implementation, fetch from backend)
-  const trendData = useMemo(() => {
-    if (!analytics) return [];
-    const days = 7;
-    return Array.from({ length: days }, (_, i) => ({
-      date: format(subDays(new Date(), days - i - 1), 'MMM dd'),
-      views: Math.floor(analytics.image_views / days + Math.random() * 50),
-      zooms: Math.floor(analytics.image_zooms / days + Math.random() * 20),
-      conversions: Math.floor(Math.random() * 10),
-    }));
-  }, [analytics]);
+  // Fetch real trend data from menu_access_logs
+  const { data: trendData = [] } = useQuery({
+    queryKey: ['menu-trend-data', menuId, dateRange],
+    queryFn: async () => {
+      const days = 7;
+      const trends = [];
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // @ts-ignore - Avoid deep type instantiation
+        const { count: views } = await supabase
+          .from('menu_access_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('menu_id', menuId)
+          .eq('action', 'viewed')
+          .gte('accessed_at', startOfDay.toISOString())
+          .lte('accessed_at', endOfDay.toISOString());
+
+        // @ts-ignore - Avoid deep type instantiation
+        const { count: zooms } = await supabase
+          .from('menu_access_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('menu_id', menuId)
+          .eq('action', 'image_zoomed')
+          .gte('accessed_at', startOfDay.toISOString())
+          .lte('accessed_at', endOfDay.toISOString());
+
+        // @ts-ignore - Avoid deep type instantiation
+        const { count: conversions } = await supabase
+          .from('menu_orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('menu_id', menuId)
+          .gte('created_at', startOfDay.toISOString())
+          .lte('created_at', endOfDay.toISOString());
+
+        trends.push({
+          date: format(date, 'MMM dd'),
+          views: views || 0,
+          zooms: zooms || 0,
+          conversions: conversions || 0,
+        });
+      }
+      
+      return trends;
+    },
+    enabled: !!menuId,
+  });
 
   // Generate top products ranking
   const topProducts = useMemo(() => {
