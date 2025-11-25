@@ -75,31 +75,19 @@ export function useSidebarConfig() {
     return getSidebarConfig(operationSize);
   }, [operationSize, preferences?.layoutPreset]);
 
-  // Development validation: warn if ENTERPRISE_SIDEBAR is missing features from registry
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      const registryIds = Object.keys(FEATURE_REGISTRY);
-      const enterpriseConfig = getSidebarConfig('enterprise');
-      const enterpriseIds = enterpriseConfig.flatMap(s => s.items.map(i => i.id));
-      const missing = registryIds.filter(id => !enterpriseIds.includes(id));
-      
-      if (missing.length > 0) {
-        console.warn('⚠️ ENTERPRISE_SIDEBAR missing features from FEATURE_REGISTRY:', missing);
-      }
-    }
-  }, []);
+
 
   // Create permissive access function for non-default presets
   // When a preset is selected, bypass business tier filtering to allow preset full control
   const canAccessForFiltering = useMemo(() => {
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
-    
+
     if (currentLayoutPreset !== 'default') {
       // Permissive: allow all features through security filter
       // The preset will control visibility later in the pipeline
       return (_featureId: string) => true;
     }
-    
+
     // Default behavior: respect business tier filtering
     return canAccess;
   }, [preferences?.layoutPreset, canAccess]);
@@ -291,21 +279,7 @@ export function useSidebarConfig() {
     });
   }, [configWithFavorites, safePreferences.collapsedSections]);
 
-  // Development diagnostic logging
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      const currentLayoutPreset = preferences?.layoutPreset || 'default';
-      console.log('🔍 SIDEBAR FILTERING PIPELINE:', {
-        baseConfig: baseConfig.flatMap(s => s.items).length,
-        afterSecurity: securityFilteredConfig.flatMap(s => s.items).length,
-        afterVisibility: visibilityFilteredConfig.flatMap(s => s.items).length,
-        afterBusinessTier: businessTierFilteredConfig.flatMap(s => s.items).length,
-        final: finalConfig.flatMap(s => s.items).length,
-        preset: currentLayoutPreset,
-        securityMode: currentLayoutPreset !== 'default' ? 'Permissive (Preset Override)' : 'Business Tier Restricted',
-      });
-    }
-  }, [baseConfig, securityFilteredConfig, visibilityFilteredConfig, businessTierFilteredConfig, finalConfig, preferences?.layoutPreset]);
+
 
   return {
     sidebarConfig: Array.isArray(finalConfig) ? finalConfig : [],
