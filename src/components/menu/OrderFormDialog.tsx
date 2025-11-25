@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logOrderCreate, logOrderCreateError } from '@/lib/debug/logger';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,15 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
 
     setLoading(true);
 
+    // Debug: Log order creation attempt
+    logOrderCreate('Order form submitted', {
+      menuId,
+      whitelistEntryId,
+      itemCount: items.length,
+      totalAmount,
+      source: 'OrderFormDialog'
+    });
+
     try {
       // Prepare order data
       const orderData = {
@@ -72,7 +82,22 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
         .select()
         .maybeSingle();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        logOrderCreateError('Order insert failed', {
+          menuId,
+          error: orderError.message,
+          code: orderError.code
+        });
+        throw orderError;
+      }
+
+      // Debug: Log successful order creation
+      logOrderCreate('Order created successfully', {
+        orderId: order.id,
+        menuId,
+        totalAmount,
+        source: 'OrderFormDialog'
+      });
 
       // Send order notifications (fire-and-forget, but still check for errors)
       supabase.functions.invoke('notify-order-placed', {
@@ -99,6 +124,12 @@ export function OrderFormDialog({ open, onClose, menuId, whitelistEntryId }: Ord
         description: 'Your order has been submitted. We\'ll contact you shortly.',
       });
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logOrderCreateError('Order submission failed', {
+        menuId,
+        error: errorMessage,
+        source: 'OrderFormDialog'
+      });
       logger.error('Order submission error', error instanceof Error ? error : new Error(String(error)), { component: 'OrderFormDialog', menuId });
       toast({
         variant: 'destructive',

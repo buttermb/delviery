@@ -16,6 +16,8 @@ serve(async (req) => {
   const traceId = req.headers.get('x-trace-id') || crypto.randomUUID();
   const idempotencyKey = req.headers.get('x-idempotency-key');
 
+  console.log(`[ORDER_CREATE] Order placement started`, { traceId, idempotencyKey });
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -31,6 +33,14 @@ serve(async (req) => {
       contact_phone,
     } = body;
 
+    console.log(`[ORDER_CREATE] Request validated`, { 
+      traceId, 
+      menuId: menu_id, 
+      itemCount: order_items?.length,
+      totalAmount: body.total_amount,
+      paymentMethod: payment_method
+    });
+
     // 1. IDEMPOTENCY CHECK (Basic implementation)
     // In a real production system, we'd check a dedicated idempotency table.
     // For now, we'll skip this check to keep it simple, but the architecture supports it.
@@ -44,6 +54,11 @@ serve(async (req) => {
       });
 
     if (reserveError) {
+      console.error(`[ORDER_CREATE] Inventory reservation failed`, { 
+        traceId, 
+        menuId: menu_id, 
+        error: reserveError.message 
+      });
       return new Response(
         JSON.stringify({ error: reserveError.message || 'Inventory reservation failed' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -51,6 +66,7 @@ serve(async (req) => {
     }
 
     const { reservation_id, lock_token } = reservation;
+    console.log(`[ORDER_CREATE] Inventory reserved`, { traceId, reservationId: reservation_id });
 
     // 3. PROCESS PAYMENT
     // Calculate total (should match what was reserved)
@@ -65,6 +81,11 @@ serve(async (req) => {
     });
 
     if (!paymentResult.success) {
+      console.error(`[ORDER_CREATE] Payment failed`, { 
+        traceId, 
+        reservationId: reservation_id,
+        error: paymentResult.error 
+      });
       // ROLLBACK: Cancel Reservation
       await supabaseClient.rpc('cancel_reservation', {
         p_reservation_id: reservation_id,
@@ -76,6 +97,11 @@ serve(async (req) => {
         { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`[ORDER_CREATE] Payment processed`, { 
+      traceId, 
+      transactionId: paymentResult.transaction_id 
+    });
 
     // 3.5 CREATE OR UPDATE CUSTOMER RECORD
     const { data: menu } = await supabaseClient
@@ -116,6 +142,11 @@ serve(async (req) => {
       });
 
     if (confirmError) {
+      console.error(`[ORDER_CREATE] Order confirmation failed - ZOMBIE RECOVERY`, { 
+        traceId, 
+        reservationId: reservation_id,
+        error: confirmError.message 
+      });
       // ZOMBIE ORDER RECOVERY (Nuclear Option Scenario A)
       if (paymentResult.transaction_id) {
         try {
@@ -123,8 +154,13 @@ serve(async (req) => {
             paymentResult.transaction_id,
             'system_error_order_creation_failed'
           );
+          console.log(`[ORDER_CREATE] Refund processed`, { traceId, transactionId: paymentResult.transaction_id });
         } catch (refundError) {
-          console.error(`FATAL: Refund failed for Zombie Order! Manual intervention required.`);
+          console.error(`[ORDER_CREATE] FATAL: Refund failed for Zombie Order! Manual intervention required.`, { 
+            traceId, 
+            transactionId: paymentResult.transaction_id,
+            error: refundError
+          });
           // In a real system, we would insert into a 'critical_alerts' table here
         }
       }
@@ -148,6 +184,13 @@ serve(async (req) => {
     // 5. REALTIME BROADCAST
     // (Handled by DB triggers we created earlier, but we can add explicit broadcast if needed)
 
+    console.log(`[ORDER_CREATE] Order confirmed successfully`, { 
+      traceId, 
+      orderId: order.order_id,
+      menuId: menu_id,
+      totalAmount
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -159,6 +202,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error(`[ORDER_CREATE] Internal server error`, { traceId, error });
     return new Response(
       JSON.stringify({ error: 'Internal server error', trace_id: traceId }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

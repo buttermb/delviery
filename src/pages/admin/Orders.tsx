@@ -1,4 +1,6 @@
 import { logger } from '@/lib/logger';
+import { logOrderQuery, logOrderQueryError, logRLSFailure } from '@/lib/debug/logger';
+import { logSelectQuery } from '@/lib/debug/queryLogger';
 import { useState, useEffect } from 'react';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +60,14 @@ export default function Orders() {
 
   const loadOrders = async () => {
     if (!tenant) return;
+
+    // Debug: Log query initiation
+    logOrderQuery('Fetching admin orders', {
+      tenantId: tenant.id,
+      statusFilter,
+      source: 'Orders'
+    });
+
     try {
       setLoading(true);
       let query = supabase
@@ -72,11 +82,28 @@ export default function Orders() {
 
       const { data: ordersData, error: ordersError } = await query;
 
+      // Debug: Log query results
+      logSelectQuery('orders', { tenant_id: tenant.id, status: statusFilter }, ordersData, 'Orders');
+
       if (ordersError) {
+        logRLSFailure('Orders query failed', {
+          tenantId: tenant.id,
+          error: ordersError.message,
+          code: ordersError.code
+        });
         logger.error('Error loading orders', ordersError instanceof Error ? ordersError : new Error(String(ordersError)), { component: 'Orders' });
         toast.error(`Failed to load orders: ${ordersError.message}`);
         return;
       }
+
+      // Debug: Log successful fetch
+      logOrderQuery('Orders fetched successfully', {
+        tenantId: tenant.id,
+        count: ordersData?.length || 0,
+        orderIds: ordersData?.slice(0, 5).map(o => o.id),
+        hasTenantFilter: true,
+        source: 'Orders'
+      });
 
       // Fetch profiles for these orders
       const userIds = [...new Set(ordersData?.map(o => o.user_id).filter(Boolean))];

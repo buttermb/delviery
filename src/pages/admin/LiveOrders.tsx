@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logOrderQuery, logOrderQueryError, logRealtime, logRealtimeError } from '@/lib/debug/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -43,6 +44,12 @@ export default function LiveOrders() {
     if (tenant) {
       loadLiveOrders();
 
+      // Debug: Log subscription setup
+      logRealtime('Setting up live orders subscriptions', {
+        tenantId: tenant.id,
+        source: 'LiveOrders'
+      });
+
       // Subscribe to BOTH orders AND menu_orders tables with tenant_id filter
       const ordersChannel = supabase
         .channel('live-orders-main')
@@ -51,14 +58,25 @@ export default function LiveOrders() {
           schema: 'public',
           table: 'orders',
           filter: `tenant_id=eq.${tenant.id}`
-        }, () => {
+        }, (payload) => {
+          logRealtime('Order update received', {
+            eventType: payload.eventType,
+            tenantId: tenant.id,
+            source: 'LiveOrders'
+          });
           logger.info('Order update received', { component: 'LiveOrders' });
           loadLiveOrders();
         })
         .subscribe((status) => {
+          logRealtime(`Orders channel status: ${status}`, {
+            channel: 'live-orders-main',
+            tenantId: tenant.id,
+            source: 'LiveOrders'
+          });
           if (status === 'SUBSCRIBED') {
             logger.debug('Orders channel subscribed', { component: 'LiveOrders' });
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logRealtimeError('Orders subscription failed', { status, tenantId: tenant.id });
             logger.error('Orders subscription error', { status, component: 'LiveOrders' });
             toast.error('Real-time order updates unavailable');
           }
@@ -71,14 +89,25 @@ export default function LiveOrders() {
           schema: 'public',
           table: 'menu_orders',
           filter: `tenant_id=eq.${tenant.id}`
-        }, () => {
+        }, (payload) => {
+          logRealtime('Menu order update received', {
+            eventType: payload.eventType,
+            tenantId: tenant.id,
+            source: 'LiveOrders'
+          });
           logger.info('Menu Order update received', { component: 'LiveOrders' });
           loadLiveOrders();
         })
         .subscribe((status) => {
+          logRealtime(`Menu orders channel status: ${status}`, {
+            channel: 'live-menu-orders-secondary',
+            tenantId: tenant.id,
+            source: 'LiveOrders'
+          });
           if (status === 'SUBSCRIBED') {
             logger.debug('Menu orders channel subscribed', { component: 'LiveOrders' });
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logRealtimeError('Menu orders subscription failed', { status, tenantId: tenant.id });
             logger.error('Menu orders subscription error', { status, component: 'LiveOrders' });
           }
         });
@@ -98,6 +127,13 @@ export default function LiveOrders() {
 
   const loadLiveOrders = async () => {
     if (!tenant) return;
+
+    // Debug: Log query initiation
+    logOrderQuery('Loading live orders', {
+      tenantId: tenant.id,
+      source: 'LiveOrders'
+    });
+
     try {
       // Query BOTH tables and union results
       const [ordersResult, menuOrdersResult] = await Promise.all([
@@ -123,8 +159,31 @@ export default function LiveOrders() {
           .order('created_at', { ascending: false })
       ]);
 
-      if (ordersResult.error) throw ordersResult.error;
-      if (menuOrdersResult.error) throw menuOrdersResult.error;
+      if (ordersResult.error) {
+        logOrderQueryError('Orders query failed', {
+          tenantId: tenant.id,
+          error: ordersResult.error.message,
+          source: 'LiveOrders'
+        });
+        throw ordersResult.error;
+      }
+      if (menuOrdersResult.error) {
+        logOrderQueryError('Menu orders query failed', {
+          tenantId: tenant.id,
+          error: menuOrdersResult.error.message,
+          source: 'LiveOrders'
+        });
+        throw menuOrdersResult.error;
+      }
+
+      // Debug: Log successful queries
+      logOrderQuery('Live orders fetched', {
+        tenantId: tenant.id,
+        ordersCount: ordersResult.data?.length || 0,
+        menuOrdersCount: menuOrdersResult.data?.length || 0,
+        hasTenantFilter: true,
+        source: 'LiveOrders'
+      });
 
       const normalizedOrders = ordersResult.data || [];
 

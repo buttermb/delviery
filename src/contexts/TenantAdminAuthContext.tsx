@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuth, logAuthWarn, logAuthError, logStateChange } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -224,6 +225,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
         if (session?.user) {
           logger.info('[AUTH] Active Supabase session found, fetching admin/tenant data');
+          logAuth('Supabase session found', {
+            userId: session.user.id,
+            userEmail: session.user.email,
+            source: 'TenantAdminAuthContext'
+          });
 
           try {
             // Fetch admin and tenant data using user ID from session
@@ -251,6 +257,17 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                   userId: session.user.id,
                 };
                 parsedTenant = tenantData as unknown as Tenant;
+
+                // Debug: Log successful tenant admin authentication
+                logAuth('Tenant admin authenticated', {
+                  adminId: parsedAdmin.id,
+                  adminEmail: parsedAdmin.email,
+                  adminRole: parsedAdmin.role,
+                  tenantId: parsedTenant.id,
+                  tenantSlug: parsedTenant.slug,
+                  tenantName: parsedTenant.business_name,
+                  source: 'TenantAdminAuthContext'
+                });
 
                 setAdmin(parsedAdmin);
                 setTenant(parsedTenant);

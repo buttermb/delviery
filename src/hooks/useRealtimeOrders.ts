@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logOrderQuery, logOrderQueryError, logRealtime, logRealtimeWarn, logRealtimeError } from '@/lib/debug/logger';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -37,6 +38,13 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   const { statusFilter } = options;
 
   const fetchOrders = useCallback(async () => {
+    // Debug: Log query initiation
+    logOrderQuery('Realtime orders fetch started', {
+      tenantId: tenant?.id,
+      statusFilter,
+      source: 'useRealtimeOrders'
+    });
+
     try {
       let query = supabase
         .from('orders')
@@ -61,7 +69,22 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
 
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        logOrderQueryError('Realtime orders query failed', {
+          error: error.message,
+          code: error.code,
+          source: 'useRealtimeOrders'
+        });
+        throw error;
+      }
+
+      // Debug: Log successful fetch
+      logOrderQuery('Realtime orders fetched', {
+        count: data?.length || 0,
+        orderIds: data?.slice(0, 5).map(o => o.id),
+        source: 'useRealtimeOrders'
+      });
+
       setOrders(data || []);
       // Clear any previous errors on successful fetch
       setError(null);
@@ -75,7 +98,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter?.join(',')]);
+  }, [statusFilter?.join(','), tenant?.id]);
 
   useEffect(() => {
     // Guard 1: Don't fetch or subscribe if auth is still loading or tenant not available
@@ -121,11 +144,24 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
           },
           (payload) => {
             try {
+              // Debug: Log realtime event
+              logRealtime('Realtime order event received', {
+                eventType: payload.eventType,
+                orderId: (payload.new as Order)?.id || (payload.old as Order)?.id,
+                tenantId: (payload.new as Order)?.tenant_id,
+                status: (payload.new as Order)?.status,
+                source: 'useRealtimeOrders'
+              });
+
               if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
                 const newOrder = payload.new as Order;
                 
                 // Validate before processing
                 if (!validateOrder(newOrder)) {
+                  logRealtimeWarn('Invalid order data received', {
+                    orderId: newOrder?.id,
+                    source: 'useRealtimeOrders'
+                  });
                   logger.error('Received invalid order data, refetching...');
                   fetchOrders();
                   return;
@@ -136,23 +172,40 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
               } else if (payload.eventType === 'DELETE') {
                 const oldOrder = payload.old as Order;
                 if (oldOrder?.id) {
+                  logRealtime('Order deleted via realtime', {
+                    orderId: oldOrder.id,
+                    source: 'useRealtimeOrders'
+                  });
                   setOrders(prev => prev.filter(order => order.id !== oldOrder.id));
                 }
               }
             } catch (error: unknown) {
               const errorObj = error instanceof Error ? error : new Error(String(error));
+              logRealtimeError('Error processing realtime order', {
+                error: errorObj.message,
+                source: 'useRealtimeOrders'
+              });
               logger.error('Error processing realtime order update', errorObj, { component: 'useRealtimeOrders' });
               fetchOrders();
             }
           }
         )
         .subscribe((status) => {
+          // Debug: Log subscription status changes
+          logRealtime(`Subscription status: ${status}`, {
+            channel: 'orders-realtime',
+            status,
+            source: 'useRealtimeOrders'
+          });
+
           if (status === 'SUBSCRIBED') {
             logger.debug('Realtime orders subscription active', { component: 'useRealtimeOrders' });
           } else if (status === 'CHANNEL_ERROR') {
+            logRealtimeError('Subscription error', { status, source: 'useRealtimeOrders' });
             logger.warn('Realtime orders subscription error, retrying...', { component: 'useRealtimeOrders', status });
             setTimeout(() => fetchOrders(), 5000);
           } else if (status === 'TIMED_OUT') {
+            logRealtimeWarn('Subscription timed out', { status, source: 'useRealtimeOrders' });
             logger.warn('Realtime orders subscription timed out', { component: 'useRealtimeOrders', status });
             fetchOrders();
           } else if (status === 'CLOSED') {

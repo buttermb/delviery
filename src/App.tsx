@@ -49,6 +49,7 @@ import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
+import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
 
 // Configure route-level progress indicator (NProgress)
 NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
@@ -816,6 +817,8 @@ const App = () => {
                               </WhiteLabelProvider>
                             </TenantProvider>
                           </CustomerAuthProvider>
+                        {/* Debug Panel - Only visible to admins or in development */}
+                        <AdminDebugPanel />
                         </TenantAdminAuthProvider>
                       </SuperAdminAuthProvider>
                     </BrowserRouter>

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
+        // Debug: Log initial session state
+        logAuth('Initial session loaded', {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          authMethod: session?.user?.app_metadata?.provider,
+          source: 'AuthContext'
+        });
         logger.debug('Initial session', { hasSession: !!session, component: 'AuthContext' });
         setSession(session);
         setUser(session?.user ?? null);
@@ -34,6 +43,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Debug: Log auth state changes
+        logAuth(`Auth state changed: ${event}`, {
+          event,
+          hasSession: !!session,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          authMethod: session?.user?.app_metadata?.provider,
+          source: 'AuthContext'
+        });
         logger.debug('Auth state change', { event, hasSession: !!session, component: 'AuthContext' });
 
         if (mounted) {
@@ -52,6 +70,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Debug: Log sign out attempt
+      logAuth('Sign out initiated', {
+        userId: user?.id,
+        userEmail: user?.email,
+        source: 'AuthContext'
+      });
+
       // Destroy encryption session before signing out
       clientEncryption.destroy();
 
@@ -62,7 +87,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear user ID from storage
       sessionStorage.removeItem('floraiq_user_id');
       localStorage.removeItem('floraiq_user_id');
+
+      // Debug: Log successful sign out
+      logAuth('Sign out completed', { source: 'AuthContext' });
     } catch (error) {
+      logAuthError('Sign out failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        source: 'AuthContext'
+      });
       logger.error("Error signing out", error instanceof Error ? error : new Error(String(error)), { component: 'AuthContext' });
     }
   };

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logAuth, logAuthWarn, logAuthError } from '@/lib/debug/logger';
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { clientEncryption } from "@/lib/encryption/clientEncryption";
 import { apiFetch } from "@/lib/utils/apiClient";
@@ -250,6 +251,15 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         customerId: data.customer?.id,
         tenantId: data.tenant?.id 
       });
+
+      // Debug: Log successful customer login
+      logAuth('Customer login successful', {
+        customerId: data.customer?.id,
+        customerEmail: data.customer?.email,
+        tenantId: data.tenant?.id,
+        tenantSlug: data.tenant?.slug,
+        source: 'CustomerAuthContext'
+      });
       
       setToken(data.token);
       setCustomer(data.customer);
@@ -307,6 +317,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    // Debug: Log logout attempt
+    logAuth('Customer logout initiated', {
+      customerId: customer?.id,
+      customerEmail: customer?.email,
+      tenantId: tenant?.id,
+      source: 'CustomerAuthContext'
+    });
+
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
@@ -328,6 +346,11 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
+      logAuthError('Customer logout error', {
+        error: errorObj.message,
+        hadToken: !!token,
+        source: 'CustomerAuthContext'
+      });
       logger.error("Customer logout error", errorObj, {
         component: 'CustomerAuthContext',
         hadToken: !!token,
@@ -346,6 +369,9 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear user ID from storage
       safeStorage.removeItem('floraiq_user_id');
       safeStorage.removeItem('floraiq_user_id');
+
+      // Debug: Log logout complete
+      logAuth('Customer logout completed', { source: 'CustomerAuthContext' });
     }
   };
 

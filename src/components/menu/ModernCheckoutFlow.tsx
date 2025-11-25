@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { logOrderCreate, logOrderCreateError, logStateChange } from '@/lib/debug/logger';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -127,7 +128,14 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
     }
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
-      setCurrentStep(steps[nextIndex].id);
+      const nextStep = steps[nextIndex].id;
+      logStateChange('Checkout step changed', {
+        from: currentStep,
+        to: nextStep,
+        menuId,
+        source: 'ModernCheckoutFlow'
+      });
+      setCurrentStep(nextStep);
     }
   };
 
@@ -149,6 +157,17 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
     }
 
     setLoading(true);
+
+    // Debug: Log order submission attempt
+    logOrderCreate('Checkout order submission started', {
+      menuId,
+      whitelistEntryId,
+      itemCount: items.length,
+      totalAmount: totalAmount + formData.tip,
+      paymentMethod: formData.paymentMethod,
+      deliveryMethod: formData.deliveryMethod,
+      source: 'ModernCheckoutFlow'
+    });
 
     try {
       const orderData = {
@@ -184,11 +203,34 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
         }
       });
 
-      if (functionError) throw functionError;
-      if (response && response.error) throw new Error(response.error);
+      if (functionError) {
+        logOrderCreateError('Edge function error', {
+          menuId,
+          error: functionError.message,
+          source: 'ModernCheckoutFlow'
+        });
+        throw functionError;
+      }
+      if (response && response.error) {
+        logOrderCreateError('Edge function returned error', {
+          menuId,
+          error: response.error,
+          source: 'ModernCheckoutFlow'
+        });
+        throw new Error(response.error);
+      }
 
       // Map response to expected format for UI
       const order = { id: response.order_id };
+
+      // Debug: Log successful order creation
+      logOrderCreate('Order created successfully via edge function', {
+        orderId: order.id,
+        menuId,
+        totalAmount: totalAmount + formData.tip,
+        traceId: response.trace_id,
+        source: 'ModernCheckoutFlow'
+      });
 
       // Trigger confetti
       confetti({
@@ -230,6 +272,12 @@ export function ModernCheckoutFlow({ open, onClose, menuId, whitelistEntryId }: 
         description: `Order #${order.id.slice(0, 8)} has been confirmed`,
       });
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logOrderCreateError('Order submission failed', {
+        menuId,
+        error: errorMessage,
+        source: 'ModernCheckoutFlow'
+      });
       logger.error('Order submission error', error instanceof Error ? error : new Error(String(error)), { component: 'ModernCheckoutFlow', menuId });
       toast({
         variant: 'destructive',
