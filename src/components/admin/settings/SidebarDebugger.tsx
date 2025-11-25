@@ -5,8 +5,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
-import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import { getAllFeatures, ESSENTIAL_FEATURES, FEATURE_REGISTRY } from '@/lib/sidebar/featureRegistry';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrationLogic';
+import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { CheckCircle, Info, Layers, AlertCircle, XCircle, ArrowRight } from 'lucide-react';
 
 export function SidebarDebugger() {
@@ -40,7 +41,12 @@ export function SidebarDebugger() {
     const integrationHiddenFeatures = getHiddenFeaturesByIntegrations(enabledIntegrations);
     const featuresAfterIntegrationFilter = totalFeatures - integrationHiddenFeatures.length;
 
-
+    // Registry vs Config comparison
+    const registryCount = Object.keys(FEATURE_REGISTRY).length;
+    const enterpriseConfig = getSidebarConfig('enterprise');
+    const enterpriseIds = enterpriseConfig.flatMap(s => s.items.map(i => i.id));
+    const enterpriseCount = enterpriseIds.length;
+    const missingFromEnterprise = Object.keys(FEATURE_REGISTRY).filter(id => !enterpriseIds.includes(id));
 
     return (
         <div className="space-y-6">
@@ -53,6 +59,31 @@ export function SidebarDebugger() {
                             Preset "{currentLayoutPreset}" uses enterprise config to access all {totalFeatures} features
                         </span>
                     )}
+                </AlertDescription>
+            </Alert>
+
+            <Alert className={missingFromEnterprise.length > 0 ? 'border-yellow-500' : 'border-green-500'}>
+                {missingFromEnterprise.length > 0 ? (
+                    <AlertCircle className="h-4 w-4 text-yellow-500" />
+                ) : (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                )}
+                <AlertDescription>
+                    <strong>Registry vs Enterprise Config:</strong>
+                    <div className="mt-2 space-y-1 text-sm">
+                        <div>Features in FEATURE_REGISTRY: <Badge variant="outline">{registryCount}</Badge></div>
+                        <div>Features in ENTERPRISE_SIDEBAR: <Badge variant="outline">{enterpriseCount}</Badge></div>
+                        {missingFromEnterprise.length > 0 ? (
+                            <div className="text-yellow-600 dark:text-yellow-400">
+                                ⚠️ Missing from ENTERPRISE: <Badge variant="destructive">{missingFromEnterprise.length}</Badge>
+                                <div className="mt-1 text-xs">{missingFromEnterprise.join(', ')}</div>
+                            </div>
+                        ) : (
+                            <div className="text-green-600 dark:text-green-400">
+                                ✓ All registry features present in Enterprise config
+                            </div>
+                        )}
+                    </div>
                 </AlertDescription>
             </Alert>
 

@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
  * - Applies user preferences
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useOperationSize } from './useOperationSize';
 import { useSidebarPreferences } from './useSidebarPreferences';
 import { usePermissions } from './usePermissions';
@@ -24,7 +24,7 @@ import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
 import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
-import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import { ESSENTIAL_FEATURES, FEATURE_REGISTRY } from '@/lib/sidebar/featureRegistry';
 import type { SidebarSection, HotItem } from '@/types/sidebar';
 
 /**
@@ -74,6 +74,20 @@ export function useSidebarConfig() {
     // For 'default' preset, use operation-size-based config
     return getSidebarConfig(operationSize);
   }, [operationSize, preferences?.layoutPreset]);
+
+  // Development validation: warn if ENTERPRISE_SIDEBAR is missing features from registry
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      const registryIds = Object.keys(FEATURE_REGISTRY);
+      const enterpriseConfig = getSidebarConfig('enterprise');
+      const enterpriseIds = enterpriseConfig.flatMap(s => s.items.map(i => i.id));
+      const missing = registryIds.filter(id => !enterpriseIds.includes(id));
+      
+      if (missing.length > 0) {
+        console.warn('⚠️ ENTERPRISE_SIDEBAR missing features from FEATURE_REGISTRY:', missing);
+      }
+    }
+  }, []);
 
   // 1. Apply Security Filters (Role, Permissions) - ALWAYS APPLY
   const securityFilteredConfig = useMemo(() => {
