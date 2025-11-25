@@ -127,7 +127,7 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Register custom service worker
-      const registration = await navigator.serviceWorker.register('/sw.js?v=13'); // Bump version to clear cache and fix React Error #310
+      const registration = await navigator.serviceWorker.register('/sw.js?v=14'); // Bump version to clear cache and fix React Error #310
       logger.debug('[APP] Custom ServiceWorker registered', { 
         scope: registration.scope,
         component: 'main'

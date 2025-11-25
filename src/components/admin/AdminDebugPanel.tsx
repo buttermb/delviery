@@ -47,11 +47,15 @@ const levelIcons: Record<string, React.ReactNode> = {
 };
 
 export function AdminDebugPanel() {
+  // Only render in development mode
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
   const { admin, tenant, loading } = useTenantAdminAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filter, setFilter] = useState<LogCategory | 'all'>('all');
-  const isDev = import.meta.env.DEV;
 
   // Refresh logs every 2 seconds
   useEffect(() => {
@@ -63,13 +67,6 @@ export function AdminDebugPanel() {
     const interval = setInterval(updateLogs, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  // Only show to admins or in development
-  const shouldShow = isDev || (admin && !loading);
-  
-  if (!shouldShow) {
-    return null;
-  }
 
   const filteredLogs = filter === 'all' 
     ? logs 
