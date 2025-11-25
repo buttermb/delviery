@@ -501,8 +501,10 @@ const App = () => {
                                     <Route path="/m/:token/view" element={<SecureMenuView />} />
                                     <Route path="/menu/:token" element={<MenuAccess />} />
 
-                                    {/* Debug Routes */}
-                                    <Route path="/debug/button-monitor" element={<ButtonMonitorPage />} />
+                                    {/* Debug Routes - Development Only */}
+                                    {import.meta.env.DEV && (
+                                      <Route path="/debug/button-monitor" element={<ButtonMonitorPage />} />
+                                    )}
 
                                     {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                                     <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
