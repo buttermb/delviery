@@ -529,23 +529,21 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
 
         try {
-          // Create AbortController for timeout (more compatible than AbortSignal.timeout)
-          const abortController = new AbortController();
-          const timeoutId = setTimeout(() => abortController.abort(), 5000);
-
-          const verifyResponse = await safeFetch(
+          const { response: verifyResponse } = await resilientFetch(
             `${supabaseUrl}/functions/v1/tenant-admin-auth?action=verify`,
             {
               method: 'GET',
-              credentials: 'include', // ⭐ Send httpOnly cookies
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
               },
-              signal: abortController.signal,
+              timeout: 5000,
+              retryConfig: {
+                maxRetries: 1,
+                initialDelay: 500,
+              },
             }
           );
-
-          clearTimeout(timeoutId);
 
           // If 401, clear localStorage and state
           if (verifyResponse.status === 401) {

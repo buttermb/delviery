@@ -558,7 +558,7 @@ export default function TenantDetailPage() {
                           variant="outline"
                           onClick={() => {
                             const planOrder = [SUBSCRIPTION_PLANS.STARTER, SUBSCRIPTION_PLANS.PROFESSIONAL, SUBSCRIPTION_PLANS.ENTERPRISE];
-                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
+                            const currentIndex = planOrder.indexOf((tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER) as typeof SUBSCRIPTION_PLANS.STARTER);
                             if (currentIndex < planOrder.length - 1) {
                               changePlanMutation.mutate(planOrder[currentIndex + 1]);
                             }
@@ -572,7 +572,7 @@ export default function TenantDetailPage() {
                           variant="outline"
                           onClick={() => {
                             const planOrder = [SUBSCRIPTION_PLANS.STARTER, SUBSCRIPTION_PLANS.PROFESSIONAL, SUBSCRIPTION_PLANS.ENTERPRISE];
-                            const currentIndex = planOrder.indexOf(tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
+                            const currentIndex = planOrder.indexOf((tenant.subscription_plan || SUBSCRIPTION_PLANS.STARTER) as typeof SUBSCRIPTION_PLANS.STARTER);
                             if (currentIndex > 0) {
                               changePlanMutation.mutate(planOrder[currentIndex - 1]);
                             }
