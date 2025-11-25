@@ -114,7 +114,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     defaultExpanded: true,
     items: [
       createItem('basic-orders', 'New Sale', '/admin/disposable-menu-orders', ShoppingCart, { hot: true }),
-      createItem('products', 'Check Stock', '/admin/inventory/products', Package),
+      createItem('stock-check', 'Check Stock', '/admin/inventory/products', Package),
       createItem('stock-alerts', 'Restock Alert', '/admin/stock-alerts', AlertCircle),
     ],
   },
@@ -131,7 +131,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     section: '⚙️ Manage',
     items: [
       createItem('products', 'My Products', '/admin/inventory/products', Box),
-      createItem('customers', 'My Customers', '/admin/big-plug-clients', Users),
+      createItem('customer-crm', 'My Customers', '/admin/big-plug-clients', Users),
       createItem('disposable-menus', 'Quick Menu', '/admin/disposable-menus', Share2),
       createItem('settings', 'Settings', '/admin/settings', Settings),
     ],
@@ -172,8 +172,8 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
     section: '👥 Customers',
     items: [
       createItem('customer-crm', 'CRM', '/admin/crm/clients', Users),
-      createItem('customers', 'Customer List', '/admin/big-plug-clients', Users),
-      createItem('customer-crm', 'Invoices', '/admin/crm/invoices', FileText),
+      createItem('customer-list', 'Customer List', '/admin/big-plug-clients', Users),
+      createItem('crm-invoices', 'Invoices', '/admin/crm/invoices', FileText),
     ],
   },
   {
@@ -235,7 +235,7 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
     section: '👥 Customers',
     items: [
       createItem('customer-crm', 'CRM', '/admin/crm/clients', Users, { hot: true }),
-      createItem('customer-crm', 'Invoices', '/admin/crm/invoices', FileText),
+      createItem('crm-invoices', 'Invoices', '/admin/crm/invoices', FileText),
       createItem('customer-insights', 'Insights', '/admin/customer-insights', TrendingUp),
       createItem('marketing-automation', 'Marketing', '/admin/marketing-automation', Mail),
       createItem('loyalty-program', 'Loyalty', '/admin/loyalty-program', Star),

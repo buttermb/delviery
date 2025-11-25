@@ -41,6 +41,18 @@ export function useSidebarConfig() {
     collapsedSections: [],
     pinnedItems: [],
     lastAccessedFeatures: [],
+    hiddenFeatures: [],
+    sectionOrder: [],
+    customSections: [],
+    enabledIntegrations: ['mapbox', 'stripe'],
+    customMenuItems: [],
+    layoutPreset: 'default',
+    sidebarBehavior: {
+      autoCollapse: true,
+      iconOnly: false,
+      showTooltips: true,
+    },
+    customPresets: [],
   };
 
   // Get base config for operation size
