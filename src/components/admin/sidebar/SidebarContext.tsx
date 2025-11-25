@@ -48,7 +48,8 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     trackFeatureAccess,
   } = useSidebarPreferences();
 
-  const { trackFeatureClick } = useFeatureTracking();
+  const { trackFeature } = useFeatureTracking();
+  const trackFeatureClick = trackFeature;
 
   const value: SidebarContextType = {
     operationSize,

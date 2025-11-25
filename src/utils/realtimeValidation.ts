@@ -10,8 +10,14 @@ import { isOrder } from '@/types/order';
  * Validates incoming order data with proper type guard
  * Returns true if order has all required Order properties
  */
-export const validateOrder = (order: unknown): order is Order => {
-  return isOrder(order);
+export const validateOrder = (order: any): order is Order => {
+  return (
+    order &&
+    typeof order.id === 'string' &&
+    typeof order.tenant_id === 'string' &&
+    typeof order.status === 'string' &&
+    typeof order.total_amount === 'number'
+  );
 };
 
 /**
