@@ -68,6 +68,7 @@ export function ExecutiveSummaryWidget() {
             const netProfit = Math.round(mtdRevenue * (profitMargin / 100));
 
             // Cash position - sum of customer payments received
+            // @ts-expect-error - Deep type instantiation from Supabase query
             const { data: payments } = await supabase
                 .from('wholesale_payments')
                 .select('amount')

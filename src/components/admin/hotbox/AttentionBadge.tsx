@@ -101,7 +101,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
               )}
               onClick={() => {
                 setOpen(false);
-                navigate(item.actionRoute);
+                navigate(item.actionUrl);
               }}
             >
               <div className="flex items-center justify-between">
@@ -111,8 +111,8 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
                   </span>
                   <div>
                     <div className="font-medium text-sm">{item.title}</div>
-                    {item.valueDisplay && (
-                      <div className="text-xs text-muted-foreground">{item.valueDisplay}</div>
+                    {item.value && (
+                      <div className="text-xs text-muted-foreground">${Number(item.value).toLocaleString()}</div>
                     )}
                   </div>
                 </div>

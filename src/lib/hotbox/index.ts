@@ -12,26 +12,24 @@ export * from '@/types/hotbox';
 
 // Tier Detection
 export {
-  calculateRevenueScore,
-  calculateLocationsScore,
-  calculateEmployeesScore,
-  calculateTierScoring,
-  getTierFromScore,
-  getNextTier,
-  calculateConfidence,
+  calculateTierScore,
+  determineTierFromScore,
+  getNextTierProgress,
   fetchTenantMetrics,
   detectBusinessTier,
-  detectTierFromMetrics,
+  TIER_SCORE_THRESHOLDS,
 } from './tierDetection';
 
 // Attention Queue
 export {
-  calculateItemScore,
-  sortByScore,
-  createAttentionItem,
+  calculateAttentionScore,
+  sortAttentionQueue,
   fetchAttentionItems,
   buildAttentionQueue,
   getTopAttentionItems,
   buildQueueFromItems,
+  getCategoryColor,
+  PRIORITY_WEIGHTS,
+  CATEGORY_URGENCY,
 } from './attentionQueue';
 

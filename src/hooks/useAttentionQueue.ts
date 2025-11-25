@@ -12,10 +12,8 @@ import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { 
   AttentionItem, 
   AttentionQueue,
-  AlertCategory,
-  PRIORITY_WEIGHTS,
-  CATEGORY_URGENCY,
 } from '@/types/hotbox';
+import { PRIORITY_WEIGHTS, CATEGORY_URGENCY } from '@/lib/hotbox';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface AttentionCounts {
@@ -39,9 +37,7 @@ function calculateScore(item: AttentionItem): number {
   
   // Age factor
   const now = Date.now();
-  const itemTime = item.timestamp instanceof Date 
-    ? item.timestamp.getTime() 
-    : new Date(item.timestamp).getTime();
+  const itemTime = new Date(item.timestamp).getTime();
   const ageHours = (now - itemTime) / (1000 * 60 * 60);
   
   if (ageHours < 1) {
@@ -102,6 +98,7 @@ export function useAttentionQueue() {
           .eq('status', 'in_transit')
           .gte('estimated_delivery_time', now.toISOString()),
         
+        // @ts-expect-error - Deep type instantiation
         supabase
           .from('products')
           .select('id, name')
@@ -142,11 +139,10 @@ export function useAttentionQueue() {
           priority: 'critical',
           category: 'orders',
           title: `${pendingMenuOrders.data.length} menu orders waiting`,
-          value: totalValue,
-          valueDisplay: `$${totalValue.toLocaleString()}`,
+          value: String(totalValue),
           actionLabel: 'Process',
-          actionRoute: '/admin/disposable-menu-orders',
-          timestamp: new Date(),
+          actionUrl: '/admin/disposable-menu-orders',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -158,8 +154,8 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${lateDeliveries.data.length} late deliveries`,
           actionLabel: 'Track',
-          actionRoute: '/admin/deliveries',
-          timestamp: new Date(),
+          actionUrl: '/admin/deliveries',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -171,8 +167,8 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${outOfStock.data.length} out of stock`,
           actionLabel: 'Restock',
-          actionRoute: '/admin/inventory-dashboard',
-          timestamp: new Date(),
+          actionUrl: '/admin/inventory-dashboard',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -186,11 +182,10 @@ export function useAttentionQueue() {
           priority: pendingOrders.data.length > 5 ? 'critical' : 'important',
           category: 'orders',
           title: `${pendingOrders.data.length} pending orders`,
-          value: totalValue,
-          valueDisplay: `$${totalValue.toLocaleString()}`,
+          value: String(totalValue),
           actionLabel: 'View',
-          actionRoute: '/admin/orders?status=pending',
-          timestamp: new Date(),
+          actionUrl: '/admin/orders?status=pending',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -204,11 +199,10 @@ export function useAttentionQueue() {
           priority: 'important',
           category: 'orders',
           title: `${wholesalePending.data.length} wholesale orders`,
-          value: totalValue,
-          valueDisplay: `$${totalValue.toLocaleString()}`,
+          value: String(totalValue),
           actionLabel: 'Review',
-          actionRoute: '/admin/wholesale-orders',
-          timestamp: new Date(),
+          actionUrl: '/admin/wholesale-orders',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -220,8 +214,8 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${lowStock.data.length} items low`,
           actionLabel: 'Reorder',
-          actionRoute: '/admin/inventory-dashboard',
-          timestamp: new Date(),
+          actionUrl: '/admin/inventory-dashboard',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -236,11 +230,10 @@ export function useAttentionQueue() {
             priority: 'important',
             category: 'customers',
             title: `${customerTabs.data.length} open tabs`,
-            value: totalOwed,
-            valueDisplay: `$${totalOwed.toLocaleString()}`,
+            value: String(totalOwed),
             actionLabel: 'Collect',
-            actionRoute: '/admin/customer-tabs',
-            timestamp: new Date(),
+            actionUrl: '/admin/customer-tabs',
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -253,8 +246,8 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
-          actionRoute: '/admin/deliveries',
-          timestamp: new Date(),
+          actionUrl: '/admin/deliveries',
+          timestamp: new Date().toISOString(),
         });
       }
 
@@ -270,12 +263,10 @@ export function useAttentionQueue() {
       const info = scoredItems.filter(i => i.priority === 'info');
 
       return {
-        critical,
-        important,
-        info,
-        all: scoredItems,
+        items: scoredItems,
+        criticalCount: critical.length,
         totalCount: scoredItems.length,
-        lastUpdated: new Date(),
+        lastUpdated: new Date().toISOString(),
       };
     },
     enabled: !!tenant?.id,
@@ -285,15 +276,15 @@ export function useAttentionQueue() {
 
   // Get counts for badges
   const counts: AttentionCounts = {
-    critical: data?.critical.length || 0,
-    important: data?.important.length || 0,
-    info: data?.info.length || 0,
+    critical: data?.criticalCount || 0,
+    important: data?.items?.filter(i => i.priority === 'important').length || 0,
+    info: data?.items?.filter(i => i.priority === 'info').length || 0,
     total: data?.totalCount || 0,
   };
 
   // Get top N items
   const getTopItems = (n: number = 5) => {
-    return data?.all.slice(0, n) || [];
+    return data?.items?.slice(0, n) || [];
   };
 
   // Check if there are urgent items

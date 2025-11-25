@@ -25,22 +25,7 @@ import {
   determineTierFromScore,
   getNextTierProgress
 } from '@/lib/hotbox/tierDetection';
-
-export interface TenantMetrics {
-  monthlyRevenue: number;
-  revenue: number;
-  locations: number;
-  teamSize: number;
-  ordersThisMonth: number;
-  customersCount: number;
-  // Add other fields required by TenantMetrics in types/hotbox.ts if needed
-  // For now we map what we have
-  activeOrders: number;
-  pendingOrders: number;
-  lowStockItems: number;
-  customerCount: number;
-  avgOrderValue: number;
-}
+import { TenantMetrics } from '@/types/hotbox';
 
 export interface BusinessTierData {
   tier: BusinessTier;
@@ -101,18 +86,25 @@ export function useBusinessTier() {
         .eq('tenant_id', tenant.id);
 
       const metrics: TenantMetrics = {
+        tenantId: tenant.id,
         monthlyRevenue: Number(tenantData?.monthly_revenue || 0),
         revenue: Number(tenantData?.monthly_revenue || 0),
         locations: Number((tenantData as any)?.usage?.locations || 1),
+        locationCount: Number((tenantData as any)?.usage?.locations || 1),
         teamSize: teamCount || 1,
-        ordersThisMonth: ordersCount || 0,
-        customersCount: customersCount || 0,
-        // Mocking missing fields for now as they require more queries
+        employeeCount: teamCount || 1,
+        totalOrders: ordersCount || 0,
+        activeCustomers: customersCount || 0,
+        customerCount: customersCount || 0,
+        averageOrderValue: 0,
+        avgOrderValue: 0,
         activeOrders: 0,
         pendingOrders: 0,
         lowStockItems: 0,
-        customerCount: customersCount || 0,
-        avgOrderValue: 0,
+        inventoryValue: 0,
+        wholesaleRevenue: 0,
+        deliveryCount: 0,
+        posTransactions: 0,
       };
 
       const currentTier = (tenantData?.business_tier as BusinessTier) || 'street';
