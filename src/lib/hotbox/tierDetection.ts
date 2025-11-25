@@ -287,20 +287,7 @@ export interface TierDetectionResult {
   suggestedUpgrade?: BusinessTier;
 }
 
-/**
- * Calculate confidence score (0-100)
- */
-function calculateConfidence(score: number, tier: BusinessTier): number {
-  const threshold = TIER_SCORE_THRESHOLDS[tier];
-  const nextTier = getNextTier(tier);
-  const nextThreshold = nextTier ? TIER_SCORE_THRESHOLDS[nextTier] : 100;
 
-  const range = nextThreshold - threshold;
-  const position = score - threshold;
-
-  // Higher confidence if we are well into the tier, lower if on the edge
-  return Math.min(100, Math.round((position / range) * 100));
-}
 
 /**
  * Detect business tier using multi-factor scoring
@@ -309,7 +296,6 @@ export async function detectBusinessTier(tenantId: string): Promise<TierDetectio
   const metrics = await fetchTenantMetrics(tenantId);
   const scoring = calculateTierScore(metrics);
   const tier = determineTierFromScore(scoring.total);
-  // const confidence = calculateConfidence(scoring.total, tier); // Unused for now
 
   // Check if close to upgrading
   const nextTier = getNextTier(tier);

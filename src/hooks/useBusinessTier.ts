@@ -5,6 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
@@ -19,13 +20,14 @@ import {
 } from '@/lib/presets/businessTiers';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { TenantMetrics } from '@/types/hotbox';
 
 import {
   calculateTierScore,
   determineTierFromScore,
   getNextTierProgress
 } from '@/lib/hotbox/tierDetection';
-import { TenantMetrics } from '@/types/hotbox';
+
 
 export interface BusinessTierData {
   tier: BusinessTier;
@@ -96,15 +98,15 @@ export function useBusinessTier() {
         totalOrders: ordersCount || 0,
         activeCustomers: customersCount || 0,
         customerCount: customersCount || 0,
-        averageOrderValue: 0,
-        avgOrderValue: 0,
         activeOrders: 0,
         pendingOrders: 0,
         lowStockItems: 0,
-        inventoryValue: 0,
+        avgOrderValue: 0,
+        averageOrderValue: 0,
         wholesaleRevenue: 0,
         deliveryCount: 0,
         posTransactions: 0,
+        inventoryValue: 0,
       };
 
       const currentTier = (tenantData?.business_tier as BusinessTier) || 'street';
@@ -164,15 +166,30 @@ export function useBusinessTier() {
     mutationFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      // Call the database function to recalculate
       const detectedTier = getSuggestedTier();
-      const { error } = await supabase.rpc('update_tenant_tier', {
-        p_tenant_id: tenant.id,
-        p_tier: detectedTier,
-        p_override: false,
-      });
 
-      if (error) throw error;
+      try {
+        // Try RPC first
+        const { error } = await supabase.rpc('update_tenant_tier', {
+          p_tenant_id: tenant.id,
+        });
+
+        if (error) throw error;
+      } catch (err) {
+        logger.warn('RPC update_tenant_tier failed, falling back to direct update', err);
+
+        // Fallback to direct update
+        const { error: updateError } = await supabase
+          .from('tenants')
+          .update({
+            business_tier: detectedTier,
+            tier_detected_at: new Date().toISOString(),
+            // Don't touch tier_override or monthly_revenue here as we might not have full data
+          })
+          .eq('id', tenant.id);
+
+        if (updateError) throw updateError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
@@ -209,10 +226,35 @@ export function useBusinessTier() {
     return determineTierFromScore(data.score);
   };
 
+  // Auto-update tier if qualified and not overridden
+  // We use a ref to prevent infinite loops if the update fails
+  const hasAttemptedUpdate = useRef(false);
+
+  useEffect(() => {
+    if (!data) return;
+
+    const suggestedTier = determineTierFromScore(data.score);
+    const currentTier = data.tier;
+    const isUpgrade = ['street', 'trap', 'block', 'hood', 'empire'].indexOf(suggestedTier) >
+      ['street', 'trap', 'block', 'hood', 'empire'].indexOf(currentTier);
+
+    // Only auto-update if:
+    // 1. We qualify for a higher tier
+    // 2. No manual override is set
+    // 3. We haven't already tried to update in this session
+    if (isUpgrade && !data.tierOverride && !hasAttemptedUpdate.current) {
+      logger.info('Auto-updating business tier', { from: currentTier, to: suggestedTier });
+      hasAttemptedUpdate.current = true;
+      recalculateTierMutation.mutate();
+    }
+  }, [data, recalculateTierMutation]);
+
   return {
     // Data
-    tier: data?.tier || 'street',
-    preset: data?.preset || getTierPreset('street'),
+    // Return suggested tier immediately if we qualify and aren't overridden
+    // This gives instant UI feedback while the DB update happens
+    tier: (data?.qualifiesForUpgrade && !data?.tierOverride) ? getSuggestedTier() : (data?.tier || 'street'),
+    preset: (data?.qualifiesForUpgrade && !data?.tierOverride) ? getTierPreset(getSuggestedTier()) : (data?.preset || getTierPreset('street')),
     metrics: data?.metrics || null,
     nextTier: data?.nextTier || null,
     nextTierRequirements: data?.nextTierRequirements || null,
@@ -235,7 +277,7 @@ export function useBusinessTier() {
     isFeatureEnabled,
     isFeatureHidden,
     getSuggestedTier,
-    getTierColor: () => getTierColor(data?.tier || 'street'),
+    getTierColor: () => getTierColor((data?.qualifiesForUpgrade && !data?.tierOverride) ? getSuggestedTier() : (data?.tier || 'street')),
   };
 }
 

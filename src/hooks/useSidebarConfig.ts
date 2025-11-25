@@ -68,8 +68,8 @@ export function useSidebarConfig() {
       isAutoDetected,
       sectionsCount: config.length,
       totalItems: config.reduce((sum, s) => sum + s.items.length, 0),
-      sections: config.map(s => ({ 
-        name: s.section, 
+      sections: config.map(s => ({
+        name: s.section,
         itemCount: s.items.length,
         items: s.items.map(i => i.id)
       }))
@@ -87,21 +87,21 @@ export function useSidebarConfig() {
       currentTier,
       sampleItem: baseConfig[0]?.items[0]
     });
-    
+
     const result = applyAllFilters(baseConfig, {
       role,
-      currentTier: currentTier as any, // BusinessTier used in filter contexts
+      currentTier: currentTier as any, // Cast to any to bypass strict type check between BusinessTier and SubscriptionTier
       checkPermission,
       canAccessFeature: canAccess,
     });
-    
+
     logger.debug('After filtering', {
       component: 'useSidebarConfig',
       sectionsCount: result.length,
       totalItems: result.reduce((sum, s) => sum + s.items.length, 0),
       sections: result.map(s => ({ name: s.section, itemCount: s.items.length }))
     });
-    
+
     return result;
   }, [baseConfig, role, currentTier, checkPermission, canAccess]);
 
@@ -111,14 +111,14 @@ export function useSidebarConfig() {
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
     const layoutPreset = getLayoutPreset(currentLayoutPreset);
-    
+
     // Check if it's a custom preset
     const customPresets = preferences?.customPresets || [];
     const customPreset = customPresets.find(p => p.id === currentLayoutPreset);
-    
+
     // Essential features that can never be hidden
     const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
-    
+
     // Get features hidden by disabled integrations
     const integrationHiddenFeatures: string[] = [];
     Object.entries({
@@ -132,22 +132,22 @@ export function useSidebarConfig() {
         integrationHiddenFeatures.push(...features);
       }
     });
-    
+
     const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures]
       .filter(id => !ESSENTIAL_FEATURES.includes(id)); // Never hide essential features
-    
+
     // Apply preset visibility if it's not 'all'
     let config = filteredConfig.map(section => ({
       ...section,
       items: section.items.filter(item => !allHiddenFeatures.includes(item.id)),
     }));
-    
+
     // Apply custom preset filtering first
     if (customPreset) {
       const visibleFeatures = customPreset.visibleFeatures;
       config = config.map(section => ({
         ...section,
-        items: section.items.filter(item => 
+        items: section.items.filter(item =>
           ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
         ),
       }));
@@ -157,12 +157,12 @@ export function useSidebarConfig() {
       const visibleFeatures = layoutPreset.visibleFeatures as string[];
       config = config.map(section => ({
         ...section,
-        items: section.items.filter(item => 
+        items: section.items.filter(item =>
           ESSENTIAL_FEATURES.includes(item.id) || visibleFeatures.includes(item.id)
         ),
       }));
     }
-    
+
     return config.filter(section => section.items.length > 0);
   }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
@@ -175,30 +175,66 @@ export function useSidebarConfig() {
 
     const enabledFeatures = businessPreset.enabledFeatures;
     const hiddenFeatures = businessPreset.hiddenFeatures;
-    
+
     // Essential features that should never be hidden regardless of tier
     const TIER_ESSENTIAL = ['dashboard', 'settings', 'billing', 'hotbox'];
 
-    return visibilityFilteredConfig.map(section => ({
+    // Map internal section IDs to display titles
+    const SECTION_MAPPING: Record<string, string[]> = {
+      'operations': ['⚙️ Operations', '⚙️ Manage', '📦 Inventory'],
+      'delivery': ['⚙️ Operations', '⚙️ Global Operations'], // Delivery often inside Operations
+      'wholesale': ['🛍️ Sales & Orders', '🛍️ Catalog & Sales'],
+      'people': ['👥 Customers', '👥 Customer Experience'],
+      'analytics': ['📊 Analytics & Finance', '📊 Intelligence', '📊 Reports'],
+      'compliance': ['⚙️ Global Operations', '⚙️ Manage'],
+      'settings': ['⚙️ Settings', '🔧 Settings', '🔧 System & Admin'],
+      'all': [], // Special case
+    };
+
+    // Filter items
+    const filteredSections = visibilityFilteredConfig.map(section => ({
       ...section,
       items: section.items.filter(item => {
         // Always show essential features
         if (TIER_ESSENTIAL.includes(item.id)) return true;
-        
+
         // Hide if explicitly in hidden features
         if (hiddenFeatures.includes(item.id) || hiddenFeatures.includes(item.featureId || '')) {
           return false;
         }
-        
+
         // Show if in enabled features
         if (enabledFeatures.includes(item.id) || enabledFeatures.includes(item.featureId || '')) {
           return true;
         }
-        
+
         // Default: show if not explicitly hidden
         return !hiddenFeatures.includes(item.id);
       }),
     })).filter(section => section.items.length > 0);
+
+    // Sort sections based on navSections order
+    if (businessPreset.navSections && !businessPreset.navSections.includes('all')) {
+      const preferredOrder = businessPreset.navSections;
+
+      return filteredSections.sort((a, b) => {
+        // Find which preferred section ID matches the display title
+        const getSectionIndex = (title: string) => {
+          const index = preferredOrder.findIndex(prefId => {
+            const mappedTitles = SECTION_MAPPING[prefId] || [];
+            return mappedTitles.includes(title);
+          });
+          return index === -1 ? 999 : index;
+        };
+
+        const indexA = getSectionIndex(a.section);
+        const indexB = getSectionIndex(b.section);
+
+        return indexA - indexB;
+      });
+    }
+
+    return filteredSections;
   }, [visibilityFilteredConfig, businessPreset]);
 
   // Generate hot items

@@ -95,7 +95,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           to={`/${tenantSlug}${item.path}`}
           onClick={handleClick}
           className={cn(
-            "flex items-center gap-2 w-full transition-transform duration-200 hover:translate-x-1",
+            "flex items-center gap-2 w-full transition-all duration-200 hover:translate-x-1 hover:bg-accent/50 p-2 rounded-md",
             item.hot && "font-semibold"
           )}
         >

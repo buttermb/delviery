@@ -258,7 +258,7 @@ export function HotboxDashboard() {
       // @ts-expect-error - Deep type instantiation from Supabase query
       const { count: deliveriesInProgress } = await supabase
         .from('deliveries')
-        .select('id', { count: 'exact', head: true })
+        .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenant.id)
         .eq('status', 'in_transit');
 
@@ -632,7 +632,7 @@ export function HotboxDashboard() {
                 key={action.id}
                 variant={action.isPersonalized ? 'secondary' : 'outline'}
                 className={cn(
-                  'flex items-center gap-2',
+                  'flex items-center gap-2 h-auto py-2 px-3',
                   action.isPersonalized && 'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20'
                 )}
                 onClick={() => {
@@ -640,10 +640,10 @@ export function HotboxDashboard() {
                   navigate(action.path);
                 }}
               >
-                {action.icon}
-                {action.label}
+                <span className="shrink-0">{action.icon}</span>
+                <span>{action.label}</span>
                 {action.isPersonalized && (
-                  <span className="text-xs text-muted-foreground">(for you)</span>
+                  <span className="text-xs text-muted-foreground ml-1">(for you)</span>
                 )}
               </Button>
             ))}
