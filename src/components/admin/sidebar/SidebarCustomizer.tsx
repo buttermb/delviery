@@ -29,7 +29,7 @@ export function SidebarCustomizer() {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-6">
+          <TabsList className={`grid ${import.meta.env.DEV ? 'grid-cols-4' : 'grid-cols-3'} mb-6`}>
             <TabsTrigger value="visibility" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Visibility</span>
@@ -45,11 +45,14 @@ export function SidebarCustomizer() {
               <span className="hidden sm:inline">Integrations</span>
               <span className="sm:hidden">Apps</span>
             </TabsTrigger>
-            <TabsTrigger value="debug" className="flex items-center gap-2">
-              <Bug className="h-4 w-4" />
-              <span className="hidden sm:inline">Debug</span>
-              <span className="sm:hidden">Debug</span>
-            </TabsTrigger>
+            {/* Debug tab only visible in development */}
+            {import.meta.env.DEV && (
+              <TabsTrigger value="debug" className="flex items-center gap-2">
+                <Bug className="h-4 w-4" />
+                <span className="hidden sm:inline">Debug</span>
+                <span className="sm:hidden">Debug</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="visibility" className="space-y-4">
@@ -64,9 +67,12 @@ export function SidebarCustomizer() {
             <IntegrationManager />
           </TabsContent>
 
-          <TabsContent value="debug" className="space-y-4">
-            <SidebarDebugger />
-          </TabsContent>
+          {/* Debug content only visible in development */}
+          {import.meta.env.DEV && (
+            <TabsContent value="debug" className="space-y-4">
+              <SidebarDebugger />
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>
