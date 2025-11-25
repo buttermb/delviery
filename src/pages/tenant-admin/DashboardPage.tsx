@@ -72,6 +72,299 @@ export default function TenantAdminDashboardPage() {
   const [generatingDemoData, setGeneratingDemoData] = useState(false);
   const { toast } = useToast();
 
+  // Enable real-time sync for dashboard data (MOVED BEFORE EARLY RETURN)
+  useRealtimeSync({
+    tenantId,
+    tables: ['wholesale_orders', 'wholesale_inventory', 'disposable_menus', 'customers'],
+    enabled: !!tenantId,
+  });
+
+  // Memoized helper functions for handling unlimited limits (MOVED BEFORE EARLY RETURN)
+  const isUnlimited = useCallback((resource: 'customers' | 'menus' | 'products') => {
+    const limit = getLimit(resource);
+    return limit === Infinity;
+  }, [getLimit]);
+
+  const getDisplayLimit = useCallback((resource: 'customers' | 'menus' | 'products') => {
+    return isUnlimited(resource) ? '∞' : getLimit(resource);
+  }, [isUnlimited, getLimit]);
+
+  const getUsagePercentage = useCallback((resource: 'customers' | 'menus' | 'products') => {
+    if (isUnlimited(resource)) return 0;
+    const current = getCurrent(resource);
+    const limit = getLimit(resource);
+    return limit > 0 ? (current / limit) * 100 : 0;
+  }, [isUnlimited, getCurrent, getLimit]);
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    navigate(`/${tenant?.slug}/admin/login`);
+  }, [logout, navigate, tenant?.slug]);
+
+  // Fetch today's metrics (MOVED BEFORE EARLY RETURN)
+  const { data: todayMetrics } = useQuery({
+    queryKey: ["tenant-dashboard-today", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return null;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      try {
+        // Get today's orders with error handling - handle missing tenant_id gracefully
+
+        // Try with tenant_id filter first
+        let ordersResult = await supabase
+          .from("wholesale_orders")
+          .select("total_amount, status")
+          .eq("tenant_id", tenantId)
+          .gte("created_at", today.toISOString())
+          .returns<DashboardOrderRow[]>();
+
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          ordersResult = await supabase
+            .from("wholesale_orders")
+            .select("total_amount, status")
+            .gte("created_at", today.toISOString())
+            .limit(100)
+            .returns<DashboardOrderRow[]>();
+        }
+
+        const orders = ordersResult.error ? [] : (ordersResult.data || []);
+
+        if (ordersResult.error && orders.length === 0) {
+          logger.warn("Failed to fetch today's orders", ordersResult.error, { component: 'DashboardPage' });
+        }
+
+        const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
+        const orderCount = orders?.length || 0;
+
+        // Get low stock items with error handling - handle missing tenant_id gracefully
+
+        // Try with tenant_id filter first
+        let inventoryResult = await supabase
+          .from("wholesale_inventory")
+          .select("id, product_name, quantity_lbs, reorder_point")
+          .eq("tenant_id", tenantId)
+          .returns<DashboardInventoryRow[]>();
+
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          inventoryResult = await supabase
+            .from("wholesale_inventory")
+            .select("id, product_name, quantity_lbs, reorder_point")
+            .limit(100)
+            .returns<DashboardInventoryRow[]>();
+        }
+
+        const inventory = inventoryResult.error ? [] : (inventoryResult.data || []);
+
+        if (inventoryResult.error && inventory.length === 0) {
+          logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
+        }
+
+        const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => ({
+          id: item.id,
+          strain: item.product_name || 'Unknown',
+          product_name: item.product_name,
+          quantity_lbs: item.quantity_lbs ?? 0,
+          reorder_point: item.reorder_point ?? 10,
+        })).filter(
+          (item) => Number(item.quantity_lbs || 0) <= Number(item.reorder_point || 10)
+        );
+
+        return {
+          sales,
+          orderCount,
+          lowStock: lowStock.slice(0, 5),
+        };
+      } catch (error) {
+        logger.error('Error fetching dashboard data', error, { component: 'DashboardPage' });
+        // Return safe defaults instead of throwing
+        return {
+          sales: 0,
+          orderCount: 0,
+          lowStock: [],
+        };
+      }
+    },
+    enabled: !!tenantId,
+    retry: 1, // Only retry once
+    retryDelay: 1000,
+  });
+
+  // Fetch recent activity (MOVED BEFORE EARLY RETURN)
+  const { data: recentActivity } = useQuery({
+    queryKey: ["recent-activity", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return [];
+
+      interface ActivityItem {
+        type: "menu_view" | "order_placed" | "menu_created";
+        message: string;
+        timestamp: string;
+      }
+
+      const activities: ActivityItem[] = [];
+
+      try {
+        // Get tenant's menus first to filter activity - handle missing tenant_id gracefully
+        let menusResult = await supabase
+          .from("disposable_menus")
+          .select("id, name, created_at")
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          menusResult = await supabase
+            .from("disposable_menus")
+            .select("id, name, created_at")
+            .order("created_at", { ascending: false })
+            .limit(100);
+        }
+
+        if (menusResult.error) {
+          logger.warn("Failed to fetch tenant menus", menusResult.error, { component: 'DashboardPage' });
+          return []; // Return empty array instead of throwing
+        }
+
+        const tenantMenus = menusResult.data;
+
+        if (!tenantMenus || tenantMenus.length === 0) return [];
+
+        const menuIds = tenantMenus.map((m) => m.id);
+
+        // Get recent menu views (from menu_access_logs via menus)
+        const { data: menuLogs, error: logsError } = await supabase
+          .from("menu_access_logs")
+          .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
+          .in("menu_id", menuIds)
+          .order("accessed_at", { ascending: false })
+          .limit(5);
+
+        if (!logsError && menuLogs) {
+          menuLogs.forEach((log: any) => {
+            activities.push({
+              type: "menu_view",
+              message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
+              timestamp: log.accessed_at,
+            });
+          });
+        }
+
+        // Get recent orders (via menu_id)
+        const { data: orders, error: ordersError } = await supabase
+          .from("menu_orders")
+          .select("id, total_amount, created_at, disposable_menus(name)")
+          .in("menu_id", menuIds)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (!ordersError && orders) {
+          orders.forEach((order: any) => {
+            activities.push({
+              type: "order_placed",
+              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
+              timestamp: order.created_at,
+            });
+          });
+        }
+
+        // Get recent menu creations (most recent 5)
+        tenantMenus.slice(0, 5).forEach((menu: any) => {
+          activities.push({
+            type: "menu_created",
+            message: `Menu "${menu.name}" created`,
+            timestamp: menu.created_at,
+          });
+        });
+
+        // Sort by timestamp and return top 5
+        return activities
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 5);
+      } catch (error) {
+        logger.error('Error fetching recent activity', error, { component: 'DashboardPage' });
+        return []; // Return empty array on error
+      }
+    },
+    enabled: !!tenantId,
+    retry: 1,
+    retryDelay: 1000,
+  });
+
+  // Calculate revenue and commission from actual transaction data (MOVED BEFORE EARLY RETURN)
+  const { data: revenueData } = useQuery({
+    queryKey: ["revenue-stats", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return { total: 0, commission: 0 };
+
+      try {
+        // Get tenant's menus first - handle missing tenant_id column gracefully
+        let tenantMenus: { id: string }[] | null = null;
+
+        let menusResult = await supabase
+          .from("disposable_menus")
+          .select("id")
+          .eq("tenant_id", tenantId);
+
+        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.message?.includes('column'))) {
+          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
+          // Retry without tenant_id filter
+          menusResult = await supabase
+            .from("disposable_menus")
+            .select("id")
+            .limit(1000);
+        }
+
+        if (menusResult.error) {
+          logger.warn("Failed to fetch tenant menus for revenue", menusResult.error, { component: 'DashboardPage' });
+          return { total: 0, commission: 0 };
+        }
+
+        tenantMenus = menusResult.data;
+
+        if (!tenantMenus || tenantMenus.length === 0) {
+          return { total: 0, commission: 0 };
+        }
+
+        const menuIds = tenantMenus.map((m) => m.id);
+
+        // Get all orders for these menus
+        const { data: orders, error: ordersError } = await supabase
+          .from("menu_orders")
+          .select("total_amount")
+          .in("menu_id", menuIds);
+
+        if (ordersError) {
+          logger.warn("Failed to fetch orders for revenue calculation", ordersError, { component: 'DashboardPage' });
+          return { total: 0, commission: 0 };
+        }
+
+        const total = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+        const commission = total * 0.03; // 3% commission
+
+        return { total, commission };
+      } catch (error) {
+        logger.error('Error calculating revenue', error, { component: 'DashboardPage' });
+        return { total: 0, commission: 0 };
+      }
+    },
+    enabled: !!tenantId,
+    retry: 1,
+    retryDelay: 1000,
+  });
+
   // Check if user came from signup (with safeguard against multiple calls)
   useEffect(() => {
     const state = location.state as { fromSignup?: boolean; showWelcome?: boolean } | null;
@@ -178,7 +471,7 @@ export default function TenantAdminDashboardPage() {
     }
   }, [authLoading, tenantId, tenant]);
 
-  // Early return if auth loading takes too long
+  // Early return if auth loading takes too long (NOW SAFE - ALL HOOKS ABOVE)
   if (authLoading) {
     // Show loading fallback, but with timeout protection
     return (
@@ -190,132 +483,6 @@ export default function TenantAdminDashboardPage() {
       </div>
     );
   }
-
-  // Enable real-time sync for dashboard data
-  useRealtimeSync({
-    tenantId,
-    tables: ['wholesale_orders', 'wholesale_inventory', 'disposable_menus', 'customers'],
-    enabled: !!tenantId,
-  });
-
-  // Memoized helper functions for handling unlimited limits
-  const isUnlimited = useCallback((resource: 'customers' | 'menus' | 'products') => {
-    const limit = getLimit(resource);
-    return limit === Infinity;
-  }, [getLimit]);
-
-  const getDisplayLimit = useCallback((resource: 'customers' | 'menus' | 'products') => {
-    return isUnlimited(resource) ? '∞' : getLimit(resource);
-  }, [isUnlimited, getLimit]);
-
-  const getUsagePercentage = useCallback((resource: 'customers' | 'menus' | 'products') => {
-    if (isUnlimited(resource)) return 0;
-    const current = getCurrent(resource);
-    const limit = getLimit(resource);
-    return limit > 0 ? (current / limit) * 100 : 0;
-  }, [isUnlimited, getCurrent, getLimit]);
-
-  // Fetch today's metrics
-  const { data: todayMetrics } = useQuery({
-    queryKey: ["tenant-dashboard-today", tenantId],
-    queryFn: async () => {
-      if (!tenantId) return null;
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      try {
-        // Get today's orders with error handling - handle missing tenant_id gracefully
-
-        // Try with tenant_id filter first
-        let ordersResult = await supabase
-          .from("wholesale_orders")
-          .select("total_amount, status")
-          .eq("tenant_id", tenantId)
-          .gte("created_at", today.toISOString())
-          .returns<DashboardOrderRow[]>();
-
-        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (ordersResult.error && (ordersResult.error.code === '42703' || ordersResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in wholesale_orders, querying without filter", ordersResult.error, { component: 'DashboardPage' });
-          // Retry without tenant_id filter
-          ordersResult = await supabase
-            .from("wholesale_orders")
-            .select("total_amount, status")
-            .gte("created_at", today.toISOString())
-            .limit(100)
-            .returns<DashboardOrderRow[]>();
-        }
-
-        const orders = ordersResult.error ? [] : (ordersResult.data || []);
-
-        if (ordersResult.error && orders.length === 0) {
-          logger.warn("Failed to fetch today's orders", ordersResult.error, { component: 'DashboardPage' });
-        }
-
-        const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
-        const orderCount = orders?.length || 0;
-
-        // Get low stock items with error handling - handle missing tenant_id gracefully
-
-        // Try with tenant_id filter first
-        let inventoryResult = await supabase
-          .from("wholesale_inventory")
-          .select("id, product_name, quantity_lbs, reorder_point")
-          .eq("tenant_id", tenantId)
-          .returns<DashboardInventoryRow[]>();
-
-        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
-          // Retry without tenant_id filter
-          inventoryResult = await supabase
-            .from("wholesale_inventory")
-            .select("id, product_name, quantity_lbs, reorder_point")
-            .limit(100)
-            .returns<DashboardInventoryRow[]>();
-        }
-
-        const inventory = inventoryResult.error ? [] : (inventoryResult.data || []);
-
-        if (inventoryResult.error && inventory.length === 0) {
-          logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
-        }
-
-        const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => ({
-          id: item.id,
-          strain: item.product_name || 'Unknown',
-          product_name: item.product_name,
-          quantity_lbs: item.quantity_lbs ?? 0,
-          reorder_point: item.reorder_point ?? 10,
-        })).filter(
-          (item) => Number(item.quantity_lbs || 0) <= Number(item.reorder_point || 10)
-        );
-
-        return {
-          sales,
-          orderCount,
-          lowStock: lowStock.slice(0, 5),
-        };
-      } catch (error) {
-        logger.error('Error fetching dashboard data', error, { component: 'DashboardPage' });
-        // Return safe defaults instead of throwing
-        return {
-          sales: 0,
-          orderCount: 0,
-          lowStock: [],
-        };
-      }
-    },
-    enabled: !!tenantId,
-    retry: 1, // Only retry once
-    retryDelay: 1000,
-  });
-
-  const handleLogout = useCallback(async () => {
-    await logout();
-    navigate(`/${tenant?.slug}/admin/login`);
-  }, [logout, navigate, tenant?.slug]);
 
   // Memoize trial calculations
   const trialInfo = useMemo(() => {
@@ -344,194 +511,6 @@ export default function TenantAdminDashboardPage() {
   const onboardingProgress = onboardingSteps.length > 0
     ? (completedSteps / onboardingSteps.length) * 100
     : 100;
-  // Fetch recent activity (menu views, orders, menu creations)
-  const { data: recentActivity } = useQuery({
-    queryKey: ["recent-activity", tenantId],
-    queryFn: async () => {
-      if (!tenantId) return [];
-
-      interface ActivityItem {
-        type: "menu_view" | "order_placed" | "menu_created";
-        message: string;
-        timestamp: string;
-      }
-
-      const activities: ActivityItem[] = [];
-
-      try {
-        // Get tenant's menus first to filter activity - handle missing tenant_id gracefully
-        let menusResult = await supabase
-          .from("disposable_menus")
-          .select("id, name, created_at")
-          .eq("tenant_id", tenantId)
-          .order("created_at", { ascending: false })
-          .limit(100);
-
-        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (menusResult.error && (menusResult.error.code === '42703' || menusResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", menusResult.error, { component: 'DashboardPage' });
-          // Retry without tenant_id filter
-          menusResult = await supabase
-            .from("disposable_menus")
-            .select("id, name, created_at")
-            .order("created_at", { ascending: false })
-            .limit(100);
-        }
-
-        if (menusResult.error) {
-          logger.warn("Failed to fetch tenant menus", menusResult.error, { component: 'DashboardPage' });
-          return []; // Return empty array instead of throwing
-        }
-
-        const tenantMenus = menusResult.data;
-
-        if (!tenantMenus || tenantMenus.length === 0) return [];
-
-        const menuIds = tenantMenus.map((m) => m.id);
-
-        // Get recent menu views (from menu_access_logs via menus)
-        const { data: menuLogs, error: logsError } = await supabase
-          .from("menu_access_logs")
-          .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
-          .in("menu_id", menuIds)
-          .order("accessed_at", { ascending: false })
-          .limit(5);
-
-        if (!logsError && menuLogs) {
-          menuLogs.forEach((log: any) => {
-            activities.push({
-              type: "menu_view",
-              message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
-              timestamp: log.accessed_at,
-            });
-          });
-        }
-
-        // Get recent orders (via menu_id)
-        const { data: orders, error: ordersError } = await supabase
-          .from("menu_orders")
-          .select("id, total_amount, created_at, disposable_menus(name)")
-          .in("menu_id", menuIds)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        if (!ordersError && orders) {
-          orders.forEach((order: any) => {
-            activities.push({
-              type: "order_placed",
-              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
-              timestamp: order.created_at,
-            });
-          });
-        }
-
-        // Get recent menu creations (most recent 5)
-        tenantMenus.slice(0, 5).forEach((menu: any) => {
-          activities.push({
-            type: "menu_created",
-            message: `Menu "${menu.name}" created`,
-            timestamp: menu.created_at,
-          });
-        });
-
-        // Sort by timestamp and return top 5
-        return activities
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-          .slice(0, 5);
-      } catch (error) {
-        logger.error('Error fetching recent activity', error, { component: 'DashboardPage' });
-        return []; // Return empty array on error
-      }
-    },
-    enabled: !!tenantId,
-    retry: 1,
-    retryDelay: 1000,
-  });
-
-  // Calculate revenue and commission from actual transaction data
-  const { data: revenueData } = useQuery({
-    queryKey: ["revenue-stats", tenantId],
-    queryFn: async () => {
-      if (!tenantId) return { total: 0, commission: 0 };
-
-      try {
-        // Get tenant's menus first - handle missing tenant_id column gracefully
-        let tenantMenus: { id: string }[] | null = null;
-
-        // Try with tenant_id filter first
-        let result = await supabase
-          .from("disposable_menus")
-          .select("id")
-          .eq("tenant_id", tenantId);
-
-        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
-        if (result.error && (result.error.code === '42703' || result.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in disposable_menus, querying without filter", result.error, { component: 'DashboardPage' });
-          // Retry without tenant_id filter
-          result = await supabase
-            .from("disposable_menus")
-            .select("id")
-            .limit(100); // Limit to prevent loading too much
-        }
-
-        // If still has error, return defaults
-        if (result.error) {
-          logger.warn("Failed to fetch menus for revenue stats", result.error, { component: 'DashboardPage' });
-          return { total: 0, commission: 0 };
-        }
-
-        tenantMenus = result.data;
-
-        if (!tenantMenus || tenantMenus.length === 0) return { total: 0, commission: 0 };
-
-        const menuIds = tenantMenus.map((m) => m.id);
-
-        // Get confirmed orders from these menus for total revenue
-        const { data: orders, error: ordersError } = await supabase
-          .from("menu_orders")
-          .select("total_amount")
-          .in("menu_id", menuIds)
-          .eq("status", "confirmed") as { data: { total_amount: number }[] | null; error: unknown | null };
-
-        if (ordersError) {
-          logger.warn("Failed to fetch orders for revenue stats", ordersError, { component: 'DashboardPage' });
-          return { total: 0, commission: 0 };
-        }
-
-        const total = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
-
-        // Get actual commission transactions (more accurate than calculating)
-        // Handle gracefully if table doesn't exist yet
-        let commission = 0;
-        try {
-          const { data: commissions, error: commissionError } = await supabase
-            .from("commission_transactions")
-            .select("commission_amount, customer_payment_amount")
-            .eq("tenant_id", tenantId)
-            .in("status", ["pending", "processed", "paid"]);
-
-          // If table doesn't exist (error code 42P01), use fallback calculation
-          if (commissionError && commissionError.code === "42P01") {
-            // Table doesn't exist - calculate 2% commission manually as fallback
-            commission = total * 0.02;
-          } else if (commissions) {
-            commission = commissions.reduce((sum, c) => sum + (Number(c.commission_amount) || 0), 0);
-          }
-        } catch (error) {
-          // Table doesn't exist - calculate 2% commission manually as fallback
-          commission = total * 0.02;
-        }
-
-        return { total, commission };
-      } catch (error) {
-        logger.error('Error fetching revenue data', error, { component: 'DashboardPage' });
-        return { total: 0, commission: 0 };
-      }
-    },
-    enabled: !!tenantId,
-    retry: 1,
-    retryDelay: 1000,
-  });
 
   return (
     <div className="min-h-screen bg-background">
