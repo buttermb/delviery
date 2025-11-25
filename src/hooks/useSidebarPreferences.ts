@@ -48,13 +48,22 @@ export function useSidebarPreferences() {
   const { data: preferences, isLoading } = useQuery({
     queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
     queryFn: async (): Promise<SidebarPreferences> => {
-      if (!tenant?.id || !admin?.userId) return DEFAULT_PREFERENCES;
+      if (!tenant?.id) return DEFAULT_PREFERENCES;
+      
+      // Get auth user ID with defensive fallback
+      let userId = admin?.userId;
+      if (!userId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        userId = session?.user?.id;
+      }
+      
+      if (!userId) return DEFAULT_PREFERENCES;
 
       const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('*')
         .eq('tenant_id', tenant.id)
-        .eq('user_id', admin.userId)
+        .eq('user_id', userId)
         .maybeSingle();
 
       if (error) {
@@ -84,7 +93,7 @@ export function useSidebarPreferences() {
         customPresets: ((data as any).custom_presets as any[]) || [],
       };
     },
-    enabled: !!tenant?.id && !!admin?.userId,
+    enabled: !!tenant?.id,
     staleTime: 1000, // Reduce cache time for faster updates
     refetchOnMount: 'always', // Always fetch fresh data on mount
   });
@@ -92,7 +101,16 @@ export function useSidebarPreferences() {
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<SidebarPreferences>) => {
-      if (!tenant?.id || !admin?.userId) throw new Error('Tenant and admin required');
+      if (!tenant?.id) throw new Error('Tenant required');
+      
+      // Get auth user ID with defensive fallback
+      let userId = admin?.userId;
+      if (!userId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        userId = session?.user?.id;
+      }
+      
+      if (!userId) throw new Error('User ID required');
 
       const current = preferences || DEFAULT_PREFERENCES;
       const updated: SidebarPreferences = {
@@ -104,7 +122,7 @@ export function useSidebarPreferences() {
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
-          user_id: admin.userId,
+          user_id: userId,
           operation_size: updated.operationSize,
           custom_layout: updated.customLayout,
           favorites: updated.favorites,
