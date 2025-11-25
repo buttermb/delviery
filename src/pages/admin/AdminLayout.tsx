@@ -63,8 +63,8 @@ const AdminLayout = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       const searchPath = tenantSlug
-        ? `/ ${tenantSlug} /admin/global - search ? q = ${encodeURIComponent(searchQuery)} `
-        : `/ admin / search ? q = ${encodeURIComponent(searchQuery)} `;
+        ? `/${tenantSlug}/admin/global-search?q=${encodeURIComponent(searchQuery)}`
+        : `/admin/search?q=${encodeURIComponent(searchQuery)}`;
       navigate(searchPath);
       setSearchQuery("");
     }
@@ -83,8 +83,8 @@ const AdminLayout = () => {
     const breadcrumbs = filteredPaths.map((path, index) => {
       const pathSlice = filteredPaths.slice(0, index + 1);
       const url = tenantSlug
-        ? `/ ${tenantSlug} /admin/${pathSlice.join('/')} `
-        : `/ admin / ${pathSlice.join('/')} `;
+        ? `/${tenantSlug}/admin/${pathSlice.join('/')}`
+        : `/admin/${pathSlice.join('/')}`;
 
       const label = path
         .split('-')

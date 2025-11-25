@@ -24,7 +24,7 @@ import {
 /**
  * Generate hot items based on business context
  */
-export function generateHotItems(context: BusinessContext, tenantSlug: string): HotItem[] {
+export function generateHotItems(context: BusinessContext): HotItem[] {
   const hotItems: HotItem[] = [];
   const now = new Date();
   const timeOfDay = context.timeOfDay ?? now.getHours();
@@ -35,7 +35,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-restock',
       name: `⚠️ Restock ${context.lowStock} Items`,
-      path: `/${tenantSlug}/admin/stock-alerts`,
+      path: '/admin/stock-alerts',
       icon: AlertCircle,
       priority: context.lowStock > 20 ? 'urgent' : 'high',
       badge: context.lowStock,
@@ -48,7 +48,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-pending-orders',
       name: `📦 ${context.pendingOrders} Orders Waiting`,
-      path: `/${tenantSlug}/admin/disposable-menu-orders`,
+      path: '/admin/disposable-menu-orders',
       icon: ShoppingCart,
       priority: context.pendingOrders > 50 ? 'urgent' : 'high',
       badge: context.pendingOrders,
@@ -61,7 +61,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-morning-prep',
       name: '☕ Morning Prep',
-      path: `/${tenantSlug}/admin/dashboard`,
+      path: '/admin/dashboard',
       icon: Calendar,
       priority: 'normal',
       featureId: 'dashboard',
@@ -73,7 +73,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-end-of-day',
       name: '🌙 End of Day',
-      path: `/${tenantSlug}/admin/pos-analytics`,
+      path: '/admin/pos-analytics',
       icon: FileText,
       priority: 'normal',
       featureId: 'pos-analytics',
@@ -85,7 +85,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-weekly-review',
       name: '📊 Weekly Review',
-      path: `/${tenantSlug}/admin/reports`,
+      path: '/admin/reports',
       icon: TrendingUp,
       priority: 'normal',
       featureId: 'reports',
@@ -97,7 +97,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-add-to-menu',
       name: '✨ Add to Menu',
-      path: `/${tenantSlug}/admin/disposable-menus`,
+      path: '/admin/disposable-menus',
       icon: Share2,
       priority: 'normal',
       featureId: 'disposable-menus',
@@ -109,7 +109,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-credit-alert',
       name: `💳 $${context.creditOwed.toLocaleString()} Credit Owed`,
-      path: `/${tenantSlug}/admin/big-plug-clients`,
+      path: '/admin/big-plug-clients',
       icon: AlertCircle,
       priority: context.creditOwed > 5000 ? 'urgent' : 'high',
       featureId: 'customers',
@@ -121,7 +121,7 @@ export function generateHotItems(context: BusinessContext, tenantSlug: string): 
     hotItems.push({
       id: 'hot-fronted-alert',
       name: `📋 $${context.frontedTotal.toLocaleString()} Fronted`,
-      path: `/${tenantSlug}/admin/fronted-inventory`,
+      path: '/admin/fronted-inventory',
       icon: Package,
       priority: context.frontedTotal > 10000 ? 'urgent' : 'high',
       featureId: 'fronted-inventory',
