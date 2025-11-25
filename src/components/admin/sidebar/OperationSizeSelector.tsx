@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { useOperationSize } from '@/hooks/useOperationSize';
+import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { Badge } from '@/components/ui/badge';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Info } from 'lucide-react';
 import type { OperationSize } from '@/types/sidebar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const SIZE_LABELS: Record<OperationSize, string> = {
   street: 'Street (Solo Runner)',
@@ -35,6 +37,10 @@ export function OperationSizeSelector() {
     resetToAuto,
     isLoading,
   } = useOperationSize();
+  
+  const { preferences } = useSidebarPreferences();
+  const currentPreset = preferences?.layoutPreset || 'default';
+  const isPresetOverriding = currentPreset !== 'default';
 
   const handleSizeChange = (value: string) => {
     setOperationSize(value as OperationSize);
@@ -56,6 +62,16 @@ export function OperationSizeSelector() {
             Currently using: <strong>{SIZE_LABELS[detectedSize]}</strong>
           </span>
         </div>
+      )}
+      
+      {isPresetOverriding && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Your selected layout preset <strong>"{currentPreset.replace('_', ' ')}"</strong> overrides operation size settings. 
+            Switch to "Default" preset to use operation-based sidebar layout.
+          </AlertDescription>
+        </Alert>
       )}
 
       <RadioGroup

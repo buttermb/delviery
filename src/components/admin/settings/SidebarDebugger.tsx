@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
 import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Info, Layers } from 'lucide-react';
 
 export function SidebarDebugger() {
     const {
@@ -27,9 +28,61 @@ export function SidebarDebugger() {
     const totalFeatures = allFeatures.length;
     const visibleFeatures = sidebarConfig.reduce((acc, section) => acc + section.items.length, 0);
     const hiddenCount = totalFeatures - visibleFeatures;
+    
+    // Determine base config source
+    const currentLayoutPreset = preferences?.layoutPreset || 'default';
+    const baseConfigSource = currentLayoutPreset !== 'default' 
+      ? 'Enterprise (overridden by preset)' 
+      : `${operationSize.charAt(0).toUpperCase() + operationSize.slice(1)} Operation`;
+    
+    // Calculate filtering stages
+    const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
+    const integrationHiddenFeatures = getHiddenFeaturesByIntegrations(enabledIntegrations);
+    const featuresAfterIntegrationFilter = totalFeatures - integrationHiddenFeatures.length;
 
     return (
         <div className="space-y-6">
+            <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                    <strong>Base Config Source:</strong> {baseConfigSource}
+                    {currentLayoutPreset !== 'default' && (
+                        <span className="block mt-1 text-xs">
+                            Preset "{currentLayoutPreset}" uses enterprise config to access all {totalFeatures} features
+                        </span>
+                    )}
+                </AlertDescription>
+            </Alert>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Layers className="h-4 w-4" />
+                        Feature Filtering Pipeline
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center p-2 bg-muted rounded">
+                            <span>1. Base Config ({baseConfigSource})</span>
+                            <Badge>{totalFeatures} features</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-2 bg-muted rounded">
+                            <span>2. After Integration Filter</span>
+                            <Badge>{featuresAfterIntegrationFilter} features</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-2 bg-muted rounded">
+                            <span>3. After Preset/Tier Filter</span>
+                            <Badge>{visibleFeatures} features</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-2 bg-primary/10 rounded font-medium">
+                            <span>Final Sidebar</span>
+                            <Badge variant="default">{visibleFeatures} visible</Badge>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                     <CardHeader className="pb-2">
