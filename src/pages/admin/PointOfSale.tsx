@@ -78,7 +78,6 @@ export default function PointOfSale() {
         .select('id, name, price, category, stock_quantity, thc_percent, image_url')
         .eq('tenant_id', tenantId)
         .eq('in_stock', true)
-        .gt('stock_quantity', 0)
         .order('name');
 
       if (error) throw error;
