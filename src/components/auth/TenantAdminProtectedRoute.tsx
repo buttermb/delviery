@@ -323,7 +323,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Check if payment method is required and not added
   const tenantData = tenant as any;
-  const needsPaymentMethod = !tenantData?.payment_method_added;
+  const needsPaymentMethod = !tenantData?.payment_method_added && 
+                            tenantData?.subscription_status !== 'active';
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
   const isOnboardingRoute = location.pathname.includes('/admin/welcome') || 
                            location.pathname.includes('/admin/onboarding');
