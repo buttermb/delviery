@@ -153,6 +153,7 @@ export async function fetchAttentionItems(
       .eq('tenant_id', tenantId)
       .eq('status', 'pending'),
     
+    // @ts-expect-error - Deep type instantiation from Supabase query
     // Late deliveries (ETA passed)
     supabase
       .from('deliveries')
@@ -169,6 +170,7 @@ export async function fetchAttentionItems(
       .eq('status', 'in_transit')
       .gte('estimated_delivery_time', now.toISOString()),
     
+    // @ts-expect-error - Deep type instantiation from Supabase query
     // Out of stock products
     supabase
       .from('products')

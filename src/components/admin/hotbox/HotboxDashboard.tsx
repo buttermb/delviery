@@ -190,7 +190,7 @@ export function HotboxDashboard() {
   const { greeting, context } = getGreeting(workflow);
   
   // Get tier-specific motivational message
-  const userName = admin?.firstName || admin?.email?.split('@')[0] || 'there';
+  const userName = admin?.email?.split('@')[0] || 'there';
   const tierGreeting = useTierGreeting(userName, tier);
 
   // Fetch dashboard pulse data
@@ -272,12 +272,14 @@ export function HotboxDashboard() {
       const totalTabsOwed = customerTabs?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
       const overdueTabsCount = customerTabs?.length || 0;
       
-      // Fetch deliveries in progress
-      const { count: deliveriesInProgress } = await supabase
+      // @ts-expect-error - Deep type instantiation from Supabase query
+      const deliveriesQuery = await supabase
         .from('deliveries')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenant.id)
         .eq('status', 'in_transit');
+      
+      const deliveriesInProgress = deliveriesQuery.count || 0;
         
       // Fetch late deliveries (ETA passed)
       const { count: lateDeliveries } = await supabase
@@ -495,7 +497,7 @@ export function HotboxDashboard() {
   });
 
   // Build quick actions from tier preset + personalized suggestions
-  const presetActions = preset.quickActions.map(action => ({
+  const presetActions: QuickAction[] = preset.quickActions.map(action => ({
     id: action.id,
     label: action.label,
     icon: iconMap[action.icon] || <Package className="h-5 w-5" />,
@@ -516,7 +518,7 @@ export function HotboxDashboard() {
       isPersonalized: true,
     }));
   
-  const quickActions = [...presetActions, ...personalizedActions];
+  const quickActions: QuickAction[] = [...presetActions, ...personalizedActions];
 
   const isLoading = tierLoading || pulseLoading;
 
@@ -752,7 +754,7 @@ function LocationOverview() {
           // Check for issues (out of stock products)
           const { count: outOfStock } = await supabase
             .from('products')
-            .select('*', { count: 'exact', head: true })
+            .select('id', { count: 'exact', head: true })
             .eq('tenant_id', tenant.id)
             .lte('stock_quantity', 0)
             .eq('status', 'active');
@@ -899,13 +901,15 @@ function ExecutiveSummary() {
       const profitMargin = 25;
       const netProfit = Math.round(mtdRevenue * (profitMargin / 100));
       
-      // Cash position - sum of customer payments received
-      const { data: payments } = await supabase
+      // @ts-expect-error - Deep type instantiation from Supabase query
+      const paymentsQuery = await supabase
         .from('wholesale_payments')
         .select('amount')
         .eq('tenant_id', tenant.id)
         .eq('status', 'completed')
         .gte('created_at', monthStart.toISOString());
+      
+      const payments = paymentsQuery.data || [];
       
       const cashInflows = payments?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
       const cashPosition = Math.round(mtdRevenue * 0.4) + cashInflows; // Estimate: 40% of revenue + payments

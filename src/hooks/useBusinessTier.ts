@@ -22,6 +22,7 @@ import { logger } from '@/lib/logger';
 
 export interface TenantMetrics {
   monthlyRevenue: number;
+  revenue: number;
   locations: number;
   teamSize: number;
   ordersThisMonth: number;
@@ -86,6 +87,7 @@ export function useBusinessTier() {
 
       const metrics: TenantMetrics = {
         monthlyRevenue: Number(tenantData?.monthly_revenue || 0),
+        revenue: Number(tenantData?.monthly_revenue || 0),
         locations: Number((tenantData as any)?.usage?.locations || 1),
         teamSize: teamCount || 1,
         ordersThisMonth: ordersCount || 0,
@@ -138,8 +140,11 @@ export function useBusinessTier() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Call the database function to recalculate
+      const detectedTier = getSuggestedTier();
       const { error } = await supabase.rpc('update_tenant_tier', {
         p_tenant_id: tenant.id,
+        p_tier: detectedTier,
+        p_override: false,
       });
 
       if (error) throw error;

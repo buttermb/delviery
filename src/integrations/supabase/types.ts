@@ -3032,6 +3032,7 @@ export type Database = {
           address_encrypted: string | null
           allergies: string[] | null
           allergies_encrypted: string | null
+          balance: number | null
           business_name: string | null
           caregiver_name: string | null
           caregiver_name_encrypted: string | null
@@ -3100,6 +3101,7 @@ export type Database = {
           address_encrypted?: string | null
           allergies?: string[] | null
           allergies_encrypted?: string | null
+          balance?: number | null
           business_name?: string | null
           caregiver_name?: string | null
           caregiver_name_encrypted?: string | null
@@ -3168,6 +3170,7 @@ export type Database = {
           address_encrypted?: string | null
           allergies?: string[] | null
           allergies_encrypted?: string | null
+          balance?: number | null
           business_name?: string | null
           caregiver_name?: string | null
           caregiver_name_encrypted?: string | null
@@ -9870,6 +9873,7 @@ export type Database = {
           email_verification_sent_at: string | null
           email_verification_token_expires_at: string | null
           email_verified: boolean | null
+          first_name: string | null
           id: string
           invited_at: string | null
           name: string
@@ -9887,6 +9891,7 @@ export type Database = {
           email_verification_sent_at?: string | null
           email_verification_token_expires_at?: string | null
           email_verified?: boolean | null
+          first_name?: string | null
           id?: string
           invited_at?: string | null
           name: string
@@ -9904,6 +9909,7 @@ export type Database = {
           email_verification_sent_at?: string | null
           email_verification_token_expires_at?: string | null
           email_verified?: boolean | null
+          first_name?: string | null
           id?: string
           invited_at?: string | null
           name?: string
@@ -9927,6 +9933,7 @@ export type Database = {
       tenants: {
         Row: {
           business_name: string
+          business_tier: string | null
           cancelled_at: string | null
           company_size: string | null
           compliance_verified: boolean | null
@@ -9941,6 +9948,7 @@ export type Database = {
           last_size_detection_at: string | null
           limits: Json | null
           monthly_orders: number | null
+          monthly_revenue: number | null
           mrr: number | null
           onboarded: boolean | null
           onboarding_completed: boolean | null
@@ -9959,6 +9967,8 @@ export type Database = {
           subscription_status: string
           suspended_reason: string | null
           team_size: number | null
+          tier_detected_at: string | null
+          tier_override: boolean | null
           trial_cancelled_at: string | null
           trial_converted_at: string | null
           trial_days: number | null
@@ -9973,6 +9983,7 @@ export type Database = {
         }
         Insert: {
           business_name: string
+          business_tier?: string | null
           cancelled_at?: string | null
           company_size?: string | null
           compliance_verified?: boolean | null
@@ -9987,6 +9998,7 @@ export type Database = {
           last_size_detection_at?: string | null
           limits?: Json | null
           monthly_orders?: number | null
+          monthly_revenue?: number | null
           mrr?: number | null
           onboarded?: boolean | null
           onboarding_completed?: boolean | null
@@ -10005,6 +10017,8 @@ export type Database = {
           subscription_status: string
           suspended_reason?: string | null
           team_size?: number | null
+          tier_detected_at?: string | null
+          tier_override?: boolean | null
           trial_cancelled_at?: string | null
           trial_converted_at?: string | null
           trial_days?: number | null
@@ -10019,6 +10033,7 @@ export type Database = {
         }
         Update: {
           business_name?: string
+          business_tier?: string | null
           cancelled_at?: string | null
           company_size?: string | null
           compliance_verified?: boolean | null
@@ -10033,6 +10048,7 @@ export type Database = {
           last_size_detection_at?: string | null
           limits?: Json | null
           monthly_orders?: number | null
+          monthly_revenue?: number | null
           mrr?: number | null
           onboarded?: boolean | null
           onboarding_completed?: boolean | null
@@ -10051,6 +10067,8 @@ export type Database = {
           subscription_status?: string
           suspended_reason?: string | null
           team_size?: number | null
+          tier_detected_at?: string | null
+          tier_override?: boolean | null
           trial_cancelled_at?: string | null
           trial_converted_at?: string | null
           trial_days?: number | null
@@ -11992,6 +12010,10 @@ export type Database = {
         Args: { p_dlq_id: string; p_user_id?: string }
         Returns: string
       }
+      track_feature_usage: {
+        Args: { p_feature_id: string; p_tenant_id: string; p_user_id: string }
+        Returns: undefined
+      }
       track_ip_address: {
         Args: { _ip_address: string; _user_id: string }
         Returns: undefined
@@ -12007,6 +12029,10 @@ export type Database = {
           _flower_grams: number
           _user_id: string
         }
+        Returns: undefined
+      }
+      update_tenant_tier: {
+        Args: { p_override?: boolean; p_tenant_id: string; p_tier: string }
         Returns: undefined
       }
       validate_courier_pin_session: {

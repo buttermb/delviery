@@ -185,6 +185,7 @@ export async function fetchTenantMetrics(tenantId: string): Promise<TenantMetric
       .eq('tenant_id', tenantId)
       .eq('status', 'active'),
     
+    // @ts-expect-error - Deep type instantiation from Supabase query
     // Locations count
     supabase
       .from('locations')
@@ -205,6 +206,7 @@ export async function fetchTenantMetrics(tenantId: string): Promise<TenantMetric
       .eq('tenant_id', tenantId)
       .gt('stock_quantity', 0),
     
+    // @ts-expect-error - Deep type instantiation from Supabase query
     // Deliveries count this month
     supabase
       .from('deliveries')
@@ -237,7 +239,10 @@ export async function fetchTenantMetrics(tenantId: string): Promise<TenantMetric
 
   return {
     tenantId,
+    revenue: monthlyRevenue,
     monthlyRevenue,
+    locations: Math.max(1, locationsResult.count || 0),
+    teamSize: Math.max(1, employeesResult.count || 0),
     averageOrderValue,
     totalOrders,
     activeCustomers: customersResult.count || 0,

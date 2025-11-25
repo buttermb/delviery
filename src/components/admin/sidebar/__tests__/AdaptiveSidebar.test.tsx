@@ -90,6 +90,25 @@ describe('AdaptiveSidebar', () => {
       operationSize: 'small' as const,
       detectedSize: 'small' as const,
       isAutoDetected: false,
+      businessTier: 'street' as const,
+      businessPreset: { 
+        tier: 'street' as const,
+        displayName: 'Street Vendor',
+        emoji: '🛒',
+        tagline: 'Solo hustler',
+        revenueRange: '<$10K',
+        typicalLocations: '1',
+        typicalTeam: '1',
+        enabledFeatures: ['all'],
+        hiddenFeatures: [],
+        dashboardWidgets: [],
+        pulseMetrics: [],
+        quickActions: [],
+        navSections: [],
+        automation: { enabled: false, rules: [] },
+        limits: { locations: 1, users: 1, products: 100, ordersPerMonth: 100 } 
+      },
+      isFeatureEnabledByTier: () => true,
     });
 
     render(<AdaptiveSidebar />, { wrapper: createWrapper() });

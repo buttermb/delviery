@@ -41,12 +41,15 @@ export interface TierDetectionResult {
 
 export interface TenantMetrics {
   tenantId: string;
+  revenue: number;
   monthlyRevenue: number;
   averageOrderValue: number;
   totalOrders: number;
   activeCustomers: number;
   locationCount: number;
   employeeCount: number;
+  locations: number;
+  teamSize: number;
   inventoryValue: number;
   wholesaleRevenue: number;
   deliveryCount: number;
@@ -154,10 +157,11 @@ export interface DailyPulse {
 export interface QuickAction {
   id: string;
   label: string;
-  icon: string;
-  route: string;
+  icon: string | any;
+  path: string;
+  route?: string;
   shortcut?: string;
-  priority: number;
+  priority?: number;
   isPersonalized?: boolean;
 }
 

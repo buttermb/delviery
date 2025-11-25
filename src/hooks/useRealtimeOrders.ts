@@ -151,7 +151,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
                 // Validate before processing
                 if (!validateOrder(newOrder)) {
                   logRealtimeWarn('Invalid order data received', {
-                    orderId: newOrder?.id,
+                    orderId: (newOrder as any)?.id,
                     source: 'useRealtimeOrders'
                   });
                   logger.error('Received invalid order data, refetching...');
