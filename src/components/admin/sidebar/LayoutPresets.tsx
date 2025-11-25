@@ -7,10 +7,12 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
+import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
+import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CustomPresetBuilder } from './CustomPresetBuilder';
 import {
   Tooltip,
@@ -21,10 +23,19 @@ import {
 
 export function LayoutPresets() {
   const { preferences, updatePreferences } = useSidebarPreferences();
+  const { sidebarConfig } = useSidebarConfig();
   const presets = getLayoutPresets();
   const currentPreset = preferences?.layoutPreset || 'default';
   const [importing, setImporting] = useState(false);
   const [applyingPreset, setApplyingPreset] = useState<string | null>(null);
+  
+  // Calculate actual feature counts based on current sidebar state
+  const actualFeatureCount = useMemo(() => {
+    return sidebarConfig.reduce((acc, section) => acc + section.items.length, 0);
+  }, [sidebarConfig]);
+  
+  const allFeatures = getAllFeatures();
+  const totalPossibleFeatures = allFeatures.length;
 
   const handleSelectPreset = async (presetId: string) => {
     if (applyingPreset) return; // Prevent multiple clicks
@@ -132,9 +143,18 @@ export function LayoutPresets() {
           <div className="grid gap-3 sm:grid-cols-2">
             {presets.map((preset) => {
               const isActive = currentPreset === preset.id;
-              const featureCount = preset.visibleFeatures === 'all' 
-                ? 'All' 
-                : preset.visibleFeatures.length;
+              
+              // Calculate actual feature count for this preset
+              let featureCount: string | number;
+              if (preset.visibleFeatures === 'all') {
+                featureCount = isActive ? actualFeatureCount : totalPossibleFeatures;
+              } else {
+                // For specific presets, count non-essential features + essential features
+                const presetFeatures = preset.visibleFeatures.filter(id => 
+                  allFeatures.some(f => f.id === id)
+                );
+                featureCount = presetFeatures.length + ESSENTIAL_FEATURES.length;
+              }
 
               return (
                 <button

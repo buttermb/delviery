@@ -49,7 +49,7 @@ export function useSidebarConfig() {
     hiddenFeatures: [],
     sectionOrder: [],
     customSections: [],
-    enabledIntegrations: ['mapbox', 'stripe'], // Stripe enabled by default
+    enabledIntegrations: ['mapbox', 'stripe'], // Both integrations enabled by default
     customMenuItems: [],
     layoutPreset: 'default',
     sidebarBehavior: {
@@ -60,11 +60,20 @@ export function useSidebarConfig() {
     customPresets: [],
   };
 
-  // Get base config for operation size
+  // Get base config - use enterprise for non-default presets to enable full feature access
   const baseConfig = useMemo(() => {
-    const config = getSidebarConfig(operationSize);
-    return config;
-  }, [operationSize]);
+    const currentLayoutPreset = preferences?.layoutPreset || 'default';
+    
+    // If user explicitly chose a preset (other than default), use ENTERPRISE config
+    // This ensures all features are available for the preset to filter from
+    if (currentLayoutPreset !== 'default') {
+      logger.info('Using enterprise base config for preset:', currentLayoutPreset, { component: 'useSidebarConfig' });
+      return getSidebarConfig('enterprise');
+    }
+    
+    // For 'default' preset, use operation-size-based config
+    return getSidebarConfig(operationSize);
+  }, [operationSize, preferences?.layoutPreset]);
 
   // 1. Apply Security Filters (Role, Permissions) - ALWAYS APPLY
   const securityFilteredConfig = useMemo(() => {
