@@ -545,7 +545,16 @@ const App = () => {
                                     <Route path="/:tenantSlug/admin/help" element={<TenantAdminProtectedRoute><HelpPage /></TenantAdminProtectedRoute>} />
 
                                     {/* Select Plan Page (for adding payment method) */}
-                                    <Route path="/:tenantSlug/admin/select-plan" element={<TenantAdminProtectedRoute><TenantAdminSelectPlanPage /></TenantAdminProtectedRoute>} />
+                                    <Route 
+                                      path="/:tenantSlug/admin/select-plan" 
+                                      element={
+                                        <Suspense fallback={<LoadingFallback />}>
+                                          <TenantAdminProtectedRoute>
+                                            <TenantAdminSelectPlanPage />
+                                          </TenantAdminProtectedRoute>
+                                        </Suspense>
+                                      } 
+                                    />
 
                                     {/* Tenant Admin Portal - Exact redirect */}
                                     <Route path="/:tenantSlug/admin" element={<Navigate to="dashboard" replace />} />
