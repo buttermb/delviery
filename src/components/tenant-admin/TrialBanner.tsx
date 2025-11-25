@@ -6,14 +6,15 @@ import { Link } from "react-router-dom";
 
 interface TrialBannerProps {
   daysRemaining: number;
-  trialEndsAt: string;
+  trialEndsAt: string | null;
   tenantSlug: string;
 }
 
 export function TrialBanner({ daysRemaining, trialEndsAt, tenantSlug }: TrialBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || daysRemaining < 0) {
+  // Guard: Don't show if dismissed, expired, or no trial end date
+  if (dismissed || daysRemaining < 0 || !trialEndsAt) {
     return null;
   }
 

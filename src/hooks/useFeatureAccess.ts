@@ -37,6 +37,9 @@ export function useFeatureAccess() {
     
     const status = tenant.subscription_status;
     
+    // Guard: Null check for status
+    if (!status) return false;
+    
     // Blocked statuses
     if (status === 'suspended' || status === 'cancelled') {
       return false;
@@ -80,8 +83,13 @@ export function useFeatureAccess() {
       return true;
     }
     
-    // Check subscription validity first
+    // Guard: Check subscription validity first
     if (!subscriptionValid) {
+      return false;
+    }
+    
+    // Guard: Null check for tier
+    if (!currentTier) {
       return false;
     }
     

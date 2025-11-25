@@ -245,16 +245,7 @@ export default function TenantAdminBillingPage() {
   const handlePlanChange = async (targetPlan: SubscriptionTier, useStripe = false) => {
     if (!tenantId) return;
 
-    // Check Stripe health before proceeding
-    if (!stripeHealth?.valid) {
-      toast({
-        title: 'Stripe Not Configured',
-        description: stripeHealth?.error || 'Payment processing is not available. Please contact support.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    // Guard: Validate user is not already on this plan
     const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
     const currentIndex = tierHierarchy.indexOf(currentTier);
     const targetIndex = tierHierarchy.indexOf(targetPlan);
@@ -263,6 +254,16 @@ export default function TenantAdminBillingPage() {
       toast({
         title: 'Already on this plan',
         description: `You're already on the ${TIER_NAMES[targetPlan]} plan.`,
+      });
+      return;
+    }
+
+    // Guard: Check Stripe health before proceeding
+    if (!stripeHealth?.valid) {
+      toast({
+        title: 'Stripe Not Configured',
+        description: stripeHealth?.error || 'Payment processing is not available. Please contact support.',
+        variant: 'destructive',
       });
       return;
     }
@@ -379,8 +380,8 @@ export default function TenantAdminBillingPage() {
           <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and view billing history</p>
         </div>
 
-        {/* Payment Method Missing Alert */}
-        {tenant?.payment_method_added === false && (
+        {/* Payment Method Missing Alert - Only show for trial users */}
+        {tenant?.payment_method_added === false && tenant?.subscription_status === 'trial' && (
           <Alert className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500 border-2">
             <AlertCircle className="h-5 w-5 text-yellow-600" />
             <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
