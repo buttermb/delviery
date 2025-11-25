@@ -38,9 +38,14 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
   const { statusFilter } = options;
 
   const fetchOrders = useCallback(async () => {
+    if (!tenant?.id) {
+      logger.debug('[useRealtimeOrders] No tenant ID, skipping fetch');
+      return;
+    }
+
     // Debug: Log query initiation
     logOrderQuery('Realtime orders fetch started', {
-      tenantId: tenant?.id,
+      tenantId: tenant.id,
       statusFilter,
       source: 'useRealtimeOrders'
     });
@@ -60,6 +65,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
             products (name, image_url)
           )
         `)
+        .eq('tenant_id', tenant.id) // FIX: Add tenant isolation
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -129,7 +135,7 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
     // Wait for connection to be ready before subscribing
     connectionTimeout = setTimeout(() => {
       const newChannel = supabase
-        .channel('orders-realtime', {
+        .channel(`orders-realtime-${tenant.id}`, {
           config: {
             broadcast: { self: false },
             presence: { key: '' },
@@ -140,7 +146,8 @@ export const useRealtimeOrders = (options: UseRealtimeOrdersOptions = {}) => {
           {
             event: '*',
             schema: 'public',
-            table: 'orders'
+            table: 'orders',
+            filter: `tenant_id=eq.${tenant.id}` // FIX: Add tenant isolation to realtime
           },
           (payload) => {
             try {

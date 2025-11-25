@@ -102,10 +102,13 @@ export default function PointOfSale() {
   };
 
   const loadCustomers = async () => {
+    if (!tenantId) return;
+    
     try {
       const { data, error } = await supabase
         .from('customers')
         .select('id, first_name, last_name, customer_type, loyalty_points')
+        .eq('tenant_id', tenantId) // FIX: Add tenant isolation
         .order('first_name');
 
       if (error) throw error;
@@ -121,7 +124,7 @@ export default function PointOfSale() {
       
       setCustomers(mappedCustomers);
     } catch (error) {
-      logger.error('Error loading customers', error);
+      logger.error('Error loading customers', error, { component: 'PointOfSale', tenantId });
     }
   };
 
@@ -194,11 +197,60 @@ export default function PointOfSale() {
       return;
     }
 
+    if (!tenantId) {
+      toast({ title: 'Tenant not loaded', variant: 'destructive' });
+      return;
+    }
+
     setLoading(true);
     try {
       const { subtotal, tax, discount, total } = calculateTotals();
+      
+      // Generate transaction number
+      const transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
 
-      // Update inventory for each item
+      // 1. Create POS transaction record FIRST
+      const transactionItems = cart.map(item => ({
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.subtotal,
+        category: item.category
+      }));
+
+      const { data: transaction, error: transactionError } = await supabase
+        .from('pos_transactions')
+        .insert({
+          tenant_id: tenantId,
+          transaction_number: transactionNumber,
+          customer_id: selectedCustomer?.id || null,
+          items: transactionItems,
+          subtotal: subtotal,
+          tax_amount: tax,
+          discount_amount: discount,
+          total_amount: total,
+          payment_method: paymentMethod,
+          payment_status: 'completed',
+          status: 'completed',
+          notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
+        } as any)
+        .select()
+        .single();
+
+      if (transactionError) {
+        logger.error('Error creating POS transaction', transactionError, { component: 'PointOfSale' });
+        throw transactionError;
+      }
+
+      logger.info('POS transaction created', { 
+        transactionId: transaction?.id, 
+        transactionNumber, 
+        total,
+        component: 'PointOfSale' 
+      });
+
+      // 2. Update inventory for each item
       for (const item of cart) {
         const { error } = await supabase
           .from('products')
@@ -208,49 +260,59 @@ export default function PointOfSale() {
         if (error) throw error;
 
         // Log inventory update activity
-        if (tenantId) {
-          await logActivityAuto(
-            tenantId,
-            ActivityActions.UPDATE_INVENTORY,
-            'product',
-            item.id,
-            { quantity_sold: item.quantity, previous_stock: item.stock_quantity, new_stock: item.stock_quantity - item.quantity }
-          );
-        }
-      }
-
-      // Log sale completion activity
-      if (tenantId) {
         await logActivityAuto(
           tenantId,
-          ActivityActions.COMPLETE_ORDER,
-          'pos_sale',
-          undefined,
+          ActivityActions.UPDATE_INVENTORY,
+          'product',
+          item.id,
           { 
-            total,
-            subtotal,
-            tax,
-            discount,
-            item_count: cart.length,
-            payment_method: paymentMethod,
-            customer_id: selectedCustomer?.id
+            quantity_sold: item.quantity, 
+            previous_stock: item.stock_quantity, 
+            new_stock: item.stock_quantity - item.quantity,
+            pos_transaction_id: transaction?.id
           }
         );
       }
 
-      // If customer is selected, we could create an order
-      // Note: orders table requires user_id so walk-in customers can't have orders
-      // Consider adding a pos_transactions table in the future for better tracking
+      // 3. Log sale completion activity
+      await logActivityAuto(
+        tenantId,
+        ActivityActions.COMPLETE_ORDER,
+        'pos_transaction',
+        transaction?.id,
+        { 
+          transaction_number: transactionNumber,
+          total,
+          subtotal,
+          tax,
+          discount,
+          item_count: cart.length,
+          payment_method: paymentMethod,
+          customer_id: selectedCustomer?.id
+        }
+      );
+
+      // 4. Update customer loyalty points if applicable
+      if (selectedCustomer) {
+        const pointsEarned = Math.floor(total); // 1 point per dollar
+        await supabase
+          .from('customers')
+          .update({ 
+            loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned 
+          })
+          .eq('id', selectedCustomer.id);
+      }
       
       toast({ 
         title: 'Sale completed!', 
-        description: `Total: $${total.toFixed(2)} - Inventory updated` 
+        description: `Transaction ${transactionNumber} - Total: $${total.toFixed(2)}` 
       });
 
       clearCart();
       loadProducts();
+      loadCustomers(); // Refresh customer loyalty points
     } catch (error) {
-      logger.error('Error completing sale', error);
+      logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
       toast({ 
         title: 'Error completing sale', 
         description: error instanceof Error ? error.message : 'Unknown error',
