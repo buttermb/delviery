@@ -7,6 +7,7 @@
 import { useSidebarPreferences } from './useSidebarPreferences';
 import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
 import { applyLayoutPreset } from '@/lib/sidebar/layoutPresets';
+import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 
 export function useFeatureVisibility() {
   const { preferences, updatePreferences } = useSidebarPreferences();
@@ -70,8 +71,7 @@ export function useFeatureVisibility() {
    * Hide all features (except essential)
    */
   const hideAll = async (allFeatureIds: string[]) => {
-    const essential = ['dashboard', 'settings', 'billing'];
-    const toHide = allFeatureIds.filter(id => !essential.includes(id));
+    const toHide = allFeatureIds.filter(id => !ESSENTIAL_FEATURES.includes(id));
     await updatePreferences({ hiddenFeatures: toHide });
   };
 

@@ -141,7 +141,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'Mapbox',
     description: 'Maps, geocoding, and route optimization',
     icon: MapPin,
-    featuresEnabled: ['logistics', 'route-planning', 'driver-tracking', 'live-map'],
+    featuresEnabled: ['live-map', 'delivery-management', 'locations'],
     setupUrl: '/admin/settings?tab=integrations&setup=mapbox',
     connected: !!import.meta.env.VITE_MAPBOX_TOKEN,
   },
@@ -150,7 +150,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'Stripe',
     description: 'Accept payments from YOUR customers (requires your own Stripe account)',
     icon: CreditCard,
-    featuresEnabled: ['subscriptions', 'payment-links', 'invoices'],
+    featuresEnabled: ['crm-invoices', 'invoice-management', 'billing'],
     setupUrl: '/admin/settings?tab=integrations&setup=stripe',
     connected: false, // Will be checked dynamically
   },
@@ -159,7 +159,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'Twilio',
     description: 'SMS notifications and 2FA',
     icon: MessageSquare,
-    featuresEnabled: ['sms-notifications', '2fa', 'customer-alerts'],
+    featuresEnabled: ['notifications', 'marketing-automation'],
     setupUrl: '/admin/settings?tab=integrations&setup=twilio',
     connected: false, // Will be checked dynamically
   },
@@ -168,7 +168,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'SendGrid',
     description: 'Email campaigns and notifications',
     icon: Mail,
-    featuresEnabled: ['email-campaigns', 'email-notifications', 'marketing'],
+    featuresEnabled: ['marketing-automation', 'notifications'],
     setupUrl: '/admin/settings?tab=integrations&setup=sendgrid',
     connected: false, // Will be checked dynamically
   },
@@ -177,7 +177,7 @@ export const INTEGRATIONS: Record<string, IntegrationConfig> = {
     name: 'Custom API',
     description: 'Connect your own APIs and webhooks',
     icon: Zap,
-    featuresEnabled: ['webhooks', 'custom-integrations'],
+    featuresEnabled: ['custom-integrations', 'api-access', 'automation'],
     setupUrl: '/admin/settings?tab=integrations&setup=custom',
     connected: false, // Will be checked dynamically
   },

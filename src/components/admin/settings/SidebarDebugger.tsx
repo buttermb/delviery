@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
-import { getAllFeatures } from '@/lib/sidebar/featureRegistry';
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { useIntegrationManager } from '@/hooks/useIntegrationManager';
+import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
+import { CheckCircle } from 'lucide-react';
 
 export function SidebarDebugger() {
     const {
@@ -18,7 +19,9 @@ export function SidebarDebugger() {
     } = useSidebarConfig();
 
     const { preferences } = useSidebarPreferences();
+    const { connectionStatuses, getIntegrationsWithStatus } = useIntegrationManager();
     const allFeatures = getAllFeatures();
+    const integrations = getIntegrationsWithStatus();
 
     // Calculate stats
     const totalFeatures = allFeatures.length;
@@ -55,7 +58,7 @@ export function SidebarDebugger() {
                         <div className="flex items-center justify-between">
                             <span className="text-2xl font-bold capitalize">{businessTier}</span>
                             <Badge variant={businessTier === 'empire' ? 'default' : 'outline'}>
-                                {businessPreset?.name || 'Unknown'}
+                                {businessTier || 'street'}
                             </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -84,6 +87,44 @@ export function SidebarDebugger() {
 
             <Card>
                 <CardHeader>
+                    <CardTitle>Integration Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-3">
+                        {integrations.map(integration => {
+                            const isEnabled = integration.enabled;
+                            const isConnected = connectionStatuses[integration.id] ?? false;
+                            const affectedFeatures = integration.featuresEnabled.length;
+
+                            return (
+                                <div key={integration.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <integration.icon className="h-5 w-5 text-muted-foreground" />
+                                        <div>
+                                            <p className="font-medium">{integration.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {affectedFeatures} features • {integration.featuresEnabled.join(', ')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {isEnabled ? (
+                                            <Badge variant={isConnected ? 'default' : 'secondary'}>
+                                                {isConnected ? 'Connected' : 'Enabled'}
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="outline">Disabled</Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
                     <CardTitle>Feature Visibility Audit</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -100,11 +141,17 @@ export function SidebarDebugger() {
 
                                 const isHiddenByUser = preferences?.hiddenFeatures?.includes(feature.id);
 
-                                const isHiddenByIntegration = !['dashboard', 'settings', 'billing'].includes(feature.id) &&
-                                    (
-                                        (feature.id.includes('stripe') && !preferences?.enabledIntegrations?.includes('stripe')) ||
-                                        (feature.id.includes('mapbox') && !preferences?.enabledIntegrations?.includes('mapbox'))
-                                    );
+                                const isEssential = ESSENTIAL_FEATURES.includes(feature.id);
+
+                                // Check if hidden by integration using the single source of truth
+                                const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
+                                const integrationHiddenFeatures = getHiddenFeaturesByIntegrations(enabledIntegrations);
+                                const isHiddenByIntegration = integrationHiddenFeatures.includes(feature.id);
+
+                                // Find which integration is responsible
+                                const hidingIntegration = integrations.find(int => 
+                                    !int.enabled && int.featuresEnabled.includes(feature.id)
+                                );
 
                                 return (
                                     <div key={feature.id} className="flex items-center justify-between py-2 border-b last:border-0">
@@ -114,6 +161,7 @@ export function SidebarDebugger() {
                                                 <p className="font-medium text-sm">{feature.name}</p>
                                                 <p className="text-xs text-muted-foreground">
                                                     ID: {feature.id} • Min Tier: {feature.minBusinessTier}
+                                                    {isEssential && ' • Essential'}
                                                 </p>
                                             </div>
                                         </div>
@@ -124,12 +172,14 @@ export function SidebarDebugger() {
                                                     <CheckCircle className="h-3 w-3 mr-1" /> Visible
                                                 </Badge>
                                             ) : (
-                                                <div className="flex gap-1">
-                                                    {isHiddenByTier && <Badge variant="secondary">Tier Locked</Badge>}
+                                                <div className="flex gap-1 flex-wrap justify-end">
+                                                    {isHiddenByTier && <Badge variant="secondary">Tier: {feature.minBusinessTier}</Badge>}
                                                     {isHiddenByUser && <Badge variant="secondary">User Hidden</Badge>}
-                                                    {isHiddenByIntegration && <Badge variant="secondary">Integration Missing</Badge>}
+                                                    {isHiddenByIntegration && hidingIntegration && (
+                                                        <Badge variant="secondary">{hidingIntegration.name} Disabled</Badge>
+                                                    )}
                                                     {!isHiddenByTier && !isHiddenByUser && !isHiddenByIntegration && (
-                                                        <Badge variant="destructive">Unknown Hidden</Badge>
+                                                        <Badge variant="outline">Unknown</Badge>
                                                     )}
                                                 </div>
                                             )}

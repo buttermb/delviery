@@ -90,13 +90,23 @@ export const LAYOUT_PRESETS: Record<string, LayoutPreset> = {
 function validatePresetFeatures(presetId: string, features: string[] | 'all'): string[] | 'all' {
   if (features === 'all') return 'all';
 
+  const invalidFeatures: string[] = [];
   const validFeatures = features.filter(id => {
     const exists = !!FEATURE_REGISTRY[id];
     if (!exists) {
+      invalidFeatures.push(id);
       logger.warn(`Invalid feature ID in preset ${presetId}: ${id}`, { component: 'layoutPresets' });
     }
     return exists;
   });
+
+  // In development mode, throw error for invalid features
+  if (import.meta.env.DEV && invalidFeatures.length > 0) {
+    throw new Error(
+      `Invalid feature IDs in preset "${presetId}": ${invalidFeatures.join(', ')}. ` +
+      `These features do not exist in FEATURE_REGISTRY. Please fix the preset configuration.`
+    );
+  }
 
   return validFeatures;
 }

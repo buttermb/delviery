@@ -23,6 +23,8 @@ import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
 import { generateHotItems, getBusinessContext } from '@/lib/sidebar/hotItemsLogic';
 import { getLayoutPreset } from '@/lib/sidebar/layoutPresets';
+import { getHiddenFeaturesByIntegrations } from '@/lib/sidebar/integrations';
+import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { SidebarSection, HotItem } from '@/types/sidebar';
 
 /**
@@ -47,7 +49,7 @@ export function useSidebarConfig() {
     hiddenFeatures: [],
     sectionOrder: [],
     customSections: [],
-    enabledIntegrations: ['mapbox', 'stripe', 'twilio', 'sendgrid'], // Added stripe and others by default
+    enabledIntegrations: ['mapbox', 'stripe'], // Stripe enabled by default
     customMenuItems: [],
     layoutPreset: 'default',
     sidebarBehavior: {
@@ -85,22 +87,8 @@ export function useSidebarConfig() {
     const customPresets = preferences?.customPresets || [];
     const customPreset = customPresets.find(p => p.id === currentLayoutPreset);
 
-    // Essential features that can never be hidden
-    const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing'];
-
-    // Get features hidden by disabled integrations
-    const integrationHiddenFeatures: string[] = [];
-    Object.entries({
-      mapbox: ['logistics', 'route-planning', 'driver-tracking', 'live-map'],
-      stripe: ['subscriptions', 'payment-links', 'invoices', 'crm-invoices', 'invoice-management'],
-      twilio: ['sms-notifications', '2fa', 'customer-alerts'],
-      sendgrid: ['email-campaigns', 'email-notifications', 'marketing', 'marketing-automation'],
-      custom: ['webhooks', 'custom-integrations'],
-    }).forEach(([integrationId, features]) => {
-      if (!enabledIntegrations.includes(integrationId)) {
-        integrationHiddenFeatures.push(...features);
-      }
-    });
+    // Get features hidden by disabled integrations (using single source of truth)
+    const integrationHiddenFeatures = getHiddenFeaturesByIntegrations(enabledIntegrations);
 
     const allHiddenFeatures = [...hiddenFeatures, ...integrationHiddenFeatures]
       .filter(id => !ESSENTIAL_FEATURES.includes(id));
@@ -150,8 +138,8 @@ export function useSidebarConfig() {
     const enabledFeatures = businessPreset.enabledFeatures;
     const hiddenFeatures = businessPreset.hiddenFeatures;
 
-    // Essential features that should never be hidden regardless of tier
-    const TIER_ESSENTIAL = ['dashboard', 'settings', 'billing', 'hotbox'];
+    // Use centralized essential features
+    const TIER_ESSENTIAL = ESSENTIAL_FEATURES;
 
     // Filter items
     const filteredSections = visibilityFilteredConfig.map(section => ({
