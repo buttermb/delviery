@@ -35,6 +35,7 @@ export default function SelectPlanPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [loadingPortal, setLoadingPortal] = useState(false);
 
   // Load plans from database
   useEffect(() => {
@@ -182,11 +183,36 @@ export default function SelectPlanPage() {
               Back to Dashboard
             </Button>
             <Button
-              onClick={() => {
-                window.open('https://billing.stripe.com/p/login/test_00g00000000000000000', '_blank');
+              onClick={async () => {
+                if (!tenant?.id) return;
+                setLoadingPortal(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke('stripe-customer-portal', {
+                    body: { tenant_id: tenant.id }
+                  });
+                  if (error) throw error;
+                  if (data?.url) {
+                    window.open(data.url, '_blank');
+                  } else {
+                    throw new Error('No portal URL received');
+                  }
+                } catch (error: any) {
+                  logger.error('Failed to open customer portal', error);
+                  toast.error('Failed to open subscription management');
+                } finally {
+                  setLoadingPortal(false);
+                }
               }}
+              disabled={loadingPortal}
             >
-              Manage Subscription
+              {loadingPortal ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                'Manage Subscription'
+              )}
             </Button>
           </div>
         </div>
