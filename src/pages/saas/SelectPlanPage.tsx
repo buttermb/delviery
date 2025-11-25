@@ -203,8 +203,7 @@ export default function SelectPlanPage() {
         <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>
             By starting a trial, you agree to our Terms of Service and Privacy Policy.
-            Your card will be charged ${" "}
-            <span className="font-semibold">after 14 days</span> unless you cancel.
+            Your card will be charged <span className="font-semibold">after 14 days</span> unless you cancel.
           </p>
         </div>
       </div>
