@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
+import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { CustomPreset } from '@/types/sidebar';
 import { Plus, Save, Trash2, Edit, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -84,15 +85,14 @@ export function CustomPresetBuilder() {
     } else {
       setEditingPresetId(null);
       setPresetName('');
-      setSelectedFeatures(['dashboard', 'settings', 'billing']); // Essential features pre-selected
+      setSelectedFeatures(ESSENTIAL_FEATURES); // Essential features pre-selected
     }
     setIsOpen(true);
   };
 
   const handleToggleFeature = (featureId: string) => {
     // Essential features can't be unchecked
-    const essentialFeatures = ['dashboard', 'settings', 'billing'];
-    if (essentialFeatures.includes(featureId)) {
+    if (ESSENTIAL_FEATURES.includes(featureId)) {
       toast.info('Essential features cannot be removed');
       return;
     }
@@ -110,9 +110,8 @@ export function CustomPresetBuilder() {
     
     if (allSelected) {
       // Unselect all (except essential)
-      const essentialFeatures = ['dashboard', 'settings', 'billing'];
       setSelectedFeatures(prev => 
-        prev.filter(id => !featureIds.includes(id) || essentialFeatures.includes(id))
+        prev.filter(id => !featureIds.includes(id) || ESSENTIAL_FEATURES.includes(id))
       );
     } else {
       // Select all
@@ -251,7 +250,7 @@ export function CustomPresetBuilder() {
                           </div>
                           <div className="grid gap-3">
                             {features.map(feature => {
-                              const isEssential = ['dashboard', 'settings', 'billing'].includes(feature.id);
+                              const isEssential = ESSENTIAL_FEATURES.includes(feature.id);
                               const isSelected = selectedFeatures.includes(feature.id);
 
                               return (

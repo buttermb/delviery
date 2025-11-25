@@ -494,6 +494,11 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     }
 };
 
+/**
+ * Essential features that cannot be hidden
+ */
+export const ESSENTIAL_FEATURES = ['dashboard', 'settings', 'billing', 'hotbox'];
+
 export function getFeature(id: string): FeatureDef | undefined {
     return FEATURE_REGISTRY[id];
 }

@@ -13,7 +13,7 @@ import { useFeatureVisibility } from '@/hooks/useFeatureVisibility';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import type { FeatureId } from '@/lib/featureConfig';
-import { getAllFeatures } from '@/lib/sidebar/featureRegistry';
+import { getAllFeatures, ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { ChevronDown, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -115,7 +115,7 @@ export function FeatureVisibilityManager() {
                       const visible = isFeatureVisible(feature.id);
                       const minTierIndex = tiers.indexOf(feature.minBusinessTier);
                       const isLocked = minTierIndex > currentTierIndex;
-                      const isEssential = ['dashboard', 'settings', 'billing'].includes(feature.id);
+                      const isEssential = ESSENTIAL_FEATURES.includes(feature.id);
 
                       return (
                         <div

@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FeatureVisibilityManager } from './FeatureVisibilityManager';
 import { IntegrationManager } from './IntegrationManager';
 import { LayoutPresets } from './LayoutPresets';
-import { Settings, Eye, Plug, Layout } from 'lucide-react';
+import { SidebarDebugger } from '@/components/admin/settings/SidebarDebugger';
+import { Settings, Eye, Plug, Layout, Bug } from 'lucide-react';
 
 export function SidebarCustomizer() {
   const [activeTab, setActiveTab] = useState('visibility');
@@ -28,21 +29,26 @@ export function SidebarCustomizer() {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-6">
+          <TabsList className="grid grid-cols-4 mb-6">
             <TabsTrigger value="visibility" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Feature Visibility</span>
-              <span className="sm:hidden">Visibility</span>
+              <span className="hidden sm:inline">Visibility</span>
+              <span className="sm:hidden">Show</span>
             </TabsTrigger>
             <TabsTrigger value="presets" className="flex items-center gap-2">
               <Layout className="h-4 w-4" />
-              <span className="hidden sm:inline">Layout Presets</span>
+              <span className="hidden sm:inline">Presets</span>
               <span className="sm:hidden">Presets</span>
             </TabsTrigger>
             <TabsTrigger value="integrations" className="flex items-center gap-2">
               <Plug className="h-4 w-4" />
               <span className="hidden sm:inline">Integrations</span>
-              <span className="sm:hidden">Integrations</span>
+              <span className="sm:hidden">Apps</span>
+            </TabsTrigger>
+            <TabsTrigger value="debug" className="flex items-center gap-2">
+              <Bug className="h-4 w-4" />
+              <span className="hidden sm:inline">Debug</span>
+              <span className="sm:hidden">Debug</span>
             </TabsTrigger>
           </TabsList>
 
@@ -56,6 +62,10 @@ export function SidebarCustomizer() {
 
           <TabsContent value="integrations" className="space-y-4">
             <IntegrationManager />
+          </TabsContent>
+
+          <TabsContent value="debug" className="space-y-4">
+            <SidebarDebugger />
           </TabsContent>
         </Tabs>
       </CardContent>
