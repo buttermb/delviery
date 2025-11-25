@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
  * - Gets operation size (auto or manual)
  * - Gets base config for that size
  * - Filters by role, tier, and feature access
+ * - Filters by business tier (5-tier Hotbox system)
  * - Adds hot items
  * - Adds favorites section
  * - Applies user preferences
@@ -16,6 +17,7 @@ import { useOperationSize } from './useOperationSize';
 import { useSidebarPreferences } from './useSidebarPreferences';
 import { usePermissions } from './usePermissions';
 import { useFeatureAccess } from './useFeatureAccess';
+import { useBusinessTier } from './useBusinessTier';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { getSidebarConfig } from '@/lib/sidebar/sidebarConfigs';
 import { applyAllFilters } from '@/lib/sidebar/sidebarFilters';
@@ -32,6 +34,7 @@ export function useSidebarConfig() {
   const { role, checkPermission } = usePermissions();
   const { currentTier, canAccess } = useFeatureAccess();
   const { tenant } = useTenantAdminAuth();
+  const { preset: businessPreset, isFeatureEnabled, tier: businessTier } = useBusinessTier();
 
   // Safe defaults for preferences
   const safePreferences = preferences || {
@@ -163,6 +166,41 @@ export function useSidebarConfig() {
     return config.filter(section => section.items.length > 0);
   }, [filteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
+  // Filter by business tier (5-tier Hotbox system)
+  const businessTierFilteredConfig = useMemo(() => {
+    // If business tier is not loaded or preset has 'all' enabled, skip filtering
+    if (!businessPreset || businessPreset.enabledFeatures.includes('all')) {
+      return visibilityFilteredConfig;
+    }
+
+    const enabledFeatures = businessPreset.enabledFeatures;
+    const hiddenFeatures = businessPreset.hiddenFeatures;
+    
+    // Essential features that should never be hidden regardless of tier
+    const TIER_ESSENTIAL = ['dashboard', 'settings', 'billing', 'hotbox'];
+
+    return visibilityFilteredConfig.map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        // Always show essential features
+        if (TIER_ESSENTIAL.includes(item.id)) return true;
+        
+        // Hide if explicitly in hidden features
+        if (hiddenFeatures.includes(item.id) || hiddenFeatures.includes(item.featureId || '')) {
+          return false;
+        }
+        
+        // Show if in enabled features
+        if (enabledFeatures.includes(item.id) || enabledFeatures.includes(item.featureId || '')) {
+          return true;
+        }
+        
+        // Default: show if not explicitly hidden
+        return !hiddenFeatures.includes(item.id);
+      }),
+    })).filter(section => section.items.length > 0);
+  }, [visibilityFilteredConfig, businessPreset]);
+
   // Generate hot items
   const hotItems = useMemo((): HotItem[] => {
     if (!tenant) return [];
@@ -172,7 +210,7 @@ export function useSidebarConfig() {
 
   // Add hot items section if any exist
   const configWithHotItems = useMemo(() => {
-    if (hotItems.length === 0) return visibilityFilteredConfig;
+    if (hotItems.length === 0) return businessTierFilteredConfig;
 
     return [
       {
@@ -189,9 +227,9 @@ export function useSidebarConfig() {
           badge: hot.badge,
         })),
       },
-      ...visibilityFilteredConfig,
+      ...businessTierFilteredConfig,
     ];
-  }, [visibilityFilteredConfig, hotItems]);
+  }, [businessTierFilteredConfig, hotItems]);
 
   // Add favorites section if user has favorites
   const configWithFavorites = useMemo(() => {
@@ -236,6 +274,10 @@ export function useSidebarConfig() {
     isAutoDetected,
     hotItems: Array.isArray(hotItems) ? hotItems : [],
     favorites: Array.isArray(safePreferences.favorites) ? safePreferences.favorites : [],
+    // Business tier info
+    businessTier,
+    businessPreset,
+    isFeatureEnabledByTier: isFeatureEnabled,
   };
 }
 

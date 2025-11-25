@@ -140,6 +140,7 @@ const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage")
 const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
 const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
+const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
 const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
@@ -578,6 +579,14 @@ const App = () => {
                                             <FeatureProtectedRoute featureId="dashboard">
                                               <TenantAdminDashboardPage />
                                             </FeatureProtectedRoute>
+                                          </Suspense>
+                                        }
+                                      />
+                                      <Route
+                                        path="hotbox"
+                                        element={
+                                          <Suspense fallback={<SkeletonDashboard />}>
+                                            <HotboxPage />
                                           </Suspense>
                                         }
                                       />

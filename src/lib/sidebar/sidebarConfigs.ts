@@ -58,6 +58,7 @@ import {
   Key,
   Building,
   Lock,
+  Flame,
   Menu,
   ClipboardList,
   ArrowRightLeft,
@@ -144,10 +145,13 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
  */
 export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
-    section: '🏠 Dashboard',
+    section: '🔥 Command Center',
+    pinned: true,
+    defaultExpanded: true,
     items: [
+      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
-      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity, { hot: true }),
+      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
     ],
   },
   {
@@ -202,12 +206,13 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
  */
 export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
   {
-    section: '🏠 Dashboard',
+    section: '🔥 Command Center',
     pinned: true,
     defaultExpanded: true,
     items: [
+      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
-      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity, { hot: true }),
+      createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPin),
       createItem('notifications', 'Notifications', '/admin/notifications', Bell),
     ],
@@ -286,10 +291,11 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
  */
 export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
-    section: '🚀 Mission Control',
+    section: '🔥 Command Center',
     pinned: true,
     defaultExpanded: true,
     items: [
+      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Executive Dashboard', '/admin/dashboard', LayoutDashboard),
       createItem('realtime-dashboard', 'Real-Time Monitor', '/admin/realtime-dashboard', Activity),
       createItem('live-map', 'Global Map', '/admin/live-map', Globe),
