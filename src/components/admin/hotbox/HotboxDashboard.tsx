@@ -52,6 +52,14 @@ import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { generateGreeting } from '@/lib/presets/businessTiers';
+import { 
+  buildAttentionQueue, 
+  getTopAttentionItems,
+  type AttentionItem as HotboxAttentionItem,
+  type AttentionQueue,
+  type AlertCategory,
+} from '@/lib/hotbox';
 
 // Type definitions
 interface PulseMetric {
@@ -66,9 +74,11 @@ interface PulseMetric {
 interface AttentionItem {
   id: string;
   priority: 'critical' | 'important' | 'info';
+  category?: AlertCategory;
   title: string;
   description?: string;
   value?: string;
+  score?: number;
   actionUrl: string;
   actionLabel: string;
 }
@@ -81,6 +91,7 @@ interface QuickAction {
 }
 
 // Helper to get time-appropriate greeting with workflow context
+// (Now enhanced with tier-specific messages from businessTiers.ts)
 function getGreeting(workflow?: string): { greeting: string; context: string } {
   const hour = new Date().getHours();
   let greeting = 'Hello';
@@ -104,6 +115,13 @@ function getGreeting(workflow?: string): { greeting: string; context: string } {
     greeting,
     context: contextMap[workflow || 'general'] || contextMap.general,
   };
+}
+
+// Get tier-specific motivational greeting
+function useTierGreeting(userName: string, tier: string) {
+  // Use the enhanced greeting system with tier-specific messages
+  const tierGreeting = generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
+  return tierGreeting;
 }
 
 // Priority icon component
@@ -169,6 +187,10 @@ export function HotboxDashboard() {
   // Get personalized greeting based on workflow
   const workflow = detectPrimaryWorkflow();
   const { greeting, context } = getGreeting(workflow);
+  
+  // Get tier-specific motivational message
+  const userName = admin?.firstName || admin?.email?.split('@')[0] || 'there';
+  const tierGreeting = useTierGreeting(userName, tier);
 
   // Fetch dashboard pulse data
   const { data: pulseData, isLoading: pulseLoading } = useQuery({
@@ -306,7 +328,7 @@ export function HotboxDashboard() {
         },
       ];
 
-      // Build attention items with priority sorting
+      // Build attention items with category + priority scoring
       const attentionItems: AttentionItem[] = [];
 
       // CRITICAL ITEMS (🔴)
@@ -316,6 +338,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'menu-orders',
           priority: 'critical',
+          category: 'orders' as AlertCategory,
           title: `${pendingMenuOrders} Disposable Menu orders waiting`,
           value: `$${menuOrdersValue.toLocaleString()}`,
           actionUrl: '/admin/disposable-menu-orders',
@@ -328,6 +351,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'late-deliveries',
           priority: 'critical',
+          category: 'delivery' as AlertCategory,
           title: `${lateDeliveries} deliveries running late`,
           description: 'Customer waiting - check in with driver',
           actionUrl: '/admin/deliveries',
@@ -340,6 +364,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'out-of-stock',
           priority: 'critical',
+          category: 'inventory' as AlertCategory,
           title: `${outOfStockCount} products out of stock`,
           description: 'Customers can\'t order these items',
           actionUrl: '/admin/inventory-dashboard?filter=out_of_stock',
@@ -354,6 +379,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'pending-orders',
           priority: pendingOrders > 5 ? 'critical' : 'important',
+          category: 'orders' as AlertCategory,
           title: `${pendingOrders} orders waiting to be processed`,
           actionUrl: '/admin/orders?status=pending',
           actionLabel: 'View',
@@ -365,6 +391,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'wholesale-pending',
           priority: 'important',
+          category: 'orders' as AlertCategory,
           title: `${wholesalePending} wholesale orders need approval`,
           value: `$${wholesaleValue.toLocaleString()}`,
           actionUrl: '/admin/wholesale-orders',
@@ -377,6 +404,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'low-stock',
           priority: 'important',
+          category: 'inventory' as AlertCategory,
           title: `${lowStockCount} items low on stock`,
           description: 'Reorder to avoid running out',
           actionUrl: '/admin/inventory-dashboard',
@@ -389,6 +417,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'customer-tabs',
           priority: 'important',
+          category: 'customers' as AlertCategory,
           title: `${overdueTabsCount} customers with open tabs`,
           value: `$${totalTabsOwed.toLocaleString()} owed`,
           actionUrl: '/admin/customer-tabs',
@@ -403,6 +432,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'deliveries-active',
           priority: 'info',
+          category: 'delivery' as AlertCategory,
           title: `${deliveriesInProgress} deliveries in progress`,
           description: 'All on schedule',
           actionUrl: '/admin/deliveries',
@@ -415,6 +445,7 @@ export function HotboxDashboard() {
         attentionItems.push({
           id: 'all-good',
           priority: 'info',
+          category: 'system' as AlertCategory,
           title: 'All caught up!',
           description: 'No urgent items need your attention',
           actionUrl: '/admin/orders',
@@ -422,11 +453,40 @@ export function HotboxDashboard() {
         });
       }
       
-      // Sort by priority: critical > important > info
-      const priorityOrder = { critical: 0, important: 1, info: 2 };
-      attentionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      // Sort by weighted score algorithm
+      // Score = Base Priority + Category Urgency + Age Factor + Value Factor
+      const PRIORITY_WEIGHTS = { critical: 1000, important: 100, info: 10 };
+      const CATEGORY_URGENCY: Record<string, number> = {
+        orders: 50,      // Money waiting
+        delivery: 45,    // Active operations
+        compliance: 40,  // Legal risk
+        system: 35,      // Technical issues
+        inventory: 30,   // Can't sell without it
+        customers: 25,   // Relationship management
+        financial: 20,   // Money tracking
+        team: 15,        // People management
+      };
+      
+      // Calculate score for each item
+      const scoredItems = attentionItems.map(item => {
+        let score = PRIORITY_WEIGHTS[item.priority];
+        score += CATEGORY_URGENCY[item.category || 'system'] || 0;
+        
+        // Value factor: log10(amount) * 20 for items with dollar values
+        if (item.value) {
+          const numericValue = parseFloat(item.value.replace(/[^0-9.]/g, ''));
+          if (!isNaN(numericValue) && numericValue > 0) {
+            score += Math.min(100, Math.log10(numericValue + 1) * 20);
+          }
+        }
+        
+        return { ...item, score: Math.round(score) };
+      });
+      
+      // Sort by score (highest first)
+      scoredItems.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-      return { pulseMetrics, attentionItems };
+      return { pulseMetrics, attentionItems: scoredItems };
     },
     enabled: !!tenant?.id,
     staleTime: 30 * 1000, // 30 seconds
@@ -463,18 +523,16 @@ export function HotboxDashboard() {
     return <HotboxSkeleton />;
   }
 
-  const userName = admin?.firstName || admin?.email?.split('@')[0] || 'there';
-
   return (
     <div className="space-y-6 p-4 md:p-6">
-      {/* Header - Personalized Greeting */}
+      {/* Header - Personalized Greeting with Tier-Specific Message */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
-            {preset.emoji} {greeting}, {userName}!
+            {preset.emoji} {tierGreeting.timeGreeting}, {userName}!
           </h1>
           <p className="text-muted-foreground">
-            {context} • {format(new Date(), 'EEEE, MMMM d')}
+            {tierGreeting.tierMessage} • {format(new Date(), 'EEEE, MMMM d')}
           </p>
           {isPowerUser() && (
             <Badge variant="secondary" className="mt-1 text-xs">

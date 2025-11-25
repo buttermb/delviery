@@ -596,3 +596,88 @@ export function getTierTextColor(tier: BusinessTier): string {
   return colors[tier];
 }
 
+// ============================================================
+// TIER GREETING SYSTEM
+// ============================================================
+
+/**
+ * Tier-specific motivational messages
+ */
+export const TIER_GREETINGS: Record<BusinessTier, string[]> = {
+  street: [
+    "Let's get this bread.",
+    'Time to hustle.',
+    'Another day, another dollar.',
+    'Stay grinding.',
+    'Make it happen.',
+  ],
+  trap: [
+    'Your crew is ready.',
+    'The trap is open.',
+    "Let's run it.",
+    'Team is locked in.',
+    "Let's get it.",
+  ],
+  block: [
+    'All locations reporting in.',
+    'The block is live.',
+    'Operations running smooth.',
+    'Network is active.',
+    "Let's dominate.",
+  ],
+  hood: [
+    "Here's your executive briefing.",
+    'Empire status: operational.',
+    "Let's review the numbers.",
+    'Your operation awaits.',
+    'Ready for growth.',
+  ],
+  empire: [
+    'Your empire awaits.',
+    'All systems operational.',
+    "Here's the big picture.",
+    'Board-ready status.',
+    'Strategic overview ready.',
+  ],
+};
+
+/**
+ * Get time-appropriate greeting
+ */
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Burning the midnight oil';
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Working late';
+}
+
+/**
+ * Get random message from tier greetings
+ */
+function getRandomTierMessage(tier: BusinessTier): string {
+  const messages = TIER_GREETINGS[tier];
+  return messages[Math.floor(Math.random() * messages.length)];
+}
+
+export interface Greeting {
+  timeGreeting: string;
+  tierMessage: string;
+  full: string;
+}
+
+/**
+ * Generate personalized greeting for user
+ */
+export function generateGreeting(userName: string, tier: BusinessTier): Greeting {
+  const timeGreeting = getTimeGreeting();
+  const tierMessage = getRandomTierMessage(tier);
+  
+  return {
+    timeGreeting,
+    tierMessage,
+    full: `${timeGreeting}, ${userName}. ${tierMessage}`,
+  };
+}
+
