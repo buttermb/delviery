@@ -67,17 +67,26 @@ export function ExecutiveSummaryWidget() {
             const profitMargin = 25;
             const netProfit = Math.round(mtdRevenue * (profitMargin / 100));
 
-            // Cash position - sum of customer payments received
-            // @ts-expect-error - Deep type instantiation from Supabase query
-            const { data: payments } = await supabase
-                .from('wholesale_payments')
-                .select('amount')
-                .eq('tenant_id', tenant.id)
-                .eq('status', 'completed')
-                .gte('created_at', monthStart.toISOString());
+            // AR Outstanding - actual unpaid invoices and customer tabs
+            const [invoicesResult, tabsResult] = await Promise.all([
+                // Unpaid invoices
+                supabase
+                    .from('invoices')
+                    .select('total_amount')
+                    .eq('tenant_id', tenant.id)
+                    .in('status', ['pending', 'overdue', 'sent']),
+                
+                // Customer tabs (unpaid balances)
+                supabase
+                    .from('customers')
+                    .select('balance')
+                    .eq('tenant_id', tenant.id)
+                    .gt('balance', 0),
+            ]);
 
-            const cashInflows = payments?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
-            const cashPosition = Math.round(mtdRevenue * 0.4) + cashInflows; // Estimate: 40% of revenue + payments
+            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total_amount || 0), 0) || 0;
+            const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
+            const arOutstanding = unpaidInvoices + unpaidTabs;
 
             return {
                 mtdRevenue,
@@ -85,7 +94,7 @@ export function ExecutiveSummaryWidget() {
                 projectedClose,
                 netProfit,
                 profitMargin,
-                cashPosition,
+                arOutstanding,
             };
         },
         enabled: !!tenant?.id,
@@ -146,9 +155,14 @@ export function ExecutiveSummaryWidget() {
                         <div className="text-xs text-muted-foreground">~{summary?.profitMargin}% margin</div>
                     </div>
                     <div className="space-y-1">
-                        <div className="text-sm text-muted-foreground">Cash Position</div>
-                        <div className="text-xl font-bold">${(summary?.cashPosition || 0).toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">estimated</div>
+                        <div className="text-sm text-muted-foreground">AR Outstanding</div>
+                        <div className={cn(
+                            "text-xl font-bold",
+                            (summary?.arOutstanding || 0) > 0 && "text-yellow-600"
+                        )}>${(summary?.arOutstanding || 0).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">
+                            {(summary?.arOutstanding || 0) > 0 ? 'to collect' : 'all collected'}
+                        </div>
                     </div>
                 </div>
             </CardContent>

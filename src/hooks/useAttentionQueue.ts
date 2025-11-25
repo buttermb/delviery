@@ -30,20 +30,24 @@ function calculateScore(item: AttentionItem): number {
   let score = PRIORITY_WEIGHTS[item.priority];
   score += CATEGORY_URGENCY[item.category] || 0;
   
-  // Value factor
-  if (item.value && typeof item.value === 'number' && item.value > 0) {
-    score += Math.min(100, Math.log10(item.value + 1) * 20);
+  // Value factor - parse string value to number (handles "$1,240" format)
+  if (item.value) {
+    const numValue = parseFloat(String(item.value).replace(/[^0-9.-]/g, ''));
+    if (!isNaN(numValue) && numValue > 0) {
+      // log10 scaling: $100 = +40, $1K = +60, $10K = +80
+      score += Math.min(100, Math.log10(numValue + 1) * 20);
+    }
   }
   
-  // Age factor
+  // Age factor - use real timestamp from database
   const now = Date.now();
   const itemTime = new Date(item.timestamp).getTime();
   const ageHours = (now - itemTime) / (1000 * 60 * 60);
   
   if (ageHours < 1) {
-    score += 20;
+    score += 20; // Boost for very recent items
   } else if (ageHours > 24) {
-    score -= Math.min(50, (ageHours - 24) * 2);
+    score -= Math.min(50, (ageHours - 24) * 2); // Decay for old items
   }
   
   return Math.max(0, Math.round(score));
@@ -128,13 +132,22 @@ export function useAttentionQueue() {
           .eq('status', 'pending'),
       ]);
 
-      // Build attention items
+      // Helper to find oldest timestamp from records
+      const getOldestTimestamp = (records: { created_at: string }[]): string => {
+        if (!records.length) return now.toISOString();
+        return records.reduce((oldest, r) => 
+          new Date(r.created_at) < new Date(oldest) ? r.created_at : oldest
+        , records[0].created_at);
+      };
+
+      // Build attention items with REAL timestamps from database
       
-      // Pending menu orders
+      // Pending menu orders - use oldest order's created_at for urgency
       if (pendingMenuOrders.data && pendingMenuOrders.data.length > 0) {
         const totalValue = pendingMenuOrders.data.reduce(
           (sum, o) => sum + Number(o.total_amount || 0), 0
         );
+        const oldestTimestamp = getOldestTimestamp(pendingMenuOrders.data);
         items.push({
           id: 'menu-orders',
           priority: 'critical',
@@ -143,12 +156,13 @@ export function useAttentionQueue() {
           value: String(totalValue),
           actionLabel: 'Process',
           actionUrl: '/admin/disposable-menu-orders',
-          timestamp: new Date().toISOString(),
+          timestamp: oldestTimestamp,
         });
       }
 
-      // Late deliveries
+      // Late deliveries - use oldest delivery's created_at
       if (lateDeliveries.data && lateDeliveries.data.length > 0) {
+        const oldestTimestamp = getOldestTimestamp(lateDeliveries.data);
         items.push({
           id: 'late-deliveries',
           priority: 'critical',
@@ -156,11 +170,11 @@ export function useAttentionQueue() {
           title: `${lateDeliveries.data.length} late deliveries`,
           actionLabel: 'Track',
           actionUrl: '/admin/deliveries',
-          timestamp: new Date().toISOString(),
+          timestamp: oldestTimestamp,
         });
       }
 
-      // Out of stock
+      // Out of stock - recent check, use now
       if (outOfStock.data && outOfStock.data.length > 0) {
         items.push({
           id: 'out-of-stock',
@@ -169,15 +183,16 @@ export function useAttentionQueue() {
           title: `${outOfStock.data.length} out of stock`,
           actionLabel: 'Restock',
           actionUrl: '/admin/inventory-dashboard',
-          timestamp: new Date().toISOString(),
+          timestamp: now.toISOString(),
         });
       }
 
-      // Pending orders
+      // Pending orders - use oldest order's created_at
       if (pendingOrders.data && pendingOrders.data.length > 0) {
         const totalValue = pendingOrders.data.reduce(
           (sum, o) => sum + Number(o.total_amount || 0), 0
         );
+        const oldestTimestamp = getOldestTimestamp(pendingOrders.data);
         items.push({
           id: 'pending-orders',
           priority: pendingOrders.data.length > 5 ? 'critical' : 'important',
@@ -186,15 +201,16 @@ export function useAttentionQueue() {
           value: String(totalValue),
           actionLabel: 'View',
           actionUrl: '/admin/orders?status=pending',
-          timestamp: new Date().toISOString(),
+          timestamp: oldestTimestamp,
         });
       }
 
-      // Wholesale pending
+      // Wholesale pending - use oldest order's created_at
       if (wholesalePending.data && wholesalePending.data.length > 0) {
         const totalValue = wholesalePending.data.reduce(
           (sum, o) => sum + Number(o.total_amount || 0), 0
         );
+        const oldestTimestamp = getOldestTimestamp(wholesalePending.data);
         items.push({
           id: 'wholesale-pending',
           priority: 'important',
@@ -203,11 +219,11 @@ export function useAttentionQueue() {
           value: String(totalValue),
           actionLabel: 'Review',
           actionUrl: '/admin/wholesale-orders',
-          timestamp: new Date().toISOString(),
+          timestamp: oldestTimestamp,
         });
       }
 
-      // Low stock
+      // Low stock - recent check, use now
       if (lowStock.data && lowStock.data.length > 0) {
         items.push({
           id: 'low-stock',
@@ -216,11 +232,11 @@ export function useAttentionQueue() {
           title: `${lowStock.data.length} items low`,
           actionLabel: 'Reorder',
           actionUrl: '/admin/inventory-dashboard',
-          timestamp: new Date().toISOString(),
+          timestamp: now.toISOString(),
         });
       }
 
-      // Customer tabs
+      // Customer tabs - use now (we don't have balance history timestamps)
       if (customerTabs.data && customerTabs.data.length > 0) {
         const totalOwed = customerTabs.data.reduce(
           (sum, c) => sum + Number(c.balance || 0), 0
@@ -234,13 +250,14 @@ export function useAttentionQueue() {
             value: String(totalOwed),
             actionLabel: 'Collect',
             actionUrl: '/admin/customer-tabs',
-            timestamp: new Date().toISOString(),
+            timestamp: now.toISOString(),
           });
         }
       }
 
-      // Active deliveries (info)
+      // Active deliveries (info) - use oldest active delivery
       if (activeDeliveries.data && activeDeliveries.data.length > 0 && !lateDeliveries.data?.length) {
+        const oldestTimestamp = getOldestTimestamp(activeDeliveries.data);
         items.push({
           id: 'active-deliveries',
           priority: 'info',
@@ -248,7 +265,7 @@ export function useAttentionQueue() {
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
           actionUrl: '/admin/deliveries',
-          timestamp: new Date().toISOString(),
+          timestamp: oldestTimestamp,
         });
       }
 

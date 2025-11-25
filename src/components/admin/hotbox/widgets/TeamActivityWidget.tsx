@@ -32,10 +32,10 @@ export function TeamActivityWidget() {
 
             if (error || !members) return [];
 
-            // For each team member, get their activity for today
+            // For each team member, get their REAL activity for today
             const teamWithActivity = await Promise.all(
                 members.map(async (member) => {
-                    // Get deliveries count for drivers
+                    // Get deliveries count for this specific courier
                     // @ts-expect-error - Deep type instantiation from Supabase query
                     const { count: deliveries } = await supabase
                         .from('deliveries')
@@ -44,21 +44,31 @@ export function TeamActivityWidget() {
                         .eq('courier_id', member.user_id || member.id)
                         .gte('created_at', today.toISOString());
 
-                    // Get orders processed (for sales roles)
-                    const { count: ordersProcessed } = await supabase
-                        .from('orders')
+                    // Get POS transactions for this user (if they processed any)
+                    const { count: posTransactions } = await supabase
+                        .from('pos_transactions')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
+                        .eq('cashier_id', member.user_id || member.id)
                         .gte('created_at', today.toISOString());
+
+                    // Determine role-based activity
+                    const isCourier = deliveries && deliveries > 0;
+                    const isCashier = posTransactions && posTransactions > 0;
 
                     return {
                         id: member.id,
                         name: member.name || member.email?.split('@')[0] || 'Team Member',
                         role: member.role === 'owner' ? 'Owner' : member.role === 'admin' ? 'Admin' : 'Member',
-                        status: 'active' as const, // We already filtered for active
+                        status: 'active' as const,
                         deliveries: deliveries || 0,
-                        sales: Math.floor((ordersProcessed || 0) / Math.max(1, members.length)),
-                        avatar: '👤',
+                        posTransactions: posTransactions || 0,
+                        activityText: isCourier 
+                            ? `${deliveries} deliveries` 
+                            : isCashier 
+                            ? `${posTransactions} sales`
+                            : member.role === 'owner' ? 'Managing' : 'Online',
+                        avatar: isCourier ? '🚗' : isCashier ? '💵' : '👤',
                     };
                 })
             );
@@ -96,12 +106,11 @@ export function TeamActivityWidget() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                                    {member.status === 'active' ? '🟢 Active' : '🟡 Away'}
+                                <Badge variant="default">
+                                    🟢 Active
                                 </Badge>
                                 <div className="text-sm text-muted-foreground">
-                                    {member.deliveries > 0 && `${member.deliveries} deliveries`}
-                                    {member.deliveries === 0 && member.sales > 0 && `${member.sales} orders`}
+                                    {member.activityText}
                                 </div>
                             </div>
                         </div>

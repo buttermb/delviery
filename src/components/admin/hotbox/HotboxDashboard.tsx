@@ -10,10 +10,11 @@
  * - Real-time attention queue
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useAttentionQueue } from '@/hooks/useAttentionQueue';
 import {
   DollarSign,
   TrendingUp,
@@ -52,14 +53,10 @@ import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
 import { generateGreeting } from '@/lib/presets/businessTiers';
 import {
-  type AlertCategory,
-  type AttentionItem,
   type QuickAction,
 } from '@/types/hotbox';
 import {
-  sortAttentionQueue,
   getCategoryColor,
-  calculateAttentionScore
 } from '@/lib/hotbox/attentionQueue';
 import { TierUpgradeCard } from './TierUpgradeCard';
 
@@ -107,10 +104,14 @@ function getGreeting(workflow?: string): { greeting: string; context: string } {
   };
 }
 
-// Get tier-specific motivational greeting
+// Get tier-specific motivational greeting - memoized to not change on re-render
 function useTierGreeting(userName: string, tier: string) {
-  const tierGreeting = generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
-  return tierGreeting;
+  // Use date as seed so greeting changes daily, not on every render
+  const dateKey = format(new Date(), 'yyyy-MM-dd');
+  
+  return useMemo(() => {
+    return generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
+  }, [userName, tier, dateKey]);
 }
 
 // Priority icon component
@@ -165,6 +166,9 @@ export function HotboxDashboard() {
     isPowerUser,
   } = useFeatureTracking();
   const navigate = useNavigate();
+  
+  // Use centralized attention queue hook (single source of truth)
+  const { queue: attentionQueue, isLoading: attentionLoading } = useAttentionQueue();
 
   // Track Hotbox visit
   useEffect(() => {
@@ -175,13 +179,10 @@ export function HotboxDashboard() {
   const userName = admin?.name || admin?.email?.split('@')[0] || 'there';
   const tierGreeting = useTierGreeting(userName, tier);
 
-  // Fetch dashboard pulse data
+  // Fetch ONLY pulse metrics (attention queue comes from hook)
   const { data: pulseData, isLoading: pulseLoading } = useQuery({
     queryKey: ['hotbox-pulse', tenant?.id],
-    queryFn: async (): Promise<{
-      pulseMetrics: PulseMetric[];
-      attentionItems: AttentionItem[];
-    }> => {
+    queryFn: async (): Promise<{ pulseMetrics: PulseMetric[] }> => {
       if (!tenant?.id) throw new Error('No tenant');
 
       const today = new Date();
@@ -189,100 +190,52 @@ export function HotboxDashboard() {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      // Fetch today's revenue
-      const { data: todayOrders } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('tenant_id', tenant.id)
-        .gte('created_at', today.toISOString())
-        .not('status', 'in', '("cancelled","rejected","refunded")');
+      // Parallel fetch for performance
+      const [todayOrdersResult, yesterdayOrdersResult, pendingOrdersResult, pendingMenuOrdersResult] = await Promise.all([
+        // Today's orders
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenant.id)
+          .gte('created_at', today.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+        
+        // Yesterday's orders for comparison
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenant.id)
+          .gte('created_at', yesterday.toISOString())
+          .lt('created_at', today.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+        
+        // Pending orders count
+        supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id)
+          .eq('status', 'pending'),
+        
+        // Pending menu orders count
+        supabase
+          .from('menu_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id)
+          .eq('status', 'pending'),
+      ]);
 
-      const todayRevenue = todayOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-
-      // Fetch yesterday's revenue for comparison
-      const { data: yesterdayOrders } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('tenant_id', tenant.id)
-        .gte('created_at', yesterday.toISOString())
-        .lt('created_at', today.toISOString())
-        .not('status', 'in', '("cancelled","rejected","refunded")');
-
-      const yesterdayRevenue = yesterdayOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const todayOrders = todayOrdersResult.data || [];
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      const yesterdayRevenue = (yesterdayOrdersResult.data || []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      
       const revenueChange = yesterdayRevenue > 0
         ? Math.round(((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100)
         : 0;
 
-      // Fetch pending orders count
-      const { count: pendingOrders } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'pending');
-
-      // Fetch pending menu orders
-      const { count: pendingMenuOrders, data: menuOrdersData } = await supabase
-        .from('menu_orders')
-        .select('total_amount', { count: 'exact' })
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'pending');
-
-      const menuOrdersValue = menuOrdersData?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-
-      // Fetch low stock items
-      const { count: lowStockCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenant.id)
-        .lt('stock_quantity', 10)
-        .gt('stock_quantity', 0);
-
-      // Fetch out of stock items
-      const { count: outOfStockCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenant.id)
-        .lte('stock_quantity', 0);
-
-      // Fetch customer tabs (unpaid balances)
-      const { data: customerTabs } = await supabase
-        .from('customers')
-        .select('id, balance')
-        .eq('tenant_id', tenant.id)
-        .gt('balance', 0);
-
-      const totalTabsOwed = customerTabs?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
-      const overdueTabsCount = customerTabs?.length || 0;
-
-      // Fetch deliveries in progress
-      // @ts-expect-error - Deep type instantiation from Supabase query
-      const { count: deliveriesInProgress } = await supabase
-        .from('deliveries')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'in_transit');
-
-      // Fetch late deliveries (ETA passed)
-      const { count: lateDeliveries } = await supabase
-        .from('deliveries')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'in_transit')
-        .lt('estimated_delivery_time', new Date().toISOString());
-
-      // Fetch wholesale orders pending approval
-      const { count: wholesalePending, data: wholesaleData } = await supabase
-        .from('wholesale_orders')
-        .select('total_amount', { count: 'exact' })
-        .eq('tenant_id', tenant.id)
-        .eq('status', 'pending');
-
-      const wholesaleValue = wholesaleData?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-
-      // Calculate profit margin (simplified - 25% assumed margin)
+      const pendingOrders = pendingOrdersResult.count || 0;
+      const pendingMenuOrders = pendingMenuOrdersResult.count || 0;
       const profit = todayRevenue * 0.25;
 
-      // Build pulse metrics based on tier
       const pulseMetrics: PulseMetric[] = [
         {
           id: 'revenue',
@@ -301,166 +254,26 @@ export function HotboxDashboard() {
         {
           id: 'orders',
           label: 'Orders',
-          value: `${todayOrders?.length || 0}`,
+          value: `${todayOrders.length}`,
           subtext: 'today',
         },
         {
           id: 'pending',
           label: 'Pending',
-          value: `${(pendingOrders || 0) + (pendingMenuOrders || 0)}`,
+          value: `${pendingOrders + pendingMenuOrders}`,
           subtext: pendingOrders || pendingMenuOrders ? '🔴 action' : 'none',
         },
       ];
 
-      // Build attention items with category + priority scoring
-      const attentionItems: AttentionItem[] = [];
-
-      // CRITICAL ITEMS (🔴)
-
-      // Pending menu orders - highest priority (money waiting!)
-      if (pendingMenuOrders && pendingMenuOrders > 0) {
-        attentionItems.push({
-          id: 'menu-orders',
-          priority: 'critical',
-          category: 'orders' as AlertCategory,
-          title: `${pendingMenuOrders} Disposable Menu orders waiting`,
-          value: `$${menuOrdersValue.toLocaleString()}`,
-          actionUrl: '/admin/disposable-menu-orders',
-          actionLabel: 'Process',
-          timestamp: new Date().toISOString(), // In real app, use oldest order date
-        });
-      }
-
-      // Late deliveries - customer experience at risk
-      if (lateDeliveries && lateDeliveries > 0) {
-        attentionItems.push({
-          id: 'late-deliveries',
-          priority: 'critical',
-          category: 'delivery' as AlertCategory,
-          title: `${lateDeliveries} deliveries running late`,
-          description: 'Customer waiting - check in with driver',
-          actionUrl: '/admin/deliveries',
-          actionLabel: 'Track',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Out of stock items - can't sell what you don't have
-      if (outOfStockCount && outOfStockCount > 0) {
-        attentionItems.push({
-          id: 'out-of-stock',
-          priority: 'critical',
-          category: 'inventory' as AlertCategory,
-          title: `${outOfStockCount} products out of stock`,
-          description: 'Customers can\'t order these items',
-          actionUrl: '/admin/inventory-dashboard?filter=out_of_stock',
-          actionLabel: 'Restock',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // IMPORTANT ITEMS (🟡)
-
-      // Regular pending orders
-      if (pendingOrders && pendingOrders > 0) {
-        attentionItems.push({
-          id: 'pending-orders',
-          priority: pendingOrders > 5 ? 'critical' : 'important',
-          category: 'orders' as AlertCategory,
-          title: `${pendingOrders} orders waiting to be processed`,
-          actionUrl: '/admin/orders?status=pending',
-          actionLabel: 'View',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Wholesale orders pending
-      if (wholesalePending && wholesalePending > 0) {
-        attentionItems.push({
-          id: 'wholesale-pending',
-          priority: 'important',
-          category: 'orders' as AlertCategory,
-          title: `${wholesalePending} wholesale orders need approval`,
-          value: `$${wholesaleValue.toLocaleString()}`,
-          actionUrl: '/admin/wholesale-orders',
-          actionLabel: 'Review',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Low stock items
-      if (lowStockCount && lowStockCount > 0) {
-        attentionItems.push({
-          id: 'low-stock',
-          priority: 'important',
-          category: 'inventory' as AlertCategory,
-          title: `${lowStockCount} items low on stock`,
-          description: 'Reorder to avoid running out',
-          actionUrl: '/admin/inventory-dashboard',
-          actionLabel: 'Reorder',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Customer tabs overdue
-      if (overdueTabsCount > 0 && totalTabsOwed > 100) {
-        attentionItems.push({
-          id: 'customer-tabs',
-          priority: 'important',
-          category: 'customers' as AlertCategory,
-          title: `${overdueTabsCount} customers with open tabs`,
-          value: `$${totalTabsOwed.toLocaleString()} owed`,
-          actionUrl: '/admin/customer-tabs',
-          actionLabel: 'Collect',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // INFO ITEMS (🟢)
-
-      // Deliveries in progress - good to know
-      if (deliveriesInProgress && deliveriesInProgress > 0 && !lateDeliveries) {
-        attentionItems.push({
-          id: 'deliveries-active',
-          priority: 'info',
-          category: 'delivery' as AlertCategory,
-          title: `${deliveriesInProgress} deliveries in progress`,
-          description: 'All on schedule',
-          actionUrl: '/admin/deliveries',
-          actionLabel: 'Track',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Add "all good" message if nothing else
-      if (attentionItems.length === 0) {
-        attentionItems.push({
-          id: 'all-good',
-          priority: 'info',
-          category: 'system' as AlertCategory,
-          title: 'All caught up!',
-          description: 'No urgent items need your attention',
-          actionUrl: '/admin/orders',
-          actionLabel: 'View Orders',
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // Sort by weighted score algorithm
-      const scoredItems = attentionItems.map(item => ({
-        ...item,
-        score: calculateAttentionScore(item)
-      }));
-
-      // Sort by score (highest first)
-      const sortedItems = sortAttentionQueue(scoredItems);
-
-      return { pulseMetrics, attentionItems: sortedItems };
+      return { pulseMetrics };
     },
     enabled: !!tenant?.id,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refresh every minute
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
   });
+  
+  // Get attention items from the centralized hook
+  const attentionItems = attentionQueue?.items || [];
 
   // Build quick actions from tier preset + personalized suggestions
   const presetActions: QuickAction[] = preset.quickActions.map(action => ({
@@ -486,7 +299,7 @@ export function HotboxDashboard() {
 
   const quickActions = [...presetActions, ...personalizedActions];
 
-  const isLoading = tierLoading || pulseLoading;
+  const isLoading = tierLoading || pulseLoading || attentionLoading;
 
   if (isLoading) {
     return <HotboxSkeleton />;
@@ -569,7 +382,7 @@ export function HotboxDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {pulseData?.attentionItems.map((item) => (
+          {attentionItems.map((item) => (
             <div
               key={item.id}
               className={cn(

@@ -104,11 +104,12 @@ const STREET_TIER: TierPreset = {
   ],
 
   dashboardWidgets: [
-    'todays_revenue',
-    'top_5_products',
-    'pending_orders',
-    'low_stock_alerts',
-    'recent_orders',
+    'street-tips',
+    'todays-revenue',
+    'top-5-products',
+    'pending-orders',
+    'low-stock-alerts',
+    'recent-orders',
   ],
 
   pulseMetrics: ['revenue', 'profit', 'orders_today', 'pending_actions'],
@@ -183,14 +184,14 @@ const TRAP_TIER: TierPreset = {
   ],
 
   dashboardWidgets: [
-    'revenue_trend',
-    'top_products',
-    'pending_orders',
-    'team_activity',
-    'low_stock_alerts',
-    'customer_tabs',
-    'delivery_status',
-    'weekly_comparison',
+    'team-activity',
+    'revenue-trend',
+    'top-products',
+    'pending-orders',
+    'low-stock-alerts',
+    'customer-tabs',
+    'delivery-status',
+    'weekly-trends',
   ],
 
   pulseMetrics: ['revenue', 'profit_margin', 'orders_today', 'team_online'],
@@ -271,16 +272,18 @@ const BLOCK_TIER: TierPreset = {
   ],
 
   dashboardWidgets: [
-    'revenue_by_location',
-    'location_comparison',
-    'top_products_network',
-    'pending_orders_all',
-    'team_performance',
-    'inventory_value',
-    'delivery_efficiency',
-    'wholesale_pipeline',
-    'weekly_trends',
-    'profit_margins',
+    'location-overview',
+    'team-activity',
+    'weekly-trends',
+    'revenue-by-location',
+    'location-comparison',
+    'top-products-network',
+    'pending-orders-all',
+    'team-performance',
+    'inventory-value',
+    'delivery-efficiency',
+    'wholesale-pipeline',
+    'profit-margins',
   ],
 
   pulseMetrics: ['total_revenue', 'avg_margin', 'orders_network', 'issues_count'],
@@ -367,18 +370,21 @@ const HOOD_TIER: TierPreset = {
   ],
 
   dashboardWidgets: [
-    'executive_summary',
-    'mtd_revenue',
-    'projected_close',
-    'net_profit',
-    'cash_position',
-    'kpi_grid',
-    'location_scorecard',
-    'customer_ltv',
-    'churn_rate',
-    'compliance_status',
-    'management_alerts',
-    'budget_variance',
+    'executive-summary',
+    'location-overview',
+    'team-activity',
+    'weekly-trends',
+    'mtd-revenue',
+    'projected-close',
+    'net-profit',
+    'cash-position',
+    'kpi-grid',
+    'location-scorecard',
+    'customer-ltv',
+    'churn-rate',
+    'compliance-status',
+    'management-alerts',
+    'budget-variance',
   ],
 
   pulseMetrics: ['mtd_revenue', 'projected_revenue', 'net_profit', 'cash_position'],
@@ -442,18 +448,22 @@ const EMPIRE_TIER: TierPreset = {
   ],
 
   dashboardWidgets: [
-    'organization_health',
+    'executive-summary',
+    'location-overview',
+    'team-activity',
+    'strategic-decisions',
+    'weekly-trends',
+    'organization-health',
     'ebitda',
-    'cash_flow',
-    'ar_outstanding',
-    'ap_due',
-    'regional_performance',
-    'strategic_decisions',
-    'market_share',
-    'competitor_alerts',
-    'expansion_opportunities',
-    'compliance_audit_status',
-    'board_report_preview',
+    'cash-flow',
+    'ar-outstanding',
+    'ap-due',
+    'regional-performance',
+    'market-share',
+    'competitor-alerts',
+    'expansion-opportunities',
+    'compliance-audit-status',
+    'board-report-preview',
   ],
 
   pulseMetrics: ['mtd_revenue', 'ebitda', 'cash_position', 'ar_outstanding'],
@@ -545,16 +555,18 @@ export function getTierRequirements(tier: BusinessTier): {
 
 /**
  * Check if tenant qualifies for a tier
+ * Must meet revenue threshold OR (locations AND team together)
  */
 export function qualifiesForTier(
   tier: BusinessTier,
   metrics: { revenue: number; locations: number; teamSize: number }
 ): boolean {
   const req = getTierRequirements(tier);
+  // Revenue is the primary qualifier
+  // OR both locations AND team size together (can't game with just employees)
   return (
     metrics.revenue >= req.minRevenue ||
-    metrics.locations >= req.minLocations ||
-    metrics.teamSize >= req.minTeam
+    (metrics.locations >= req.minLocations && metrics.teamSize >= req.minTeam)
   );
 }
 
