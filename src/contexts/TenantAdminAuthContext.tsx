@@ -35,6 +35,7 @@ export interface Tenant {
   payment_method_added?: boolean;
   mrr?: number;
   onboarding_completed?: boolean;
+  business_tier?: string;
   created_at?: string;
   limits: {
     customers: number;

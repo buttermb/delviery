@@ -7,10 +7,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { 
-  BusinessTier, 
-  getTierPreset, 
-  getNextTier, 
+import {
+  BusinessTier,
+  getTierPreset,
+  getNextTier,
   getTierRequirements,
   qualifiesForTier,
   detectBestTier,
@@ -20,6 +20,12 @@ import {
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
+import {
+  calculateTierScore,
+  determineTierFromScore,
+  getNextTierProgress
+} from '@/lib/hotbox/tierDetection';
+
 export interface TenantMetrics {
   monthlyRevenue: number;
   revenue: number;
@@ -27,6 +33,13 @@ export interface TenantMetrics {
   teamSize: number;
   ordersThisMonth: number;
   customersCount: number;
+  // Add other fields required by TenantMetrics in types/hotbox.ts if needed
+  // For now we map what we have
+  activeOrders: number;
+  pendingOrders: number;
+  lowStockItems: number;
+  customerCount: number;
+  avgOrderValue: number;
 }
 
 export interface BusinessTierData {
@@ -37,6 +50,8 @@ export interface BusinessTierData {
   nextTierRequirements: { minRevenue: number; minLocations: number; minTeam: number } | null;
   qualifiesForUpgrade: boolean;
   tierOverride: boolean;
+  score: number;
+  progress: number;
 }
 
 export function useBusinessTier() {
@@ -92,10 +107,26 @@ export function useBusinessTier() {
         teamSize: teamCount || 1,
         ordersThisMonth: ordersCount || 0,
         customersCount: customersCount || 0,
+        // Mocking missing fields for now as they require more queries
+        activeOrders: 0,
+        pendingOrders: 0,
+        lowStockItems: 0,
+        customerCount: customersCount || 0,
+        avgOrderValue: 0,
       };
 
       const currentTier = (tenantData?.business_tier as BusinessTier) || 'street';
-      const nextTier = getNextTier(currentTier);
+
+      // Calculate score
+      const scoreData = calculateTierScore(metrics);
+      const { nextTier, progress } = getNextTierProgress(scoreData.total);
+
+      // Determine if they qualify for upgrade based on score
+      const suggestedTier = determineTierFromScore(scoreData.total);
+      const qualifiesForUpgrade = suggestedTier !== currentTier &&
+        ['street', 'trap', 'block', 'hood', 'empire'].indexOf(suggestedTier) >
+        ['street', 'trap', 'block', 'hood', 'empire'].indexOf(currentTier);
+
       const nextTierReq = nextTier ? getTierRequirements(nextTier) : null;
 
       return {
@@ -104,8 +135,10 @@ export function useBusinessTier() {
         metrics,
         nextTier,
         nextTierRequirements: nextTierReq,
-        qualifiesForUpgrade: nextTier ? qualifiesForTier(nextTier, metrics) : false,
+        qualifiesForUpgrade,
         tierOverride: Boolean(tenantData?.tier_override),
+        score: scoreData.total,
+        progress
       };
     },
     enabled: !!tenant?.id,
@@ -119,8 +152,8 @@ export function useBusinessTier() {
 
       const { error } = await supabase
         .from('tenants')
-        .update({ 
-          business_tier: tier, 
+        .update({
+          business_tier: tier,
           tier_override: override,
           tier_detected_at: new Date().toISOString(),
         })
@@ -158,16 +191,16 @@ export function useBusinessTier() {
   const isFeatureEnabled = (featureId: string): boolean => {
     if (!data) return false;
     const { preset } = data;
-    
+
     // 'all' means everything enabled
     if (preset.enabledFeatures.includes('all')) return true;
-    
+
     // Check if feature is in enabled list
     if (preset.enabledFeatures.includes(featureId)) return true;
-    
+
     // Check if feature is in hidden list
     if (preset.hiddenFeatures.includes(featureId)) return false;
-    
+
     // Default to enabled
     return true;
   };
@@ -181,7 +214,7 @@ export function useBusinessTier() {
   // Get suggested tier based on current metrics
   const getSuggestedTier = (): BusinessTier => {
     if (!data) return 'street';
-    return detectBestTier(data.metrics);
+    return determineTierFromScore(data.score);
   };
 
   return {
@@ -193,17 +226,19 @@ export function useBusinessTier() {
     nextTierRequirements: data?.nextTierRequirements || null,
     qualifiesForUpgrade: data?.qualifiesForUpgrade || false,
     tierOverride: data?.tierOverride || false,
-    
+    score: data?.score || 0,
+    progress: data?.progress || 0,
+
     // State
     isLoading,
     error,
-    
+
     // Actions
     setTier: setTierMutation.mutate,
     recalculateTier: recalculateTierMutation.mutate,
     isSettingTier: setTierMutation.isPending,
     isRecalculating: recalculateTierMutation.isPending,
-    
+
     // Helpers
     isFeatureEnabled,
     isFeatureHidden,

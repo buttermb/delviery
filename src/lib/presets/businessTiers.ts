@@ -19,15 +19,15 @@ export interface TierPreset {
   revenueRange: string;
   typicalLocations: string;
   typicalTeam: string;
-  
+
   // Sidebar features
   enabledFeatures: string[];
   hiddenFeatures: string[];
-  
+
   // Dashboard widgets
   dashboardWidgets: string[];
   pulseMetrics: string[]; // The 4 key numbers
-  
+
   // Quick actions for this tier
   quickActions: Array<{
     id: string;
@@ -35,16 +35,16 @@ export interface TierPreset {
     icon: string;
     path: string;
   }>;
-  
+
   // Navigation sections visible
   navSections: string[];
-  
+
   // Automation rules enabled
   automation: {
     enabled: boolean;
     rules: string[];
   };
-  
+
   // Feature limits
   limits: {
     locations: number;
@@ -52,6 +52,13 @@ export interface TierPreset {
     products: number;
     ordersPerMonth: number;
   };
+}
+
+export interface TierThresholds {
+  revenue: number;
+  locations: number;
+  team: number;
+  score: number;
 }
 
 /**
@@ -66,7 +73,7 @@ const STREET_TIER: TierPreset = {
   revenueRange: '<$10K/mo',
   typicalLocations: '1',
   typicalTeam: 'Just you',
-  
+
   enabledFeatures: [
     'dashboard',
     'pos-system',
@@ -79,7 +86,7 @@ const STREET_TIER: TierPreset = {
     'compliance-basic',
     'settings',
   ],
-  
+
   hiddenFeatures: [
     'advanced-analytics',
     'multi-location',
@@ -95,7 +102,7 @@ const STREET_TIER: TierPreset = {
     'customer-insights',
     'financial-center',
   ],
-  
+
   dashboardWidgets: [
     'todays_revenue',
     'top_5_products',
@@ -103,18 +110,18 @@ const STREET_TIER: TierPreset = {
     'low_stock_alerts',
     'recent_orders',
   ],
-  
+
   pulseMetrics: ['revenue', 'profit', 'orders_today', 'pending_actions'],
-  
+
   quickActions: [
     { id: 'new-sale', label: '+ New Sale', icon: 'DollarSign', path: '/admin/pos-system' },
     { id: 'view-orders', label: 'Orders', icon: 'Package', path: '/admin/orders' },
     { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory/products' },
     { id: 'menu', label: 'View Menu', icon: 'Menu', path: '/admin/disposable-menus' },
   ],
-  
+
   navSections: ['operations', 'settings'],
-  
+
   automation: {
     enabled: true,
     rules: [
@@ -123,7 +130,7 @@ const STREET_TIER: TierPreset = {
       'compliance_reminders',
     ],
   },
-  
+
   limits: {
     locations: 1,
     users: 3,
@@ -144,7 +151,7 @@ const TRAP_TIER: TierPreset = {
   revenueRange: '$10K-50K/mo',
   typicalLocations: '1-2',
   typicalTeam: '2-5',
-  
+
   enabledFeatures: [
     'dashboard',
     'pos-system',
@@ -161,7 +168,7 @@ const TRAP_TIER: TierPreset = {
     'loyalty-program',
     'stock-alerts',
   ],
-  
+
   hiddenFeatures: [
     'advanced-analytics',
     'wholesale-marketplace',
@@ -174,7 +181,7 @@ const TRAP_TIER: TierPreset = {
     'financial-center',
     'marketing-automation',
   ],
-  
+
   dashboardWidgets: [
     'revenue_trend',
     'top_products',
@@ -185,18 +192,18 @@ const TRAP_TIER: TierPreset = {
     'delivery_status',
     'weekly_comparison',
   ],
-  
+
   pulseMetrics: ['revenue', 'profit_margin', 'orders_today', 'team_online'],
-  
+
   quickActions: [
     { id: 'new-order', label: '+ New Order', icon: 'Plus', path: '/admin/orders/new' },
     { id: 'pos', label: 'POS', icon: 'Store', path: '/admin/pos-system' },
     { id: 'process-menu', label: 'Process Menu Orders', icon: 'Menu', path: '/admin/disposable-menu-orders' },
     { id: 'team', label: 'Team View', icon: 'Users', path: '/admin/team' },
   ],
-  
+
   navSections: ['operations', 'delivery', 'people', 'settings'],
-  
+
   automation: {
     enabled: true,
     rules: [
@@ -208,7 +215,7 @@ const TRAP_TIER: TierPreset = {
       'loyalty_rewards',
     ],
   },
-  
+
   limits: {
     locations: 2,
     users: 10,
@@ -229,7 +236,7 @@ const BLOCK_TIER: TierPreset = {
   revenueRange: '$50K-200K/mo',
   typicalLocations: '2-3',
   typicalTeam: '5-15',
-  
+
   enabledFeatures: [
     'dashboard',
     'pos-system',
@@ -253,7 +260,7 @@ const BLOCK_TIER: TierPreset = {
     'purchase-orders',
     'customer-insights',
   ],
-  
+
   hiddenFeatures: [
     'wholesale-marketplace',
     'api-access',
@@ -262,7 +269,7 @@ const BLOCK_TIER: TierPreset = {
     'custom-integrations',
     'advanced-fleet',
   ],
-  
+
   dashboardWidgets: [
     'revenue_by_location',
     'location_comparison',
@@ -275,18 +282,18 @@ const BLOCK_TIER: TierPreset = {
     'weekly_trends',
     'profit_margins',
   ],
-  
+
   pulseMetrics: ['total_revenue', 'avg_margin', 'orders_network', 'issues_count'],
-  
+
   quickActions: [
     { id: 'approve-orders', label: 'Approve Orders', icon: 'CheckCircle', path: '/admin/wholesale-orders' },
     { id: 'location-view', label: 'Locations', icon: 'MapPin', path: '/admin/locations' },
     { id: 'transfer', label: 'Transfer Stock', icon: 'ArrowRightLeft', path: '/admin/inventory/transfers' },
     { id: 'reports', label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   ],
-  
+
   navSections: ['operations', 'delivery', 'wholesale', 'people', 'compliance', 'settings'],
-  
+
   automation: {
     enabled: true,
     rules: [
@@ -301,7 +308,7 @@ const BLOCK_TIER: TierPreset = {
       'inventory_transfer_suggestions',
     ],
   },
-  
+
   limits: {
     locations: 5,
     users: 25,
@@ -322,7 +329,7 @@ const HOOD_TIER: TierPreset = {
   revenueRange: '$200K-500K/mo',
   typicalLocations: '3-5',
   typicalTeam: '15-30',
-  
+
   enabledFeatures: [
     'dashboard',
     'pos-system',
@@ -352,13 +359,13 @@ const HOOD_TIER: TierPreset = {
     'predictive-par',
     'audit-trail',
   ],
-  
+
   hiddenFeatures: [
     'white-label',
     'custom-integrations',
     'developer-tools',
   ],
-  
+
   dashboardWidgets: [
     'executive_summary',
     'mtd_revenue',
@@ -373,18 +380,18 @@ const HOOD_TIER: TierPreset = {
     'management_alerts',
     'budget_variance',
   ],
-  
+
   pulseMetrics: ['mtd_revenue', 'projected_revenue', 'net_profit', 'cash_position'],
-  
+
   quickActions: [
     { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/approvals' },
     { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/financial-center' },
     { id: 'wholesale', label: 'Wholesale Pipeline', icon: 'Building', path: '/admin/wholesale-orders' },
     { id: 'scorecard', label: 'Team Scorecard', icon: 'Users', path: '/admin/team-performance' },
   ],
-  
+
   navSections: ['operations', 'delivery', 'wholesale', 'people', 'analytics', 'compliance', 'settings'],
-  
+
   automation: {
     enabled: true,
     rules: [
@@ -400,7 +407,7 @@ const HOOD_TIER: TierPreset = {
       'churn_risk_detection',
     ],
   },
-  
+
   limits: {
     locations: 10,
     users: 50,
@@ -421,19 +428,19 @@ const EMPIRE_TIER: TierPreset = {
   revenueRange: '$500K+/mo',
   typicalLocations: '5+',
   typicalTeam: '30+',
-  
+
   enabledFeatures: [
     // Everything enabled
     'all',
   ],
-  
+
   hiddenFeatures: [
     // Only debug/dev tools hidden
     'debug-console',
     'bug-scanner',
     'link-checker',
   ],
-  
+
   dashboardWidgets: [
     'organization_health',
     'ebitda',
@@ -448,18 +455,18 @@ const EMPIRE_TIER: TierPreset = {
     'compliance_audit_status',
     'board_report_preview',
   ],
-  
+
   pulseMetrics: ['mtd_revenue', 'ebitda', 'cash_position', 'ar_outstanding'],
-  
+
   quickActions: [
     { id: 'board-report', label: 'Board Report', icon: 'FileText', path: '/admin/board-report' },
     { id: 'strategic', label: 'Strategic Dashboard', icon: 'TrendingUp', path: '/admin/strategic-dashboard' },
     { id: 'compliance', label: 'Compliance Status', icon: 'Shield', path: '/admin/compliance' },
     { id: 'expansion', label: 'Expansion Analysis', icon: 'Globe', path: '/admin/expansion' },
   ],
-  
+
   navSections: ['all'],
-  
+
   automation: {
     enabled: true,
     rules: [
@@ -479,7 +486,7 @@ const EMPIRE_TIER: TierPreset = {
       'regulatory_compliance_check',
     ],
   },
-  
+
   limits: {
     locations: 999,
     users: 999,
@@ -673,7 +680,7 @@ export interface Greeting {
 export function generateGreeting(userName: string, tier: BusinessTier): Greeting {
   const timeGreeting = getTimeGreeting();
   const tierMessage = getRandomTierMessage(tier);
-  
+
   return {
     timeGreeting,
     tierMessage,

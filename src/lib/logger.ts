@@ -10,8 +10,8 @@
 export type LogContext = string | Record<string, unknown>;
 
 class Logger {
-  private isDev = import.meta.env.DEV;
-  private isProduction = import.meta.env.PROD;
+  private isDev = (typeof import.meta !== 'undefined' && import.meta.env?.DEV) || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development');
+  private isProduction = (typeof import.meta !== 'undefined' && import.meta.env?.PROD) || (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production');
 
   /**
    * Debug logging - only in development
@@ -53,7 +53,7 @@ class Logger {
    * Supports both 2-param and 3-param signatures for compatibility
    */
   error(message: string, error?: Error | unknown, sourceOrContext?: string | Record<string, unknown>): void {
-    const errorData = error instanceof Error 
+    const errorData = error instanceof Error
       ? { message: error.message, stack: error.stack, name: error.name }
       : error;
 

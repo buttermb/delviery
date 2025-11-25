@@ -1,59 +1,35 @@
 /**
  * Hotbox Type Definitions
- * 
- * Complete type system for the Hotbox Command Center
- * including attention queue, tier detection, and metrics.
+ * Centralized types for the Hotbox Dashboard system
  */
 
-// ============================================================
-// BUSINESS TIER TYPES
-// ============================================================
+import { LucideIcon } from 'lucide-react';
 
-export type BusinessTier = 'street' | 'trap' | 'block' | 'hood' | 'empire';
-
-export interface TierThresholds {
-  minRevenue: number;
-  maxRevenue: number;
-  minLocations: number;
-  maxLocations: number;
-  minEmployees: number;
-  maxEmployees: number;
-}
-
-export interface TierScoring {
-  revenue: number;      // 0-50 points
-  locations: number;    // 0-25 points
-  employees: number;    // 0-25 points
-  total: number;        // 0-100 points
-}
-
-export interface TierDetectionResult {
-  tier: BusinessTier;
-  metrics: TenantMetrics;
-  scoring: TierScoring;
-  confidence: 'high' | 'medium' | 'low';
-  suggestedUpgrade?: BusinessTier;
-}
-
-// ============================================================
-// TENANT METRICS
-// ============================================================
+// ==========================================
+// Metric Types
+// ==========================================
 
 export interface TenantMetrics {
   tenantId: string;
   revenue: number;
   monthlyRevenue: number;
   averageOrderValue: number;
+  avgOrderValue: number; // Alias for backward compatibility
   totalOrders: number;
   activeCustomers: number;
+  customerCount: number; // Alias
   locationCount: number;
+  locations: number; // Alias
   employeeCount: number;
-  locations: number;
-  teamSize: number;
+  teamSize: number; // Alias
   inventoryValue: number;
   wholesaleRevenue: number;
   deliveryCount: number;
   posTransactions: number;
+  activeOrders: number;
+  pendingOrders: number;
+  lowStockItems: number;
+  retentionRate?: number;
 }
 
 export interface LocationMetrics {
@@ -62,7 +38,7 @@ export interface LocationMetrics {
   revenue: number;
   margin: number;
   orders: number;
-  status: 'healthy' | 'warning' | 'critical';
+  status: 'active' | 'offline' | 'warning';
   issues: number;
 }
 
@@ -70,31 +46,29 @@ export interface TeamMemberStatus {
   id: string;
   name: string;
   role: string;
-  status: 'active' | 'break' | 'offline';
-  avatar?: string;
+  status: 'online' | 'busy' | 'offline';
   currentTask?: string;
   metrics?: {
-    sales?: number;
-    deliveries?: number;
-    orders?: number;
+    ordersHandled: number;
+    avgTime: string;
   };
 }
 
-// ============================================================
-// ATTENTION QUEUE TYPES
-// ============================================================
+// ==========================================
+// Alert & Attention Types
+// ==========================================
 
-export type AlertPriority = 'critical' | 'important' | 'info';
-
-export type AlertCategory = 
-  | 'orders' 
-  | 'inventory' 
-  | 'delivery' 
-  | 'customers' 
-  | 'compliance' 
-  | 'team' 
+export type AlertCategory =
+  | 'orders'
+  | 'inventory'
+  | 'delivery'
+  | 'customers'
+  | 'compliance'
+  | 'team'
   | 'financial'
   | 'system';
+
+export type AlertPriority = 'critical' | 'important' | 'info';
 
 export interface AttentionItem {
   id: string;
@@ -102,151 +76,85 @@ export interface AttentionItem {
   category: AlertCategory;
   title: string;
   description?: string;
-  value?: number;          // Dollar amount for scoring
-  valueDisplay?: string;   // Formatted display value
+  value?: string;
+  timestamp: string; // ISO date string
+  score?: number; // Calculated weighted score
+  actionUrl: string;
   actionLabel: string;
-  actionRoute: string;
-  timestamp: Date;
-  metadata?: Record<string, unknown>;
-  // Computed by scoring algorithm
-  score?: number;
+  metadata?: Record<string, any>;
 }
 
 export interface AttentionQueue {
-  critical: AttentionItem[];
-  important: AttentionItem[];
-  info: AttentionItem[];
-  all: AttentionItem[];    // All items sorted by score
+  items: AttentionItem[];
   totalCount: number;
-  lastUpdated: Date;
+  criticalCount: number;
+  lastUpdated: string;
 }
 
-// ============================================================
-// PULSE METRICS
-// ============================================================
-
-export type MetricFormat = 'currency' | 'number' | 'percent' | 'text';
-
-export interface MetricTrend {
-  direction: 'up' | 'down' | 'flat';
-  value: number;
-  label: string;
-}
+// ==========================================
+// Dashboard Component Types
+// ==========================================
 
 export interface PulseMetric {
   id: string;
   label: string;
-  value: number | string;
-  format: MetricFormat;
-  trend?: MetricTrend;
-  alert?: boolean;
+  value: string;
+  change?: string;
+  changeType?: 'increase' | 'decrease' | 'neutral';
   subtext?: string;
+  trend?: number[]; // Array of values for sparkline
+  format?: 'currency' | 'number' | 'percent';
+  alert?: boolean;
 }
-
-export interface DailyPulse {
-  revenue: PulseMetric;
-  profit: PulseMetric;
-  orders: PulseMetric;
-  pendingActions: PulseMetric;
-}
-
-// ============================================================
-// QUICK ACTIONS
-// ============================================================
 
 export interface QuickAction {
   id: string;
   label: string;
-  icon: string | any;
+  icon: React.ReactNode | string; // Can be component or icon name
   path: string;
   route?: string;
   shortcut?: string;
   priority?: number;
   isPersonalized?: boolean;
+  category?: string;
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
+// ==========================================
+// Tier System Types
+// ==========================================
 
-export interface NavItem {
-  id: string;
-  label: string;
-  icon: string;
-  route: string;
-  badge?: number;
-  children?: NavItem[];
-  requiredTier?: BusinessTier;
+export interface TierThresholds {
+  revenue: {
+    empire: number;
+    hood: number;
+    block: number;
+    trap: number;
+  };
+  locations: {
+    empire: number;
+    hood: number;
+    block: number;
+    trap: number;
+  };
+  team: {
+    empire: number;
+    hood: number;
+    block: number;
+    trap: number;
+  };
+  score: {
+    empire: number;
+    hood: number;
+    block: number;
+    trap: number;
+  };
 }
 
-export interface NavSection {
-  id: string;
-  label: string;
-  icon: string;
-  items: NavItem[];
-  collapsed?: boolean;
+export interface TierScore {
+  total: number;
+  breakdown: {
+    revenue: number;
+    locations: number;
+    team: number;
+  };
 }
-
-// ============================================================
-// GREETING SYSTEM
-// ============================================================
-
-export interface TierGreetings {
-  tier: BusinessTier;
-  messages: string[];
-}
-
-export interface Greeting {
-  timeGreeting: string;
-  tierMessage: string;
-  full: string;
-}
-
-// ============================================================
-// HOTBOX STATE
-// ============================================================
-
-export interface HotboxState {
-  tier: BusinessTier;
-  pulse: DailyPulse | null;
-  attention: AttentionQueue | null;
-  locations?: LocationMetrics[];
-  team?: TeamMemberStatus[];
-  quickActions: QuickAction[];
-  greeting: Greeting;
-  lastRefresh: Date;
-  isLoading: boolean;
-  error?: string;
-}
-
-// ============================================================
-// SCORING CONSTANTS
-// ============================================================
-
-export const PRIORITY_WEIGHTS: Record<AlertPriority, number> = {
-  critical: 1000,
-  important: 100,
-  info: 10,
-};
-
-export const CATEGORY_URGENCY: Record<AlertCategory, number> = {
-  orders: 50,      // Orders = money waiting
-  delivery: 45,    // Active operations
-  compliance: 40,  // Legal/regulatory
-  system: 35,      // Technical issues
-  inventory: 30,   // Stock issues
-  customers: 25,   // Relationship management
-  financial: 20,   // Money tracking
-  team: 15,        // People management
-};
-
-export const AGE_DECAY_HOURS = 24;
-
-export const TIER_SCORE_THRESHOLDS = {
-  empire: 80,
-  hood: 55,
-  block: 35,
-  trap: 15,
-  street: 0,
-} as const;
-

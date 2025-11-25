@@ -1,116 +1,120 @@
 /**
- * Attention Queue with Weighted Scoring Algorithm
+ * Attention Queue Scoring Algorithm
  * 
- * Scoring Formula:
- * Score = Base Priority + Category Urgency + Age Factor + Value Factor
- * 
- * Base Priority:
- * - Critical: 1000 points
- * - Important: 100 points
- * - Info: 10 points
- * 
- * Category Urgency:
- * - Orders: +50 (money waiting)
- * - Delivery: +45 (active operations)
- * - Compliance: +40 (legal risk)
- * - System: +35 (technical issues)
- * - Inventory: +30 (can't sell without it)
- * - Customers: +25 (relationship management)
- * - Financial: +20 (money tracking)
- * - Team: +15 (people management)
- * 
- * Age Factor:
- * - < 1 hour: +20 points (just happened)
- * - > 24 hours: -2 points per hour (decay)
- * 
- * Value Factor:
- * - log10(dollar_amount) * 20
- * - $100 = +40, $1K = +60, $10K = +80
+ * Calculates a weighted score for attention items to determine priority.
+ * Formula: Score = Base Priority + Category Urgency + Age Factor + Value Factor
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import {
-  AttentionItem,
-  AttentionQueue,
-  AlertPriority,
-  AlertCategory,
-  PRIORITY_WEIGHTS,
-  CATEGORY_URGENCY,
-  AGE_DECAY_HOURS,
-  BusinessTier,
-} from '@/types/hotbox';
+import { AttentionItem, AlertPriority, AlertCategory } from '@/types/hotbox';
 
-// ============================================================
-// SCORING FUNCTIONS
-// ============================================================
+// Base Priority Scores
+const PRIORITY_SCORES: Record<AlertPriority, number> = {
+  critical: 1000,
+  important: 100,
+  info: 10,
+};
+
+// Category Urgency Scores
+const CATEGORY_SCORES: Record<AlertCategory, number> = {
+  orders: 50,      // Money waiting
+  delivery: 45,    // Active operations
+  compliance: 40,  // Legal risk
+  system: 35,      // Technical issues
+  inventory: 30,   // Can't sell without it
+  customers: 25,   // Relationship
+  financial: 20,   // Tracking
+  team: 15,        // People management
+};
 
 /**
- * Calculate the weighted score for an attention item
+ * Calculate the score for an attention item
  */
-export function calculateItemScore(item: AttentionItem): number {
+export function calculateAttentionScore(item: AttentionItem): number {
   let score = 0;
-  
-  // 1. Base priority score
-  score += PRIORITY_WEIGHTS[item.priority];
-  
-  // 2. Category urgency score
-  score += CATEGORY_URGENCY[item.category];
-  
-  // 3. Age factor
-  const now = Date.now();
-  const itemTime = item.timestamp instanceof Date 
-    ? item.timestamp.getTime() 
-    : new Date(item.timestamp).getTime();
-  const ageHours = (now - itemTime) / (1000 * 60 * 60);
-  
-  if (ageHours < 1) {
-    // Fresh items get a boost
-    score += 20;
-  } else if (ageHours > AGE_DECAY_HOURS) {
-    // Old items decay (but cap the penalty)
-    const decayPenalty = Math.min(50, (ageHours - AGE_DECAY_HOURS) * 2);
-    score -= decayPenalty;
+
+  // 1. Base Priority
+  score += PRIORITY_SCORES[item.priority] || 0;
+
+  // 2. Category Urgency
+  score += CATEGORY_SCORES[item.category] || 0;
+
+  // 3. Age Factor
+  const created = new Date(item.timestamp);
+  const now = new Date();
+  const ageInHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+
+  if (ageInHours < 1) {
+    score += 20; // Boost for very new items
+  } else if (ageInHours > 24) {
+    // Decay for old items (-2 points per hour over 24h)
+    const decay = Math.min(100, (ageInHours - 24) * 2);
+    score -= decay;
   }
-  
-  // 4. Value factor (for items with dollar amounts)
-  if (item.value && typeof item.value === 'number' && item.value > 0) {
-    // log10(value) * 20, capped at 100
-    const valueFactor = Math.min(100, Math.log10(item.value + 1) * 20);
-    score += valueFactor;
+
+  // 4. Value Factor (if applicable)
+  // If item has a value (e.g., "$500"), parse it and add points
+  if (item.value) {
+    const valueStr = item.value.replace(/[^0-9.]/g, '');
+    const value = parseFloat(valueStr);
+
+    if (!isNaN(value) && value > 0) {
+      // log10(amount) * 20
+      // $100 -> 2 * 20 = 40
+      // $1000 -> 3 * 20 = 60
+      // $10000 -> 4 * 20 = 80
+      score += Math.log10(value) * 20;
+    }
   }
-  
-  return Math.max(0, Math.round(score));
+
+  return Math.round(score);
 }
 
 /**
- * Sort items by their calculated score (highest first)
+ * Sort attention items by score (descending)
  */
-export function sortByScore(items: AttentionItem[]): AttentionItem[] {
-  return [...items]
+export function sortAttentionQueue(items: AttentionItem[]): AttentionItem[] {
+  return items
     .map(item => ({
       ...item,
-      score: calculateItemScore(item),
+      score: calculateAttentionScore(item)
     }))
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-// ============================================================
-// ATTENTION ITEM BUILDERS
-// ============================================================
-
 /**
- * Create an attention item with defaults
+ * Get color for category
  */
-export function createAttentionItem(
-  partial: Omit<AttentionItem, 'id' | 'timestamp'> & { 
-    id?: string; 
-    timestamp?: Date;
-  }
-): AttentionItem {
+export function getCategoryColor(category: AlertCategory): string {
+  const colors: Record<AlertCategory, string> = {
+    orders: 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400',
+    delivery: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
+    compliance: 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400',
+    system: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400',
+    inventory: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400',
+    customers: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
+    financial: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400',
+    team: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400',
+  };
+  return colors[category] || 'text-gray-600 bg-gray-100';
+}
+import { supabase } from '@/integrations/supabase/client';
+import { BusinessTier } from '@/lib/presets/businessTiers';
+
+// Helper to create consistent attention items
+function createAttentionItem(params: Omit<Partial<AttentionItem>, 'timestamp'> & { title: string; priority: AlertPriority; category: AlertCategory; actionLabel: string; actionRoute: string; timestamp: Date }): AttentionItem {
+  const { timestamp, ...rest } = params;
   return {
-    id: partial.id || `${partial.category}-${Date.now()}`,
-    timestamp: partial.timestamp || new Date(),
-    ...partial,
+    id: params.id || Math.random().toString(36).substring(7),
+    priority: params.priority,
+    category: params.category,
+    title: params.title,
+    description: params.description,
+    value: params.value ? String(params.value) : undefined,
+    timestamp: timestamp.toISOString(),
+    actionUrl: params.actionRoute,
+    actionLabel: params.actionLabel,
+    score: 0, // Will be calculated
+    ...rest,
   };
 }
 
@@ -145,14 +149,14 @@ export async function fetchAttentionItems(
       .select('id, total_amount, created_at')
       .eq('tenant_id', tenantId)
       .eq('status', 'pending'),
-    
+
     // Pending regular orders
     supabase
       .from('orders')
       .select('id, total_amount, created_at')
       .eq('tenant_id', tenantId)
       .eq('status', 'pending'),
-    
+
     // @ts-expect-error - Deep type instantiation from Supabase query
     // Late deliveries (ETA passed)
     supabase
@@ -161,7 +165,7 @@ export async function fetchAttentionItems(
       .eq('tenant_id', tenantId)
       .eq('status', 'in_transit')
       .lt('estimated_delivery_time', now.toISOString()),
-    
+
     // Active deliveries (on schedule)
     supabase
       .from('deliveries')
@@ -169,7 +173,7 @@ export async function fetchAttentionItems(
       .eq('tenant_id', tenantId)
       .eq('status', 'in_transit')
       .gte('estimated_delivery_time', now.toISOString()),
-    
+
     // @ts-expect-error - Deep type instantiation from Supabase query
     // Out of stock products
     supabase
@@ -178,7 +182,7 @@ export async function fetchAttentionItems(
       .eq('tenant_id', tenantId)
       .lte('stock_quantity', 0)
       .eq('status', 'active'),
-    
+
     // Low stock products
     supabase
       .from('products')
@@ -187,14 +191,14 @@ export async function fetchAttentionItems(
       .gt('stock_quantity', 0)
       .lt('stock_quantity', 10)
       .eq('status', 'active'),
-    
+
     // Customer tabs with balance
     supabase
       .from('customers')
       .select('id, first_name, last_name, balance')
       .eq('tenant_id', tenantId)
       .gt('balance', 0),
-    
+
     // Wholesale orders pending approval
     supabase
       .from('wholesale_orders')
@@ -214,14 +218,13 @@ export async function fetchAttentionItems(
       const orderTime = new Date(o.created_at).getTime();
       return orderTime < oldest ? orderTime : oldest;
     }, Date.now());
-    
+
     items.push(createAttentionItem({
       priority: 'critical',
       category: 'orders',
       title: `${pendingMenuOrders.data.length} Disposable Menu orders waiting`,
       description: 'Customers waiting for confirmation',
-      value: totalValue,
-      valueDisplay: `$${totalValue.toLocaleString()}`,
+      value: String(totalValue),
       actionLabel: 'Process',
       actionRoute: '/admin/disposable-menu-orders',
       timestamp: new Date(oldestOrder),
@@ -262,13 +265,12 @@ export async function fetchAttentionItems(
     const totalValue = pendingOrders.data.reduce(
       (sum, o) => sum + Number(o.total_amount || 0), 0
     );
-    
+
     items.push(createAttentionItem({
       priority: priority as AlertPriority,
       category: 'orders',
       title: `${pendingOrders.data.length} orders waiting to process`,
-      value: totalValue,
-      valueDisplay: `$${totalValue.toLocaleString()}`,
+      value: String(totalValue),
       actionLabel: 'View',
       actionRoute: '/admin/orders?status=pending',
       timestamp: new Date(),
@@ -280,13 +282,12 @@ export async function fetchAttentionItems(
     const totalValue = wholesalePending.data.reduce(
       (sum, o) => sum + Number(o.total_amount || 0), 0
     );
-    
+
     items.push(createAttentionItem({
       priority: 'important',
       category: 'orders',
       title: `${wholesalePending.data.length} wholesale orders need approval`,
-      value: totalValue,
-      valueDisplay: `$${totalValue.toLocaleString()}`,
+      value: String(totalValue),
       actionLabel: 'Review',
       actionRoute: '/admin/wholesale-orders',
       timestamp: new Date(),
@@ -311,14 +312,13 @@ export async function fetchAttentionItems(
     const totalOwed = customerTabs.data.reduce(
       (sum, c) => sum + Number(c.balance || 0), 0
     );
-    
+
     if (totalOwed > 100) { // Only show if significant amount
       items.push(createAttentionItem({
         priority: 'important',
         category: 'customers',
         title: `${customerTabs.data.length} customers with open tabs`,
-        value: totalOwed,
-        valueDisplay: `$${totalOwed.toLocaleString()} owed`,
+        value: String(totalOwed),
         actionLabel: 'Collect',
         actionRoute: '/admin/customer-tabs',
         timestamp: new Date(),
@@ -361,6 +361,8 @@ export async function fetchAttentionItems(
 // QUEUE BUILDER
 // ============================================================
 
+import { AttentionQueue } from '@/types/hotbox';
+
 /**
  * Build the complete attention queue with scoring
  */
@@ -369,20 +371,18 @@ export async function buildAttentionQueue(
   tier: BusinessTier
 ): Promise<AttentionQueue> {
   const allItems = await fetchAttentionItems(tenantId, tier);
-  const sortedItems = sortByScore(allItems);
-  
+  const sortedItems = sortAttentionQueue(allItems);
+
   // Split by priority
   const critical = sortedItems.filter(i => i.priority === 'critical');
   const important = sortedItems.filter(i => i.priority === 'important');
   const info = sortedItems.filter(i => i.priority === 'info');
-  
+
   return {
-    critical,
-    important,
-    info,
-    all: sortedItems,
+    items: sortedItems,
+    criticalCount: critical.length,
     totalCount: allItems.length,
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
   };
 }
 
@@ -393,22 +393,20 @@ export function getTopAttentionItems(
   queue: AttentionQueue,
   maxItems: number = 5
 ): AttentionItem[] {
-  return queue.all.slice(0, maxItems);
+  return queue.items.slice(0, maxItems);
 }
 
 /**
  * Build queue from pre-fetched items (no database call)
  */
 export function buildQueueFromItems(items: AttentionItem[]): AttentionQueue {
-  const sortedItems = sortByScore(items);
-  
+  const sortedItems = sortAttentionQueue(items);
+
   return {
-    critical: sortedItems.filter(i => i.priority === 'critical'),
-    important: sortedItems.filter(i => i.priority === 'important'),
-    info: sortedItems.filter(i => i.priority === 'info'),
-    all: sortedItems,
+    items: sortedItems,
+    criticalCount: sortedItems.filter(i => i.priority === 'critical').length,
     totalCount: items.length,
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
   };
 }
 
@@ -417,8 +415,6 @@ export function buildQueueFromItems(items: AttentionItem[]): AttentionQueue {
 // ============================================================
 
 export {
-  PRIORITY_WEIGHTS,
-  CATEGORY_URGENCY,
-  AGE_DECAY_HOURS,
+  PRIORITY_SCORES as PRIORITY_WEIGHTS,
+  CATEGORY_SCORES as CATEGORY_URGENCY,
 };
-
