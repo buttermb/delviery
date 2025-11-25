@@ -84,6 +84,7 @@ export function useAttentionQueue() {
           .eq('tenant_id', tenant.id)
           .eq('status', 'pending'),
         
+        // @ts-expect-error - Deep type instantiation
         supabase
           .from('deliveries')
           .select('id, created_at, estimated_delivery_time')
