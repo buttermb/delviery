@@ -205,7 +205,7 @@ export function useSidebarConfig() {
   const hotItems = useMemo((): HotItem[] => {
     if (!tenant) return [];
     const context = getBusinessContext(tenant);
-    return generateHotItems(context);
+    return generateHotItems(context, tenant.slug);
   }, [tenant]);
 
   // Add hot items section if any exist

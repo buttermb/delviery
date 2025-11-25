@@ -385,8 +385,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
             // Set state from verified cookie data
             if (verifyData.admin) {
-              parsedAdmin = verifyData.admin;
-              setAdmin(verifyData.admin);
+              parsedAdmin = {
+                ...verifyData.admin,
+                userId: verifyData.admin.userId || verifyData.user?.id || verifyData.admin.id,
+              };
+              setAdmin(parsedAdmin);
             }
             if (verifyData.tenant) {
               parsedTenant = verifyData.tenant;

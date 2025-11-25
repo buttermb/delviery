@@ -224,12 +224,14 @@ serve(async (req) => {
         name: tenantUser.name,
         role: tenantUser.role,
         tenant_id: tenantUser.tenant_id,
+        userId: authData.user.id,
       } : {
         id: authData.user.id,
         email: authData.user.email,
         name: tenant.owner_name,
         role: 'owner',
         tenant_id: tenant.id,
+        userId: authData.user.id,
       };
 
       console.log('Login successful for:', email, 'tenant:', tenant.business_name);
@@ -532,6 +534,7 @@ serve(async (req) => {
             email: tenantAdmin.email,
             name: tenantAdmin.name,
             role: tenantAdmin.role,
+            userId: tenantAdmin.user_id,
           },
           message: 'Use tenant admin email to generate token',
         }),
@@ -603,6 +606,7 @@ serve(async (req) => {
           name: ownedTenant.owner_name || userEmail.split('@')[0],
           role: 'owner',
           tenant_id: ownedTenant.id,
+          userId: user.id,
         };
 
         const tenant = {
@@ -669,6 +673,7 @@ serve(async (req) => {
         name: tenantUser.name,
         role: tenantUser.role,
         tenant_id: tenantUser.tenant_id,
+        userId: user.id,
       };
 
       const tenant = {
