@@ -59,6 +59,7 @@ import {
   type AttentionItem as HotboxAttentionItem,
   type AttentionQueue,
   type AlertCategory,
+  type QuickAction,
 } from '@/lib/hotbox';
 import { TierUpgradeCard } from './TierUpgradeCard';
 
@@ -82,13 +83,6 @@ interface AttentionItem {
   score?: number;
   actionUrl: string;
   actionLabel: string;
-}
-
-interface QuickAction {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  path: string;
 }
 
 // Helper to get time-appropriate greeting with workflow context
@@ -723,6 +717,7 @@ function LocationOverview() {
       today.setHours(0, 0, 0, 0);
       
       // Try to fetch locations from locations table
+      // @ts-expect-error Deep type instantiation from Supabase query
       const { data: locs } = await supabase
         .from('locations')
         .select('id, name, address')
@@ -752,6 +747,7 @@ function LocationOverview() {
           const margin = todayRevenue > 0 ? 25 : 0;
           
           // Check for issues (out of stock products)
+          // @ts-expect-error Deep type instantiation from Supabase query
           const { count: outOfStock } = await supabase
             .from('products')
             .select('id', { count: 'exact', head: true })
@@ -1098,6 +1094,7 @@ function TeamToday() {
       const teamWithActivity = await Promise.all(
         members.map(async (member) => {
           // Get deliveries count for drivers
+          // @ts-expect-error Deep type instantiation from Supabase query
           const { count: deliveries } = await supabase
             .from('deliveries')
             .select('*', { count: 'exact', head: true })
