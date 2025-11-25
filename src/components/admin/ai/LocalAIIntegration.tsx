@@ -26,23 +26,20 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Transformers.js example (runs in browser)
-// Note: This is a simplified example - actual implementation would load models
+// Demo Mode: Simulated AI processing
+// In production, integrate with @xenova/transformers, Ollama, or Lovable AI
 async function runLocalAI(prompt: string, model: string): Promise<string> {
-  // Simulate local AI processing
-  // In production, you'd use @xenova/transformers or connect to Ollama/LocalAI
+  await new Promise(resolve => setTimeout(resolve, 1500));
   
-  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing
-  
-  // Example responses based on model
+  // Demo responses with clear labeling
   const responses: Record<string, string> = {
-    'sentiment': `Sentiment Analysis: The text appears to be ${Math.random() > 0.5 ? 'positive' : 'neutral'} with ${Math.round(Math.random() * 100)}% confidence.`,
-    'summary': `Summary: This text appears to discuss customer service and business operations. Key points include communication, service quality, and customer satisfaction.`,
-    'classification': `Classification: Customer Inquiry - Order Status. Priority: Medium. Suggested Response Time: Within 24 hours.`,
-    'translation': `Translation: [Translated text would appear here]`,
+    'sentiment': `[DEMO MODE] Sentiment Analysis: This is a simulated response. In production, connect to real AI models via Lovable AI or local processing.`,
+    'summary': `[DEMO MODE] Summary: This is a placeholder summary. Real AI summarization requires integration with supported AI models.`,
+    'classification': `[DEMO MODE] Classification: Demo classification result. Connect real AI to classify customer inquiries automatically.`,
+    'translation': `[DEMO MODE] Translation: Demo translation output. Real translation requires AI model integration.`,
   };
   
-  return responses[model] || `AI Response: ${prompt.substring(0, 100)}...`;
+  return responses[model] || `[DEMO MODE] AI Response: ${prompt.substring(0, 100)}...`;
 }
 
 interface AIModel {
@@ -144,9 +141,9 @@ export function LocalAIIntegration() {
             Run AI models locally - no API fees, no external services
           </p>
         </div>
-        <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-500">
+        <Badge variant="outline" className="bg-orange-500/10 text-orange-700 border-orange-500">
           <Zap className="h-3 w-3 mr-1" />
-          100% Free
+          Demo Mode
         </Badge>
       </div>
 

@@ -94,17 +94,19 @@ export function LocationMapWidget() {
           name,
           lbs: stats.lbs,
           count: stats.count,
-          // Use deterministic coordinates based on name if no real address geocoding
+          // Use deterministic coordinates based on name (estimated location)
           lat: BASE_LAT + getDeterministicOffset(name),
           lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
+          isEstimated: true,
         })),
         runners: (runners || []).map((runner: any) => ({
           id: runner.id,
           full_name: runner.full_name,
           status: runner.status,
-          // Use real coordinates if available, otherwise fallback to deterministic mock
+          // Use real coordinates if available, otherwise fallback to estimated location
           lat: runner.current_lat || (BASE_LAT + getDeterministicOffset(runner.id)),
           lng: runner.current_lng || (BASE_LNG + getDeterministicOffset(runner.id + '_lng')),
+          isEstimated: !runner.current_lat,
         })),
       };
     },
@@ -162,9 +164,16 @@ export function LocationMapWidget() {
                   {wh.count} items • {wh.lbs.toFixed(1)} lbs
                 </div>
               </div>
-              <Badge variant="outline" className="bg-green-500/10 text-green-700">
-                Active
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-500/10 text-green-700">
+                  Active
+                </Badge>
+                {(wh as any).isEstimated && (
+                  <Badge variant="outline" className="bg-orange-500/10 text-orange-700 text-xs">
+                    Estimated Location
+                  </Badge>
+                )}
+              </div>
             </div>
           ))
         ) : (
@@ -182,9 +191,16 @@ export function LocationMapWidget() {
           locations.runners.map((runner) => (
             <div key={runner.id} className="flex items-center justify-between p-2 border rounded-lg">
               <div className="font-medium text-sm">{runner.full_name}</div>
-              <Badge variant="outline" className="bg-blue-500/10 text-blue-700">
-                Active
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-700">
+                  Active
+                </Badge>
+                {(runner as any).isEstimated && (
+                  <Badge variant="outline" className="bg-orange-500/10 text-orange-700 text-xs">
+                    Estimated
+                  </Badge>
+                )}
+              </div>
             </div>
           ))
         ) : (

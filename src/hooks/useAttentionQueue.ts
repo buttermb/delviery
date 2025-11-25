@@ -162,6 +162,7 @@ export function useAttentionQueue() {
 
       // Late deliveries - use oldest delivery's created_at
       if (lateDeliveries.data && lateDeliveries.data.length > 0) {
+        // @ts-ignore - Complex type from Supabase query
         const oldestTimestamp = getOldestTimestamp(lateDeliveries.data);
         items.push({
           id: 'late-deliveries',

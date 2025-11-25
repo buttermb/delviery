@@ -84,6 +84,7 @@ export function ExecutiveSummaryWidget() {
                     .gt('balance', 0),
             ]);
 
+            // @ts-ignore - Avoid deep type instantiation
             const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total_amount || 0), 0) || 0;
             const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
             const arOutstanding = unpaidInvoices + unpaidTabs;

@@ -52,10 +52,17 @@ export function useSmartDashboard() {
                     .eq('tenant_id', tenant.id)
                     .gte('created_at', startOfDay.toISOString());
 
+                // @ts-ignore - Avoid deep type instantiation
+                const { count: activeUserCount } = await supabase
+                    .from('tenant_users')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('tenant_id', tenant.id)
+                    .eq('status', 'active');
+
                 setMetrics(prev => ({
                     ...prev,
                     ordersToday: orderCount || 0,
-                    activeUsers: Math.floor(Math.random() * 10) + 2 // Mock active users
+                    activeUsers: activeUserCount || 0
                 }));
             } catch (error) {
                 logger.error('Failed to fetch metrics:', error);
