@@ -6,7 +6,8 @@ import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeStorage } from "@/utils/safeStorage";
 import { getTokenExpiration } from "@/lib/auth/jwt";
 import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
-import { safeFetch } from "@/utils/safeFetch";
+import { resilientFetch, ErrorCategory, getErrorMessage, initConnectionMonitoring, onConnectionStatusChange, type ConnectionStatus } from "@/lib/utils/networkResilience";
+import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLogger";
 
 interface Customer {
   id: string;
@@ -45,6 +46,7 @@ interface CustomerAuthContextType {
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
+  connectionStatus: ConnectionStatus;
 }
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
@@ -77,6 +79,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [secondsUntilLogout, setSecondsUntilLogout] = useState(300);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('unknown');
 
   // Validate environment on mount
   useEffect(() => {
@@ -86,6 +89,24 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       logger.error('[CustomerAuth] Configuration error:', envCheck.error);
       setLoading(false);
     }
+  }, []);
+
+  // Initialize connection monitoring
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      initConnectionMonitoring();
+    }
+    
+    const unsubscribe = onConnectionStatusChange((status) => {
+      setConnectionStatus(status);
+      if (status === 'offline') {
+        logger.warn('Customer portal offline', { component: 'CustomerAuthContext' });
+      } else if (status === 'online') {
+        logger.info('Customer portal back online', { component: 'CustomerAuthContext' });
+      }
+    });
+    
+    return unsubscribe;
   }, []);
 
   // Initialize from localStorage
@@ -121,13 +142,21 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=verify`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${tokenToVerify}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const { response } = await resilientFetch(
+        `${supabaseUrl}/functions/v1/customer-auth?action=verify`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenToVerify}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 8000,
+          retryConfig: {
+            maxRetries: 2,
+            initialDelay: 500,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -165,12 +194,42 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      const response = await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, tenantSlug }),
+      
+      const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { 
+        email, 
+        tenantSlug, 
+        userType: 'customer' 
+      });
+
+      authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
+
+      const { response, attempts, category } = await resilientFetch(
+        `${supabaseUrl}/functions/v1/customer-auth?action=login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password, tenantSlug }),
+          timeout: 30000,
+          retryConfig: {
+            maxRetries: 3,
+            initialDelay: 1000,
+          },
+          onRetry: (attempt, error) => {
+            authFlowLogger.logFetchRetry(flowId, 'customer-auth', attempt, error, 1000);
+            logger.warn('Customer login retry', { 
+              attempt, 
+              error: error instanceof Error ? error.message : String(error), 
+              component: 'CustomerAuthContext' 
+            });
+          },
+        }
+      );
+
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE, { 
+        status: response.status,
+        attempts 
       });
 
       if (!response.ok) {
@@ -186,6 +245,12 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
+      
+      authFlowLogger.completeFlow(flowId, { 
+        customerId: data.customer?.id,
+        tenantId: data.tenant?.id 
+      });
+      
       setToken(data.token);
       setCustomer(data.customer);
       setTenant(data.tenant);
@@ -219,23 +284,25 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // For now, manual filtering provides security without requiring Supabase auth
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
+      
+      // Get category from error or use unknown
+      const errorCategory = (error as any)?.category || ErrorCategory.UNKNOWN;
+      
+      // Log flow failure
+      authFlowLogger.failFlow((error as any)?.flowId || '', errorObj, errorCategory);
 
       // Enhanced error logging with context
       logger.error("Customer login error", errorObj, {
         component: 'CustomerAuthContext',
         email: email,
         tenantSlug: tenantSlug,
-        hasResponse: errorObj instanceof Error && 'response' in errorObj,
+        attempts: (error as any)?.attempts,
+        errorCategory,
       });
 
-      // Re-throw with user-friendly message if needed
-      if (errorObj.message?.includes('Network') || errorObj.message?.includes('network')) {
-        throw new Error('Network error. Please check your internet connection and try again.');
-      } else if (errorObj.message?.includes('timeout') || errorObj.message?.includes('timed out')) {
-        throw new Error('Request timed out. Please try again.');
-      }
-
-      throw errorObj;
+      // Use getErrorMessage for user-friendly errors
+      const userMessage = getErrorMessage(errorCategory, errorObj);
+      throw new Error(userMessage);
     }
   };
 
@@ -243,13 +310,21 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (token) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-        await safeFetch(`${supabaseUrl}/functions/v1/customer-auth?action=logout`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        await resilientFetch(
+          `${supabaseUrl}/functions/v1/customer-auth?action=logout`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            timeout: 10000,
+            retryConfig: {
+              maxRetries: 1,
+              initialDelay: 500,
+            },
+          }
+        );
       }
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
@@ -341,7 +416,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CustomerAuthContext.Provider value={{ customer, tenant, token, loading, login, logout, refreshToken }}>
+    <CustomerAuthContext.Provider value={{ customer, tenant, token, loading, login, logout, refreshToken, connectionStatus }}>
       {children}
       <SessionTimeoutWarning
         open={showTimeoutWarning}
