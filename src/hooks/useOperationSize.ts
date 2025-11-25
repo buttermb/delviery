@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
  * Supports manual override stored in sidebar_preferences
  */
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -54,20 +54,32 @@ function detectOperationSize(tenant: {
  * Hook to get and manage operation size
  */
 export function useOperationSize() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
+
+  // Get the actual Supabase auth user ID
+  useEffect(() => {
+    const getAuthUserId = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        setAuthUserId(session.user.id);
+      }
+    };
+    getAuthUserId();
+  }, []);
 
   // Fetch user's manual override preference
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
-    queryKey: ['sidebar-preferences', tenant?.id, admin?.id],
+    queryKey: ['sidebar-preferences', tenant?.id, authUserId],
     queryFn: async () => {
-      if (!tenant?.id || !admin?.id) return null;
+      if (!tenant?.id || !authUserId) return null;
 
       const { data, error } = await (supabase as any)
         .from('sidebar_preferences')
         .select('operation_size')
         .eq('tenant_id', tenant.id)
-        .eq('user_id', admin.id)
+        .eq('user_id', authUserId)
         .maybeSingle();
 
       if (error) {
@@ -77,7 +89,7 @@ export function useOperationSize() {
 
       return data as any;
     },
-    enabled: !!tenant?.id && !!admin?.id,
+    enabled: !!tenant?.id && !!authUserId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
@@ -112,13 +124,13 @@ export function useOperationSize() {
   // Mutation to set manual operation size
   const setOperationSizeMutation = useMutation({
     mutationFn: async (size: OperationSize) => {
-      if (!tenant?.id || !admin?.id) throw new Error('Tenant and admin required');
+      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
 
       const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,
-          user_id: admin.id,
+          user_id: authUserId,
           operation_size: size,
         }], {
           onConflict: 'tenant_id,user_id',
@@ -127,7 +139,7 @@ export function useOperationSize() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
     },
     onError: (error: unknown) => {
       logger.error('Failed to update operation size', error, { component: 'useOperationSize' });
@@ -137,18 +149,18 @@ export function useOperationSize() {
   // Mutation to reset to auto-detected
   const resetToAutoMutation = useMutation({
     mutationFn: async () => {
-      if (!tenant?.id || !admin?.id) throw new Error('Tenant and admin required');
+      if (!tenant?.id || !authUserId) throw new Error('Tenant and auth user required');
 
       const { error } = await (supabase as any)
         .from('sidebar_preferences')
         .update({ operation_size: null })
         .eq('tenant_id', tenant.id)
-        .eq('user_id', admin.id);
+        .eq('user_id', authUserId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.id] });
+      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, authUserId] });
     },
     onError: (error: unknown) => {
       logger.error('Failed to reset operation size', error, { component: 'useOperationSize' });
@@ -163,13 +175,25 @@ export function useOperationSize() {
     resetToAutoMutation.mutate();
   };
 
+  // Loading guard
+  if (!authUserId) {
+    return {
+      operationSize: detectedSize,
+      detectedSize,
+      isAutoDetected: true,
+      setOperationSize: () => {},
+      resetToAuto: () => {},
+      isLoading: true,
+    };
+  }
+
   return {
     operationSize,
     detectedSize,
     isAutoDetected,
     setOperationSize,
     resetToAuto,
-    isLoading: preferencesLoading,
+    isLoading: preferencesLoading || !authUserId,
   };
 }
 
