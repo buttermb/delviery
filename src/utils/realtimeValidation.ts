@@ -1,16 +1,17 @@
 /**
  * Realtime Data Validation Utilities
- * Simplified version - basic validation only
+ * Type guards for validating realtime data payloads
  */
 
+import type { Order } from '@/types/order';
+import { isOrder } from '@/types/order';
+
 /**
- * Validates incoming order data - simplified
+ * Validates incoming order data with proper type guard
+ * Returns true if order has all required Order properties
  */
-/**
- * Validates incoming order data - simplified
- */
-export const validateOrder = (order: unknown): order is Record<string, unknown> => {
-  return !!(order && typeof order === 'object');
+export const validateOrder = (order: unknown): order is Order => {
+  return isOrder(order);
 };
 
 /**

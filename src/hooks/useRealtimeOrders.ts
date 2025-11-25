@@ -6,22 +6,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { validateOrder } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useVerification } from '@/contexts/VerificationContext';
-
-interface Order {
-  id: string;
-  status: string;
-  tracking_code: string;
-  total_amount: number;
-  created_at: string;
-  delivery_address: string;
-  delivery_borough: string;
-  eta_minutes?: number;
-  eta_updated_at?: string;
-  courier_id?: string;
-  dropoff_lat?: number;
-  dropoff_lng?: number;
-  [key: string]: any;
-}
+import type { Order } from '@/types/order';
 
 interface UseRealtimeOrdersOptions {
   statusFilter?: string[];
