@@ -60,6 +60,7 @@ import {
   type AttentionQueue,
   type AlertCategory,
 } from '@/lib/hotbox';
+import { TierUpgradeCard } from './TierUpgradeCard';
 
 // Type definitions
 interface PulseMetric {
@@ -677,13 +678,16 @@ export function HotboxDashboard() {
         </CardContent>
       </Card>
 
+      {/* Tier Upgrade Progress */}
+      <TierUpgradeCard />
+
       {/* Tier-specific sections */}
       
       {/* Street tier: Quick Tips */}
       {tier === 'street' && <StreetTierTips />}
       
-      {/* Trap tier: Team Today */}
-      {tier === 'trap' && <TeamToday />}
+      {/* Trap+ tiers: Team Today */}
+      {(tier === 'trap' || tier === 'block' || tier === 'hood' || tier === 'empire') && <TeamToday />}
       
       {/* Block+ tiers: Network Overview */}
       {(tier === 'block' || tier === 'hood' || tier === 'empire') && (
@@ -704,30 +708,96 @@ export function HotboxDashboard() {
   );
 }
 
-// Location Overview for Block+ tiers
+// Location Overview for Block+ tiers - Real data
 function LocationOverview() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: locations, isLoading } = useQuery({
     queryKey: ['hotbox-locations', tenant?.id],
     queryFn: async () => {
-      // Placeholder - would fetch actual location data
-      return [
-        { id: '1', name: 'Main', revenue: 3200, margin: 28, orders: 18, issues: 0 },
-        { id: '2', name: 'Downtown', revenue: 2100, margin: 24, orders: 12, issues: 1 },
-        { id: '3', name: 'Heights', revenue: 1800, margin: 22, orders: 9, issues: 2 },
-      ];
+      if (!tenant?.id) return [];
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Try to fetch locations from locations table
+      const { data: locs } = await supabase
+        .from('locations')
+        .select('id, name, address')
+        .eq('tenant_id', tenant.id)
+        .limit(10);
+      
+      // If no locations table or empty, create a default "Main" location
+      const locationList = locs && locs.length > 0 
+        ? locs 
+        : [{ id: 'main', name: 'Main', address: null }];
+      
+      // For each location, calculate metrics
+      const locationsWithMetrics = await Promise.all(
+        locationList.map(async (loc) => {
+          // Get today's orders and revenue
+          const { data: orders } = await supabase
+            .from('orders')
+            .select('total_amount')
+            .eq('tenant_id', tenant.id)
+            .gte('created_at', today.toISOString())
+            .not('status', 'in', '("cancelled","rejected","refunded")');
+          
+          const todayRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+          const orderCount = orders?.length || 0;
+          
+          // Estimate margin (simplified 25%)
+          const margin = todayRevenue > 0 ? 25 : 0;
+          
+          // Check for issues (out of stock products)
+          const { count: outOfStock } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', tenant.id)
+            .lte('stock_quantity', 0)
+            .eq('status', 'active');
+          
+          // Check for low stock
+          const { count: lowStock } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', tenant.id)
+            .gt('stock_quantity', 0)
+            .lt('stock_quantity', 10)
+            .eq('status', 'active');
+          
+          const issues = (outOfStock || 0) + Math.floor((lowStock || 0) / 5);
+          
+          return {
+            id: loc.id,
+            name: loc.name,
+            revenue: Math.round(todayRevenue / Math.max(1, locationList.length)), // Split evenly for now
+            margin,
+            orders: Math.round(orderCount / Math.max(1, locationList.length)),
+            issues: Math.min(issues, 5), // Cap at 5 for display
+          };
+        })
+      );
+      
+      return locationsWithMetrics;
     },
     enabled: !!tenant?.id,
+    staleTime: 60 * 1000, // 1 minute
   });
 
-  if (isLoading) return null;
+  if (isLoading || !locations || locations.length === 0) return null;
+
+  const totalRevenue = locations.reduce((sum, loc) => sum + loc.revenue, 0);
+  const totalOrders = locations.reduce((sum, loc) => sum + loc.orders, 0);
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <span className="text-xl">📍</span> NETWORK OVERVIEW
+          <Badge variant="outline" className="text-xs ml-auto">
+            ${totalRevenue.toLocaleString()} • {totalOrders} orders
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -743,16 +813,16 @@ function LocationOverview() {
               </tr>
             </thead>
             <tbody>
-              {locations?.map((loc) => (
-                <tr key={loc.id} className="border-b">
+              {locations.map((loc) => (
+                <tr key={loc.id} className="border-b last:border-0">
                   <td className="py-2 font-medium">{loc.name}</td>
                   <td className="text-right py-2">${loc.revenue.toLocaleString()}</td>
                   <td className="text-right py-2">{loc.margin}%</td>
                   <td className="text-right py-2">{loc.orders}</td>
                   <td className="text-right py-2">
                     {loc.issues === 0 ? (
-                      <span className="text-green-500">0</span>
-                    ) : loc.issues === 1 ? (
+                      <span className="text-green-500">0 ✓</span>
+                    ) : loc.issues <= 2 ? (
                       <span className="text-yellow-500">{loc.issues} 🟡</span>
                     ) : (
                       <span className="text-red-500">{loc.issues} 🔴</span>
@@ -768,31 +838,118 @@ function LocationOverview() {
   );
 }
 
-// Executive Summary for Hood+ tiers
+// Executive Summary for Hood+ tiers - Real data
 function ExecutiveSummary() {
   const { tenant } = useTenantAdminAuth();
   
-  const { data: summary } = useQuery({
+  const { data: summary, isLoading } = useQuery({
     queryKey: ['hotbox-executive', tenant?.id],
     queryFn: async () => {
-      // TODO: Replace with actual data fetching
+      if (!tenant?.id) return null;
+      
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      
+      // MTD Revenue (orders + POS)
+      const [ordersResult, posResult, lastMonthOrders] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenant.id)
+          .gte('created_at', monthStart.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+        
+        supabase
+          .from('pos_transactions')
+          .select('total_amount')
+          .eq('tenant_id', tenant.id)
+          .gte('created_at', monthStart.toISOString())
+          .eq('payment_status', 'paid'),
+        
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('tenant_id', tenant.id)
+          .gte('created_at', lastMonthStart.toISOString())
+          .lte('created_at', lastMonthEnd.toISOString())
+          .not('status', 'in', '("cancelled","rejected","refunded")'),
+      ]);
+      
+      const ordersRevenue = ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const posRevenue = posResult.data?.reduce((sum, t) => sum + Number(t.total_amount || 0), 0) || 0;
+      const mtdRevenue = ordersRevenue + posRevenue;
+      
+      const lastMonthRevenue = lastMonthOrders.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      
+      // Calculate change percentage
+      const revenueChange = lastMonthRevenue > 0 
+        ? Math.round(((mtdRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
+        : 0;
+      
+      // Project end of month (simple linear projection)
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysPassed = now.getDate();
+      const projectedClose = daysPassed > 0 
+        ? Math.round((mtdRevenue / daysPassed) * daysInMonth)
+        : mtdRevenue;
+      
+      // Estimate profit (25% margin)
+      const profitMargin = 25;
+      const netProfit = Math.round(mtdRevenue * (profitMargin / 100));
+      
+      // Cash position - sum of customer payments received
+      const { data: payments } = await supabase
+        .from('wholesale_payments')
+        .select('amount')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'completed')
+        .gte('created_at', monthStart.toISOString());
+      
+      const cashInflows = payments?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
+      const cashPosition = Math.round(mtdRevenue * 0.4) + cashInflows; // Estimate: 40% of revenue + payments
+      
       return {
-        mtdRevenue: 287000,
-        revenueChange: 14,
-        projectedClose: 340000,
-        netProfit: 68000,
-        profitMargin: 23.7,
-        cashPosition: 124000,
+        mtdRevenue,
+        revenueChange,
+        projectedClose,
+        netProfit,
+        profitMargin,
+        cashPosition,
       };
     },
     enabled: !!tenant?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <span className="text-xl">📈</span> EXECUTIVE SUMMARY
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-16" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <span className="text-xl">📈</span> EXECUTIVE SUMMARY
+          <Badge variant="outline" className="text-xs ml-auto">
+            {format(new Date(), 'MMMM yyyy')}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -800,7 +957,7 @@ function ExecutiveSummary() {
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">MTD Revenue</div>
             <div className="text-xl font-bold">${(summary?.mtdRevenue || 0).toLocaleString()}</div>
-            {summary?.revenueChange && (
+            {summary?.revenueChange !== undefined && summary.revenueChange !== 0 && (
               <div className={cn(
                 'text-xs',
                 summary.revenueChange > 0 ? 'text-green-600' : 'text-red-600'
@@ -812,15 +969,17 @@ function ExecutiveSummary() {
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Projected Close</div>
             <div className="text-xl font-bold">${(summary?.projectedClose || 0).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">at current pace</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Net Profit</div>
+            <div className="text-sm text-muted-foreground">Est. Profit</div>
             <div className="text-xl font-bold">${(summary?.netProfit || 0).toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">{summary?.profitMargin}% margin</div>
+            <div className="text-xs text-muted-foreground">~{summary?.profitMargin}% margin</div>
           </div>
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Cash Position</div>
             <div className="text-xl font-bold">${(summary?.cashPosition || 0).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">estimated</div>
           </div>
         </div>
       </CardContent>
@@ -902,35 +1061,86 @@ function StreetTierTips() {
   );
 }
 
-// Team Today for Trap tier
+// Team Today for Trap+ tiers - Real data
 function TeamToday() {
   const { tenant } = useTenantAdminAuth();
   
-  const { data: team } = useQuery({
+  const { data: team, isLoading } = useQuery({
     queryKey: ['hotbox-team', tenant?.id],
     queryFn: async () => {
-      // TODO: Replace with actual team data
-      return [
-        { id: '1', name: 'Alex', role: 'Driver', status: 'active', deliveries: 5, avatar: '👤' },
-        { id: '2', name: 'Jordan', role: 'Sales', status: 'active', sales: 12, avatar: '👤' },
-        { id: '3', name: 'Sam', role: 'Driver', status: 'break', deliveries: 3, avatar: '👤' },
-      ];
+      if (!tenant?.id) return [];
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Fetch team members with their activity
+      const { data: members, error } = await supabase
+        .from('tenant_users')
+        .select(`
+          id,
+          email,
+          name,
+          role,
+          status,
+          user_id
+        `)
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'active')
+        .limit(10);
+      
+      if (error || !members) return [];
+      
+      // For each team member, get their activity for today
+      const teamWithActivity = await Promise.all(
+        members.map(async (member) => {
+          // Get deliveries count for drivers
+          const { count: deliveries } = await supabase
+            .from('deliveries')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', tenant.id)
+            .eq('courier_id', member.user_id || member.id)
+            .gte('created_at', today.toISOString());
+          
+          // Get orders processed (for sales roles)
+          const { count: ordersProcessed } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', tenant.id)
+            .gte('created_at', today.toISOString());
+          
+          return {
+            id: member.id,
+            name: member.name || member.email?.split('@')[0] || 'Team Member',
+            role: member.role === 'owner' ? 'Owner' : member.role === 'admin' ? 'Admin' : 'Member',
+            status: 'active' as const, // We already filtered for active
+            deliveries: deliveries || 0,
+            sales: Math.floor((ordersProcessed || 0) / Math.max(1, members.length)),
+            avatar: '👤',
+          };
+        })
+      );
+      
+      return teamWithActivity;
     },
     enabled: !!tenant?.id,
+    staleTime: 60 * 1000, // 1 minute
   });
   
-  if (!team || team.length === 0) return null;
+  if (isLoading || !team || team.length === 0) return null;
   
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <span className="text-xl">👥</span> TEAM TODAY
+          <Badge variant="outline" className="text-xs ml-auto">
+            {team.length} active
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {team.map((member) => (
+          {team.slice(0, 5).map((member) => (
             <div
               key={member.id}
               className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
@@ -944,15 +1154,20 @@ function TeamToday() {
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                  {member.status === 'active' ? '🟢 Active' : '🟡 Break'}
+                  {member.status === 'active' ? '🟢 Active' : '🟡 Away'}
                 </Badge>
                 <div className="text-sm text-muted-foreground">
-                  {member.deliveries !== undefined && `${member.deliveries} deliveries`}
-                  {member.sales !== undefined && `${member.sales} sales`}
+                  {member.deliveries > 0 && `${member.deliveries} deliveries`}
+                  {member.deliveries === 0 && member.sales > 0 && `${member.sales} orders`}
                 </div>
               </div>
             </div>
           ))}
+          {team.length > 5 && (
+            <div className="text-center text-sm text-muted-foreground pt-2">
+              +{team.length - 5} more team members
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -960,41 +1175,168 @@ function TeamToday() {
 }
 
 // Strategic Decisions for Empire tier
+// Strategic Decisions for Empire tier - Real data based on business state
 function StrategicDecisions() {
+  const { tenant } = useTenantAdminAuth();
   const navigate = useNavigate();
   
-  const decisions = [
-    {
-      id: 'new-market',
-      emoji: '🗺️',
-      title: 'New Market Analysis',
-      description: 'Expansion opportunity in Northern region',
-      priority: 'high' as const,
-      action: '/admin/analytics/market',
+  const { data: decisions, isLoading } = useQuery({
+    queryKey: ['hotbox-strategic', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+      
+      const items: Array<{
+        id: string;
+        emoji: string;
+        title: string;
+        description: string;
+        priority: 'critical' | 'high' | 'medium';
+        action: string;
+      }> = [];
+      
+      // Check wholesale pipeline value
+      const { data: wholesalePending } = await supabase
+        .from('wholesale_orders')
+        .select('total_amount')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'pending');
+      
+      const wholesalePipelineValue = wholesalePending?.reduce(
+        (sum, o) => sum + Number(o.total_amount || 0), 0
+      ) || 0;
+      
+      if (wholesalePipelineValue > 10000) {
+        items.push({
+          id: 'wholesale-pipeline',
+          emoji: '💼',
+          title: 'High-Value Wholesale Pipeline',
+          description: `$${wholesalePipelineValue.toLocaleString()} in pending approvals`,
+          priority: wholesalePipelineValue > 50000 ? 'critical' : 'high',
+          action: '/admin/wholesale-orders',
+        });
+      }
+      
+      // Check inventory investment
+      const { data: products } = await supabase
+        .from('products')
+        .select('price, stock_quantity')
+        .eq('tenant_id', tenant.id)
+        .gt('stock_quantity', 0);
+      
+      const inventoryValue = products?.reduce(
+        (sum, p) => sum + (Number(p.price || 0) * Number(p.stock_quantity || 0)), 0
+      ) || 0;
+      
+      if (inventoryValue > 50000) {
+        items.push({
+          id: 'inventory-investment',
+          emoji: '📦',
+          title: 'Inventory Investment Review',
+          description: `$${inventoryValue.toLocaleString()} tied up in inventory`,
+          priority: inventoryValue > 100000 ? 'high' : 'medium',
+          action: '/admin/inventory-dashboard',
+        });
+      }
+      
+      // Check customer AR
+      const { data: customerTabs } = await supabase
+        .from('customers')
+        .select('balance')
+        .eq('tenant_id', tenant.id)
+        .gt('balance', 0);
+      
+      const arOutstanding = customerTabs?.reduce(
+        (sum, c) => sum + Number(c.balance || 0), 0
+      ) || 0;
+      
+      if (arOutstanding > 5000) {
+        items.push({
+          id: 'ar-collection',
+          emoji: '💳',
+          title: 'Accounts Receivable',
+          description: `$${arOutstanding.toLocaleString()} outstanding from customers`,
+          priority: arOutstanding > 20000 ? 'critical' : 'high',
+          action: '/admin/customer-tabs',
+        });
+      }
+      
+      // Check team growth
+      const { count: teamSize } = await supabase
+        .from('tenant_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'active');
+      
+      if ((teamSize || 0) >= 30) {
+        items.push({
+          id: 'team-expansion',
+          emoji: '👥',
+          title: 'Team Scaling Review',
+          description: `${teamSize} team members - consider organizational structure`,
+          priority: 'medium',
+          action: '/admin/team',
+        });
+      }
+      
+      // Check month-end approaching
+      const now = new Date();
+      const daysUntilMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
+      
+      if (daysUntilMonthEnd <= 5) {
+        items.push({
+          id: 'month-close',
+          emoji: '📅',
+          title: 'Month-End Close',
+          description: `${daysUntilMonthEnd} days until month-end`,
+          priority: daysUntilMonthEnd <= 2 ? 'critical' : 'high',
+          action: '/admin/financial-center',
+        });
+      }
+      
+      // Always add expansion opportunity if profitable
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const { data: monthlyOrders } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('tenant_id', tenant.id)
+        .gte('created_at', monthStart.toISOString())
+        .not('status', 'in', '("cancelled","rejected","refunded")');
+      
+      const monthlyRevenue = monthlyOrders?.reduce(
+        (sum, o) => sum + Number(o.total_amount || 0), 0
+      ) || 0;
+      
+      if (monthlyRevenue > 200000) {
+        items.push({
+          id: 'expansion',
+          emoji: '🗺️',
+          title: 'Expansion Opportunity',
+          description: 'Revenue supports new market entry',
+          priority: 'medium',
+          action: '/admin/analytics',
+        });
+      }
+      
+      // Sort by priority
+      const priorityOrder = { critical: 0, high: 1, medium: 2 };
+      items.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      
+      return items.slice(0, 4); // Max 4 items
     },
-    {
-      id: 'rfp',
-      emoji: '📄',
-      title: 'Enterprise RFP',
-      description: 'City hospital network - $2.4M contract',
-      priority: 'critical' as const,
-      action: '/admin/wholesale/opportunities',
-    },
-    {
-      id: 'q4-budget',
-      emoji: '📊',
-      title: 'Q4 Budget Review',
-      description: 'Due in 5 days',
-      priority: 'medium' as const,
-      action: '/admin/financial-center/budget',
-    },
-  ];
+    enabled: !!tenant?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
+  if (isLoading || !decisions || decisions.length === 0) return null;
   
   return (
     <Card className="border-yellow-500/50 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <span className="text-xl">🎯</span> STRATEGIC DECISIONS
+          <Badge variant="outline" className="text-xs ml-auto">
+            {decisions.length} items
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -1027,26 +1369,79 @@ function StrategicDecisions() {
 }
 
 // Weekly Progress for all tiers except Street
+// Weekly Progress - Real data
 function WeeklyProgress() {
   const { tenant } = useTenantAdminAuth();
   
-  const { data: progress } = useQuery({
+  const { data: progress, isLoading } = useQuery({
     queryKey: ['hotbox-weekly', tenant?.id],
     queryFn: async () => {
-      // TODO: Replace with actual progress data
+      if (!tenant?.id) return null;
+      
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const lastWeekStart = new Date(weekStart);
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      const lastWeekEnd = new Date(weekStart);
+      lastWeekEnd.setMilliseconds(-1);
+      
+      // This week's orders and revenue
+      const { data: thisWeekOrders } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('tenant_id', tenant.id)
+        .gte('created_at', weekStart.toISOString())
+        .not('status', 'in', '("cancelled","rejected","refunded")');
+      
+      // Last week's orders (for goal comparison)
+      const { data: lastWeekOrders } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('tenant_id', tenant.id)
+        .gte('created_at', lastWeekStart.toISOString())
+        .lt('created_at', weekStart.toISOString())
+        .not('status', 'in', '("cancelled","rejected","refunded")');
+      
+      // New customers this week
+      const { count: newCustomers } = await supabase
+        .from('customers')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id)
+        .gte('created_at', weekStart.toISOString());
+      
+      // Last week's new customers (for goal)
+      const { count: lastWeekNewCustomers } = await supabase
+        .from('customers')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenant.id)
+        .gte('created_at', lastWeekStart.toISOString())
+        .lt('created_at', weekStart.toISOString());
+      
+      const thisWeekRevenue = thisWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const lastWeekRevenue = lastWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      
+      // Goals = last week's numbers + 10% growth target
+      const revenueGoal = Math.round(lastWeekRevenue * 1.1) || 5000;
+      const ordersGoal = Math.round((lastWeekOrders?.length || 10) * 1.1);
+      const customersGoal = Math.round((lastWeekNewCustomers || 5) * 1.1);
+      
       return {
-        revenueGoal: 25000,
-        revenueCurrent: 18500,
-        ordersGoal: 150,
-        ordersCurrent: 98,
-        customersGoal: 50,
-        customersCurrent: 34,
+        revenueGoal: Math.max(revenueGoal, 1000), // Minimum goals
+        revenueCurrent: thisWeekRevenue,
+        ordersGoal: Math.max(ordersGoal, 10),
+        ordersCurrent: thisWeekOrders?.length || 0,
+        customersGoal: Math.max(customersGoal, 5),
+        customersCurrent: newCustomers || 0,
       };
     },
     enabled: !!tenant?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  if (!progress) return null;
+  if (isLoading || !progress) return null;
   
   const metrics = [
     { 
@@ -1074,11 +1469,15 @@ function WeeklyProgress() {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
           <span className="text-xl">📊</span> WEEKLY PROGRESS
+          <Badge variant="outline" className="text-xs ml-auto">
+            vs last week +10%
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {metrics.map((metric) => {
-          const percent = Math.round((metric.current / metric.goal) * 100);
+          const percent = metric.goal > 0 ? Math.min(100, Math.round((metric.current / metric.goal) * 100)) : 0;
+          const isAhead = percent >= 100;
           return (
             <div key={metric.label} className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -1087,9 +1486,15 @@ function WeeklyProgress() {
                   {metric.format(metric.current)} / {metric.format(metric.goal)}
                 </span>
               </div>
-              <Progress value={percent} className="h-2" />
-              <div className="text-xs text-muted-foreground text-right">
-                {percent}% of goal
+              <Progress 
+                value={percent} 
+                className={cn('h-2', isAhead && 'bg-green-200 [&>div]:bg-green-500')} 
+              />
+              <div className={cn(
+                'text-xs text-right',
+                isAhead ? 'text-green-600 font-medium' : 'text-muted-foreground'
+              )}>
+                {percent}% of goal {isAhead && '🎉'}
               </div>
             </div>
           );

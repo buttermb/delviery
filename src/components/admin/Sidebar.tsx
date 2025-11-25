@@ -6,11 +6,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu, X, Zap } from 'lucide-react';
 import { navigationSections } from './sidebar-navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { isFeatureAvailable, featureTableRequirements } from '@/utils/featureAvailability';
+import { AttentionBadge } from './hotbox/AttentionBadge';
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -143,7 +144,22 @@ export function Sidebar() {
               <h2 className="font-bold text-sm">{tenant?.business_name || 'BigMike'}</h2>
               <p className="text-xs text-muted-foreground">Wholesale</p>
             </div>
+            <AttentionBadge />
           </div>
+          
+          {/* Quick access to Hotbox */}
+          <Link
+            to={getFullPath('/admin/hotbox')}
+            className={cn(
+              'flex items-center gap-2 mx-3 mt-3 px-3 py-2 text-sm rounded-lg transition-colors',
+              'bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10',
+              'border border-primary/20 text-primary font-medium',
+              isActive('/admin/hotbox') && 'ring-2 ring-primary/50'
+            )}
+          >
+            <Zap className="h-4 w-4" />
+            <span>Command Center</span>
+          </Link>
 
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
