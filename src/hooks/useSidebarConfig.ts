@@ -90,7 +90,7 @@ export function useSidebarConfig() {
     
     const result = applyAllFilters(baseConfig, {
       role,
-      currentTier,
+      currentTier: currentTier as any, // BusinessTier used in filter contexts
       checkPermission,
       canAccessFeature: canAccess,
     });

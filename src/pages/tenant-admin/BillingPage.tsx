@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BusinessTier } from '@/lib/presets/businessTiers';
+import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import {
   CreditCard,
   CheckCircle2,
@@ -248,7 +250,8 @@ export default function TenantAdminBillingPage() {
 
     // Guard: Validate user is not already on this plan
     const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
-    const currentIndex = tierHierarchy.indexOf(currentTier);
+    const currentSubscriptionTier = businessTierToSubscriptionTier(currentTier);
+    const currentIndex = tierHierarchy.indexOf(currentSubscriptionTier);
     const targetIndex = tierHierarchy.indexOf(targetPlan);
 
     if (currentIndex === targetIndex) {
@@ -640,11 +643,11 @@ export default function TenantAdminBillingPage() {
           <TabsContent value="plans" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
               {/* Starter Plan */}
-              <Card className={currentTier === 'starter' ? 'border-2 border-primary' : ''}>
+              <Card className={businessTierToSubscriptionTier(currentTier) === 'starter' ? 'border-2 border-primary' : ''}>
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Zap className="h-8 w-8 text-green-600" />
-                    {currentTier === 'starter' && <Badge>Current</Badge>}
+                    {businessTierToSubscriptionTier(currentTier) === 'starter' && <Badge>Current</Badge>}
                   </div>
                   <CardTitle className="text-2xl">Starter</CardTitle>
                   <div className="text-3xl font-bold">${TIER_PRICES.starter}<span className="text-sm text-muted-foreground">/mo</span></div>
@@ -673,23 +676,23 @@ export default function TenantAdminBillingPage() {
                     </ul>
                   </div>
                   <Button
-                    variant={currentTier === 'starter' ? 'outline' : 'default'}
+                    variant={businessTierToSubscriptionTier(currentTier) === 'starter' ? 'outline' : 'default'}
                     className="w-full"
-                    disabled={currentTier === 'starter' || upgradeLoading}
-                    onClick={() => currentTier !== 'starter' && handlePlanChange('starter')}
+                    disabled={businessTierToSubscriptionTier(currentTier) === 'starter' || upgradeLoading}
+                    onClick={() => businessTierToSubscriptionTier(currentTier) !== 'starter' && handlePlanChange('starter')}
                   >
-                    {currentTier === 'starter' ? 'Current Plan' : upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {currentTier === 'starter' ? 'Current Plan' : 'Downgrade'}
+                    {businessTierToSubscriptionTier(currentTier) === 'starter' ? 'Current Plan' : upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    {businessTierToSubscriptionTier(currentTier) === 'starter' ? 'Current Plan' : 'Downgrade'}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Professional Plan */}
-              <Card className={currentTier === 'professional' ? 'border-2 border-primary' : 'border-2 border-blue-500/50'}>
+              <Card className={businessTierToSubscriptionTier(currentTier) === 'professional' ? 'border-2 border-primary' : 'border-2 border-blue-500/50'}>
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Star className="h-8 w-8 text-blue-600" />
-                    {currentTier === 'professional' && <Badge>Current</Badge>}
+                    {businessTierToSubscriptionTier(currentTier) === 'professional' && <Badge>Current</Badge>}
                   </div>
                   <CardTitle className="text-2xl">Professional</CardTitle>
                   <div className="text-3xl font-bold">${TIER_PRICES.professional}<span className="text-sm text-muted-foreground">/mo</span></div>
@@ -726,23 +729,23 @@ export default function TenantAdminBillingPage() {
                     </ul>
                   </div>
                   <Button
-                    variant={currentTier === 'professional' ? 'outline' : 'default'}
+                    variant={businessTierToSubscriptionTier(currentTier) === 'professional' ? 'outline' : 'default'}
                     className="w-full"
-                    disabled={currentTier === 'professional' || upgradeLoading}
-                    onClick={() => currentTier !== 'professional' && handlePlanChange('professional')}
+                    disabled={businessTierToSubscriptionTier(currentTier) === 'professional' || upgradeLoading}
+                    onClick={() => businessTierToSubscriptionTier(currentTier) !== 'professional' && handlePlanChange('professional')}
                   >
                     {upgradeLoading && selectedPlan === 'professional' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {currentTier === 'professional' ? 'Current Plan' : currentTier === 'starter' ? 'Upgrade' : 'Downgrade'}
+                    {businessTierToSubscriptionTier(currentTier) === 'professional' ? 'Current Plan' : businessTierToSubscriptionTier(currentTier) === 'starter' ? 'Upgrade' : 'Downgrade'}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Enterprise Plan */}
-              <Card className={currentTier === 'enterprise' ? 'border-2 border-primary' : 'border-2 border-purple-500/50'}>
+              <Card className={businessTierToSubscriptionTier(currentTier) === 'enterprise' ? 'border-2 border-primary' : 'border-2 border-purple-500/50'}>
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Diamond className="h-8 w-8 text-purple-600" />
-                    {currentTier === 'enterprise' && <Badge>Current</Badge>}
+                    {businessTierToSubscriptionTier(currentTier) === 'enterprise' && <Badge>Current</Badge>}
                   </div>
                   <CardTitle className="text-2xl">Enterprise</CardTitle>
                   <div className="text-3xl font-bold">${TIER_PRICES.enterprise}+<span className="text-sm text-muted-foreground">/mo</span></div>
@@ -779,13 +782,13 @@ export default function TenantAdminBillingPage() {
                     </ul>
                   </div>
                   <Button
-                    variant={currentTier === 'enterprise' ? 'outline' : 'default'}
+                    variant={businessTierToSubscriptionTier(currentTier) === 'enterprise' ? 'outline' : 'default'}
                     className="w-full"
-                    disabled={currentTier === 'enterprise' || upgradeLoading}
-                    onClick={() => currentTier !== 'enterprise' && handlePlanChange('enterprise')}
+                    disabled={businessTierToSubscriptionTier(currentTier) === 'enterprise' || upgradeLoading}
+                    onClick={() => businessTierToSubscriptionTier(currentTier) !== 'enterprise' && handlePlanChange('enterprise')}
                   >
                     {upgradeLoading && selectedPlan === 'enterprise' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    {currentTier === 'enterprise' ? 'Current Plan' : 'Upgrade'}
+                    {businessTierToSubscriptionTier(currentTier) === 'enterprise' ? 'Current Plan' : 'Upgrade'}
                   </Button>
                 </CardContent>
               </Card>
