@@ -89,15 +89,30 @@ export function useSidebarConfig() {
     }
   }, []);
 
+  // Create permissive access function for non-default presets
+  // When a preset is selected, bypass business tier filtering to allow preset full control
+  const canAccessForFiltering = useMemo(() => {
+    const currentLayoutPreset = preferences?.layoutPreset || 'default';
+    
+    if (currentLayoutPreset !== 'default') {
+      // Permissive: allow all features through security filter
+      // The preset will control visibility later in the pipeline
+      return (_featureId: string) => true;
+    }
+    
+    // Default behavior: respect business tier filtering
+    return canAccess;
+  }, [preferences?.layoutPreset, canAccess]);
+
   // 1. Apply Security Filters (Role, Permissions) - ALWAYS APPLY
   const securityFilteredConfig = useMemo(() => {
     return applyAllFilters(baseConfig, {
       role,
       currentTier: currentTier as any,
       checkPermission,
-      canAccessFeature: canAccess,
+      canAccessFeature: canAccessForFiltering, // Use conditional function
     });
-  }, [baseConfig, role, currentTier, checkPermission, canAccess]);
+  }, [baseConfig, role, currentTier, checkPermission, canAccessForFiltering]);
 
   // 2. Apply Layout Preset & Integration Filters
   const visibilityFilteredConfig = useMemo(() => {
@@ -275,6 +290,22 @@ export function useSidebarConfig() {
       };
     });
   }, [configWithFavorites, safePreferences.collapsedSections]);
+
+  // Development diagnostic logging
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      const currentLayoutPreset = preferences?.layoutPreset || 'default';
+      console.log('🔍 SIDEBAR FILTERING PIPELINE:', {
+        baseConfig: baseConfig.flatMap(s => s.items).length,
+        afterSecurity: securityFilteredConfig.flatMap(s => s.items).length,
+        afterVisibility: visibilityFilteredConfig.flatMap(s => s.items).length,
+        afterBusinessTier: businessTierFilteredConfig.flatMap(s => s.items).length,
+        final: finalConfig.flatMap(s => s.items).length,
+        preset: currentLayoutPreset,
+        securityMode: currentLayoutPreset !== 'default' ? 'Permissive (Preset Override)' : 'Business Tier Restricted',
+      });
+    }
+  }, [baseConfig, securityFilteredConfig, visibilityFilteredConfig, businessTierFilteredConfig, finalConfig, preferences?.layoutPreset]);
 
   return {
     sidebarConfig: Array.isArray(finalConfig) ? finalConfig : [],
