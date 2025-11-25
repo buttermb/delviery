@@ -6,6 +6,7 @@
 import { serve, corsHeaders } from '../_shared/deps.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
+import { validateSetupSession } from './validation.ts';
 
 // Helper logging function
 const logStep = (step: string, details?: any) => {
@@ -60,15 +61,8 @@ serve(async (req) => {
 
         logStep('User authenticated', { userId: user.id, email: user.email });
 
-        const { tenant_id } = await req.json();
-
-        if (!tenant_id) {
-            logStep('ERROR: Missing tenant_id');
-            return new Response(
-                JSON.stringify({ error: 'Missing tenant_id' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
+        const rawBody = await req.json();
+        const { tenant_id } = validateSetupSession(rawBody);
 
         logStep('Fetching tenant', { tenantId: tenant_id });
 

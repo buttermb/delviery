@@ -138,18 +138,16 @@ export default function TenantAdminBillingPage() {
   });
 
   // Fetch subscription plans
-  // @ts-ignore - Complex query return type
   const { data: subscriptionPlans = [], isLoading: plansLoading, error: plansError } = useQuery({
     queryKey: ['subscription-plans'],
     queryFn: async () => {
       logger.info('[BillingPage] Fetching subscription plans...', { component: 'BillingPage' });
 
-      // @ts-ignore - Deep instantiation error from Supabase types
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
-        .order('price_monthly');
+        .order('price_monthly') as { data: Database['public']['Tables']['subscription_plans']['Row'][] | null; error: any };
 
       if (error) {
         logger.error('[BillingPage] Error fetching subscription plans:', error, { component: 'BillingPage' });

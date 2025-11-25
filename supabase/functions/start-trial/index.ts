@@ -1,5 +1,6 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { validateStartTrial } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -20,14 +21,8 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    const { tenant_id, plan_id } = await req.json();
-
-    if (!tenant_id || !plan_id) {
-      return new Response(
-        JSON.stringify({ error: "Missing tenant_id or plan_id" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const rawBody = await req.json();
+    const { tenant_id, plan_id } = validateStartTrial(rawBody);
 
     // Get tenant
     const { data: tenant, error: tenantError } = await supabaseClient
@@ -136,9 +131,10 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error("Error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Start trial failed';
+    console.error('[START-TRIAL] Error:', errorMessage, error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
