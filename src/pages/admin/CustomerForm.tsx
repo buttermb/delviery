@@ -18,9 +18,12 @@ import { toast } from 'sonner';
 import { ArrowLeft, Save, Shield } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+
 export default function CustomerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();
   const isEdit = !!id;
@@ -195,7 +198,7 @@ export default function CustomerForm() {
         toast.success('Customer created successfully');
       }
 
-      navigate('/admin/customers');
+      navigateToAdmin('customer-management');
     } catch (error) {
       logger.error('Error saving customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
       toast.error('Failed to save customer', {
@@ -225,7 +228,7 @@ export default function CustomerForm() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/admin/customer-management')}>
+            <Button variant="ghost" onClick={() => navigateToAdmin('customer-management')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
@@ -383,7 +386,7 @@ export default function CustomerForm() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/admin/customer-management')}
+                onClick={() => navigateToAdmin('customer-management')}
                 className="border-gray-300"
               >
                 Cancel

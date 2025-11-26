@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,7 @@ interface Customer {
 
 export default function CustomerManagement() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
@@ -555,7 +557,7 @@ export default function CustomerManagement() {
                 <p className="text-muted-foreground mb-4">
                   {searchTerm ? "No customers found matching your search" : "No customers yet"}
                 </p>
-                <Button onClick={() => navigate("/admin/customers/new")}>
+                <Button onClick={() => navigateToAdmin('customers/new')}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your First Customer
                 </Button>
@@ -573,7 +575,7 @@ export default function CustomerManagement() {
             <p className="text-muted-foreground mb-4">
               {searchTerm ? "No customers found matching your search" : "No customers yet"}
             </p>
-            <Button onClick={() => navigate("/admin/customers/new")} className="min-h-[48px]">
+            <Button onClick={() => navigateToAdmin('customers/new')} className="min-h-[48px]">
               <Plus className="w-4 h-4 mr-2" />
               Add Your First Customer
             </Button>
