@@ -50,6 +50,7 @@ import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterc
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
 import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
+import { PerformanceMonitor } from "./utils/performance";
 
 // Configure route-level progress indicator (NProgress)
 NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
@@ -398,6 +399,21 @@ const App = () => {
   // Initialize global button monitoring
   useEffect(() => {
     initializeGlobalButtonMonitoring();
+  }, []);
+
+  // Initialize performance monitoring (Core Web Vitals)
+  useEffect(() => {
+    PerformanceMonitor.init();
+    
+    // Log performance report in development
+    if (import.meta.env.DEV) {
+      const reportTimer = setTimeout(() => {
+        console.log(PerformanceMonitor.getReport());
+      }, 5000);
+      return () => clearTimeout(reportTimer);
+    }
+    
+    return () => PerformanceMonitor.disconnect();
   }, []);
 
   // Run production health check on mount

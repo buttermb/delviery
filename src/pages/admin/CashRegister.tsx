@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface Product {
   id: string;
@@ -36,6 +37,7 @@ export default function CashRegister() {
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { triggerSuccess, triggerLight, triggerError } = useHapticFeedback();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -121,6 +123,7 @@ export default function CashRegister() {
       }
     },
     onSuccess: () => {
+      triggerSuccess(); // Haptic feedback on successful payment
       toast({ title: 'Payment processed successfully!' });
       setCart([]);
       setPaymentMethod('cash');
@@ -129,6 +132,7 @@ export default function CashRegister() {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
     },
     onError: (error: unknown) => {
+      triggerError(); // Haptic feedback on payment failure
       logger.error('Payment processing failed', error, { component: 'CashRegister' });
       toast({
         title: 'Payment failed',
@@ -143,15 +147,18 @@ export default function CashRegister() {
 
     if (existingItem) {
       if (existingItem.quantity >= product.stock_quantity) {
+        triggerError();
         toast({ title: 'Not enough stock', variant: 'destructive' });
         return;
       }
+      triggerLight();
       setCart(cart.map(item =>
         item.id === product.id
           ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
           : item
       ));
     } else {
+      triggerLight();
       setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
     }
     setProductDialogOpen(false);
