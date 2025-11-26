@@ -23,6 +23,7 @@ import { LogOut, ChevronDown } from 'lucide-react';
 import { getNavigationForRole } from '@/lib/constants/navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import type { LucideIcon } from 'lucide-react';
@@ -31,7 +32,7 @@ import { prefetchOnHover } from '@/lib/utils/prefetch';
 export function RoleBasedSidebar() {
   const { state } = useSidebar();
   const { admin, tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  const { tenantSlug, buildAdminUrl } = useTenantNavigation();
   const location = useLocation();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>('owner');
@@ -72,7 +73,7 @@ export function RoleBasedSidebar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({ title: 'Signed out successfully' });
-    
+
     // Navigate to appropriate login page based on context
     if (tenantSlug) {
       navigate(`/${tenantSlug}/admin/login`);
@@ -112,7 +113,7 @@ export function RoleBasedSidebar() {
         {navigation.map((item) => {
           if (item.children) {
             const isExpanded = expandedSections.includes(item.name);
-            const hasActiveChild = item.children.some(child => 
+            const hasActiveChild = item.children.some(child =>
               location.pathname === child.href || location.pathname.startsWith(child.href + '/')
             );
 
@@ -156,12 +157,8 @@ export function RoleBasedSidebar() {
                       <SidebarMenu>
                         {item.children.map((child) => {
                           // Handle tenant-aware routes
-                          const href = child.href 
-                            ? (tenantSlug && child.href.startsWith('/admin') 
-                                ? `/${tenantSlug}${child.href}` 
-                                : child.href)
-                            : '#';
-                          
+                          const href = child.href ? buildAdminUrl(child.href) : '#';
+
                           return (
                             <SidebarMenuItem key={href}>
                               <SidebarMenuButton asChild>
@@ -194,12 +191,8 @@ export function RoleBasedSidebar() {
           }
 
           // Handle tenant-aware routes for top-level items
-          const href = item.href 
-            ? (tenantSlug && item.href.startsWith('/admin') 
-                ? `/${tenantSlug}${item.href}` 
-                : item.href)
-            : '#';
-          
+          const href = item.href ? buildAdminUrl(item.href) : '#';
+
           return (
             <SidebarGroup key={item.name}>
               <SidebarMenuItem>
@@ -209,7 +202,7 @@ export function RoleBasedSidebar() {
                     onMouseEnter={() => prefetchOnHover(href)}
                     className={({ isActive }) =>
                       cn(
-                        isActive 
+                        isActive
                           ? 'bg-[hsl(var(--tenant-primary))]/10 text-[hsl(var(--tenant-primary))] font-medium'
                           : 'text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]'
                       )

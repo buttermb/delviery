@@ -12,12 +12,16 @@ import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus 
 import { showSuccessToast, showErrorToast, showInfoToast } from "@/utils/toastHelpers";
 import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { CreateWholesaleClientDialog } from "@/components/wholesale/CreateWholesaleClientDialog";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
 export default function NewWholesaleOrder() {
   const navigate = useNavigate();
+  const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
+  const [showCreateClient, setShowCreateClient] = useState(false);
   const { data: clients, isLoading: clientsLoading } = useWholesaleClients();
   const { data: inventory, isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
   const { data: runners, isLoading: runnersLoading } = useWholesaleRunners();
@@ -147,7 +151,7 @@ export default function NewWholesaleOrder() {
       }
 
       showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);
-      navigate('/admin/wholesale-dashboard');
+      navigateToAdmin('wholesale-dashboard');
     } catch (error) {
       logger.error('Order creation error:', error);
       showErrorToast('Order Failed', error instanceof Error ? error.message : 'Failed to create order');
@@ -167,7 +171,7 @@ export default function NewWholesaleOrder() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/wholesale-clients')}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-clients')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -212,7 +216,13 @@ export default function NewWholesaleOrder() {
         <Card className="p-6">
           {currentStep === 'client' && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Select Client</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Select Client</h2>
+                <Button variant="outline" size="sm" onClick={() => setShowCreateClient(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Client
+                </Button>
+              </div>
 
               {!orderData.clientId ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -400,19 +410,19 @@ export default function NewWholesaleOrder() {
                         New balance will be $158,000 - OVER LIMIT by $108,000
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           className="gap-2 min-w-[100px]"
                           onClick={() => showSuccessToast("Request Sent", "Manager approval requested")}
                         >
                           Require Manager Approval
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           className="gap-2 min-w-[100px]"
-                          onClick={() => navigate(`/admin/clients/${orderData.clientId}`)}
+                          onClick={() => navigateToAdmin(`clients/${orderData.clientId}`)}
                         >
                           Adjust Credit Limit
                         </Button>
@@ -527,7 +537,7 @@ export default function NewWholesaleOrder() {
             ← Back
           </Button>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate('/admin/wholesale-clients')}>
+            <Button variant="ghost" onClick={() => navigateToAdmin('wholesale-clients')}>
               Cancel
             </Button>
             {currentStep === 'review' ? (
@@ -542,6 +552,16 @@ export default function NewWholesaleOrder() {
           </div>
         </div>
       </div>
+
+      <CreateWholesaleClientDialog
+        open={showCreateClient}
+        onClose={() => setShowCreateClient(false)}
+        onSuccess={(clientId) => {
+          // Refetch clients query to get the new client
+          // Then select it automatically
+          handleClientSelect(clientId);
+        }}
+      />
     </div>
   );
 }

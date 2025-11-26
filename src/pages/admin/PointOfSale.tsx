@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ interface Customer {
 
 export default function PointOfSale() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { toast } = useToast();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -81,7 +83,7 @@ export default function PointOfSale() {
         .order('name');
 
       if (error) throw error;
-      
+
       // Map to our Product interface with proper type checking
       const mappedProducts: Product[] = (data || []).map((p) => ({
         id: p.id,
@@ -92,7 +94,7 @@ export default function PointOfSale() {
         thc_percent: typeof p.thc_percent === 'number' ? p.thc_percent : null,
         image_url: p.image_url || null
       }));
-      
+
       setProducts(mappedProducts);
     } catch (error) {
       logger.error('Error loading products', error);
@@ -102,7 +104,7 @@ export default function PointOfSale() {
 
   const loadCustomers = async () => {
     if (!tenantId) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -111,7 +113,7 @@ export default function PointOfSale() {
         .order('first_name');
 
       if (error) throw error;
-      
+
       // Map to our Customer interface with proper type checking
       const mappedCustomers: Customer[] = (data || []).map((c) => ({
         id: c.id,
@@ -120,7 +122,7 @@ export default function PointOfSale() {
         customer_type: c.customer_type || null,
         loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0
       }));
-      
+
       setCustomers(mappedCustomers);
     } catch (error) {
       logger.error('Error loading customers', error, { component: 'PointOfSale', tenantId });
@@ -145,7 +147,7 @@ export default function PointOfSale() {
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
+
     if (existingItem) {
       if (existingItem.quantity >= product.stock_quantity) {
         toast({ title: 'Not enough stock', variant: 'destructive' });
@@ -204,7 +206,7 @@ export default function PointOfSale() {
     setLoading(true);
     try {
       const { subtotal, tax, discount, total } = calculateTotals();
-      
+
       // Generate transaction number
       const transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
 
@@ -242,11 +244,11 @@ export default function PointOfSale() {
         throw transactionError;
       }
 
-      logger.info('POS transaction created', { 
-        transactionId: transaction?.id, 
-        transactionNumber, 
+      logger.info('POS transaction created', {
+        transactionId: transaction?.id,
+        transactionNumber,
         total,
-        component: 'PointOfSale' 
+        component: 'PointOfSale'
       });
 
       // 2. Update inventory for each item
@@ -255,7 +257,7 @@ export default function PointOfSale() {
           .from('products')
           .update({ stock_quantity: item.stock_quantity - item.quantity })
           .eq('id', item.id);
-        
+
         if (error) throw error;
 
         // Log inventory update activity
@@ -264,9 +266,9 @@ export default function PointOfSale() {
           ActivityActions.UPDATE_INVENTORY,
           'product',
           item.id,
-          { 
-            quantity_sold: item.quantity, 
-            previous_stock: item.stock_quantity, 
+          {
+            quantity_sold: item.quantity,
+            previous_stock: item.stock_quantity,
             new_stock: item.stock_quantity - item.quantity,
             pos_transaction_id: transaction?.id
           }
@@ -279,7 +281,7 @@ export default function PointOfSale() {
         ActivityActions.COMPLETE_ORDER,
         'pos_transaction',
         transaction?.id,
-        { 
+        {
           transaction_number: transactionNumber,
           total,
           subtotal,
@@ -296,15 +298,15 @@ export default function PointOfSale() {
         const pointsEarned = Math.floor(total); // 1 point per dollar
         await supabase
           .from('customers')
-          .update({ 
-            loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned 
+          .update({
+            loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned
           })
           .eq('id', selectedCustomer.id);
       }
-      
-      toast({ 
-        title: 'Sale completed!', 
-        description: `Transaction ${transactionNumber} - Total: $${total.toFixed(2)}` 
+
+      toast({
+        title: 'Sale completed!',
+        description: `Transaction ${transactionNumber} - Total: $${total.toFixed(2)}`
       });
 
       clearCart();
@@ -312,10 +314,10 @@ export default function PointOfSale() {
       loadCustomers(); // Refresh customer loyalty points
     } catch (error) {
       logger.error('Error completing sale', error, { component: 'PointOfSale', tenantId });
-      toast({ 
-        title: 'Error completing sale', 
+      toast({
+        title: 'Error completing sale',
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive' 
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -334,7 +336,7 @@ export default function PointOfSale() {
           <h1 className="text-3xl font-bold">Point of Sale</h1>
           <p className="text-sm text-muted-foreground">Process in-store sales</p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/admin/order-management')}>
+        <Button variant="outline" onClick={() => navigateToAdmin('order-management')}>
           View Order History
         </Button>
       </div>

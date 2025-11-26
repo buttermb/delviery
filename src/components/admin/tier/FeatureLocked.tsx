@@ -7,6 +7,7 @@
 import { Lock, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { getTierPreset, getNextTier, type BusinessTier } from '@/lib/presets/businessTiers';
 import { TierBadge } from './TierBadge';
@@ -19,15 +20,16 @@ interface FeatureLockedProps {
   className?: string;
 }
 
-export function FeatureLocked({ 
+export function FeatureLocked({
   featureId,
   featureName,
   requiredTier,
-  className 
+  className
 }: FeatureLockedProps) {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tier } = useBusinessTier();
-  
+
   // Find which tier unlocks this feature if not specified
   const unlockTier = requiredTier || findUnlockTier(featureId || '');
   const unlockPreset = unlockTier ? getTierPreset(unlockTier) : null;
@@ -42,11 +44,11 @@ export function FeatureLocked({
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <Lock className="h-8 w-8 text-muted-foreground" />
       </div>
-      
+
       <h3 className="text-lg font-semibold mb-2">
         {featureName || 'Feature'} is Locked
       </h3>
-      
+
       <p className="text-muted-foreground mb-4 max-w-md">
         {unlockPreset ? (
           <>
@@ -66,8 +68,8 @@ export function FeatureLocked({
         </div>
       )}
 
-      <Button 
-        onClick={() => navigate('/admin/settings')}
+      <Button
+        onClick={() => navigateToAdmin('settings')}
         className="gap-2"
       >
         Upgrade Plan
@@ -97,17 +99,17 @@ export function LockedBadge({ className }: { className?: string }) {
  */
 function findUnlockTier(featureId: string): BusinessTier | null {
   const tiers: BusinessTier[] = ['street', 'trap', 'block', 'hood', 'empire'];
-  
+
   for (const tier of tiers) {
     const preset = getTierPreset(tier);
     if (
-      preset.enabledFeatures.includes('all') || 
+      preset.enabledFeatures.includes('all') ||
       preset.enabledFeatures.includes(featureId)
     ) {
       return tier;
     }
   }
-  
+
   return null;
 }
 

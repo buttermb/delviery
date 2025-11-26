@@ -1,18 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export const useWholesaleClients = () => {
+  const { tenant } = useTenantAdminAuth();
+
   return useQuery({
-    queryKey: ["wholesale-clients"],
+    queryKey: ["wholesale-clients", tenant?.id],
     queryFn: async () => {
+      if (!tenant?.id) throw new Error('No tenant context');
+
       const { data, error } = await supabase
         .from('wholesale_clients')
-        .select('*');
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('business_name');
 
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !!tenant?.id
   });
 };
 

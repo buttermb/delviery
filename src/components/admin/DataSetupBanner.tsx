@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Database, AlertCircle, Sparkles } from "lucide-react";
@@ -8,11 +9,12 @@ import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 
 export function DataSetupBanner() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { data: clients = [], isLoading } = useWholesaleClients();
   const [showQuickStart, setShowQuickStart] = useState(false);
 
   if (isLoading) return null;
-  
+
   if (clients.length === 0) {
     return (
       <>
@@ -26,7 +28,7 @@ export function DataSetupBanner() {
               Get started in seconds with our Quick Start wizard or add your data manually.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button 
+              <Button
                 size="lg"
                 className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold shadow-md"
                 onClick={() => setShowQuickStart(true)}
@@ -34,10 +36,10 @@ export function DataSetupBanner() {
                 <Sparkles className="h-5 w-5 mr-2" />
                 Quick Start (30 seconds)
               </Button>
-              <Button 
+              <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/admin/wholesale-clients')}
+                onClick={() => navigateToAdmin('wholesale-clients')}
               >
                 <Database className="h-5 w-5 mr-2" />
                 Add Data Manually
@@ -49,7 +51,7 @@ export function DataSetupBanner() {
           </AlertDescription>
         </Alert>
 
-        <QuickStartWizard 
+        <QuickStartWizard
           open={showQuickStart}
           onOpenChange={setShowQuickStart}
           onComplete={() => {

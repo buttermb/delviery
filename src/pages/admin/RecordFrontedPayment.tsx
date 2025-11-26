@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function RecordFrontedPayment() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { id } = useParams();
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
@@ -113,7 +115,7 @@ export default function RecordFrontedPayment() {
         description: `Payment of $${paymentAmount.toFixed(2)} recorded`
       });
 
-      navigate('/admin/inventory/fronted');
+      navigateToAdmin('inventory/fronted');
     } catch (error) {
       logger.error('Error recording payment:', error);
       toast({

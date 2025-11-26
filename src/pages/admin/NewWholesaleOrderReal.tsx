@@ -13,6 +13,8 @@ import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus,
 import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners, useCreateWholesaleOrder } from "@/hooks/useWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { CreateWholesaleClientDialog } from "@/components/wholesale/CreateWholesaleClientDialog";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -24,6 +26,7 @@ interface OrderItem {
 
 export default function NewWholesaleOrderReal() {
   const navigate = useNavigate();
+  const { navigateToAdmin, buildAdminUrl } = useTenantNavigation();
   const [searchParams] = useSearchParams();
   const clientIdParam = searchParams.get('clientId');
   const { tenant } = useTenantAdminAuth();
@@ -34,6 +37,7 @@ export default function NewWholesaleOrderReal() {
   const createOrder = useCreateWholesaleOrder();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
+  const [showCreateClient, setShowCreateClient] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(clientIdParam || '');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('credit');
@@ -42,7 +46,7 @@ export default function NewWholesaleOrderReal() {
   const [selectedRunnerId, setSelectedRunnerId] = useState('');
 
   const selectedClient = clients.find(c => c.id === selectedClientId);
-  const availableCredit = selectedClient 
+  const availableCredit = selectedClient
     ? Number(selectedClient.credit_limit) - Number(selectedClient.outstanding_balance)
     : 0;
 
@@ -139,7 +143,7 @@ export default function NewWholesaleOrderReal() {
         delivery_notes: deliveryNotes
       });
 
-      navigate('/admin/wholesale-dashboard');
+      navigateToAdmin('wholesale-dashboard');
     } catch (error) {
       logger.error('Order creation error', error, { component: 'NewWholesaleOrderReal' });
     }
@@ -154,7 +158,7 @@ export default function NewWholesaleOrderReal() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/wholesale-clients')}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-clients')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -170,7 +174,7 @@ export default function NewWholesaleOrderReal() {
               const Icon = step.icon;
               const isActive = currentStep === step.key;
               const isCompleted = index < currentStepIndex;
-              
+
               return (
                 <div key={step.key} className="flex items-center">
                   <div className={`flex flex-col items-center ${index > 0 ? 'ml-4' : ''}`}>
@@ -200,8 +204,14 @@ export default function NewWholesaleOrderReal() {
           {/* Client Selection */}
           {currentStep === 'client' && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Select Client</h2>
-              
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Select Client</h2>
+                <Button variant="outline" size="sm" onClick={() => setShowCreateClient(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Client
+                </Button>
+              </div>
+
               <div className="space-y-3">
                 <Label>Choose Client</Label>
                 <Select value={selectedClientId} onValueChange={setSelectedClientId}>
@@ -287,8 +297,8 @@ export default function NewWholesaleOrderReal() {
                         <div className="grid grid-cols-12 gap-4 items-start">
                           <div className="col-span-4">
                             <Label className="text-xs">Product</Label>
-                            <Select 
-                              value={item.product_name} 
+                            <Select
+                              value={item.product_name}
                               onValueChange={(value) => updateOrderItem(index, 'product_name', value)}
                             >
                               <SelectTrigger>
@@ -308,8 +318,8 @@ export default function NewWholesaleOrderReal() {
                           </div>
                           <div className="col-span-3">
                             <Label className="text-xs">Quantity (lbs)</Label>
-                            <Input 
-                              type="number" 
+                            <Input
+                              type="number"
                               value={item.quantity_lbs}
                               onChange={(e) => updateOrderItem(index, 'quantity_lbs', Number(e.target.value))}
                               min="0.1"
@@ -318,8 +328,8 @@ export default function NewWholesaleOrderReal() {
                           </div>
                           <div className="col-span-3">
                             <Label className="text-xs">Price/lb</Label>
-                            <Input 
-                              type="number" 
+                            <Input
+                              type="number"
                               value={item.unit_price}
                               onChange={(e) => updateOrderItem(index, 'unit_price', Number(e.target.value))}
                               min="0"
@@ -329,8 +339,8 @@ export default function NewWholesaleOrderReal() {
                             <span className="font-mono font-semibold">
                               ${(item.quantity_lbs * item.unit_price).toLocaleString()}
                             </span>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="icon"
                               onClick={() => removeOrderItem(index)}
                             >
@@ -343,7 +353,7 @@ export default function NewWholesaleOrderReal() {
                   })}
 
                   <Separator />
-                  
+
                   <div className="flex justify-between items-center p-4 bg-muted/30 rounded-lg">
                     <div className="space-y-1">
                       <div className="text-sm text-muted-foreground">Order Total</div>
@@ -369,14 +379,14 @@ export default function NewWholesaleOrderReal() {
               <div className="space-y-3">
                 <Label>Payment Method</Label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Card 
+                  <Card
                     className={`p-4 cursor-pointer ${paymentMethod === 'cash' ? 'border-emerald-500 bg-emerald-500/5' : ''}`}
                     onClick={() => setPaymentMethod('cash')}
                   >
                     <div className="font-semibold">Cash Payment</div>
                     <div className="text-sm text-muted-foreground">Paid in full</div>
                   </Card>
-                  <Card 
+                  <Card
                     className={`p-4 cursor-pointer ${paymentMethod === 'credit' ? 'border-emerald-500 bg-emerald-500/5' : ''}`}
                     onClick={() => setPaymentMethod('credit')}
                   >
@@ -428,7 +438,7 @@ export default function NewWholesaleOrderReal() {
               <div className="space-y-3">
                 <div>
                   <Label>Delivery Address</Label>
-                  <Textarea 
+                  <Textarea
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
                     placeholder="Enter delivery address..."
@@ -454,7 +464,7 @@ export default function NewWholesaleOrderReal() {
 
                 <div>
                   <Label>Delivery Notes</Label>
-                  <Textarea 
+                  <Textarea
                     value={deliveryNotes}
                     onChange={(e) => setDeliveryNotes(e.target.value)}
                     placeholder="Special instructions..."
@@ -517,16 +527,16 @@ export default function NewWholesaleOrderReal() {
             Back
           </Button>
           {currentStep === 'review' ? (
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={createOrder.isPending}
               className="bg-emerald-500 hover:bg-emerald-600"
             >
               {createOrder.isPending ? 'Creating...' : 'Create Order'}
             </Button>
           ) : (
-            <Button 
-              onClick={handleNext} 
+            <Button
+              onClick={handleNext}
               disabled={!canProceed()}
               className="bg-emerald-500 hover:bg-emerald-600"
             >
@@ -535,6 +545,14 @@ export default function NewWholesaleOrderReal() {
           )}
         </div>
       </div>
+
+      <CreateWholesaleClientDialog
+        open={showCreateClient}
+        onClose={() => setShowCreateClient(false)}
+        onSuccess={(clientId) => {
+          setSelectedClientId(clientId);
+        }}
+      />
     </div>
   );
 }

@@ -9,8 +9,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
-import { 
-  AttentionItem, 
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import {
+  AttentionItem,
   AttentionQueue,
 } from '@/types/hotbox';
 import { PRIORITY_WEIGHTS, CATEGORY_URGENCY } from '@/lib/hotbox';
@@ -29,7 +30,7 @@ interface AttentionCounts {
 function calculateScore(item: AttentionItem): number {
   let score = PRIORITY_WEIGHTS[item.priority];
   score += CATEGORY_URGENCY[item.category] || 0;
-  
+
   // Value factor - parse string value to number (handles "$1,240" format)
   if (item.value) {
     const numValue = parseFloat(String(item.value).replace(/[^0-9.-]/g, ''));
@@ -38,24 +39,25 @@ function calculateScore(item: AttentionItem): number {
       score += Math.min(100, Math.log10(numValue + 1) * 20);
     }
   }
-  
+
   // Age factor - use real timestamp from database
   const now = Date.now();
   const itemTime = new Date(item.timestamp).getTime();
   const ageHours = (now - itemTime) / (1000 * 60 * 60);
-  
+
   if (ageHours < 1) {
     score += 20; // Boost for very recent items
   } else if (ageHours > 24) {
     score -= Math.min(50, (ageHours - 24) * 2); // Decay for old items
   }
-  
+
   return Math.max(0, Math.round(score));
 }
 
 export function useAttentionQueue() {
   const { tenant } = useTenantAdminAuth();
   const { tier } = useBusinessTier();
+  const { buildAdminUrl } = useTenantNavigation();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['attention-queue', tenant?.id],
@@ -81,13 +83,13 @@ export function useAttentionQueue() {
           .select('id, total_amount, created_at')
           .eq('tenant_id', tenant.id)
           .eq('status', 'pending'),
-        
+
         supabase
           .from('orders')
           .select('id, total_amount, created_at')
           .eq('tenant_id', tenant.id)
           .eq('status', 'pending'),
-        
+
         // @ts-expect-error - Deep type instantiation
         supabase
           .from('deliveries')
@@ -95,14 +97,14 @@ export function useAttentionQueue() {
           .eq('tenant_id', tenant.id)
           .eq('status', 'in_transit')
           .lt('estimated_delivery_time', now.toISOString()),
-        
+
         supabase
           .from('deliveries')
           .select('id, created_at')
           .eq('tenant_id', tenant.id)
           .eq('status', 'in_transit')
           .gte('estimated_delivery_time', now.toISOString()),
-        
+
         // @ts-expect-error - Deep type instantiation
         supabase
           .from('products')
@@ -110,7 +112,7 @@ export function useAttentionQueue() {
           .eq('tenant_id', tenant.id)
           .lte('stock_quantity', 0)
           .eq('status', 'active'),
-        
+
         supabase
           .from('products')
           .select('id, name, stock_quantity')
@@ -118,13 +120,13 @@ export function useAttentionQueue() {
           .gt('stock_quantity', 0)
           .lt('stock_quantity', 10)
           .eq('status', 'active'),
-        
+
         supabase
           .from('customers')
           .select('id, first_name, last_name, balance')
           .eq('tenant_id', tenant.id)
           .gt('balance', 0),
-        
+
         supabase
           .from('wholesale_orders')
           .select('id, total_amount, created_at')
@@ -135,13 +137,13 @@ export function useAttentionQueue() {
       // Helper to find oldest timestamp from records
       const getOldestTimestamp = (records: { created_at: string }[]): string => {
         if (!records.length) return now.toISOString();
-        return records.reduce((oldest, r) => 
+        return records.reduce((oldest, r) =>
           new Date(r.created_at) < new Date(oldest) ? r.created_at : oldest
-        , records[0].created_at);
+          , records[0].created_at);
       };
 
       // Build attention items with REAL timestamps from database
-      
+
       // Pending menu orders - use oldest order's created_at for urgency
       if (pendingMenuOrders.data && pendingMenuOrders.data.length > 0) {
         const totalValue = pendingMenuOrders.data.reduce(
@@ -155,7 +157,7 @@ export function useAttentionQueue() {
           title: `${pendingMenuOrders.data.length} menu orders waiting`,
           value: String(totalValue),
           actionLabel: 'Process',
-          actionUrl: '/admin/disposable-menu-orders',
+          actionUrl: buildAdminUrl('disposable-menu-orders'),
           timestamp: oldestTimestamp,
         });
       }
@@ -170,7 +172,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${lateDeliveries.data.length} late deliveries`,
           actionLabel: 'Track',
-          actionUrl: '/admin/deliveries',
+          actionUrl: buildAdminUrl('deliveries'),
           timestamp: oldestTimestamp,
         });
       }
@@ -183,7 +185,7 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${outOfStock.data.length} out of stock`,
           actionLabel: 'Restock',
-          actionUrl: '/admin/inventory-dashboard',
+          actionUrl: buildAdminUrl('inventory-dashboard'),
           timestamp: now.toISOString(),
         });
       }
@@ -201,7 +203,7 @@ export function useAttentionQueue() {
           title: `${pendingOrders.data.length} pending orders`,
           value: String(totalValue),
           actionLabel: 'View',
-          actionUrl: '/admin/orders?status=pending',
+          actionUrl: buildAdminUrl('orders?status=pending'),
           timestamp: oldestTimestamp,
         });
       }
@@ -219,7 +221,7 @@ export function useAttentionQueue() {
           title: `${wholesalePending.data.length} wholesale orders`,
           value: String(totalValue),
           actionLabel: 'Review',
-          actionUrl: '/admin/wholesale-orders',
+          actionUrl: buildAdminUrl('wholesale-orders'),
           timestamp: oldestTimestamp,
         });
       }
@@ -232,7 +234,7 @@ export function useAttentionQueue() {
           category: 'inventory',
           title: `${lowStock.data.length} items low`,
           actionLabel: 'Reorder',
-          actionUrl: '/admin/inventory-dashboard',
+          actionUrl: buildAdminUrl('inventory-dashboard'),
           timestamp: now.toISOString(),
         });
       }
@@ -250,7 +252,7 @@ export function useAttentionQueue() {
             title: `${customerTabs.data.length} open tabs`,
             value: String(totalOwed),
             actionLabel: 'Collect',
-            actionUrl: '/admin/customer-tabs',
+            actionUrl: buildAdminUrl('customer-tabs'),
             timestamp: now.toISOString(),
           });
         }
@@ -265,7 +267,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
-          actionUrl: '/admin/deliveries',
+          actionUrl: buildAdminUrl('deliveries'),
           timestamp: oldestTimestamp,
         });
       }

@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +27,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
   const { counts, getTopItems, hasUrgent, hasImportant, isLoading } = useAttentionQueue();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
 
   if (isLoading || counts.total === 0) {
     return null;
@@ -89,7 +91,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
             </div>
           </div>
         </div>
-        
+
         <div className="max-h-64 overflow-y-auto">
           {topItems.map((item) => (
             <div
@@ -121,7 +123,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
             </div>
           ))}
         </div>
-        
+
         <div className="p-2 border-t bg-muted/30">
           <Button
             variant="ghost"
@@ -129,7 +131,7 @@ export function AttentionBadge({ className, showPopover = true }: AttentionBadge
             className="w-full"
             onClick={() => {
               setOpen(false);
-              navigate('/admin/hotbox');
+              navigateToAdmin('hotbox');
             }}
           >
             View All in Hotbox
@@ -155,8 +157,8 @@ export function AttentionCount({ className }: { className?: string }) {
     <span
       className={cn(
         'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full',
-        hasUrgent 
-          ? 'bg-red-500 text-white animate-pulse' 
+        hasUrgent
+          ? 'bg-red-500 text-white animate-pulse'
           : 'bg-yellow-500 text-white',
         className
       )}

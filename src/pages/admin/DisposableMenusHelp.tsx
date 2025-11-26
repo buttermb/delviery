@@ -1,12 +1,12 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Shield, 
-  Lock, 
-  MapPin, 
-  Clock, 
-  Flame, 
+import {
+  Shield,
+  Lock,
+  MapPin,
+  Clock,
+  Flame,
   Users,
   Eye,
   ArrowLeft,
@@ -15,16 +15,18 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const DisposableMenusHelp = () => {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate('/admin/disposable-menus')}
+      <Button
+        variant="ghost"
+        onClick={() => navigateToAdmin('disposable-menus')}
         className="mb-4"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -55,7 +57,7 @@ const DisposableMenusHelp = () => {
             <h2 className="text-2xl font-bold mb-4">What are Disposable Menus?</h2>
             <p className="text-muted-foreground mb-4">
               Disposable Menus are encrypted, temporary wholesale catalogs designed for maximum
-              security and control. Each menu has unique access controls and can be "burned" 
+              security and control. Each menu has unique access controls and can be "burned"
               (destroyed) instantly if compromised.
             </p>
 

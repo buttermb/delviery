@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WholesaleInventory() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
 
@@ -138,17 +140,17 @@ export default function WholesaleInventory() {
           <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory tracking</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="gap-2 min-w-[100px]"
-            onClick={() => navigate('/admin/inventory-management')}
+            onClick={() => navigateToAdmin('inventory-management')}
           >
             <ArrowRightLeft className="h-4 w-4" />
             Move Stock
           </Button>
           <Button
             className="bg-emerald-500 hover:bg-emerald-600 gap-2 min-w-[100px]"
-            onClick={() => navigate('/admin/inventory-management')}
+            onClick={() => navigateToAdmin('inventory-management')}
           >
             <Plus className="h-4 w-4" />
             Add Stock
@@ -377,26 +379,26 @@ export default function WholesaleInventory() {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button 
-            className="bg-emerald-500 hover:bg-emerald-600 gap-2 min-w-[100px]" 
-            size="sm" 
-            onClick={() => navigate('/admin/wholesale-orders')}
+          <Button
+            className="bg-emerald-500 hover:bg-emerald-600 gap-2 min-w-[100px]"
+            size="sm"
+            onClick={() => navigateToAdmin('wholesale-orders')}
           >
             Generate Restock Order
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="gap-2 min-w-[100px]"
-            onClick={() => navigate('/admin/suppliers')}
+            onClick={() => navigateToAdmin('suppliers')}
           >
             Contact Supplier
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             className="gap-2 min-w-[100px]"
-            onClick={() => navigate('/admin/reports')}
+            onClick={() => navigateToAdmin('reports')}
           >
             View Trends
           </Button>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, Image, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 interface ImageUploadHelperProps {
   productsWithoutImages?: string[];
@@ -12,6 +13,7 @@ interface ImageUploadHelperProps {
 
 export const ImageUploadHelper = ({ productsWithoutImages = [] }: ImageUploadHelperProps) => {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const [expanded, setExpanded] = useState(false);
 
   if (productsWithoutImages.length === 0) {
@@ -52,7 +54,7 @@ export const ImageUploadHelper = ({ productsWithoutImages = [] }: ImageUploadHel
             <div className="text-sm font-medium">Products without images:</div>
             <div className="space-y-1">
               {productsWithoutImages.map((productName, index) => (
-                <div 
+                <div
                   key={index}
                   className="text-sm text-muted-foreground flex items-center gap-2 p-2 rounded bg-muted/50"
                 >
@@ -74,7 +76,7 @@ export const ImageUploadHelper = ({ productsWithoutImages = [] }: ImageUploadHel
           </Button>
           <Button
             size="sm"
-            onClick={() => navigate('/admin/wholesale-inventory')}
+            onClick={() => navigateToAdmin('wholesale-inventory')}
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload Images

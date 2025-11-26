@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
@@ -30,6 +31,7 @@ import { StripeConnectSettings } from '@/components/settings/StripeConnectSettin
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { account } = useAccount();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'general';
@@ -226,7 +228,7 @@ export default function SettingsPage() {
               </Button>
               <div className="pt-4 border-t">
                 <h4 className="text-sm font-medium mb-2">Team Management</h4>
-                <Button variant="outline" onClick={() => navigate('/admin/team-members')}>
+                <Button variant="outline" onClick={() => navigateToAdmin('team-members')}>
                   <Users className="h-4 w-4 mr-2" />
                   Manage Team Members
                 </Button>

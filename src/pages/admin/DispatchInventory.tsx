@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,7 @@ interface ScannedProduct {
 
 export default function DispatchInventory() {
   const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
   const [scannedProducts, setScannedProducts] = useState<ScannedProduct[]>([]);
@@ -238,7 +240,7 @@ export default function DispatchInventory() {
         description: `${calculateTotals().totalUnits} units dispatched successfully`
       });
 
-      navigate('/admin/inventory/fronted');
+      navigateToAdmin('inventory/fronted');
     } catch (error) {
       logger.error('Error dispatching inventory:', error);
       toast({
@@ -262,7 +264,7 @@ export default function DispatchInventory() {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin/inventory/fronted')}>
+          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('inventory/fronted')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -396,7 +398,7 @@ export default function DispatchInventory() {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <Button variant="outline" onClick={() => navigate('/admin/inventory/fronted')} className="flex-1">
+          <Button variant="outline" onClick={() => navigateToAdmin('inventory/fronted')} className="flex-1">
             Cancel
           </Button>
           <Button
