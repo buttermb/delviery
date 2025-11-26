@@ -91,14 +91,49 @@ export default function DemoConfirmation() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button variant="outline" className="flex-1" asChild>
-                  <a href="#" onClick={(e) => {
-                    e.preventDefault();
-                    showInfoToast("Calendar", "Calendar invite sent to your email");
-                  }}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Add to Calendar
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => {
+                    // Generate .ics calendar file
+                    const now = new Date();
+                    const start = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+                    start.setHours(10, 0, 0, 0);
+                    const end = new Date(start.getTime() + 30 * 60 * 1000); // 30 min
+                    
+                    const formatDate = (d: Date) => {
+                      return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                    };
+                    
+                    const icsContent = [
+                      'BEGIN:VCALENDAR',
+                      'VERSION:2.0',
+                      'PRODID:-//FloraIQ//Demo//EN',
+                      'BEGIN:VEVENT',
+                      `UID:${Date.now()}@floraiq.com`,
+                      `DTSTAMP:${formatDate(now)}`,
+                      `DTSTART:${formatDate(start)}`,
+                      `DTEND:${formatDate(end)}`,
+                      'SUMMARY:FloraIQ Product Demo',
+                      'DESCRIPTION:Product demo with Sarah Chen. Join at: https://meet.floraiq.com/demo/abc123',
+                      'LOCATION:https://meet.floraiq.com/demo/abc123',
+                      'ORGANIZER;CN=Sarah Chen:mailto:sarah@floraiq.com',
+                      'END:VEVENT',
+                      'END:VCALENDAR'
+                    ].join('\r\n');
+                    
+                    const blob = new Blob([icsContent], { type: 'text/calendar' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'floraiq-demo.ics';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showInfoToast("Calendar", "Calendar file downloaded");
+                  }}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Add to Calendar
                 </Button>
                 <Button variant="outline" className="flex-1" asChild>
                   <Link to="/demo">Reschedule</Link>

@@ -1,56 +1,55 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ExpressCheckoutButtonsProps {
   onCheckout?: () => void;
 }
 
-interface WindowWithApplePay extends Window {
-  ApplePaySession?: {
-    canMakePayments?: () => boolean;
-  };
-}
-
 const ExpressCheckoutButtons = ({ onCheckout }: ExpressCheckoutButtonsProps) => {
-  const handleApplePay = () => {
-    // Check if Apple Pay is available
-    const applePaySession = (window as WindowWithApplePay).ApplePaySession;
-    if (applePaySession?.canMakePayments?.()) {
-      toast.info("Apple Pay integration coming soon!");
-      // In production, this would trigger Apple Pay flow
-    } else {
-      toast.error("Apple Pay is not available on this device");
-    }
-  };
-
-  const handleGooglePay = () => {
-    toast.info("Google Pay integration coming soon!");
-    // In production, this would trigger Google Pay flow
-  };
-
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleApplePay}
-          className="h-12 border-2 font-semibold hover:scale-105 transition-transform"
-        >
-          <span className="text-lg mr-2">🍎</span>
-          Apple Pay
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleGooglePay}
-          className="h-12 border-2 font-semibold hover:scale-105 transition-transform"
-        >
-          <span className="text-lg mr-2">G</span>
-          Google Pay
-        </Button>
-      </div>
+      <TooltipProvider>
+        <div className="grid grid-cols-2 gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                disabled
+                className="h-12 border-2 font-semibold opacity-50 cursor-not-allowed"
+              >
+                <span className="text-lg mr-2">🍎</span>
+                Apple Pay
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Apple Pay coming Q1 2025</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                disabled
+                className="h-12 border-2 font-semibold opacity-50 cursor-not-allowed"
+              >
+                <span className="text-lg mr-2">G</span>
+                Google Pay
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Google Pay coming Q1 2025</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
       
       <div className="relative">
         <Separator />

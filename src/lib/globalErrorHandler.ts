@@ -77,8 +77,8 @@ export function setupGlobalErrorHandlers() {
 export function captureException(error: unknown, context?: Record<string, unknown>) {
   logger.error('Captured exception', error, context);
   
-  // TODO: Send to Sentry or other monitoring service
-  // Example:
+  // NOTE: Production error tracking integration placeholder
+  // When ready to add Sentry/Datadog/etc., uncomment and configure:
   // if (import.meta.env.PROD && window.Sentry) {
   //   window.Sentry.captureException(error, { extra: context });
   // }

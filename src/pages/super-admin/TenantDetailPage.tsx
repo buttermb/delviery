@@ -154,6 +154,24 @@ export default function TenantDetailPage() {
     enabled: !!tenantId,
   });
 
+  // Fetch activity logs for this tenant
+  const { data: activityLogs } = useQuery({
+    queryKey: ["tenant-activity-logs", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return [];
+
+      const { data } = await supabase
+        .from("super_admin_audit_logs")
+        .select("*")
+        .eq("entity_id", tenantId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      return data || [];
+    },
+    enabled: !!tenantId,
+  });
+
   // Suspend/Resume tenant
   const suspendMutation = useMutation({
     mutationFn: async (suspend: boolean) => {
@@ -1071,9 +1089,35 @@ export default function TenantDetailPage() {
                 <CardTitle className="text-[hsl(var(--super-admin-text))]">Recent Admin Actions</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-[hsl(var(--super-admin-text))]/60 py-8">
-                  Activity log coming soon
-                </p>
+                {activityLogs && activityLogs.length > 0 ? (
+                  <div className="space-y-3">
+                    {activityLogs.map((log: { id: string; action: string; created_at: string; details?: Record<string, unknown> }) => (
+                      <div key={log.id} className="flex items-start justify-between p-3 border border-white/10 rounded-lg">
+                        <div className="space-y-1">
+                          <p className="font-medium text-[hsl(var(--super-admin-text))]">
+                            {log.action.replace(/_/g, ' ')}
+                          </p>
+                          {log.details && (
+                            <p className="text-sm text-[hsl(var(--super-admin-text))]/60">
+                              {JSON.stringify(log.details).slice(0, 100)}
+                              {JSON.stringify(log.details).length > 100 && '...'}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-sm text-[hsl(var(--super-admin-text))]/50 whitespace-nowrap">
+                          {formatSmartDate(log.created_at)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-[hsl(var(--super-admin-text))]/60">No activity recorded yet</p>
+                    <p className="text-sm text-[hsl(var(--super-admin-text))]/40 mt-2">
+                      Admin actions like plan changes and suspensions will appear here
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

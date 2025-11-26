@@ -64,6 +64,9 @@ export default function WholesaleClients() {
   const [createClientDialogOpen, setCreateClientDialogOpen] = useState(false);
   const [portalLinkDialogOpen, setPortalLinkDialogOpen] = useState(false);
   const [portalLinkClient, setPortalLinkClient] = useState<WholesaleClient | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter }),
@@ -145,11 +148,7 @@ export default function WholesaleClients() {
               variant="outline"
               size="sm"
               className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
-              onClick={() => {
-                toast.info("Import functionality coming soon", {
-                  description: "CSV import for bulk client creation will be available in a future update."
-                });
-              }}
+              onClick={() => setImportDialogOpen(true)}
             >
               <Plus className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Import</span>
@@ -596,6 +595,97 @@ export default function WholesaleClients() {
             // Query will automatically refetch due to cache invalidation
           }}
         />
+
+        {/* Import Clients Dialog */}
+        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Import Clients from CSV</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Upload a CSV file with columns: business_name, contact_name, email, phone, address, credit_limit
+              </div>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                className="min-h-[44px]"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Download template
+                    const template = "business_name,contact_name,email,phone,address,credit_limit\nAcme Corp,John Doe,john@acme.com,555-1234,123 Main St,10000";
+                    const blob = new Blob([template], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'client-import-template.csv';
+                    a.click();
+                  }}
+                  className="flex-1 min-h-[44px]"
+                >
+                  Download Template
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!importFile || !tenant?.id) return;
+                    setImporting(true);
+                    try {
+                      const text = await importFile.text();
+                      const lines = text.split('\n').filter(l => l.trim());
+                      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                      
+                      let imported = 0;
+                      for (let i = 1; i < lines.length; i++) {
+                        const values = lines[i].split(',');
+                        const client: Record<string, string | number> = { tenant_id: tenant.id };
+                        headers.forEach((header, idx) => {
+                          const value = values[idx]?.trim() || '';
+                          if (header === 'credit_limit') {
+                            client[header] = parseFloat(value) || 0;
+                          } else {
+                            client[header] = value;
+                          }
+                        });
+                        
+                        if (client.business_name && client.contact_name) {
+                          const { error } = await supabase.from('wholesale_clients').insert({
+                            tenant_id: tenant.id,
+                            business_name: String(client.business_name),
+                            contact_name: String(client.contact_name),
+                            email: String(client.email || ''),
+                            phone: String(client.phone || ''),
+                            address: String(client.address || ''),
+                            credit_limit: Number(client.credit_limit) || 0,
+                            status: 'active'
+                          });
+                          if (!error) imported++;
+                        }
+                      }
+                      
+                      toast.success(`Imported ${imported} clients successfully`);
+                      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.lists() });
+                      setImportDialogOpen(false);
+                      setImportFile(null);
+                    } catch (error) {
+                      logger.error('Import failed', error);
+                      toast.error('Failed to import clients');
+                    } finally {
+                      setImporting(false);
+                    }
+                  }}
+                  disabled={!importFile || importing}
+                  className="flex-1 min-h-[44px]"
+                >
+                  {importing ? 'Importing...' : 'Import'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </PullToRefresh>
   );
