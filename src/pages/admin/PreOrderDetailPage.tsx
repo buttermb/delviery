@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { usePreOrder, useCancelPreOrder } from "@/hooks/crm/usePreOrders";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +40,7 @@ import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 
 export default function PreOrderDetailPage() {
     const { preOrderId } = useParams<{ preOrderId: string }>();
-    const navigate = useNavigate();
+    const { navigateToAdmin } = useTenantNavigation();
 
     const { data: preOrder, isLoading } = usePreOrder(preOrderId!);
     const cancelPreOrder = useCancelPreOrder();
@@ -75,12 +76,12 @@ export default function PreOrderDetailPage() {
     };
 
     return (
-        <SwipeBackWrapper onBack={() => navigate("/admin/crm/pre-orders")}>
+        <SwipeBackWrapper onBack={() => navigateToAdmin("crm/pre-orders")}>
             <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate("/admin/crm/pre-orders")}>
+                    <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("crm/pre-orders")}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
@@ -211,7 +212,7 @@ export default function PreOrderDetailPage() {
                                 <Button
                                     variant="outline"
                                     className="w-full"
-                                    onClick={() => navigate(`/admin/crm/clients/${preOrder.client_id}`)}
+                                    onClick={() => navigateToAdmin(`crm/clients/${preOrder.client_id}`)}
                                 >
                                     View Client Profile
                                 </Button>

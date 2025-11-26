@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 export default function FrontedInventoryDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
   const [front, setFront] = useState<any>(null);
@@ -136,7 +137,7 @@ export default function FrontedInventoryDetails() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/inventory/fronted")}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("inventory/fronted")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -376,15 +377,15 @@ export default function FrontedInventoryDetails() {
 
       {/* Actions */}
       <div className="flex flex-wrap gap-4">
-        <Button onClick={() => navigate(`/admin/inventory/fronted/${id}/sale`)}>
+        <Button onClick={() => navigateToAdmin(`inventory/fronted/${id}/sale`)}>
           <DollarSign className="h-4 w-4 mr-2" />
           Record Sale
         </Button>
-        <Button variant="outline" onClick={() => navigate(`/admin/inventory/fronted/${id}/return`)}>
+        <Button variant="outline" onClick={() => navigateToAdmin(`inventory/fronted/${id}/return`)}>
           <Package className="h-4 w-4 mr-2" />
           Scan Returns
         </Button>
-        <Button variant="outline" onClick={() => navigate(`/admin/inventory/fronted/${id}/payment`)}>
+        <Button variant="outline" onClick={() => navigateToAdmin(`inventory/fronted/${id}/payment`)}>
           <DollarSign className="h-4 w-4 mr-2" />
           Record Payment
         </Button>

@@ -2,7 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,7 +25,7 @@ export default function FinancialCenter() {
     tables: ['wholesale_payments', 'courier_earnings'],
     enabled: !!tenantId,
   });
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; amount: number } | null>(null);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
@@ -153,7 +154,7 @@ export default function FinancialCenter() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button size="sm" variant="outline" onClick={() => navigate(`/${tenantSlug}/admin/wholesale-clients`)}>
+              <Button size="sm" variant="outline" onClick={() => navigateToAdmin('wholesale-clients')}>
                 View Collections
               </Button>
             </div>
@@ -187,7 +188,7 @@ export default function FinancialCenter() {
               size="sm" 
               variant="outline" 
               className="mt-4"
-              onClick={() => navigate(`/${tenantSlug}/admin/wholesale-orders`)}
+              onClick={() => navigateToAdmin('wholesale-orders')}
             >
               View Payables
             </Button>
@@ -239,13 +240,13 @@ export default function FinancialCenter() {
         <div className="flex gap-2 mt-4">
           <Button 
             className="bg-emerald-500 hover:bg-emerald-600"
-            onClick={() => navigate(`/${tenantSlug}/admin/wholesale-clients`)}
+            onClick={() => navigateToAdmin('wholesale-clients')}
           >
             Collections Dashboard
           </Button>
           <Button 
             variant="outline"
-            onClick={() => navigate(`/${tenantSlug}/admin/reports`)}
+            onClick={() => navigateToAdmin('reports')}
           >
             View Reports
           </Button>
@@ -298,7 +299,7 @@ export default function FinancialCenter() {
         </div>
 
         <div className="flex gap-2 mt-6">
-          <Button variant="outline" onClick={() => navigate("/admin/reports")}>
+          <Button variant="outline" onClick={() => navigateToAdmin("reports")}>
             Detailed Reports
           </Button>
         </div>
