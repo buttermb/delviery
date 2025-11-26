@@ -76,13 +76,13 @@ export function LazyWrapper({ children, fallback = <DefaultFallback /> }: LazyWr
 /**
  * Create a lazy component with a custom fallback
  */
-export function createLazyComponent<T extends ComponentType<unknown>>(
+export function createLazyComponent<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   fallback: React.ReactNode = <DefaultFallback />
 ) {
   const LazyComponent = lazy(importFn);
   
-  return function LazyLoadedComponent(props: React.ComponentProps<T>) {
+  return function LazyLoadedComponent(props: any) {
     return (
       <Suspense fallback={fallback}>
         <LazyComponent {...props} />
