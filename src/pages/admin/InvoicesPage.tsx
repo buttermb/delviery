@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import { useInvoices } from "@/hooks/crm/useInvoices";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ import { CRMInvoice } from "@/types/crm";
 
 export default function InvoicesPage() {
     const navigate = useNavigate();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
@@ -154,7 +155,7 @@ export default function InvoicesPage() {
                         Manage your invoices and track payments.
                     </p>
                 </div>
-                <Button onClick={() => navigate("/admin/crm/invoices/new")}>
+                <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
                     <Plus className="mr-2 h-4 w-4" /> Create Invoice
                 </Button>
             </div>
@@ -274,7 +275,7 @@ export default function InvoicesPage() {
                                     <TableRow
                                         key={invoice.id}
                                         className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => navigate(`/admin/crm/invoices/${invoice.id}`)}
+                                        onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
                                     >
                                         <TableCell className="font-medium">
                                             {invoice.invoice_number}
@@ -306,7 +307,7 @@ export default function InvoicesPage() {
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/admin/crm/invoices/${invoice.id}`);
+                                                        navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
                                                     }}>
                                                         View Details
                                                     </DropdownMenuItem>
