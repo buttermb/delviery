@@ -37,6 +37,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
+import { VirtualList } from "@/components/ui/virtual-list";
+import { useSwipeBack, useLongPress } from "@/hooks/useGestures";
 
 interface Customer {
   id: string;

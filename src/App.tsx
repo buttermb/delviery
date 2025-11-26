@@ -11,8 +11,9 @@
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createQueryClient } from "@/lib/react-query-config";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -340,27 +341,8 @@ const ApprovalPage = lazy(() => import("./pages/community/ApprovalPage").then(m 
 const MenuAccess = lazy(() => import("./pages/MenuAccess"));
 const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000, // 1 minute
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: false, // Don't refetch on window focus
-      refetchOnMount: false, // Don't refetch on mount if data is fresh
-      refetchOnReconnect: true, // Refetch when network reconnects
-      retry: 2, // Retry failed requests twice
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-      // Performance optimizations
-      structuralSharing: true, // Enable structural sharing to prevent unnecessary re-renders
-    },
-    mutations: {
-      retry: 1,
-      onError: handleMutationError,
-      // Optimize mutation performance
-      networkMode: 'online', // Only run mutations when online
-    },
-  },
-});
+// Create optimized QueryClient from centralized config
+const queryClient = createQueryClient();
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
