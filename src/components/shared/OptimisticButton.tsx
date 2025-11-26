@@ -3,10 +3,11 @@
  * Button with built-in optimistic update state management
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { haptics } from '@/utils/haptics';
 
 interface OptimisticButtonProps {
   onClick?: () => Promise<void> | void;
@@ -42,10 +43,36 @@ export function OptimisticButton({
   const showSuccess = isOptimistic && !isLoading && !hasError;
   const showLoading = isLoading;
   const showError = hasError;
+  const prevSuccessRef = useRef(false);
+  const prevErrorRef = useRef(false);
+
+  // Haptic feedback on state changes
+  useEffect(() => {
+    if (showSuccess && !prevSuccessRef.current) {
+      haptics.success();
+      prevSuccessRef.current = true;
+    } else if (!showSuccess) {
+      prevSuccessRef.current = false;
+    }
+  }, [showSuccess]);
+
+  useEffect(() => {
+    if (showError && !prevErrorRef.current) {
+      haptics.error();
+      prevErrorRef.current = true;
+    } else if (!showError) {
+      prevErrorRef.current = false;
+    }
+  }, [showError]);
+
+  const handleClick = () => {
+    haptics.light(); // Light haptic on click
+    onClick?.();
+  };
 
   return (
     <Button
-      onClick={onClick}
+      onClick={handleClick}
       type={type}
       className={cn(
         'transition-all duration-200',

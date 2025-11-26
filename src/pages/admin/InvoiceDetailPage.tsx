@@ -36,6 +36,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 
 export default function InvoiceDetailPage() {
     const { invoiceId } = useParams<{ invoiceId: string }>();
@@ -95,7 +96,8 @@ export default function InvoiceDetailPage() {
     };
 
     return (
-        <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
+        <SwipeBackWrapper onBack={() => navigate("/admin/crm/invoices")}>
+            <div className="space-y-6 p-6 pb-16 max-w-5xl mx-auto">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -297,5 +299,6 @@ export default function InvoiceDetailPage() {
                 </div>
             </div>
         </div>
+        </SwipeBackWrapper>
     );
 }

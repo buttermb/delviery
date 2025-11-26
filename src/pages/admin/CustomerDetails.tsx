@@ -21,6 +21,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
 import { CommunicationHistory } from '@/components/crm/CommunicationHistory';
 import { ContactCard } from '@/components/crm/ContactCard';
+import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 
 interface Customer {
   id: string;
@@ -168,8 +169,9 @@ export default function CustomerDetails() {
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
+    <SwipeBackWrapper onBack={() => navigate('/admin/customer-management')}>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <SEOHead title={`${customer.first_name} ${customer.last_name} | Customer Details`} />
 
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -646,5 +648,6 @@ export default function CustomerDetails() {
         </Tabs>
       </div>
     </div>
+    </SwipeBackWrapper>
   );
 }

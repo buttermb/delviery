@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AlertTriangle } from 'lucide-react';
+import { haptics } from '@/utils/haptics';
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -47,9 +48,12 @@ export function ConfirmDeleteDialog({
 
   const handleConfirm = async () => {
     try {
+      haptics.heavy(); // Haptic feedback for destructive action
       await onConfirm();
+      haptics.success(); // Success feedback after deletion
       // Parent controls dialog closing via setDeleteDialogOpen
     } catch (error) {
+      haptics.error(); // Error feedback if deletion fails
       // Error is handled by parent, keep dialog open
       logger.error('Confirm action failed', error, { component: 'ConfirmDeleteDialog' });
     }

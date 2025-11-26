@@ -24,6 +24,7 @@ import {
 import { formatCurrency } from '@/utils/formatters';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
@@ -60,7 +61,8 @@ export default function ClientDetailPage() {
     };
 
     return (
-        <div className="container mx-auto py-8 space-y-6">
+        <SwipeBackWrapper onBack={() => navigate('/admin/crm/clients')}>
+            <div className="container mx-auto py-8 space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-4">
@@ -257,5 +259,6 @@ export default function ClientDetailPage() {
                 </TabsContent>
             </Tabs>
         </div>
+        </SwipeBackWrapper>
     );
 }
