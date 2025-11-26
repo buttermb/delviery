@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +39,7 @@ interface FrontedItem {
 }
 
 export default function FrontedInventory() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { account } = useAccount();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -156,10 +156,10 @@ export default function FrontedInventory() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">📊 Fronted Inventory Tracking</h1>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/admin/inventory/barcodes')}>
+            <Button variant="outline" onClick={() => navigateToAdmin('inventory/barcodes')}>
               Generate Barcodes
             </Button>
-            <Button onClick={() => navigate('/admin/inventory/dispatch')}>
+            <Button onClick={() => navigateToAdmin('inventory/dispatch')}>
               + New Front
             </Button>
           </div>
@@ -232,7 +232,7 @@ export default function FrontedInventory() {
                 <p className="text-muted-foreground mb-4">
                   Start by fronting inventory to drivers or locations
                 </p>
-                <Button onClick={() => navigate('/admin/inventory/dispatch')}>
+                <Button onClick={() => navigateToAdmin('inventory/dispatch')}>
                   + Front Products
                 </Button>
               </CardContent>
@@ -259,7 +259,7 @@ export default function FrontedInventory() {
                           Due: {format(new Date(item.payment_due_date), 'MMM d, yyyy')}
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/admin/inventory/fronted/${item.id}`)}>
+                      <Button variant="outline" size="sm" onClick={() => navigateToAdmin(`inventory/fronted/${item.id}`)}>
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
                       </Button>
@@ -295,7 +295,7 @@ export default function FrontedInventory() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => navigate(`/admin/inventory/fronted/${item.id}/payment`)}>
+                      <Button size="sm" onClick={() => navigateToAdmin(`inventory/fronted/${item.id}/payment`)}>
                         <CreditCard className="h-4 w-4 mr-1" />
                         Record Payment
                       </Button>

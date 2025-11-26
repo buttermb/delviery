@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -54,7 +54,7 @@ interface GeneratedBarcode {
 }
 
 export default function GenerateBarcodes() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { toast } = useToast();
 
@@ -341,7 +341,7 @@ export default function GenerateBarcodes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin/inventory')}>
+          <Button variant="ghost" size="sm" onClick={() => navigateToAdmin('inventory')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>

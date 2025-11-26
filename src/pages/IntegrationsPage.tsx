@@ -4,9 +4,10 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Code2, Database, Webhook, Zap, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export default function IntegrationsPage() {
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const integrations = [
     {
       icon: Database,
@@ -99,7 +100,7 @@ export default function IntegrationsPage() {
                   View API Docs
                 </Button>
               </Link>
-              <Link to="/admin/api-access" className="flex-1">
+              <Link to={tenantSlug ? `/${tenantSlug}/admin/api-access` : "/admin/api-access"} className="flex-1">
                 <Button variant="outline" className="w-full">
                   <Key className="mr-2 h-4 w-4" />
                   Manage API Keys

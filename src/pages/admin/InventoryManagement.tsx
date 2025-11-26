@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function InventoryManagement() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const { data: inventory = [], isLoading } = useWholesaleInventory(tenant?.id);
 
@@ -57,7 +57,7 @@ export default function InventoryManagement() {
             className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
             data-tutorial="add-product"
             onClick={() => {
-              navigate('/admin/inventory/products');
+              navigateToAdmin('inventory/products');
               import("sonner").then(({ toast }) => {
                 toast.info("Manage your product catalog and create new products here.", {
                   duration: 3000,

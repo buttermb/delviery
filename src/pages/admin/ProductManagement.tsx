@@ -70,7 +70,7 @@ type Product = Database['public']['Tables']['products']['Row'];
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 export default function ProductManagement() {
-  const navigate = useTenantNavigate();
+  const navigateTenant = useTenantNavigate();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
 
@@ -717,12 +717,12 @@ export default function ProductManagement() {
       toast.error("Marketplace access requires Medium tier or higher", {
         description: "Upgrade your plan to list products on the marketplace",
       });
-      navigate(`/${tenant?.slug}/admin/billing`);
+      navigateTenant(`/${tenant?.slug}/admin/billing`);
       return;
     }
 
     // Navigate to listing form with product data in state
-    navigate(`/${tenant?.slug}/admin/marketplace/listings/new`, {
+    navigateTenant(`/${tenant?.slug}/admin/marketplace/listings/new`, {
       state: {
         productData: {
           name: product.name,
@@ -958,7 +958,7 @@ export default function ProductManagement() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button onClick={() => navigate("/admin/generate-barcodes")}>
+          <Button onClick={() => navigateTenant("/admin/generate-barcodes")}>
             <Barcode className="h-4 w-4 mr-2" />
             Generate Barcodes
           </Button>

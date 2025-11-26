@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatActionType } from "@/utils/stringHelpers";
@@ -26,7 +27,7 @@ import { ArrowLeft, AlertTriangle, Ban, Lock, CheckCircle, Monitor, Globe, Histo
 
 export default function AdminUserDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   interface UserProfile {
     user_id?: string;
     user_id_code?: string;
@@ -485,7 +486,7 @@ export default function AdminUserDetails() {
     <div className="p-6 max-w-7xl mx-auto">
       <Button
         variant="ghost"
-        onClick={() => navigate("/admin/users")}
+        onClick={() => navigateToAdmin("users")}
         className="mb-4"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />

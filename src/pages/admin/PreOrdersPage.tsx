@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { usePreOrders, useCancelPreOrder } from "@/hooks/crm/usePreOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 export default function PreOrdersPage() {
-    const navigate = useNavigate();
+    const { navigateToAdmin } = useTenantNavigation();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
@@ -94,7 +94,7 @@ export default function PreOrdersPage() {
                         Manage pre-orders and convert them to invoices.
                     </p>
                 </div>
-                <Button onClick={() => navigate("/admin/crm/pre-orders/new")}>
+                <Button onClick={() => navigateToAdmin("crm/pre-orders/new")}>
                     <Plus className="mr-2 h-4 w-4" /> Create Pre-Order
                 </Button>
             </div>
@@ -208,7 +208,7 @@ export default function PreOrdersPage() {
                                     <TableRow
                                         key={order.id}
                                         className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => navigate(`/admin/crm/pre-orders/${order.id}`)}
+                                        onClick={() => navigateToAdmin(`crm/pre-orders/${order.id}`)}
                                     >
                                         <TableCell className="font-medium">
                                             {order.pre_order_number}
@@ -240,7 +240,7 @@ export default function PreOrdersPage() {
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/admin/crm/pre-orders/${order.id}`);
+                                                        navigateToAdmin(`crm/pre-orders/${order.id}`);
                                                     }}>
                                                         View Details
                                                     </DropdownMenuItem>
@@ -249,7 +249,7 @@ export default function PreOrdersPage() {
                                                             <DropdownMenuItem onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 // Trigger convert dialog (will implement later)
-                                                                navigate(`/admin/crm/pre-orders/${order.id}?action=convert`);
+                                                                navigateToAdmin(`crm/pre-orders/${order.id}?action=convert`);
                                                             }}>
                                                                 <ArrowRight className="mr-2 h-4 w-4" />
                                                                 Convert to Invoice

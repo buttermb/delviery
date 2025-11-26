@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, Package, Users, Truck } from "lucide-react";
 import { createSampleWholesaleData } from "@/utils/sampleWholesaleData";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 export default function WholesaleSetup() {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
 
@@ -22,7 +22,7 @@ export default function WholesaleSetup() {
       showSuccessToast("🎉 Setup Complete!", "Sample wholesale data has been created successfully");
 
       setTimeout(() => {
-        navigate("/admin/wholesale-dashboard");
+        navigateToAdmin("wholesale-dashboard");
       }, 2000);
     } catch (error) {
       logger.error("Setup error", error, { component: 'WholesaleSetup' });
@@ -114,7 +114,7 @@ export default function WholesaleSetup() {
               <Button
                 variant="ghost"
                 className="w-full"
-                onClick={() => navigate("/admin/wholesale-dashboard")}
+                onClick={() => navigateToAdmin("wholesale-dashboard")}
               >
                 Skip & Go to Dashboard
               </Button>

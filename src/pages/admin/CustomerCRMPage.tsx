@@ -46,7 +46,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
-import { useNavigate } from "react-router-dom";
+import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 
 interface Customer {
   id: string;
