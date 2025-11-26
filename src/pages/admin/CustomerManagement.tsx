@@ -36,6 +36,7 @@ import { SwipeableItem } from "@/components/mobile/SwipeableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
+import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
 
 interface Customer {
   id: string;
@@ -66,6 +67,7 @@ export default function CustomerManagement() {
   const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   useEffect(() => {
     if (tenant && !accountLoading) {
@@ -115,7 +117,7 @@ export default function CustomerManagement() {
               };
             } catch (decryptError) {
               // Fall back to plaintext if decryption fails
-              logger.warn('Failed to decrypt customer, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement', customerId: customer.id });
+              logger.warn('Failed to decrypt customer, using plaintext', decryptError instanceof Error ? decryptError : new Error(String(decryptError)), { component: 'CustomerManagement' });
               return customer;
             }
           });
@@ -162,7 +164,7 @@ export default function CustomerManagement() {
       setCustomerToDelete(null);
       setSelectedCustomerForDrawer(null); // Close drawer if open
     } catch (error: unknown) {
-      logger.error("Failed to delete customer", error, { component: "CustomerManagement", customerId: customerToDelete.id });
+      logger.error("Failed to delete customer", error, { component: "CustomerManagement" });
       toast.error("Failed to delete customer", {
         description: error instanceof Error ? error.message : "An error occurred"
       });
@@ -395,17 +397,17 @@ export default function CustomerManagement() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial">
+            <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
               <Download className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Export</span>
               <span className="sm:hidden">Export</span>
             </Button>
-            <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial">
+            <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
               <Upload className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Import</span>
               <span className="sm:hidden">Import</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={loadCustomers} className="min-h-[44px] flex-1 sm:flex-initial">
+            <Button variant="outline" size="sm" onClick={loadCustomers} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
               <Filter className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Refresh</span>
@@ -578,15 +580,15 @@ export default function CustomerManagement() {
             {filteredCustomers.map((customer) => (
               <SwipeableItem
                 key={customer.id}
-                leftAction={{ 
-                  icon: <Trash className="h-5 w-5" />, 
-                  color: 'bg-red-500', 
+                leftAction={{
+                  icon: <Trash className="h-5 w-5" />,
+                  color: 'bg-red-500',
                   label: 'Delete',
                   onClick: () => handleDeleteClick(customer.id, `${customer.first_name} ${customer.last_name}`)
                 }}
-                rightAction={{ 
-                  icon: <Eye className="h-5 w-5" />, 
-                  color: 'bg-blue-500', 
+                rightAction={{
+                  icon: <Eye className="h-5 w-5" />,
+                  color: 'bg-blue-500',
                   label: 'View',
                   onClick: () => navigate(`/admin/customers/${customer.id}`)
                 }}
@@ -724,6 +726,11 @@ export default function CustomerManagement() {
           )}
         </DrawerContent>
       </Drawer>
+      <CustomerImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onSuccess={loadCustomers}
+      />
     </div>
   );
 }

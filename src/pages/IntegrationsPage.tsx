@@ -2,7 +2,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Code2, Database, Webhook, Zap } from "lucide-react";
+import { CheckCircle, Code2, Database, Webhook, Zap, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -36,11 +36,11 @@ export default function IntegrationsPage() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
+      <SEOHead
         title="Integrations - DevPanel"
         description="Connect DevPanel with your favorite tools and platforms. REST API, Webhooks, and more."
       />
-      
+
       <MarketingNav />
 
       <section className="container mx-auto px-4 py-20">
@@ -99,6 +99,12 @@ export default function IntegrationsPage() {
                   View API Docs
                 </Button>
               </Link>
+              <Link to="/admin/api-access" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  <Key className="mr-2 h-4 w-4" />
+                  Manage API Keys
+                </Button>
+              </Link>
               <Link to="/contact" className="flex-1">
                 <Button className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
                   Contact Sales
@@ -107,9 +113,9 @@ export default function IntegrationsPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section >
 
       <MarketingFooter />
-    </div>
+    </div >
   );
 }

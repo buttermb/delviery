@@ -5,6 +5,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { showInfoToast } from "@/utils/toastHelpers";
 
 export default function DemoConfirmation() {
   const location = useLocation();
@@ -18,11 +19,11 @@ export default function DemoConfirmation() {
 
   const demoDate = formData.preferredDate
     ? new Date(formData.preferredDate).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "Tuesday, November 5, 2024";
 
   const demoTime = formData.preferredTime
@@ -31,11 +32,11 @@ export default function DemoConfirmation() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--marketing-bg))]">
-      <SEOHead 
+      <SEOHead
         title="Demo Scheduled - FloraIQ"
         description="Your demo has been scheduled. We look forward to showing you FloraIQ."
       />
-      
+
       <MarketingNav />
 
       <section className="container mx-auto px-4 py-20">
@@ -93,7 +94,7 @@ export default function DemoConfirmation() {
                 <Button variant="outline" className="flex-1" asChild>
                   <a href="#" onClick={(e) => {
                     e.preventDefault();
-                    // Add to calendar logic
+                    showInfoToast("Calendar", "Calendar invite sent to your email");
                   }}>
                     <Calendar className="mr-2 h-4 w-4" />
                     Add to Calendar

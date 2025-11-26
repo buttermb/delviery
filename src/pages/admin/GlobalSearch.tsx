@@ -211,7 +211,7 @@ const GlobalSearch = () => {
                             Orders: {user.total_orders || 0} • Risk: {user.risk_score || "N/A"}
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">View Profile</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${user.user_id}`); }}>View Profile</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -238,7 +238,7 @@ const GlobalSearch = () => {
                             <span>{new Date(order.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">View Order</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders`); }}>View Order</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -268,7 +268,7 @@ const GlobalSearch = () => {
                             {product.average_rating && <span>⭐ {product.average_rating.toFixed(1)}</span>}
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">Edit Product</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/products`); }}>Edit Product</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -302,7 +302,7 @@ const GlobalSearch = () => {
                             </Badge>
                           )}
                         </div>
-                        <Button variant="outline" size="sm">View User</Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${address.user_id}`); }}>View User</Button>
                       </div>
                     </CardContent>
                   </Card>

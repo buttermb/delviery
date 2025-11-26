@@ -303,16 +303,16 @@ export function TenantAdminSidebar() {
               {tenant?.slug?.charAt(0).toUpperCase() || "T"}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+              <span className="font-semibold text-xs sm:text-sm truncate min-w-0">{tenant?.slug || "Tenant Admin"}</span>
               <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
             </div>
           </div>
         </SidebarHeader>
-        
+
         <SidebarContent>
           {menuGroups.map((group) => {
             const hasActiveItem = group.items.some(item => isActive(item.url));
-            
+
             return (
               <SidebarGroup key={group.label}>
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
@@ -321,14 +321,14 @@ export function TenantAdminSidebar() {
                     {group.items.map((item) => {
                       const hasAccess = canAccess(item.featureId);
                       const itemIsActive = isActive(item.url);
-                      
+
                       return (
                         <SidebarMenuItem key={`${group.label}-${item.url}`}>
                           {hasAccess ? (
                             <SidebarMenuButton asChild isActive={itemIsActive}>
                               <NavLink to={`/${tenantSlug}${item.url}`}>
                                 <item.icon className="h-4 w-4" />
-                                <span>{item.title}</span>
+                                <span className="truncate min-w-0">{item.title}</span>
                               </NavLink>
                             </SidebarMenuButton>
                           ) : (
@@ -337,7 +337,7 @@ export function TenantAdminSidebar() {
                               className="cursor-pointer opacity-60 hover:opacity-100"
                             >
                               <item.icon className="h-4 w-4" />
-                              <span>{item.title}</span>
+                              <span className="truncate min-w-0">{item.title}</span>
                               <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
                               {getTierBadge(item.tier)}
                             </SidebarMenuButton>

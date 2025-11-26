@@ -226,7 +226,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
       try {
         if (data.superAdmin?.id) {
           await clientEncryption.initialize(password, data.superAdmin.id);
-          logger.debug('Encryption initialized successfully', { userId: data.superAdmin.id, component: 'SuperAdminAuthContext' });
+          logger.debug('Encryption initialized successfully', { component: 'SuperAdminAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now

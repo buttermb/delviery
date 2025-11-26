@@ -11,6 +11,10 @@ import { FileText, Download, TrendingUp, TrendingDown, DollarSign, Users, Packag
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { showInfoToast, showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 
 export default function BoardReportPage() {
     const { tenant } = useTenantAdminAuth();
@@ -83,9 +87,50 @@ export default function BoardReportPage() {
         enabled: !!tenant?.id,
     });
 
-    const handleExport = () => {
-        // TODO: Implement PDF export
-        alert('PDF export coming soon!');
+    const reportRef = useRef<HTMLDivElement>(null);
+
+    const handleExport = async () => {
+        if (!reportRef.current) return;
+
+        try {
+            showInfoToast("Exporting", "Generating PDF report...");
+
+            const canvas = await html2canvas(reportRef.current, {
+                scale: 2,
+                logging: false,
+                useCORS: true
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const imgWidth = 210;
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            pdf.save(`Board_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            showSuccessToast("Export Complete", "Board report downloaded successfully");
+        } catch (error) {
+            console.error('Export failed:', error);
+            showErrorToast("Export Failed", "Could not generate PDF report");
+        }
     };
 
     if (isLoading) {
@@ -100,7 +145,7 @@ export default function BoardReportPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" ref={reportRef}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

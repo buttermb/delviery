@@ -8,22 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck } from "lucide-react";
-import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
+import { ArrowLeft, AlertCircle, CheckCircle2, Package, DollarSign, Truck, Plus } from "lucide-react";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/utils/toastHelpers";
+import { useWholesaleClients, useWholesaleInventory, useWholesaleRunners } from "@/hooks/useWholesaleData";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
 export default function NewWholesaleOrder() {
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
+  const { data: clients, isLoading: clientsLoading } = useWholesaleClients();
+  const { data: inventory, isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
+  const { data: runners, isLoading: runnersLoading } = useWholesaleRunners();
+
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
   const [orderData, setOrderData] = useState({
     clientId: '',
-    clientName: 'Big Mike\'s Operation',
-    creditStatus: { balance: 38000, limit: 50000 },
+    clientName: '',
+    creditStatus: { balance: 0, limit: 0 },
     products: [] as any[],
     paymentTerms: 'credit',
     deliveryMethod: 'runner',
     runnerId: '',
+    deliveryAddress: '',
     notes: ''
   });
 
@@ -51,6 +59,64 @@ export default function NewWholesaleOrder() {
     }
   };
 
+  const handleClientSelect = (clientId: string) => {
+    const client = clients?.find(c => c.id === clientId);
+    if (client) {
+      setOrderData({
+        ...orderData,
+        clientId: client.id,
+        clientName: client.business_name,
+        creditStatus: {
+          balance: client.outstanding_balance || 0,
+          limit: client.credit_limit || 0
+        },
+        deliveryAddress: client.address || ''
+      });
+    }
+  };
+
+  const handleAddProduct = (product: any) => {
+    const existing = orderData.products.find(p => p.id === product.id);
+    if (existing) {
+      setOrderData({
+        ...orderData,
+        products: orderData.products.map(p =>
+          p.id === product.id ? { ...p, qty: p.qty + 1 } : p
+        )
+      });
+    } else {
+      setOrderData({
+        ...orderData,
+        products: [...orderData.products, {
+          id: product.id,
+          name: product.product_name,
+          qty: 1,
+          price: product.base_price || 0
+        }]
+      });
+    }
+  };
+
+  const handleRemoveProduct = (productId: string) => {
+    setOrderData({
+      ...orderData,
+      products: orderData.products.filter(p => p.id !== productId)
+    });
+  };
+
+  const handleUpdateQty = (productId: string, qty: number) => {
+    if (qty <= 0) {
+      handleRemoveProduct(productId);
+      return;
+    }
+    setOrderData({
+      ...orderData,
+      products: orderData.products.map(p =>
+        p.id === productId ? { ...p, qty } : p
+      )
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       if (!orderData.clientId) {
@@ -62,31 +128,13 @@ export default function NewWholesaleOrder() {
       const { data, error } = await supabase.functions.invoke('wholesale-order-create', {
         body: {
           client_id: orderData.clientId,
-          items: orderData.products.length > 0 ? orderData.products : [
-            { 
-              inventory_id: '00000000-0000-0000-0000-000000000001',
-              product_name: 'Blue Dream',
-              quantity_lbs: 20,
-              quantity_units: 20,
-              price_per_lb: 3000
-            },
-            { 
-              inventory_id: '00000000-0000-0000-0000-000000000002',
-              product_name: 'Wedding Cake',
-              quantity_lbs: 10,
-              quantity_units: 10,
-              price_per_lb: 3200
-            },
-            { 
-              inventory_id: '00000000-0000-0000-0000-000000000003',
-              product_name: 'Gelato',
-              quantity_lbs: 10,
-              quantity_units: 10,
-              price_per_lb: 3100
-            }
-          ],
-          delivery_address: 'Brooklyn East (Big Mike\'s spot)',
-          delivery_notes: orderData.notes || 'MUST collect $38k before dropping off new product'
+          items: orderData.products.map(p => ({
+            product_name: p.name,
+            quantity: Number(p.qty),
+            unit_price: Number(p.price)
+          })),
+          delivery_address: orderData.deliveryAddress || 'No address provided',
+          delivery_notes: orderData.notes || ''
         }
       });
 
@@ -107,15 +155,15 @@ export default function NewWholesaleOrder() {
   };
 
   const calculateTotals = () => {
-    const total = 120000;
-    const cost = 78400;
+    const total = orderData.products.reduce((sum, p) => sum + (p.qty * p.price), 0);
+    const cost = total * 0.6; // Mock cost basis (60%)
     const profit = total - cost;
-    const margin = (profit / total) * 100;
+    const margin = total > 0 ? (profit / total) * 100 : 0;
     return { total, cost, profit, margin };
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -135,7 +183,7 @@ export default function NewWholesaleOrder() {
               const Icon = step.icon;
               const isActive = currentStep === step.key;
               const isCompleted = index < currentStepIndex;
-              
+
               return (
                 <div key={step.key} className="flex items-center">
                   <div className={`flex flex-col items-center ${index > 0 ? 'ml-4' : ''}`}>
@@ -165,109 +213,151 @@ export default function NewWholesaleOrder() {
           {currentStep === 'client' && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Select Client</h2>
-              
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="font-semibold text-lg">{orderData.clientName}</div>
-                    <div className="text-sm text-muted-foreground">Sub-Dealer | Brooklyn East</div>
-                  </div>
-                  <Badge variant="outline">Selected</Badge>
-                </div>
-                
-                <Separator className="my-4" />
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Credit Limit:</span>
-                    <span className="font-mono">${orderData.creditStatus.limit.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Outstanding:</span>
-                    <span className="font-mono text-destructive">${orderData.creditStatus.balance.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Available Credit:</span>
-                    <span className="font-mono text-emerald-500">
-                      ${(orderData.creditStatus.limit - orderData.creditStatus.balance).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
 
-                {orderData.creditStatus.balance > 0 && (
-                  <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
-                    <div className="text-sm">
-                      <div className="font-semibold text-yellow-500">Outstanding Balance</div>
-                      <div className="text-muted-foreground">Client has ${orderData.creditStatus.balance.toLocaleString()} overdue. Proceed with caution.</div>
+              {!orderData.clientId ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {clientsLoading ? (
+                    <div className="col-span-2 text-center py-8">Loading clients...</div>
+                  ) : (
+                    clients?.map(client => (
+                      <Card
+                        key={client.id}
+                        className="p-4 cursor-pointer hover:border-emerald-500 transition-colors"
+                        onClick={() => handleClientSelect(client.id)}
+                      >
+                        <div className="font-semibold">{client.business_name}</div>
+                        <div className="text-sm text-muted-foreground">{client.contact_name}</div>
+                        <div className="mt-2 text-xs bg-muted inline-block px-2 py-1 rounded">
+                          Limit: ${client.credit_limit?.toLocaleString() || 0}
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="font-semibold text-lg">{orderData.clientName}</div>
+                      <div className="text-sm text-muted-foreground">Selected Client</div>
+                    </div>
+                    <Badge variant="outline">Selected</Badge>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Credit Limit:</span>
+                      <span className="font-mono">${orderData.creditStatus.limit.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Outstanding:</span>
+                      <span className="font-mono text-destructive">${orderData.creditStatus.balance.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Available Credit:</span>
+                      <span className="font-mono text-emerald-500">
+                        ${(orderData.creditStatus.limit - orderData.creditStatus.balance).toLocaleString()}
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <Button className="w-full" onClick={() => navigate('/admin/wholesale-clients')}>
-                Change Client
-              </Button>
+              {orderData.clientId && (
+                <Button className="w-full" variant="outline" onClick={() => setOrderData({ ...orderData, clientId: '', clientName: '' })}>
+                  Change Client
+                </Button>
+              )}
             </div>
           )}
 
           {currentStep === 'products' && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Select Products</h2>
-              
-              <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-4 text-sm font-semibold text-muted-foreground">
-                  <div>Product</div>
-                  <div>Qty (lbs)</div>
-                  <div>Price/lb</div>
-                  <div className="text-right">Subtotal</div>
-                </div>
 
-                <div className="space-y-2">
-                  {[
-                    { name: 'Blue Dream', qty: 20, price: 3000 },
-                    { name: 'Wedding Cake', qty: 10, price: 3200 },
-                    { name: 'Gelato', qty: 10, price: 3100 }
-                  ].map((product, idx) => (
-                    <div key={idx} className="grid grid-cols-4 gap-4 p-3 bg-muted/50 rounded-lg items-center">
-                      <div className="font-medium">{product.name}</div>
-                      <div>
-                        <Input 
-                          type="number" 
-                          defaultValue={product.qty}
-                          className="h-8"
-                        />
-                      </div>
-                      <div className="font-mono text-sm">${product.price.toLocaleString()}</div>
-                      <div className="text-right font-mono font-semibold">
-                        ${(product.qty * product.price).toLocaleString()}
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Product List */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground">Available Inventory</h3>
+                  {inventoryLoading ? (
+                    <div>Loading inventory...</div>
+                  ) : (
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                      {inventory?.map(product => (
+                        <Card
+                          key={product.id}
+                          className="p-3 cursor-pointer hover:bg-muted/50 transition-colors flex justify-between items-center"
+                          onClick={() => handleAddProduct(product)}
+                        >
+                          <div>
+                            <div className="font-medium">{product.product_name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Stock: {product.quantity_lbs} lbs | ${product.price_per_lb}/lb
+                            </div>
+                          </div>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </Card>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
 
-                <Button variant="outline" size="sm">+ Add Product</Button>
+                {/* Selected Products */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground">Order Items</h3>
+                  {orderData.products.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                      No products selected
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {orderData.products.map((product, idx) => (
+                        <div key={idx} className="grid grid-cols-4 gap-2 p-3 bg-muted/50 rounded-lg items-center text-sm">
+                          <div className="font-medium col-span-1 truncate">{product.name}</div>
+                          <div className="col-span-1">
+                            <Input
+                              type="number"
+                              value={product.qty}
+                              onChange={(e) => handleUpdateQty(product.id, Number(e.target.value))}
+                              className="h-7 w-full"
+                            />
+                          </div>
+                          <div className="font-mono text-xs col-span-1 text-right">${product.price}</div>
+                          <div className="text-right font-mono font-semibold col-span-1">
+                            ${(product.qty * product.price).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                <Separator />
+                  <Separator />
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Weight:</span>
-                    <span className="font-mono font-semibold">40 lbs</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Value:</span>
-                    <span className="font-mono font-semibold">${calculateTotals().total.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Cost Basis:</span>
-                    <span className="font-mono">${calculateTotals().cost.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-emerald-500">
-                    <span>Profit:</span>
-                    <span className="font-mono font-semibold">
-                      ${calculateTotals().profit.toLocaleString()} ({calculateTotals().margin.toFixed(1)}%)
-                    </span>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Weight:</span>
+                      <span className="font-mono font-semibold">
+                        {orderData.products.reduce((sum, p) => sum + p.qty, 0)} lbs
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Value:</span>
+                      <span className="font-mono font-semibold">${calculateTotals().total.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Cost Basis:</span>
+                      <span className="font-mono">${calculateTotals().cost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-500">
+                      <span>Profit:</span>
+                      <span className="font-mono font-semibold">
+                        ${calculateTotals().profit.toLocaleString()} ({calculateTotals().margin.toFixed(1)}%)
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -277,20 +367,19 @@ export default function NewWholesaleOrder() {
           {currentStep === 'payment' && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Payment Terms</h2>
-              
+
               <div className="space-y-3">
                 {[
                   { value: 'cash', label: 'Paid in Full (Cash/Transfer)', icon: '✅' },
                   { value: 'credit', label: 'Credit (Invoice) - Net 7 days', icon: '📄' },
                   { value: 'partial', label: 'Partial Payment', icon: '💰' }
                 ].map((option) => (
-                  <Card 
+                  <Card
                     key={option.value}
-                    className={`p-4 cursor-pointer transition-colors ${
-                      orderData.paymentTerms === option.value 
-                        ? 'border-emerald-500 bg-emerald-500/5' 
-                        : 'hover:border-muted-foreground/50'
-                    }`}
+                    className={`p-4 cursor-pointer transition-colors ${orderData.paymentTerms === option.value
+                      ? 'border-emerald-500 bg-emerald-500/5'
+                      : 'hover:border-muted-foreground/50'
+                      }`}
                     onClick={() => setOrderData({ ...orderData, paymentTerms: option.value })}
                   >
                     <div className="flex items-center gap-3">
@@ -311,8 +400,8 @@ export default function NewWholesaleOrder() {
                         New balance will be $158,000 - OVER LIMIT by $108,000
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <Button size="sm" variant="outline">Require Manager Approval</Button>
-                        <Button size="sm" variant="outline">Adjust Credit Limit</Button>
+                        <Button size="sm" variant="outline" onClick={() => showSuccessToast("Request Sent", "Manager approval requested")}>Require Manager Approval</Button>
+                        <Button size="sm" variant="outline" onClick={() => showInfoToast("Adjust Limit", "Credit limit adjustment form coming soon")}>Adjust Credit Limit</Button>
                       </div>
                     </div>
                   </div>
@@ -324,16 +413,16 @@ export default function NewWholesaleOrder() {
           {currentStep === 'delivery' && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Delivery Method</h2>
-              
+
               <div className="space-y-3">
-                <Card 
+                <Card
                   className="p-4 cursor-pointer border-emerald-500 bg-emerald-500/5"
                 >
                   <div className="flex items-center gap-3">
                     <Truck className="h-5 w-5" />
                     <span className="font-medium">Runner Delivery</span>
                   </div>
-                  
+
                   <div className="mt-4 space-y-3">
                     <div>
                       <Label>Assign Runner</Label>
@@ -342,7 +431,7 @@ export default function NewWholesaleOrder() {
                         <option>Runner #1 (DeShawn) - Available 3:00 PM</option>
                       </select>
                     </div>
-                    
+
                     <div>
                       <Label>Pickup From</Label>
                       <select className="w-full mt-1 px-3 py-2 bg-background border border-input rounded-md">
@@ -374,7 +463,7 @@ export default function NewWholesaleOrder() {
           {currentStep === 'review' && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Review Order</h2>
-              
+
               <div className="space-y-4">
                 <Card className="p-4">
                   <h3 className="font-semibold mb-2">Client</h3>
@@ -408,7 +497,7 @@ export default function NewWholesaleOrder() {
 
                 <div>
                   <Label>Special Instructions</Label>
-                  <textarea 
+                  <textarea
                     className="w-full mt-1 px-3 py-2 bg-background border border-input rounded-md min-h-[80px]"
                     placeholder="MUST collect $38k before dropping off new product..."
                   />

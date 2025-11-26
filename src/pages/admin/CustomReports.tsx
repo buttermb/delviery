@@ -218,9 +218,51 @@ export default function CustomReports() {
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(report)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => {
-                      toast({ title: "Downloading...", description: "Report download started." });
-                      // TODO: Implement actual download logic via Edge Function
+                    <Button variant="ghost" size="sm" onClick={async () => {
+                      try {
+                        toast({ title: "Generating Report", description: "Please wait while we generate your report..." });
+
+                        const { data, error } = await supabase.functions.invoke('generate-custom-report', {
+                          body: { reportId: report.id }
+                        });
+
+                        if (error) throw error;
+
+                        if (data) {
+                          // Convert to CSV
+                          const items = data.data?.wholesale_orders || data.data?.wholesale_clients || [];
+                          if (items.length > 0) {
+                            const headers = Object.keys(items[0]);
+                            const csvContent = [
+                              headers.join(','),
+                              ...items.map((item: any) => headers.map(header =>
+                                JSON.stringify(item[header] || '')
+                              ).join(','))
+                            ].join('\n');
+
+                            const blob = new Blob([csvContent], { type: 'text/csv' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${report.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.csv`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+
+                            toast({ title: "Success", description: "Report downloaded successfully" });
+                          } else {
+                            toast({ title: "Empty Report", description: "No data found for this report configuration" });
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Download failed:', error);
+                        toast({
+                          title: "Download Failed",
+                          description: "Failed to generate report. Please try again.",
+                          variant: "destructive"
+                        });
+                      }
                     }}>
                       <Download className="h-4 w-4" />
                     </Button>

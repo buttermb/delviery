@@ -216,7 +216,7 @@ export default function LoginPage() {
       // Initialize encryption with user's password
       try {
         await clientEncryption.initialize(data.password, authData.user.id);
-        logger.debug('Encryption initialized successfully', { userId: authData.user.id, component: 'LoginPage' });
+        logger.debug('Encryption initialized successfully', { component: 'LoginPage' });
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
         logger.warn('Encryption initialization failed', encryptionError instanceof Error ? encryptionError : new Error(String(encryptionError)), { component: 'LoginPage' });

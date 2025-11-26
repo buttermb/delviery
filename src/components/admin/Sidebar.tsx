@@ -41,15 +41,15 @@ export function Sidebar() {
   useEffect(() => {
     const checkFeatures = async () => {
       const features = new Set<string>();
-      const allHrefs = navigationSections.flatMap(section => 
+      const allHrefs = navigationSections.flatMap(section =>
         section.items.map(item => item.href)
       );
-      
+
       // Check only features that have table requirements
-      const featuresToCheck = allHrefs.filter(href => 
+      const featuresToCheck = allHrefs.filter(href =>
         featureTableRequirements[href] && featureTableRequirements[href].length > 0
       );
-      
+
       // Check all features in parallel
       const availability = await Promise.all(
         featuresToCheck.map(async (href) => {
@@ -57,7 +57,7 @@ export function Sidebar() {
           return { href, available };
         })
       );
-      
+
       // Add all features that are available or don't have requirements
       allHrefs.forEach(href => {
         if (!featureTableRequirements[href] || featureTableRequirements[href].length === 0) {
@@ -69,7 +69,7 @@ export function Sidebar() {
           }
         }
       });
-      
+
       setAvailableFeatures(features);
     };
 
@@ -92,7 +92,7 @@ export function Sidebar() {
 
   const getTierBadge = (tier?: string) => {
     if (!tier || tier === 'free') return null;
-    
+
     const colors = {
       professional: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       enterprise: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -146,7 +146,7 @@ export function Sidebar() {
             </div>
             <AttentionBadge />
           </div>
-          
+
           {/* Quick access to Hotbox */}
           <Link
             to={getFullPath('/admin/hotbox')}
@@ -199,10 +199,10 @@ export function Sidebar() {
                               key={item.href}
                               to={fullPath}
                               onClick={() => {
-                                logger.debug('Sidebar click', { 
-                                  href: item.href, 
+                                logger.debug('Sidebar click', {
+                                  href: item.href,
                                   fullPath,
-                                  title: item.title 
+                                  title: item.title
                                 });
                                 setIsOpen(false);
                               }}
@@ -215,14 +215,14 @@ export function Sidebar() {
                               )}
                             >
                               <Icon className="h-4 w-4 shrink-0" />
-                              <span className="flex-1 truncate">{item.title}</span>
-                              
+                              <span className="flex-1 truncate min-w-0">{item.title}</span>
+
                               {item.badge && (
                                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                                   {item.badge}
                                 </Badge>
                               )}
-                              
+
                               {getTierBadge(item.tier)}
                             </Link>
                           );

@@ -97,7 +97,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     if (typeof window !== 'undefined') {
       initConnectionMonitoring();
     }
-    
+
     const unsubscribe = onConnectionStatusChange((status) => {
       setConnectionStatus(status);
       if (status === 'offline') {
@@ -106,7 +106,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         logger.info('Customer portal back online', { component: 'CustomerAuthContext' });
       }
     });
-    
+
     return unsubscribe;
   }, []);
 
@@ -195,11 +195,11 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
-      
-      const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, { 
-        email, 
-        tenantSlug, 
-        userType: 'customer' 
+
+      const flowId = authFlowLogger.startFlow(AuthAction.LOGIN, {
+        email,
+        tenantSlug,
+        userType: 'customer'
       });
 
       authFlowLogger.logStep(flowId, AuthFlowStep.NETWORK_REQUEST);
@@ -219,18 +219,18 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
           },
           onRetry: (attempt, error) => {
             authFlowLogger.logFetchRetry(flowId, 'customer-auth', attempt, error, 1000);
-            logger.warn('Customer login retry', { 
-              attempt, 
-              error: error instanceof Error ? error.message : String(error), 
-              component: 'CustomerAuthContext' 
+            logger.warn('Customer login retry', {
+              attempt,
+              error: error instanceof Error ? error.message : String(error),
+              component: 'CustomerAuthContext'
             });
           },
         }
       );
 
-      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE, { 
+      authFlowLogger.logStep(flowId, AuthFlowStep.PARSE_RESPONSE, {
         status: response.status,
-        attempts 
+        attempts
       });
 
       if (!response.ok) {
@@ -246,10 +246,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
-      
-      authFlowLogger.completeFlow(flowId, { 
+
+      authFlowLogger.completeFlow(flowId, {
         customerId: data.customer?.id,
-        tenantId: data.tenant?.id 
+        tenantId: data.tenant?.id
       });
 
       // Debug: Log successful customer login
@@ -260,7 +260,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         tenantSlug: data.tenant?.slug,
         source: 'CustomerAuthContext'
       });
-      
+
       setToken(data.token);
       setCustomer(data.customer);
       setTenant(data.tenant);
@@ -278,7 +278,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         if (data.customer?.id) {
           await clientEncryption.initialize(password, data.customer.id);
-          logger.debug('Encryption initialized successfully', { userId: data.customer.id, component: 'CustomerAuthContext' });
+          logger.debug('Encryption initialized successfully', { component: 'CustomerAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now
@@ -294,10 +294,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // For now, manual filtering provides security without requiring Supabase auth
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      
+
       // Get category from error or use unknown
       const errorCategory = (error as any)?.category || ErrorCategory.UNKNOWN;
-      
+
       // Log flow failure
       authFlowLogger.failFlow((error as any)?.flowId || '', errorObj, errorCategory);
 

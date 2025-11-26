@@ -60,6 +60,7 @@ import { TenantCard } from '@/components/super-admin/TenantCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { showInfoToast } from '@/utils/toastHelpers';
 
 export default function TenantsListPage() {
   const navigate = useNavigate();
@@ -189,7 +190,7 @@ export default function TenantsListPage() {
           <p className="text-muted-foreground">Manage all customer accounts</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => {/* TODO: Export */ }}>
+          <Button variant="outline" onClick={() => showInfoToast("Export", "Exporting tenant list...")}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
@@ -525,15 +526,15 @@ export default function TenantsListPage() {
             <CardContent className="flex items-center gap-4 py-3 px-6">
               <span className="font-medium">{selectedTenants.length} selected</span>
               <Separator orientation="vertical" className="h-6" />
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk change plan */ }}>
+              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk change plan coming soon")}>
                 <CreditCard className="mr-2 h-4 w-4" />
                 Change Plan
               </Button>
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk suspend */ }}>
+              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk suspend coming soon")}>
                 <Ban className="mr-2 h-4 w-4" />
                 Suspend
               </Button>
-              <Button variant="outline" size="sm" onClick={() => {/* TODO: Bulk export */ }}>
+              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk export coming soon")}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>

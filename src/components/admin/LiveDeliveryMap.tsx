@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
 import { themeColors } from "@/lib/utils/colorConversion";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
+import { showErrorToast } from "@/utils/toastHelpers";
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;
@@ -32,7 +33,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
   const [mapLoaded, setMapLoaded] = useState(false);
   const { data: deliveries = [], refetch } = useWholesaleDeliveries();
   const etasRef = useRef<Map<string, { formatted: string; eta: Date }>>(new Map());
-  
+
   // Set up global call driver function
   useEffect(() => {
     window.callDriver = (driverId: string) => {
@@ -40,17 +41,17 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       if (delivery?.runner?.phone) {
         window.location.href = `tel:${delivery.runner.phone}`;
       } else {
-        alert('Driver phone number not available');
+        showErrorToast("Driver phone number not available");
       }
     };
-    
+
     return () => {
       delete window.callDriver;
     };
   }, [deliveries]);
 
   // Filter deliveries based on props - include all active statuses
-  const activeDeliveries = deliveries.filter(d => 
+  const activeDeliveries = deliveries.filter(d =>
     ['in_transit', 'picked_up', 'assigned'].includes(d.status) && (showAll || d.id === deliveryId)
   );
 
@@ -125,7 +126,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           markerPair.runner.remove();
           markerPair.destination.remove();
           markers.current.delete(id);
-          
+
           // Remove route layer
           if (map.current!.getLayer('route-' + id)) {
             map.current!.removeLayer('route-' + id);
@@ -142,7 +143,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       activeDeliveries.forEach((delivery) => {
         // Get runner location - use mock data if not available
         let runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
-        
+
         // If no location, use default NYC coordinates with small random offset
         if (!runnerLocation || typeof runnerLocation.lat !== 'number') {
           const baseOffset = Math.random() * 0.05;
@@ -162,7 +163,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
         // Check if markers already exist
         const existingMarkers = markers.current.get(delivery.id);
-        
+
         if (existingMarkers) {
           // Update existing markers
           existingMarkers.runner.setLngLat([runnerLocation.lng, runnerLocation.lat]);
@@ -186,7 +187,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           // Calculate ETA for this delivery
           const etaDisplay = 'Calculating...';
           let etaResult = null;
-          
+
           if (runnerLocation && typeof runnerLocation.lat === 'number') {
             calculateETA(
               [runnerLocation.lng, runnerLocation.lat],
@@ -253,7 +254,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
           // Use calculated ETA if available, otherwise show calculating
           const destETADisplay = etaResult ? etaResult.formatted : 'Calculating...';
-          
+
           const destPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="padding: 8px;">
               <h3 style="font-weight: 600; margin-bottom: 4px;">📍 Destination</h3>
@@ -379,7 +380,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             const runnerName = delivery.runner?.full_name || 'Runner';
             const clientName = 'Client'; // Will use actual address data when available
             const orderNumber = delivery.order?.order_number || 'N/A';
-            
+
             return (
               <div key={delivery.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                 <div className="flex items-center gap-3">
@@ -408,8 +409,8 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         </div>
       )}
 
-      <div 
-        ref={mapContainer} 
+      <div
+        ref={mapContainer}
         className="w-full h-[500px]"
         style={{ minHeight: "500px" }}
       />

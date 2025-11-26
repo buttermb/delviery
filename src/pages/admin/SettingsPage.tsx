@@ -14,9 +14,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders
+  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders, Users
 } from 'lucide-react';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { showSuccessToast, showErrorToast, showInfoToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -224,6 +224,13 @@ export default function SettingsPage() {
                 <Save className="h-4 w-4 mr-2" />
                 Save General Settings
               </Button>
+              <div className="pt-4 border-t">
+                <h4 className="text-sm font-medium mb-2">Team Management</h4>
+                <Button variant="outline" onClick={() => navigate('/admin/team-members')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Manage Team Members
+                </Button>
+              </div>
             </div>
           </Card>
         </TabsContent>
@@ -442,7 +449,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium">QuickBooks</h4>
                     <p className="text-sm text-muted-foreground">Sync financial data</p>
                   </div>
-                  <Button variant="outline" size="sm">Connect</Button>
+                  <Button variant="outline" size="sm" onClick={() => showInfoToast("QuickBooks", "QuickBooks integration coming soon")}>Connect</Button>
                 </div>
               </div>
               <div className="p-0 border-0">
@@ -454,7 +461,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium">Twilio</h4>
                     <p className="text-sm text-muted-foreground">SMS notifications</p>
                   </div>
-                  <Button variant="outline" size="sm">Connect</Button>
+                  <Button variant="outline" size="sm" onClick={() => showInfoToast("Twilio", "Twilio integration coming soon")}>Connect</Button>
                 </div>
               </div>
             </div>

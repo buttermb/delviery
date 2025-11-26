@@ -28,11 +28,11 @@ export function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = inView && !prefersReducedMotion;
   const [shouldAnimateChart, setShouldAnimateChart] = useState(false);
-  
+
   // Auth state for conditional CTAs
   const { user } = useAuth();
   const { hasActiveSubscription, isTrial } = useSubscriptionStatus();
-  
+
   // Use throttled scroll for better performance
   const { scrollY } = useThrottledScroll(32);
   const y1 = useTransform(scrollY, [0, 500], [0, 100]);
@@ -62,7 +62,7 @@ export function HeroSection() {
           <FloatingUIElements />
         </Suspense>
       )}
-      
+
       {/* Parallax background - desktop only, respect motion preferences */}
       {!isMobile && !prefersReducedMotion && (
         <Suspense fallback={null}>
@@ -82,7 +82,7 @@ export function HeroSection() {
             style={{ y: y1, opacity }}
             className="mb-6"
           >
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-7xl font-bold leading-tight">
               The Modern CRM for<br />
               <span className="text-white">
                 Cannabis Distributors
@@ -97,7 +97,7 @@ export function HeroSection() {
             <p className="text-xl md:text-2xl mb-4 text-white/90 max-w-3xl mx-auto">
               Manage customers, products, orders, and inventory in one powerful platform
             </p>
-            
+
             {/* Typewriter Effect */}
             <div className="text-xl md:text-2xl font-semibold text-white min-h-[2rem] mb-4">
               <TypewriterHeadline benefits={benefits} />
@@ -206,7 +206,7 @@ export function HeroSection() {
             <p className="text-sm text-white/80 mb-4">
               Trusted by 400+ cannabis distributors • $1.4M orders/month
             </p>
-            
+
             {/* Client Logos Placeholder - Add actual logos here */}
             <div className="flex flex-wrap justify-center items-center gap-6 mb-8 opacity-60">
               <div className="text-xs text-white/60">Client Logos Coming Soon</div>

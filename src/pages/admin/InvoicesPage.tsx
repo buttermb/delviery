@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
 import { useInvoices } from "@/hooks/crm/useInvoices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,40 @@ export default function InvoicesPage() {
                 toast.success("Invoice marked as paid");
             },
         });
+    };
+
+    const handleDownloadPDF = (invoice: CRMInvoice) => {
+        try {
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFontSize(20);
+            doc.text("INVOICE", 105, 20, { align: "center" });
+
+            // Invoice Details
+            doc.setFontSize(12);
+            doc.text(`Invoice #: ${invoice.invoice_number}`, 20, 40);
+            doc.text(`Date: ${format(new Date(invoice.invoice_date), "MMM d, yyyy")}`, 20, 50);
+            doc.text(`Due Date: ${format(new Date(invoice.due_date), "MMM d, yyyy")}`, 20, 60);
+            doc.text(`Status: ${invoice.status.toUpperCase()}`, 20, 70);
+
+            // Client Details
+            doc.text(`Client: ${invoice.client?.name || "Unknown"}`, 20, 90);
+
+            // Amount
+            doc.setFontSize(16);
+            doc.text(`Total Amount: ${formatCurrency(invoice.total)}`, 20, 110);
+
+            // Footer
+            doc.setFontSize(10);
+            doc.text("Thank you for your business!", 105, 280, { align: "center" });
+
+            doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+            toast.success("PDF downloaded successfully");
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            toast.error("Failed to generate PDF");
+        }
     };
 
     const getStatusBadge = (status: string) => {
@@ -295,8 +330,7 @@ export default function InvoicesPage() {
                                                     )}
                                                     <DropdownMenuItem onClick={(e) => {
                                                         e.stopPropagation();
-                                                        // Download PDF logic (placeholder)
-                                                        toast.info("PDF download coming soon");
+                                                        handleDownloadPDF(invoice);
                                                     }}>
                                                         Download PDF
                                                     </DropdownMenuItem>

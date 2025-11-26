@@ -190,9 +190,26 @@ export default function Orders() {
     triggerHaptic('medium');
   };
 
-  const handleDelete = (id: string) => {
-    toast.error("Order deleted (simulated)");
-    triggerHaptic('heavy');
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success("Order deleted successfully");
+      triggerHaptic('heavy');
+      loadOrders();
+    } catch (error) {
+      logger.error('Error deleting order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to delete order");
+    }
   };
 
   return (
@@ -345,15 +362,15 @@ export default function Orders() {
               filteredOrders.map((order) => (
                 <SwipeableItem
                   key={order.id}
-                  leftAction={{ 
-                    icon: <Trash2 className="h-5 w-5" />, 
-                    color: 'bg-destructive', 
+                  leftAction={{
+                    icon: <Trash2 className="h-5 w-5" />,
+                    color: 'bg-destructive',
                     label: 'Delete',
                     onClick: () => handleDelete(order.id)
                   }}
-                  rightAction={{ 
-                    icon: <Archive className="h-5 w-5" />, 
-                    color: 'bg-blue-500', 
+                  rightAction={{
+                    icon: <Archive className="h-5 w-5" />,
+                    color: 'bg-blue-500',
                     label: 'Archive',
                     onClick: () => handleArchive(order.id)
                   }}

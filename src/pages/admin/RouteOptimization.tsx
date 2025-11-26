@@ -5,54 +5,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Route, Clock, Package } from 'lucide-react';
+import { useWholesaleDeliveries } from '@/hooks/useWholesaleData';
 
 export default function RouteOptimization() {
   const { tenant } = useTenantAdminAuth();
-  const tenantId = tenant?.id;
+  const { data: deliveries, isLoading } = useWholesaleDeliveries();
 
-  const { data: routes, isLoading } = useQuery({
-    queryKey: ['route-optimization', tenantId],
-    queryFn: async () => {
-      if (!tenantId) return [];
+  // Group deliveries by runner to create "routes"
+  const routes = (deliveries || []).reduce((acc: any[], delivery: any) => {
+    const runnerId = delivery.runner_id || 'unassigned';
+    const existingRoute = acc.find(r => r.runnerId === runnerId);
 
-      try {
-        // Try to get optimized routes from a routes table
-        const { data, error } = await supabase
-          .from('routes' as any)
-          .select('*, deliveries(*, orders(*))')
-          .eq('tenant_id', tenantId)
-          .order('created_at', { ascending: false })
-          .limit(50);
-
-        if (error && error.code === '42P01') {
-          // Fallback: try to get deliveries
-          const { data: deliveries, error: delError } = await supabase
-            .from('deliveries' as any)
-            .select('*')
-            .eq('tenant_id', tenantId);
-
-          if (delError && delError.code === '42P01') return [];
-          if (delError) throw delError;
-
-          // Generate mock routes from deliveries
-          return (deliveries || []).map((delivery: any) => ({
-            id: delivery.id,
-            name: `Route ${delivery.id.slice(0, 8)}`,
-            stops: 1,
-            distance: 0,
-            estimated_time: 0,
-            status: delivery.status || 'pending',
-          }));
-        }
-        if (error) throw error;
-        return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
-        throw error;
-      }
-    },
-    enabled: !!tenantId,
-  });
+    if (existingRoute) {
+      existingRoute.stops += 1;
+      existingRoute.deliveries.push(delivery);
+      // Update status logic if needed
+    } else {
+      acc.push({
+        id: runnerId,
+        runnerId,
+        name: delivery.runner ? `Route: ${delivery.runner.full_name}` : 'Unassigned Route',
+        stops: 1,
+        distance: 0, // Placeholder as we don't have distance data yet
+        estimated_time: 0, // Placeholder
+        status: 'active', // Derived from deliveries
+        deliveries: [delivery]
+      });
+    }
+    return acc;
+  }, []);
 
   if (isLoading) {
     return (
@@ -69,7 +50,7 @@ export default function RouteOptimization() {
           <h1 className="text-3xl font-bold">Route Optimization</h1>
           <p className="text-muted-foreground">Optimize delivery routes for efficiency</p>
         </div>
-        <Button>
+        <Button onClick={() => import("sonner").then(({ toast }) => toast.info("Optimization Engine", { description: "AI route optimization coming in next update" }))}>
           <Route className="h-4 w-4 mr-2" />
           Optimize Routes
         </Button>
@@ -81,9 +62,9 @@ export default function RouteOptimization() {
             <Card key={route.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>{route.name || `Route ${route.id.slice(0, 8)}`}</CardTitle>
+                  <CardTitle className="text-base truncate pr-2" title={route.name}>{route.name}</CardTitle>
                   <Badge variant={route.status === 'completed' ? 'default' : 'secondary'}>
-                    {route.status || 'pending'}
+                    {route.status}
                   </Badge>
                 </div>
               </CardHeader>
@@ -91,7 +72,7 @@ export default function RouteOptimization() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{route.stops || 0} stops</span>
+                    <span>{route.stops} stops</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Route className="h-4 w-4 text-muted-foreground" />
@@ -100,6 +81,16 @@ export default function RouteOptimization() {
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span>{route.estimated_time || 0} min</span>
+                  </div>
+                  <div className="pt-2 mt-2 border-t">
+                    <p className="text-xs text-muted-foreground mb-2">Deliveries:</p>
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {route.deliveries.map((d: any) => (
+                        <div key={d.id} className="text-xs truncate bg-muted/50 p-1 rounded">
+                          #{d.order?.order_number || d.id.slice(0, 8)} - {d.status}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -111,7 +102,7 @@ export default function RouteOptimization() {
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
               <Route className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No routes available. Route optimization will appear here once routes are created.</p>
+              <p>No active routes found. Assign deliveries to runners to generate routes.</p>
             </div>
           </CardContent>
         </Card>

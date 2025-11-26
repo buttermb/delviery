@@ -49,6 +49,16 @@ export const useMenuAnalytics = (menuId: string) => {
       if (!menu) throw new Error('Menu not found');
 
       // Calculate analytics
+      // Filter logs that are actual page views (where actions_taken is null or not an event)
+      const pageViewLogs = menu.menu_access_logs?.filter((log: any) =>
+        !log.actions_taken || !log.actions_taken.action
+      ) || [];
+
+      // Filter logs that are events
+      const eventLogs = menu.menu_access_logs?.filter((log: any) =>
+        log.actions_taken && log.actions_taken.action
+      ) || [];
+
       const productsWithImages = menu.disposable_menu_products?.filter(
         (mp: any) => mp.product?.image_url || mp.product?.images?.length > 0
       ).length || 0;
@@ -60,17 +70,20 @@ export const useMenuAnalytics = (menuId: string) => {
         0
       ) || 0;
 
+      const imageViews = eventLogs.filter((log: any) => log.actions_taken.action === 'image_viewed').length;
+      const imageZooms = eventLogs.filter((log: any) => log.actions_taken.action === 'image_zoomed').length;
+
       const analytics: MenuAnalytics = {
-        total_views: menu.menu_access_logs?.length || 0,
+        total_views: pageViewLogs.length,
         total_orders: menu.menu_orders?.length || 0,
         total_revenue: totalRevenue,
         products_with_images: productsWithImages,
         products_without_images: productsWithoutImages,
-        image_views: 0, // TODO: Track from logs
-        image_zooms: 0, // TODO: Track from logs
-        avg_time_on_menu: 0, // TODO: Calculate from session data
-        conversion_rate: menu.menu_access_logs?.length > 0
-          ? ((menu.menu_orders?.length || 0) / menu.menu_access_logs.length) * 100
+        image_views: imageViews,
+        image_zooms: imageZooms,
+        avg_time_on_menu: pageViewLogs.reduce((acc: number, log: any) => acc + (log.session_duration_seconds || 0), 0) / (pageViewLogs.length || 1),
+        conversion_rate: pageViewLogs.length > 0
+          ? ((menu.menu_orders?.length || 0) / pageViewLogs.length) * 100
           : 0
       };
 
@@ -102,18 +115,35 @@ export const useProductImageAnalytics = (menuId: string) => {
 
       if (!menuProducts) return [];
 
+      // Fetch logs for this menu to aggregate per product
+      const { data: logs } = await supabase
+        .from('menu_access_logs')
+        .select('actions_taken')
+        .eq('menu_id', menuId)
+        .not('actions_taken', 'is', null);
+
       // Calculate per-product analytics
       const analytics: ProductImageAnalytics[] = menuProducts.map((mp: any) => {
         const hasImage = !!(mp.product?.image_url || mp.product?.images?.length > 0);
+
+        const productLogs = logs?.filter((log: any) =>
+          log.actions_taken?.product_id === mp.product_id
+        ) || [];
+
+        const viewCount = productLogs.filter((log: any) => log.actions_taken?.action === 'image_viewed').length;
+        const zoomCount = productLogs.filter((log: any) => log.actions_taken?.action === 'image_zoomed').length;
+
+        const addToCartCount = productLogs.filter((log: any) => log.actions_taken?.action === 'add_to_cart').length;
+        const conversionRate = viewCount > 0 ? (addToCartCount / viewCount) * 100 : 0;
 
         return {
           product_id: mp.product_id,
           product_name: mp.product?.product_name || 'Unknown',
           has_image: hasImage,
-          view_count: 0, // TODO: Track from logs
-          zoom_count: 0, // TODO: Track from logs
-          add_to_cart_count: 0, // TODO: Track from cart events
-          conversion_rate: 0 // TODO: Calculate
+          view_count: viewCount,
+          zoom_count: zoomCount,
+          add_to_cart_count: addToCartCount,
+          conversion_rate: conversionRate
         };
       });
 
@@ -134,8 +164,7 @@ export const trackImageView = async (
   try {
     await supabase.from('menu_access_logs').insert({
       menu_id: menuId,
-      action: 'image_viewed',
-      details: { product_id: productId },
+      actions_taken: { action: 'image_viewed', product_id: productId },
       accessed_at: new Date().toISOString()
     });
   } catch (error) {
@@ -154,8 +183,7 @@ export const trackImageZoom = async (
   try {
     await supabase.from('menu_access_logs').insert({
       menu_id: menuId,
-      action: 'image_zoomed',
-      details: { product_id: productId },
+      actions_taken: { action: 'image_zoomed', product_id: productId },
       accessed_at: new Date().toISOString()
     });
   } catch (error) {

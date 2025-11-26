@@ -27,6 +27,7 @@ import { formatSmartDate } from "@/lib/utils/formatDate";
 import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { showInfoToast } from "@/utils/toastHelpers";
 import { FeatureList } from "@/components/admin/FeatureList";
 import { TenantDataInspector } from "@/components/super-admin/TenantDataInspector";
 import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
@@ -651,10 +652,7 @@ export default function TenantDetailPage() {
                       variant="outline"
                       className="w-full border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                       onClick={() => {
-                        toast({
-                          title: "Update Card",
-                          description: "Card update functionality coming soon",
-                        });
+                        showInfoToast("Update Card", "Card update functionality coming soon");
                       }}
                     >
                       Update Card
@@ -964,10 +962,7 @@ export default function TenantDetailPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      toast({
-                        title: "Issue Refund",
-                        description: "Refund functionality coming soon",
-                      });
+                      showInfoToast("Issue Refund", "Refund functionality coming soon");
                     }}
                     className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >
@@ -976,10 +971,7 @@ export default function TenantDetailPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      toast({
-                        title: "Apply Credit",
-                        description: "Credit functionality coming soon",
-                      });
+                      showInfoToast("Apply Credit", "Credit functionality coming soon");
                     }}
                     className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >
@@ -988,10 +980,7 @@ export default function TenantDetailPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      toast({
-                        title: "Retry Payment",
-                        description: "Retry functionality coming soon",
-                      });
+                      showInfoToast("Retry Payment", "Retry functionality coming soon");
                     }}
                     className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >

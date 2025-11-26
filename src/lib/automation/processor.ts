@@ -44,21 +44,22 @@ export async function processAutomationRules(
 
     // Rule: Compliance Reminders
     if (enabledRules.includes('compliance_reminders')) {
-        // Mock check for compliance documents expiring
-        // In a real app, this would check a compliance table
-        // @ts-ignore
+        // Check for compliance documents expiring in the next 30 days
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
         const { count } = await supabase
-            .from('activity_logs')
-            .select('id', { count: 'exact', head: true })
+            .from('compliance_documents')
+            .select('*', { count: 'exact', head: true })
             .eq('tenant_id', tenantId)
-            .eq('action', 'compliance_expiry')
-            .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+            .lte('expiration_date', thirtyDaysFromNow.toISOString())
+            .gte('expiration_date', new Date().toISOString()); // Only future expirations
 
         if (count && count > 0) {
             results.push({
                 ruleId: 'compliance_reminders',
                 triggered: true,
-                message: 'You have compliance documents expiring soon.',
+                message: `You have ${count} compliance document${count === 1 ? '' : 's'} expiring soon.`,
                 action: '/admin/compliance'
             });
         }

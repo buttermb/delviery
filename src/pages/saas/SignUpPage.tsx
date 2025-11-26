@@ -154,11 +154,8 @@ export default function SignUpPage() {
           // Data is still valid
           const parsed = JSON.parse(saved);
           form.reset(parsed);
-        } else {
-          // Data has expired, clear it
-          localStorage.removeItem(STORAGE_KEY);
-          localStorage.removeItem(STORAGE_EXPIRY_KEY);
         }
+        // Note: Expired data is cleared when form is submitted successfully
       }
     } catch (error) {
       logger.error('Failed to load form data from localStorage', error);
@@ -196,7 +193,7 @@ export default function SignUpPage() {
     }
 
     try {
-      logger.info('[SIGNUP] Starting tenant signup', { email: data.email, business_name: data.business_name });
+      logger.info('[SIGNUP] Starting tenant signup', { component: 'SignUpPage' });
 
       // Clear saved form data
       try {

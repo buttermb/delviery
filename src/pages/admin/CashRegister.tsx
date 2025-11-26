@@ -36,7 +36,7 @@ export default function CashRegister() {
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,9 +50,9 @@ export default function CashRegister() {
       const { data, error } = await supabase
         .from('products')
         .select('id, name, price, stock_quantity, image_url')
-        .eq('tenant_id', tenantId)
-        .gt('stock_quantity', 0);
-      
+        .eq('tenant_id', tenantId);
+      // .gt('stock_quantity', 0); // Allow seeing all products even if out of stock
+
       if (error) throw error;
       return data || [];
     },
@@ -116,7 +116,7 @@ export default function CashRegister() {
           .from('products')
           .update({ stock_quantity: item.stock_quantity - item.quantity })
           .eq('id', item.id);
-        
+
         if (invError) throw invError;
       }
     },
@@ -140,7 +140,7 @@ export default function CashRegister() {
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
+
     if (existingItem) {
       if (existingItem.quantity >= product.stock_quantity) {
         toast({ title: 'Not enough stock', variant: 'destructive' });
@@ -204,9 +204,9 @@ export default function CashRegister() {
               <div className="text-sm font-medium">Total</div>
               <div className="text-3xl font-bold">${total.toFixed(2)}</div>
             </div>
-            
+
             {/* Cart Items */}
-            {cart.length > 0 && (
+            {cart.length > 0 ? (
               <div className="space-y-2 max-h-64 overflow-auto">
                 <div className="text-sm font-medium">Items</div>
                 {cart.map((item) => (
@@ -247,6 +247,12 @@ export default function CashRegister() {
                     <span className="font-bold text-sm">${item.subtotal.toFixed(2)}</span>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed rounded-lg border-muted-foreground/25">
+                <ShoppingCart className="w-12 h-12 mb-3 text-muted-foreground/50" />
+                <p className="text-sm font-medium text-muted-foreground">Your cart is empty</p>
+                <p className="text-xs text-muted-foreground mt-1">Add items to start a transaction</p>
               </div>
             )}
 
@@ -339,28 +345,51 @@ export default function CashRegister() {
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {filteredProducts.map(product => (
-                <Card
-                  key={product.id}
-                  className="cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => addToCart(product)}
-                >
-                  <CardContent className="p-3">
-                    <div className="aspect-square bg-muted rounded mb-2 flex items-center justify-center overflow-hidden">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <ShoppingCart className="w-8 h-8 text-muted-foreground" />
-                      )}
-                    </div>
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold">${product.price}</span>
-                      <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {filteredProducts.length === 0 ? (
+                <div className="col-span-2 text-center py-8">
+                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground font-medium mb-2">
+                    {products.length === 0
+                      ? "No products available"
+                      : searchQuery
+                        ? "No products match your search"
+                        : "No products with stock"}
+                  </p>
+                  {products.length === 0 && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add products with stock to start selling
+                    </p>
+                  )}
+                  {products.length > 0 && !searchQuery && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      All products are out of stock. Update inventory to continue.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                filteredProducts.map(product => (
+                  <Card
+                    key={product.id}
+                    className="cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => addToCart(product)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="aspect-square bg-muted rounded mb-2 flex items-center justify-center overflow-hidden">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <ShoppingCart className="w-8 h-8 text-muted-foreground" />
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold">${product.price}</span>
+                        <span className="text-xs text-muted-foreground">Stock: {product.stock_quantity}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         </DialogContent>

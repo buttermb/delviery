@@ -2,7 +2,7 @@
   "name": "FloraIQ - Smart Cannabis Operations",
   "short_name": "FloraIQ",
   "description": "FloraIQ - Smart cannabis operations platform with multi-tenant SAAS, wholesale CRM, inventory management, and premium delivery services.",
-  "version": "3.0.0",
+  "version": "0.0.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1419",
@@ -23,35 +23,59 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["shopping", "lifestyle", "food"],
+  "categories": [
+    "shopping",
+    "lifestyle",
+    "food"
+  ],
   "shortcuts": [
     {
       "name": "Browse Products",
       "short_name": "Shop",
       "description": "Browse our product catalog",
       "url": "/#products",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/placeholder.svg",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Track Order",
       "short_name": "Track",
       "description": "Track your delivery",
       "url": "/track-order",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/placeholder.svg",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "My Orders",
       "short_name": "Orders",
       "description": "View order history",
       "url": "/my-orders",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/placeholder.svg",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Giveaway",
       "short_name": "Win",
       "description": "Enter giveaway",
       "url": "/giveaway/nyc-biggest-flower",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/placeholder.svg",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
   "screenshots": [

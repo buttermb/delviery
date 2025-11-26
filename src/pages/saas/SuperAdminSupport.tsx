@@ -95,55 +95,12 @@ export default function SuperAdminSupport() {
       const { data, error } = await query;
 
       if (error) {
-        // Fallback to mock data if table doesn't exist yet
-        const { data: tenants } = await supabase
-          .from('tenants')
-          .select('id, business_name')
-          .limit(50);
-
-        const mockTickets: SupportTicket[] = [
-          {
-            id: '1',
-            tenant_id: tenants?.[0]?.id || '',
-            subject: 'Billing issue - Payment not processing',
-            description: 'Customer reports payment method declined',
-            priority: 'high',
-            status: 'open',
-            category: 'billing',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            tenant: tenants?.[0] || { business_name: 'BigMike Wholesale' },
-          },
-          {
-            id: '2',
-            tenant_id: tenants?.[1]?.id || '',
-            subject: 'Feature request - API rate limit increase',
-            description: 'Need higher API rate limits for integration',
-            priority: 'medium',
-            status: 'in_progress',
-            category: 'feature',
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            updated_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-            tenant: tenants?.[1] || { business_name: 'Eastside Collective' },
-          },
-        ];
-
-        let filtered = mockTickets;
-        if (statusFilter !== 'all') {
-          filtered = filtered.filter((t) => t.status === statusFilter);
-        }
-        if (priorityFilter !== 'all') {
-          filtered = filtered.filter((t) => t.priority === priorityFilter);
-        }
-        if (searchTerm) {
-          filtered = filtered.filter(
-            (t) =>
-              t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              t.tenant?.business_name.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-        return filtered;
+        toast({
+          title: "Error fetching tickets",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
       }
 
       // Map database results

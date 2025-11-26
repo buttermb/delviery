@@ -1137,7 +1137,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       try {
         if (data.admin?.id) {
           await clientEncryption.initialize(password, data.admin.id);
-          logger.debug('Encryption initialized successfully', { userId: data.admin.id, component: 'TenantAdminAuthContext' });
+          logger.debug('Encryption initialized successfully', { component: 'TenantAdminAuthContext' });
         }
       } catch (encryptionError) {
         // Log but don't block login - encryption is optional for now

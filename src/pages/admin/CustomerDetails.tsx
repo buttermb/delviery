@@ -120,7 +120,7 @@ export default function CustomerDetails() {
       if (notesError) throw notesError;
       setNotes(notesData || []);
     } catch (error) {
-      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails', customerId: id });
+      logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
       toast.error('Failed to load customer data');
     } finally {
       setLoading(false);
@@ -144,7 +144,7 @@ export default function CustomerDetails() {
       setNewNote('');
       loadCustomerData();
     } catch (error) {
-      logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails', customerId: id });
+      logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
       toast.error('Failed to add note');
     }
   };

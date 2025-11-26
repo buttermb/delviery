@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,10 @@ import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 
 export default function InventoryManagement() {
+  const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const { data: inventory = [], isLoading } = useWholesaleInventory(tenant?.id);
-  
+
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
@@ -51,8 +53,19 @@ export default function InventoryManagement() {
         </div>
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <BulkImageGenerator products={inventory} />
-          <Button className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base" data-tutorial="add-product">
-            + Add Stock
+          <Button
+            className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial text-sm sm:text-base min-w-[100px]"
+            data-tutorial="add-product"
+            onClick={() => {
+              navigate('/admin/inventory/products');
+              import("sonner").then(({ toast }) => {
+                toast.info("Manage your product catalog and create new products here.", {
+                  duration: 3000,
+                });
+              });
+            }}
+          >
+            Manage Products
           </Button>
           <TakeTourButton
             tutorialId={inventoryTutorial.id}
@@ -143,7 +156,7 @@ export default function InventoryManagement() {
                         const qty = Number(product.quantity_lbs || 0);
                         const estimatedCost = avgCostPerLb;
                         const stockStatus = getStockStatus(qty, product.reorder_point || 20);
-                        
+
                         return (
                           <tr key={product.id} className="border-b last:border-0 touch-manipulation">
                             <td className="py-2 sm:py-3 text-xs sm:text-sm font-medium text-foreground truncate max-w-[150px] sm:max-w-none">{product.product_name}</td>
@@ -159,9 +172,9 @@ export default function InventoryManagement() {
                             </td>
                             <td className="py-2 sm:py-3">
                               <div className="flex items-center justify-center gap-1">
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
                                   className="min-h-[48px] min-w-[48px] px-2 text-xs sm:text-sm touch-manipulation"
                                   onClick={() => {
                                     setSelectedProduct(product);

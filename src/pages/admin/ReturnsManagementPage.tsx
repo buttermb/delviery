@@ -107,6 +107,10 @@ export default function ReturnsManagementPage() {
 
       if (error) {
         logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
+        // If table doesn't exist, show a helpful message once
+        if (error.code === '42P01') { // undefined_table
+          toast.error("Returns module is not enabled for this tenant (table missing).");
+        }
         return [];
       }
 

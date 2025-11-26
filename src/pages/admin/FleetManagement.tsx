@@ -79,14 +79,28 @@ export default function FleetManagement() {
 
       if (error) throw error;
 
-      return (data || []).map((delivery) => ({
-        ...delivery,
-        delivery_address: delivery.orders?.delivery_address || 'Unknown',
-        // Estimate ETA based on status (mock logic: 15-45 mins)
-        eta_minutes: delivery.status === 'in_transit' ? 15 : 45,
-        collection_amount: 0,
-        notes_for_runner: delivery.orders?.delivery_notes || delivery.notes
-      }));
+      return (data || []).map((delivery) => {
+        // Calculate ETA based on status and timestamps
+        let etaMinutes = 0;
+        if (delivery.status === 'in_transit') {
+          // Mock: Assume 30 mins from pickup or last update
+          // In a real app, we would calculate this using current location and destination
+          etaMinutes = 30;
+        } else if (delivery.status === 'assigned' && delivery.scheduled_pickup_time) {
+          const scheduled = new Date(delivery.scheduled_pickup_time);
+          const now = new Date();
+          const diff = Math.max(0, Math.floor((scheduled.getTime() - now.getTime()) / 60000));
+          etaMinutes = diff;
+        }
+
+        return {
+          ...delivery,
+          delivery_address: delivery.orders?.delivery_address || 'Unknown',
+          eta_minutes: etaMinutes,
+          collection_amount: 0,
+          notes_for_runner: delivery.orders?.delivery_notes || delivery.notes
+        };
+      });
     },
     enabled: !!tenantId,
     // Realtime sync is enabled, so we don't need aggressive polling
@@ -109,8 +123,9 @@ export default function FleetManagement() {
 
       return (data || []).map(runner => ({
         ...runner,
-        // Calculate success rate based on completed vs total deliveries (mock logic for now)
-        success_rate: runner.total_deliveries > 0 ? 95 + (Math.random() * 5) : 100
+        // Calculate success rate based on rating (5 stars = 100%, 1 star = 20%)
+        // Fallback to 100% if no rating
+        success_rate: runner.rating ? Math.min(100, Math.max(0, runner.rating * 20)) : 100
       }));
     },
     enabled: !!tenantId

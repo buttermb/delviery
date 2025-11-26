@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
+import { showErrorToast } from "@/utils/toastHelpers";
 
 export function useDeviceTracking() {
   useEffect(() => {
@@ -13,16 +14,16 @@ export function useDeviceTracking() {
         }
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
+
         // Don't log out on network errors
         if (authError && authError.message?.includes('network')) {
           logger.debug('Network error in device tracking, skipping');
           return;
         }
-        
+
         if (user) {
           const deviceInfo = generateDeviceFingerprint();
-          
+
           // Call edge function to track access and check blocks
           const { data, error } = await supabase.functions.invoke('track-access', {
             body: {
@@ -51,7 +52,7 @@ export function useDeviceTracking() {
           if (data?.blocked) {
             await supabase.auth.signOut();
             window.location.href = '/';
-            alert('Your access has been restricted. Please contact support if you believe this is an error.');
+            showErrorToast("Access Restricted", "Your access has been restricted. Please contact support if you believe this is an error.");
           }
         }
       } catch (error: any) {

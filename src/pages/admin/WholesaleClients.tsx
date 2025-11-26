@@ -69,10 +69,10 @@ export default function WholesaleClients() {
     queryKey: queryKeys.wholesaleClients.list({ filter }),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      
+
       let query = supabase
         .from("wholesale_clients")
-        .select("*")
+        .select("*, wholesale_payments(amount)")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 
@@ -91,11 +91,11 @@ export default function WholesaleClients() {
 
       // Wholesale clients are NOT encrypted - use plaintext fields directly
       // Map to expected format
-      return (data || []).map(client => ({
+      return (data || []).map((client: any) => ({
         ...client,
         territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
-        total_spent: Number(client.outstanding_balance) + 100000 // Estimate
+        total_spent: client.wholesale_payments?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0
       })) as WholesaleClient[];
     }
   });
@@ -144,7 +144,7 @@ export default function WholesaleClients() {
             <Button
               variant="outline"
               size="sm"
-              className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial"
+              className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
               onClick={() => {
                 toast.info("Import functionality coming soon", {
                   description: "CSV import for bulk client creation will be available in a future update."
@@ -155,7 +155,7 @@ export default function WholesaleClients() {
               <span className="hidden sm:inline">Import</span>
             </Button>
             <Button
-              className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial"
+              className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
               onClick={() => setCreateClientDialogOpen(true)}
               data-tutorial="add-customer"
             >
@@ -483,7 +483,7 @@ export default function WholesaleClients() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="min-h-[48px] min-w-[48px] flex-1"
+                          className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
                           onClick={() => {
                             setSmsClient(client);
                             setSmsDialogOpen(true);
@@ -495,7 +495,7 @@ export default function WholesaleClients() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="min-h-[48px] min-w-[48px] flex-1"
+                          className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
                           onClick={() => {
                             if (client.phone) {
                               window.location.href = `tel:${client.phone}`;
@@ -511,7 +511,7 @@ export default function WholesaleClients() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            className="min-h-[48px] flex-1"
+                            className="min-h-[48px] flex-1 min-w-[100px]"
                             onClick={() => {
                               setPaymentDialog({ open: true, client });
                             }}
@@ -523,7 +523,7 @@ export default function WholesaleClients() {
                         <Button
                           size="sm"
                           variant="default"
-                          className="min-h-[48px] flex-1"
+                          className="min-h-[48px] flex-1 min-w-[100px]"
                           onClick={() => {
                             navigate(`/admin/new-wholesale-order?clientId=${client.id}`);
                           }}

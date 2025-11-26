@@ -1,73 +1,97 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Plus, ArrowRightLeft, TrendingUp, Clock, Truck } from "lucide-react";
 import { showInfoToast } from "@/utils/toastHelpers";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { useWholesaleInventory, useWholesaleDeliveries, useWholesaleOrders } from "@/hooks/useWholesaleData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WholesaleInventory() {
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
 
-  // Mock data
+  // Fetch real data
+  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
+  const { data: deliveries = [], isLoading: deliveriesLoading } = useWholesaleDeliveries();
+  const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
+
+  const isLoading = inventoryLoading || deliveriesLoading || ordersLoading;
+
+  // Process Inventory Data
+  const totalStockLbs = inventory.reduce((sum, item) => sum + (Number(item.quantity_lbs) || 0), 0);
+  const totalStockKg = totalStockLbs * 0.453592;
+  const totalValue = inventory.reduce((sum, item) => sum + ((Number(item.quantity_lbs) || 0) * (Number(item.cost_per_lb) || 0)), 0);
+  const avgCostPerLb = totalStockLbs > 0 ? totalValue / totalStockLbs : 0;
+
   const overview = {
-    total_stock_lbs: 284,
-    total_stock_kg: 129,
-    total_value: 852000,
-    avg_cost_per_lb: 3000
+    total_stock_lbs: totalStockLbs,
+    total_stock_kg: totalStockKg,
+    total_value: totalValue,
+    avg_cost_per_lb: avgCostPerLb
   };
 
-  const warehouses = [
-    {
-      id: "1",
-      name: "Warehouse A",
-      location: "Brooklyn",
-      capacity_lbs: 500,
-      current_stock_lbs: 156,
-      value: 468000,
-      status: "good",
-      inventory: [
-        { strain: "Blue Dream", weight_lbs: 45, cost_per_lb: 2800, value: 126000, status: "good" },
-        { strain: "Wedding Cake", weight_lbs: 32, cost_per_lb: 3000, value: 96000, status: "good" },
-        { strain: "Gelato", weight_lbs: 28, cost_per_lb: 3100, value: 86800, status: "good" },
-        { strain: "OG Kush", weight_lbs: 22, cost_per_lb: 2900, value: 63800, status: "low" },
-        { strain: "Purple Punch", weight_lbs: 18, cost_per_lb: 3200, value: 57600, status: "low" },
-        { strain: "Sundae Driver", weight_lbs: 11, cost_per_lb: 3400, value: 37400, status: "very_low" },
-      ]
-    },
-    {
-      id: "2",
-      name: "Warehouse B",
-      location: "Queens",
-      capacity_lbs: 400,
-      current_stock_lbs: 96,
-      value: 288000,
-      status: "good",
-      inventory: [
-        { strain: "Blue Dream", weight_lbs: 28, cost_per_lb: 2800, value: 78400, status: "good" },
-        { strain: "Gelato", weight_lbs: 25, cost_per_lb: 3100, value: 77500, status: "good" },
-        { strain: "Wedding Cake", weight_lbs: 20, cost_per_lb: 3000, value: 60000, status: "good" },
-        { strain: "Various Mix", weight_lbs: 23, cost_per_lb: 3100, value: 71300, status: "good" },
-      ]
+  // Group by Warehouse
+  const warehouseMap = new Map();
+
+  inventory.forEach(item => {
+    const location = item.warehouse_location || "Unassigned";
+    if (!warehouseMap.has(location)) {
+      warehouseMap.set(location, {
+        id: location,
+        name: location,
+        location: location,
+        capacity_lbs: 1000, // Placeholder as we don't have capacity in DB yet
+        current_stock_lbs: 0,
+        value: 0,
+        status: "good",
+        inventory: []
+      });
     }
-  ];
 
-  const activeDeliveries = [
-    { id: "1", runner: "Runner #3", weight_lbs: 12, destination: "Eastside Collective (Manhattan)", eta: "2:30pm" },
-    { id: "2", runner: "Runner #1", weight_lbs: 8, destination: "Queens Network", eta: "4:15pm" },
-    { id: "3", runner: "Runner #5", weight_lbs: 7, destination: "Bronx Connect", eta: "5:00pm" },
-    { id: "4", runner: "Runner #2", weight_lbs: 5, destination: "Staten Island", eta: "6:30pm" },
-  ];
+    const warehouse = warehouseMap.get(location);
+    warehouse.current_stock_lbs += Number(item.quantity_lbs) || 0;
+    warehouse.value += (Number(item.quantity_lbs) || 0) * (Number(item.cost_per_lb) || 0);
 
+    // Determine status based on quantity (simplified logic)
+    let status = "good";
+    if ((Number(item.quantity_lbs) || 0) < 10) status = "very_low";
+    else if ((Number(item.quantity_lbs) || 0) < 25) status = "low";
+
+    warehouse.inventory.push({
+      strain: item.product_name,
+      weight_lbs: Number(item.quantity_lbs) || 0,
+      cost_per_lb: Number(item.cost_per_lb) || 0,
+      value: (Number(item.quantity_lbs) || 0) * (Number(item.cost_per_lb) || 0),
+      status: status
+    });
+  });
+
+  const warehouses = Array.from(warehouseMap.values());
+
+  // Process Active Deliveries
+  const activeDeliveries = deliveries
+    .filter(d => ['pending', 'in_transit'].includes(d.status))
+    .slice(0, 5)
+    .map(d => ({
+      id: d.id,
+      runner: d.runner?.full_name || "Unassigned",
+      weight_lbs: 0, // We'd need to sum order items to get weight
+      destination: "Client Location", // We'd need client address
+      eta: "TBD"
+    }));
+
+  // Process Top Movers (simplified based on orders)
+  // In a real app, we'd aggregate order items by product
   const topMovers = [
     { strain: "Blue Dream", lbs_moved: 124, revenue: 347000, profit: 112000 },
     { strain: "Wedding Cake", lbs_moved: 98, revenue: 294000, profit: 98000 },
     { strain: "Gelato", lbs_moved: 87, revenue: 270000, profit: 89000 },
-  ];
+  ]; // Keeping mock for now as calculating this from raw orders requires more complex logic/queries
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -87,6 +111,24 @@ export default function WholesaleInventory() {
     return labels[status] || status;
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -96,147 +138,198 @@ export default function WholesaleInventory() {
           <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory tracking</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => showInfoToast("Move Stock", "Stock movement functionality coming soon")}>
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Move Stock
           </Button>
-          <Button className="bg-emerald-500 hover:bg-emerald-600">
+          <Button
+            className="bg-emerald-500 hover:bg-emerald-600 min-w-[100px]"
+            onClick={() => showInfoToast("Add Stock", "Stock receiving functionality coming soon")}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Stock
           </Button>
         </div>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Total Stock</div>
-          <div className="text-2xl font-bold">{overview.total_stock_lbs} lbs</div>
-          <div className="text-xs text-muted-foreground">{overview.total_stock_kg} kg</div>
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-medium text-muted-foreground">Total Stock (lbs)</div>
+          <div className="text-2xl font-bold">{overview.total_stock_lbs.toLocaleString()} lbs</div>
+          <div className="text-xs text-muted-foreground">{overview.total_stock_kg.toFixed(1)} kg</div>
         </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Total Value</div>
-          <div className="text-2xl font-bold">${(overview.total_value / 1000).toFixed(0)}k</div>
-          <div className="text-xs text-muted-foreground">at cost</div>
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-medium text-muted-foreground">Total Value</div>
+          <div className="text-2xl font-bold">${overview.total_value.toLocaleString()}</div>
+          <div className="text-xs text-emerald-500 flex items-center">
+            <TrendingUp className="h-3 w-3 mr-1" />
+            Asset Value
+          </div>
         </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Avg Cost/lb</div>
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-medium text-muted-foreground">Avg Cost / lb</div>
           <div className="text-2xl font-bold">${overview.avg_cost_per_lb.toLocaleString()}</div>
-          <div className="text-xs text-muted-foreground">average</div>
+          <div className="text-xs text-muted-foreground">Across all strains</div>
         </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground mb-1">Warehouses</div>
-          <div className="text-2xl font-bold">{warehouses.length}</div>
-          <div className="text-xs text-emerald-500">All operational</div>
+        <Card className="p-4 space-y-2">
+          <div className="text-sm font-medium text-muted-foreground">Active Deliveries</div>
+          <div className="text-2xl font-bold">{activeDeliveries.length}</div>
+          <div className="text-xs text-blue-500 flex items-center">
+            <Truck className="h-3 w-3 mr-1" />
+            En Route
+          </div>
         </Card>
       </div>
 
-      {/* Warehouses */}
-      {warehouses.map((warehouse) => (
-        <Card key={warehouse.id} className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                🏢 {warehouse.name} - {warehouse.location}
-                <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                  🟢 GOOD
-                </Badge>
-              </h2>
-              <div className="text-sm text-muted-foreground mt-1">
-                Capacity: {warehouse.capacity_lbs} lbs | Current: {warehouse.current_stock_lbs} lbs ({Math.round((warehouse.current_stock_lbs / warehouse.capacity_lbs) * 100)}%) | Value: ${(warehouse.value / 1000).toFixed(0)}k
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">Move Stock</Button>
-              <Button variant="outline" size="sm">Adjust Count</Button>
-              <Button variant="outline" size="sm">View Details</Button>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Inventory List */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <Button
+              variant={selectedWarehouse === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedWarehouse("all")}
+            >
+              All Warehouses
+            </Button>
+            {warehouses.map(w => (
+              <Button
+                key={w.id}
+                variant={selectedWarehouse === w.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedWarehouse(w.id)}
+              >
+                {w.name}
+              </Button>
+            ))}
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Strain</TableHead>
-                <TableHead>Weight</TableHead>
-                <TableHead>Cost/lb</TableHead>
-                <TableHead>Total Value</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {warehouse.inventory.map((item, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="font-medium">{item.strain}</TableCell>
-                  <TableCell>{item.weight_lbs} lbs</TableCell>
-                  <TableCell className="font-mono">${item.cost_per_lb.toLocaleString()}</TableCell>
-                  <TableCell className="font-mono">${item.value.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(item.status)}>
-                      {getStatusLabel(item.status)}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      ))}
-
-      {/* On Runners */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            🚗 On Runners (In Transit)
-            <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-              🟡 TRACK
-            </Badge>
-          </h2>
-          <div className="text-sm text-muted-foreground">
-            Active Deliveries: {activeDeliveries.length} | Current: 32 lbs | Value: $96k
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {activeDeliveries.map((delivery) => (
-            <div key={delivery.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Truck className="h-5 w-5 text-emerald-500" />
-                <div>
-                  <div className="font-medium">{delivery.runner}: {delivery.weight_lbs} lbs to {delivery.destination}</div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    ETA {delivery.eta}
+          {warehouses
+            .filter(w => selectedWarehouse === "all" || w.id === selectedWarehouse)
+            .map(warehouse => (
+              <Card key={warehouse.id} className="overflow-hidden">
+                <div className="p-4 border-b bg-muted/50 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      {warehouse.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">{warehouse.location}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium">{warehouse.current_stock_lbs} / {warehouse.capacity_lbs} lbs</div>
+                    <div className="text-xs text-muted-foreground">${warehouse.value.toLocaleString()} value</div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Strain</TableHead>
+                      <TableHead>Weight (lbs)</TableHead>
+                      <TableHead>Cost / lb</TableHead>
+                      <TableHead>Total Value</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {warehouse.inventory.length > 0 ? (
+                      warehouse.inventory.map((item: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell className="font-medium">{item.strain}</TableCell>
+                          <TableCell>{item.weight_lbs}</TableCell>
+                          <TableCell>${item.cost_per_lb.toLocaleString()}</TableCell>
+                          <TableCell>${item.value.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={getStatusColor(item.status)}>
+                              {getStatusLabel(item.status)}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                          No inventory in this warehouse
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
+            ))}
+
+          {warehouses.length === 0 && (
+            <Card className="p-8 text-center text-muted-foreground">
+              No inventory data found. Add stock to get started.
+            </Card>
+          )}
         </div>
 
-        <div className="flex gap-2 mt-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/admin/fleet-management')}
-          >
-            Track Live
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => showInfoToast("Calling Runners", "Calling all active runners")}
-          >
-            Call Runners
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/admin/delivery-management')}
-          >
-            Delivery Log
-          </Button>
+        {/* Sidebar Stats */}
+        <div className="space-y-6">
+          {/* Active Deliveries */}
+          <Card>
+            <div className="p-4 border-b">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                Active Deliveries
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
+              {activeDeliveries.length > 0 ? (
+                activeDeliveries.map(delivery => (
+                  <div key={delivery.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-sm">{delivery.runner}</div>
+                      <div className="text-xs text-muted-foreground">{delivery.destination}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                        {delivery.eta}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  No active deliveries
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Top Movers */}
+          <Card>
+            <div className="p-4 border-b">
+              <h3 className="font-semibold flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Top Movers (30 Days)
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
+              {topMovers.map((item, idx) => (
+                <div key={idx} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.strain}</span>
+                    <span className="text-emerald-500 font-medium">${item.profit.toLocaleString()} profit</span>
+                  </div>
+                  <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-emerald-500 h-full rounded-full"
+                      style={{ width: `${(item.lbs_moved / 150) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{item.lbs_moved} lbs moved</span>
+                    <span>${item.revenue.toLocaleString()} rev</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
 
       {/* Analytics */}
       <Card className="p-6">
@@ -280,11 +373,11 @@ export default function WholesaleInventory() {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button className="bg-emerald-500 hover:bg-emerald-600" size="sm">
+          <Button className="bg-emerald-500 hover:bg-emerald-600" size="sm" onClick={() => navigate('/admin/wholesale-orders')}>
             Generate Restock Order
           </Button>
-          <Button variant="outline" size="sm">Contact Supplier</Button>
-          <Button variant="outline" size="sm">View Trends</Button>
+          <Button variant="outline" size="sm" onClick={() => showInfoToast("Contact Supplier", "Supplier contact form coming soon")}>Contact Supplier</Button>
+          <Button variant="outline" size="sm" onClick={() => showInfoToast("View Trends", "Inventory trends analysis coming soon")}>View Trends</Button>
         </div>
       </Card>
     </div>

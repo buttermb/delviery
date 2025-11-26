@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
+import {
   BarChart3, FileText, Package, DollarSign, Download,
   Calendar, TrendingUp, Loader2, ArrowLeft
 } from 'lucide-react';
@@ -130,9 +130,9 @@ export default function ReportsPage() {
     <div className="container mx-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(-1)}
             className="mb-2"
           >
@@ -155,7 +155,7 @@ export default function ReportsPage() {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExport} data-tutorial="export-options" className="min-h-[44px] touch-manipulation text-sm sm:text-base flex-1 sm:flex-initial">
+          <Button onClick={handleExport} data-tutorial="export-options" className="min-h-[44px] touch-manipulation text-sm sm:text-base flex-1 sm:flex-initial min-w-[100px]">
             <Download className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Export</span>
             <span className="sm:hidden">Export</span>

@@ -23,11 +23,11 @@ export default function VendorLoginPage() {
     try {
       // Vendor authentication would go here
       // For now, this is a placeholder
-      logger.info('Vendor login attempt', { email: formData.email, component: 'VendorLoginPage' });
-      
+      logger.info('Vendor login attempt', { component: 'VendorLoginPage' });
+
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       toast.success("Login successful");
       navigate("/vendor/dashboard");
     } catch (error: unknown) {

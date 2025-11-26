@@ -98,40 +98,45 @@ section[id] {
     width: 100%;
     max-width: 100vw;
   }
+}
 
-  /* Ensure all containers respect viewport width */
-  * {
-    max-width: 100%;
+.smooth-scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure all containers respect viewport width */
+* {
+  max-width: 100%;
+}
+
+/* Ensure inputs are scrollable into view when keyboard opens */
+body {
+  position: relative;
+}
+
+/* Fix for iOS Safari viewport when keyboard opens */
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
   }
 
-  /* Ensure inputs are scrollable into view when keyboard opens */
   body {
-    position: relative;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
   }
+}
 
-  /* Fix for iOS Safari viewport when keyboard opens */
-  @supports (-webkit-touch-callout: none) {
-    html {
-      height: -webkit-fill-available;
-    }
-
-    body {
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-    }
-  }
-
-  /* REMOVED: All body.keyboard-open rules - they interfere with admin scroll
+/* REMOVED: All body.keyboard-open rules - they interfere with admin scroll
    * Main content containers handle their own scrolling independently
    */
 
-  /* Dialog content should be scrollable when keyboard opens */
-  body.keyboard-open [role="dialog"],
-  body.keyboard-open [data-radix-dialog-content] {
-    max-height: calc(100vh - 2rem);
-    overflow-y: auto;
-  }
+/* Dialog content should be scrollable when keyboard opens */
+body.keyboard-open [role="dialog"],
+body.keyboard-open [data-radix-dialog-content] {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
 }
+
 
 /* Smooth scrolling for mobile */
 @supports (-webkit-touch-callout: none) {
