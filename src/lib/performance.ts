@@ -154,15 +154,15 @@ export function requestIdleCallback(
   if ('requestIdleCallback' in window) {
     return window.requestIdleCallback(callback, options);
   }
-  // Fallback for Safari
-  return window.setTimeout(callback, options?.timeout || 1);
+  // Fallback for Safari - cast to any to avoid type errors
+  return (window as any).setTimeout(callback, options?.timeout || 1);
 }
 
 export function cancelIdleCallback(id: number): void {
   if ('cancelIdleCallback' in window) {
     window.cancelIdleCallback(id);
   } else {
-    window.clearTimeout(id);
+    (window as any).clearTimeout(id);
   }
 }
 

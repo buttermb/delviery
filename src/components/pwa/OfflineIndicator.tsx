@@ -34,11 +34,13 @@ export function OfflineIndicator({
       if (wasOffline) {
         setShowBanner(true);
         // Trigger sync when back online
-        if ('serviceWorker' in navigator && 'sync' in window.SyncManager) {
+        if ('serviceWorker' in navigator) {
           navigator.serviceWorker.ready.then((registration) => {
-            registration.sync.register('sync-queue').catch(() => {
-              // Background sync not available
-            });
+            if ('sync' in registration) {
+              (registration as any).sync.register('sync-queue').catch(() => {
+                // Background sync not available
+              });
+            }
           });
         }
         // Auto-hide after showing "back online"
@@ -77,7 +79,7 @@ export function OfflineIndicator({
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         if ('sync' in registration) {
-          await registration.sync.register('sync-queue');
+          await (registration as any).sync.register('sync-queue');
         }
       }
       

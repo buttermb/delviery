@@ -652,7 +652,7 @@ export default function WholesaleClients() {
                         });
                         
                         if (client.business_name && client.contact_name) {
-                          const { error } = await supabase.from('wholesale_clients').insert({
+                          const { error } = await supabase.from('wholesale_clients').insert([{
                             tenant_id: tenant.id,
                             business_name: String(client.business_name),
                             contact_name: String(client.contact_name),
@@ -660,8 +660,9 @@ export default function WholesaleClients() {
                             phone: String(client.phone || ''),
                             address: String(client.address || ''),
                             credit_limit: Number(client.credit_limit) || 0,
+                            client_type: 'wholesale',
                             status: 'active'
-                          });
+                          }]);
                           if (!error) imported++;
                         }
                       }
