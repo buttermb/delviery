@@ -82,6 +82,18 @@ export const STORAGE_KEYS = {
   SIDEBAR_CUSTOM_LAYOUT: 'sidebar_custom_layout',
   SIDEBAR_FAVORITES: 'sidebar_favorites',
   SIDEBAR_COLLAPSED_SECTIONS: 'sidebar_collapsed_sections',
+  
+  // PWA
+  PWA_DISMISS_DATE: 'pwa_dismiss_date',
+  PWA_INSTALLED: 'pwa_installed',
+  
+  // Feature tracking (Hotbox)
+  FEATURE_USAGE: 'feature_usage',
+  BUSINESS_TIER_OVERRIDE: 'business_tier_override',
+  
+  // Performance
+  NETWORK_QUALITY: 'network_quality',
+  REDUCED_MOTION: 'reduced_motion',
 } as const;
 
 /**
