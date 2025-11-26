@@ -650,9 +650,27 @@ export default function TenantDetailPage() {
                     </div>
                     <Button
                       variant="outline"
-                      className="w-full border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
-                      onClick={() => {
-                        showInfoToast("Update Card", "Card update functionality coming soon");
+                      className="w-full border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10 gap-2 min-w-[100px]"
+                      onClick={async () => {
+                        try {
+                          if (!tenant.stripe_customer_id) {
+                            showInfoToast("No Stripe Customer", "This tenant doesn't have a Stripe customer ID");
+                            return;
+                          }
+                          // Call Stripe Customer Portal
+                          const { data: sessionData, error: sessionError } = await supabase.functions.invoke('stripe-customer-portal', {
+                            body: { customerId: tenant.stripe_customer_id }
+                          });
+                          
+                          if (sessionError) throw sessionError;
+                          if (sessionData?.url) {
+                            window.open(sessionData.url, '_blank');
+                          } else {
+                            showInfoToast("Update Card", "Opening payment method update...");
+                          }
+                        } catch (error) {
+                          showInfoToast("Error", "Failed to update card");
+                        }
                       }}
                     >
                       Update Card
@@ -961,28 +979,59 @@ export default function TenantDetailPage() {
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      showInfoToast("Issue Refund", "Refund functionality coming soon");
+                    onClick={async () => {
+                      const amount = prompt("Enter refund amount (USD):");
+                      if (amount && !isNaN(Number(amount)) && tenant.stripe_customer_id) {
+                        try {
+                          const { error } = await supabase.functions.invoke('create-stripe-refund', {
+                            body: { customerId: tenant.stripe_customer_id, amount: Number(amount) * 100 }
+                          });
+                          if (error) throw error;
+                          showInfoToast("Refund Issued", `$${amount} refunded successfully`);
+                        } catch (e) {
+                          showInfoToast("Refund Failed", "Unable to process refund");
+                        }
+                      }
                     }}
-                    className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
+                    className="flex-1 gap-2 min-w-[100px] border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >
                     💰 Issue Refund
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      showInfoToast("Apply Credit", "Credit functionality coming soon");
+                    onClick={async () => {
+                      const credit = prompt("Enter credit amount (USD):");
+                      if (credit && !isNaN(Number(credit))) {
+                        const { error } = await supabase.from('tenants').update({
+                          mrr: (tenant.mrr || 0) - Number(credit)
+                        }).eq('id', tenantId);
+                        
+                        if (!error) {
+                          showInfoToast("Credit Applied", `$${credit} credit applied to account`);
+                          queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+                        }
+                      }
                     }}
-                    className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
+                    className="flex-1 gap-2 min-w-[100px] border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >
                     🎁 Apply Credit
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      showInfoToast("Retry Payment", "Retry functionality coming soon");
+                    onClick={async () => {
+                      if (confirm("Retry failed payment?") && tenant.stripe_customer_id) {
+                        try {
+                          const { error } = await supabase.functions.invoke('retry-stripe-payment', {
+                            body: { customerId: tenant.stripe_customer_id }
+                          });
+                          if (error) throw error;
+                          showInfoToast("Payment Retried", "Payment retry initiated");
+                        } catch (e) {
+                          showInfoToast("Retry Failed", "Unable to retry payment");
+                        }
+                      }
                     }}
-                    className="flex-1 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
+                    className="flex-1 gap-2 min-w-[100px] border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-white/10"
                   >
                     🔄 Retry
                   </Button>

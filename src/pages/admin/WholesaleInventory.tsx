@@ -138,15 +138,19 @@ export default function WholesaleInventory() {
           <p className="text-sm text-muted-foreground mt-1">Wholesale scale inventory tracking</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => showInfoToast("Move Stock", "Stock movement functionality coming soon")}>
-            <ArrowRightLeft className="h-4 w-4 mr-2" />
+          <Button 
+            variant="outline" 
+            className="gap-2 min-w-[100px]"
+            onClick={() => navigate('/admin/inventory-management')}
+          >
+            <ArrowRightLeft className="h-4 w-4" />
             Move Stock
           </Button>
           <Button
-            className="bg-emerald-500 hover:bg-emerald-600 min-w-[100px]"
-            onClick={() => showInfoToast("Add Stock", "Stock receiving functionality coming soon")}
+            className="bg-emerald-500 hover:bg-emerald-600 gap-2 min-w-[100px]"
+            onClick={() => navigate('/admin/inventory-management')}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             Add Stock
           </Button>
         </div>
@@ -373,11 +377,29 @@ export default function WholesaleInventory() {
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button className="bg-emerald-500 hover:bg-emerald-600" size="sm" onClick={() => navigate('/admin/wholesale-orders')}>
+          <Button 
+            className="bg-emerald-500 hover:bg-emerald-600 gap-2 min-w-[100px]" 
+            size="sm" 
+            onClick={() => navigate('/admin/wholesale-orders')}
+          >
             Generate Restock Order
           </Button>
-          <Button variant="outline" size="sm" onClick={() => showInfoToast("Contact Supplier", "Supplier contact form coming soon")}>Contact Supplier</Button>
-          <Button variant="outline" size="sm" onClick={() => showInfoToast("View Trends", "Inventory trends analysis coming soon")}>View Trends</Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 min-w-[100px]"
+            onClick={() => navigate('/admin/suppliers')}
+          >
+            Contact Supplier
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="gap-2 min-w-[100px]"
+            onClick={() => navigate('/admin/reports')}
+          >
+            View Trends
+          </Button>
         </div>
       </Card>
     </div>

@@ -75,7 +75,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
 
                 const { error } = await supabase.from('customers').insert(
                     batch.map(record => ({
-                        tenant_id: tenant.id,
+                        account_id: tenant.id,
                         first_name: record.first_name,
                         last_name: record.last_name,
                         email: record.email || null,
