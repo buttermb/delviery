@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +57,7 @@ interface Customer {
 
 export default function CustomerManagement() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, admin, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -323,7 +324,7 @@ export default function CustomerManagement() {
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
         <Button
-          onClick={() => navigate("/admin/customers/new")}
+          onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
           className="min-h-[44px] touch-manipulation flex-shrink-0"
         >
           <Plus className="w-4 h-4 mr-2" />

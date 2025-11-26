@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, ArrowUpRight, ArrowDownRight, Loader2, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFinancialSnapshot, useCashFlow, useCreditOut, useMonthlyPerformance, useCreatePaymentSchedule, useCreateCollectionActivity } from "@/hooks/useFinancialData";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export default function FinancialCenter() {
   const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantId = tenant?.id;
 
   // Enable realtime sync for payments and earnings
@@ -152,7 +153,7 @@ export default function FinancialCenter() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button size="sm" variant="outline" onClick={() => navigate("/admin/wholesale-clients")}>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/${tenantSlug}/admin/wholesale-clients`)}>
                 View Collections
               </Button>
             </div>
@@ -186,7 +187,7 @@ export default function FinancialCenter() {
               size="sm" 
               variant="outline" 
               className="mt-4"
-              onClick={() => navigate("/admin/wholesale-orders")}
+              onClick={() => navigate(`/${tenantSlug}/admin/wholesale-orders`)}
             >
               View Payables
             </Button>
@@ -238,13 +239,13 @@ export default function FinancialCenter() {
         <div className="flex gap-2 mt-4">
           <Button 
             className="bg-emerald-500 hover:bg-emerald-600"
-            onClick={() => navigate("/admin/wholesale-clients")}
+            onClick={() => navigate(`/${tenantSlug}/admin/wholesale-clients`)}
           >
             Collections Dashboard
           </Button>
           <Button 
             variant="outline"
-            onClick={() => navigate("/admin/reports")}
+            onClick={() => navigate(`/${tenantSlug}/admin/reports`)}
           >
             View Reports
           </Button>

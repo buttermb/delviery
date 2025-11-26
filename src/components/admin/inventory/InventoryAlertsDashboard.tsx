@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 interface InventoryAlert {
   id: string;
@@ -21,13 +22,18 @@ interface InventoryAlert {
 
 export function InventoryAlertsDashboard() {
   const queryClient = useQueryClient();
+  const { tenant } = useTenantAdminAuth();
 
   const { data: alerts, isLoading } = useQuery({
-    queryKey: ['inventory-alerts'],
+    queryKey: ['inventory-alerts', tenant?.id],
     queryFn: async () => {
+      if (!tenant?.id) return [];
+      
+      // @ts-ignore - Deep type instantiation issue
       const { data, error } = await supabase
         .from('inventory_alerts')
         .select('*')
+        .eq('tenant_id', tenant.id)
         .eq('is_resolved', false)
         .order('severity', { ascending: false })
         .order('created_at', { ascending: false });
@@ -35,7 +41,8 @@ export function InventoryAlertsDashboard() {
       if (error) throw error;
       return data as InventoryAlert[];
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: !!tenant?.id,
+    refetchInterval: 30000,
   });
 
   const resolveAlertMutation = useMutation({

@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';
 import {
@@ -159,6 +159,7 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function HotboxDashboard() {
   const { tenant, admin } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tier, preset, hasWidget, isLoading: tierLoading } = useTierDashboard();
   const {
     trackFeature,
@@ -447,7 +448,7 @@ export function HotboxDashboard() {
                 )}
                 onClick={() => {
                   trackFeature(action.id);
-                  navigate(action.path);
+                  navigate(`/${tenantSlug}${action.path}`);
                 }}
               >
                 <span className="shrink-0">{action.icon}</span>

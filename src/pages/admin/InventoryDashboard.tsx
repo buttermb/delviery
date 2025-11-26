@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Package,
   Warehouse,
@@ -47,6 +47,7 @@ interface LocationInventory {
 
 export default function InventoryDashboard() {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { admin, tenant, loading: authLoading } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
@@ -236,11 +237,11 @@ export default function InventoryDashboard() {
             </p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button className="flex-1 sm:flex-none">
+            <Button className="flex-1 sm:flex-none" onClick={() => navigate(`/${tenantSlug}/admin/catalog/batches`)}>
               <Plus className="h-4 w-4 mr-2" />
               New Batch
             </Button>
-            <Button variant="outline" className="flex-1 sm:flex-none">
+            <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => navigate(`/${tenantSlug}/admin/inventory/transfers`)}>
               <ArrowRightLeft className="h-4 w-4 mr-2" />
               Transfer
             </Button>
