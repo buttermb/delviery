@@ -294,7 +294,7 @@ export default function NewWholesaleOrder() {
                           <div>
                             <div className="font-medium">{product.product_name}</div>
                             <div className="text-xs text-muted-foreground">
-                              Stock: {product.quantity_lbs} lbs | ${product.price_per_lb}/lb
+                              Stock: {product.quantity_lbs} lbs | ${product.base_price}/lb
                             </div>
                           </div>
                           <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
@@ -400,8 +400,22 @@ export default function NewWholesaleOrder() {
                         New balance will be $158,000 - OVER LIMIT by $108,000
                       </div>
                       <div className="flex gap-2 mt-3">
-                        <Button size="sm" variant="outline" onClick={() => showSuccessToast("Request Sent", "Manager approval requested")}>Require Manager Approval</Button>
-                        <Button size="sm" variant="outline" onClick={() => showInfoToast("Adjust Limit", "Credit limit adjustment form coming soon")}>Adjust Credit Limit</Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="gap-2 min-w-[100px]"
+                          onClick={() => showSuccessToast("Request Sent", "Manager approval requested")}
+                        >
+                          Require Manager Approval
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="gap-2 min-w-[100px]"
+                          onClick={() => navigate(`/admin/clients/${orderData.clientId}`)}
+                        >
+                          Adjust Credit Limit
+                        </Button>
                       </div>
                     </div>
                   </div>

@@ -189,13 +189,39 @@ export default function TenantsListPage() {
           <h1 className="text-3xl font-bold">Tenants</h1>
           <p className="text-muted-foreground">Manage all customer accounts</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => showInfoToast("Export", "Exporting tenant list...")}>
-            <Download className="mr-2 h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2 min-w-[100px]"
+            onClick={() => {
+              const csv = [
+                ['Business Name', 'Email', 'Plan', 'Status', 'MRR', 'Created'].join(','),
+                ...tenants.map(t => [
+                  t.business_name,
+                  t.owner_email,
+                  t.subscription_plan,
+                  t.subscription_status,
+                  t.mrr || 0,
+                  t.created_at
+                ].join(','))
+              ].join('\n');
+              const blob = new Blob([csv], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `tenants-${new Date().toISOString().split('T')[0]}.csv`;
+              a.click();
+              showInfoToast("Export Complete", "Tenant list downloaded");
+            }}
+          >
+            <Download className="h-4 w-4" />
             Export
           </Button>
-          <Button onClick={() => navigate('/super-admin/tenants/new')}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button 
+            className="gap-2 min-w-[100px]"
+            onClick={() => navigate('/super-admin/tenants/new')}
+          >
+            <Plus className="h-4 w-4" />
             Create Tenant
           </Button>
         </div>
@@ -526,16 +552,47 @@ export default function TenantsListPage() {
             <CardContent className="flex items-center gap-4 py-3 px-6">
               <span className="font-medium">{selectedTenants.length} selected</span>
               <Separator orientation="vertical" className="h-6" />
-              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk change plan coming soon")}>
-                <CreditCard className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2 min-w-[100px]" onClick={async () => {
+                const selectedPlan = prompt("Enter new plan (starter, professional, enterprise):");
+                if (selectedPlan && ['starter', 'professional', 'enterprise'].includes(selectedPlan.toLowerCase())) {
+                  for (const tid of selectedTenants) {
+                    await supabase.from('tenants').update({ subscription_plan: selectedPlan.toLowerCase() }).eq('id', tid);
+                  }
+                  clearSelection();
+                  showInfoToast("Success", `${selectedTenants.length} tenants updated`);
+                }
+              }}>
+                <CreditCard className="h-4 w-4" />
                 Change Plan
               </Button>
-              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk suspend coming soon")}>
-                <Ban className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2 min-w-[100px]" onClick={async () => {
+                if (confirm(`Suspend ${selectedTenants.length} tenants?`)) {
+                  for (const tid of selectedTenants) {
+                    await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tid);
+                  }
+                  clearSelection();
+                  showInfoToast("Success", `${selectedTenants.length} tenants suspended`);
+                }
+              }}>
+                <Ban className="h-4 w-4" />
                 Suspend
               </Button>
-              <Button variant="outline" size="sm" onClick={() => showInfoToast("Bulk Action", "Bulk export coming soon")}>
-                <Download className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2 min-w-[100px]" onClick={() => {
+                const csv = [
+                  ['ID', 'Business Name', 'Email', 'Plan', 'Status', 'MRR'].join(','),
+                  ...tenants.filter(t => selectedTenants.includes(t.id)).map(t => [
+                    t.id, t.business_name, t.owner_email, t.subscription_plan, t.subscription_status, t.mrr || 0
+                  ].join(','))
+                ].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `selected-tenants-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                showInfoToast("Export Complete", `${selectedTenants.length} tenants exported`);
+              }}>
+                <Download className="h-4 w-4" />
                 Export
               </Button>
               <Button variant="ghost" size="sm" onClick={clearSelection}>
