@@ -1091,7 +1091,7 @@ export default function TenantDetailPage() {
               <CardContent>
                 {activityLogs && activityLogs.length > 0 ? (
                   <div className="space-y-3">
-                    {activityLogs.map((log: { id: string; action: string; created_at: string; details?: Record<string, unknown> }) => (
+                    {activityLogs.map((log: any) => (
                       <div key={log.id} className="flex items-start justify-between p-3 border border-white/10 rounded-lg">
                         <div className="space-y-1">
                           <p className="font-medium text-[hsl(var(--super-admin-text))]">
