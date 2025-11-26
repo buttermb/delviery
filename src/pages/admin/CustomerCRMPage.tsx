@@ -64,7 +64,7 @@ interface Customer {
 export default function CustomerCRMPage() {
   const { tenant } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
   const [searchTerm, setSearchTerm] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
   const [segmentFilter, setSegmentFilter] = useState<string>("all");
@@ -304,7 +304,7 @@ export default function CustomerCRMPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigate("/admin/crm/invoices/new")}>
+            <Card className="cursor-pointer hover:bg-muted/50" onClick={() => navigateToAdmin("crm/invoices/new")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Quick Action</CardTitle>
                 <Tag className="h-4 w-4 text-muted-foreground" />
@@ -332,13 +332,13 @@ export default function CustomerCRMPage() {
                 <CardDescription>Navigate to key areas</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2">
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/clients")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigateToAdmin("crm/clients")}>
                   <Users className="mr-2 h-4 w-4" /> Manage Clients
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/invoices")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigateToAdmin("crm/invoices")}>
                   <DollarSign className="mr-2 h-4 w-4" /> View Invoices
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/crm/pre-orders")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigateToAdmin("crm/pre-orders")}>
                   <TrendingUp className="mr-2 h-4 w-4" /> Manage Pre-Orders
                 </Button>
               </CardContent>
