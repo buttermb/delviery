@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CRMClient, ClientFormValues } from '@/types/crm';
 import { toast } from 'sonner';
-import { useAccountIdSafe } from './useAccountId';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 
 /**
@@ -20,7 +20,8 @@ export const crmClientKeys = {
  * Fetch all clients for current account
  */
 export function useClients(status?: 'active' | 'archived') {
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useQuery({
         queryKey: crmClientKeys.list(status || 'all'),
@@ -55,7 +56,8 @@ export function useClients(status?: 'active' | 'archived') {
  * Fetch a single client by ID
  */
 export function useClient(clientId: string | undefined) {
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useQuery({
         queryKey: crmClientKeys.detail(clientId || ''),
@@ -84,7 +86,8 @@ export function useClient(clientId: string | undefined) {
  */
 export function useCreateClient() {
     const queryClient = useQueryClient();
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useMutation({
         mutationFn: async (values: ClientFormValues & { account_id?: string }) => {
@@ -129,7 +132,8 @@ export function useCreateClient() {
  */
 export function useUpdateClient() {
     const queryClient = useQueryClient();
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useMutation({
         mutationFn: async ({ id, values }: { id: string; values: Partial<ClientFormValues> }) => {
@@ -174,7 +178,8 @@ export function useUpdateClient() {
  */
 export function useArchiveClient() {
     const queryClient = useQueryClient();
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useMutation({
         mutationFn: async (clientId: string) => {
@@ -214,7 +219,8 @@ export function useArchiveClient() {
  */
 export function useRestoreClient() {
     const queryClient = useQueryClient();
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useMutation({
         mutationFn: async (clientId: string) => {
@@ -253,7 +259,8 @@ export function useRestoreClient() {
  * Search clients by name, email, or phone
  */
 export function useSearchClients(searchTerm: string) {
-    const accountId = useAccountIdSafe();
+    const { tenant } = useTenantAdminAuth();
+    const accountId = tenant?.id;
 
     return useQuery({
         queryKey: [...crmClientKeys.lists(), 'search', searchTerm],

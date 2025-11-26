@@ -99,6 +99,7 @@ export default function CashRegister() {
         .insert({
           tenant_id: tenantId,
           total_amount: total,
+          subtotal: total,
           payment_method: paymentMethod,
           payment_status: 'completed',
           items: cart.map(item => ({
