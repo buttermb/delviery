@@ -65,7 +65,7 @@ export default function DeliveryTracking() {
       <div className="min-h-screen bg-background p-6">
         <div className="flex flex-col items-center justify-center h-96 space-y-4">
           <p className="text-muted-foreground">Delivery not found</p>
-          <Button onClick={() => navigate("/admin/fleet-management")}>
+          <Button onClick={() => navigate(`/${tenant?.slug}/admin/fleet-management`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Fleet Management
           </Button>
@@ -81,7 +81,7 @@ export default function DeliveryTracking() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate("/admin/fleet-management")}>
+          <Button variant="outline" onClick={() => navigate(`/${tenant?.slug}/admin/fleet-management`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>

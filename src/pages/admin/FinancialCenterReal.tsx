@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2 } from "lucide-react";
 import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { format, isToday, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import { PaymentDialog } from "@/components/admin/PaymentDialog";
 
 export default function FinancialCenterReal() {
   const navigate = useNavigate();
+  const { tenant } = useTenantAdminAuth();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
@@ -219,13 +221,13 @@ export default function FinancialCenterReal() {
         <div className="flex gap-2">
           <Button 
             className="bg-emerald-500 hover:bg-emerald-600"
-            onClick={() => navigate("/admin/wholesale-clients")}
+            onClick={() => navigate(`/${tenant?.slug}/admin/wholesale-clients`)}
           >
             Collections Dashboard
           </Button>
           <Button 
             variant="outline"
-            onClick={() => navigate("/admin/wholesale-clients")}
+            onClick={() => navigate(`/${tenant?.slug}/admin/wholesale-clients`)}
           >
             Send Reminders
           </Button>

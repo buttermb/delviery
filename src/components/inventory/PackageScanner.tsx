@@ -42,6 +42,13 @@ export function PackageScanner({
   const startScanning = async () => {
     if (!scannerRef.current) return;
 
+    // Check if we're on HTTPS (required for camera access)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      setError('Camera access requires HTTPS connection. Please use https:// in the URL.');
+      onScanError?.('HTTPS required for camera access');
+      return;
+    }
+
     try {
       const html5QrCode = new Html5Qrcode('scanner-container');
       
@@ -63,7 +70,21 @@ export function PackageScanner({
       setIsScanning(true);
       setError(null);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to start scanner';
+      let errorMsg = 'Failed to start scanner';
+      
+      if (err instanceof Error) {
+        errorMsg = err.message;
+        
+        // Provide user-friendly messages for common errors
+        if (errorMsg.includes('Permission denied') || errorMsg.includes('NotAllowedError')) {
+          errorMsg = 'Camera access denied. Please enable camera permissions in your browser settings and try again.';
+        } else if (errorMsg.includes('NotFoundError') || errorMsg.includes('NotReadableError')) {
+          errorMsg = 'No camera found or camera is in use by another app. Please close other apps using the camera and try again.';
+        } else if (errorMsg.includes('NotSupportedError')) {
+          errorMsg = 'Camera scanning is not supported on this device or browser. Please use a modern browser like Chrome, Safari, or Firefox.';
+        }
+      }
+      
       setError(errorMsg);
       setIsScanning(false);
       onScanError?.(errorMsg);

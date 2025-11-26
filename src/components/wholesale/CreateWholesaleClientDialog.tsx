@@ -39,18 +39,22 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
         setLoading(true);
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('wholesale_clients')
-                // @ts-ignore - tenant_id missing in generated types
                 .insert({
                     tenant_id: tenant.id,
                     business_name: formData.business_name,
                     contact_name: formData.contact_name,
                     email: formData.email,
                     phone: formData.phone,
-                    license_number: formData.license_number,
-                    payment_terms: formData.payment_terms,
+                    license_number: formData.license_number || 'PENDING',
+                    payment_terms: parseInt(formData.payment_terms === 'cod' ? '0' : formData.payment_terms === 'net_7' ? '7' : formData.payment_terms === 'net_15' ? '15' : '30'),
                     address: formData.address,
+                    client_type: 'retail',
+                    credit_limit: 0,
+                    outstanding_balance: 0,
+                    reliability_score: 100,
+                    monthly_volume: 0,
                     status: 'active',
                 })
                 .select()

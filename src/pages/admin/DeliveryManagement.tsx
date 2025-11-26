@@ -219,7 +219,7 @@ export default function DeliveryManagement() {
           <p className="text-sm text-muted-foreground">Manage deliveries and assign couriers</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/admin/order-management')}>
+          <Button variant="outline" onClick={() => navigate(`/${tenant?.slug}/admin/order-management`)}>
             View All Orders
           </Button>
         </div>
