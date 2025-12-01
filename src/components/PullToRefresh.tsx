@@ -15,42 +15,52 @@ export const PullToRefresh = ({ onRefresh, children }: PullToRefreshProps) => {
   const PULL_THRESHOLD = 80;
   const MAX_PULL = 120;
 
-  const handleTouchStart = (e: TouchEvent) => {
-    if (window.scrollY === 0) {
-      setTouchStart(e.touches[0].clientY);
-    }
-  };
+  // Use refs to access latest state in event handlers without re-binding listeners
+  const stateRef = useRef({ pullDistance, isRefreshing, touchStart, onRefresh });
 
-  const handleTouchMove = (e: TouchEvent) => {
-    if (touchStart === 0 || isRefreshing) return;
-
-    const touchY = e.touches[0].clientY;
-    const distance = touchY - touchStart;
-
-    if (distance > 0 && window.scrollY === 0) {
-      e.preventDefault();
-      setPullDistance(Math.min(distance * 0.5, MAX_PULL));
-    }
-  };
-
-  const handleTouchEnd = async () => {
-    if (pullDistance > PULL_THRESHOLD && !isRefreshing) {
-      setIsRefreshing(true);
-      try {
-        await onRefresh();
-      } finally {
-        setIsRefreshing(false);
-        setPullDistance(0);
-      }
-    } else {
-      setPullDistance(0);
-    }
-    setTouchStart(0);
-  };
+  useEffect(() => {
+    stateRef.current = { pullDistance, isRefreshing, touchStart, onRefresh };
+  }, [pullDistance, isRefreshing, touchStart, onRefresh]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        setTouchStart(e.touches[0].clientY);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const { touchStart, isRefreshing } = stateRef.current;
+      if (touchStart === 0 || isRefreshing) return;
+
+      const touchY = e.touches[0].clientY;
+      const distance = touchY - touchStart;
+
+      if (distance > 0 && window.scrollY === 0) {
+        if (e.cancelable) e.preventDefault();
+        setPullDistance(Math.min(distance * 0.5, MAX_PULL));
+      }
+    };
+
+    const handleTouchEnd = async () => {
+      const { pullDistance, isRefreshing, onRefresh } = stateRef.current;
+
+      if (pullDistance > PULL_THRESHOLD && !isRefreshing) {
+        setIsRefreshing(true);
+        try {
+          await onRefresh();
+        } finally {
+          setIsRefreshing(false);
+          setPullDistance(0);
+        }
+      } else {
+        setPullDistance(0);
+      }
+      setTouchStart(0);
+    };
 
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -61,8 +71,7 @@ export const PullToRefresh = ({ onRefresh, children }: PullToRefreshProps) => {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [touchStart, pullDistance, isRefreshing]);
+  }, []); // Empty dependency array - listeners bound once
 
   const rotation = (pullDistance / PULL_THRESHOLD) * 360;
   const opacity = Math.min(pullDistance / PULL_THRESHOLD, 1);

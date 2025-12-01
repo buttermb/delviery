@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function PasswordResetPage() {
   const { token } = useParams<{ token: string }>();
@@ -31,7 +32,7 @@ export default function PasswordResetPage() {
       // Try to detect user type from URL or token structure
       const path = window.location.pathname;
       let detectedType: "super_admin" | "tenant_admin" | "customer" = "tenant_admin";
-      
+
       if (path.includes("/super-admin/reset")) {
         detectedType = "super_admin";
       } else if (path.includes("/shop/reset")) {
@@ -39,7 +40,7 @@ export default function PasswordResetPage() {
       } else {
         detectedType = "tenant_admin";
       }
-      
+
       setUserType(detectedType);
 
       try {
@@ -55,12 +56,12 @@ export default function PasswordResetPage() {
             description: result.error || "This reset link is invalid or has expired",
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         setValid(false);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message || "Failed to verify reset token",
+        handleError(error, {
+          component: "PasswordResetPage.verifyToken",
+          toastTitle: "Error",
+          showToast: true
         });
       } finally {
         setVerifying(false);
@@ -96,7 +97,7 @@ export default function PasswordResetPage() {
     setLoading(true);
     try {
       const result = await resetPasswordWithToken(token, password, userType);
-      
+
       if (result.success) {
         setSuccess(true);
         toast({
@@ -125,11 +126,11 @@ export default function PasswordResetPage() {
           description: result.message,
         });
       }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to reset password",
+    } catch (error) {
+      handleError(error, {
+        component: "PasswordResetPage.handleSubmit",
+        toastTitle: "Error",
+        showToast: true
       });
     } finally {
       setLoading(false);

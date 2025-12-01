@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function Compliance() {
   const { tenant } = useTenantAdminAuth();
@@ -30,8 +31,9 @@ export default function Compliance() {
         if (error && error.code === 'PGRST116') return null;
         if (error) throw error;
         return data;
-      } catch (error: any) {
-        if (error.code === '42P01' || error.code === 'PGRST116') return null;
+      } catch (error) {
+        if ((error as any)?.code === '42P01' || (error as any)?.code === 'PGRST116') return null;
+        handleError(error, { component: 'Compliance', toastTitle: 'Failed to load compliance status' });
         throw error;
       }
     },
@@ -99,9 +101,8 @@ export default function Compliance() {
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className={`h-2 rounded-full ${
-                    compliancePercentage === 100 ? 'bg-primary' : compliancePercentage >= 80 ? 'bg-orange-500 dark:bg-orange-600' : 'bg-destructive'
-                  }`}
+                  className={`h-2 rounded-full ${compliancePercentage === 100 ? 'bg-primary' : compliancePercentage >= 80 ? 'bg-orange-500 dark:bg-orange-600' : 'bg-destructive'
+                    }`}
                   style={{ width: `${compliancePercentage}%` }}
                 />
               </div>

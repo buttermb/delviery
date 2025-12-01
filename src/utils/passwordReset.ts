@@ -5,6 +5,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { getErrorMessage } from "@/utils/errorHandling/typeGuards";
 
 /**
  * Request password reset for super admin
@@ -30,10 +31,10 @@ export async function requestSuperAdminPasswordReset(email: string): Promise<{ s
       success: true,
       message: "Password reset email sent. Please check your inbox.",
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: error.message || "Failed to request password reset",
+      message: getErrorMessage(error) || "Failed to request password reset",
     };
   }
 }
@@ -66,10 +67,10 @@ export async function requestTenantAdminPasswordReset(
       success: true,
       message: "Password reset email sent. Please check your inbox.",
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: error.message || "Failed to request password reset",
+      message: getErrorMessage(error) || "Failed to request password reset",
     };
   }
 }
@@ -102,10 +103,10 @@ export async function requestCustomerPasswordReset(
       success: true,
       message: "Password reset email sent. Please check your inbox.",
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: error.message || "Failed to request password reset",
+      message: getErrorMessage(error) || "Failed to request password reset",
     };
   }
 }
@@ -140,10 +141,10 @@ export async function resetPasswordWithToken(
       success: true,
       message: "Password reset successfully. You can now log in with your new password.",
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: error.message || "Failed to reset password",
+      message: getErrorMessage(error) || "Failed to reset password",
     };
   }
 }
@@ -180,10 +181,10 @@ export async function verifyResetToken(
       valid: true,
       email: data.email,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       valid: false,
-      error: error.message || "Failed to verify token",
+      error: getErrorMessage(error) || "Failed to verify token",
     };
   }
 }

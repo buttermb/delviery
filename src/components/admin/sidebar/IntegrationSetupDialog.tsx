@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -137,41 +138,41 @@ export function IntegrationSetupDialog({
 
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      
+
       // For Mapbox (public token), store in tenant settings for runtime access
       if (integrationId === 'mapbox' && formData['VITE_MAPBOX_TOKEN']) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
-        
+
         // Get tenant ID from tenant_users table
         const { data: tenantUser } = await supabase
           .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
-          .single();
-        
+          .maybeSingle();
+
         if (!tenantUser) throw new Error('Tenant not found');
-        
+
         const { data: account, error: accountError } = await supabase
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
-          .single();
-        
+          .maybeSingle();
+
         let accountId = account?.id as string | undefined;
-        
+
         // If no account exists yet for this tenant, create a minimal one so settings can be stored
         if (accountError || !accountId) {
           const { data: tenant } = await supabase
             .from('tenants')
             .select('id, business_name, slug')
             .eq('id', tenantUser.tenant_id)
-            .single();
-          
+            .maybeSingle();
+
           if (!tenant) {
             throw new Error('Unable to resolve tenant to create billing account');
           }
-          
+
           const { data: newAccount, error: createError } = await supabase
             .from('accounts')
             .insert({
@@ -180,42 +181,42 @@ export function IntegrationSetupDialog({
               tenant_id: (tenant as any).id,
             })
             .select('id')
-            .single();
-          
-      if (createError || !newAccount) {
-        console.error('Failed to create account', createError);
-        const code = (createError as any)?.code;
-        const hint =
-          code === '42501'
-            ? 'Permission denied – your user may not have rights to create billing accounts.'
-            : code === '23505'
-            ? 'An account might already exist for this tenant.'
-            : undefined;
+            .maybeSingle();
 
-        throw new Error(
-          hint
-            ? `Unable to create billing account for tenant. ${hint}`
-            : 'Unable to create billing account for tenant'
-        );
-      }
-          
+          if (createError || !newAccount) {
+            logger.error('Failed to create account', createError instanceof Error ? createError : new Error(String(createError)), { component: 'IntegrationSetupDialog' });
+            const code = (createError as any)?.code;
+            const hint =
+              code === '42501'
+                ? 'Permission denied – your user may not have rights to create billing accounts.'
+                : code === '23505'
+                  ? 'An account might already exist for this tenant.'
+                  : undefined;
+
+            throw new Error(
+              hint
+                ? `Unable to create billing account for tenant. ${hint}`
+                : 'Unable to create billing account for tenant'
+            );
+          }
+
           accountId = newAccount.id;
         }
-        
+
         // Get existing settings to merge with new token
         const { data: existingSettings } = await supabase
           .from('account_settings')
           .select('integration_settings')
           .eq('account_id', accountId)
-          .single();
-        
+          .maybeSingle();
+
         // Merge existing integration settings with new mapbox token
         const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
         const updatedSettings = {
           ...currentSettings,
           mapbox_token: formData['VITE_MAPBOX_TOKEN']
         };
-        
+
         // Update or create account_settings with merged integration settings
         const { error: settingsError } = await supabase
           .from('account_settings')
@@ -226,43 +227,43 @@ export function IntegrationSetupDialog({
             onConflict: 'account_id',
             ignoreDuplicates: false
           });
-          
+
         if (settingsError) throw settingsError;
       } else if (integrationId === 'stripe') {
         // Store tenant's own Stripe credentials for customer payments
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
-        
+
         const { data: tenantUser } = await supabase
           .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
-          .single();
-        
+          .maybeSingle();
+
         if (!tenantUser) throw new Error('Tenant not found');
-        
+
         const { data: account } = await supabase
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
-          .single();
-        
+          .maybeSingle();
+
         if (!account) throw new Error('Account not found');
-        
+
         // Get existing settings to merge with new Stripe keys
         const { data: existingSettings } = await supabase
           .from('account_settings')
           .select('integration_settings')
           .eq('account_id', account.id)
-          .single();
-        
+          .maybeSingle();
+
         const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
         const updatedSettings = {
           ...currentSettings,
           stripe_secret_key: formData['TENANT_STRIPE_SECRET_KEY'],
           stripe_publishable_key: formData['TENANT_STRIPE_PUBLISHABLE_KEY']
         };
-        
+
         const { error: settingsError } = await supabase
           .from('account_settings')
           .upsert({
@@ -272,7 +273,7 @@ export function IntegrationSetupDialog({
             onConflict: 'account_id',
             ignoreDuplicates: false
           });
-          
+
         if (settingsError) throw settingsError;
       } else {
         // For customer-configurable integrations (Twilio, SendGrid)
@@ -280,12 +281,12 @@ export function IntegrationSetupDialog({
         toast.info('Customer secret storage coming soon - this feature allows your customers to add their own credentials');
         return;
       }
-      
+
       toast.success(`${integrationName} configured successfully`);
       onSetupComplete();
       onOpenChange(false);
     } catch (error) {
-      console.error('Setup error:', error);
+      logger.error('Setup error:', error instanceof Error ? error : new Error(String(error)), { component: 'IntegrationSetupDialog' });
       toast.error(`Failed to configure integration: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
@@ -299,7 +300,7 @@ export function IntegrationSetupDialog({
     try {
       // Call the appropriate check function
       const { supabase } = await import('@/integrations/supabase/client');
-      
+
       let result;
       switch (integrationId) {
         case 'stripe':
@@ -347,7 +348,7 @@ export function IntegrationSetupDialog({
         <DialogHeader>
           <DialogTitle>Configure {integrationName}</DialogTitle>
           <DialogDescription>
-            {integrationId === 'stripe' 
+            {integrationId === 'stripe'
               ? 'Enter your own Stripe API keys to accept payments from your customers. This is separate from the platform subscription billing.'
               : `Enter your ${integrationName} credentials to enable this integration.`}
           </DialogDescription>

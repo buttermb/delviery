@@ -16,6 +16,7 @@ import { OperationSizeSelector } from "@/components/admin/sidebar/OperationSizeS
 import { SidebarCustomizer } from "@/components/admin/sidebar/SidebarCustomizer";
 import { TwoFactorSetup } from "@/components/auth/TwoFactorSetup";
 import { ShieldCheck } from "lucide-react";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function TenantAdminSettingsPage() {
   const { admin, tenant } = useTenantAdminAuth();
@@ -97,12 +98,8 @@ export default function TenantAdminSettingsPage() {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update password",
-        variant: "destructive",
-      });
+    } catch (error) {
+      handleError(error, { component: 'SettingsPage', toastTitle: 'Failed to update password' });
     } finally {
       setLoading(false);
     }

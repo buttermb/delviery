@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Mail, Check, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
@@ -83,12 +84,8 @@ export default function VerifyEmailPage() {
           navigate('/signup');
         }
       }
-    } catch (error: any) {
-      toast({
-        title: 'Verification Failed',
-        description: error.message || 'Invalid verification code',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'VerifyEmailPage', toastTitle: 'Verification Failed' });
     } finally {
       setIsVerifying(false);
     }
@@ -107,12 +104,8 @@ export default function VerifyEmailPage() {
         title: 'Code Resent',
         description: 'Check your email for the new verification code',
       });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to Resend',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'VerifyEmailPage', toastTitle: 'Failed to Resend' });
     }
   };
 

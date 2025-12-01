@@ -6,30 +6,30 @@ Complete navigation guide for all BigMike Platform documentation.
 
 **New to the project? Start here:**
 
-1. **[Getting Started Guide](./GETTING_STARTED.md)** - 🚀 **START HERE** - 5-minute onboarding
-2. **[Rules Quick Reference](./RULES_QUICK_REFERENCE.md)** - ⚡ One-page cheat sheet
-3. **[Ultimate Rulebook](./ULTIMATE_RULEBOOK.md)** - ⭐ Complete error-prevention guide
+1. **[Getting Started Guide](./guides/GETTING_STARTED.md)** - 🚀 **START HERE** - 5-minute onboarding
+2. **[Rules Quick Reference](./guides/RULES_QUICK_REFERENCE.md)** - ⚡ One-page cheat sheet
+3. **[Ultimate Rulebook](./architecture/ULTIMATE_RULEBOOK.md)** - ⭐ Complete error-prevention guide
 
 ## 📚 Core Documentation
 
 ### Rules & Best Practices
-- **[Ultimate Rulebook](./ULTIMATE_RULEBOOK.md)** - Complete 14-section guide
-- **[Rules Quick Reference](./RULES_QUICK_REFERENCE.md)** - Quick reference card
-- **[Complete Rules Reference](./COMPLETE_RULES_REFERENCE.md)** - All rules consolidated
-- **[Rules System Summary](./RULES_SYSTEM_SUMMARY.md)** - System overview
+- **[Ultimate Rulebook](./architecture/ULTIMATE_RULEBOOK.md)** - Complete 14-section guide
+- **[Rules Quick Reference](./guides/RULES_QUICK_REFERENCE.md)** - Quick reference card
+- **[Complete Rules Reference](./archive/COMPLETE_RULES_REFERENCE.md)** - All rules consolidated
+- **[Rules System Summary](./archive/RULES_SYSTEM_SUMMARY.md)** - System overview
 
 ### Domain-Specific Guides
-- **[Admin Panel Rules](./ADMIN_PANEL_RULES.md)** - Admin panel patterns
-- **[Admin Panel Checklist](./ADMIN_PANEL_CHECKLIST.md)** - Quick validation
-- **[Schema & Edge Function Rules](./SCHEMA_EDGE_FUNCTION_RULES.md)** - Database & API patterns
-- **[Supabase Rules](./SUPABASE_RULES.md)** - Supabase-specific rules
+- **[Admin Panel Rules](./architecture/ADMIN_PANEL_RULES.md)** - Admin panel patterns
+- **[Admin Panel Checklist](./archive/ADMIN_PANEL_CHECKLIST.md)** - Quick validation
+- **[Schema & Edge Function Rules](./architecture/SCHEMA_EDGE_FUNCTION_RULES.md)** - Database & API patterns
+- **[Supabase Rules](./architecture/SUPABASE_RULES.md)** - Supabase-specific rules
 
 ### Tenant Isolation
-- **[Tenant Isolation Quick Start](./TENANT_ISOLATION_QUICK_START.md)** - Get started in 5 minutes
-- **[Tenant Isolation Guide](./TENANT_ISOLATION.md)** - Complete system documentation
-- **[Tenant Isolation Migration Guide](./TENANT_ISOLATION_MIGRATION_GUIDE.md)** - Migrate existing code
-- **[Tenant Isolation Rules Compliance](./TENANT_ISOLATION_RULES_COMPLIANCE.md)** - Rules verification
-- **[Tenant Isolation Summary](./TENANT_ISOLATION_SUMMARY.md)** - System summary
+- **[Tenant Isolation Quick Start](./guides/TENANT_ISOLATION_QUICK_START.md)** - Get started in 5 minutes
+- **[Tenant Isolation Guide](./architecture/TENANT_ISOLATION.md)** - Complete system documentation
+- **[Tenant Isolation Migration Guide](./guides/TENANT_ISOLATION_MIGRATION_GUIDE.md)** - Migrate existing code
+- **[Tenant Isolation Rules Compliance](./archive/TENANT_ISOLATION_RULES_COMPLIANCE.md)** - Rules verification
+- **[Tenant Isolation Summary](./archive/TENANT_ISOLATION_SUMMARY.md)** - System summary
 
 ## 🛠️ Tools & Templates
 
@@ -52,51 +52,51 @@ Complete navigation guide for all BigMike Platform documentation.
 ## 🆘 Help & Support
 
 ### Troubleshooting
-- **[Troubleshooting Guide](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Troubleshooting Guide](./archive/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[FAQ](./FAQ.md)** - Frequently asked questions
 
 ### Quick Links
-- **[README_RULES.md](../README_RULES.md)** - Rules system entry point
+- **[README_RULES.md](../archive/README_RULES.md)** - Rules system entry point
 - **[DEVELOPMENT.md](../DEVELOPMENT.md)** - Development guide
 
 ## 📖 Documentation by Topic
 
 ### Frontend Development
-- [Ultimate Rulebook - React Section](./ULTIMATE_RULEBOOK.md#2-react--shadcn-rules)
+- [Ultimate Rulebook - React Section](./architecture/ULTIMATE_RULEBOOK.md#2-react--shadcn-rules)
 - [Component Template](./templates/ComponentTemplate.tsx)
 - [React Query Hook Template](./templates/ReactQueryHookTemplate.ts)
 
 ### Backend Development
-- [Ultimate Rulebook - Edge Functions](./ULTIMATE_RULEBOOK.md#5-edge-function-rules)
-- [Schema & Edge Function Rules](./SCHEMA_EDGE_FUNCTION_RULES.md)
+- [Ultimate Rulebook - Edge Functions](./architecture/ULTIMATE_RULEBOOK.md#5-edge-function-rules)
+- [Schema & Edge Function Rules](./architecture/SCHEMA_EDGE_FUNCTION_RULES.md)
 - [Edge Function Template](./templates/EdgeFunctionTemplate.ts)
 
 ### Database
-- [Ultimate Rulebook - Database Section](./ULTIMATE_RULEBOOK.md#4-database--schema-rules)
-- [Schema & Edge Function Rules](./SCHEMA_EDGE_FUNCTION_RULES.md)
+- [Ultimate Rulebook - Database Section](./architecture/ULTIMATE_RULEBOOK.md#4-database--schema-rules)
+- [Schema & Edge Function Rules](./architecture/SCHEMA_EDGE_FUNCTION_RULES.md)
 - [Migration Template](./templates/MigrationTemplate.sql)
 
 ### Security
-- [Ultimate Rulebook - Security Section](./ULTIMATE_RULEBOOK.md#6-security-rules)
-- [Tenant Isolation Guide](./TENANT_ISOLATION.md)
-- [Rules Compliance](./TENANT_ISOLATION_RULES_COMPLIANCE.md)
+- [Ultimate Rulebook - Security Section](./architecture/ULTIMATE_RULEBOOK.md#6-security-rules)
+- [Tenant Isolation Guide](./architecture/TENANT_ISOLATION.md)
+- [Rules Compliance](./archive/TENANT_ISOLATION_RULES_COMPLIANCE.md)
 
 ### Multi-Tenant
-- [Tenant Isolation Guide](./TENANT_ISOLATION.md)
-- [Tenant Isolation Quick Start](./TENANT_ISOLATION_QUICK_START.md)
-- [Tenant Isolation Migration Guide](./TENANT_ISOLATION_MIGRATION_GUIDE.md)
+- [Tenant Isolation Guide](./architecture/TENANT_ISOLATION.md)
+- [Tenant Isolation Quick Start](./guides/TENANT_ISOLATION_QUICK_START.md)
+- [Tenant Isolation Migration Guide](./guides/TENANT_ISOLATION_MIGRATION_GUIDE.md)
 
 ## 🎯 Quick Navigation
 
 ### I want to...
-- **Start developing** → [Getting Started](./GETTING_STARTED.md)
-- **Check rules** → [Rules Quick Reference](./RULES_QUICK_REFERENCE.md)
+- **Start developing** → [Getting Started](./guides/GETTING_STARTED.md)
+- **Check rules** → [Rules Quick Reference](./guides/RULES_QUICK_REFERENCE.md)
 - **Create a component** → [Component Template](./templates/ComponentTemplate.tsx)
 - **Create an Edge Function** → [Edge Function Template](./templates/EdgeFunctionTemplate.ts)
-- **Fix an error** → [Troubleshooting Guide](./TROUBLESHOOTING.md)
+- **Fix an error** → [Troubleshooting Guide](./archive/TROUBLESHOOTING.md)
 - **Validate my code** → `bash scripts/check-rules-compliance.sh`
-- **Understand tenant isolation** → [Tenant Isolation Guide](./TENANT_ISOLATION.md)
-- **See all rules** → [Ultimate Rulebook](./ULTIMATE_RULEBOOK.md)
+- **Understand tenant isolation** → [Tenant Isolation Guide](./architecture/TENANT_ISOLATION.md)
+- **See all rules** → [Ultimate Rulebook](./architecture/ULTIMATE_RULEBOOK.md)
 
 ## 📊 Documentation Stats
 

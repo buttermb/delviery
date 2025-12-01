@@ -58,7 +58,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                     status: 'active',
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
 

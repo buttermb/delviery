@@ -42,7 +42,7 @@ serve(async (req) => {
         status: 'pending'
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (raError) throw raError;
 
@@ -82,12 +82,12 @@ serve(async (req) => {
         .from('wholesale_clients')
         .select('outstanding_balance')
         .eq('id', customer_id)
-        .single();
+        .maybeSingle();
 
       if (client) {
         await supabaseClient
           .from('wholesale_clients')
-          .update({ 
+          .update({
             outstanding_balance: Math.max(0, client.outstanding_balance - refundAmount)
           })
           .eq('id', customer_id);
@@ -95,8 +95,8 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         return_authorization_id: ra.id,
         ra_number: ra.ra_number,
         refund_amount: refundAmount

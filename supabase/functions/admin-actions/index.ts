@@ -55,7 +55,7 @@ serve(async (req) => {
       .select("*")
       .eq("user_id", user.id)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
     if (!adminUser) {
       return new Response(
@@ -85,7 +85,7 @@ serve(async (req) => {
         })
         .eq("id", orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(
@@ -111,7 +111,7 @@ serve(async (req) => {
           .from("orders")
           .select("user_id, courier_id, order_number")
           .eq("id", orderId)
-          .single();
+          .maybeSingle();
 
         if (orderDetails) {
           // Notify customer
@@ -158,8 +158,8 @@ serve(async (req) => {
       await logAdminAction(supabase, adminUser.id, "CANCEL_ORDER", "order", orderId, { reason }, req);
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           order,
           message: "Order cancelled. Inventory will be automatically restored. Notifications sent to customer and courier."
         }),
@@ -184,7 +184,7 @@ serve(async (req) => {
         })
         .eq("id", orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(
@@ -249,7 +249,7 @@ serve(async (req) => {
         .from("orders")
         .select("*")
         .eq("id", orderId)
-        .single();
+        .maybeSingle();
 
       if (fetchError || !orderData) {
         return new Response(
@@ -265,7 +265,7 @@ serve(async (req) => {
           .from("addresses")
           .select("*")
           .eq("id", orderData.address_id)
-          .single();
+          .maybeSingle();
         addressData = addr;
       }
 
@@ -276,7 +276,7 @@ serve(async (req) => {
         .eq("is_active", true)
         .eq("is_online", true)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       // Update order to accepted status
       const { data: order, error: updateError } = await supabase
@@ -288,7 +288,7 @@ serve(async (req) => {
         })
         .eq("id", orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(
@@ -326,7 +326,7 @@ serve(async (req) => {
       await supabase.from("order_tracking").insert({
         order_id: orderId,
         status: "accepted",
-        message: courier 
+        message: courier
           ? `Order accepted and assigned to ${courier.full_name}`
           : "Order accepted, awaiting courier assignment",
       });
@@ -357,7 +357,7 @@ serve(async (req) => {
         })
         .eq("id", orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(
@@ -398,7 +398,7 @@ serve(async (req) => {
         })
         .eq("user_id", userId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(
@@ -418,7 +418,7 @@ serve(async (req) => {
     // ==================== ASSIGN COURIER ====================
     if (action === "assign-courier") {
       const { courierId } = details || {};
-      
+
       if (!orderId || !courierId) {
         return new Response(
           JSON.stringify({ error: "Order ID and Courier ID required" }),
@@ -434,7 +434,7 @@ serve(async (req) => {
         })
         .eq("id", orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         return new Response(

@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,7 +26,7 @@ export function LiveActivityFeed() {
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_access_logs' }, (payload) => {
                 // Validate payload
                 if (!payload?.new || typeof payload.new !== 'object') {
-                    console.warn('Invalid access log payload');
+                    logger.warn('Invalid access log payload', { payload });
                     return;
                 }
                 addActivity({
@@ -39,7 +39,7 @@ export function LiveActivityFeed() {
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_orders' }, (payload) => {
                 if (!payload?.new || typeof payload.new !== 'object') {
-                    console.warn('Invalid order payload');
+                    logger.warn('Invalid order payload', { payload });
                     return;
                 }
                 addActivity({
@@ -51,7 +51,7 @@ export function LiveActivityFeed() {
             })
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'menu_security_events' }, (payload) => {
                 if (!payload?.new || typeof payload.new !== 'object') {
-                    console.warn('Invalid security event payload');
+                    logger.warn('Invalid security event payload', { payload });
                     return;
                 }
                 addActivity({
@@ -63,7 +63,7 @@ export function LiveActivityFeed() {
             })
             .subscribe((status) => {
                 if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-                    console.error('Activity feed subscription error:', status);
+                    logger.error('Activity feed subscription error:', new Error(status), { component: 'LiveActivityFeed' });
                 }
             });
 

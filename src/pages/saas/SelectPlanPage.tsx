@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface Plan {
   id: string;
@@ -101,7 +102,7 @@ export default function SelectPlanPage() {
         .from("subscription_plans")
         .select("*")
         .eq("id", planId)
-        .single();
+        .maybeSingle();
 
       if (!plans) {
         throw new Error("Plan not found");
@@ -123,9 +124,8 @@ export default function SelectPlanPage() {
       } else {
         throw new Error("No checkout URL received");
       }
-    } catch (error: any) {
-      logger.error("Error starting trial:", error, { component: 'SelectPlanPage' });
-      toast.error(error.message || "Failed to start trial");
+    } catch (error) {
+      handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to start trial' });
       setLoading(null);
     }
   };

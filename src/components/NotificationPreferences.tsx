@@ -25,40 +25,39 @@ export function NotificationPreferences() {
   });
 
   useEffect(() => {
-    loadPreferences();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    const loadPreferences = async () => {
+      if (!user) return;
 
-  const loadPreferences = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("notification_preferences")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!error && data) {
-      setPrefs(data);
-    } else if (!data) {
-      // Create default preferences
-      const { data: newPrefs, error: insertError } = await supabase
+      setLoading(true);
+      const { data, error } = await supabase
         .from("notification_preferences")
-        .insert({ user_id: user.id })
-        .select()
+        .select("*")
+        .eq("user_id", user.id)
         .maybeSingle();
-      
-      if (!insertError && newPrefs) {
-        setPrefs(newPrefs);
+
+      if (!error && data) {
+        setPrefs(data);
+      } else if (!data) {
+        // Create default preferences
+        const { data: newPrefs, error: insertError } = await supabase
+          .from("notification_preferences")
+          .insert({ user_id: user.id })
+          .select()
+          .maybeSingle();
+
+        if (!insertError && newPrefs) {
+          setPrefs(newPrefs);
+        }
       }
-    }
-    setLoading(false);
-  };
+      setLoading(false);
+    };
+
+    loadPreferences();
+  }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     setSaving(true);
     const { error } = await supabase
       .from("notification_preferences")

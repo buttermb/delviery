@@ -20,6 +20,8 @@ interface QuickExportProps {
   onExportComplete?: () => void;
 }
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export default function AdminQuickExport({ onExportComplete }: QuickExportProps) {
   const [exportType, setExportType] = useState<'orders' | 'users' | 'products'>('orders');
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all' | 'custom'>('month');
@@ -131,12 +133,8 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       });
 
       onExportComplete?.();
-    } catch (error: any) {
-      toast({
-        title: 'Export failed',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'AdminQuickExport', toastTitle: 'Export failed' });
     }
   };
 

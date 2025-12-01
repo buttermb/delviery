@@ -27,7 +27,7 @@ serve(
       }
 
       const token = authHeader.replace('Bearer ', '');
-      
+
       // Verify super admin token (using super-admin-auth function logic)
       // For now, we'll verify by checking super_admin_users table
       let user = null;
@@ -38,7 +38,7 @@ serve(
         // If getUser fails, user remains null
         user = null;
       }
-      
+
       if (!user) {
         // Try custom JWT verification for super admin
         // This is a simplified check - in production, use proper JWT verification
@@ -47,7 +47,7 @@ serve(
           .select('id, email, role')
           .eq('status', 'active')
           .maybeSingle();
-        
+
         if (!superAdmin) {
           return new Response(
             JSON.stringify({ error: 'Unauthorized - Super admin access required' }),
@@ -62,7 +62,7 @@ serve(
           .eq('user_id', user.id)
           .eq('status', 'active')
           .maybeSingle();
-        
+
         if (!superAdmin) {
           return new Response(
             JSON.stringify({ error: 'Unauthorized - Super admin access required' }),
@@ -80,7 +80,7 @@ serve(
         .from('tenants')
         .select('id, business_name, slug, subscription_plan, subscription_status, status')
         .eq('id', tenant_id)
-        .single();
+        .maybeSingle();
 
       if (tenantError || !tenant) {
         return new Response(
@@ -212,8 +212,8 @@ serve(
     } catch (error) {
       console.error('Impersonation error:', error);
       return new Response(
-        JSON.stringify({ 
-          error: error instanceof Error ? error.message : 'Failed to impersonate tenant' 
+        JSON.stringify({
+          error: error instanceof Error ? error.message : 'Failed to impersonate tenant'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

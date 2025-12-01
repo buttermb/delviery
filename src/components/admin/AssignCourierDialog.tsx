@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
 import {
@@ -49,35 +50,38 @@ export const AssignCourierDialog = ({
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const { toast } = useToast();
+  const { tenant } = useTenantAdminAuth();
 
   useEffect(() => {
-    if (open) {
+    const fetchAvailableCouriers = async () => {
+      if (!tenant?.id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("couriers")
+          .select("*")
+          .eq("is_active", true)
+          .eq("tenant_id", tenant.id) // Filter by tenant for multi-tenant isolation
+          .order("is_online", { ascending: false });
+
+        if (error) throw error;
+        setCouriers(data || []);
+      } catch (error) {
+        logger.error("Failed to fetch couriers:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load available couriers",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (open && tenant?.id) {
       fetchAvailableCouriers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  const fetchAvailableCouriers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("couriers")
-        .select("*")
-        .eq("is_active", true)
-        .order("is_online", { ascending: false });
-
-      if (error) throw error;
-      setCouriers(data || []);
-    } catch (error) {
-      logger.error("Failed to fetch couriers:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load available couriers",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, toast, tenant?.id]);
 
   const handleAssign = async () => {
     if (!selectedCourierId) {
@@ -92,7 +96,7 @@ export const AssignCourierDialog = ({
     setAssigning(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         throw new Error("Not authenticated");
       }
@@ -138,7 +142,7 @@ export const AssignCourierDialog = ({
     setAssigning(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         throw new Error("Not authenticated");
       }

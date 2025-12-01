@@ -38,7 +38,7 @@ export function TenantStripeConfig() {
         .from("accounts")
         .select("id")
         .eq("tenant_id", tenantId)
-        .single();
+        .maybeSingle();
 
       if (!account) return;
 
@@ -46,7 +46,7 @@ export function TenantStripeConfig() {
         .from("account_settings")
         .select("integration_settings")
         .eq("account_id", account.id)
-        .single();
+        .maybeSingle();
 
       if (settings?.integration_settings) {
         const integrationSettings = settings.integration_settings as any;
@@ -67,7 +67,7 @@ export function TenantStripeConfig() {
 
   const testConnection = async (secretKey?: string, silent = false) => {
     const keyToTest = secretKey || config.secretKey;
-    
+
     if (!keyToTest) {
       toast({
         title: "Missing API Key",
@@ -100,19 +100,19 @@ export function TenantStripeConfig() {
         setConnectionStatus("connected");
         setStatusMessage(data.testMode ? "Connected (Test Mode)" : "Connected (Live Mode)");
         setIsTestMode(data.testMode);
-        
+
         if (!silent) {
           toast({
             title: "✅ Connection Successful",
-            description: data.testMode 
-              ? "Test mode credentials verified successfully" 
+            description: data.testMode
+              ? "Test mode credentials verified successfully"
               : "Live mode credentials verified successfully",
           });
         }
       } else {
         setConnectionStatus("error");
         setStatusMessage(data.error || "Connection failed");
-        
+
         if (!silent) {
           toast({
             title: "Connection Failed",
@@ -124,7 +124,7 @@ export function TenantStripeConfig() {
     } catch (error: any) {
       setConnectionStatus("error");
       setStatusMessage(error.message || "Connection test failed");
-      
+
       if (!silent) {
         toast({
           title: "Connection Error",
@@ -186,7 +186,7 @@ export function TenantStripeConfig() {
         .from("accounts")
         .select("id")
         .eq("tenant_id", tenantId)
-        .single();
+        .maybeSingle();
 
       if (accountError || !account) throw new Error("Account not found");
 

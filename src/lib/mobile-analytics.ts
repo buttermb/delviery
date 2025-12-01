@@ -34,8 +34,12 @@ export const mobileAnalytics = {
 
         logger.info('[Mobile Analytics]', event, { component: 'MobileAnalytics' });
 
-        // TODO: Send to your analytics provider (PostHog, Google Analytics, etc.)
-        // sendToAnalyticsProvider(event);
+        // Placeholder for analytics provider integration
+        // In the future, integrate with PostHog, Google Analytics, or similar
+        if (process.env.NODE_ENV === 'production') {
+            // sendToAnalyticsProvider(event);
+            logger.debug('[Analytics] Event tracked (placeholder)', event, { component: 'MobileAnalytics' });
+        }
     },
 
     getDisplayMode() {

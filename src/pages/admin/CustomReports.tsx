@@ -256,7 +256,7 @@ export default function CustomReports() {
                           }
                         }
                       } catch (error) {
-                        console.error('Download failed:', error);
+                        logger.error('Download failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomReports' });
                         toast({
                           title: "Download Failed",
                           description: "Failed to generate report. Please try again.",

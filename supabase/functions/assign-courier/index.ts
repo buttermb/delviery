@@ -75,12 +75,20 @@ serve(async (req) => {
     let selectedCourierId = courierId;
 
     if (!selectedCourierId) {
-      const { data: availableCouriers } = await supabase
+      // Filter couriers by tenant_id for multi-tenant isolation
+      let courierQuery = supabase
         .from("couriers")
         .select("*")
         .eq("is_active", true)
         .eq("is_online", true)
         .eq("age_verified", true);
+
+      // If order has tenant_id, filter couriers by same tenant
+      if (order.tenant_id) {
+        courierQuery = courierQuery.eq("tenant_id", order.tenant_id);
+      }
+
+      const { data: availableCouriers } = await courierQuery;
 
       if (!availableCouriers || availableCouriers.length === 0) {
         return new Response(
@@ -118,15 +126,21 @@ serve(async (req) => {
     }
 
     // Verify courier exists and is available
-    const { data: courier, error: courierError } = await supabase
+    let courierVerifyQuery = supabase
       .from("couriers")
       .select("*")
-      .eq("id", selectedCourierId)
-      .single();
+      .eq("id", selectedCourierId);
+
+    // Ensure courier belongs to same tenant as order for multi-tenant isolation
+    if (order.tenant_id) {
+      courierVerifyQuery = courierVerifyQuery.eq("tenant_id", order.tenant_id);
+    }
+
+    const { data: courier, error: courierError } = await courierVerifyQuery.single();
 
     if (courierError || !courier) {
       return new Response(
-        JSON.stringify({ error: "Courier not found" }),
+        JSON.stringify({ error: "Courier not found or does not belong to this tenant" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

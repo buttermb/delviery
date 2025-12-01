@@ -11,6 +11,8 @@ interface TwoFactorVerificationProps {
     onCancel?: () => void;
 }
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerificationProps) {
     const [loading, setLoading] = useState(false);
     const [verificationCode, setVerificationCode] = useState("");
@@ -59,9 +61,8 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
 
             toast.success("Authentication successful");
             onVerified();
-        } catch (error: any) {
-            console.error("MFA verification error:", error);
-            toast.error(error.message || "Invalid code. Please try again.");
+        } catch (error) {
+            handleError(error, { component: 'TwoFactorVerification', toastTitle: 'Verification failed' });
         } finally {
             setLoading(false);
         }

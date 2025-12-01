@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ interface CourierLocation {
 }
 
 export default function LiveMap() {
+  const { tenant } = useTenantAdminAuth();
   const [couriers, setCouriers] = useState<CourierLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('streets');
@@ -150,10 +152,13 @@ export default function LiveMap() {
   }, []);
 
   const loadCourierLocations = async () => {
+    if (!tenant?.id) return;
+
     try {
       const { data, error } = await supabase
         .from('couriers')
         .select('id, full_name, is_online, current_lat, current_lng')
+        .eq('tenant_id', tenant.id) // Filter by tenant for multi-tenant isolation
         .eq('is_online', true)
         .not('current_lat', 'is', null)
         .not('current_lng', 'is', null);

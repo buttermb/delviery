@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   ShoppingCart, Package, Settings, TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,72 +30,71 @@ export default function UserActivityFeed({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const [ordersResult, logsResult] = await Promise.all([
+          supabase
+            .from('orders')
+            .select('id, created_at, status, total_amount')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(10),
+
+          supabase
+            .from('account_logs')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(10)
+        ]);
+
+        const combinedActivities: ActivityItem[] = [];
+
+        // Add orders
+        if (ordersResult.data) {
+          ordersResult.data.forEach((order) => {
+            combinedActivities.push({
+              id: order.id,
+              type: 'order',
+              title: `Order ${order.status}`,
+              description: `$${order.total_amount}`,
+              timestamp: order.created_at,
+              icon: ShoppingCart,
+              color: 'text-blue-500'
+            });
+          });
+        }
+
+        // Add account logs
+        if (logsResult.data) {
+          logsResult.data.forEach((log) => {
+            combinedActivities.push({
+              id: log.id,
+              type: 'update',
+              title: log.action_type,
+              description: log.description || '',
+              timestamp: log.created_at,
+              icon: Settings,
+              color: 'text-gray-500'
+            });
+          });
+        }
+
+        // Sort by timestamp
+        combinedActivities.sort((a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        setActivities(combinedActivities.slice(0, 15));
+      } catch (error) {
+        logger.error('Error fetching activity', error as Error, { component: 'UserActivityFeed' });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchActivity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
-
-  const fetchActivity = async () => {
-    try {
-      const [ordersResult, logsResult] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('id, created_at, status, total_amount')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-        
-        supabase
-          .from('account_logs')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(10)
-      ]);
-
-      const combinedActivities: ActivityItem[] = [];
-
-      // Add orders
-      if (ordersResult.data) {
-        ordersResult.data.forEach((order) => {
-          combinedActivities.push({
-            id: order.id,
-            type: 'order',
-            title: `Order ${order.status}`,
-            description: `$${order.total_amount}`,
-            timestamp: order.created_at,
-            icon: ShoppingCart,
-            color: 'text-blue-500'
-          });
-        });
-      }
-
-      // Add account logs
-      if (logsResult.data) {
-        logsResult.data.forEach((log) => {
-          combinedActivities.push({
-            id: log.id,
-            type: 'update',
-            title: log.action_type,
-            description: log.description || '',
-            timestamp: log.created_at,
-            icon: Settings,
-            color: 'text-gray-500'
-          });
-        });
-      }
-
-      // Sort by timestamp
-      combinedActivities.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      setActivities(combinedActivities.slice(0, 15));
-    } catch (error) {
-      logger.error('Error fetching activity', error as Error, { component: 'UserActivityFeed' });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getIcon = (activity: ActivityItem) => {
     const Icon = activity.icon;

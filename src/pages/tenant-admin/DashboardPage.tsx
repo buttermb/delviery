@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
+import { UnifiedAnalyticsDashboard } from "@/components/analytics/UnifiedAnalyticsDashboard";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { Link } from "react-router-dom";
@@ -36,7 +37,9 @@ import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBann
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
 import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { useToast } from "@/hooks/use-toast";
-import { TrialExpirationBanner } from "@/components/billing/TrialExpirationBanner";
+import { handleError } from "@/utils/errorHandling/handlers";
+import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanner';
+import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -446,12 +449,11 @@ export default function TenantAdminDashboardPage() {
 
       // Refresh page to show new data
       window.location.reload();
-    } catch (error: any) {
-      logger.error('Failed to generate demo data', error, { component: 'DashboardPage' });
-      toast({
-        title: "Error",
-        description: "Failed to generate demo data. Please try again.",
-        variant: "destructive",
+    } catch (error) {
+      handleError(error, {
+        component: 'DashboardPage',
+        context: { action: 'generate_demo_data' },
+        toastTitle: 'Error generating demo data'
       });
     } finally {
       setGeneratingDemoData(false);
@@ -530,6 +532,7 @@ export default function TenantAdminDashboardPage() {
               variant="outline"
               size="sm"
             />
+            <SmartNotificationsCenter />
             {admin && (
               <div className="text-xs sm:text-sm text-muted-foreground hidden md:block truncate max-w-[120px]">
                 {admin.email}
@@ -611,6 +614,9 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Customizable Widget Grid */}
+        <DashboardWidgetGrid />
 
         {/* Trial Countdown Banner */}
         {tenant?.subscription_status === "trial" && trialInfo.trialDaysRemaining !== null && (
@@ -715,6 +721,9 @@ export default function TenantAdminDashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Unified Analytics Dashboard */}
+        {tenantId && <UnifiedAnalyticsDashboard tenantId={tenantId} />}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
@@ -852,26 +861,6 @@ export default function TenantAdminDashboardPage() {
                   ✓ Unlimited menus on {tenant?.subscription_plan || 'your'} plan
                 </p>
               )}
-            </CardContent>
-          </Card>
-
-          <Card
-            className="hover:shadow-md transition-shadow cursor-pointer hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
-            onClick={() => navigate(`/${tenant?.slug}/admin/financial-center`)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4 md:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">💰 Revenue</CardTitle>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                {formatCurrency(revenueData?.total || 0)}
-              </div>
-              <p className="text-xs sm:text-sm text-[hsl(var(--tenant-text-light))] mt-1">
-                Platform fee: {formatCurrency(revenueData?.commission || 0)} (2%)
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -1013,6 +1002,6 @@ export default function TenantAdminDashboardPage() {
           window.location.reload(); // Refresh to show new data
         }}
       />
-    </div>
+    </div >
   );
 }

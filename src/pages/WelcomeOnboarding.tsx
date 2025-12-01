@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateDemoData } from "@/lib/demoData";
 import { OnboardingCompletionModal } from "@/components/onboarding/OnboardingCompletionModal";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function WelcomeOnboarding() {
   const location = useLocation();
@@ -20,7 +21,7 @@ export default function WelcomeOnboarding() {
   const { tenantSlug: routeSlug } = useParams<{ tenantSlug: string }>();
   const { toast } = useToast();
   const { tenant, admin } = useTenantAdminAuth();
-  
+
   // Get tenant info from either location state (after signup) or auth context (if already logged in)
   const stateData = location.state || {};
   const tenantSlug = routeSlug || stateData.tenantSlug || tenant?.slug || "";
@@ -44,7 +45,7 @@ export default function WelcomeOnboarding() {
           .select("usage, limits, onboarding_completed")
           .eq("id", effectiveTenantId)
           .maybeSingle();
-        
+
         // If columns don't exist (error code 42703), return null for those fields
         if (error && error.code === "42703") {
           // Columns don't exist yet - return basic data without onboarding fields
@@ -61,16 +62,19 @@ export default function WelcomeOnboarding() {
             onboarding_completed: false,
           };
         }
-        
+
         if (error) throw error;
         // Ensure demo_data_generated is always present (defaults to false if column doesn't exist)
         return {
           ...data,
           demo_data_generated: (data as any)?.demo_data_generated ?? false,
         };
-      } catch (error: any) {
+      } catch (error) {
         // If query fails, return defaults
-        logger.warn("Error fetching tenant data", error, { component: 'WelcomeOnboarding' });
+        handleError(error, {
+          component: 'WelcomeOnboarding.fetchTenantData',
+          showToast: false
+        });
         return {
           usage: {},
           limits: {},
@@ -165,12 +169,11 @@ export default function WelcomeOnboarding() {
       });
       // Refetch tenant data to update usage counts
       await refetchTenant();
-    } catch (error: any) {
-      logger.error("Error generating demo data", error, { component: 'WelcomeOnboarding' });
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate demo data",
-        variant: "destructive",
+    } catch (error) {
+      handleError(error, {
+        component: 'WelcomeOnboarding.handleGenerateDemoData',
+        toastTitle: "Error",
+        showToast: true
       });
     } finally {
       setIsGenerating(false);
@@ -181,7 +184,7 @@ export default function WelcomeOnboarding() {
     const newSkipped = new Set(skippedSteps);
     newSkipped.add(stepId);
     setSkippedSteps(newSkipped);
-    
+
     if (effectiveTenantId) {
       localStorage.setItem(
         `tenant_${effectiveTenantId}_onboarding_progress`,
@@ -208,11 +211,11 @@ export default function WelcomeOnboarding() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEOHead 
+      <SEOHead
         title="Welcome to DevPanel"
         description="Your account is ready. Let's get you set up."
       />
-      
+
       <MarketingNav />
 
       <div className="container mx-auto px-4 py-8 sm:py-12 md:py-20 safe-area-top safe-area-bottom">
@@ -276,9 +279,8 @@ export default function WelcomeOnboarding() {
                 return (
                   <Card
                     key={step.id}
-                    className={`hover:shadow-lg transition-shadow ${
-                      step.completed ? "border-green-300 bg-green-50/50" : ""
-                    } ${isSkipped ? "opacity-60" : ""}`}
+                    className={`hover:shadow-lg transition-shadow ${step.completed ? "border-green-300 bg-green-50/50" : ""
+                      } ${isSkipped ? "opacity-60" : ""}`}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between mb-4">
@@ -302,26 +304,26 @@ export default function WelcomeOnboarding() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                {step.link && !step.completed && (
-                  <Button
-                    variant="outline"
-                    className="w-full min-h-[44px] touch-manipulation text-sm sm:text-base"
-                    onClick={() => navigate(step.link!)}
-                  >
-                    <span className="hidden sm:inline">Complete This →</span>
-                    <span className="sm:hidden">Complete →</span>
-                  </Button>
-                )}
-                {!step.completed && !isSkipped && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs sm:text-sm min-h-[44px] touch-manipulation"
-                    onClick={() => handleSkipStep(step.id)}
-                  >
-                    Skip
-                  </Button>
-                )}
+                      {step.link && !step.completed && (
+                        <Button
+                          variant="outline"
+                          className="w-full min-h-[44px] touch-manipulation text-sm sm:text-base"
+                          onClick={() => navigate(step.link!)}
+                        >
+                          <span className="hidden sm:inline">Complete This →</span>
+                          <span className="sm:hidden">Complete →</span>
+                        </Button>
+                      )}
+                      {!step.completed && !isSkipped && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-xs sm:text-sm min-h-[44px] touch-manipulation"
+                          onClick={() => handleSkipStep(step.id)}
+                        >
+                          Skip
+                        </Button>
+                      )}
                       {isSkipped && (
                         <p className="text-xs text-gray-500 text-center">Skipped</p>
                       )}
@@ -357,17 +359,17 @@ export default function WelcomeOnboarding() {
           <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-[hsl(var(--marketing-border))]">
             <p className="text-sm text-[hsl(var(--marketing-text-light))] mb-4">Need help?</p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="min-h-[44px] touch-manipulation"
                 asChild
               >
                 <Link to="/contact">Chat with us</Link>
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="min-h-[44px] touch-manipulation"
                 asChild
               >
@@ -379,7 +381,7 @@ export default function WelcomeOnboarding() {
       </div>
 
       {/* Onboarding Completion Modal */}
-        <OnboardingCompletionModal
+      <OnboardingCompletionModal
         open={showCompletionModal}
         onOpenChange={setShowCompletionModal}
         tenantSlug={tenantSlug}

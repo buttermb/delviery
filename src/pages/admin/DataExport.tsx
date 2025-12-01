@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Database, FileSpreadsheet } from 'lucide-react';
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function DataExport() {
   const { tenant } = useTenantAdminAuth();
@@ -32,8 +33,8 @@ export default function DataExport() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },

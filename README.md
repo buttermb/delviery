@@ -290,11 +290,10 @@ See `DEPLOYMENT_READY.md` for detailed deployment instructions.
 
 Comprehensive documentation is available:
 
-- `SYSTEM_COMPLETE.md` - Complete system overview
-- `DEPLOYMENT_READY.md` - Deployment guide
-- `SAAS_PLATFORM_COMPLETE.md` - SAAS platform details
-- `SUPER_ADMIN_COMPLETE.md` - Super Admin Panel
-- `COMPLETE_SYSTEM_FINAL.md` - Complete feature list
+- `docs/INDEX.md` - **Start Here: Documentation Index**
+- `docs/guides/GETTING_STARTED.md` - Getting Started Guide
+- `docs/guides/DEPLOYMENT_GUIDE.md` - Deployment Guide
+- `docs/architecture/COMPLETE_SYSTEM_OVERVIEW.md` - System Overview
 
 ---
 

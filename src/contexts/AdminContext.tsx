@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface AdminUser {
   id: string;
@@ -36,7 +37,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         .eq("user_id", currentSession.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      
+
       if (!roleError && roleData) {
         // Get admin details
         const { data: adminData, error: adminError } = await supabase
@@ -65,7 +66,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setSession(null);
       }
     } catch (error) {
-      logger.error("Admin verification failed:", error);
+      handleError(error, {
+        component: 'AdminContext',
+        context: { action: 'verifyAdmin' },
+        showToast: false
+      });
       setAdmin(null);
       setSession(null);
     } finally {
@@ -149,12 +154,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         title: "Welcome back!",
         description: `Logged in as ${adminData.full_name}`,
       });
-    } catch (error: any) {
-      logger.error("Admin sign in error:", error);
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message || "Invalid credentials",
+    } catch (error) {
+      handleError(error, {
+        component: 'AdminContext',
+        toastTitle: 'Login failed'
       });
       throw error;
     }
@@ -170,17 +173,20 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
           details: { timestamp: new Date().toISOString() }
         });
       }
-      
+
       await supabase.auth.signOut();
       setAdmin(null);
       setSession(null);
-      
+
       toast({
         title: "Signed out",
         description: "You have been logged out successfully",
       });
     } catch (error) {
-      logger.error("Sign out error:", error);
+      handleError(error, {
+        component: 'AdminContext',
+        context: { action: 'signOut' }
+      });
     }
   };
 

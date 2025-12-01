@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -65,14 +66,14 @@ export function CustomIntegrationForm({
     setIsSubmitting(true);
 
     try {
-      // TODO: custom_integrations table doesn't exist yet in schema
+      // Mock implementation until custom_integrations table is created
       // For now, just show success message
       toast.success('Custom integration feature coming soon!', {
         description: 'This feature will be available in a future update',
       });
-      
+
       onOpenChange(false);
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -84,7 +85,7 @@ export function CustomIntegrationForm({
       });
       setCustomHeaders([{ key: '', value: '' }]);
     } catch (error) {
-      console.error('Failed to add custom integration:', error);
+      logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
       toast.error('Failed to add custom integration');
     } finally {
       setIsSubmitting(false);
@@ -196,7 +197,7 @@ export function CustomIntegrationForm({
                 Add Header
               </Button>
             </div>
-            
+
             {customHeaders.map((header, index) => (
               <div key={index} className="flex gap-2">
                 <Input

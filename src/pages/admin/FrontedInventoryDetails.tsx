@@ -24,6 +24,7 @@ import {
 import { format } from "date-fns";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function FrontedInventoryDetails() {
   const { id } = useParams();
@@ -110,8 +111,12 @@ export default function FrontedInventoryDetails() {
         .order("received_at", { ascending: false });
 
       setPayments(paymentsData || []);
-    } catch (error: any) {
-      toast.error("Failed to load details: " + error.message);
+    } catch (error) {
+      handleError(error, {
+        component: 'FrontedInventoryDetails.loadFrontDetails',
+        toastTitle: 'Error',
+        showToast: true
+      });
     } finally {
       setLoading(false);
     }

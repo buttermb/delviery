@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -11,6 +12,7 @@ interface QuickStats {
 }
 
 export const AdminQuickStatsHeader = () => {
+  const { tenant } = useTenantAdminAuth();
   const [stats, setStats] = useState<QuickStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,6 +20,8 @@ export const AdminQuickStatsHeader = () => {
     let isMounted = true;
     
     const fetchQuickStats = async () => {
+      if (!tenant?.id) return;
+
       try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -26,10 +30,12 @@ export const AdminQuickStatsHeader = () => {
           supabase
             .from('orders')
             .select('total_amount, status')
+            .eq('tenant_id', tenant.id) // Filter by tenant
             .gte('created_at', today.toISOString()),
           supabase
             .from('couriers')
             .select('is_online')
+            .eq('tenant_id', tenant.id) // Filter by tenant
             .eq('is_online', true)
         ]);
 
@@ -72,7 +78,7 @@ export const AdminQuickStatsHeader = () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [tenant?.id]);
 
   if (loading) {
     return (

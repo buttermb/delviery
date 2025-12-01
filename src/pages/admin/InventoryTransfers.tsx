@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Truck, Plus, Package } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
@@ -41,8 +43,8 @@ export default function InventoryTransfers() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -86,11 +88,11 @@ export default function InventoryTransfers() {
       });
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create transfer',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'InventoryTransfers.createTransfer',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

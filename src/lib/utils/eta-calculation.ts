@@ -23,7 +23,7 @@ async function getMapboxToken(): Promise<string | null> {
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!tenantUser) return null;
 
@@ -31,7 +31,7 @@ async function getMapboxToken(): Promise<string | null> {
       .from('account_settings')
       .select('integration_settings')
       .eq('account_id', tenantUser.tenant_id)
-      .single();
+      .maybeSingle();
 
     const integrationSettings = settings?.integration_settings as Record<string, any> | null;
     if (integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token) {
@@ -62,7 +62,7 @@ export async function calculateETA(
   destination: [number, number]
 ): Promise<ETAResult | null> {
   const MAPBOX_TOKEN = await getMapboxToken();
-  
+
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
     logger.warn('Mapbox token not configured, using fallback ETA calculation', undefined, { component: 'eta-calculation' });
     return calculateFallbackETA(driverLocation, destination);
@@ -73,7 +73,7 @@ export async function calculateETA(
 
     const safeFetch = fetch.bind(window);
     const response = await safeFetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Mapbox API error: ${response.status}`);
     }
@@ -165,14 +165,14 @@ function formatDuration(seconds: number): string {
   }
 
   const minutes = Math.round(seconds / 60);
-  
+
   if (minutes < 60) {
     return `${minutes} min${minutes !== 1 ? 's' : ''}`;
   }
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  
+
   if (remainingMinutes === 0) {
     return `${hours} hr${hours !== 1 ? 's' : ''}`;
   }

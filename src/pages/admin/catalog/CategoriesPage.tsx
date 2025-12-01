@@ -39,6 +39,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { queryKeys } from '@/lib/queryKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function CategoriesPage() {
   const tenantId = tenant?.id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
@@ -77,7 +78,7 @@ export default function CategoriesPage() {
           .select('*')
           .eq('tenant_id', tenantId)
           .order('name', { ascending: true });
-        
+
         // Gracefully handle missing table
         if (error && error.code === '42P01') {
           setTableMissing(true);
@@ -86,11 +87,13 @@ export default function CategoriesPage() {
         if (error) throw error;
         setTableMissing(false);
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') {
+        return data || [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') {
           setTableMissing(true);
           return [];
         }
+        handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to load categories' });
         throw error;
       }
     },
@@ -148,12 +151,8 @@ export default function CategoriesPage() {
         icon: 'tag'
       });
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to create category',
-        description: error.message,
-        variant: 'destructive'
-      });
+    onError: (error) => {
+      handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to create category' });
     }
   });
 
@@ -172,12 +171,8 @@ export default function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
       setEditingCategory(null);
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to update category',
-        description: error.message,
-        variant: 'destructive'
-      });
+    onError: (error) => {
+      handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to update category' });
     }
   });
 
@@ -197,12 +192,8 @@ export default function CategoriesPage() {
       setCategoryToDelete(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to delete category',
-        description: error.message,
-        variant: 'destructive'
-      });
+    onError: (error) => {
+      handleError(error, { component: 'CategoriesPage', toastTitle: 'Failed to delete category' });
     }
   });
 
@@ -232,9 +223,8 @@ export default function CategoriesPage() {
     return (
       <div key={category.id} className="mb-2">
         <div
-          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors ${
-            level > 0 ? 'ml-6' : ''
-          }`}
+          className={`flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors ${level > 0 ? 'ml-6' : ''
+            }`}
         >
           {hasChildren && (
             <Button
@@ -256,7 +246,7 @@ export default function CategoriesPage() {
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: category.color || '#3B82F6' }}
           />
-          
+
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="font-medium">{category.name}</p>
@@ -306,9 +296,9 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(-1)}
             className="mb-2"
           >

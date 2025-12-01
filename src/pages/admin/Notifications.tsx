@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Bell, Plus, Edit, Trash2 } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 interface NotificationTemplate {
   id: string;
@@ -54,8 +56,8 @@ export default function Notifications() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -93,11 +95,11 @@ export default function Notifications() {
       toast({ title: 'Template created', description: 'Notification template has been created.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create template',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'Notifications.createTemplate',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });
@@ -134,11 +136,11 @@ export default function Notifications() {
       toast({ title: 'Template updated', description: 'Notification template has been updated.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update template',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'Notifications.updateTemplate',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Package, TrendingUp, Clock, XCircle, Search, Eye, Archive, Trash2, MoreHorizontal } from 'lucide-react';
+import { Package, TrendingUp, Clock, XCircle, Search, Eye, Archive, Trash2, MoreHorizontal, Plus } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -39,24 +39,140 @@ interface Order {
   order_items?: any[];
 }
 
+import { LastUpdated } from "@/components/shared/LastUpdated";
+import { BulkActions } from "@/components/shared/BulkActions";
+import { Checkbox } from "@/components/ui/checkbox";
+import CopyButton from "@/components/CopyButton";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+
+import { useExport } from "@/hooks/useExport";
+import { Download } from "lucide-react";
+
+import QuickFilters, { QuickFilter } from "@/components/QuickFilters";
+
+import { useTablePreferences } from "@/hooks/useTablePreferences";
+
+import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
+import { useRef } from "react";
+
+import { useRecentItems } from "@/hooks/useRecentItems";
 
 export default function Orders() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
+  const { preferences, savePreferences } = useTablePreferences("orders-table");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { addRecentItem } = useRecentItems();
+
+  useAdminKeyboardShortcuts({
+    onSearch: () => {
+      searchInputRef.current?.focus();
+    },
+    onCreate: () => {
+      navigate('/admin/wholesale-orders');
+    }
+  });
+
+  const { exportCSV } = useExport();
+
+  // Bulk Actions State
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    open: boolean;
+    type: 'single' | 'bulk';
+    id?: string;
+  }>({ open: false, type: 'single' });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(orders.map(o => o.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(prev => [...prev, orderId]);
+    } else {
+      setSelectedOrders(prev => prev.filter(id => id !== orderId));
+    }
+  };
+
+  const handleBulkStatusChange = async (status: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .in('id', selectedOrders);
+
+      if (error) throw error;
+
+      toast.success(`Updated ${selectedOrders.length} orders to ${status}`);
+      loadOrders();
+      setSelectedOrders([]);
+    } catch (error) {
+      logger.error('Error updating orders', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to update orders");
+    }
+  };
+
+  const handleBulkDelete = () => {
+    setDeleteConfirmation({ open: true, type: 'bulk' });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      if (deleteConfirmation.type === 'single' && deleteConfirmation.id) {
+        const { error } = await supabase
+          .from('orders')
+          .delete()
+          .eq('id', deleteConfirmation.id);
+        if (error) throw error;
+        toast.success("Order deleted successfully");
+      } else if (deleteConfirmation.type === 'bulk') {
+        const { error } = await supabase
+          .from('orders')
+          .delete()
+          .in('id', selectedOrders);
+        if (error) throw error;
+        toast.success(`${selectedOrders.length} orders deleted successfully`);
+        setSelectedOrders([]);
+      }
+
+      triggerHaptic('heavy');
+      loadOrders();
+    } catch (error) {
+      logger.error('Error deleting order(s)', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to delete order(s)");
+    } finally {
+      setDeleteConfirmation({ open: false, type: 'single' });
+    }
+  };
+
+  const handleExport = () => {
+    exportCSV(filteredOrders, { filename: `orders-export-${new Date().toISOString().split('T')[0]}.csv` });
+  };
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>(preferences.customFilters?.status || 'all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Save preferences when filter changes
+  useEffect(() => {
+    savePreferences({ customFilters: { status: statusFilter } });
+  }, [statusFilter, savePreferences]);
 
   useEffect(() => {
     if (tenant) {
       loadOrders();
     }
-  }, [tenant]);
+  }, [tenant, statusFilter]); // Reload when filter changes (logic already existed)
 
   const loadOrders = async () => {
     if (!tenant) return;
@@ -145,9 +261,15 @@ export default function Orders() {
   }, [statusFilter]);
 
   // Filter orders with debounced search
-  const filteredOrders = orders.filter(order =>
-    order.order_number?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  );
+  const filteredOrders = orders.filter(order => {
+    const query = debouncedSearchQuery.toLowerCase();
+    return (
+      order.order_number?.toLowerCase().includes(query) ||
+      order.user?.full_name?.toLowerCase().includes(query) ||
+      order.user?.email?.toLowerCase().includes(query) ||
+      order.total_amount?.toString().includes(query)
+    );
+  });
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -190,25 +312,28 @@ export default function Orders() {
     triggerHaptic('medium');
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
-      return;
-    }
+  const handleDelete = (id: string) => {
+    setDeleteConfirmation({ open: true, type: 'single', id });
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    // Optimistic update
+    const previousOrders = [...orders];
+    setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
 
     try {
       const { error } = await supabase
         .from('orders')
-        .delete()
-        .eq('id', id);
+        .update({ status: newStatus })
+        .eq('id', orderId);
 
       if (error) throw error;
 
-      toast.success("Order deleted successfully");
-      triggerHaptic('heavy');
-      loadOrders();
+      toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
-      logger.error('Error deleting order', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to delete order");
+      logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
+      toast.error("Failed to update status");
+      setOrders(previousOrders); // Rollback
     }
   };
 
@@ -222,8 +347,19 @@ export default function Orders() {
       <PullToRefresh onRefresh={handleRefresh}>
         <div className="w-full max-w-full px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 space-y-4 sm:space-y-6 overflow-x-hidden pb-24">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
+            <div>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
+              <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={loading} className="mt-1" />
+            </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="min-h-[48px] touch-manipulation"
+                onClick={handleExport}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
               <Button
                 variant="default"
                 className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
@@ -286,12 +422,44 @@ export default function Orders() {
               </Select>
             </div>
 
+            {/* Bulk Actions Bar */}
+            <BulkActions
+              selectedCount={selectedOrders.length}
+              actions={[
+                {
+                  label: 'Mark as Confirmed',
+                  onClick: () => handleBulkStatusChange('confirmed'),
+                },
+                {
+                  label: 'Mark as Preparing',
+                  onClick: () => handleBulkStatusChange('preparing'),
+                },
+                {
+                  label: 'Mark as Delivered',
+                  onClick: () => handleBulkStatusChange('delivered'),
+                },
+                {
+                  label: 'Mark as Cancelled',
+                  onClick: () => handleBulkStatusChange('cancelled'),
+                  variant: 'destructive',
+                },
+              ]}
+              onDelete={handleBulkDelete}
+              className="mb-4 sticky bottom-4 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 rounded-lg border shadow-lg md:static md:bg-transparent md:border-none md:shadow-none md:p-0"
+            />
+
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <div className="inline-block min-w-full align-middle">
                 <Table data-tutorial="orders-list" className="w-full">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border/50">
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                          onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                        />
+                      </TableHead>
                       <TableHead className="text-xs sm:text-sm font-semibold">Order #</TableHead>
                       <TableHead className="text-xs sm:text-sm font-semibold">Customer</TableHead>
                       <TableHead className="text-xs sm:text-sm font-semibold" data-tutorial="order-status">Status</TableHead>
@@ -304,37 +472,114 @@ export default function Orders() {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-sm sm:text-base">Loading...</TableCell>
+                        <TableCell colSpan={8} className="text-center py-8 text-sm sm:text-base">Loading...</TableCell>
                       </TableRow>
                     ) : filteredOrders.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-sm sm:text-base">No orders found</TableCell>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="bg-muted/30 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                              <Package className="w-8 h-8 text-muted-foreground opacity-50" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">No orders found</h3>
+                            <p className="text-muted-foreground mb-6 max-w-sm">
+                              {searchQuery || statusFilter !== 'all'
+                                ? "We couldn't find any orders matching your current filters."
+                                : "You haven't received any orders yet. Create one manually or wait for customers."}
+                            </p>
+                            {searchQuery || statusFilter !== 'all' ? (
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setSearchQuery('');
+                                  setStatusFilter('all');
+                                }}
+                              >
+                                Clear Filters
+                              </Button>
+                            ) : (
+                              <Button onClick={() => navigate('/admin/wholesale-orders')}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create First Order
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ) : (
                       filteredOrders.map((order) => (
                         <TableRow key={order.id} className="group hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/admin/orders/${order.id}`)}>
-                          <TableCell className="font-medium text-xs sm:text-sm">{order.order_number || order.id.slice(0, 8)}</TableCell>
+                          <TableCell className="w-[50px]" onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedOrders.includes(order.id)}
+                              onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium text-xs sm:text-sm">
+                            <div className="flex items-center gap-2">
+                              {order.order_number || order.id.slice(0, 8)}
+                              <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </TableCell>
                           <TableCell className="text-xs sm:text-sm">
                             <div className="flex flex-col">
                               <span className="font-medium">{order.user?.full_name || 'Unknown Customer'}</span>
+                              {order.user?.email && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  {order.user.email}
+                                  <CopyButton text={order.user.email} label="Email" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-xs sm:text-sm">{getStatusBadge(order.status)}</TableCell>
+                          <TableCell className="text-xs sm:text-sm">
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => handleStatusChange(order.id, value)}
+                            >
+                              <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0">
+                                <SelectValue>
+                                  {getStatusBadge(order.status)}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="confirmed">Confirmed</SelectItem>
+                                <SelectItem value="preparing">Preparing</SelectItem>
+                                <SelectItem value="in_transit">In Transit</SelectItem>
+                                <SelectItem value="delivered">Delivered</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
                           <TableCell className="capitalize text-xs sm:text-sm">{order.delivery_method || 'N/A'}</TableCell>
                           <TableCell className="text-xs sm:text-sm font-mono font-medium">${order.total_amount?.toFixed(2)}</TableCell>
                           <TableCell className="text-xs sm:text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/admin/orders/${order.id}`);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/orders/${order.id}`);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(order.id);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -355,8 +600,31 @@ export default function Orders() {
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12">
-                <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">No orders found</p>
+                <div className="bg-muted/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Package className="w-8 h-8 text-muted-foreground opacity-50" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No orders found</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  {searchQuery || statusFilter !== 'all'
+                    ? "We couldn't find any orders matching your current filters."
+                    : "You haven't received any orders yet. Create one manually or wait for customers."}
+                </p>
+                {searchQuery || statusFilter !== 'all' ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                ) : (
+                  <Button onClick={() => navigate('/admin/wholesale-orders')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create First Order
+                  </Button>
+                )}
               </div>
             ) : (
               filteredOrders.map((order) => (
@@ -383,6 +651,12 @@ export default function Orders() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
+                            <Checkbox
+                              checked={selectedOrders.includes(order.id)}
+                              onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="mr-2"
+                            />
                             <span className="font-mono font-bold text-primary">
                               #{order.order_number || order.id.slice(0, 8)}
                             </span>
@@ -407,6 +681,17 @@ export default function Orders() {
           </div>
         </div>
       </PullToRefresh>
+
+      <ConfirmDeleteDialog
+        open={deleteConfirmation.open}
+        onOpenChange={(open) => setDeleteConfirmation(prev => ({ ...prev, open }))}
+        onConfirm={handleConfirmDelete}
+        itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} orders` : 'this order'}
+        description={deleteConfirmation.type === 'bulk'
+          ? "This will permanently delete the selected orders. This action cannot be undone."
+          : "This will permanently delete this order. This action cannot be undone."
+        }
+      />
 
       {/* Mobile Order Details Drawer */}
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>

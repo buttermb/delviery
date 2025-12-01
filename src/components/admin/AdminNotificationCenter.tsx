@@ -27,77 +27,69 @@ export const AdminNotificationCenter = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    const addNotification = (data: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+      const notification: Notification = {
+        ...data,
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: new Date(),
+        read: false,
+      };
+      setNotifications(prev => [notification, ...prev].slice(0, 20));
+    };
+
+    const setupRealtimeNotifications = () => {
+      const channel = supabase
+        .channel('admin-notifications')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
+          if (!payload || !payload.new) {
+            logger.warn('Invalid fraud_flags payload', { component: 'AdminNotificationCenter' });
+            return;
+          }
+          addNotification({
+            type: 'warning',
+            title: 'Fraud Alert',
+            message: `New fraud flag: ${payload.new.flag_type || 'Unknown'}`,
+          });
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, (payload) => {
+          if (!payload || !payload.new) {
+            logger.warn('Invalid age_verification_requests payload', { component: 'AdminNotificationCenter' });
+            return;
+          }
+          addNotification({
+            type: 'info',
+            title: 'Age Verification',
+            message: 'New age verification request pending',
+          });
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, (payload) => {
+          if (!payload || !payload.new) {
+            logger.warn('Invalid courier_applications payload', { component: 'AdminNotificationCenter' });
+            return;
+          }
+          addNotification({
+            type: 'info',
+            title: 'Courier Application',
+            message: 'New courier application received',
+          });
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Successfully subscribed to admin notifications', { component: 'AdminNotificationCenter' });
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            logger.error('Failed to subscribe to admin notifications', { status, component: 'AdminNotificationCenter' });
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
     const cleanup = setupRealtimeNotifications();
     return cleanup;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setUnreadCount(notifications.filter(n => !n.read).length);
-  }, [notifications]);
-
-  const setupRealtimeNotifications = () => {
-    const channel = supabase
-      .channel('admin-notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_flags' }, (payload) => {
-        // Validate payload before processing
-        if (!payload || !payload.new) {
-          logger.warn('Invalid fraud_flags payload', { component: 'AdminNotificationCenter' });
-          return;
-        }
-        addNotification({
-          type: 'warning',
-          title: 'Fraud Alert',
-          message: `New fraud flag: ${payload.new.flag_type || 'Unknown'}`,
-        });
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'age_verification_requests' }, (payload) => {
-        // Validate payload before processing
-        if (!payload || !payload.new) {
-          logger.warn('Invalid age_verification_requests payload', { component: 'AdminNotificationCenter' });
-          return;
-        }
-        addNotification({
-          type: 'info',
-          title: 'Age Verification',
-          message: 'New age verification request pending',
-        });
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'courier_applications' }, (payload) => {
-        // Validate payload before processing
-        if (!payload || !payload.new) {
-          logger.warn('Invalid courier_applications payload', { component: 'AdminNotificationCenter' });
-          return;
-        }
-        addNotification({
-          type: 'info',
-          title: 'Courier Application',
-          message: 'New courier application received',
-        });
-      })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.debug('Successfully subscribed to admin notifications', { component: 'AdminNotificationCenter' });
-        }
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          logger.error('Failed to subscribe to admin notifications', { status, component: 'AdminNotificationCenter' });
-        }
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  const addNotification = (data: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const notification: Notification = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      read: false,
-    };
-    setNotifications(prev => [notification, ...prev].slice(0, 20));
-  };
 
   const markAsRead = (id: string) => {
     setNotifications(prev =>
@@ -132,8 +124,8 @@ export const AdminNotificationCenter = () => {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
             >
               {unreadCount}

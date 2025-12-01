@@ -58,11 +58,11 @@ serve(withZenProtection(async (req) => {
       .from('disposable_menus')
       .select('id, access_code_hash, status, expiration_date, never_expires, security_settings')
       .eq('encrypted_url_token', accessData.url_token)
-      .single();
+      .maybeSingle();
 
     if (menuError || !menu) {
       console.error('Menu not found:', menuError);
-      
+
       // Log failed access attempt
       await supabase.from('menu_access_logs').insert({
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
@@ -177,7 +177,7 @@ serve(withZenProtection(async (req) => {
         business_name
       `)
       .eq('id', menu.id)
-      .single();
+      .maybeSingle();
 
     if (decryptError || !decryptedMenu) {
       console.error('Decryption failed:', decryptError);

@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,19 +37,25 @@ export const CourierDispatchPanel = ({
   dropoffLng,
   onAssigned
 }: CourierDispatchPanelProps) => {
+  const { tenant } = useTenantAdminAuth();
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAvailableCouriers();
-  }, []);
+    if (tenant?.id) {
+      fetchAvailableCouriers();
+    }
+  }, [tenant?.id]);
 
   const fetchAvailableCouriers = async () => {
+    if (!tenant?.id) return;
+
     try {
       const { data, error } = await supabase
         .from('couriers')
         .select('*')
+        .eq('tenant_id', tenant.id) // Filter by tenant for multi-tenant isolation
         .eq('is_online', true)
         .eq('is_active', true);
 

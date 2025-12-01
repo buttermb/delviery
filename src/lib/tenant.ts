@@ -121,12 +121,8 @@ export async function setTenantContext(tenantId: string): Promise<void> {
   // Set tenant context via localStorage for frontend filtering
   // Backend RLS will use X-Tenant-ID header set by middleware
   localStorage.setItem('current_tenant_id', tenantId);
-  
+
   // Note: RPC call handled by backend middleware
-  // const { error } = await supabase.rpc('set_config' as any, {
-  //   setting_name: 'app.current_tenant_id',
-  //   setting_value: tenantId,
-  // });
 }
 
 /**
@@ -141,20 +137,20 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   // Ensure limits and usage exist
   const limits = tenant.limits || {};
   const usage = tenant.usage || {};
-  
+
   const current = usage[resource] || 0;
   const limit = limits[resource];
-  
+
   // -1 means unlimited
   const unlimited = limit === -1;
-  
+
   // If limit is undefined or 0, default to unlimited for enterprise/professional plans
   // This prevents (0/0) errors for top-tier accounts
   if (limit === undefined || limit === 0) {
     // Check if this is an enterprise or professional plan that should have unlimited
     const isEnterprise = tenant.subscription_plan === 'enterprise';
     const isProfessional = tenant.subscription_plan === 'professional';
-    
+
     // Enterprise plans are unlimited for all resources
     // Professional plans are unlimited for menus and products
     if (isEnterprise || (isProfessional && (resource === 'menus' || resource === 'products'))) {
@@ -171,7 +167,7 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   // For starter plans with 0 limit, return 0 (not unlimited)
   // For enterprise/professional with 0 limit, already handled above
   const finalLimit = unlimited ? Infinity : (limit || 0);
-  
+
   return {
     allowed: unlimited || (finalLimit > 0 && current < finalLimit),
     current,
@@ -193,8 +189,8 @@ export function hasFeature(tenant: Tenant, feature: keyof Tenant['features']): b
 export function isSubscriptionActive(tenant: Tenant): boolean {
   return (
     tenant.subscription_status === 'active' ||
-    (tenant.subscription_status === 'trial' && 
-     (!tenant.trial_ends_at || new Date(tenant.trial_ends_at) > new Date()))
+    (tenant.subscription_status === 'trial' &&
+      (!tenant.trial_ends_at || new Date(tenant.trial_ends_at) > new Date()))
   );
 }
 
@@ -244,7 +240,7 @@ export function calculateHealthScore(tenant: Tenant): {
     const daysSinceActivity = Math.floor(
       (Date.now() - new Date(tenant.last_activity_at).getTime()) / (1000 * 60 * 60 * 24)
     );
-    
+
     if (daysSinceActivity > 7) {
       score -= 20;
       reasons.push('No activity in over 7 days');

@@ -35,7 +35,7 @@ export function TenantStripeCheckout() {
         .from("accounts")
         .select("id")
         .eq("tenant_id", tenant.id)
-        .single();
+        .maybeSingle();
 
       if (!account) return;
 
@@ -43,7 +43,7 @@ export function TenantStripeCheckout() {
         .from("account_settings")
         .select("integration_settings")
         .eq("account_id", account.id)
-        .single();
+        .maybeSingle();
 
       const integrationSettings = settings?.integration_settings as any;
       setStripeConfigured(!!integrationSettings?.stripe_secret_key);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -42,10 +42,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ColumnVisibilityControl } from "./ColumnVisibilityControl";
+import { CopyButton } from "@/components/shared/CopyButton";
 
 interface Product {
   id: string;
   name: string;
+  sku?: string | null;
   category?: string;
   price?: number;
   stock_quantity?: number;
@@ -66,6 +68,9 @@ interface EnhancedProductTableProps {
   onListOnMarketplace?: (product: Product) => void;
 }
 
+import { useTablePreferences } from "@/hooks/useTablePreferences";
+
+// ... inside component ...
 export function EnhancedProductTable({
   products,
   selectedProducts,
@@ -78,12 +83,19 @@ export function EnhancedProductTable({
   onPrintLabel,
   onListOnMarketplace,
 }: EnhancedProductTableProps) {
+  const { preferences, savePreferences } = useTablePreferences("products-table");
+
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(preferences.sorting || []);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(preferences.columnVisibility || {});
   const [globalFilter, setGlobalFilter] = useState("");
+
+  // Save preferences when they change
+  useEffect(() => {
+    savePreferences({ sorting, columnVisibility });
+  }, [sorting, columnVisibility, savePreferences]);
 
   const startEdit = (id: string, field: string, currentValue: string | number | boolean | undefined) => {
     setEditingCell({ id, field });
@@ -200,10 +212,18 @@ export function EnhancedProductTable({
               className="cursor-pointer hover:bg-accent px-2 py-1 rounded"
               onClick={() => startEdit(row.original.id, "name", row.original.name)}
             >
-              <p className="font-medium">{row.original.name}</p>
-              <p className="text-xs text-muted-foreground">{row.original.category || "uncategorized"}</p>
+              <div className="flex flex-col">
+                <p className="font-medium">{row.original.name}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {row.original.sku && (
+                    <div className="flex items-center gap-1">
+                      • SKU: {row.original.sku}
+                      <CopyButton text={row.original.sku} label="SKU" showLabel={false} className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          );
         },
       },
       {

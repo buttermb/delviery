@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Webhook, Plus, Edit, Trash2 } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 interface WebhookConfig {
   id: string;
@@ -63,8 +65,8 @@ export default function Webhooks() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -101,11 +103,11 @@ export default function Webhooks() {
       toast({ title: 'Webhook created', description: 'Webhook has been created successfully.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create webhook',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'Webhooks.createWebhook',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });
@@ -141,11 +143,11 @@ export default function Webhooks() {
       toast({ title: 'Webhook updated', description: 'Webhook has been updated successfully.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update webhook',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'Webhooks.updateWebhook',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

@@ -29,7 +29,7 @@ serve(async (req) => {
       .from("tenants")
       .select("*")
       .eq("id", tenant_id)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       return new Response(
@@ -43,7 +43,7 @@ serve(async (req) => {
       .from("subscription_plans")
       .select("*")
       .eq("id", plan_id)
-      .single();
+      .maybeSingle();
 
     if (!plan || !plan.stripe_price_id) {
       return new Response(

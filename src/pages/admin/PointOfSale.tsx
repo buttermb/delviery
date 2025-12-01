@@ -15,8 +15,15 @@ import { SEOHead } from '@/components/SEOHead';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
-
-interface Product {
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PendingPickupsPanel } from '@/components/pos/PendingPickupsPanel';
+import { PendingOrder } from '@/hooks/usePendingOrders';
+import { orderConverter } from '@/lib/orders/orderConverter';
+import { orderFlowManager } from '@/lib/orders/orderFlowManager';
+import { QuickMenuWizard } from '@/components/pos/QuickMenuWizard';
+import { Share2 } from 'lucide-react';
+import { useInventorySync } from '@/hooks/useInventorySync';
+export interface Product {
   id: string;
   name: string;
   price: number;
@@ -26,7 +33,7 @@ interface Product {
   image_url: string | null;
 }
 
-interface CartItem extends Product {
+export interface CartItem extends Product {
   quantity: number;
   subtotal: number;
 }
@@ -53,7 +60,13 @@ export default function PointOfSale() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
+
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('register');
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+
+  useInventorySync({ tenantId, enabled: !!tenantId });
 
   // Enable realtime sync for wholesale_orders and wholesale_inventory
   useRealtimeSync({
@@ -181,6 +194,7 @@ export default function PointOfSale() {
     setCart([]);
     setSelectedCustomer(null);
     setPaymentMethod('cash');
+    setActiveOrderId(null);
   };
 
   const calculateTotals = () => {
@@ -237,7 +251,7 @@ export default function PointOfSale() {
           notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
         } as any)
         .select()
-        .single();
+        .maybeSingle();
 
       if (transactionError) {
         logger.error('Error creating POS transaction', transactionError, { component: 'PointOfSale' });
@@ -304,6 +318,23 @@ export default function PointOfSale() {
           .eq('id', selectedCustomer.id);
       }
 
+      // 5. Update disposable menu order status if applicable
+      if (activeOrderId) {
+        await supabase
+          .from('disposable_menu_orders')
+          .update({
+            status: 'completed',
+            pos_transaction_id: transaction?.id,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', activeOrderId);
+
+        logger.info('Linked disposable order to transaction', {
+          orderId: activeOrderId,
+          transactionId: transaction?.id
+        });
+      }
+
       toast({
         title: 'Sale completed!',
         description: `Transaction ${transactionNumber} - Total: $${total.toFixed(2)}`
@@ -324,6 +355,59 @@ export default function PointOfSale() {
     }
   };
 
+  const handleLoadOrder = async (order: PendingOrder) => {
+    if (cart.length > 0) {
+      const confirm = window.confirm('Current cart will be cleared. Continue?');
+      if (!confirm) return;
+    }
+
+    try {
+      // Convert items
+      const cartItems = order.items.map(item => ({
+        id: item.product_id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: 'flower', // Default or fetch from product
+        stock_quantity: 999, // Should fetch real stock, but for now allow load
+        subtotal: item.price * item.quantity,
+        image_url: null,
+        thc_percent: null
+      }));
+
+      // Update status
+      await orderFlowManager.transitionOrderStatus(order.id, 'in_pos');
+
+      setCart(cartItems as any); // Type assertion needed due to missing fields in mapped object
+
+      if (order.customer_id) {
+        const customer = customers.find(c => c.id === order.customer_id);
+        if (customer) setSelectedCustomer(customer);
+      }
+
+      setActiveOrderId(order.id);
+      setActiveTab('register');
+      toast({ title: 'Order loaded', description: 'Pending order loaded into register' });
+    } catch (error) {
+      logger.error('Error loading order', error);
+      toast({ title: 'Failed to load order', variant: 'destructive' });
+    }
+  };
+
+  const handleCancelOrder = async (order: PendingOrder) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+
+    try {
+      await orderFlowManager.transitionOrderStatus(order.id, 'cancelled');
+      // Inventory release should be handled by the transition logic or separate service call
+      // For now assuming simple status update
+      toast({ title: 'Order cancelled' });
+    } catch (error) {
+      logger.error('Error cancelling order', error);
+      toast({ title: 'Failed to cancel order', variant: 'destructive' });
+    }
+  };
+
   const { subtotal, tax, discount, total } = calculateTotals();
   const categories = ['all', 'flower', 'edibles', 'concentrates', 'vapes', 'pre-rolls', 'topicals'];
 
@@ -341,242 +425,286 @@ export default function PointOfSale() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Products Section */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Search and Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="register">Register</TabsTrigger>
+          <TabsTrigger value="pickups">Pending Pickups</TabsTrigger>
+        </TabsList>
 
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {filteredProducts.map(product => (
-              <Card
-                key={product.id}
-                className="cursor-pointer hover:border-primary transition-colors"
-                onClick={() => addToCart(product)}
-              >
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" loading="lazy" />
-                    ) : (
-                      <ShoppingCart className="w-12 h-12 text-muted-foreground" />
-                    )}
+        <TabsContent value="register" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Products Section */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Search and Filters */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">${product.price}</span>
-                    {product.thc_percent && (
-                      <Badge variant="secondary">{product.thc_percent}% THC</Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Stock: {product.stock_quantity}</p>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
 
-        {/* Cart Section */}
-        <div className="space-y-4">
+              {/* Products Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {filteredProducts.map(product => (
+                  <Card
+                    key={product.id}
+                    className="cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => addToCart(product)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" loading="lazy" />
+                        ) : (
+                          <ShoppingCart className="w-12 h-12 text-muted-foreground" />
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-primary">${product.price}</span>
+                        {product.thc_percent && (
+                          <Badge variant="secondary">{product.thc_percent}% THC</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">Stock: {product.stock_quantity}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Cart Section */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    Cart ({cart.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Customer Selection */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Customer</label>
+                    <Select
+                      value={selectedCustomer?.id || 'walk-in'}
+                      onValueChange={(value) => {
+                        if (value === 'walk-in') {
+                          setSelectedCustomer(null);
+                        } else {
+                          const customer = customers.find(c => c.id === value);
+                          setSelectedCustomer(customer || null);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="walk-in">Walk-in Customer</SelectItem>
+                        {customers.map(customer => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.first_name} {customer.last_name}
+                            {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Medical</Badge>}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedCustomer && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Loyalty Points: {selectedCustomer.loyalty_points || 0}
+                      </p>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Cart Items */}
+                  <div className="space-y-3 max-h-96 overflow-auto">
+                    {cart.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">Cart is empty</p>
+                    ) : (
+                      cart.map(item => (
+                        <div key={item.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
+                            <p className="text-xs text-muted-foreground">${item.price} each</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQuantity(item.id, -1);
+                              }}
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+                            <span className="w-8 text-center font-medium">{item.quantity}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQuantity(item.id, 1);
+                              }}
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFromCart(item.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Totals */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax (8.875%):</span>
+                      <span>${tax.toFixed(2)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>Medical Discount (5%):</span>
+                        <span>-${discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total:</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Payment Method</label>
+                    <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            Cash
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="debit">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            Debit Card
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="credit">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            Credit Card
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="other">Other (Venmo, Zelle, etc)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="space-y-2">
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={completeSale}
+                      disabled={cart.length === 0 || loading}
+                    >
+                      {loading ? 'Processing...' : 'Complete Sale'}
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={clearCart}
+                      disabled={cart.length === 0}
+                    >
+                      Clear Cart
+                    </Button>
+                    <Button
+                      className="w-full"
+                      variant="secondary"
+                      onClick={() => setQuickMenuOpen(true)}
+                      disabled={cart.length === 0}
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share as Menu
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pickups">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
-                Cart ({cart.length})
-              </CardTitle>
+              <CardTitle>Pending Pickups</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Customer Selection */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Customer</label>
-                <Select
-                  value={selectedCustomer?.id || 'walk-in'}
-                  onValueChange={(value) => {
-                    if (value === 'walk-in') {
-                      setSelectedCustomer(null);
-                    } else {
-                      const customer = customers.find(c => c.id === value);
-                      setSelectedCustomer(customer || null);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="walk-in">Walk-in Customer</SelectItem>
-                    {customers.map(customer => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.first_name} {customer.last_name}
-                        {customer.customer_type === 'medical' && <Badge className="ml-2" variant="secondary">Medical</Badge>}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedCustomer && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Loyalty Points: {selectedCustomer.loyalty_points || 0}
-                  </p>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Cart Items */}
-              <div className="space-y-3 max-h-96 overflow-auto">
-                {cart.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Cart is empty</p>
-                ) : (
-                  cart.map(item => (
-                    <div key={item.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
-                        <p className="text-xs text-muted-foreground">${item.price} each</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(item.id, -1);
-                          }}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateQuantity(item.id, 1);
-                          }}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFromCart(item.id);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Totals */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Tax (8.875%):</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Medical Discount (5%):</span>
-                    <span>-${discount.toFixed(2)}</span>
-                  </div>
-                )}
-                <Separator />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total:</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Payment Method</label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4" />
-                        Cash
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="debit">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4" />
-                        Debit Card
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="credit">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4" />
-                        Credit Card
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="other">Other (Venmo, Zelle, etc)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Actions */}
-              <div className="space-y-2">
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={completeSale}
-                  disabled={cart.length === 0 || loading}
-                >
-                  {loading ? 'Processing...' : 'Complete Sale'}
-                </Button>
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={clearCart}
-                  disabled={cart.length === 0}
-                >
-                  Clear Cart
-                </Button>
-              </div>
+            <CardContent>
+              {tenantId && (
+                <PendingPickupsPanel
+                  tenantId={tenantId}
+                  onLoadOrder={handleLoadOrder}
+                  onCancelOrder={handleCancelOrder}
+                />
+              )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
+
+      {tenantId && (
+        <QuickMenuWizard
+          open={quickMenuOpen}
+          onOpenChange={setQuickMenuOpen}
+          cartItems={cart}
+          tenantId={tenantId}
+        />
+      )}
     </div>
   );
 }

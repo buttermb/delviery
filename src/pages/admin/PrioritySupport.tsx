@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Headphones, Plus, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function PrioritySupport() {
   const { tenant } = useTenantAdminAuth();
@@ -40,8 +42,8 @@ export default function PrioritySupport() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -77,11 +79,11 @@ export default function PrioritySupport() {
       setFormData({ subject: '', description: '', priority: 'high' });
       setIsDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create ticket',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'PrioritySupport.createTicket',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

@@ -29,7 +29,7 @@ export class MenuAnalyticsEngine {
             .from('disposable_menus')
             .select('tenant_id, created_at')
             .eq('id', menuId)
-            .single();
+            .maybeSingle();
 
         if (!menu) {
             // Return conservative defaults if menu not found
@@ -57,8 +57,8 @@ export class MenuAnalyticsEngine {
 
         // 2. Forecast Revenue based on historical average order value
         const totalRevenue = (historicalOrders || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
-        const avgOrderValue = historicalOrders && historicalOrders.length > 0 
-            ? totalRevenue / historicalOrders.length 
+        const avgOrderValue = historicalOrders && historicalOrders.length > 0
+            ? totalRevenue / historicalOrders.length
             : 150;
         const predictedRevenue = predictedOrders * avgOrderValue;
 

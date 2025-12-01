@@ -106,8 +106,8 @@ export function CustomerMobileBottomNav() {
     <>
       <OfflineIndicator />
       <MobileErrorBoundary>
-        <nav 
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom" 
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-t border-[hsl(var(--customer-border))] shadow-lg lg:hidden min-h-[64px] safe-area-bottom transition-all duration-200"
           style={{ zIndex: 50 }}
           role="navigation"
           aria-label="Customer mobile navigation"
@@ -121,50 +121,50 @@ export function CustomerMobileBottomNav() {
               }} />
             </div>
           )}
-          
-          <div className="grid grid-cols-6 h-full items-center px-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          const isCart = item.path.includes("/cart");
 
-          return (
-            <button
-              key={item.label}
-              onClick={() => {
-                triggerHaptic('light');
-                navigate(item.path);
-              }}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 w-full min-h-[48px] transition-colors relative touch-manipulation active:scale-95",
-                isActive
-                  ? "text-[hsl(var(--customer-primary))]"
-                  : "text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-text))]"
-              )}
-              aria-label={`Navigate to ${item.label}`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <div className="relative">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-                {item.badge !== undefined && item.badge > 0 && (
-                  <Badge 
-                    className="absolute -top-2 -right-2 h-4 min-w-[16px] px-1 text-xs bg-[hsl(var(--customer-accent))] text-white border-0"
-                    aria-label={`${item.badge} items in ${item.label}`}
-                  >
-                    {item.badge}
-                  </Badge>
-                )}
-              </div>
-              <span className="text-xs font-medium">{item.label}</span>
-              {isActive && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[hsl(var(--customer-primary))] rounded-full" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-    </MobileErrorBoundary>
+          <div className="grid grid-cols-6 h-full items-center px-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              const isCart = item.path.includes("/cart");
+
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    navigate(item.path);
+                  }}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 w-full min-h-[48px] transition-all duration-200 relative touch-manipulation active:scale-95",
+                    isActive
+                      ? "text-[hsl(var(--customer-primary))]"
+                      : "text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-text))]"
+                  )}
+                  aria-label={`Navigate to ${item.label}`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <div className="relative">
+                    <Icon className={cn("h-5 w-5 transition-transform duration-200", isActive && "scale-110")} aria-hidden="true" />
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <Badge
+                        className="absolute -top-2 -right-2 h-4 min-w-[16px] px-1 text-xs bg-[hsl(var(--customer-accent))] text-white border-0 animate-in zoom-in duration-300"
+                        aria-label={`${item.badge} items in ${item.label}`}
+                      >
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </div>
+                  <span className={cn("text-[10px] font-medium transition-all duration-200", isActive && "font-bold")}>{item.label}</span>
+                  {isActive && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[hsl(var(--customer-primary))] rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </MobileErrorBoundary>
     </>
   );
 }

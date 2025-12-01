@@ -11,9 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { 
-  Shield, TrendingUp, CheckCircle, AlertTriangle, FileText, 
-  Gift, Settings, User, Package, Heart, Tag, HeadphonesIcon, 
+import {
+  Shield, TrendingUp, CheckCircle, AlertTriangle, FileText,
+  Gift, Settings, User, Package, Heart, Tag, HeadphonesIcon,
   Share2, MapPin, CreditCard, Star, ShoppingBag, Award,
   Calendar, DollarSign
 } from "lucide-react";
@@ -30,6 +30,7 @@ import UserActivityFeed from "@/components/account/UserActivityFeed";
 import AddressBook from "@/components/account/AddressBook";
 import PaymentMethods from "@/components/account/PaymentMethods";
 import NotificationPreferences from "@/components/account/NotificationPreferences";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function UserAccount() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export default function UserAccount() {
 
   useEffect(() => {
     fetchUserData();
-    
+
     // Set up realtime subscription to keep data updated
     const channel = supabase
       .channel('user-account-updates')
@@ -94,7 +95,7 @@ export default function UserAccount() {
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       if (profileError) throw profileError;
       if (!profileData) {
         toast.error("Profile not found. Please contact support.");
@@ -111,9 +112,12 @@ export default function UserAccount() {
 
       setProfile(profileData);
       setOrders(ordersData || []);
-    } catch (error: any) {
-      logger.error("Error fetching user data", error, { component: 'UserAccount' });
-      toast.error("Failed to load account data");
+    } catch (error) {
+      handleError(error, {
+        component: 'UserAccount.fetchUserData',
+        toastTitle: "Error",
+        showToast: true
+      });
     } finally {
       setLoading(false);
     }
@@ -140,7 +144,7 @@ export default function UserAccount() {
       <div className="container mx-auto p-6 max-w-7xl pb-20 md:pb-6">
         {/* Back to Home Button */}
         <div className="mb-6">
-          <Link 
+          <Link
             to="/"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
           >
@@ -555,13 +559,13 @@ export default function UserAccount() {
                 <div className="grid grid-cols-1 gap-6">
                   {/* Address Book */}
                   <AddressBook />
-                  
+
                   {/* Payment Methods */}
                   <PaymentMethods />
-                  
+
                   {/* Notification Preferences */}
                   <NotificationPreferences />
-                  
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader>
@@ -581,7 +585,7 @@ export default function UserAccount() {
                         </Button>
                       </CardContent>
                     </Card>
-                    
+
                     {/* Activity Feed */}
                     {profile && <UserActivityFeed userId={profile.user_id} />}
                   </div>

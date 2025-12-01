@@ -26,6 +26,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { canUseWhiteLabel, hasFeature } from '@/lib/tenant';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function WhiteLabelSettings() {
   const { tenant, refresh } = useTenant();
@@ -107,12 +108,10 @@ export default function WhiteLabelSettings() {
 
       refresh();
       queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to Save',
-        description: error.message,
-        variant: 'destructive',
-      });
+      refresh();
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+    } catch (error) {
+      handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Failed to Save' });
     } finally {
       setIsSaving(false);
     }
@@ -139,12 +138,12 @@ export default function WhiteLabelSettings() {
         title: 'Logo Uploaded',
         description: 'Logo has been uploaded successfully',
       });
-    } catch (error: any) {
       toast({
-        title: 'Upload Failed',
-        description: error.message,
-        variant: 'destructive',
+        title: 'Logo Uploaded',
+        description: 'Logo has been uploaded successfully',
       });
+    } catch (error) {
+      handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Upload Failed' });
     }
   };
 

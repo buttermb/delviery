@@ -14,11 +14,11 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
-  
+
   // Track auth values in refs to avoid re-triggering verification
   const authRef = useRef({ token, customer, tenant });
   const verificationLockRef = useRef(false);
-  
+
   // Cache verification results to avoid repeated checks
   const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
   const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
@@ -26,16 +26,16 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
     const cacheKey = `${email}:${tenantSlug}`;
     const cached = verificationCache.current.get(cacheKey);
-    
+
     if (!cached) return false;
-    
+
     const age = Date.now() - cached.timestamp;
     const isValid = age < VERIFICATION_CACHE_MS && cached.result;
-    
+
     if (!isValid && cached) {
       verificationCache.current.delete(cacheKey);
     }
-    
+
     return isValid;
   };
 
@@ -47,7 +47,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   // Safety timeout to unlock verification if it gets stuck
   useEffect(() => {
     if (!verifying) return;
-    
+
     const timeout = setTimeout(() => {
       if (verificationLockRef.current) {
         logger.warn('[CustomerProtectedRoute] Verification timeout - unlocking', { component: 'CustomerProtectedRoute' });
@@ -55,16 +55,32 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
         setVerifying(false);
       }
     }, 5000); // 5 second timeout
-    
+
     return () => clearTimeout(timeout);
   }, [verifying]);
 
   // Verify access on route change or auth change
   useEffect(() => {
+    const isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
+      const cacheKey = `${email}:${tenantSlug}`;
+      const cached = verificationCache.current.get(cacheKey);
+
+      if (!cached) return false;
+
+      const age = Date.now() - cached.timestamp;
+      const isValid = age < VERIFICATION_CACHE_MS && cached.result;
+
+      if (!isValid && cached) {
+        verificationCache.current.delete(cacheKey);
+      }
+
+      return isValid;
+    };
+
     const verifyAccess = async () => {
-      // CRITICAL: Check verifying and lock FIRST to prevent re-entry
-      // This must be the first check to avoid infinite loops
-      if (verifying || verificationLockRef.current) {
+      // CRITICAL: Check lock FIRST to prevent re-entry
+      // We rely on verificationLockRef instead of verifying state to avoid dependency loops
+      if (verificationLockRef.current) {
         return;
       }
 
@@ -121,10 +137,6 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
     };
 
     verifyAccess();
-    // NOTE: verifying is intentionally NOT in the dependency array
-    // to prevent infinite loops. The lock ref handles concurrency.
-    // isVerificationCacheValid is stable (only uses refs) and doesn't need to be included.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, location.pathname, loading, token, customer, tenant, navigate]);
 
   if (loading || verifying) {

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useGuestCart } from "@/hooks/useGuestCart";
+import { triggerHaptic } from "@/lib/utils/mobile";
 
 export function CustomerMobileNav() {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ export function CustomerMobileNav() {
   if (!isMobile) return null;
 
   const handleLogout = async () => {
+    triggerHaptic('medium');
     await logout();
     navigate(`/${tenant?.slug}/shop/login`);
     setMenuOpen(false);
@@ -88,6 +90,7 @@ export function CustomerMobileNav() {
       icon: Home,
       path: `/${tenant?.slug}/shop/dashboard`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/dashboard`);
         setMenuOpen(false);
       },
@@ -97,6 +100,7 @@ export function CustomerMobileNav() {
       icon: ShoppingBag,
       path: `/${tenant?.slug}/shop/dashboard`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/dashboard`);
         setMenuOpen(false);
       },
@@ -106,6 +110,7 @@ export function CustomerMobileNav() {
       icon: ShoppingBag,
       path: `/${tenant?.slug}/shop/retail/businesses`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/retail/businesses`);
         setMenuOpen(false);
       },
@@ -115,6 +120,7 @@ export function CustomerMobileNav() {
       icon: Building2,
       path: `/${tenant?.slug}/shop/wholesale`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/wholesale`);
         setMenuOpen(false);
       },
@@ -124,6 +130,7 @@ export function CustomerMobileNav() {
       icon: Package,
       path: `/${tenant?.slug}/shop/orders`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/orders`);
         setMenuOpen(false);
       },
@@ -133,6 +140,7 @@ export function CustomerMobileNav() {
       icon: Settings,
       path: `/${tenant?.slug}/shop/settings`,
       onClick: () => {
+        triggerHaptic('light');
         navigate(`/${tenant?.slug}/shop/settings`);
         setMenuOpen(false);
       },
@@ -140,29 +148,33 @@ export function CustomerMobileNav() {
   ];
 
   return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-[hsl(var(--customer-border))] shadow-sm">
+    <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-[hsl(var(--customer-border))] shadow-sm transition-all duration-200">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <Sheet open={menuOpen} onOpenChange={(open) => {
+            if (open) triggerHaptic('light');
+            setMenuOpen(open);
+          }}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
                 aria-label="Open navigation menu"
+                onClick={() => triggerHaptic('light')}
               >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[280px] bg-white border-[hsl(var(--customer-border))]"
+              className="w-[280px] bg-white/95 backdrop-blur-xl border-[hsl(var(--customer-border))]"
               aria-label="Navigation menu"
             >
               <div className="flex flex-col h-full">
                 <div className="mb-6 mt-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] flex items-center justify-center shadow-lg">
                       <ShoppingBag className="h-5 w-5 text-white" />
                     </div>
                     <div>
@@ -186,15 +198,15 @@ export function CustomerMobileNav() {
                         key={item.label}
                         onClick={item.onClick}
                         className={cn(
-                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left",
                           isActive
-                            ? "bg-[hsl(var(--customer-primary))]/10 text-[hsl(var(--customer-primary))]"
+                            ? "bg-[hsl(var(--customer-primary))]/10 text-[hsl(var(--customer-primary))] font-medium"
                             : "text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]"
                         )}
                         aria-label={`Navigate to ${item.label}`}
                         aria-current={isActive ? "page" : undefined}
                       >
-                        <Icon className="h-5 w-5" aria-hidden="true" />
+                        <Icon className={cn("h-5 w-5 transition-transform duration-200", isActive && "scale-110")} aria-hidden="true" />
                         <span className="font-medium">{item.label}</span>
                       </button>
                     );
@@ -215,14 +227,14 @@ export function CustomerMobileNav() {
             </SheetContent>
           </Sheet>
 
-          <Link to={`/${tenant?.slug}/shop/dashboard`}>
+          <Link to={`/${tenant?.slug}/shop/dashboard`} onClick={() => triggerHaptic('light')}>
             <h1 className="text-lg font-bold text-[hsl(var(--customer-text))]">
               {tenant?.business_name || "Shop"}
             </h1>
           </Link>
         </div>
 
-        <Link to={`/${tenant?.slug}/shop/cart`}>
+        <Link to={`/${tenant?.slug}/shop/cart`} onClick={() => triggerHaptic('light')}>
           <Button
             variant="ghost"
             size="icon"
@@ -231,8 +243,8 @@ export function CustomerMobileNav() {
           >
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
-              <Badge 
-                className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1.5 text-xs bg-[hsl(var(--customer-accent))] text-white border-0 flex items-center justify-center"
+              <Badge
+                className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1.5 text-xs bg-[hsl(var(--customer-accent))] text-white border-0 flex items-center justify-center animate-in zoom-in duration-300"
                 aria-label={`${cartCount} items in cart`}
               >
                 {cartCount > 99 ? '99+' : cartCount}

@@ -31,14 +31,14 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader! } }
     });
 
-    const { 
-      orderId, 
-      driverLat, 
-      driverLng, 
+    const {
+      orderId,
+      driverLat,
+      driverLng,
       action,
       accuracy,
       speed,
-      isMockLocation 
+      isMockLocation
     } = await req.json();
 
     if (!orderId || !driverLat || !driverLng) {
@@ -53,7 +53,7 @@ serve(async (req) => {
       .from("orders")
       .select("*, courier:couriers(*)")
       .eq("id", orderId)
-      .single();
+      .maybeSingle();
 
     if (orderError || !order) {
       return new Response(
@@ -101,7 +101,7 @@ serve(async (req) => {
 
     // GPS Validation & Anomaly Detection
     const gpsAnomalies = [];
-    
+
     // Check for mock location
     if (isMockLocation === true) {
       gpsAnomalies.push({
@@ -114,7 +114,7 @@ serve(async (req) => {
         admin_notified: false
       });
     }
-    
+
     // Check for low accuracy (> 100 meters)
     if (accuracy && accuracy > 100) {
       gpsAnomalies.push({
@@ -127,7 +127,7 @@ serve(async (req) => {
         admin_notified: false
       });
     }
-    
+
     // Check for impossible speed (> 100 mph)
     if (speed && speed > 100) {
       gpsAnomalies.push({
@@ -140,7 +140,7 @@ serve(async (req) => {
         admin_notified: false
       });
     }
-    
+
     // Log GPS anomalies
     if (gpsAnomalies.length > 0) {
       await supabase.from("gps_anomalies").insert(gpsAnomalies);
@@ -172,8 +172,8 @@ serve(async (req) => {
         distance: parseFloat(distance.toFixed(2)),
         geofenceRadius: GEOFENCE_RADIUS,
         actionAllowed,
-        message: withinGeofence 
-          ? "You can complete delivery" 
+        message: withinGeofence
+          ? "You can complete delivery"
           : `You're ${distance.toFixed(2)} miles from customer. Get within ${GEOFENCE_RADIUS} miles.`
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

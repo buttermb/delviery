@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { logger } from "@/lib/logger";
 import jsPDF from "jspdf";
 import { useInvoices } from "@/hooks/crm/useInvoices";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ export default function InvoicesPage() {
             doc.save(`Invoice_${invoice.invoice_number}.pdf`);
             toast.success("PDF downloaded successfully");
         } catch (error) {
-            console.error("PDF generation failed:", error);
+            logger.error("PDF generation failed:", error instanceof Error ? error : new Error(String(error)), { component: 'InvoicesPage' });
             toast.error("Failed to generate PDF");
         }
     };

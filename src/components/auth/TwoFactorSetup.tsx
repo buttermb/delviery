@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
 import { Loader2, ShieldCheck, AlertTriangle } from "lucide-react";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export function TwoFactorSetup() {
     const [loading, setLoading] = useState(false);
@@ -51,12 +52,8 @@ export function TwoFactorSetup() {
             // Generate QR Code
             const qrUrl = await QRCode.toDataURL(data.totp.uri);
             setQrCodeUrl(qrUrl);
-        } catch (error: any) {
-            toast({
-                title: "Error starting setup",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error) {
+            handleError(error, { component: 'TwoFactorSetup', toastTitle: 'Error starting setup' });
         } finally {
             setLoading(false);
         }
@@ -90,12 +87,8 @@ export function TwoFactorSetup() {
                 description: "Two-factor authentication has been successfully enabled.",
             });
             checkStatus();
-        } catch (error: any) {
-            toast({
-                title: "Verification failed",
-                description: error.message || "Invalid code. Please try again.",
-                variant: "destructive",
-            });
+        } catch (error) {
+            handleError(error, { component: 'TwoFactorSetup', toastTitle: 'Verification failed' });
         } finally {
             setLoading(false);
         }
@@ -124,12 +117,8 @@ export function TwoFactorSetup() {
                 title: "2FA Disabled",
                 description: "Two-factor authentication has been disabled.",
             });
-        } catch (error: any) {
-            toast({
-                title: "Error disabling 2FA",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error) {
+            handleError(error, { component: 'TwoFactorSetup', toastTitle: 'Error disabling 2FA' });
         } finally {
             setLoading(false);
         }

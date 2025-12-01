@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  User, 
-  Phone, 
-  MapPin, 
-  Calendar, 
+import {
+  CheckCircle,
+  XCircle,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
   DollarSign,
   Package,
   AlertCircle,
@@ -69,17 +69,17 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
   const { shouldAutoApprove } = useFeatureFlags();
 
   const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
-  const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) => 
+  const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) =>
     sum + (item.quantity || 0), 0
   );
 
-  const handleApprove = async () => {
+  const handleApprove = useCallback(async () => {
     setIsProcessing(true);
     try {
       // Update order status
       const { error: updateError } = await supabase
         .from('menu_orders')
-        .update({ 
+        .update({
           status: 'confirmed',
           approved_at: new Date().toISOString()
         })
@@ -129,7 +129,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [order, orderItems, queryClient, onOpenChange]);
 
   // Auto-approve when feature flag is active; runs once on dialog open
   useEffect(() => {
@@ -140,8 +140,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
           logger.warn('Auto-approve (menu order) failed', e instanceof Error ? e : new Error(String(e)), { component: 'OrderApprovalDialog' });
         });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, shouldAutoApprove, handleApprove]);
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
@@ -153,7 +152,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
     try {
       const { error } = await supabase
         .from('menu_orders')
-        .update({ 
+        .update({
           status: 'rejected',
           rejection_reason: rejectionReason,
           rejected_at: new Date().toISOString()
@@ -278,7 +277,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
               </div>
               <p className="text-lg font-semibold">
                 {order.payment_method === 'cash' ? 'Cash' :
-                 order.payment_method === 'crypto' ? 'Crypto' : 'Credit'}
+                  order.payment_method === 'crypto' ? 'Crypto' : 'Credit'}
               </p>
             </div>
           </div>
@@ -291,8 +290,8 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
             </div>
             <p className="text-lg font-semibold">
               {order.urgency === 'asap' ? 'ASAP (Today/Tomorrow)' :
-               order.urgency === 'this_week' ? 'This Week' :
-               order.specific_date ? new Date(String(jsonToStringOrNumber(order.specific_date as any))).toLocaleDateString() : 'Not specified'}
+                order.urgency === 'this_week' ? 'This Week' :
+                  order.specific_date ? new Date(String(jsonToStringOrNumber(order.specific_date as any))).toLocaleDateString() : 'Not specified'}
             </p>
           </div>
 
@@ -346,7 +345,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
               </Button>
             </>
           )}
-          
+
           {showRejectionForm && (
             <>
               <Button
@@ -368,7 +367,7 @@ export const OrderApprovalDialog = ({ order, open, onOpenChange }: OrderApproval
               </Button>
             </>
           )}
-          
+
           {order.status !== 'pending' && (
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close

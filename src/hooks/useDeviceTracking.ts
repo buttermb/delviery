@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import { showErrorToast } from "@/utils/toastHelpers";
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export function useDeviceTracking() {
   useEffect(() => {
     const trackDevice = async () => {
@@ -55,11 +57,15 @@ export function useDeviceTracking() {
             showErrorToast("Access Restricted", "Your access has been restricted. Please contact support if you believe this is an error.");
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         // Don't disrupt user experience on network errors
-        if (!error?.message?.includes('network')) {
-          logger.error("Error tracking device:", error);
-        }
+        if ((error as any)?.message?.includes('network')) return;
+
+        handleError(error, {
+          component: 'useDeviceTracking',
+          showToast: false,
+          context: { action: 'track_device' }
+        });
       }
     };
 

@@ -10,6 +10,7 @@ import { logger } from "@/lib/logger";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface Plan {
   id: string;
@@ -153,51 +154,18 @@ export default function SelectPlanPage() {
         logger.error('[SELECT_PLAN] No checkout URL received', { data });
         throw new Error("No checkout URL received from Stripe. Please contact support if this persists.");
       }
-    } catch (error: any) {
-      const errorMessage = getErrorMessage(error);
-      logger.error('[SELECT_PLAN] Failed to start trial', error, {
+    } catch (error) {
+      handleError(error, {
         component: 'SelectPlanPage',
-        planId,
-        tenantId: tenant.id,
-        errorMessage
+        toastTitle: 'Failed to start trial',
+        context: { planId, tenantId: tenant.id }
       });
-
-      setError(errorMessage);
       setRetryPlanId(planId); // Enable retry for this plan
-      toast.error(errorMessage);
       setLoading(null);
     }
   };
 
-  const getErrorMessage = (error: any): string => {
-    // Network errors
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-      return "Network error. Please check your internet connection and try again.";
-    }
 
-    // Stripe-specific errors
-    if (error.message?.includes('Stripe')) {
-      return "Payment processing error. Please try again or contact support.";
-    }
-
-    // Invalid plan ID
-    if (error.message?.includes('Plan not found') || error.message?.includes('Invalid plan')) {
-      return "Selected plan is unavailable. Please choose a different plan or contact support.";
-    }
-
-    // Timeout errors
-    if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
-      return "Request timed out. Please try again.";
-    }
-
-    // Server errors (500+)
-    if (error.status >= 500) {
-      return "Server error. Our team has been notified. Please try again in a few minutes.";
-    }
-
-    // Default to error message or generic fallback
-    return error.message || "Failed to start trial. Please try again or contact support.";
-  };
 
   if (loadingPlans) {
     return (
@@ -273,9 +241,8 @@ export default function SelectPlanPage() {
                   } else {
                     throw new Error('No portal URL received');
                   }
-                } catch (error: any) {
-                  logger.error('Failed to open customer portal', error);
-                  toast.error('Failed to open subscription management');
+                } catch (error) {
+                  handleError(error, { component: 'SelectPlanPage', toastTitle: 'Failed to open subscription management' });
                 } finally {
                   setLoadingPortal(false);
                 }

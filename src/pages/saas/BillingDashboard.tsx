@@ -34,6 +34,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 
 import { isTrial as checkIsTrial, SUBSCRIPTION_STATUS } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 // ... imports
 
@@ -164,12 +165,10 @@ export default function BillingDashboard() {
 
       refresh();
       setUpgradeDialogOpen(false);
-    } catch (error: any) {
-      toast({
-        title: 'Upgrade Failed',
-        description: error.message || 'Failed to upgrade plan',
-        variant: 'destructive',
-      });
+      refresh();
+      setUpgradeDialogOpen(false);
+    } catch (error) {
+      handleError(error, { component: 'BillingDashboard', toastTitle: 'Upgrade Failed' });
     }
   };
 

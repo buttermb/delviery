@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Edit, Trash2, Shield } from 'lucide-react';
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function UserManagement() {
   const { tenant } = useTenantAdminAuth();
@@ -25,8 +26,8 @@ export default function UserManagement() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },

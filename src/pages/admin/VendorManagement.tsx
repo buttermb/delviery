@@ -18,6 +18,7 @@ import { Package, Plus, Edit, Trash2, Mail, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -59,11 +60,10 @@ export default function VendorManagement() {
       if (error) throw error;
       setVendors(data || []);
     } catch (error) {
-      logger.error('Error loading vendors:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load vendors',
-        variant: 'destructive'
+      handleError(error, {
+        component: 'VendorManagement.loadVendors',
+        toastTitle: 'Error',
+        showToast: true
       });
     } finally {
       setLoading(false);
@@ -107,11 +107,11 @@ export default function VendorManagement() {
       setEditingVendor(null);
       setFormData({ name: '', contact_name: '', email: '', phone: '', address: '', website: '', license_number: '', notes: '' });
       loadVendors();
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
+    } catch (error) {
+      handleError(error, {
+        component: 'VendorManagement.handleSubmit',
+        toastTitle: 'Error',
+        showToast: true
       });
     }
   };
@@ -156,12 +156,11 @@ export default function VendorManagement() {
       loadVendors();
       setDeleteDialogOpen(false);
       setVendorToDelete(null);
-    } catch (error: unknown) {
-      logger.error('Failed to delete vendor', error, { component: 'VendorManagement', vendorId: vendorToDelete.id });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete vendor',
-        variant: 'destructive'
+    } catch (error) {
+      handleError(error, {
+        component: 'VendorManagement.handleDelete',
+        toastTitle: 'Error',
+        showToast: true
       });
     } finally {
       setIsDeleting(false);
@@ -178,7 +177,7 @@ export default function VendorManagement() {
 
   return (
     <div className="space-y-6">
-      <SEOHead 
+      <SEOHead
         title="Vendor Management"
         description="Manage your suppliers and vendors"
       />

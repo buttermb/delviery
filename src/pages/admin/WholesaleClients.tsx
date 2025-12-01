@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -26,7 +26,8 @@ import {
   DollarSign,
   Package,
   Star,
-  AlertCircle
+  AlertCircle,
+  Edit2
 } from "lucide-react";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
@@ -35,12 +36,27 @@ import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
 import { queryKeys } from "@/lib/queryKeys";
 // SendSMS removed per plan - can be re-added if needed
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input as ShadcnInput } from "@/components/ui/input"; // Renamed to avoid conflict
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { SendPortalLinkDialog } from "@/components/admin/wholesale/SendPortalLinkDialog";
 import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
+import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -51,17 +67,36 @@ interface WholesaleClient extends WholesaleClientRow {
   risk_score?: number | null;
 }
 
+import { useTablePreferences } from "@/hooks/useTablePreferences";
+import CopyButton from "@/components/CopyButton";
+
+import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
+
 export default function WholesaleClients() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const queryClient = useQueryClient();
+  const { preferences, savePreferences } = useTablePreferences("wholesale-clients-table");
+
+  const [createClientDialogOpen, setCreateClientDialogOpen] = useState(false);
+
+  useAdminKeyboardShortcuts({
+    onCreate: () => {
+      setCreateClientDialogOpen(true);
+    }
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });
+
+  // Save preferences when filter changes
+  useEffect(() => {
+    savePreferences({ customFilters: { filter } });
+  }, [filter, savePreferences]);
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [smsClient, setSmsClient] = useState<WholesaleClient | null>(null);
-  const [createClientDialogOpen, setCreateClientDialogOpen] = useState(false);
   const [portalLinkDialogOpen, setPortalLinkDialogOpen] = useState(false);
   const [portalLinkClient, setPortalLinkClient] = useState<WholesaleClient | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -132,6 +167,23 @@ export default function WholesaleClients() {
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.list({ filter }) });
+  };
+
+  const handleUpdateClient = async (clientId: string, updates: Record<string, any>) => {
+    try {
+      const { error } = await supabase
+        .from('wholesale_clients')
+        .update(updates)
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      toast.success("Client updated successfully");
+      handleRefresh();
+    } catch (error) {
+      logger.error('Error updating client:', error);
+      toast.error("Failed to update client");
+    }
   };
 
   return (
@@ -261,34 +313,96 @@ export default function WholesaleClients() {
                           <div>
                             <div className="font-semibold text-foreground flex items-center gap-2">
                               {getStatusIcon(client.outstanding_balance)}
-                              <span className="truncate">{client.business_name}</span>
+                              <CustomerQuickViewCard customer={client}>
+                                <span className="truncate">{client.business_name}</span>
+                              </CustomerQuickViewCard>
+                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <div className="text-xs text-muted-foreground truncate">{client.territory}</div>
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
-                          <Badge variant="outline" className="text-xs">{getClientTypeLabel(client.client_type)}</Badge>
+                          <Select
+                            defaultValue={client.client_type}
+                            onValueChange={(value) => handleUpdateClient(client.id, { client_type: value })}
+                          >
+                            <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                              <SelectValue>
+                                <Badge variant="outline" className="text-xs pointer-events-none">
+                                  {getClientTypeLabel(client.client_type)}
+                                </Badge>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sub_dealer">Sub-Dealer</SelectItem>
+                              <SelectItem value="small_shop">Small Shop</SelectItem>
+                              <SelectItem value="network">Network/Crew</SelectItem>
+                              <SelectItem value="supplier">Supplier</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
                           <div>
                             <div className="text-xs sm:text-sm text-foreground truncate">{client.contact_name}</div>
+                            <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                              {client.email && (
+                                <>
+                                  {client.email}
+                                  <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </>
+                              )}
+                            </div>
                             <div className="text-xs text-muted-foreground truncate">{client.phone}</div>
                           </div>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className={`font-mono font-semibold text-xs sm:text-sm ${getStatusColor(client.outstanding_balance)}`}>
-                              ${Number(client.outstanding_balance).toLocaleString()}
-                            </div>
-                            {client.outstanding_balance > 0 ? (
-                              <div className="text-xs text-destructive flex items-center gap-1 mt-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Outstanding
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <div className="cursor-pointer hover:bg-muted/50 p-1 rounded transition-colors group/credit">
+                                <div className={`font-mono font-semibold text-xs sm:text-sm ${getStatusColor(client.outstanding_balance)}`}>
+                                  ${Number(client.outstanding_balance).toLocaleString()}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                  Limit: ${Number(client.credit_limit || 0).toLocaleString()}
+                                  <Edit2 className="h-3 w-3 opacity-0 group-hover/credit:opacity-100 transition-opacity" />
+                                </div>
+                                {client.outstanding_balance > 0 ? (
+                                  <div className="text-xs text-destructive flex items-center gap-1 mt-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Outstanding
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-emerald-500 mt-1">Paid in full ✅</div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="text-xs text-emerald-500 mt-1">Paid in full ✅</div>
-                            )}
-                          </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-60">
+                              <div className="space-y-2">
+                                <h4 className="font-medium leading-none">Credit Limit</h4>
+                                <p className="text-sm text-muted-foreground">Set credit limit for this client.</p>
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="number"
+                                    defaultValue={client.credit_limit || 0}
+                                    className="h-8"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleUpdateClient(client.id, { credit_limit: Number(e.currentTarget.value) });
+                                        // Close popover? It's uncontrolled, so maybe not easily.
+                                        // But the update will trigger refresh.
+                                      }
+                                    }}
+                                    onBlur={(e) => {
+                                      const val = Number(e.target.value);
+                                      if (val !== client.credit_limit) {
+                                        handleUpdateClient(client.id, { credit_limit: val });
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">
                           <CustomerRiskBadge
@@ -637,7 +751,7 @@ export default function WholesaleClients() {
                       const text = await importFile.text();
                       const lines = text.split('\n').filter(l => l.trim());
                       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-                      
+
                       let imported = 0;
                       for (let i = 1; i < lines.length; i++) {
                         const values = lines[i].split(',');
@@ -650,7 +764,7 @@ export default function WholesaleClients() {
                             client[header] = value;
                           }
                         });
-                        
+
                         if (client.business_name && client.contact_name) {
                           const { error } = await supabase.from('wholesale_clients').insert([{
                             tenant_id: tenant.id,
@@ -666,7 +780,7 @@ export default function WholesaleClients() {
                           if (!error) imported++;
                         }
                       }
-                      
+
                       toast.success(`Imported ${imported} clients successfully`);
                       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.lists() });
                       setImportDialogOpen(false);

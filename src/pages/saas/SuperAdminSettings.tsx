@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminSettings() {
   const { toast } = useToast();
@@ -55,12 +56,8 @@ export default function SuperAdminSettings() {
         title: 'Settings saved',
         description: 'Platform settings have been updated',
       });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to save',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminSettings', toastTitle: 'Failed to save' });
     } finally {
       setSaving(false);
     }

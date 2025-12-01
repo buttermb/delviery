@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Users, Package, Clock } from 'lucide-react';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -28,8 +29,9 @@ export default function AdvancedAnalytics() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load orders' });
         throw error;
       }
     },
@@ -50,8 +52,9 @@ export default function AdvancedAnalytics() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load customers' });
         throw error;
       }
     },

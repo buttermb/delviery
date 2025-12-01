@@ -56,7 +56,7 @@ export function useBusinessTier() {
         .from('tenants')
         .select('business_tier, monthly_revenue, tier_override, usage, team_size')
         .eq('id', tenant.id)
-        .single();
+        .maybeSingle();
 
       if (tenantError) {
         logger.error('Failed to fetch tenant tier', tenantError, { component: 'useBusinessTier' });

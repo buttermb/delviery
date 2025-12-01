@@ -34,15 +34,15 @@ export function useStripeRedirectHandler() {
       try {
         // Get tenant slug from database if we only have tenant ID
         let tenantSlug = tenant?.slug || safeStorage.getItem('lastTenantSlug');
-        
+
         if (!tenantSlug && tenantId) {
           logger.info('[StripeRedirect] Fetching tenant slug from database');
           const { data: tenantData } = await supabase
             .from('tenants')
             .select('slug')
             .eq('id', tenantId)
-            .single();
-          
+            .maybeSingle();
+
           if (tenantData) {
             tenantSlug = tenantData.slug;
             safeStorage.setItem('lastTenantSlug', tenantSlug);
@@ -51,12 +51,12 @@ export function useStripeRedirectHandler() {
 
         // Check if user session is valid
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session) {
           logger.warn('[StripeRedirect] No active session, redirecting to login');
-          
+
           toast.error('Session expired. Please log in again.');
-          
+
           // Redirect to login with tenant slug
           if (tenantSlug) {
             navigate(`/${tenantSlug}/admin/login`);
@@ -94,7 +94,7 @@ export function useStripeRedirectHandler() {
         toast.error('Failed to complete setup', {
           description: 'Please contact support if this issue persists.',
         });
-        
+
         // Try to get tenant slug from storage as fallback
         const fallbackSlug = safeStorage.getItem('lastTenantSlug');
         if (fallbackSlug) {

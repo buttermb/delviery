@@ -20,6 +20,8 @@ interface AddPaymentMethodDialogProps {
     onSuccess?: () => void;
 }
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export function AddPaymentMethodDialog({
     open,
     onOpenChange,
@@ -47,13 +49,8 @@ export function AddPaymentMethodDialog({
             } else {
                 throw new Error("No setup URL received");
             }
-        } catch (error: any) {
-            logger.error("Failed to create setup session", error, { component: "AddPaymentMethodDialog" });
-            toast({
-                title: "Error",
-                description: "Failed to initialize payment setup. Please try again.",
-                variant: "destructive",
-            });
+        } catch (error) {
+            handleError(error, { component: "AddPaymentMethodDialog", toastTitle: "Error" });
         } finally {
             setLoading(false);
         }

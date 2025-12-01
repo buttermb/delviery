@@ -44,6 +44,7 @@ import {
   SUBSCRIPTION_STATUS
 } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminDashboard() {
   const { toast } = useToast();
@@ -158,12 +159,9 @@ export default function SuperAdminDashboard() {
       // In production, generate temporary JWT and redirect to tenant dashboard
       // window.location.href = `/tenant/${tenant.id}/dashboard?impersonate=true`;
       logger.debug('Would navigate to tenant dashboard:', tenant.id);
-    } catch (error: any) {
-      toast({
-        title: 'Session Failed',
-        description: error.message,
-        variant: 'destructive'
-      });
+      logger.debug('Would navigate to tenant dashboard:', tenant.id);
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminDashboard', toastTitle: 'Session Failed' });
     }
   };
 
@@ -183,12 +181,8 @@ export default function SuperAdminDashboard() {
         title: 'Tenant Suspended',
         description: `${tenant.business_name} has been suspended`,
       });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminDashboard', toastTitle: 'Error suspending tenant' });
     }
   };
 
@@ -422,12 +416,8 @@ export default function SuperAdminDashboard() {
                           title: 'Feature flag updated',
                           description: `${flag.name} is now ${!flag.enabled ? 'enabled' : 'disabled'}`,
                         });
-                      } catch (error: any) {
-                        toast({
-                          title: 'Update failed',
-                          description: error.message,
-                          variant: 'destructive',
-                        });
+                      } catch (error) {
+                        handleError(error, { component: 'SuperAdminDashboard', toastTitle: 'Update failed' });
                       }
                     }}
                   />

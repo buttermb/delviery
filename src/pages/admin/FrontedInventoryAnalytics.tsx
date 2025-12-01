@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { format, subDays } from "date-fns";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function FrontedInventoryAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function FrontedInventoryAnalytics() {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      
+
       // Get all fronted inventory
       const { data: fronts, error } = await supabase
         .from("fronted_inventory")
@@ -111,11 +112,11 @@ export default function FrontedInventoryAnalytics() {
       const averageMargin =
         fronts && fronts.length > 0
           ? fronts.reduce(
-              (sum, f) =>
-                sum +
-                (parseFloat(String(f.expected_profit || 0)) / parseFloat(String(f.expected_revenue || 1))) * 100,
-              0
-            ) / fronts.length
+            (sum, f) =>
+              sum +
+              (parseFloat(String(f.expected_profit || 0)) / parseFloat(String(f.expected_revenue || 1))) * 100,
+            0
+          ) / fronts.length
           : 0;
 
       setStats({
@@ -135,11 +136,11 @@ export default function FrontedInventoryAnalytics() {
         const name = front.fronted_to_customer_name || "Unknown";
         const profit = parseFloat(String(front.expected_profit || 0));
         const revenue = parseFloat(String(front.expected_revenue || 0));
-        
+
         if (!performerMap.has(name)) {
           performerMap.set(name, { name, profit: 0, revenue: 0, fronts: 0 });
         }
-        
+
         const performer = performerMap.get(name);
         performer.profit += profit;
         performer.revenue += revenue;
@@ -207,8 +208,12 @@ export default function FrontedInventoryAnalytics() {
       });
 
       setTimelineData(last30Days);
-    } catch (error: any) {
-      toast.error("Failed to load analytics: " + error.message);
+    } catch (error) {
+      handleError(error, {
+        component: 'FrontedInventoryAnalytics.loadAnalytics',
+        toastTitle: 'Error',
+        showToast: true
+      });
     } finally {
       setLoading(false);
     }

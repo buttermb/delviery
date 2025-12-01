@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Edit, 
-  Trash2, 
+import {
+  Edit,
+  Trash2,
   Package,
   DollarSign,
   TrendingUp,
   AlertTriangle,
 } from "lucide-react";
+import { InventoryStatusBadge } from "../tenant-admin/InventoryStatusBadge";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
   DropdownMenu,
@@ -38,9 +39,9 @@ interface ProductCardProps {
   onPrintLabel?: () => void;
 }
 
-export function ProductCard({ 
-  product, 
-  onEdit, 
+export function ProductCard({
+  product,
+  onEdit,
   onDelete,
   onAddToMenu,
   onPrintLabel
@@ -60,7 +61,7 @@ export function ProductCard({
   const margin = profitMargin(costPerUnit, wholesalePrice);
 
   return (
-    <Card 
+    <Card
       className="bg-[hsl(var(--tenant-bg))] border-[hsl(var(--tenant-border))] hover:shadow-lg transition-all duration-300 overflow-hidden group hover:scale-[1.02] hover:border-[hsl(var(--tenant-primary))]/30"
     >
       {/* Product Image */}
@@ -117,8 +118,8 @@ export function ProductCard({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
               >
@@ -145,9 +146,9 @@ export function ProductCard({
                 </DropdownMenuItem>
               )}
               {onDelete && (
-                <DropdownMenuItem 
-              onClick={() => onDelete(product.id)}
-              className="text-destructive focus:text-destructive"
+                <DropdownMenuItem
+                  onClick={() => onDelete(product.id)}
+                  className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
@@ -192,17 +193,10 @@ export function ProductCard({
               Stock: {String(stockQuantity)} units
             </span>
           </div>
-          {isLowStock && (
-            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              Low Stock
-            </Badge>
-          )}
-          {!isInStock && (
-            <Badge variant="destructive">
-              Out of Stock
-            </Badge>
-          )}
+          <InventoryStatusBadge
+            quantity={stockQuantity}
+            reorderPoint={10} // Default reorder point if not provided
+          />
         </div>
 
         {/* Quick Actions */}

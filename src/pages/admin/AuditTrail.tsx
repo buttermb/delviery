@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { History, Search, User, Clock, Shield } from 'lucide-react';
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export default function AuditTrail() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -28,8 +30,9 @@ export default function AuditTrail() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'AuditTrail', toastTitle: 'Failed to load audit trail' });
         throw error;
       }
     },

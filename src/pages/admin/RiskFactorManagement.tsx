@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MapPin, TrendingUp, AlertTriangle } from "lucide-react";
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function RiskFactorManagement() {
   const [riskFactors, setRiskFactors] = useState<any[]>([]);
@@ -35,9 +36,12 @@ export default function RiskFactorManagement() {
 
       if (error) throw error;
       setRiskFactors(data || []);
-    } catch (error: any) {
-      logger.error("Error fetching risk factors:", error);
-      toast.error("Failed to load risk factors");
+    } catch (error) {
+      handleError(error, {
+        component: 'RiskFactorManagement.fetchRiskFactors',
+        toastTitle: 'Error',
+        showToast: true
+      });
     } finally {
       setLoading(false);
     }
@@ -55,9 +59,12 @@ export default function RiskFactorManagement() {
       toast.success("Risk factor updated");
       fetchRiskFactors();
       setEditingId(null);
-    } catch (error: any) {
-      logger.error("Error updating risk factor:", error);
-      toast.error("Failed to update risk factor");
+    } catch (error) {
+      handleError(error, {
+        component: 'RiskFactorManagement.updateRiskFactor',
+        toastTitle: 'Error',
+        showToast: true
+      });
     }
   };
 

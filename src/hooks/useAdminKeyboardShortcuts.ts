@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
-export const useAdminKeyboardShortcuts = () => {
+interface KeyboardShortcutsOptions {
+  onSearch?: () => void;
+  onCreate?: () => void;
+  onEscape?: () => void;
+}
+
+export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}) => {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
@@ -11,22 +17,51 @@ export const useAdminKeyboardShortcuts = () => {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Check if ? is pressed (for shortcuts help)
-      if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault();
         setShortcutsVisible(true);
+        return;
+      }
+
+      // Escape key
+      if (e.key === 'Escape') {
+        if (options.onEscape) {
+          options.onEscape();
+        }
+        return;
+      }
+
+      // Create action (c key) - only if not typing
+      if (e.key.toLowerCase() === 'c' && !e.metaKey && !e.ctrlKey && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        if (options.onCreate) {
+          e.preventDefault();
+          options.onCreate();
+          return;
+        }
+      }
+
+      // Search action (Cmd/Ctrl + K)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (options.onSearch) {
+          options.onSearch();
+        } else {
+          // Default behavior: open command palette if no specific search handler
+          setCommandPaletteOpen(true);
+        }
         return;
       }
 
       // Check if Cmd/Ctrl + Shift is pressed
       if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
         e.preventDefault();
-        
+
         const getPath = (path: string) => {
           if (!tenantSlug) return path;
           return path.startsWith('/admin') ? `/${tenantSlug}${path}` : path;
         };
 
-        switch(e.key.toLowerCase()) {
+        switch (e.key.toLowerCase()) {
           case 'd':
             // Navigate to current tenant's dashboard
             navigate(getPath('/admin/dashboard'));
@@ -55,10 +90,10 @@ export const useAdminKeyboardShortcuts = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [navigate, tenantSlug]);
+  }, [navigate, tenantSlug, options]);
 
-  return { 
-    shortcutsVisible, 
+  return {
+    shortcutsVisible,
     setShortcutsVisible,
     commandPaletteOpen,
     setCommandPaletteOpen,

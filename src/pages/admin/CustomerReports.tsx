@@ -11,6 +11,7 @@ import {
   Award, Calendar, BarChart3
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function CustomerReports() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
@@ -95,9 +96,12 @@ export default function CustomerReports() {
       });
 
       toast.success('Reports loaded');
-    } catch (error: any) {
-      logger.error('Error loading reports:', error);
-      toast.error('Failed to load reports');
+    } catch (error) {
+      handleError(error, {
+        component: 'CustomerReports.loadReports',
+        toastTitle: 'Error',
+        showToast: true
+      });
     } finally {
       setLoading(false);
     }

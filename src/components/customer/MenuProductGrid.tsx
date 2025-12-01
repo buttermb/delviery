@@ -3,9 +3,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, Package } from 'lucide-react';
+import { ShoppingCart, Search, Package, Plus, Minus, Loader2 } from 'lucide-react';
 import { cleanProductName } from '@/utils/productName';
 import { formatWeight } from '@/utils/productHelpers';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -18,6 +19,7 @@ interface Product {
   min_quantity: number;
   type?: string;
   thc_content?: string;
+  description?: string;
 }
 
 interface MenuProductGridProps {
@@ -37,132 +39,167 @@ export const MenuProductGrid = ({
 }: MenuProductGridProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
 
   const filteredProducts = products.filter(product =>
     cleanProductName(product.name).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleQuantityChange = (productId: string, value: string) => {
-    const qty = parseInt(value) || 0;
-    setQuantities(prev => ({ ...prev, [productId]: qty }));
+  const handleQuantityChange = (productId: string, delta: number, min: number, max: number) => {
+    setQuantities(prev => {
+      const current = prev[productId] || min;
+      const next = Math.min(Math.max(current + delta, min), max);
+      return { ...prev, [productId]: next };
+    });
   };
 
   const handleAddToCart = (product: Product) => {
     const qty = quantities[product.id] || product.min_quantity;
     if (qty >= product.min_quantity) {
+      setAnimatingId(product.id);
       onAddToCart(product.id, qty);
-      setQuantities(prev => ({ ...prev, [product.id]: 0 }));
+
+      // Reset after animation
+      setTimeout(() => {
+        setAnimatingId(null);
+        setQuantities(prev => ({ ...prev, [product.id]: 0 }));
+      }, 1000);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      {/* Search - Only show if not handled by parent (optional, keeping for compatibility) */}
+      {/* <div className="relative"> ... </div> */}
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => {
           const qty = quantities[product.id] || product.min_quantity;
-          const isValidQty = qty >= product.min_quantity && qty <= (product.stock_quantity || 0);
+          const maxStock = product.stock_quantity || product.stock || 0;
+          const isValidQty = qty >= product.min_quantity && qty <= maxStock;
+          const isAnimating = animatingId === product.id;
 
           return (
-            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {showImages && product.image_url && (
-                <div className="relative h-48 bg-muted">
-                  <img
-                    src={product.image_url}
-                    alt={cleanProductName(product.name)}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+            <Card
+              key={product.id}
+              className="group overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 rounded-2xl bg-white ring-1 ring-gray-100"
+            >
+              {showImages && (
+                <div className="relative h-56 overflow-hidden bg-gray-50">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={cleanProductName(product.name)}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <Package className="h-12 w-12" />
+                    </div>
+                  )}
+
+                  {/* Overlay Badges */}
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    {product.type && (
+                      <Badge className="bg-white/90 text-black backdrop-blur-sm shadow-sm border-0 hover:bg-white">
+                        {product.type}
+                      </Badge>
+                    )}
+                  </div>
+
                   {!product.available && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <Badge variant="destructive">Out of Stock</Badge>
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
+                      <Badge variant="destructive" className="text-sm px-3 py-1">Out of Stock</Badge>
                     </div>
                   )}
                 </div>
               )}
 
-              <div className="p-6 space-y-4">
-                {/* Product Info */}
+              <div className="p-5 space-y-4">
+                {/* Header */}
                 <div>
-                  <h3 className="text-xl font-bold mb-1">
-                    {cleanProductName(product.name)}
-                  </h3>
-                  {product.type && (
-                    <p className="text-sm text-muted-foreground">{product.type}</p>
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="text-lg font-bold leading-tight text-gray-900 line-clamp-2">
+                      {cleanProductName(product.name)}
+                    </h3>
+                    <div className="text-right shrink-0">
+                      <span className="text-lg font-bold text-primary block">
+                        ${product.price.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground">/lb</span>
+                    </div>
+                  </div>
+                  {product.thc_content && (
+                    <p className="text-xs font-medium text-emerald-600 mt-1">
+                      THC: {product.thc_content}
+                    </p>
                   )}
                 </div>
 
-                {/* Price & Stock */}
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <span className="text-3xl font-bold text-primary">
-                      ${product.price.toLocaleString()}
-                    </span>
-                    <span className="text-muted-foreground ml-1">/lb</span>
-                  </div>
-                  {showAvailability && (
-                    <Badge variant={product.available && (product.stock_quantity || 0) > 10 ? 'default' : 'secondary'}>
-                      {product.available ? (
-                        <>
-                          <Package className="h-3 w-3 mr-1" />
-                          {product.stock_quantity || 0} lbs
-                        </>
-                      ) : (
-                        'Out of Stock'
-                      )}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* THC Content */}
-                {product.thc_content && (
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">THC:</span>{' '}
-                    <span className="font-medium">{product.thc_content}</span>
-                  </div>
+                {/* Description (Optional) */}
+                {product.description && (
+                  <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                    {product.description}
+                  </p>
                 )}
 
-                {/* Quantity Input */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={product.min_quantity}
-                      max={product.stock_quantity || product.stock || 0}
-                      value={qty}
-                      onChange={(e) => handleQuantityChange(product.id, e.target.value)}
-                      disabled={!product.available}
-                      className="w-24"
-                    />
-                    <span className="text-sm text-muted-foreground">lbs</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Min: {product.min_quantity} lbs
-                  </p>
-                </div>
+                {/* Actions */}
+                <div className="pt-2 flex items-center gap-3">
+                  {product.available ? (
+                    <>
+                      {/* Stepper */}
+                      <div className="flex items-center bg-gray-100 rounded-full p-1">
+                        <button
+                          onClick={() => handleQuantityChange(product.id, -1, product.min_quantity, maxStock)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50 text-gray-600 transition-colors disabled:opacity-50"
+                          disabled={qty <= product.min_quantity}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-8 text-center text-sm font-semibold text-gray-900">{qty}</span>
+                        <button
+                          onClick={() => handleQuantityChange(product.id, 1, product.min_quantity, maxStock)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50 text-gray-600 transition-colors disabled:opacity-50"
+                          disabled={qty >= maxStock}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
 
-                {/* Add to Cart Button */}
-                <Button
-                  onClick={() => handleAddToCart(product)}
-                  disabled={!product.available || !isValidQty}
-                  className="w-full"
-                  size="lg"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart - ${(product.price * qty).toLocaleString()}
-                </Button>
+                      {/* Add Button */}
+                      <Button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={!isValidQty || isAnimating}
+                        className={cn(
+                          "flex-1 rounded-full font-semibold transition-all duration-300",
+                          isAnimating
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : "bg-primary hover:bg-primary/90 text-white"
+                        )}
+                      >
+                        {isAnimating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Added!
+                          </>
+                        ) : (
+                          <>
+                            Add
+                            <span className="ml-1 opacity-80 text-xs font-normal">
+                              (${(product.price * qty).toLocaleString()})
+                            </span>
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button disabled variant="secondary" className="w-full rounded-full">
+                      Unavailable
+                    </Button>
+                  )}
+                </div>
               </div>
             </Card>
           );
@@ -170,9 +207,10 @@ export const MenuProductGrid = ({
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="text-center py-12">
-          <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">No products found</p>
+        <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+          <p className="text-gray-500 font-medium">No products found</p>
+          <p className="text-sm text-gray-400">Try adjusting your search filters</p>
         </div>
       )}
     </div>

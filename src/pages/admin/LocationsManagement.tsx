@@ -18,6 +18,7 @@ import { MapPin, Plus, Edit, Trash2, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
@@ -59,12 +60,7 @@ export default function LocationsManagement() {
       if (error) throw error;
       setLocations(data || []);
     } catch (error) {
-      logger.error('Error loading locations:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load locations',
-        variant: 'destructive'
-      });
+      handleError(error, { component: 'LocationsManagement', toastTitle: 'Failed to load locations' });
     } finally {
       setLoading(false);
     }
@@ -107,12 +103,9 @@ export default function LocationsManagement() {
       setEditingLocation(null);
       setFormData({ name: '', address: '', city: '', state: '', zip_code: '', phone: '', email: '', license_number: '' });
       loadLocations();
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      loadLocations();
+    } catch (error) {
+      handleError(error, { component: 'LocationsManagement', toastTitle: 'Error saving location' });
     }
   };
 
@@ -156,12 +149,12 @@ export default function LocationsManagement() {
       loadLocations();
       setDeleteDialogOpen(false);
       setLocationToDelete(null);
-    } catch (error: unknown) {
-      logger.error('Failed to delete location', error, { component: 'LocationsManagement', locationId: locationToDelete.id });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete location',
-        variant: 'destructive'
+      setLocationToDelete(null);
+    } catch (error) {
+      handleError(error, {
+        component: 'LocationsManagement',
+        toastTitle: 'Failed to delete location',
+        context: { locationId: locationToDelete.id }
       });
     } finally {
       setIsDeleting(false);
@@ -178,7 +171,7 @@ export default function LocationsManagement() {
 
   return (
     <div className="space-y-6">
-      <SEOHead 
+      <SEOHead
         title="Locations Management"
         description="Manage your business locations"
       />
@@ -240,7 +233,7 @@ export default function LocationsManagement() {
                     required
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="state">State *</Label>
                   <Input

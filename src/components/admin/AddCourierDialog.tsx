@@ -6,6 +6,7 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils/apiClient";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,7 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { tenant } = useTenantAdminAuth();
 
   const form = useForm<CourierFormData>({
     resolver: zodResolver(courierSchema),
@@ -83,7 +85,10 @@ export const AddCourierDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          tenant_id: tenant?.id, // Include tenant_id for multi-tenant isolation
+        }),
         skipAuth: true, // Manual auth header
       });
 

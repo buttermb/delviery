@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Clock, User, Activity } from 'lucide-react';
 
+import { handleError } from '@/utils/errorHandling/handlers';
+
 export default function ActivityLogs() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -25,8 +27,9 @@ export default function ActivityLogs() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'ActivityLogs', toastTitle: 'Failed to load activity logs' });
         throw error;
       }
     },

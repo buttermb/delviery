@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface FrontedItem {
   id: string;
@@ -98,13 +99,9 @@ export default function FrontedInventory() {
       }
 
       setFrontedItems(data || []);
-    } catch (error: any) {
-      logger.error('Unexpected error loading fronted inventory:', error);
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred. Please check your connection.',
-        variant: 'destructive'
-      });
+      setFrontedItems(data || []);
+    } catch (error) {
+      handleError(error, { component: 'FrontedInventory', toastTitle: 'Error loading fronted inventory' });
     } finally {
       setLoading(false);
     }

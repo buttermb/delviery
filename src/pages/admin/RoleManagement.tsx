@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Plus, Edit, Trash2 } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 interface Role {
   id: string;
@@ -59,8 +61,8 @@ export default function RoleManagement() {
           ...role,
           permissions: role.role_permissions?.map((rp: any) => rp.permission_key) || [],
         }));
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -108,11 +110,11 @@ export default function RoleManagement() {
       toast({ title: 'Role created', description: 'Role has been successfully created.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create role',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'RoleManagement.createRole',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });
@@ -160,11 +162,11 @@ export default function RoleManagement() {
       toast({ title: 'Role updated', description: 'Role has been successfully updated.' });
       resetForm();
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update role',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'RoleManagement.updateRole',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

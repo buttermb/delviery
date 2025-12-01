@@ -36,7 +36,7 @@ serve(async (req) => {
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')
-      .single();
+      .maybeSingle();
 
     if (!roles) {
       return new Response(
@@ -55,6 +55,7 @@ serve(async (req) => {
       vehicle_make,
       vehicle_model,
       vehicle_plate,
+      tenant_id,
       age_verified = true // Default to true for admin-added couriers
     } = body;
 
@@ -66,12 +67,35 @@ serve(async (req) => {
       );
     }
 
+    // Get tenant_id from the admin user if not provided
+    let courierTenantId = tenant_id;
+    if (!courierTenantId) {
+      // Try to get tenant from tenant_users table
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (tenantUser?.tenant_id) {
+        courierTenantId = tenantUser.tenant_id;
+      }
+    }
+
+    if (!courierTenantId) {
+      return new Response(
+        JSON.stringify({ error: 'Unable to determine tenant. Please provide tenant_id.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Check if courier email already exists
     const { data: existingCourier } = await supabase
       .from('couriers')
       .select('id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (existingCourier) {
       return new Response(
@@ -98,11 +122,12 @@ serve(async (req) => {
       );
     }
 
-    // Insert courier record
+    // Insert courier record with tenant_id for multi-tenant isolation
     const { data: courier, error: courierError } = await supabase
       .from('couriers')
       .insert({
         user_id: authData.user.id,
+        tenant_id: courierTenantId,
         full_name,
         email,
         phone,
@@ -116,13 +141,13 @@ serve(async (req) => {
         is_online: false
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (courierError) {
       console.error('Failed to create courier:', courierError);
       // Cleanup: delete auth user if courier creation failed
       await supabase.auth.admin.deleteUser(authData.user.id);
-      
+
       return new Response(
         JSON.stringify({ error: 'Failed to create courier record' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -155,8 +180,8 @@ serve(async (req) => {
     console.log('Courier created successfully:', courier.id);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         courier,
         message: 'Courier added successfully. They will receive an email to set their password.'
       }),

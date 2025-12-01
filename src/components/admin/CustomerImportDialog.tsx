@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from "@/lib/logger";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +101,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             setFile(null);
             setProgress(0);
         } catch (error) {
-            console.error('Import failed:', error);
+            logger.error('Import failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerImportDialog' });
             toast.error(error instanceof Error ? error.message : "Failed to import customers");
         } finally {
             setLoading(false);

@@ -191,8 +191,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         label: 'Find Tenant',
         icon: Search,
         action: () => {
-          navigate('/super-admin/tenants');
-          // TODO: Focus search input
+          navigate('/super-admin/tenants?focus=search');
         },
         shortcut: '⌘T',
         keywords: ['search', 'find', 'tenant'],

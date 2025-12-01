@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, CheckCircle, XCircle } from 'lucide-react';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 const PERMISSION_CATEGORIES = [
   {
@@ -54,8 +55,9 @@ export default function Permissions() {
           ...role,
           permissions: role.role_permissions?.map((rp: any) => rp.permission_key) || [],
         }));
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'Permissions', toastTitle: 'Failed to load permissions' });
         throw error;
       }
     },

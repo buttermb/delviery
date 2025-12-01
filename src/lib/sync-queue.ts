@@ -2,6 +2,15 @@ import { db } from './idb';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
+interface SyncManager {
+    register(tag: string): Promise<void>;
+    getTags(): Promise<string[]>;
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+    sync: SyncManager;
+}
+
 export const syncQueue = {
     async process() {
         if (!navigator.onLine) return;
@@ -43,8 +52,7 @@ export const syncQueue = {
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
             try {
                 const registration = await navigator.serviceWorker.ready;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (registration as any).sync.register('sync-queue');
+                await (registration as ServiceWorkerRegistrationWithSync).sync.register('sync-queue');
             } catch (err) {
                 logger.warn('Background sync registration failed:', err, { component: 'SyncQueue' });
             }

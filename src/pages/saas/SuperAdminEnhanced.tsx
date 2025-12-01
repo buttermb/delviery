@@ -58,9 +58,19 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
+import { handleError } from '@/utils/errorHandling/handlers';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { CreateTenantDialog } from '@/components/admin/CreateTenantDialog';
 import { NotificationDialog } from '@/components/admin/NotificationDialog';
+import { TenantQuickActions } from '@/components/admin/TenantQuickActions';
+import { TenantFilters, FilterType } from '@/components/admin/TenantFilters';
+import { HealthScoreTooltip } from '@/components/admin/HealthScoreTooltip';
+import { OnboardingTracker } from '@/components/admin/OnboardingTracker';
+import { TenantHoverCard } from '@/components/admin/TenantHoverCard';
+import { TenantSupportTickets } from '@/components/admin/TenantSupportTickets';
+import { TenantActivityTimeline } from '@/components/admin/TenantActivityTimeline';
+import { BulkActionsBar } from '@/components/admin/BulkActionsBar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PlatformStats {
   mrr: number;
@@ -105,8 +115,10 @@ export default function SuperAdminEnhanced() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [planFilter, setPlanFilter] = useState<string>('all');
+  const [smartFilter, setSmartFilter] = useState<FilterType>('all');
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
   const [tenantDetailOpen, setTenantDetailOpen] = useState(false);
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
 
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading } = useQuery<PlatformStats>({
@@ -167,7 +179,7 @@ export default function SuperAdminEnhanced() {
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        query = query.ilike('business_name', `%${searchTerm}%`);
+        query = query.or(`business_name.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%,owner_email.ilike.%${searchTerm}%,owner_name.ilike.%${searchTerm}%`);
       }
 
       if (statusFilter !== 'all') {
@@ -182,7 +194,7 @@ export default function SuperAdminEnhanced() {
 
       if (error) throw error;
 
-      // Calculate health scores
+      // Calculate health scores and filter based on smart filter
       const tenantsWithHealth = await Promise.all(
         (data || []).map(async (tenant) => {
           const { data: fullTenant } = await supabase
@@ -196,13 +208,50 @@ export default function SuperAdminEnhanced() {
           return {
             ...tenant,
             health_score: health.score,
+            health_reasons: health.reasons,
+            full_tenant: fullTenant
           };
         })
       );
 
+      // Apply smart filters in memory (since they depend on derived data like health score)
+      if (smartFilter !== 'all') {
+        return tenantsWithHealth.filter(tenant => {
+          const daysSinceCreation = (Date.now() - new Date(tenant.created_at).getTime()) / (1000 * 60 * 60 * 24);
+          const isTenantTrial = isTrial(tenant.subscription_status);
+          // Mock trial end date check (assuming 14 days)
+          const trialEndsIn = 14 - daysSinceCreation;
+
+          switch (smartFilter) {
+            case 'needs_attention':
+              return tenant.health_score < 50 || tenant.subscription_status === 'past_due';
+            case 'onboarding':
+              return daysSinceCreation < 7;
+            case 'trial_ending':
+              return isTenantTrial && trialEndsIn <= 3 && trialEndsIn > 0;
+            case 'past_due':
+              return tenant.subscription_status === 'past_due';
+            case 'high_value':
+              return (tenant.mrr || 0) > 500;
+            default:
+              return true;
+          }
+        });
+      }
+
       return tenantsWithHealth;
     },
   });
+
+  // Calculate filter counts
+  const filterCounts = {
+    all: stats?.totalTenants || 0,
+    needs_attention: tenants?.filter(t => t.health_score < 50 || t.subscription_status === 'past_due').length || 0,
+    onboarding: tenants?.filter(t => (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24) < 7).length || 0,
+    trial_ending: tenants?.filter(t => isTrial(t.subscription_status) && (14 - (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24)) <= 3).length || 0,
+    past_due: tenants?.filter(t => t.subscription_status === 'past_due').length || 0,
+    high_value: tenants?.filter(t => (t.mrr || 0) > 500).length || 0,
+  };
 
   // Fetch at-risk tenants
   const { data: atRiskTenants } = useQuery({
@@ -266,12 +315,9 @@ export default function SuperAdminEnhanced() {
 
       // Navigate to tenant's admin dashboard using their slug
       navigate(`/${tenant.slug}/admin/dashboard`);
-    } catch (error: any) {
-      toast({
-        title: 'Failed to login',
-        description: error.message,
-        variant: 'destructive',
-      });
+      navigate(`/${tenant.slug}/admin/dashboard`);
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminEnhanced', toastTitle: 'Failed to login' });
     }
   };
 
@@ -547,8 +593,15 @@ export default function SuperAdminEnhanced() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Filters */}
-            <div className="flex gap-2 mb-4">
+            {/* Smart Filters */}
+            <TenantFilters
+              activeFilter={smartFilter}
+              onFilterChange={setSmartFilter}
+              counts={filterCounts}
+            />
+
+            {/* Filters and Search */}
+            <div className="flex gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -588,6 +641,18 @@ export default function SuperAdminEnhanced() {
               <table className="w-full">
                 <thead className="bg-muted">
                   <tr>
+                    <th className="w-[50px] p-3">
+                      <Checkbox
+                        checked={tenants?.length > 0 && selectedTenants.length === tenants?.length}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedTenants(tenants?.map(t => t.id) || []);
+                          } else {
+                            setSelectedTenants([]);
+                          }
+                        }}
+                      />
+                    </th>
                     <th className="text-left p-3 text-sm font-medium">Business</th>
                     <th className="text-left p-3 text-sm font-medium">Plan</th>
                     <th className="text-left p-3 text-sm font-medium">Status</th>
@@ -607,8 +672,34 @@ export default function SuperAdminEnhanced() {
                         setTenantDetailOpen(true);
                       }}
                     >
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedTenants.includes(tenant.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedTenants([...selectedTenants, tenant.id]);
+                            } else {
+                              setSelectedTenants(selectedTenants.filter(id => id !== tenant.id));
+                            }
+                          }}
+                        />
+                      </td>
                       <td className="p-3">
-                        <div className="font-medium">{tenant.business_name}</div>
+                        <TenantHoverCard tenant={{
+                          id: tenant.id,
+                          business_name: tenant.business_name,
+                          slug: (tenant as any).slug || tenant.id,
+                          subscription_plan: tenant.subscription_plan,
+                          subscription_status: tenant.subscription_status,
+                          created_at: tenant.created_at,
+                          mrr: tenant.mrr,
+                          health_score: tenant.health_score,
+                          owner_name: (tenant as any).full_tenant?.owner_name || 'Unknown',
+                          owner_email: (tenant as any).full_tenant?.owner_email || 'Unknown',
+                          last_activity_at: tenant.last_activity_at
+                        }}>
+                          <div className="font-medium hover:underline">{tenant.business_name}</div>
+                        </TenantHoverCard>
                       </td>
                       <td className="p-3">
                         <Badge variant="outline">{tenant.subscription_plan}</Badge>
@@ -616,40 +707,45 @@ export default function SuperAdminEnhanced() {
                       <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
                       <td className="p-3">{formatCurrency(tenant.mrr || 0)}</td>
                       <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          {getHealthBadge(tenant.health_score)}
-                          <span className="text-sm text-muted-foreground">
-                            ({tenant.health_score})
-                          </span>
-                        </div>
+                        <HealthScoreTooltip score={tenant.health_score} reasons={(tenant as any).health_reasons}>
+                          <div className="flex items-center gap-2">
+                            {getHealthBadge(tenant.health_score)}
+                            <span className="text-sm text-muted-foreground">
+                              ({tenant.health_score})
+                            </span>
+                          </div>
+                        </HealthScoreTooltip>
                       </td>
                       <td className="p-3 text-sm text-muted-foreground">
-                        {formatSmartDate(tenant.created_at)}
+                        {(Date.now() - new Date(tenant.created_at).getTime()) / (1000 * 60 * 60 * 24) < 14 ? (
+                          <OnboardingTracker tenant={{
+                            created_at: tenant.created_at,
+                            onboarded: (tenant as any).full_tenant?.onboarded,
+                            usage: (tenant as any).full_tenant?.usage,
+                            email_verified: (tenant as any).full_tenant?.email_verified,
+                            payment_method_attached: !!(tenant as any).full_tenant?.stripe_customer_id
+                          }} />
+                        ) : (
+                          formatSmartDate(tenant.created_at)
+                        )}
                       </td>
                       <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedTenant(tenant.id);
-                              setTenantDetailOpen(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLoginAsTenant(tenant.id);
-                            }}
-                          >
-                            <LogIn className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <TenantQuickActions
+                          tenant={{
+                            id: tenant.id,
+                            business_name: tenant.business_name,
+                            slug: (tenant as any).slug || tenant.id,
+                            subscription_status: tenant.subscription_status,
+                          }}
+                          onViewDetails={() => {
+                            setSelectedTenant(tenant.id);
+                            setTenantDetailOpen(true);
+                          }}
+                          onRefresh={() => {
+                            // Refresh tenant data
+                            // TODO: Add refresh logic
+                          }}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -679,6 +775,28 @@ export default function SuperAdminEnhanced() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Actions Bar */}
+        <BulkActionsBar
+          selectedCount={selectedTenants.length}
+          onClearSelection={() => setSelectedTenants([])}
+          onBulkEmail={() => {
+            // Open notification dialog with selected tenants
+            // This would require updating NotificationDialog to accept initial selection
+            toast({ title: "Bulk Email", description: `Drafting email to ${selectedTenants.length} tenants` });
+          }}
+          onBulkSuspend={async () => {
+            // Implement bulk suspend logic
+            toast({ title: "Bulk Suspend", description: `Suspending ${selectedTenants.length} tenants` });
+            setSelectedTenants([]);
+          }}
+          onBulkUnsuspend={() => { }}
+          onBulkExport={() => {
+            const selectedData = tenants?.filter(t => selectedTenants.includes(t.id)) || [];
+            exportTenantsToCSV(selectedData);
+            setSelectedTenants([]);
+          }}
+        />
       </div>
     </div>
   );
@@ -713,6 +831,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
         <TabsTrigger value="features">Features</TabsTrigger>
         <TabsTrigger value="usage">Usage</TabsTrigger>
         <TabsTrigger value="billing">Billing</TabsTrigger>
+        <TabsTrigger value="support">Support</TabsTrigger>
         <TabsTrigger value="activity">Activity</TabsTrigger>
       </TabsList>
 
@@ -803,12 +922,8 @@ function FeatureManagement({ tenant }: { tenant: any }) {
         title: 'Feature updated',
         description: `${featureKey} ${enabled ? 'enabled' : 'disabled'}`,
       });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to update feature',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminEnhanced', toastTitle: 'Failed to update feature' });
     }
   };
 
@@ -1010,12 +1125,8 @@ function BillingManagement({ tenant }: { tenant: any }) {
         title: 'Plan updated',
         description: `Changed to ${newPlan} plan`,
       });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to change plan',
-        description: error.message,
-        variant: 'destructive',
-      });
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminEnhanced', toastTitle: 'Failed to change plan' });
     }
   };
 

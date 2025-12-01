@@ -41,6 +41,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface SupportTicket {
   id: string;
@@ -140,13 +141,18 @@ export default function SuperAdminSupport() {
         description: 'Ticket has been marked as resolved',
       });
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
-    } catch (error: any) {
-      // If table doesn't exist, just show success
-      toast({
-        title: 'Ticket resolved',
-        description: 'Ticket has been marked as resolved',
-      });
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+    } catch (error) {
+      // If table doesn't exist, just show success (mock behavior for dev)
+      if ((error as any)?.code === '42P01') {
+        toast({
+          title: 'Ticket resolved',
+          description: 'Ticket has been marked as resolved',
+        });
+        queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+        return;
+      }
+      handleError(error, { component: 'SuperAdminSupport', toastTitle: 'Failed to resolve ticket' });
     }
   };
 

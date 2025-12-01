@@ -386,7 +386,7 @@ const App = () => {
   // Initialize performance monitoring (Core Web Vitals)
   useEffect(() => {
     PerformanceMonitor.init();
-    
+
     // Log performance report in development
     if (import.meta.env.DEV) {
       const reportTimer = setTimeout(() => {
@@ -394,7 +394,7 @@ const App = () => {
       }, 5000);
       return () => clearTimeout(reportTimer);
     }
-    
+
     return () => PerformanceMonitor.disconnect();
   }, []);
 
@@ -762,16 +762,18 @@ const App = () => {
                                     <Route
                                       path="/courier/*"
                                       element={
-                                        <CourierProvider>
-                                          <Routes>
-                                            <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
-                                            <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
-                                            <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
-                                            <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
-                                            <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
-                                            <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
-                                          </Routes>
-                                        </CourierProvider>
+                                        <ErrorBoundary title="Courier Portal Unavailable" description="We encountered an error loading the courier portal. Please try refreshing the page.">
+                                          <CourierProvider>
+                                            <Routes>
+                                              <Route path="dashboard" element={<ProtectedCourierRoute><CourierDashboardPage /></ProtectedCourierRoute>} />
+                                              <Route path="earnings" element={<ProtectedCourierRoute><CourierEarningsPage /></ProtectedCourierRoute>} />
+                                              <Route path="history" element={<ProtectedCourierRoute><CourierHistoryPage /></ProtectedCourierRoute>} />
+                                              <Route path="settings" element={<ProtectedCourierRoute><CourierSettingsPage /></ProtectedCourierRoute>} />
+                                              <Route path="order/:orderId" element={<ProtectedCourierRoute><CourierActiveOrderPage /></ProtectedCourierRoute>} />
+                                              <Route path="delivery/:id" element={<ProtectedCourierRoute><UnifiedActiveDeliveryPage /></ProtectedCourierRoute>} />
+                                            </Routes>
+                                          </CourierProvider>
+                                        </ErrorBoundary>
                                       }
                                     />
 
@@ -789,7 +791,11 @@ const App = () => {
                                     <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                                     {/* Public Routes */}
                                     <Route path="/portal/invoice/:token" element={<InvoicePublicPage />} />
-                                    <Route path="/:tenantSlug/shop" element={<CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>}>
+                                    <Route path="/:tenantSlug/shop" element={
+                                      <ErrorBoundary title="Shop Unavailable" description="We encountered an error loading the shop. Please try refreshing the page.">
+                                        <CustomerProtectedRoute><CustomerPortal /></CustomerProtectedRoute>
+                                      </ErrorBoundary>
+                                    }>
                                       <Route index element={<Navigate to="dashboard" replace />} />
                                       <Route path="dashboard" element={<CustomerDashboardPage />} />
                                     </Route>

@@ -6,6 +6,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function RevenueReports() {
   const { tenant } = useTenantAdminAuth();
@@ -54,8 +55,8 @@ export default function RevenueReports() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },

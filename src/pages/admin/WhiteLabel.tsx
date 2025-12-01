@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Paintbrush, Upload, Save } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
 
 export default function WhiteLabel() {
   const { tenant } = useTenantAdminAuth();
@@ -90,11 +91,11 @@ export default function WhiteLabel() {
       queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
       toast({ title: 'Branding updated', description: 'White label settings have been saved.' });
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update branding',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'WhiteLabel.updateBranding',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });
@@ -175,11 +176,11 @@ export default function WhiteLabel() {
 
                       setFormData({ ...formData, logo_url: data.publicUrl });
                       toast({ title: "Success", description: "Logo uploaded successfully" });
-                    } catch (error: any) {
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to upload logo. Ensure 'branding' bucket exists.",
-                        variant: "destructive"
+                    } catch (error) {
+                      handleError(error, {
+                        component: 'WhiteLabel.uploadLogo',
+                        toastTitle: 'Error',
+                        showToast: true
                       });
                     }
                   }}

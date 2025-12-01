@@ -23,7 +23,7 @@ export function useMapboxToken() {
           .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (!tenantUser) {
           setLoading(false);
@@ -35,7 +35,7 @@ export function useMapboxToken() {
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
-          .single();
+          .maybeSingle();
 
         if (!account) {
           setLoading(false);
@@ -46,7 +46,7 @@ export function useMapboxToken() {
           .from('account_settings')
           .select('integration_settings')
           .eq('account_id', account.id)
-          .single();
+          .maybeSingle();
 
         const integrationSettings = settings?.integration_settings as Record<string, any> | null;
         if (integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token) {

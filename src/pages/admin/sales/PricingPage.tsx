@@ -30,6 +30,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -96,8 +97,9 @@ export default function PricingPage() {
           bulk_discount_percent: product.bulk_discount || 0,
           products: { name: product.name },
         }));
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'PricingPage', toastTitle: 'Failed to load pricing tiers' });
         throw error;
       }
     },
@@ -108,7 +110,7 @@ export default function PricingPage() {
     queryKey: ['products-for-pricing', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
-      
+
       try {
         const { data, error } = await supabase
           .from('products')
@@ -122,8 +124,9 @@ export default function PricingPage() {
         }
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'PricingPage', toastTitle: 'Failed to load products' });
         throw error;
       }
     },
@@ -224,12 +227,8 @@ export default function PricingPage() {
       });
       queryClient.invalidateQueries({ queryKey: ['pricing-tiers'] });
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Failed to update pricing',
-        description: error.message,
-        variant: 'destructive'
-      });
+    onError: (error) => {
+      handleError(error, { component: 'PricingPage', toastTitle: 'Failed to update pricing' });
     }
   });
 
@@ -345,9 +344,9 @@ export default function PricingPage() {
             $
             {pricingTiers && pricingTiers.length > 0
               ? (
-                  pricingTiers.reduce((sum, t) => sum + Number(t.price_per_lb || 0), 0) /
-                  pricingTiers.length
-                ).toFixed(2)
+                pricingTiers.reduce((sum, t) => sum + Number(t.price_per_lb || 0), 0) /
+                pricingTiers.length
+              ).toFixed(2)
               : '0.00'}
           </div>
         </Card>

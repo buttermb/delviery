@@ -15,79 +15,79 @@ export async function checkIntegrationConnection(integrationId: string): Promise
     case 'mapbox':
       // Check if Mapbox token exists in environment or account settings
       if (import.meta.env.VITE_MAPBOX_TOKEN) return true;
-      
+
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
-        
+
         const { data: tenantUser } = await supabase
           .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
-          .single();
-        
+          .maybeSingle();
+
         if (!tenantUser) return false;
-        
+
         // Get account.id from accounts table first
         const { data: account } = await supabase
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
-          .single();
-        
+          .maybeSingle();
+
         if (!account) return false;
-        
+
         // Now query account_settings using the correct account.id
         const { data: settings } = await supabase
           .from('account_settings')
           .select('integration_settings')
           .eq('account_id', account.id)
-          .single();
-        
+          .maybeSingle();
+
         const integrationSettings = settings?.integration_settings as Record<string, any> | null;
         return !!(integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token);
       } catch (error) {
         logger.error('Mapbox connection check error', error, { component: 'integrations' });
         return false;
       }
-    
+
     case 'stripe':
       // Check if Tenant Stripe is configured (their own API keys for customer payments)
       try {
         const { supabase } = await import('@/integrations/supabase/client');
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
-        
+
         const { data: tenantUser } = await supabase
           .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
-          .single();
-        
+          .maybeSingle();
+
         if (!tenantUser) return false;
-        
+
         const { data: account } = await supabase
           .from('accounts')
           .select('id')
           .eq('tenant_id', tenantUser.tenant_id)
-          .single();
-        
+          .maybeSingle();
+
         if (!account) return false;
-        
+
         const { data: settings } = await supabase
           .from('account_settings')
           .select('integration_settings')
           .eq('account_id', account.id)
-          .single();
-        
+          .maybeSingle();
+
         const integrationSettings = settings?.integration_settings as Record<string, any> | null;
         return !!(integrationSettings?.stripe_secret_key && integrationSettings?.stripe_publishable_key);
       } catch (error) {
         logger.error('Stripe connection check error', error, { component: 'integrations' });
         return false;
       }
-    
+
     case 'twilio':
       // Check if Twilio is configured
       try {
@@ -101,7 +101,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
         logger.error('Twilio connection check error', error, { component: 'integrations' });
         return false;
       }
-    
+
     case 'sendgrid':
       // Check if SendGrid is configured
       try {
@@ -115,7 +115,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
         logger.error('SendGrid connection check error', error, { component: 'integrations' });
         return false;
       }
-    
+
     case 'custom':
       // Custom integrations are checked via database
       try {
@@ -129,7 +129,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
         logger.error('Custom integrations check error', error, { component: 'integrations' });
         return false;
       }
-    
+
     default:
       return false;
   }
@@ -215,14 +215,14 @@ export function getHiddenFeaturesByIntegrations(
   enabledIntegrations?: string[]
 ): string[] {
   if (!enabledIntegrations) return [];
-  
+
   const hiddenFeatures: string[] = [];
-  
+
   Object.values(INTEGRATIONS).forEach(integration => {
     if (!enabledIntegrations.includes(integration.id)) {
       hiddenFeatures.push(...integration.featuresEnabled);
     }
   });
-  
+
   return hiddenFeatures;
 }

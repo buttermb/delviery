@@ -7,6 +7,7 @@ import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -31,16 +32,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const [skipVerification, setSkipVerification] = useState(false);
   const location = useLocation();
   const totalWaitStartRef = useRef<number | null>(null);
-  
+
   // Use lock to prevent concurrent verification requests
   const verificationLockRef = useRef(false);
-  
+
   // Cache verification results to avoid repeated checks
   const verificationCache = useRef<Record<string, { verified: boolean; timestamp: number }>>({});
-  
+
   // Track auth values in refs to avoid re-triggering verification
   const authRef = useRef({ token, admin, tenant });
-  
+
   // Update auth refs when auth changes (doesn't trigger verification)
   useEffect(() => {
     authRef.current = { token, admin, tenant };
@@ -56,7 +57,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   // Safety timeout to unlock verification if it gets stuck
   useEffect(() => {
     if (!verifying) return;
-    
+
     const timeout = setTimeout(() => {
       if (verificationLockRef.current) {
         logger.warn('[TenantAdminProtectedRoute] Verification timeout - unlocking', { component: 'TenantAdminProtectedRoute' });
@@ -64,7 +65,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         setVerifying(false);
       }
     }, VERIFICATION_TIMEOUT_MS);
-    
+
     return () => clearTimeout(timeout);
   }, [verifying]);
 
@@ -79,13 +80,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       tenantSlug,
       pathname: location.pathname,
     });
-    
+
     // Skip if already verified or skipped - MUST be first check to prevent loops
     if (verified || skipVerification) {
       logger.debug('[PROTECTED ROUTE] ⏩ Skipping verification (already verified or skipped)');
       return;
     }
-    
+
     // CRITICAL FIX: If auth is complete (not loading) and we have admin/tenant, skip verification
     // This prevents infinite loading when auth completes successfully
     if (!loading && admin && tenant && tenant.slug === tenantSlug) {
@@ -94,13 +95,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       setSkipVerification(true);
       return;
     }
-    
+
     // Track total wait time
     if (!totalWaitStartRef.current) {
       totalWaitStartRef.current = Date.now();
       logger.debug('[PROTECTED ROUTE] ⏱️ Starting total wait timer');
     }
-    
+
     // Total wait timeout: skip verification after 15 seconds
     const totalWaitTimeout = setTimeout(() => {
       const totalWait = Date.now() - (totalWaitStartRef.current || Date.now());
@@ -113,7 +114,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         verificationLockRef.current = false;
       }
     }, TOTAL_WAIT_TIMEOUT_MS);
-    
+
     // If auth is still loading, wait (but with timeout protection)
     if (loading) {
       logger.debug('[PROTECTED ROUTE] ⏳ Auth context still loading, waiting...');
@@ -127,13 +128,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           verificationLockRef.current = false;
         }
       }, 10000);
-      
+
       return () => {
         clearTimeout(loadingTimeout);
         clearTimeout(totalWaitTimeout);
       };
     }
-    
+
     // If not authenticated, don't verify - let the redirect happen
     if (!admin || !tenant) {
       logger.debug('[PROTECTED ROUTE] ❌ Not authenticated, will redirect to login');
@@ -142,12 +143,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       setVerified(false);
       return;
     }
-    
+
     logger.debug('[PROTECTED ROUTE] ✅ Auth context loaded', {
       adminEmail: admin.email,
       tenantSlug: tenant.slug,
     });
-    
+
     // Skip if already checking
     if (verifying) {
       logger.debug('[PROTECTED ROUTE] 🔄 Already verifying, skipping duplicate check');
@@ -175,7 +176,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     verificationLockRef.current = true;
     setVerifying(true);
     setVerificationError(null);
-    
+
     // Set verification timeout (5 seconds)
     const verificationTimeout = setTimeout(() => {
       if (!verified && !skipVerification) {
@@ -190,7 +191,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // Verification with retry logic
     const verifyWithRetry = async (retryCount = 0): Promise<boolean> => {
       const maxRetries = 2;
-      
+
       try {
         // Local verification: compare tenant slug from URL with authenticated tenant
         const isValidSlug = tenant.slug === tenantSlug;
@@ -200,16 +201,16 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
           isValid: isValidSlug,
           attempt: retryCount + 1,
         });
-        
+
         if (!isValidSlug) {
           logger.debug('[PROTECTED ROUTE] ❌ Slug mismatch detected!');
           const { showErrorToast } = await import('@/lib/toastUtils');
           const { emitAuthError } = await import('@/hooks/useAuthError');
-          
+
           const errorMessage = "Tenant mismatch. You may be logged into a different account.";
           showErrorToast(errorMessage, "Please log in with the correct account.");
           emitAuthError({ message: errorMessage, code: 'TENANT_MISMATCH' });
-          
+
           setVerificationError(errorMessage);
           return false;
         }
@@ -217,37 +218,41 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
         // Verification passed
         logger.debug('[PROTECTED ROUTE] ✅ Verification passed!');
         return true;
-      } catch (error: any) {
-        logger.error('[PROTECTED ROUTE] ❌ Verification error:', error);
-        
+      } catch (error) {
+        const message = handleError(error, {
+          component: 'TenantAdminProtectedRoute',
+          showToast: false,
+          context: { action: 'verification_failed', retryCount }
+        });
+
         // Retry with exponential backoff
         if (retryCount < maxRetries) {
           const delay = Math.pow(2, retryCount) * 500; // 500ms, 1s, 2s
           logger.debug(`[PROTECTED ROUTE] 🔄 Retrying verification in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
-          
+
           await new Promise(resolve => setTimeout(resolve, delay));
           return verifyWithRetry(retryCount + 1);
         }
-        
+
         // Final failure after retries
         const { showErrorToast } = await import('@/lib/toastUtils');
         const { emitAuthError } = await import('@/hooks/useAuthError');
-        
+
         let errorMessage = 'Verification failed after multiple attempts.';
         let errorCode = 'VERIFICATION_FAILED';
-        
-        if (error.message?.includes('network')) {
+
+        if (message.includes('network')) {
           errorMessage = 'Network error during verification. Please check your connection.';
           errorCode = 'NETWORK_ERROR';
-        } else if (error.message?.includes('timeout')) {
+        } else if (message.includes('timeout')) {
           errorMessage = 'Verification timed out. Please try again.';
           errorCode = 'TIMEOUT';
         }
-        
+
         showErrorToast(errorMessage, 'Please refresh the page or log in again.');
         emitAuthError({ message: errorMessage, code: errorCode });
         setVerificationError(errorMessage);
-        
+
         return false;
       }
     };
@@ -256,19 +261,19 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     verifyWithRetry().then((success) => {
       clearTimeout(verificationTimeout);
       clearTimeout(totalWaitTimeout);
-      
+
       if (success) {
         verificationCache.current[cacheKey] = {
           verified: true,
           timestamp: Date.now(),
         };
-        
+
         setVerified(true);
         setVerificationError(null);
       } else {
         setVerified(false);
       }
-      
+
       setVerifying(false);
       verificationLockRef.current = false;
     }).catch((error) => {
@@ -278,7 +283,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       setVerifying(false);
       verificationLockRef.current = false;
     });
-    
+
     return () => {
       clearTimeout(totalWaitTimeout);
       clearTimeout(verificationTimeout);
@@ -297,21 +302,21 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     // Extract tenant slug from URL path
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const tenantSlugFromUrl = pathSegments[0];
-    
+
     // Validate slug: not 'undefined', not a UUID, not empty
-    const isValidSlug = tenantSlugFromUrl && 
-                       tenantSlugFromUrl !== 'undefined' && 
-                       !tenantSlugFromUrl.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-    
+    const isValidSlug = tenantSlugFromUrl &&
+      tenantSlugFromUrl !== 'undefined' &&
+      !tenantSlugFromUrl.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
     // Try URL slug first, then fallback to localStorage, then saas/login
-    const redirectSlug = isValidSlug ? tenantSlugFromUrl : 
-                        localStorage.getItem('lastTenantSlug');
-    
+    const redirectSlug = isValidSlug ? tenantSlugFromUrl :
+      localStorage.getItem('lastTenantSlug');
+
     if (redirectSlug) {
       logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug });
       return <Navigate to={`/${redirectSlug}/admin/login`} replace />;
     }
-    
+
     logger.debug('[PROTECTED ROUTE] No valid slug found, redirecting to saas login');
     return <Navigate to="/saas/login" replace />;
   }
@@ -323,12 +328,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Check if payment method is required and not added
   const tenantData = tenant as any;
-  const needsPaymentMethod = !tenantData?.payment_method_added && 
-                            tenantData?.subscription_status !== 'active';
+  const needsPaymentMethod = !tenantData?.payment_method_added &&
+    tenantData?.subscription_status !== 'active';
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
-  const isOnboardingRoute = location.pathname.includes('/admin/welcome') || 
-                           location.pathname.includes('/admin/onboarding');
-  
+  const isOnboardingRoute = location.pathname.includes('/admin/welcome') ||
+    location.pathname.includes('/admin/onboarding');
+
   // Redirect to plan selection if payment method not added (except if already on select-plan or onboarding)
   if (needsPaymentMethod && !isOnSelectPlanPage && !isOnboardingRoute) {
     logger.debug('[PROTECTED ROUTE] Payment method not added, redirecting to plan selection');

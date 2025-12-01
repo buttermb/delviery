@@ -6,6 +6,7 @@ import { DollarSign, Users, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function CommissionTracking() {
   const { tenant } = useTenantAdminAuth();
@@ -44,8 +45,9 @@ export default function CommissionTracking() {
         }
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if ((error as any)?.code === '42P01') return [];
+        handleError(error, { component: 'CommissionTracking', toastTitle: 'Failed to load commissions' });
         throw error;
       }
     },

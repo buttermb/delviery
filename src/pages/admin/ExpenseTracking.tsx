@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingDown, Calendar, Tag } from 'lucide-react';
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function ExpenseTracking() {
   const { tenant } = useTenantAdminAuth();
@@ -25,8 +26,8 @@ export default function ExpenseTracking() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },

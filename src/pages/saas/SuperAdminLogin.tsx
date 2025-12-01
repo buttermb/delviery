@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Loader2, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { handleError } from '@/utils/errorHandling/handlers';
 
 const SuperAdminLogin = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const SuperAdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -36,8 +37,8 @@ const SuperAdminLogin = () => {
       // Check if user is a platform super admin
       // Method 1: Check user metadata for platform_admin flag
       const isPlatformAdmin = authData.user.user_metadata?.role === 'platform_admin' ||
-                             authData.user.user_metadata?.platform_admin === true ||
-                             authData.user.user_metadata?.is_super_admin === true;
+        authData.user.user_metadata?.platform_admin === true ||
+        authData.user.user_metadata?.is_super_admin === true;
 
       // Method 2: Check tenant_users for super_admin role (tenant admins can also access platform admin)
       const { data: tenantUser } = await (supabase as any)
@@ -69,13 +70,9 @@ const SuperAdminLogin = () => {
 
       // Redirect to super admin dashboard
       navigate("/saas/admin", { replace: true });
-    } catch (error: any) {
-      logger.error("Super admin sign in error", error);
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error.message || "Invalid credentials",
-      });
+      navigate("/saas/admin", { replace: true });
+    } catch (error) {
+      handleError(error, { component: 'SuperAdminLogin', toastTitle: 'Login failed' });
       setLoading(false);
     }
   };
@@ -135,13 +132,13 @@ const SuperAdminLogin = () => {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 pt-6 border-t">
             <div className="text-center text-sm text-muted-foreground">
               <p>For tenant admin access, use your tenant-specific login URL</p>
             </div>
           </div>
-          
+
           <div className="mt-4 text-xs text-center text-muted-foreground">
             <p>Platform administrators can manage all tenants, billing, and platform settings.</p>
           </div>

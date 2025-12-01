@@ -4,6 +4,7 @@
  * Executive summary view for board meetings
  */
 
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -128,7 +129,7 @@ export default function BoardReportPage() {
             pdf.save(`Board_Report_${new Date().toISOString().split('T')[0]}.pdf`);
             showSuccessToast("Export Complete", "Board report downloaded successfully");
         } catch (error) {
-            console.error('Export failed:', error);
+            logger.error('Export failed:', error instanceof Error ? error : new Error(String(error)), { component: 'BoardReportPage' });
             showErrorToast("Export Failed", "Could not generate PDF report");
         }
     };

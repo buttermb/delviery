@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Plus, Check, X } from 'lucide-react';
+import { handleError } from "@/utils/errorHandling/handlers";
+import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 
 export default function CustomDomain() {
   const { tenant } = useTenantAdminAuth();
@@ -32,8 +34,8 @@ export default function CustomDomain() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         return data || [];
-      } catch (error: any) {
-        if (error.code === '42P01') return [];
+      } catch (error) {
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -67,11 +69,11 @@ export default function CustomDomain() {
       toast({ title: 'Domain added', description: 'Domain has been added. Please configure DNS settings.' });
       setDomain('');
     },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to add domain',
-        variant: 'destructive',
+    onError: (error) => {
+      handleError(error, {
+        component: 'CustomDomain.addDomain',
+        toastTitle: 'Error',
+        showToast: true
       });
     },
   });

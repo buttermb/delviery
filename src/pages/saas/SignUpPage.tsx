@@ -39,6 +39,7 @@ import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { handleError } from '@/utils/errorHandling/handlers';
 
 const signupSchema = z.object({
   business_name: z.string()
@@ -341,14 +342,18 @@ export default function SignUpPage() {
       });
 
       logger.info('[SIGNUP] Navigation complete', { slug: tenant.slug });
-    } catch (error: any) {
-      logger.error('[SIGNUP] Fatal error', error);
+    } catch (error) {
+      const message = handleError(error, {
+        component: 'SignUpPage',
+        showToast: false,
+        context: { action: 'signup_failed' }
+      });
 
       // Track analytics: signup error
       try {
         if (typeof window !== 'undefined' && 'analytics' in window) {
           (window as any).analytics?.track('Signup Error', {
-            error_message: error.message,
+            error_message: message,
             email: data.email,
           });
         }
@@ -368,15 +373,15 @@ export default function SignUpPage() {
 
       // Provide user-friendly error messages
       let errorMessage = 'Failed to create account. Please try again.';
-      if (error.message) {
-        if (error.message.includes('already exists')) {
+      if (message) {
+        if (message.includes('already exists')) {
           errorMessage = 'An account with this email already exists. Please sign in instead.';
-        } else if (error.message.includes('slug')) {
+        } else if (message.includes('slug')) {
           errorMessage = 'This business name is already taken. Please try a different name.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        } else if (message.includes('network') || message.includes('fetch')) {
           errorMessage = 'Network error. Please check your connection and try again.';
         } else {
-          errorMessage = error.message;
+          errorMessage = message;
         }
       }
 

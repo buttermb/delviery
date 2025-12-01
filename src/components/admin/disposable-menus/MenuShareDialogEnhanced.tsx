@@ -175,15 +175,6 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // In production, call your SMS service here
-      // Example:
-      // const { data, error } = await supabase.functions.invoke('send-sms', {
-      //   body: {
-      //     customers: selectedCustomersData,
-      //     message: smsMessage,
-      //     menu_url: menuUrl,
-      //     access_code: accessCode,
-      //   }
-      // });
 
       showSuccessToast(
         'SMS Sent',
@@ -200,16 +191,16 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
   const handleWhatsApp = () => {
     const message = isForumMenu
       ? `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
-        `You've been granted access to our community forum.\n\n` +
-        `Access URL: ${menuUrl}\n` +
-        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
-        `Join the discussion, share reviews, and connect with other customers!\n\n` +
-        `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
+      `You've been granted access to our community forum.\n\n` +
+      `Access URL: ${menuUrl}\n` +
+      `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+      `Join the discussion, share reviews, and connect with other customers!\n\n` +
+      `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`
       : `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
-        `You've been granted access to our wholesale catalog.\n\n` +
-        `Access URL: ${menuUrl}\n` +
-        `Access Code: ${accessCode}\n\n` +
-        `This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
+      `You've been granted access to our wholesale catalog.\n\n` +
+      `Access URL: ${menuUrl}\n` +
+      `Access Code: ${accessCode}\n\n` +
+      `This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -217,18 +208,18 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
     const subject = encodeURIComponent(`Access to ${menu?.name}`);
     const body = isForumMenu
       ? `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
-        `You've been granted access to our community forum.\n\n` +
-        `Access URL: ${menuUrl}\n` +
-        `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
-        `Join the discussion, share reviews, and connect with other customers!\n\n` +
-        `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
-        `Best regards`
+      `You've been granted access to our community forum.\n\n` +
+      `Access URL: ${menuUrl}\n` +
+      `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
+      `Join the discussion, share reviews, and connect with other customers!\n\n` +
+      `This link expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+      `Best regards`
       : `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
-        `You've been granted access to our wholesale catalog.\n\n` +
-        `Access URL: ${menuUrl}\n` +
-        `Access Code: ${accessCode}\n\n` +
-        `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
-        `Best regards`;
+      `You've been granted access to our wholesale catalog.\n\n` +
+      `Access URL: ${menuUrl}\n` +
+      `Access Code: ${accessCode}\n\n` +
+      `Important: This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(menu.expiration_date).toLocaleDateString()}` : 'after use'}.\n\n` +
+      `Best regards`;
     window.open(`mailto:${whitelistEntry?.customer_email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
   };
 
@@ -238,7 +229,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
         <DialogHeader>
           <DialogTitle>Share Menu Access</DialogTitle>
           <DialogDescription>
-            {isForumMenu 
+            {isForumMenu
               ? 'Share this forum menu link - customers will be redirected to the community forum'
               : 'Share this encrypted menu via link, QR code, or SMS'}
           </DialogDescription>
@@ -307,7 +298,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
                 </div>
               </div>
             )}
-            
+
             {/* Forum Menu Notice */}
             {isForumMenu && (
               <div className="rounded-lg border bg-green-500/10 border-green-500/20 p-4">
@@ -523,7 +514,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${new Date(m
             <div className="space-y-2">
               <Label>Menu Access List</Label>
               <div className="border rounded-lg">
-                    {whitelist && whitelist.length > 0 ? (
+                {whitelist && whitelist.length > 0 ? (
                   <div className="divide-y">
                     {whitelist.map((entry: WhitelistEntry) => (
                       <div key={String(entry.id)} className="p-3 flex items-center justify-between">
