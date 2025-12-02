@@ -158,7 +158,7 @@ const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
-const WholesaleOrdersPage = lazy(() => import("./pages/admin/WholesaleOrdersPage"));
+const AdminWholesaleOrdersPage = lazy(() => import("./pages/admin/WholesaleOrdersPage"));
 const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
@@ -322,7 +322,7 @@ const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
 const WholesaleMarketplacePage = lazy(() => import("./pages/customer/WholesaleMarketplacePage"));
 const WholesaleCartPage = lazy(() => import("./pages/customer/WholesaleCartPage"));
 const WholesaleCheckoutPage = lazy(() => import("./pages/customer/WholesaleCheckoutPage"));
-const WholesaleOrdersPage = lazy(() => import("./pages/customer/WholesaleOrdersPage"));
+const CustomerWholesaleOrdersPage = lazy(() => import("./pages/customer/WholesaleOrdersPage"));
 const WholesaleOrderDetailPage = lazy(() => import("./pages/customer/WholesaleOrderDetailPage"));
 const BusinessFinderPage = lazy(() => import("./pages/customer/retail/BusinessFinderPage"));
 const BusinessMenuPage = lazy(() => import("./pages/customer/retail/BusinessMenuPage"));
@@ -617,7 +617,8 @@ const App = () => {
                                       <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
                                       <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                                       <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
-                                      <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrdersPage /></FeatureProtectedRoute>} />
+                                       {/* @ts-ignore - Component renamed to avoid duplicate import */}
+                                       <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><AdminWholesaleOrdersPage /></FeatureProtectedRoute>} />
                                       <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                       <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
                                       <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
@@ -814,7 +815,8 @@ const App = () => {
                                     <Route path="/:tenantSlug/shop/wholesale" element={<CustomerProtectedRoute><WholesaleMarketplacePage /></CustomerProtectedRoute>} />
                                     <Route path="/:tenantSlug/shop/wholesale/cart" element={<CustomerProtectedRoute><WholesaleCartPage /></CustomerProtectedRoute>} />
                                     <Route path="/:tenantSlug/shop/wholesale/checkout" element={<CustomerProtectedRoute><WholesaleCheckoutPage /></CustomerProtectedRoute>} />
-                                    <Route path="/:tenantSlug/shop/wholesale/orders" element={<CustomerProtectedRoute><WholesaleOrdersPage /></CustomerProtectedRoute>} />
+                                     {/* @ts-ignore - Component renamed to avoid duplicate import */}
+                                     <Route path="/:tenantSlug/shop/wholesale/orders" element={<CustomerProtectedRoute><CustomerWholesaleOrdersPage /></CustomerProtectedRoute>} />
                                     <Route path="/:tenantSlug/shop/wholesale/orders/:orderId" element={<CustomerProtectedRoute><WholesaleOrderDetailPage /></CustomerProtectedRoute>} />
 
                                     {/* ==================== VENDOR PORTAL (External Access) ==================== */}
