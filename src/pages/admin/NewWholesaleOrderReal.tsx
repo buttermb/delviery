@@ -19,9 +19,11 @@ import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
 interface OrderItem {
+  inventory_id: string;
   product_name: string;
   quantity_lbs: number;
-  unit_price: number;
+  quantity_units: number;
+  price_per_lb: number;
 }
 
 export default function NewWholesaleOrderReal() {
@@ -68,10 +70,13 @@ export default function NewWholesaleOrderReal() {
 
   const addOrderItem = () => {
     if (inventory.length > 0) {
+      const firstItem = inventory[0];
       setOrderItems([...orderItems, {
-        product_name: inventory[0].product_name,
+        inventory_id: firstItem.id,
+        product_name: firstItem.product_name,
         quantity_lbs: 1,
-        unit_price: 3000
+        quantity_units: 4, // 1 lb = ~4 quarter pounds
+        price_per_lb: firstItem.base_price || 35
       }]);
     }
   };
@@ -82,12 +87,37 @@ export default function NewWholesaleOrderReal() {
 
   const updateOrderItem = (index: number, field: keyof OrderItem, value: any) => {
     const updated = [...orderItems];
-    updated[index] = { ...updated[index], [field]: value };
+    
+    // If updating product_name, also update related fields from inventory
+    if (field === 'product_name') {
+      const inventoryItem = inventory.find(i => i.product_name === value);
+      if (inventoryItem) {
+        updated[index] = {
+          ...updated[index],
+          product_name: value,
+          inventory_id: inventoryItem.id,
+          price_per_lb: inventoryItem.base_price || 35,
+          quantity_units: Math.ceil(updated[index].quantity_lbs * 4) // 1 lb = ~4 quarter pounds
+        };
+      } else {
+        updated[index] = { ...updated[index], [field]: value };
+      }
+    } else if (field === 'quantity_lbs') {
+      // Update quantity_units when quantity_lbs changes
+      updated[index] = {
+        ...updated[index],
+        quantity_lbs: value,
+        quantity_units: Math.ceil(value * 4)
+      };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
+    
     setOrderItems(updated);
   };
 
   const calculateTotals = () => {
-    const total = orderItems.reduce((sum, item) => sum + (item.quantity_lbs * item.unit_price), 0);
+    const total = orderItems.reduce((sum, item) => sum + (item.quantity_lbs * item.price_per_lb), 0);
     const cost = total * 0.65; // Assume 65% cost
     const profit = total - cost;
     const margin = total > 0 ? (profit / total) * 100 : 0;
@@ -135,9 +165,11 @@ export default function NewWholesaleOrderReal() {
       await createOrder.mutateAsync({
         client_id: selectedClientId,
         items: orderItems.map(item => ({
+          inventory_id: item.inventory_id,
           product_name: item.product_name,
-          quantity: item.quantity_lbs,
-          unit_price: item.unit_price
+          quantity_lbs: item.quantity_lbs,
+          quantity_units: item.quantity_units,
+          price_per_lb: item.price_per_lb
         })),
         delivery_address: deliveryAddress,
         delivery_notes: deliveryNotes
@@ -330,14 +362,14 @@ export default function NewWholesaleOrderReal() {
                             <Label className="text-xs">Price/lb</Label>
                             <Input
                               type="number"
-                              value={item.unit_price}
-                              onChange={(e) => updateOrderItem(index, 'unit_price', Number(e.target.value))}
+                              value={item.price_per_lb}
+                              onChange={(e) => updateOrderItem(index, 'price_per_lb', Number(e.target.value))}
                               min="0"
                             />
                           </div>
                           <div className="col-span-2 flex flex-col items-end justify-between h-full pt-6">
                             <span className="font-mono font-semibold">
-                              ${(item.quantity_lbs * item.unit_price).toLocaleString()}
+                              ${(item.quantity_lbs * item.price_per_lb).toLocaleString()}
                             </span>
                             <Button
                               variant="ghost"
@@ -492,7 +524,7 @@ export default function NewWholesaleOrderReal() {
                   {orderItems.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-sm">
                       <span>{item.product_name} ({item.quantity_lbs} lbs)</span>
-                      <span className="font-mono">${(item.quantity_lbs * item.unit_price).toLocaleString()}</span>
+                      <span className="font-mono">${(item.quantity_lbs * item.price_per_lb).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
