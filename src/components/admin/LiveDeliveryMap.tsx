@@ -1,17 +1,22 @@
 import { logger } from '@/lib/logger';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useWholesaleDeliveries } from "@/hooks/useWholesaleData";
-import { Navigation, Clock, Package, AlertCircle, Phone } from "lucide-react";
+import { 
+  Navigation, Clock, Package, AlertCircle, Phone, 
+  Truck, MapPin, Zap, ChevronRight, RefreshCw,
+  Timer, Route, User
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateETA } from "@/lib/utils/eta-calculation";
 import { themeColors } from "@/lib/utils/colorConversion";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
+import { cn } from "@/lib/utils";
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;
@@ -31,6 +36,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<Map<string, { runner: mapboxgl.Marker; destination: mapboxgl.Marker }>>(new Map());
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
   const { data: deliveries = [], refetch } = useWholesaleDeliveries();
   const etasRef = useRef<Map<string, { formatted: string; eta: Date }>>(new Map());
 
@@ -51,9 +57,20 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
   }, [deliveries]);
 
   // Filter deliveries based on props - include all active statuses
-  const activeDeliveries = deliveries.filter(d =>
-    ['in_transit', 'picked_up', 'assigned'].includes(d.status) && (showAll || d.id === deliveryId)
+  const activeDeliveries = useMemo(() => 
+    deliveries.filter(d =>
+      ['in_transit', 'picked_up', 'assigned'].includes(d.status) && (showAll || d.id === deliveryId)
+    ),
+    [deliveries, showAll, deliveryId]
   );
+
+  // Stats
+  const stats = useMemo(() => ({
+    total: activeDeliveries.length,
+    inTransit: activeDeliveries.filter(d => d.status === 'in_transit').length,
+    pickedUp: activeDeliveries.filter(d => d.status === 'picked_up').length,
+    assigned: activeDeliveries.filter(d => d.status === 'assigned').length,
+  }), [activeDeliveries]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -64,15 +81,53 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: "mapbox://styles/mapbox/streets-v12",
+        style: "mapbox://styles/mapbox/dark-v11",
         center: [-73.9808, 40.7648],
         zoom: 11,
+        pitch: 45,
+        bearing: -17.6,
+        antialias: true,
       });
 
-      map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+      map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
 
       map.current.on("load", () => {
         setMapLoaded(true);
+
+        // Add 3D buildings
+        if (map.current) {
+          const layers = map.current.getStyle().layers;
+          const labelLayerId = layers?.find(
+            (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+          )?.id;
+
+          map.current.addLayer(
+            {
+              id: '3d-buildings',
+              source: 'composite',
+              'source-layer': 'building',
+              filter: ['==', 'extrude', 'true'],
+              type: 'fill-extrusion',
+              minzoom: 15,
+              paint: {
+                'fill-extrusion-color': '#1a1a2e',
+                'fill-extrusion-height': ['get', 'height'],
+                'fill-extrusion-base': ['get', 'min_height'],
+                'fill-extrusion-opacity': 0.6,
+              },
+            },
+            labelLayerId
+          );
+
+          // Add atmosphere
+          map.current.setFog({
+            color: 'rgb(20, 20, 30)',
+            'high-color': 'rgb(36, 36, 50)',
+            'horizon-blend': 0.02,
+            'space-color': 'rgb(11, 11, 25)',
+            'star-intensity': 0.6
+          });
+        }
       });
 
       return () => {
@@ -81,7 +136,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
     } catch (error) {
       logger.error("Mapbox error", error as Error, { component: 'LiveDeliveryMap' });
     }
-  }, []);
+  }, [MAPBOX_TOKEN]);
 
   // Setup real-time updates for deliveries
   useEffect(() => {
@@ -113,6 +168,32 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       supabase.removeChannel(channel);
     };
   }, [refetch]);
+
+  // Focus on delivery
+  const focusOnDelivery = (deliveryId: string) => {
+    setSelectedDelivery(deliveryId);
+    const delivery = activeDeliveries.find(d => d.id === deliveryId);
+    if (!delivery || !map.current) return;
+
+    let runnerLocation = delivery.current_location as { lat: number; lng: number } | undefined;
+    if (!runnerLocation || typeof runnerLocation.lat !== 'number') {
+      runnerLocation = { lat: 40.7648, lng: -73.9808 };
+    }
+
+    map.current.flyTo({
+      center: [runnerLocation.lng, runnerLocation.lat],
+      zoom: 15,
+      pitch: 60,
+      bearing: Math.random() * 360,
+      duration: 2000,
+      essential: true
+    });
+
+    const markerPair = markers.current.get(deliveryId);
+    if (markerPair) {
+      markerPair.runner.togglePopup();
+    }
+  };
 
   // Update markers when deliveries change
   useEffect(() => {
@@ -154,7 +235,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        const clientName = 'Client'; // Will use actual address data when available
+        const clientName = delivery.delivery_address?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 
         // Destination (offset for demo)
@@ -169,24 +250,23 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           existingMarkers.runner.setLngLat([runnerLocation.lng, runnerLocation.lat]);
           existingMarkers.destination.setLngLat([destLng, destLat]);
         } else {
-          // Create new runner marker
+          // Create new runner marker with enhanced styling
           const runnerEl = document.createElement("div");
           runnerEl.className = "runner-marker";
-          runnerEl.style.width = "40px";
-          runnerEl.style.height = "40px";
-          runnerEl.style.backgroundColor = themeColors.info();
-          runnerEl.style.border = "3px solid white";
-          runnerEl.style.borderRadius = "50%";
-          runnerEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
-          runnerEl.style.display = "flex";
-          runnerEl.style.alignItems = "center";
-          runnerEl.style.justifyContent = "center";
-          runnerEl.style.cursor = "pointer";
-          runnerEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
+          runnerEl.innerHTML = `
+            <div class="relative">
+              <div class="absolute inset-0 bg-blue-500/30 rounded-full animate-ping"></div>
+              <div class="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse scale-150"></div>
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.5); cursor: pointer; transition: transform 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+              </div>
+            </div>
+          `;
 
           // Calculate ETA for this delivery
-          const etaDisplay = 'Calculating...';
-          let etaResult = null;
+          let etaResult: { formatted: string; eta: Date } | null = null;
 
           if (runnerLocation && typeof runnerLocation.lat === 'number') {
             calculateETA(
@@ -195,24 +275,37 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             ).then(result => {
               if (result) {
                 etaResult = result;
+                etasRef.current.set(delivery.id, result);
                 // Update popup with real ETA
-                const updatedPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                  <div style="padding: 8px;">
-                    <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Order #${orderNumber}</p>
-                    ${etaResult ? `
-                      <div style="font-size: 12px; margin-bottom: 4px;">
-                        <span style="color: #666;">ETA:</span>
-                        <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${etaResult.formatted}</span>
+                const updatedPopup = new mapboxgl.Popup({ 
+                  offset: 25,
+                  closeButton: false,
+                  className: 'delivery-popup'
+                }).setHTML(`
+                  <div style="padding: 16px; min-width: 220px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                      <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        ${runnerName.charAt(0).toUpperCase()}
                       </div>
-                    ` : ''}
-                    <div style="font-size: 12px; color: #3b82f6; font-weight: 500;">In Transit</div>
-                    <button 
-                      onclick="window.callDriver && window.callDriver('${delivery.runner_id || ''}')" 
-                      style="margin-top: 6px; padding: 4px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; width: 100%;"
-                    >
-                      📞 Call Driver
-                    </button>
+                      <div>
+                        <div style="font-weight: 600; font-size: 14px;">${runnerName}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Order #${orderNumber}</div>
+                      </div>
+                    </div>
+                    <div style="background: #f0fdf4; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
+                      <div style="font-size: 11px; color: #6b7280; text-transform: uppercase;">Estimated Arrival</div>
+                      <div style="font-size: 18px; font-weight: 700; color: #059669;">${result.formatted}</div>
+                      <div style="font-size: 11px; color: #6b7280;">at ${result.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button 
+                        onclick="window.callDriver && window.callDriver('${delivery.runner_id || ''}')" 
+                        style="flex: 1; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                        Call
+                      </button>
+                    </div>
                   </div>
                 `);
                 runnerMarker.setPopup(updatedPopup);
@@ -220,15 +313,25 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             });
           }
 
-          const runnerPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div style="padding: 8px;">
-              <h3 style="font-weight: 600; margin-bottom: 4px;">🚗 ${runnerName}</h3>
-              <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Order #${orderNumber}</p>
-              <div style="font-size: 12px; margin-bottom: 4px;">
-                <span style="color: #666;">ETA:</span>
-                <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${etaDisplay}</span>
+          const runnerPopup = new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            className: 'delivery-popup'
+          }).setHTML(`
+            <div style="padding: 16px; min-width: 220px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                  ${runnerName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">${runnerName}</div>
+                  <div style="font-size: 12px; color: #6b7280;">Order #${orderNumber}</div>
+                </div>
               </div>
-              <div style="font-size: 12px; color: #3b82f6; font-weight: 500;">In Transit</div>
+              <div style="background: #fef3c7; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
+                <div style="font-size: 11px; color: #6b7280; text-transform: uppercase;">Status</div>
+                <div style="font-size: 14px; font-weight: 600; color: #d97706;">Calculating ETA...</div>
+              </div>
             </div>
           `);
 
@@ -237,37 +340,38 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             .setPopup(runnerPopup)
             .addTo(map.current!);
 
-          // Create destination marker
+          // Create destination marker with enhanced styling
           const destEl = document.createElement("div");
           destEl.className = "destination-marker";
-          destEl.style.width = "36px";
-          destEl.style.height = "36px";
-          destEl.style.backgroundColor = themeColors.success();
-          destEl.style.border = "3px solid white";
-          destEl.style.borderRadius = "50%";
-          destEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
-          destEl.style.display = "flex";
-          destEl.style.alignItems = "center";
-          destEl.style.justifyContent = "center";
-          destEl.style.cursor = "pointer";
-          destEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>`;
-
-          // Use calculated ETA if available, otherwise show calculating
-          const destETADisplay = etaResult ? etaResult.formatted : 'Calculating...';
-
-          const destPopup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div style="padding: 8px;">
-              <h3 style="font-weight: 600; margin-bottom: 4px;">📍 Destination</h3>
-              <p style="font-size: 12px; color: #666; margin-bottom: 4px;">${clientName}</p>
-              <div style="font-size: 12px;">
-                <span style="color: #666;">ETA:</span>
-                <span style="font-weight: 600; color: #10b981; margin-left: 4px;">${destETADisplay}</span>
+          destEl.innerHTML = `
+            <div class="relative">
+              <div class="absolute inset-0 bg-emerald-500/20 rounded-full animate-pulse scale-150"></div>
+              <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5); cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
               </div>
-              ${etaResult ? `
-                <div style="font-size: 11px; color: #999; margin-top: 4px;">
-                  Arriving at ${etaResult.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          `;
+
+          const destPopup = new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            className: 'delivery-popup'
+          }).setHTML(`
+            <div style="padding: 16px; min-width: 200px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
                 </div>
-              ` : ''}
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">Destination</div>
+                  <div style="font-size: 12px; color: #6b7280;">${clientName}</div>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #6b7280; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                ${delivery.delivery_address || 'Address pending'}
+              </div>
             </div>
           `);
 
@@ -317,9 +421,10 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
               'line-cap': 'round'
             },
             paint: {
-              'line-color': themeColors.info(),
-              'line-width': 3,
-              'line-dasharray': [2, 2]
+              'line-color': '#3b82f6',
+              'line-width': 4,
+              'line-dasharray': [0.5, 1.5],
+              'line-opacity': 0.8
             }
           });
         }
@@ -331,89 +436,205 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       });
 
       // Fit bounds if we have locations
-      if (hasValidLocation && !bounds.isEmpty()) {
+      if (hasValidLocation && !bounds.isEmpty() && !selectedDelivery) {
         map.current!.fitBounds(bounds, { padding: 100, maxZoom: 14 });
       }
     };
 
     updateMarkers();
-  }, [mapLoaded, activeDeliveries]);
+  }, [mapLoaded, activeDeliveries, selectedDelivery]);
 
   if (!MAPBOX_TOKEN || MAPBOX_TOKEN === '') {
     return (
-      <Card className="p-6">
-        <div className="flex items-center gap-3 text-amber-600">
-          <AlertCircle className="h-5 w-5" />
-          <div>
-            <h3 className="font-semibold">Map Configuration Required</h3>
-            <p className="text-sm text-muted-foreground">
-              The Mapbox token needs to be configured. Please contact support.
-            </p>
+      <Card className="overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+        <CardContent className="p-8">
+          <div className="flex items-center gap-4 text-amber-400">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Map Configuration Required</h3>
+              <p className="text-sm text-gray-400">
+                The Mapbox token needs to be configured. Please contact support.
+              </p>
+            </div>
           </div>
-        </div>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="overflow-hidden">
-      <div className="p-4 border-b bg-muted/30">
+    <Card className="overflow-hidden border-0 shadow-xl">
+      {/* Header */}
+      <CardHeader className="p-4 border-b bg-gradient-to-r from-blue-600 to-indigo-600">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Navigation className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold">Live Tracking</h3>
-            <Badge variant="outline" className="gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              {activeDeliveries.length} Active
-            </Badge>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Navigation className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-white text-lg">Live Delivery Tracking</CardTitle>
+              <p className="text-blue-100 text-sm">Real-time fleet monitoring</p>
+            </div>
           </div>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <Clock className="h-4 w-4" />
-            Auto-refresh: 30s
-          </Button>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-white/20 text-white border-0 gap-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              {stats.total} Active
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-white hover:bg-white/20 gap-2"
+              onClick={() => refetch()}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
+      {/* Stats Bar */}
       {activeDeliveries.length > 0 && (
-        <div className="p-4 border-b bg-background space-y-2">
+        <div className="p-3 bg-muted/50 border-b grid grid-cols-3 gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10">
+            <Truck className="h-4 w-4 text-blue-500" />
+            <div>
+              <div className="text-lg font-bold text-blue-600">{stats.inTransit}</div>
+              <div className="text-xs text-muted-foreground">In Transit</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10">
+            <Package className="h-4 w-4 text-amber-500" />
+            <div>
+              <div className="text-lg font-bold text-amber-600">{stats.pickedUp}</div>
+              <div className="text-xs text-muted-foreground">Picked Up</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10">
+            <User className="h-4 w-4 text-purple-500" />
+            <div>
+              <div className="text-lg font-bold text-purple-600">{stats.assigned}</div>
+              <div className="text-xs text-muted-foreground">Assigned</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Deliveries List */}
+      {activeDeliveries.length > 0 && (
+        <div className="max-h-48 overflow-y-auto border-b">
           {activeDeliveries.map((delivery) => {
             const runnerName = delivery.runner?.full_name || 'Runner';
-            const clientName = 'Client'; // Will use actual address data when available
+            const clientName = delivery.delivery_address?.split(',')[0] || 'Client';
             const orderNumber = delivery.order?.order_number || 'N/A';
+            const eta = etasRef.current.get(delivery.id);
 
             return (
-              <div key={delivery.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+              <div 
+                key={delivery.id} 
+                className={cn(
+                  "flex items-center justify-between p-3 border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/50",
+                  selectedDelivery === delivery.id && "bg-blue-50 dark:bg-blue-950/30"
+                )}
+                onClick={() => focusOnDelivery(delivery.id)}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-info flex items-center justify-center text-info-foreground font-semibold">
-                    🚗
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+                    {runnerName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-medium">{runnerName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      To: {clientName}
+                    <div className="font-medium flex items-center gap-2">
+                      {runnerName}
+                      <Badge variant="outline" className="text-xs">
+                        {delivery.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <MapPin className="h-3 w-3" />
+                      {clientName}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <div className="flex items-center gap-2 text-sm font-medium text-blue-600">
                     <Package className="h-4 w-4" />
                     #{orderNumber}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    ETA: ~15 mins
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Timer className="h-3 w-3" />
+                    {eta ? eta.formatted : '~15 mins'}
                   </div>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-2" />
               </div>
             );
           })}
         </div>
       )}
 
+      {/* Empty State */}
+      {activeDeliveries.length === 0 && (
+        <div className="p-8 text-center border-b">
+          <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+            <Truck className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="font-semibold mb-1">No Active Deliveries</h3>
+          <p className="text-sm text-muted-foreground">
+            Deliveries will appear here when runners are on the move
+          </p>
+        </div>
+      )}
+
+      {/* Map */}
       <div
         ref={mapContainer}
-        className="w-full h-[500px]"
-        style={{ minHeight: "500px" }}
+        className="w-full h-[450px]"
+        style={{ minHeight: "450px" }}
       />
+
+      <style>{`
+        .runner-marker, .destination-marker {
+          cursor: pointer;
+          transition: transform 0.2s;
+        }
+        
+        .runner-marker:hover, .destination-marker:hover {
+          transform: scale(1.1);
+        }
+        
+        .delivery-popup .mapboxgl-popup-content {
+          padding: 0;
+          border-radius: 12px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          border: 1px solid rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+        
+        .delivery-popup .mapboxgl-popup-tip {
+          border-top-color: white;
+        }
+        
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+        
+        .animate-ping {
+          animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        .mapboxgl-ctrl-group {
+          background: rgba(255, 255, 255, 0.95) !important;
+          backdrop-filter: blur(8px);
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+      `}</style>
     </Card>
   );
 }
