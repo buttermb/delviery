@@ -172,7 +172,7 @@ export function OrderPipelineBoard() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            // @ts-expect-error - Complex Supabase query with joins
+            // @ts-ignore - Outdated Supabase types
             const { data, error } = await supabase
                 .from('wholesale_orders')
                 .select(`

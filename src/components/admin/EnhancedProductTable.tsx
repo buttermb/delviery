@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ColumnVisibilityControl } from "./ColumnVisibilityControl";
-import { CopyButton } from "@/components/shared/CopyButton";
+import CopyButton from "@/components/CopyButton";
 
 interface Product {
   id: string;

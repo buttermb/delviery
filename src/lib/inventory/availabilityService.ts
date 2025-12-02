@@ -52,6 +52,7 @@ export const availabilityService = {
             // For now, we'll iterate and update (optimistic locking would be better in a real high-concurrency scenario)
 
             for (const item of items) {
+                // @ts-ignore - RPC function not in types
                 const { error } = await supabase.rpc('decrement_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
@@ -60,6 +61,7 @@ export const availabilityService = {
                 if (error) throw error;
 
                 // Log the sync
+                // @ts-ignore - Table not in types
                 await supabase.from('inventory_sync_log').insert({
                     product_id: item.product_id,
                     change_amount: -item.quantity,
@@ -83,6 +85,7 @@ export const availabilityService = {
     ): Promise<void> {
         try {
             for (const item of items) {
+                // @ts-ignore - RPC function not in types
                 const { error } = await supabase.rpc('increment_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
@@ -90,6 +93,7 @@ export const availabilityService = {
 
                 if (error) throw error;
 
+                // @ts-ignore - Table not in types
                 await supabase.from('inventory_sync_log').insert({
                     product_id: item.product_id,
                     change_amount: item.quantity,
