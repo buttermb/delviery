@@ -322,6 +322,7 @@ export default function PointOfSale() {
       if (activeOrderId) {
         // @ts-ignore - Outdated Supabase types
         await supabase
+          // @ts-ignore - Table not in types
           .from('disposable_menu_orders')
           .update({
             status: 'completed',
