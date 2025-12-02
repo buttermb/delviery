@@ -7,20 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { 
-  Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, 
+  Shield, ShoppingCart, Package, Minus, Plus, Lock, 
   ZoomIn, Leaf, Sparkles, Wind, Coffee, Search, X, Check,
-  SlidersHorizontal, ArrowUpDown, ChevronRight, Trash2
+  ChevronRight
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { showSuccessToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 
 interface Product {
   id: string;
@@ -301,150 +300,6 @@ function ProductCard({
   );
 }
 
-// Cart Sheet Component
-function CartSheet({ 
-  open, 
-  onOpenChange,
-  menuData,
-  onCheckout
-}: { 
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  menuData: MenuData;
-  onCheckout: () => void;
-}) {
-  const cartItems = useMenuCartStore((state) => state.items);
-  const removeItem = useMenuCartStore((state) => state.removeItem);
-  const updateQuantity = useMenuCartStore((state) => state.updateQuantity);
-  const getTotal = useMenuCartStore((state) => state.getTotal);
-  const getItemCount = useMenuCartStore((state) => state.getItemCount);
-
-  const totalAmount = getTotal();
-  const totalItems = getItemCount();
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md flex flex-col">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Your Cart ({totalItems} items)
-          </SheetTitle>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto py-4">
-          {cartItems.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p>Your cart is empty</p>
-              <p className="text-sm mt-1">Add some products to get started</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {cartItems.map((item) => {
-                const product = menuData.products.find(p => p.id === item.productId);
-                return (
-                  <Card key={`${item.productId}-${item.weight}`} className="p-3">
-                    <div className="flex gap-3">
-                      {product?.image_url && (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
-                          <OptimizedProductImage
-                            src={product.image_url}
-                            alt={item.productName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{item.productName}</div>
-                        {item.weight && (
-                          <Badge variant="secondary" className="text-xs mt-1">
-                            {formatWeight(item.weight)}
-                          </Badge>
-                        )}
-                        <div className="text-sm text-muted-foreground mt-1">
-                          ${item.price.toFixed(2)} each
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold">${(item.price * item.quantity).toFixed(2)}</div>
-                        <div className="flex items-center gap-1 mt-2">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-6 text-center text-sm">{item.quantity}</span>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-red-500 hover:text-red-600"
-                            onClick={() => removeItem(item.productId)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Cart Footer */}
-        {cartItems.length > 0 && (
-          <div className="border-t pt-4 space-y-4">
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total</span>
-              <span className="text-primary">${totalAmount.toFixed(2)}</span>
-            </div>
-            
-            {/* Order Constraints Warning */}
-            {menuData.min_order_quantity && totalItems < menuData.min_order_quantity && (
-              <Alert variant="destructive" className="py-2">
-                <AlertDescription className="text-sm">
-                  Minimum order: {menuData.min_order_quantity} items
-                </AlertDescription>
-              </Alert>
-            )}
-            {menuData.max_order_quantity && totalItems > menuData.max_order_quantity && (
-              <Alert variant="destructive" className="py-2">
-                <AlertDescription className="text-sm">
-                  Maximum order: {menuData.max_order_quantity} items
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <Button 
-              onClick={onCheckout}
-              className="w-full h-12 text-lg font-semibold"
-              disabled={
-                (menuData.min_order_quantity && totalItems < menuData.min_order_quantity) ||
-                (menuData.max_order_quantity && totalItems > menuData.max_order_quantity)
-              }
-            >
-              Proceed to Checkout
-              <ChevronRight className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
-  );
-}
 
 const SecureMenuView = () => {
   const { token } = useParams();
@@ -452,11 +307,10 @@ const SecureMenuView = () => {
   
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [placingOrder, setPlacingOrder] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
-  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -583,62 +437,16 @@ const SecureMenuView = () => {
     }
   };
 
-  const handlePlaceOrder = async () => {
-    if (cartItems.length === 0) return;
-
-    // Get contact phone
-    const contact_phone = prompt("Enter your contact phone number for order updates:");
-    if (!contact_phone?.trim()) {
-      toast.error('Phone number is required to place an order');
-      return;
-    }
-
-    setPlacingOrder(true);
-    try {
-      const orderItems = cartItems.map(item => ({
-        product_id: item.productId,
-        quantity: item.quantity,
-        price: item.price,
-        weight: item.weight
-      }));
-
-      const { data, error } = await supabase.functions.invoke('menu-order-place', {
-        body: {
-          menu_id: menuData!.menu_id,
-          access_token: menuData!.whitelist_id,
-          order_items: orderItems,
-          contact_phone: contact_phone.trim(),
-          delivery_method: 'pickup',
-          payment_method: 'cash',
-          delivery_address: '',
-          customer_notes: ''
-        }
-      });
-
-      if (error) throw error;
-
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to place order';
-        throw new Error(errorMessage);
-      }
-
-      showSuccessToast('Order Placed', 'Your order has been submitted successfully');
-      clearCart();
-      setSelectedWeights({});
-      setCartOpen(false);
-      
-      // Clear session after order
-      setTimeout(() => {
-        sessionStorage.removeItem(`menu_${token}`);
-        navigate('/');
-      }, 2000);
-    } catch (err: unknown) {
-      logger.error('Order error', err, { component: 'SecureMenuView' });
-      const errorMessage = err instanceof Error ? err.message : 'Could not place order';
-      showErrorToast('Order Failed', errorMessage);
-    } finally {
-      setPlacingOrder(false);
-    }
+  const handleOrderComplete = () => {
+    showSuccessToast('Order Placed', 'Your order has been submitted successfully');
+    clearCart();
+    setSelectedWeights({});
+    
+    // Clear session after order
+    setTimeout(() => {
+      sessionStorage.removeItem(`menu_${token}`);
+      navigate('/');
+    }, 3000);
   };
 
   if (loading) {
@@ -680,7 +488,7 @@ const SecureMenuView = () => {
                 variant="default"
                 size="lg"
                 className="relative gap-2"
-                onClick={() => setCartOpen(true)}
+                onClick={() => setCheckoutOpen(true)}
               >
                 <ShoppingCart className="h-5 w-5" />
                 <span className="hidden sm:inline">Cart</span>
@@ -833,7 +641,7 @@ const SecureMenuView = () => {
             </div>
             <Button
               size="lg"
-              onClick={() => setCartOpen(true)}
+              onClick={() => setCheckoutOpen(true)}
               className="min-w-[160px] h-12 text-base font-semibold gap-2"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -843,12 +651,16 @@ const SecureMenuView = () => {
         </div>
       )}
 
-      {/* Cart Sheet */}
-      <CartSheet
-        open={cartOpen}
-        onOpenChange={setCartOpen}
-        menuData={menuData}
-        onCheckout={handlePlaceOrder}
+      {/* Modern Checkout Flow */}
+      <ModernCheckoutFlow
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        menuId={menuData.menu_id}
+        accessToken={menuData.whitelist_id}
+        minOrder={menuData.min_order_quantity}
+        maxOrder={menuData.max_order_quantity}
+        onOrderComplete={handleOrderComplete}
+        products={menuData.products.map(p => ({ id: p.id, name: p.name, image_url: p.image_url }))}
       />
 
       {/* Image Zoom Dialog */}
