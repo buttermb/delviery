@@ -306,7 +306,7 @@ export default function NewWholesaleOrder() {
   };
 
   // Get selected runner
-  const selectedRunner = runners.find((r: any) => r.id === orderData.runnerId);
+  const selectedRunner = couriers.find((r: any) => r.id === orderData.runnerId);
 
   // Validation for next button
   const canProceed = useMemo(() => {

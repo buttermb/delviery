@@ -222,7 +222,7 @@ export const useWholesaleCouriers = () => {
 
       const { data, error } = await supabase
         .from("couriers")
-        .select("id, full_name, phone, vehicle_type, status, current_location")
+        .select("id, full_name, phone, vehicle_type, is_online, is_active")
         .eq("tenant_id", tenant.id)
         .order("full_name");
 
