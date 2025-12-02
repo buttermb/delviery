@@ -27,13 +27,14 @@ export const orderFlowManager = {
             // Fetch current status
             // @ts-ignore - Outdated Supabase types
             const { data: order, error: fetchError } = await supabase
+                // @ts-ignore - Table not in types
                 .from('disposable_menu_orders')
                 .select('status')
                 .eq('id', orderId)
                 .single();
 
             if (fetchError) throw fetchError;
-
+            // @ts-ignore - Outdated types
             const currentStatus = order.status as OrderStatus;
 
             if (!this.canTransition(currentStatus, newStatus)) {
@@ -43,6 +44,7 @@ export const orderFlowManager = {
             // Update status
             // @ts-ignore - Outdated Supabase types
             const { error: updateError } = await supabase
+                // @ts-ignore - Table not in types
                 .from('disposable_menu_orders')
                 .update({
                     status: newStatus,
