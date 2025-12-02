@@ -53,12 +53,12 @@ const DELIVERY_METHODS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional' },
-  { id: 'zelle', label: 'Zelle', icon: Wallet, description: 'Send via Zelle', category: 'traditional' },
-  { id: 'cashapp', label: 'CashApp', icon: Wallet, description: 'Send via CashApp', category: 'traditional' },
-  { id: 'bitcoin', label: 'Bitcoin', icon: Bitcoin, description: 'Pay with BTC', category: 'crypto', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' },
-  { id: 'lightning', label: 'Lightning', icon: Zap, description: 'Instant BTC', category: 'crypto' },
-  { id: 'ethereum', label: 'Ethereum', icon: Coins, description: 'Pay with ETH', category: 'crypto', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F' },
+  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional', apiValue: 'cash' },
+  { id: 'zelle', label: 'Zelle', icon: Wallet, description: 'Send via Zelle', category: 'traditional', apiValue: 'other' },
+  { id: 'cashapp', label: 'CashApp', icon: Wallet, description: 'Send via CashApp', category: 'traditional', apiValue: 'other' },
+  { id: 'bitcoin', label: 'Bitcoin', icon: Bitcoin, description: 'Pay with BTC', category: 'crypto', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', apiValue: 'crypto' },
+  { id: 'lightning', label: 'Lightning', icon: Zap, description: 'Instant BTC', category: 'crypto', apiValue: 'crypto' },
+  { id: 'ethereum', label: 'Ethereum', icon: Coins, description: 'Pay with ETH', category: 'crypto', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', apiValue: 'crypto' },
 ];
 
 // Format phone number as user types
@@ -1453,27 +1453,30 @@ export function ModernCheckoutFlow({
         product_id: item.productId,
         quantity: item.quantity,
         price: item.price,
-        weight: item.weight
       }));
 
       const fullAddress = formData.deliveryMethod === 'delivery' 
         ? [formData.address, formData.city, formData.zipCode].filter(Boolean).join(', ')
         : '';
 
+      // Map the UI payment method to API-compatible value
+      const selectedPaymentMethod = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod);
+      const apiPaymentMethod = selectedPaymentMethod?.apiValue || 'cash';
+
+      // Calculate total for the API
+      const totalAmount = getTotal() * 1.05; // Include 5% service fee
+
       const { data, error } = await supabase.functions.invoke('menu-order-place', {
         body: {
           menu_id: menuId,
-          access_token: accessToken,
           order_items: orderItems,
-          contact_phone: formData.phone,
-          contact_name: `${formData.firstName} ${formData.lastName}`,
-          contact_email: formData.email,
-          delivery_method: formData.deliveryMethod,
-          payment_method: formData.paymentMethod,
-          delivery_address: fullAddress,
-          customer_notes: formData.notes,
-          landmark: formData.landmark,
-          gate_code: formData.gateCode,
+          contact_phone: formData.phone.replace(/\D/g, ''), // Send only digits
+          contact_email: formData.email || undefined,
+          customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          payment_method: apiPaymentMethod,
+          delivery_address: fullAddress || undefined,
+          customer_notes: formData.notes || undefined,
+          total_amount: totalAmount,
         }
       });
 
