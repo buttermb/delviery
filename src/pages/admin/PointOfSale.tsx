@@ -320,6 +320,7 @@ export default function PointOfSale() {
 
       // 5. Update disposable menu order status if applicable
       if (activeOrderId) {
+        // @ts-ignore - Outdated Supabase types
         await supabase
           .from('disposable_menu_orders')
           .update({

@@ -25,6 +25,7 @@ export const orderFlowManager = {
     async transitionOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void> {
         try {
             // Fetch current status
+            // @ts-ignore - Outdated Supabase types
             const { data: order, error: fetchError } = await supabase
                 .from('disposable_menu_orders')
                 .select('status')
@@ -40,6 +41,7 @@ export const orderFlowManager = {
             }
 
             // Update status
+            // @ts-ignore - Outdated Supabase types
             const { error: updateError } = await supabase
                 .from('disposable_menu_orders')
                 .update({

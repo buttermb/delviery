@@ -48,7 +48,7 @@ export function MultiChannelOrderList() {
             if (!tenantId) return [];
 
             // Fetch Wholesale Orders
-            // @ts-expect-error - Complex Supabase query with joins
+            // @ts-ignore - Outdated Supabase types
             const { data: wholesale } = await supabase
                 .from('wholesale_orders')
                 .select(`

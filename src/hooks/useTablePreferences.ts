@@ -7,6 +7,8 @@ export interface TablePreferences {
     pageSize?: number;
     visibleColumns?: Record<string, boolean>;
     customFilters?: Record<string, any>;
+    sorting?: any[];
+    columnVisibility?: Record<string, boolean>;
 }
 
 const defaultPreferences: TablePreferences = {
