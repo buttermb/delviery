@@ -96,7 +96,7 @@ export function QuickActionsHub() {
             id: 'add-inventory',
             label: 'Add Inventory',
             icon: Package,
-            action: () => navigate(`/${tenantSlug}/admin/inventory`),
+            action: () => navigate(`/${tenantSlug}/admin/advanced-inventory`),
             shortcut: 'Alt+I',
             description: 'Update stock levels'
         },
@@ -112,7 +112,7 @@ export function QuickActionsHub() {
             id: 'add-customer',
             label: 'Add Customer',
             icon: UserPlus,
-            action: () => navigate(`/${tenantSlug}/admin/customers/new`),
+            action: () => navigate(`/${tenantSlug}/admin/big-plug-clients`),
             shortcut: 'Alt+C',
             description: 'Create customer profile'
         },
@@ -120,21 +120,21 @@ export function QuickActionsHub() {
             id: 'generate-invoice',
             label: 'Invoice',
             icon: FileText,
-            action: () => navigate(`/${tenantSlug}/admin/invoices/new`),
+            action: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
             description: 'Generate customer invoice'
         },
         {
             id: 'create-menu',
             label: 'Disposable Menu',
             icon: Smartphone,
-            action: () => navigate(`/${tenantSlug}/admin/disposable-menus/new`),
+            action: () => navigate(`/${tenantSlug}/admin/disposable-menus`),
             description: 'Create QR menu'
         },
         {
             id: 'view-deliveries',
             label: 'Deliveries',
             icon: MapPin,
-            action: () => navigate(`/${tenantSlug}/admin/deliveries`),
+            action: () => navigate(`/${tenantSlug}/admin/delivery-management`),
             badge: counts?.todayDeliveries,
             description: "View today's routes"
         },
@@ -142,7 +142,7 @@ export function QuickActionsHub() {
             id: 'open-pos',
             label: 'Open POS',
             icon: ShoppingCart,
-            action: () => navigate(`/${tenantSlug}/admin/pos`),
+            action: () => navigate(`/${tenantSlug}/admin/pos-system`),
             shortcut: 'Alt+P',
             description: 'Open cash register'
         },
@@ -150,7 +150,7 @@ export function QuickActionsHub() {
             id: 'low-stock',
             label: 'Low Stock',
             icon: AlertCircle,
-            action: () => navigate(`/${tenantSlug}/admin/inventory?filter=low-stock`),
+            action: () => navigate(`/${tenantSlug}/admin/inventory-monitoring`),
             badge: counts?.lowStockItems,
             description: 'Review reorder needs'
         },
@@ -158,7 +158,7 @@ export function QuickActionsHub() {
             id: 'send-message',
             label: 'Message',
             icon: MessageSquare,
-            action: () => navigate(`/${tenantSlug}/admin/customers?action=message`),
+            action: () => navigate(`/${tenantSlug}/admin/big-plug-clients`),
             description: 'Send customer SMS'
         }
     ];
