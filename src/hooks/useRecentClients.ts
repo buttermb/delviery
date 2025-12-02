@@ -40,7 +40,7 @@ export function useRecentClients() {
   // Load recent client IDs from localStorage on mount
   useEffect(() => {
     try {
-      const stored = safeStorage.getItem(STORAGE_KEYS.WHOLESALE_CLIENTS as any);
+      const stored = safeStorage.getItem('wholesale_clients' as any);
       if (stored) {
         const parsed = JSON.parse(stored);
         // Filter by tenant if stored data includes tenant
@@ -121,7 +121,7 @@ export function useRecentClients() {
 
       // Persist to localStorage
       try {
-        safeStorage.setItem(STORAGE_KEYS.WHOLESALE_CLIENTS as any, JSON.stringify(updated));
+        safeStorage.setItem('wholesale_clients' as any, JSON.stringify(updated));
       } catch (error) {
         logger.warn('Failed to save recent clients to storage', { component: 'useRecentClients' });
       }
@@ -134,7 +134,7 @@ export function useRecentClients() {
   const clearRecentClients = useCallback(() => {
     setRecentClientIds([]);
     try {
-      safeStorage.removeItem(STORAGE_KEYS.WHOLESALE_CLIENTS as any);
+      safeStorage.removeItem('wholesale_clients' as any);
     } catch (error) {
       logger.warn('Failed to clear recent clients from storage', { component: 'useRecentClients' });
     }

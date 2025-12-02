@@ -97,6 +97,38 @@ serve(withZenProtection(async (req) => {
 
     // Add products if provided
     if (menuData.products && menuData.products.length > 0) {
+      // Validate that all product_ids exist and belong to the tenant
+      const productIds = menuData.products.map(p => p.product_id);
+      const { data: existingProducts, error: validationError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('tenant_id', menuData.tenant_id)
+        .in('id', productIds);
+
+      if (validationError) {
+        console.error('Failed to validate products:', validationError);
+        await supabase.from('disposable_menus').delete().eq('id', menu.id);
+        return new Response(
+          JSON.stringify({ error: 'Failed to validate products', details: validationError.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const existingProductIds = new Set(existingProducts?.map(p => p.id) || []);
+      const invalidProducts = productIds.filter(id => !existingProductIds.has(id));
+
+      if (invalidProducts.length > 0) {
+        console.error('Invalid product IDs:', invalidProducts);
+        await supabase.from('disposable_menus').delete().eq('id', menu.id);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Invalid product IDs', 
+            details: `The following product IDs do not exist or do not belong to this tenant: ${invalidProducts.join(', ')}` 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const productsToInsert = menuData.products.map(p => ({
         menu_id: menu.id,
         product_id: p.product_id,
