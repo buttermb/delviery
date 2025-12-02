@@ -1,10 +1,9 @@
 /**
- * LiveSocialProof - Real-time social proof notifications
- * Shows recent signups and activity to create urgency
+ * LiveSocialProof - Optimized real-time social proof notifications
+ * Uses CSS transitions instead of Framer Motion for better performance
  */
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Users, TrendingUp, ShieldCheck, Zap } from "lucide-react";
 
 interface Activity {
@@ -22,8 +21,6 @@ const activities: Activity[] = [
   { id: 4, type: "delivery", message: "Delivery completed", location: "Seattle, WA", time: "12 min ago" },
   { id: 5, type: "signup", message: "New business joined", location: "Phoenix, AZ", time: "15 min ago" },
   { id: 6, type: "order", message: "Wholesale order", location: "San Diego, CA", time: "18 min ago" },
-  { id: 7, type: "menu", message: "Catalog shared", location: "Las Vegas, NV", time: "22 min ago" },
-  { id: 8, type: "signup", message: "New business joined", location: "Oakland, CA", time: "25 min ago" },
 ];
 
 const getIcon = (type: Activity["type"]) => {
@@ -46,61 +43,67 @@ const getColor = (type: Activity["type"]) => {
 
 export function LiveSocialProof() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const cycleNotification = useCallback(() => {
+    setIsVisible(true);
+    
+    const hideTimer = setTimeout(() => {
+      setIsVisible(false);
+      
+      const nextTimer = setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % activities.length);
+      }, 300);
+      
+      return () => clearTimeout(nextTimer);
+    }, 4000);
+    
+    return () => clearTimeout(hideTimer);
+  }, []);
 
   useEffect(() => {
-    const showInterval = setInterval(() => {
-      setIsVisible(true);
-      
-      // Hide after 4 seconds
-      setTimeout(() => {
-        setIsVisible(false);
-        
-        // Change to next activity after fade out
-        setTimeout(() => {
-          setCurrentIndex((prev) => (prev + 1) % activities.length);
-        }, 300);
-      }, 4000);
-    }, 6000);
+    // Initial delay before showing first notification
+    const initialDelay = setTimeout(() => {
+      cycleNotification();
+    }, 2000);
 
-    return () => clearInterval(showInterval);
-  }, []);
+    const interval = setInterval(cycleNotification, 7000);
+
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
+  }, [cycleNotification]);
 
   const activity = activities[currentIndex];
   const Icon = getIcon(activity.type);
   const colorClass = getColor(activity.type);
 
   return (
-    <div className="fixed bottom-24 left-4 z-40 md:bottom-8">
-      <AnimatePresence>
-        {isVisible && (
-          <motion.div
-            initial={{ opacity: 0, x: -100, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -100, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="bg-[hsl(var(--marketing-bg))]/95 backdrop-blur-xl rounded-xl border border-[hsl(var(--marketing-border))] shadow-2xl p-4 max-w-xs"
-          >
-            <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${colorClass}`}>
-                <Icon className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[hsl(var(--marketing-text))] truncate">
-                  {activity.message}
-                </p>
-                <p className="text-xs text-[hsl(var(--marketing-text-light))]">
-                  {activity.location} • {activity.time}
-                </p>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] text-emerald-500 font-medium">LIVE</span>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div 
+      className={`fixed bottom-24 left-4 z-40 md:bottom-8 transition-all duration-300 ease-out ${
+        isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
+      }`}
+    >
+      <div className="bg-[hsl(var(--marketing-bg))]/95 backdrop-blur-sm rounded-xl border border-[hsl(var(--marketing-border))] shadow-xl p-4 max-w-xs">
+        <div className="flex items-start gap-3">
+          <div className={`p-2 rounded-lg ${colorClass} flex-shrink-0`}>
+            <Icon className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-[hsl(var(--marketing-text))] truncate">
+              {activity.message}
+            </p>
+            <p className="text-xs text-[hsl(var(--marketing-text-light))]">
+              {activity.location} • {activity.time}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] text-emerald-500 font-medium">LIVE</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -109,31 +112,26 @@ export function LiveUserCount() {
   const [count, setCount] = useState(127);
 
   useEffect(() => {
-    // Simulate fluctuating user count
+    // Slower interval for less CPU usage
     const interval = setInterval(() => {
       setCount((prev) => {
-        const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
-        return Math.max(100, Math.min(200, prev + change));
+        const change = Math.floor(Math.random() * 3) - 1; // -1 to +1
+        return Math.max(100, Math.min(150, prev + change));
       });
-    }, 3000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20"
-    >
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
       </span>
       <span className="text-sm font-medium text-emerald-500">
-        {count} people viewing now
+        {count} viewing
       </span>
-    </motion.div>
+    </div>
   );
 }
-

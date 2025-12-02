@@ -13,13 +13,10 @@ import { BentoFeatureGrid } from "@/components/marketing/BentoFeatureGrid";
 import { LiveActivityTicker } from "@/components/marketing/LiveActivityTicker";
 import { ScrollProgressIndicator } from "@/components/marketing/ScrollProgressIndicator";
 import { SectionTransition } from "@/components/marketing/SectionTransition";
-import { ParallaxBackground } from "@/components/marketing/ParallaxBackground";
-import { AnimatedMeshBackground } from "@/components/marketing/AnimatedMeshBackground";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { SectionSkeleton } from "@/components/marketing/SkeletonLoader";
 import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigationHelper";
 import { LiveChatWidget } from "@/components/LiveChatWidget";
-import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
 import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
 import { LiveSocialProof } from "@/components/marketing/LiveSocialProof";
@@ -29,7 +26,6 @@ import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
 import { TrustedBy } from "@/components/marketing/TrustedBy";
 import { lazy, Suspense, useEffect } from "react";
-import { motion } from "framer-motion";
 import { analytics } from "@/utils/analytics";
 
 // Lazy load heavy components
@@ -63,12 +59,7 @@ export default function MarketingHome() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans">
-      {/* Performance Monitor - Dev mode only */}
-      <PerformanceMonitor />
-
-      {/* Parallax Background Effects - only for hero */}
-      <ParallaxBackground />
+    <div className="min-h-screen bg-[hsl(var(--marketing-bg))] text-[hsl(var(--marketing-text))] font-sans overflow-x-hidden">
 
       <SEOHead
         title="FloraIQ - Modern Operating System for Cannabis Distribution"
@@ -244,13 +235,9 @@ export default function MarketingHome() {
                 features: ["All 87 Features", "Unlimited everything", "Fleet management", "API & webhooks", "White-label"],
               },
             ].map((plan, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className={`p-6 md:p-8 rounded-3xl border transition-all duration-300 hover:scale-[1.02] relative overflow-hidden ${plan.popular
+                className={`p-6 md:p-8 rounded-3xl border transition-all duration-200 hover:scale-[1.02] hover:-translate-y-1 relative overflow-hidden ${plan.popular
                   ? "border-[hsl(var(--marketing-primary))] bg-gradient-to-b from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-bg-subtle))] shadow-[0_0_40px_rgba(16,185,129,0.15)] md:scale-105"
                   : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
                   }`}
@@ -299,7 +286,7 @@ export default function MarketingHome() {
                     {plan.name === "ENTERPRISE" ? "Contact Sales" : "Start Free Trial"}
                   </ConfettiButton>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -319,21 +306,10 @@ export default function MarketingHome() {
               </span>
             </div>
             <Link to="/pricing">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))]">
-                  See Full Pricing Details
-                  <motion.div
-                    className="inline-block ml-2"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.div>
-                </Button>
-              </motion.div>
+              <Button variant="ghost" className="group text-[hsl(var(--marketing-text))] hover:text-[hsl(var(--marketing-primary))] hover:scale-105 active:scale-95 transition-transform">
+                See Full Pricing Details
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </Link>
           </div>
 

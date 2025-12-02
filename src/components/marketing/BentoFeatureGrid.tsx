@@ -1,8 +1,10 @@
-import { motion } from "framer-motion";
-import { FileKey2, Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight, MapPin, BarChart3 } from "lucide-react";
-import { Link } from "react-router-dom";
+/**
+ * BentoFeatureGrid - Optimized feature grid
+ * Uses CSS transitions instead of Framer Motion for better scroll performance
+ */
+
+import { Layers, Workflow, TrendingUp, ShieldCheck, Smartphone, Lock, ArrowUpRight } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
-import { FloatingUIElements } from "./FloatingUIElements";
 
 const features = [
   {
@@ -14,11 +16,7 @@ const features = [
     visual: (
       <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.05] via-transparent to-[hsl(var(--marketing-accent))/0.05]">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 z-30">
-          <motion.div 
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden"
-          >
+          <div className="bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md rounded-lg p-3 border border-[hsl(var(--marketing-border))] flex items-center gap-3 shadow-xl relative overflow-hidden">
             <div className="w-8 h-8 rounded bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center text-white relative z-10">
               <Lock className="w-4 h-4" />
             </div>
@@ -26,7 +24,7 @@ const features = [
               <div className="h-2 w-20 bg-[hsl(var(--marketing-text-light))] opacity-30 rounded mb-1" />
               <div className="h-1.5 w-12 bg-[hsl(var(--marketing-text-light))] opacity-20 rounded" />
             </div>
-          </motion.div>
+          </div>
           <div className="mt-2">
             <CountdownTimer />
           </div>
@@ -93,10 +91,7 @@ const features = [
 
 export function BentoFeatureGrid() {
   return (
-    <section className="py-24 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg))] relative">
-      {/* Floating background elements */}
-      <FloatingUIElements />
-      
+    <section className="py-20 bg-gradient-to-b from-[hsl(var(--marketing-bg))] via-[hsl(var(--marketing-bg-subtle))] to-[hsl(var(--marketing-bg))] relative">
       <div className="container mx-auto px-4 max-w-7xl relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -113,28 +108,20 @@ export function BentoFeatureGrid() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[minmax(200px,auto)]">
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              transition={{ 
-                opacity: { duration: 0.5, delay: index * 0.1 },
-                y: { duration: 0.5, delay: index * 0.1 },
-                scale: { type: "spring", stiffness: 300, damping: 20 }
-              }}
               className={`
                 group relative overflow-hidden rounded-3xl p-8 
-                bg-[hsl(var(--marketing-bg))]/60 backdrop-blur-md border border-[hsl(var(--marketing-border))]
+                bg-[hsl(var(--marketing-bg))]/60 border border-[hsl(var(--marketing-border))]
                 hover:border-[hsl(var(--marketing-primary))/0.5] 
-                hover:shadow-[0_20px_50px_-12px_rgba(16,185,129,0.25)]
-                transition-all duration-300 cursor-pointer
+                hover:shadow-lg hover:-translate-y-1
+                transition-all duration-200 cursor-pointer
                 ${feature.className}
               `}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               {/* Background Glow on Hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.08] via-[hsl(var(--marketing-bg))] to-[hsl(var(--marketing-accent))/0.06]" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-[hsl(var(--marketing-primary))/0.05] via-transparent to-[hsl(var(--marketing-accent))/0.03]" />
 
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-start justify-between mb-4">
@@ -161,20 +148,19 @@ export function BentoFeatureGrid() {
                 </p>
 
                 {feature.visual && (
-                  <div className="mt-4 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] aspect-video relative group-hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-shadow">
+                  <div className="mt-4 rounded-xl overflow-hidden border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg))] aspect-video relative">
                     {feature.visual}
                   </div>
                 )}
 
-                <div className="mt-auto pt-4 flex items-center text-sm text-[hsl(var(--marketing-primary))] font-medium opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                <div className="mt-auto pt-4 flex items-center text-sm text-[hsl(var(--marketing-primary))] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   Learn more <ArrowUpRight className="w-4 h-4 ml-1" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
     </section>
   );
 }
-
