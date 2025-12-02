@@ -224,6 +224,7 @@ export function EnhancedProductTable({
                 </div>
               </div>
             </div>
+          );
         },
       },
       {
