@@ -235,7 +235,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
  * Hook to create a new order
  */
 export function useCreateUnifiedOrder() {
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -248,7 +248,7 @@ export function useCreateUnifiedOrder() {
         p_tenant_id: tenant.id,
         p_order_type: input.order_type,
         p_source: input.source,
-        p_items: input.items,
+        p_items: JSON.parse(JSON.stringify(input.items)),
         p_customer_id: input.customer_id,
         p_wholesale_client_id: input.wholesale_client_id,
         p_menu_id: input.menu_id,
@@ -259,8 +259,8 @@ export function useCreateUnifiedOrder() {
         p_courier_id: input.courier_id,
         p_contact_name: input.contact_name,
         p_contact_phone: input.contact_phone,
-        p_metadata: input.metadata || {},
-      });
+        p_metadata: JSON.parse(JSON.stringify(input.metadata || {})),
+      } as any);
 
       if (error) {
         logger.error('Failed to create order', { error });

@@ -275,7 +275,8 @@ export function useCreateContact() {
           tenant_id: tenant.id,
           ...input,
           contact_type: input.contact_type || ['retail'],
-        })
+          metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : null,
+        } as any)
         .select()
         .single();
 
@@ -303,10 +304,15 @@ export function useUpdateContact() {
     mutationFn: async ({ contactId, ...input }: CreateContactInput & { contactId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
+      const updateData = {
+        ...input,
+        metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : undefined,
+      };
+
       // @ts-ignore - Table exists after unified architecture migration
       const { data, error } = await supabase
         .from('contacts')
-        .update(input)
+        .update(updateData as any)
         .eq('id', contactId)
         .eq('tenant_id', tenant.id)
         .select()

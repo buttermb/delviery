@@ -97,9 +97,10 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingOrderId(orderId);
     try {
+      // @ts-ignore - Dynamic status value
       const { error } = await supabase
         .from('menu_orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ status: newStatus as any, updated_at: new Date().toISOString() })
         .eq('id', orderId);
 
       if (error) throw error;
@@ -232,6 +233,7 @@ export function OrderKanban({ onViewDetails }: OrderKanbanProps) {
           order={selectedOrder}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
+          onUpdate={() => refetch()}
         />
       )}
 

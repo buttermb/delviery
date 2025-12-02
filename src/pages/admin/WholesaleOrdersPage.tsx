@@ -187,11 +187,11 @@ export default function WholesaleOrdersPage() {
       if (courierIds.length > 0) {
         const { data: couriersData } = await supabase
           .from('couriers')
-          .select('id, full_name, phone, vehicle_type, status')
+          .select('id, full_name, phone, vehicle_type')
           .in('id', courierIds);
 
         if (couriersData) {
-          couriersMap = Object.fromEntries(couriersData.map(c => [c.id, c]));
+          couriersMap = Object.fromEntries(couriersData.map((c: any) => [c.id, c]));
         }
       }
 
@@ -199,9 +199,9 @@ export default function WholesaleOrdersPage() {
       const ordersWithCouriers = (ordersData || []).map(order => ({
         ...order,
         courier: order.runner_id ? couriersMap[order.runner_id] : undefined,
-      }));
+      })) as unknown as WholesaleOrder[];
 
-      return ordersWithCouriers as WholesaleOrder[];
+      return ordersWithCouriers;
     },
     enabled: !!tenant?.id,
   });
