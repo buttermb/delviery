@@ -16,6 +16,11 @@ export function LastUpdated({ date, onRefresh, isLoading, className }: LastUpdat
 
     useEffect(() => {
         const updateTime = () => {
+            // Validate date before formatting
+            if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+                setTimeAgo('Just now');
+                return;
+            }
             setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
         };
 
