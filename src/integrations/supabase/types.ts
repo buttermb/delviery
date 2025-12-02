@@ -1262,6 +1262,158 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          account_manager_id: string | null
+          address: string | null
+          age_verified: boolean
+          assigned_to: string | null
+          auth_user_id: string | null
+          business_license: string | null
+          business_name: string | null
+          city: string | null
+          client_type: string | null
+          company_name: string | null
+          contact_type: string[]
+          country: string
+          created_at: string
+          credit_limit: number
+          email: string | null
+          email_opt_in: boolean
+          first_name: string | null
+          id: string
+          is_verified: boolean
+          job_title: string | null
+          last_contacted_at: string | null
+          last_name: string | null
+          last_order_at: string | null
+          lead_source: string | null
+          lead_status: string | null
+          lifetime_value: number
+          loyalty_points: number
+          loyalty_tier: string | null
+          metadata: Json | null
+          name: string | null
+          notes: string | null
+          outstanding_balance: number
+          payment_terms: string
+          phone: string | null
+          preferred_contact_method: string
+          sms_opt_in: boolean
+          state: string | null
+          status: string
+          tags: string[] | null
+          tax_id: string | null
+          tenant_id: string
+          total_orders: number
+          updated_at: string
+          verified_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          account_manager_id?: string | null
+          address?: string | null
+          age_verified?: boolean
+          assigned_to?: string | null
+          auth_user_id?: string | null
+          business_license?: string | null
+          business_name?: string | null
+          city?: string | null
+          client_type?: string | null
+          company_name?: string | null
+          contact_type?: string[]
+          country?: string
+          created_at?: string
+          credit_limit?: number
+          email?: string | null
+          email_opt_in?: boolean
+          first_name?: string | null
+          id?: string
+          is_verified?: boolean
+          job_title?: string | null
+          last_contacted_at?: string | null
+          last_name?: string | null
+          last_order_at?: string | null
+          lead_source?: string | null
+          lead_status?: string | null
+          lifetime_value?: number
+          loyalty_points?: number
+          loyalty_tier?: string | null
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          outstanding_balance?: number
+          payment_terms?: string
+          phone?: string | null
+          preferred_contact_method?: string
+          sms_opt_in?: boolean
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          tax_id?: string | null
+          tenant_id: string
+          total_orders?: number
+          updated_at?: string
+          verified_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          account_manager_id?: string | null
+          address?: string | null
+          age_verified?: boolean
+          assigned_to?: string | null
+          auth_user_id?: string | null
+          business_license?: string | null
+          business_name?: string | null
+          city?: string | null
+          client_type?: string | null
+          company_name?: string | null
+          contact_type?: string[]
+          country?: string
+          created_at?: string
+          credit_limit?: number
+          email?: string | null
+          email_opt_in?: boolean
+          first_name?: string | null
+          id?: string
+          is_verified?: boolean
+          job_title?: string | null
+          last_contacted_at?: string | null
+          last_name?: string | null
+          last_order_at?: string | null
+          lead_source?: string | null
+          lead_status?: string | null
+          lifetime_value?: number
+          loyalty_points?: number
+          loyalty_tier?: string | null
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          outstanding_balance?: number
+          payment_terms?: string
+          phone?: string | null
+          preferred_contact_method?: string
+          sms_opt_in?: boolean
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          tax_id?: string | null
+          tenant_id?: string
+          total_orders?: number
+          updated_at?: string
+          verified_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupon_codes: {
         Row: {
           auto_apply: boolean | null
@@ -10115,6 +10267,220 @@ export type Database = {
           },
         ]
       }
+      unified_order_items: {
+        Row: {
+          discount_amount: number
+          id: string
+          inventory_id: string | null
+          metadata: Json | null
+          order_id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          quantity_unit: string
+          sku: string | null
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          discount_amount?: number
+          id?: string
+          inventory_id?: string | null
+          metadata?: Json | null
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          quantity_unit?: string
+          sku?: string | null
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          discount_amount?: number
+          id?: string
+          inventory_id?: string | null
+          metadata?: Json | null
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          quantity_unit?: string
+          sku?: string | null
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_order_items_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "unified_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unified_orders: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier_id: string | null
+          created_at: string
+          customer_id: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_notes: string | null
+          discount_amount: number
+          id: string
+          menu_id: string | null
+          metadata: Json | null
+          order_number: string
+          order_type: string
+          payment_method: string | null
+          payment_status: string
+          shift_id: string | null
+          source: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total_amount: number
+          updated_at: string
+          wholesale_client_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number
+          id?: string
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number: string
+          order_type: string
+          payment_method?: string | null
+          payment_status?: string
+          shift_id?: string | null
+          source: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tenant_id: string
+          total_amount: number
+          updated_at?: string
+          wholesale_client_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number
+          id?: string
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string
+          order_type?: string
+          payment_method?: string | null
+          payment_status?: string
+          shift_id?: string | null
+          source?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tenant_id?: string
+          total_amount?: number
+          updated_at?: string
+          wholesale_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus_decrypted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "unified_orders_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_wholesale_client_id_fkey"
+            columns: ["wholesale_client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_events: {
         Row: {
           created_at: string | null
@@ -11679,6 +12045,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_contact_type: {
+        Args: { p_contact_id: string; p_contact_type: string }
+        Returns: undefined
+      }
       add_to_cart: {
         Args: {
           p_product_id: string
@@ -11764,6 +12134,26 @@ export type Database = {
           p_state?: string
         }
         Returns: Json
+      }
+      create_unified_order: {
+        Args: {
+          p_contact_name?: string
+          p_contact_phone?: string
+          p_courier_id?: string
+          p_customer_id?: string
+          p_delivery_address?: string
+          p_delivery_notes?: string
+          p_items: Json
+          p_menu_id?: string
+          p_metadata?: Json
+          p_order_type: string
+          p_payment_method?: string
+          p_shift_id?: string
+          p_source: string
+          p_tenant_id: string
+          p_wholesale_client_id?: string
+        }
+        Returns: string
       }
       decrement_giveaway_entries: {
         Args: { p_entries: number; p_giveaway_id: string; p_user_id: string }
@@ -12021,6 +12411,10 @@ export type Database = {
       update_client_reliability: {
         Args: { p_client_id: string; p_payment_made?: boolean }
         Returns: undefined
+      }
+      update_contact_balance: {
+        Args: { p_amount: number; p_contact_id: string; p_operation: string }
+        Returns: number
       }
       update_purchase_limits: {
         Args: {
