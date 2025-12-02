@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   ShoppingCart, User, MapPin, CreditCard, Check, ArrowRight, ArrowLeft,
   Loader2, Package, Minus, Plus, Trash2, Phone, Mail, Home, 
@@ -25,6 +26,7 @@ import { formatWeight } from '@/utils/productHelpers';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { useMenuPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
 
 interface CheckoutFlowProps {
   open: boolean;
@@ -52,14 +54,136 @@ const DELIVERY_METHODS = [
   { id: 'pickup', label: 'Pickup', icon: Store, description: 'Pick up at our location', eta: '15-20 min' },
 ];
 
-const PAYMENT_METHODS = [
-  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional', apiValue: 'cash' },
-  { id: 'zelle', label: 'Zelle', icon: Wallet, description: 'Send via Zelle', category: 'traditional', apiValue: 'other' },
-  { id: 'cashapp', label: 'CashApp', icon: Wallet, description: 'Send via CashApp', category: 'traditional', apiValue: 'other' },
-  { id: 'bitcoin', label: 'Bitcoin', icon: Bitcoin, description: 'Pay with BTC', category: 'crypto', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', apiValue: 'crypto' },
-  { id: 'lightning', label: 'Lightning', icon: Zap, description: 'Instant BTC', category: 'crypto', apiValue: 'crypto' },
-  { id: 'ethereum', label: 'Ethereum', icon: Coins, description: 'Pay with ETH', category: 'crypto', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', apiValue: 'crypto' },
+// Default payment methods (used as fallback when settings not loaded)
+const DEFAULT_PAYMENT_METHODS = [
+  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional', apiValue: 'cash' as const },
 ];
+
+// Build payment methods from settings
+function buildPaymentMethods(settings: PaymentSettings | null | undefined) {
+  const methods: Array<{
+    id: string;
+    label: string;
+    icon: React.ElementType;
+    description: string;
+    category: 'traditional' | 'crypto';
+    apiValue: 'cash' | 'card' | 'crypto' | 'other';
+    address?: string;
+    username?: string;
+    instructions?: string;
+  }> = [];
+
+  if (!settings) {
+    // Return default cash if no settings
+    return DEFAULT_PAYMENT_METHODS;
+  }
+
+  // Traditional payments
+  if (settings.accept_cash) {
+    methods.push({
+      id: 'cash',
+      label: 'Cash',
+      icon: Banknote,
+      description: settings.cash_instructions || 'Pay on delivery/pickup',
+      category: 'traditional',
+      apiValue: 'cash',
+      instructions: settings.cash_instructions || undefined,
+    });
+  }
+
+  if (settings.accept_zelle) {
+    methods.push({
+      id: 'zelle',
+      label: 'Zelle',
+      icon: Wallet,
+      description: settings.zelle_username || settings.zelle_phone 
+        ? `Send to ${settings.zelle_username || settings.zelle_phone}`
+        : 'Send via Zelle',
+      category: 'traditional',
+      apiValue: 'other',
+      username: settings.zelle_username || settings.zelle_phone || undefined,
+      instructions: settings.zelle_instructions || undefined,
+    });
+  }
+
+  if (settings.accept_cashapp) {
+    methods.push({
+      id: 'cashapp',
+      label: 'CashApp',
+      icon: Wallet,
+      description: settings.cashapp_username 
+        ? `Send to ${settings.cashapp_username}`
+        : 'Send via CashApp',
+      category: 'traditional',
+      apiValue: 'other',
+      username: settings.cashapp_username || undefined,
+      instructions: settings.cashapp_instructions || undefined,
+    });
+  }
+
+  // Crypto payments
+  if (settings.accept_bitcoin && settings.bitcoin_address) {
+    methods.push({
+      id: 'bitcoin',
+      label: 'Bitcoin',
+      icon: Bitcoin,
+      description: 'Pay with BTC',
+      category: 'crypto',
+      apiValue: 'crypto',
+      address: settings.bitcoin_address,
+      instructions: settings.crypto_instructions || undefined,
+    });
+  }
+
+  if (settings.accept_lightning && settings.lightning_address) {
+    methods.push({
+      id: 'lightning',
+      label: 'Lightning',
+      icon: Zap,
+      description: 'Instant BTC via Lightning',
+      category: 'crypto',
+      apiValue: 'crypto',
+      address: settings.lightning_address,
+      instructions: settings.crypto_instructions || undefined,
+    });
+  }
+
+  if (settings.accept_ethereum && settings.ethereum_address) {
+    methods.push({
+      id: 'ethereum',
+      label: 'Ethereum',
+      icon: Coins,
+      description: 'Pay with ETH',
+      category: 'crypto',
+      apiValue: 'crypto',
+      address: settings.ethereum_address,
+      instructions: settings.crypto_instructions || undefined,
+    });
+  }
+
+  if (settings.accept_usdt && settings.usdt_address) {
+    methods.push({
+      id: 'usdt',
+      label: 'USDT',
+      icon: Coins,
+      description: 'Pay with Tether',
+      category: 'crypto',
+      apiValue: 'crypto',
+      address: settings.usdt_address,
+      instructions: settings.crypto_instructions || undefined,
+    });
+  }
+
+  // If no methods enabled, default to cash
+  if (methods.length === 0) {
+    return DEFAULT_PAYMENT_METHODS;
+  }
+
+  return methods;
+}
+
+// Type for payment method
+type PaymentMethod = ReturnType<typeof buildPaymentMethods>[number];
 
 // Format phone number as user types
 const formatPhoneNumber = (value: string) => {
@@ -803,17 +927,24 @@ function PaymentStep({
   totalAmount,
   onUpdate,
   onNext,
-  onBack 
+  onBack,
+  paymentMethods,
+  isLoadingSettings
 }: { 
   formData: { paymentMethod: string };
   totalAmount: number;
   onUpdate: (field: string, value: string) => void;
   onNext: () => void;
   onBack: () => void;
+  paymentMethods: PaymentMethod[];
+  isLoadingSettings?: boolean;
 }) {
   const [copiedAddress, setCopiedAddress] = useState(false);
-  const selectedMethod = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod);
+  const selectedMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
   const isValid = !!formData.paymentMethod;
+  
+  const traditionalMethods = paymentMethods.filter(m => m.category === 'traditional');
+  const cryptoMethods = paymentMethods.filter(m => m.category === 'crypto');
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -837,116 +968,159 @@ function PaymentStep({
           <p className="text-sm text-muted-foreground">Choose how you'd like to pay</p>
         </div>
 
-        {/* Traditional payments */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Traditional
-          </h3>
-          <div className="space-y-2">
-            {PAYMENT_METHODS.filter(m => m.category === 'traditional').map((method) => {
-              const Icon = method.icon;
-              const isSelected = formData.paymentMethod === method.id;
-              
-              return (
-                <Card 
-                  key={method.id}
-                  className={cn(
-                    "cursor-pointer transition-all",
-                    isSelected 
-                      ? "border-primary bg-primary/5 ring-2 ring-primary" 
-                      : "hover:border-primary/50"
-                  )}
-                  onClick={() => onUpdate('paymentMethod', method.id)}
-                >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center",
-                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
-                    )}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold">{method.label}</div>
-                      <div className="text-sm text-muted-foreground">{method.description}</div>
-                    </div>
-                    {isSelected && (
-                      <Check className="h-5 w-5 text-primary" />
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+        {/* Loading state */}
+        {isLoadingSettings && (
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
           </div>
-        </div>
+        )}
 
-        {/* Crypto payments */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Bitcoin className="h-4 w-4" />
-            Cryptocurrency
-          </h3>
+        {/* Traditional payments */}
+        {!isLoadingSettings && traditionalMethods.length > 0 && (
           <div className="space-y-2">
-            {PAYMENT_METHODS.filter(m => m.category === 'crypto').map((method) => {
-              const Icon = method.icon;
-              const isSelected = formData.paymentMethod === method.id;
-              
-              // Calculate crypto amount
-              let cryptoAmount = '';
-              if (method.id === 'bitcoin') {
-                cryptoAmount = (totalAmount / btcPrice).toFixed(6) + ' BTC';
-              } else if (method.id === 'ethereum') {
-                cryptoAmount = (totalAmount / ethPrice).toFixed(4) + ' ETH';
-              } else if (method.id === 'lightning') {
-                cryptoAmount = Math.round(totalAmount / btcPrice * 100000000) + ' sats';
-              }
-              
-              return (
-                <Card 
-                  key={method.id}
-                  className={cn(
-                    "cursor-pointer transition-all",
-                    isSelected 
-                      ? "border-orange-500 bg-orange-500/5 ring-2 ring-orange-500" 
-                      : "hover:border-orange-500/50"
-                  )}
-                  onClick={() => onUpdate('paymentMethod', method.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              Traditional
+            </h3>
+            <div className="space-y-2">
+              {traditionalMethods.map((method) => {
+                const Icon = method.icon;
+                const isSelected = formData.paymentMethod === method.id;
+                
+                return (
+                  <Card 
+                    key={method.id}
+                    className={cn(
+                      "cursor-pointer transition-all",
+                      isSelected 
+                        ? "border-primary bg-primary/5 ring-2 ring-primary" 
+                        : "hover:border-primary/50"
+                    )}
+                    onClick={() => onUpdate('paymentMethod', method.id)}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
                       <div className={cn(
                         "w-12 h-12 rounded-full flex items-center justify-center",
-                        isSelected ? "bg-orange-500 text-white" : "bg-orange-500/10 text-orange-500"
+                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
                       )}>
                         <Icon className="h-6 w-6" />
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold">{method.label}</div>
                         <div className="text-sm text-muted-foreground">{method.description}</div>
-                        {cryptoAmount && (
-                          <Badge variant="outline" className="mt-1 text-orange-600 border-orange-500/30">
-                            ≈ {cryptoAmount}
-                          </Badge>
+                        {method.username && isSelected && (
+                          <div className="mt-1 flex items-center gap-2">
+                            <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                              {method.username}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(method.username!);
+                                toast.success('Copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                       {isSelected && (
-                        <Check className="h-5 w-5 text-orange-500" />
+                        <Check className="h-5 w-5 text-primary" />
                       )}
-                    </div>
-                    
-                    {/* Show wallet address for selected crypto */}
-                    {isSelected && 'address' in method && method.address && (
-                      <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <div className="text-xs text-muted-foreground mb-2">Send to this address:</div>
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 text-xs break-all font-mono bg-background p-2 rounded">
-                            {method.address}
-                          </code>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="shrink-0 h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                    </CardContent>
+                    {/* Show instructions when selected */}
+                    {isSelected && method.instructions && (
+                      <div className="px-4 pb-4">
+                        <Alert>
+                          <AlertDescription className="text-sm">
+                            {method.instructions}
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Crypto payments */}
+        {!isLoadingSettings && cryptoMethods.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Bitcoin className="h-4 w-4" />
+              Cryptocurrency
+            </h3>
+            <div className="space-y-2">
+              {cryptoMethods.map((method) => {
+                const Icon = method.icon;
+                const isSelected = formData.paymentMethod === method.id;
+                
+                // Calculate crypto amount
+                let cryptoAmount = '';
+                if (method.id === 'bitcoin') {
+                  cryptoAmount = (totalAmount / btcPrice).toFixed(6) + ' BTC';
+                } else if (method.id === 'ethereum') {
+                  cryptoAmount = (totalAmount / ethPrice).toFixed(4) + ' ETH';
+                } else if (method.id === 'lightning') {
+                  cryptoAmount = Math.round(totalAmount / btcPrice * 100000000) + ' sats';
+                } else if (method.id === 'usdt') {
+                  cryptoAmount = totalAmount.toFixed(2) + ' USDT';
+                }
+                
+                return (
+                  <Card 
+                    key={method.id}
+                    className={cn(
+                      "cursor-pointer transition-all",
+                      isSelected 
+                        ? "border-orange-500 bg-orange-500/5 ring-2 ring-orange-500" 
+                        : "hover:border-orange-500/50"
+                    )}
+                    onClick={() => onUpdate('paymentMethod', method.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "w-12 h-12 rounded-full flex items-center justify-center",
+                          isSelected ? "bg-orange-500 text-white" : "bg-orange-500/10 text-orange-500"
+                        )}>
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold">{method.label}</div>
+                          <div className="text-sm text-muted-foreground">{method.description}</div>
+                          {cryptoAmount && (
+                            <Badge variant="outline" className="mt-1 text-orange-600 border-orange-500/30">
+                              ≈ {cryptoAmount}
+                            </Badge>
+                          )}
+                        </div>
+                        {isSelected && (
+                          <Check className="h-5 w-5 text-orange-500" />
+                        )}
+                      </div>
+                      
+                      {/* Show wallet address for selected crypto */}
+                      {isSelected && method.address && (
+                        <div className="mt-4 p-3 bg-muted rounded-lg">
+                          <div className="text-xs text-muted-foreground mb-2">Send to this address:</div>
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 text-xs break-all font-mono bg-background p-2 rounded">
+                              {method.address}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="shrink-0 h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
                               copyToClipboard(method.address!);
                             }}
                           >
@@ -958,13 +1132,19 @@ function PaymentStep({
                           </Button>
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      {/* Show instructions when selected */}
+                      {isSelected && method.instructions && (
+                        <div className="mt-3 p-2 bg-background rounded text-xs text-muted-foreground">
+                          {method.instructions}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Security notice */}
         <Alert className="bg-emerald-500/10 border-emerald-500/20">
@@ -1002,7 +1182,8 @@ function ConfirmStep({
   onSubmit,
   onBack,
   onEdit,
-  isSubmitting
+  isSubmitting,
+  paymentMethods
 }: { 
   formData: {
     firstName: string;
@@ -1020,6 +1201,7 @@ function ConfirmStep({
   onBack: () => void;
   onEdit: (step: CheckoutStep) => void;
   isSubmitting: boolean;
+  paymentMethods: PaymentMethod[];
 }) {
   const cartItems = useMenuCartStore((state) => state.items);
   const getTotal = useMenuCartStore((state) => state.getTotal);
@@ -1035,7 +1217,7 @@ function ConfirmStep({
   const finalTotal = totalAmount + serviceFee;
 
   const deliveryLabel = DELIVERY_METHODS.find(m => m.id === formData.deliveryMethod)?.label;
-  const paymentMethod = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod);
+  const paymentMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
 
   const canSubmit = agreed && ageVerified;
 
@@ -1389,6 +1571,14 @@ export function ModernCheckoutFlow({
   const getItemCount = useMenuCartStore((state) => state.getItemCount);
   const clearCart = useMenuCartStore((state) => state.clearCart);
 
+  // Fetch payment settings for this menu
+  const { data: paymentSettings, isLoading: isLoadingPaymentSettings } = useMenuPaymentSettings(menuId);
+  
+  // Build payment methods from settings
+  const paymentMethods = useMemo(() => {
+    return buildPaymentMethods(paymentSettings);
+  }, [paymentSettings]);
+
   const totalItems = getItemCount();
   const totalAmount = getTotal();
   const serviceFee = totalAmount * 0.05;
@@ -1460,7 +1650,7 @@ export function ModernCheckoutFlow({
         : '';
 
       // Map the UI payment method to API-compatible value
-      const selectedPaymentMethod = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod);
+      const selectedPaymentMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
       const apiPaymentMethod = selectedPaymentMethod?.apiValue || 'cash';
 
       // Calculate total for the API
@@ -1585,6 +1775,8 @@ export function ModernCheckoutFlow({
                     onUpdate={updateFormData}
                     onNext={() => goToStep('confirm')}
                     onBack={() => goToStep('location')}
+                    paymentMethods={paymentMethods}
+                    isLoadingSettings={isLoadingPaymentSettings}
                   />
                 )}
                 {currentStep === 'confirm' && (
@@ -1594,6 +1786,7 @@ export function ModernCheckoutFlow({
                     onBack={() => goToStep('payment')}
                     onEdit={goToStep}
                     isSubmitting={isSubmitting}
+                    paymentMethods={paymentMethods}
                   />
                 )}
               </div>

@@ -15,7 +15,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Settings, Shield, Bell, Printer, Plug, Save,
-  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders, Users
+  Building, Lock, Key, AlertCircle, CheckCircle2, ArrowLeft, Layout, Sliders, Users, CreditCard
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast, showInfoToast } from '@/utils/toastHelpers';
 import { useAccount } from '@/contexts/AccountContext';
@@ -28,6 +28,7 @@ import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { useToast } from "@/hooks/use-toast";
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
 import { StripeConnectSettings } from '@/components/settings/StripeConnectSettings';
+import { PaymentSettingsForm } from '@/components/settings/PaymentSettingsForm';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -170,6 +171,10 @@ export default function SettingsPage() {
           <TabsTrigger value="sidebar-customization" className="justify-start lg:justify-center w-full lg:w-auto">
             <Sliders className="h-4 w-4 mr-2" />
             Sidebar Layout
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="justify-start lg:justify-center w-full lg:w-auto">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Payments
           </TabsTrigger>
         </TabsList>
 
@@ -486,6 +491,11 @@ export default function SettingsPage() {
         {/* Sidebar Customization */}
         <TabsContent value="sidebar-customization">
           <SidebarCustomizer />
+        </TabsContent>
+
+        {/* Payment Settings */}
+        <TabsContent value="payments">
+          <PaymentSettingsForm />
         </TabsContent>
       </Tabs>
     </div>

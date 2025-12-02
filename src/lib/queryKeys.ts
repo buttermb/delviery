@@ -433,4 +433,8 @@ export const queryKeys = {
     orders: (token: string) => [...queryKeys.portal.all, 'orders', token] as const,
     history: (token: string) => [...queryKeys.portal.all, 'history', token] as const,
   },
+
+  // Payment Settings
+  tenantPaymentSettings: (tenantId: string) => ['tenant-payment-settings', tenantId] as const,
+  menuPaymentSettings: (menuId: string) => ['menu-payment-settings', menuId] as const,
 } as const;

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink, 
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, 
-  MoreHorizontal, MessageSquare, DollarSign
+  MoreHorizontal, MessageSquare, DollarSign, CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -27,6 +27,7 @@ import { MenuAnalyticsDialog } from './MenuAnalyticsDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
+import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
@@ -47,6 +48,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [qrCodeOpen, setQrCodeOpen] = useState(false);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
+  const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
 
   const viewCount = (menu as any).view_count || 0;
   const customerCount = (menu as any).customer_count || 0;
@@ -272,6 +274,10 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     <Users className="h-4 w-4 mr-2" />
                     Manage Access
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPaymentSettingsOpen(true)}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Payment Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setCloneDialogOpen(true)}>
                     <CopyPlus className="h-4 w-4 mr-2" />
@@ -358,6 +364,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         accessCode={menu.access_code || 'N/A'}
         shareableUrl={menuUrl}
         menuName={menu.name}
+      />
+
+      <MenuPaymentSettingsDialog
+        open={paymentSettingsOpen}
+        onOpenChange={setPaymentSettingsOpen}
+        menu={menu}
       />
     </>
   );
