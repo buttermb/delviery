@@ -1,22 +1,26 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
-import { Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, ZoomIn, Leaf, Sparkles, Wind, Coffee } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { 
+  Shield, ShoppingCart, Package, Minus, Plus, Lock, AlertTriangle, 
+  ZoomIn, Leaf, Sparkles, Wind, Coffee, Search, X, Check,
+  SlidersHorizontal, ArrowUpDown, ChevronRight, Trash2
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OptimizedProductImage } from '@/components/OptimizedProductImage';
-import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
-// import { enableScreenshotProtection, generateDeviceFingerprint } from '@/utils/screenshotProtection';
 import { trackImageZoom } from '@/hooks/useMenuAnalytics';
 import { getDefaultWeight, sortProductWeights, formatWeight } from '@/utils/productHelpers';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -53,13 +57,31 @@ interface MenuData {
   custom_prices?: Record<string, number>;
 }
 
+const STRAIN_TYPES = ['All', 'Indica', 'Sativa', 'Hybrid', 'CBD'] as const;
+const SORT_OPTIONS = [
+  { value: 'name', label: 'Name A-Z' },
+  { value: 'price-low', label: 'Price: Low to High' },
+  { value: 'price-high', label: 'Price: High to Low' },
+  { value: 'thc', label: 'THC %' },
+] as const;
+
 const getStrainColor = (strainType?: string) => {
   switch (strainType) {
-    case 'Indica': return 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20';
-    case 'Sativa': return 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20';
-    case 'Hybrid': return 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20';
-    case 'CBD': return 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20';
-    default: return 'bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20';
+    case 'Indica': return 'bg-purple-500 text-white';
+    case 'Sativa': return 'bg-emerald-500 text-white';
+    case 'Hybrid': return 'bg-orange-500 text-white';
+    case 'CBD': return 'bg-blue-500 text-white';
+    default: return 'bg-gray-500 text-white';
+  }
+};
+
+const getStrainBgColor = (strainType?: string) => {
+  switch (strainType) {
+    case 'Indica': return 'from-purple-500/20 to-purple-600/10';
+    case 'Sativa': return 'from-emerald-500/20 to-emerald-600/10';
+    case 'Hybrid': return 'from-orange-500/20 to-orange-600/10';
+    case 'CBD': return 'from-blue-500/20 to-blue-600/10';
+    default: return 'from-gray-500/20 to-gray-600/10';
   }
 };
 
@@ -74,6 +96,356 @@ const getEffectIcon = (effect: string) => {
   return '✨';
 };
 
+// Enhanced Product Card Component
+function ProductCard({ 
+  product, 
+  menuData,
+  selectedWeight,
+  onWeightChange,
+  cartQuantity,
+  onAddToCart,
+  onUpdateQuantity,
+  onViewDetails,
+  onImageZoom
+}: {
+  product: Product;
+  menuData: MenuData;
+  selectedWeight: string;
+  onWeightChange: (weight: string) => void;
+  cartQuantity: number;
+  onAddToCart: () => void;
+  onUpdateQuantity: (delta: number) => void;
+  onViewDetails: () => void;
+  onImageZoom: () => void;
+}) {
+  const [justAdded, setJustAdded] = useState(false);
+  const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
+  const imageUrl = product.image_url || product.images?.[0];
+  
+  const hasPrices = product.prices && typeof product.prices === 'object';
+  const weights = hasPrices ? sortProductWeights(Object.keys(product.prices!)) : [];
+  const currentPrice = hasPrices 
+    ? (product.prices![selectedWeight] || 0)
+    : (product.price || 0);
+
+  const handleAddToCart = () => {
+    onAddToCart();
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
+
+  return (
+    <Card className={cn(
+      "overflow-hidden transition-all duration-300 group",
+      "hover:shadow-xl hover:shadow-primary/10",
+      justAdded && "ring-2 ring-emerald-500 ring-offset-2"
+    )}>
+      {/* Image Section */}
+      <div className="relative">
+        {shouldShowImage && imageUrl && (
+          <div 
+            className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50 cursor-pointer"
+            onClick={onImageZoom}
+          >
+            <OptimizedProductImage
+              src={imageUrl}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              priority={false}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button size="sm" variant="secondary" className="h-8 gap-1">
+                <ZoomIn className="h-3.5 w-3.5" />
+                View
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Strain Badge */}
+        {product.strain_type && (
+          <Badge className={cn(
+            "absolute top-3 left-3 font-semibold shadow-lg",
+            getStrainColor(product.strain_type)
+          )}>
+            {product.strain_type}
+          </Badge>
+        )}
+
+        {/* THC Badge */}
+        {product.thc_percentage && (
+          <Badge 
+            variant="secondary" 
+            className="absolute top-3 right-3 bg-black/70 text-white backdrop-blur-sm"
+          >
+            <Leaf className="h-3 w-3 mr-1" />
+            {product.thc_percentage.toFixed(1)}%
+          </Badge>
+        )}
+
+        {/* Added Indicator */}
+        {justAdded && (
+          <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">
+            <div className="bg-emerald-500 text-white rounded-full p-3 animate-bounce">
+              <Check className="h-6 w-6" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content Section */}
+      <div className={cn(
+        "p-4 space-y-3",
+        product.strain_type && `bg-gradient-to-b ${getStrainBgColor(product.strain_type)}`
+      )}>
+        {/* Title & Info Button */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-lg leading-tight truncate">{product.name}</h3>
+            {product.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                {product.description}
+              </p>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={onViewDetails}
+          >
+            <Sparkles className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Effects */}
+        {product.effects && product.effects.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {product.effects.slice(0, 3).map((effect, idx) => (
+              <Badge key={idx} variant="secondary" className="text-xs py-0.5">
+                {getEffectIcon(effect)} {effect}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Weight Selector */}
+        {hasPrices && weights.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap">
+            {weights.map(weight => (
+              <Button
+                key={weight}
+                size="sm"
+                variant={selectedWeight === weight ? 'default' : 'outline'}
+                onClick={() => onWeightChange(weight)}
+                className={cn(
+                  "h-9 px-3 text-sm font-medium transition-all",
+                  selectedWeight === weight && "shadow-md"
+                )}
+              >
+                {formatWeight(weight)}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Price & Stock */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <div className="text-2xl font-bold text-primary">
+            ${currentPrice.toFixed(2)}
+          </div>
+          {menuData.appearance_settings?.show_availability !== false && product.quantity_lbs && (
+            <Badge variant="outline" className="text-xs">
+              <Package className="h-3 w-3 mr-1" />
+              {product.quantity_lbs} lbs
+            </Badge>
+          )}
+        </div>
+
+        {/* Add to Cart / Quantity Controls */}
+        {cartQuantity === 0 ? (
+          <Button 
+            onClick={handleAddToCart}
+            className="w-full h-12 text-base font-semibold gap-2"
+            size="lg"
+          >
+            <Plus className="h-5 w-5" />
+            Add to Cart
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => onUpdateQuantity(-1)}
+              className="h-12 w-12 p-0"
+            >
+              <Minus className="h-5 w-5" />
+            </Button>
+            <div className="flex-1 text-center">
+              <div className="text-2xl font-bold">{cartQuantity}</div>
+              <div className="text-xs text-muted-foreground">in cart</div>
+            </div>
+            <Button
+              size="lg"
+              onClick={() => onUpdateQuantity(1)}
+              className="h-12 w-12 p-0"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+// Cart Sheet Component
+function CartSheet({ 
+  open, 
+  onOpenChange,
+  menuData,
+  onCheckout
+}: { 
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  menuData: MenuData;
+  onCheckout: () => void;
+}) {
+  const cartItems = useMenuCartStore((state) => state.items);
+  const removeItem = useMenuCartStore((state) => state.removeItem);
+  const updateQuantity = useMenuCartStore((state) => state.updateQuantity);
+  const getTotal = useMenuCartStore((state) => state.getTotal);
+  const getItemCount = useMenuCartStore((state) => state.getItemCount);
+
+  const totalAmount = getTotal();
+  const totalItems = getItemCount();
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-md flex flex-col">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Your Cart ({totalItems} items)
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto py-4">
+          {cartItems.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p>Your cart is empty</p>
+              <p className="text-sm mt-1">Add some products to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {cartItems.map((item) => {
+                const product = menuData.products.find(p => p.id === item.productId);
+                return (
+                  <Card key={`${item.productId}-${item.weight}`} className="p-3">
+                    <div className="flex gap-3">
+                      {product?.image_url && (
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
+                          <OptimizedProductImage
+                            src={product.image_url}
+                            alt={item.productName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{item.productName}</div>
+                        {item.weight && (
+                          <Badge variant="secondary" className="text-xs mt-1">
+                            {formatWeight(item.weight)}
+                          </Badge>
+                        )}
+                        <div className="text-sm text-muted-foreground mt-1">
+                          ${item.price.toFixed(2)} each
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold">${(item.price * item.quantity).toFixed(2)}</div>
+                        <div className="flex items-center gap-1 mt-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center text-sm">{item.quantity}</span>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-red-500 hover:text-red-600"
+                            onClick={() => removeItem(item.productId)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Cart Footer */}
+        {cartItems.length > 0 && (
+          <div className="border-t pt-4 space-y-4">
+            <div className="flex justify-between text-lg font-bold">
+              <span>Total</span>
+              <span className="text-primary">${totalAmount.toFixed(2)}</span>
+            </div>
+            
+            {/* Order Constraints Warning */}
+            {menuData.min_order_quantity && totalItems < menuData.min_order_quantity && (
+              <Alert variant="destructive" className="py-2">
+                <AlertDescription className="text-sm">
+                  Minimum order: {menuData.min_order_quantity} items
+                </AlertDescription>
+              </Alert>
+            )}
+            {menuData.max_order_quantity && totalItems > menuData.max_order_quantity && (
+              <Alert variant="destructive" className="py-2">
+                <AlertDescription className="text-sm">
+                  Maximum order: {menuData.max_order_quantity} items
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Button 
+              onClick={onCheckout}
+              className="w-full h-12 text-lg font-semibold"
+              disabled={
+                (menuData.min_order_quantity && totalItems < menuData.min_order_quantity) ||
+                (menuData.max_order_quantity && totalItems > menuData.max_order_quantity)
+              }
+            >
+              Proceed to Checkout
+              <ChevronRight className="h-5 w-5 ml-2" />
+            </Button>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 const SecureMenuView = () => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -84,6 +456,12 @@ const SecureMenuView = () => {
   const [zoomedImage, setZoomedImage] = useState<{ url: string; name: string } | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>({});
+  const [cartOpen, setCartOpen] = useState(false);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStrain, setSelectedStrain] = useState<typeof STRAIN_TYPES[number]>('All');
+  const [sortBy, setSortBy] = useState<typeof SORT_OPTIONS[number]['value']>('name');
 
   // Use Zustand cart store
   const cartItems = useMenuCartStore((state) => state.items);
@@ -118,19 +496,6 @@ const SecureMenuView = () => {
         setMenuToken(token);
       }
 
-      // Enable screenshot protection if enabled in menu settings (disabled - module removed)
-      // if (parsed.security_settings?.screenshot_protection?.enabled) {
-      //   generateDeviceFingerprint().then((fingerprint) => {
-      //     cleanupScreenshotProtection.current = enableScreenshotProtection(
-      //       parsed.menu_id,
-      //       parsed.whitelist_id,
-      //       (event) => {
-      //         logger.debug('Security event detected:', event);
-      //       }
-      //     );
-      //   });
-      // }
-
       return () => {
         if (cleanupScreenshotProtection.current) {
           cleanupScreenshotProtection.current();
@@ -142,6 +507,48 @@ const SecureMenuView = () => {
     }
   }, [token, navigate, setMenuToken]);
 
+  // Filtered and sorted products
+  const filteredProducts = useMemo(() => {
+    if (!menuData?.products) return [];
+    
+    let products = [...menuData.products];
+    
+    // Filter by search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      products = products.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query) ||
+        p.category?.toLowerCase().includes(query) ||
+        p.effects?.some(e => e.toLowerCase().includes(query)) ||
+        p.flavors?.some(f => f.toLowerCase().includes(query))
+      );
+    }
+    
+    // Filter by strain type
+    if (selectedStrain !== 'All') {
+      products = products.filter(p => p.strain_type === selectedStrain);
+    }
+    
+    // Sort
+    products.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'price-low':
+          return (getProductPrice(a) || 0) - (getProductPrice(b) || 0);
+        case 'price-high':
+          return (getProductPrice(b) || 0) - (getProductPrice(a) || 0);
+        case 'thc':
+          return (b.thc_percentage || 0) - (a.thc_percentage || 0);
+        default:
+          return 0;
+      }
+    });
+    
+    return products;
+  }, [menuData?.products, searchQuery, selectedStrain, sortBy]);
+
   const getProductPrice = (product: Product, weight?: string) => {
     if (product.prices && typeof product.prices === 'object') {
       const selectedWeight = weight || selectedWeights[product.id] || getDefaultWeight(product.prices);
@@ -150,37 +557,30 @@ const SecureMenuView = () => {
     return product.price || 0;
   };
 
-  const updateQuantity = (productId: string, delta: number) => {
-    const product = menuData?.products?.find((p: Product) => p.id === productId);
-    if (!product) return;
-
-    const existingItem = cartItems.find(item => item.productId === productId);
-    const currentQty = existingItem?.quantity || 0;
-    const newQty = Math.max(0, currentQty + delta);
-    
-    const weight = selectedWeights[productId] || getDefaultWeight(product.prices);
+  const handleAddToCart = (product: Product) => {
+    const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
     const price = getProductPrice(product, weight);
-
-    if (newQty === 0) {
-      removeItem(productId);
-    } else if (existingItem) {
-      updateQuantityStore(productId, newQty);
-    } else {
-      addItem({
-        productId,
-        weight,
-        price,
-        productName: product.name,
-      });
-      // Then update to the correct quantity if needed
-      if (newQty > 1) {
-        updateQuantityStore(productId, newQty);
-      }
-    }
+    
+    addItem({
+      productId: product.id,
+      weight,
+      price,
+      productName: product.name,
+    });
+    
+    toast.success(`${product.name} added to cart`);
   };
 
-  const calculateTotal = () => {
-    return getTotal();
+  const handleUpdateQuantity = (productId: string, delta: number) => {
+    const existingItem = cartItems.find(item => item.productId === productId);
+    if (!existingItem) return;
+    
+    const newQty = existingItem.quantity + delta;
+    if (newQty <= 0) {
+      removeItem(productId);
+    } else {
+      updateQuantityStore(productId, newQty);
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -195,15 +595,12 @@ const SecureMenuView = () => {
 
     setPlacingOrder(true);
     try {
-      const orderItems = cartItems.map(item => {
-        const product = menuData!.products.find((p: Product) => p.id === item.productId);
-        return {
-          product_id: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          weight: item.weight
-        };
-      });
+      const orderItems = cartItems.map(item => ({
+        product_id: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        weight: item.weight
+      }));
 
       const { data, error } = await supabase.functions.invoke('menu-order-place', {
         body: {
@@ -220,7 +617,6 @@ const SecureMenuView = () => {
 
       if (error) throw error;
 
-      // Check for error in response body (some edge functions return 200 with error)
       if (data && typeof data === 'object' && 'error' in data && data.error) {
         const errorMessage = typeof data.error === 'string' ? data.error : 'Failed to place order';
         throw new Error(errorMessage);
@@ -229,6 +625,7 @@ const SecureMenuView = () => {
       showSuccessToast('Order Placed', 'Your order has been submitted successfully');
       clearCart();
       setSelectedWeights({});
+      setCartOpen(false);
       
       // Clear session after order
       setTimeout(() => {
@@ -257,282 +654,211 @@ const SecureMenuView = () => {
   }
 
   const totalItems = getItemCount();
-  const totalAmount = calculateTotal();
-  
-  // Convert cart items to a map for easier lookup
+  const totalAmount = getTotal();
   const cartMap = new Map(cartItems.map(item => [item.productId, item]));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10 shadow-sm">
+      <div className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">{menuData.name}</h1>
-              <p className="text-sm text-muted-foreground">{menuData.description}</p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{menuData.name}</h1>
+              {menuData.description && (
+                <p className="text-sm text-muted-foreground truncate">{menuData.description}</p>
+              )}
             </div>
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Shield className="h-3 w-3" />
-              Encrypted
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="hidden sm:flex items-center gap-1 shrink-0">
+                <Shield className="h-3 w-3" />
+                Encrypted
+              </Badge>
+              
+              {/* Cart Button */}
+              <Button
+                variant="default"
+                size="lg"
+                className="relative gap-2"
+                onClick={() => setCartOpen(true)}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span className="hidden sm:inline">Cart</span>
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-6 w-6 p-0 flex items-center justify-center bg-red-500">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Security Notice */}
-        <Alert className="mb-6">
+        <Alert className="bg-primary/5 border-primary/20">
           <Lock className="h-4 w-4" />
           <AlertDescription>
             This is a confidential catalog. Do not share or screenshot this page.
           </AlertDescription>
         </Alert>
 
-        {/* Order Constraints */}
-        {(menuData.min_order_quantity || menuData.max_order_quantity) && (
-          <Alert className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {menuData.min_order_quantity && `Minimum order: ${menuData.min_order_quantity} items. `}
-              {menuData.max_order_quantity && `Maximum order: ${menuData.max_order_quantity} items.`}
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Filters Bar */}
+        <div className="space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products, effects, flavors..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-12 text-base"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Strain Filter Pills */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {STRAIN_TYPES.map((strain) => (
+              <Button
+                key={strain}
+                variant={selectedStrain === strain ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedStrain(strain)}
+                className={cn(
+                  "shrink-0 h-9 px-4",
+                  selectedStrain === strain && strain !== 'All' && getStrainColor(strain)
+                )}
+              >
+                {strain}
+              </Button>
+            ))}
+            
+            {/* Sort Dropdown */}
+            <div className="ml-auto shrink-0">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="h-9 px-3 rounded-md border bg-background text-sm"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="text-sm text-muted-foreground">
+            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
 
         {/* Products Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
-          {!menuData.products || menuData.products.length === 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <p className="text-lg text-muted-foreground">No products available in this menu</p>
+              <p className="text-lg text-muted-foreground">
+                {searchQuery || selectedStrain !== 'All' 
+                  ? 'No products match your filters'
+                  : 'No products available in this menu'}
+              </p>
+              {(searchQuery || selectedStrain !== 'All') && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedStrain('All');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
             </div>
           ) : (
-            menuData.products.map((product: Product) => {
+            filteredProducts.map((product) => {
               const cartItem = cartMap.get(product.id);
-              const quantity = cartItem?.quantity || 0;
-              const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
-              const imageUrl = product.image_url || product.images?.[0];
-              
-              const hasPrices = product.prices && typeof product.prices === 'object';
               const selectedWeight = selectedWeights[product.id] || getDefaultWeight(product.prices);
-              const currentPrice = getProductPrice(product, selectedWeight);
               
-              const weights = hasPrices ? sortProductWeights(Object.keys(product.prices!)) : [];
-
               return (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative">
-                    {/* Product Image */}
-                    {shouldShowImage && imageUrl && (
-                      <div 
-                        className="relative aspect-square overflow-hidden bg-muted cursor-pointer group"
-                        onClick={() => {
-                          setZoomedImage({ url: imageUrl, name: product.name });
-                          trackImageZoom(menuData.menu_id, product.id);
-                        }}
-                      >
-                        <OptimizedProductImage
-                          src={imageUrl}
-                          alt={product.name}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          priority={false}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                          <ZoomIn className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Strain Badge Overlay */}
-                    {product.strain_type && (
-                      <Badge className={`absolute top-3 left-3 ${getStrainColor(product.strain_type)} font-semibold`}>
-                        {product.strain_type}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    {/* Product Info */}
-                    <div>
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-lg leading-tight">{product.name}</h3>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedProduct(product)}
-                          className="h-8 px-2"
-                        >
-                          <Sparkles className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {/* THC/CBD Badges */}
-                      {(product.thc_percentage || product.cbd_percentage) && (
-                        <div className="flex gap-2 mb-2">
-                          {product.thc_percentage && (
-                            <Badge variant="outline" className="text-xs">
-                              <Leaf className="h-3 w-3 mr-1" />
-                              {product.thc_percentage.toFixed(1)}% THC
-                            </Badge>
-                          )}
-                          {product.cbd_percentage && product.cbd_percentage > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              {product.cbd_percentage.toFixed(1)}% CBD
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {product.description || 'Premium cannabis flower'}
-                      </p>
-                    </div>
-
-                    {/* Effects */}
-                    {product.effects && product.effects.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {product.effects.slice(0, 4).map((effect, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {getEffectIcon(effect)} {effect}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Weight Selector */}
-                    {hasPrices && weights.length > 0 && (
-                      <div className="flex gap-1 flex-wrap">
-                        {weights.map(weight => (
-                          <Button
-                            key={weight}
-                            size="sm"
-                            variant={selectedWeight === weight ? 'default' : 'outline'}
-                            onClick={() => {
-                              setSelectedWeights(prev => ({ ...prev, [product.id]: weight }));
-                            }}
-                            className="text-xs h-8"
-                          >
-                            {formatWeight(weight)}
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Price and Stock */}
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="text-xl font-bold text-primary">
-                        ${currentPrice.toFixed(2)}
-                      </div>
-                      {menuData.appearance_settings?.show_availability !== false && (
-                        <Badge variant="outline" className="flex items-center gap-1">
-                          <Package className="h-3 w-3" />
-                          {product.quantity_lbs || 0} lbs
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateQuantity(product.id, -1)}
-                        disabled={quantity === 0}
-                        className="h-9 w-9 p-0"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value) || 0;
-                          const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
-                          const price = getProductPrice(product, weight);
-                          
-                          if (val === 0) {
-                            removeItem(product.id);
-                          } else {
-                            const existingItem = cartItems.find(item => item.productId === product.id);
-                            if (existingItem) {
-                              updateQuantityStore(product.id, val);
-                            } else {
-                              addItem({
-                                productId: product.id,
-                                weight,
-                                price,
-                                productName: product.name,
-                              });
-                              if (val > 1) {
-                                updateQuantityStore(product.id, val);
-                              }
-                            }
-                          }
-                        }}
-                        className="flex-1 text-center h-9"
-                        min={0}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => updateQuantity(product.id, 1)}
-                        className="h-9 flex-1"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  menuData={menuData}
+                  selectedWeight={selectedWeight}
+                  onWeightChange={(weight) => setSelectedWeights(prev => ({ ...prev, [product.id]: weight }))}
+                  cartQuantity={cartItem?.quantity || 0}
+                  onAddToCart={() => handleAddToCart(product)}
+                  onUpdateQuantity={(delta) => handleUpdateQuantity(product.id, delta)}
+                  onViewDetails={() => setSelectedProduct(product)}
+                  onImageZoom={() => {
+                    const imageUrl = product.image_url || product.images?.[0];
+                    if (imageUrl) {
+                      setZoomedImage({ url: imageUrl, name: product.name });
+                      trackImageZoom(menuData.menu_id, product.id);
+                    }
+                  }}
+                />
               );
             })
           )}
         </div>
-
-        {/* Floating Cart Summary */}
-        {totalItems > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg p-4 z-20">
-            <div className="container mx-auto flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  {totalItems} item{totalItems !== 1 ? 's' : ''}
-                </div>
-                <div className="text-2xl font-bold">
-                  ${totalAmount.toFixed(2)}
-                </div>
-              </div>
-              <Button
-                size="lg"
-                onClick={handlePlaceOrder}
-                disabled={
-                  placingOrder ||
-                  (menuData.min_order_quantity && totalItems < menuData.min_order_quantity) ||
-                  (menuData.max_order_quantity && totalItems > menuData.max_order_quantity)
-                }
-                className="min-w-[200px]"
-              >
-                {placingOrder ? (
-                  'Processing...'
-                ) : (
-                  <>
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Place Order
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Floating Cart Summary */}
+      {totalItems > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t shadow-2xl p-4 z-30 safe-area-inset-bottom">
+          <div className="container mx-auto flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">
+                {totalItems} item{totalItems !== 1 ? 's' : ''}
+              </div>
+              <div className="text-2xl font-bold text-primary">
+                ${totalAmount.toFixed(2)}
+              </div>
+            </div>
+            <Button
+              size="lg"
+              onClick={() => setCartOpen(true)}
+              className="min-w-[160px] h-12 text-base font-semibold gap-2"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              View Cart
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Sheet */}
+      <CartSheet
+        open={cartOpen}
+        onOpenChange={setCartOpen}
+        menuData={menuData}
+        onCheckout={handlePlaceOrder}
+      />
 
       {/* Image Zoom Dialog */}
       <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
-        <DialogContent className="max-w-4xl p-0">
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
           <DialogTitle className="sr-only">{zoomedImage?.name}</DialogTitle>
           {zoomedImage && (
             <div className="relative">
               <div className="absolute top-4 left-4 z-10">
-                <Badge variant="secondary" className="text-lg px-4 py-2">
+                <Badge variant="secondary" className="text-lg px-4 py-2 backdrop-blur-sm">
                   {zoomedImage.name}
                 </Badge>
               </div>
@@ -553,7 +879,7 @@ const SecureMenuView = () => {
           <DialogHeader>
             <DialogTitle className="text-2xl">{selectedProduct?.name}</DialogTitle>
             {selectedProduct?.strain_type && (
-              <Badge className={`w-fit ${getStrainColor(selectedProduct.strain_type)} font-semibold`}>
+              <Badge className={cn("w-fit font-semibold", getStrainColor(selectedProduct.strain_type))}>
                 {selectedProduct.strain_type}
               </Badge>
             )}
@@ -582,9 +908,9 @@ const SecureMenuView = () => {
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(selectedProduct.prices).map(([weight, price]) => (
-                      <div key={weight} className="flex justify-between p-2 bg-muted rounded">
+                      <div key={weight} className="flex justify-between p-3 bg-muted rounded-lg">
                         <span className="font-medium">{formatWeight(weight)}</span>
-                        <span className="text-primary">${(price as number).toFixed(2)}</span>
+                        <span className="text-primary font-bold">${(price as number).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -608,16 +934,16 @@ const SecureMenuView = () => {
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     {selectedProduct.thc_percentage && (
-                      <div className="p-3 bg-green-500/10 rounded-lg">
-                        <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                      <div className="p-4 bg-emerald-500/10 rounded-lg">
+                        <div className="text-3xl font-bold text-emerald-600">
                           {selectedProduct.thc_percentage.toFixed(1)}%
                         </div>
                         <div className="text-sm text-muted-foreground">THC</div>
                       </div>
                     )}
                     {selectedProduct.cbd_percentage && (
-                      <div className="p-3 bg-blue-500/10 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                      <div className="p-4 bg-blue-500/10 rounded-lg">
+                        <div className="text-3xl font-bold text-blue-600">
                           {selectedProduct.cbd_percentage.toFixed(1)}%
                         </div>
                         <div className="text-sm text-muted-foreground">CBD</div>
@@ -664,7 +990,7 @@ const SecureMenuView = () => {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedProduct.effects.map((effect, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-sm py-1">
+                      <Badge key={idx} variant="secondary" className="text-sm py-1 px-3">
                         {getEffectIcon(effect)} {effect}
                       </Badge>
                     ))}
@@ -699,15 +1025,20 @@ const SecureMenuView = () => {
                 </div>
               )}
 
-              {/* Grow Info */}
-              {selectedProduct.grow_info && (
-                <div>
-                  <h4 className="font-semibold mb-2">Grow Information</h4>
-                  <p className="text-muted-foreground text-sm">
-                    {selectedProduct.grow_info}
-                  </p>
-                </div>
-              )}
+              {/* Add to Cart from Detail View */}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={() => {
+                    handleAddToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                  className="w-full h-12 text-lg font-semibold"
+                  size="lg"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add to Cart
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -716,5 +1047,4 @@ const SecureMenuView = () => {
   );
 };
 
-// Force rebuild - disposable menus with image support
 export default SecureMenuView;
