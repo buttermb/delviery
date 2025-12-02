@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,21 +9,23 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { 
   MapPin, Truck, Layers, Map as MapIcon, Search, 
-  Phone, Navigation, Clock, Zap, Users, Activity,
-  ChevronRight, RefreshCw, Maximize2, Filter, Eye
+  Phone, Navigation, Clock, Users, Activity,
+  ChevronRight, RefreshCw, Maximize2, UserPlus, AlertCircle,
+  CheckCircle, XCircle
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { cn } from '@/lib/utils';
+import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 
 interface CourierLocation {
   id: string;
   full_name: string;
   is_online: boolean;
-  current_lat: number;
-  current_lng: number;
+  current_lat: number | null;
+  current_lng: number | null;
   phone?: string;
   status?: string;
   last_updated?: string;
@@ -32,13 +34,16 @@ interface CourierLocation {
 export default function LiveMap() {
   const { tenant } = useTenantAdminAuth();
   const [couriers, setCouriers] = useState<CourierLocation[]>([]);
+  const [allCouriers, setAllCouriers] = useState<CourierLocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'dark'>('dark');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [showOffline, setShowOffline] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -53,105 +58,164 @@ export default function LiveMap() {
     dark: 'mapbox://styles/mapbox/dark-v11'
   };
 
-  // Filter couriers based on search
+  // Filter couriers based on search and online status
   const filteredCouriers = useMemo(() => {
-    if (!searchQuery) return couriers;
-    return couriers.filter(c => 
+    const list = showOffline ? allCouriers : couriers;
+    if (!searchQuery) return list;
+    return list.filter(c => 
       c.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [couriers, searchQuery]);
+  }, [couriers, allCouriers, searchQuery, showOffline]);
 
   // Stats
   const stats = useMemo(() => ({
+    total: allCouriers.length,
     online: couriers.length,
     active: couriers.filter(c => c.status === 'delivering').length,
-    idle: couriers.filter(c => c.status !== 'delivering').length,
-  }), [couriers]);
+    offline: allCouriers.length - couriers.length,
+  }), [couriers, allCouriers]);
+
+  // Load couriers - memoized to prevent re-creation
+  const loadCourierLocations = useCallback(async () => {
+    if (!tenant?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      // Load all couriers first (for total count)
+      const { data: allData, error: allError } = await supabase
+        .from('couriers')
+        .select('id, full_name, is_online, current_lat, current_lng, phone, status')
+        .eq('tenant_id', tenant.id);
+
+      if (allError) {
+        logger.error('Error loading all couriers', allError, { component: 'LiveMap' });
+        throw allError;
+      }
+
+      setAllCouriers(allData || []);
+
+      // Filter to online couriers with valid locations
+      const onlineCouriers = (allData || []).filter(c => 
+        c.is_online && c.current_lat !== null && c.current_lng !== null
+      );
+      
+      setCouriers(onlineCouriers);
+      setLastRefresh(new Date());
+      
+      if (allData && allData.length === 0) {
+        logger.info('No couriers found for tenant', { tenantId: tenant.id, component: 'LiveMap' });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load courier locations';
+      setError(errorMessage);
+      logger.error('Error loading courier locations', err, { component: 'LiveMap' });
+      toast.error('Failed to load courier locations');
+    } finally {
+      setLoading(false);
+    }
+  }, [tenant?.id]);
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current || !mapboxToken || map.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
+    try {
+      mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: mapStyles[mapStyle],
-      center: [-73.935242, 40.730610], // NYC center
-      zoom: 12,
-      pitch: 45,
-      bearing: -17.6,
-      antialias: true,
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: mapStyles[mapStyle],
+        center: [-73.935242, 40.730610], // NYC center
+        zoom: 12,
+        pitch: 45,
+        bearing: -17.6,
+        antialias: true,
+      });
 
-    // Add controls
-    map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
-    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-    map.current.addControl(new mapboxgl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showUserHeading: true
-    }), 'top-right');
+      // Add controls
+      map.current.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'top-right');
+      map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+      map.current.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true
+      }), 'top-right');
 
-    map.current.on('load', () => {
-      setMapLoaded(true);
+      map.current.on('load', () => {
+        setMapLoaded(true);
 
-      // Add 3D buildings for immersive experience
-      if (map.current) {
-        const layers = map.current.getStyle().layers;
-        const labelLayerId = layers?.find(
-          (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
-        )?.id;
+        // Add 3D buildings for immersive experience
+        if (map.current) {
+          const layers = map.current.getStyle().layers;
+          const labelLayerId = layers?.find(
+            (layer) => layer.type === 'symbol' && layer.layout?.['text-field']
+          )?.id;
 
-        map.current.addLayer(
-          {
-            id: '3d-buildings',
-            source: 'composite',
-            'source-layer': 'building',
-            filter: ['==', 'extrude', 'true'],
-            type: 'fill-extrusion',
-            minzoom: 15,
-            paint: {
-              'fill-extrusion-color': mapStyle === 'dark' ? '#1a1a2e' : '#aaa',
-              'fill-extrusion-height': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'height'],
-              ],
-              'fill-extrusion-base': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'min_height'],
-              ],
-              'fill-extrusion-opacity': 0.6,
-            },
-          },
-          labelLayerId
-        );
+          if (labelLayerId) {
+            map.current.addLayer(
+              {
+                id: '3d-buildings',
+                source: 'composite',
+                'source-layer': 'building',
+                filter: ['==', 'extrude', 'true'],
+                type: 'fill-extrusion',
+                minzoom: 15,
+                paint: {
+                  'fill-extrusion-color': mapStyle === 'dark' ? '#1a1a2e' : '#aaa',
+                  'fill-extrusion-height': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    15,
+                    0,
+                    15.05,
+                    ['get', 'height'],
+                  ],
+                  'fill-extrusion-base': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    15,
+                    0,
+                    15.05,
+                    ['get', 'min_height'],
+                  ],
+                  'fill-extrusion-opacity': 0.6,
+                },
+              },
+              labelLayerId
+            );
+          }
 
-        // Add atmosphere effect for dark mode
-        if (mapStyle === 'dark') {
-          map.current.setFog({
-            color: 'rgb(20, 20, 30)',
-            'high-color': 'rgb(36, 36, 50)',
-            'horizon-blend': 0.02,
-            'space-color': 'rgb(11, 11, 25)',
-            'star-intensity': 0.6
-          });
+          // Add atmosphere effect for dark mode
+          if (mapStyle === 'dark') {
+            map.current.setFog({
+              color: 'rgb(20, 20, 30)',
+              'high-color': 'rgb(36, 36, 50)',
+              'horizon-blend': 0.02,
+              'space-color': 'rgb(11, 11, 25)',
+              'star-intensity': 0.6
+            });
+          }
         }
-      }
-    });
+      });
+
+      map.current.on('error', (e) => {
+        logger.error('Mapbox error', e.error, { component: 'LiveMap' });
+      });
+
+    } catch (err) {
+      logger.error('Failed to initialize map', err, { component: 'LiveMap' });
+      setError('Failed to initialize map');
+    }
 
     return () => {
       map.current?.remove();
+      map.current = null;
     };
   }, [mapboxToken]);
 
@@ -162,7 +226,7 @@ export default function LiveMap() {
     }
   }, [mapStyle, mapLoaded]);
 
-  // Load couriers
+  // Load couriers on mount and set up realtime subscription
   useEffect(() => {
     loadCourierLocations();
 
@@ -195,40 +259,21 @@ export default function LiveMap() {
     // Auto-refresh every 30 seconds
     const refreshInterval = setInterval(() => {
       loadCourierLocations();
-      setLastRefresh(new Date());
     }, 30000);
 
     return () => {
       supabase.removeChannel(channel);
       clearInterval(refreshInterval);
     };
-  }, [tenant?.id]);
-
-  const loadCourierLocations = async () => {
-    if (!tenant?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('couriers')
-        .select('id, full_name, is_online, current_lat, current_lng, phone, status')
-        .eq('tenant_id', tenant.id)
-        .eq('is_online', true)
-        .not('current_lat', 'is', null)
-        .not('current_lng', 'is', null);
-
-      if (error) throw error;
-      setCouriers(data || []);
-      setLastRefresh(new Date());
-    } catch (error) {
-      logger.error('Error loading courier locations', error, { component: 'LiveMap' });
-      toast.error('Failed to load courier locations');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [loadCourierLocations]);
 
   // Focus on a specific courier
   const focusOnCourier = (courier: CourierLocation) => {
+    if (!courier.current_lat || !courier.current_lng) {
+      toast.error('No location data available for this courier');
+      return;
+    }
+    
     setSelectedCourier(courier.id);
     if (map.current) {
       map.current.flyTo({
@@ -262,6 +307,8 @@ export default function LiveMap() {
 
     // Add or update markers
     couriers.forEach((courier) => {
+      if (!courier.current_lat || !courier.current_lng) return;
+
       if (markers.current[courier.id]) {
         // Update existing marker
         markers.current[courier.id].setLngLat([courier.current_lng, courier.current_lat]);
@@ -306,7 +353,7 @@ export default function LiveMap() {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span>${courier.current_lat.toFixed(4)}, ${courier.current_lng.toFixed(4)}</span>
+                <span>${courier.current_lat?.toFixed(4)}, ${courier.current_lng?.toFixed(4)}</span>
               </div>
               ${courier.phone ? `
                 <a href="tel:${courier.phone}" class="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium">
@@ -333,11 +380,15 @@ export default function LiveMap() {
     if (couriers.length > 0 && !selectedCourier) {
       const bounds = new mapboxgl.LngLatBounds();
       couriers.forEach((courier) => {
-        bounds.extend([courier.current_lng, courier.current_lat]);
+        if (courier.current_lat && courier.current_lng) {
+          bounds.extend([courier.current_lng, courier.current_lat]);
+        }
       });
-      map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
+      if (!bounds.isEmpty()) {
+        map.current.fitBounds(bounds, { padding: 100, maxZoom: 15 });
+      }
     }
-  }, [couriers, mapLoaded]);
+  }, [couriers, mapLoaded, selectedCourier]);
 
   // Toggle heatmap
   useEffect(() => {
@@ -349,14 +400,16 @@ export default function LiveMap() {
           type: 'geojson',
           data: {
             type: 'FeatureCollection',
-            features: couriers.map((courier) => ({
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'Point',
-                coordinates: [courier.current_lng, courier.current_lat],
-              },
-            })),
+            features: couriers
+              .filter(c => c.current_lat && c.current_lng)
+              .map((courier) => ({
+                type: 'Feature' as const,
+                properties: {},
+                geometry: {
+                  type: 'Point' as const,
+                  coordinates: [courier.current_lng!, courier.current_lat!],
+                },
+              })),
           },
         });
 
@@ -393,14 +446,26 @@ export default function LiveMap() {
     }
   }, [showHeatmap, couriers, mapLoaded]);
 
-  if (!mapboxToken) {
+  // No mapbox token
+  if (!mapboxToken && !tokenLoading) {
     return (
       <>
         <SEOHead
           title="Live Map | Admin"
           description="Real-time courier tracking"
         />
-        <div className="container mx-auto p-6">
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <Navigation className="h-6 w-6 text-emerald-500" />
+                Live Fleet Map
+              </h1>
+              <p className="text-sm text-muted-foreground">Real-time courier tracking</p>
+            </div>
+            <AddCourierDialog onSuccess={loadCourierLocations} />
+          </div>
+
           <Card className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
@@ -413,6 +478,15 @@ export default function LiveMap() {
               </p>
             </div>
           </Card>
+
+          {/* Still show courier list even without map */}
+          <CourierList 
+            couriers={allCouriers}
+            loading={loading}
+            error={error}
+            onRefresh={loadCourierLocations}
+            stats={stats}
+          />
         </div>
       </>
     );
@@ -425,30 +499,25 @@ export default function LiveMap() {
         description="Real-time courier tracking"
       />
 
-      <div className={cn(
-        "flex flex-col h-[calc(100vh-4rem)]",
-        isFullscreen && "fixed inset-0 z-50 h-screen bg-background"
-      )}>
+      <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Navigation className="h-6 w-6 text-emerald-500" />
-                Live Fleet Map
-              </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="h-3 w-3" />
-                Last updated: {lastRefresh.toLocaleTimeString()}
-              </p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Navigation className="h-6 w-6 text-emerald-500" />
+              Live Fleet Map
+            </h1>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <Clock className="h-3 w-3" />
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1 px-3 py-1 border-emerald-500/50 bg-emerald-500/10 text-emerald-600">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               {stats.online} Online
             </Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -458,140 +527,206 @@ export default function LiveMap() {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              className="gap-2"
-            >
-              <Maximize2 className="h-4 w-4" />
-              {isFullscreen ? 'Exit' : 'Fullscreen'}
-            </Button>
+            <AddCourierDialog onSuccess={loadCourierLocations} />
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
+        {/* Error State */}
+        {error && (
+          <Card className="p-4 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
+            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              <div>
+                <p className="font-medium">Failed to load courier locations</p>
+                <p className="text-sm opacity-80">{error}</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={loadCourierLocations}
+                className="ml-auto"
+              >
+                Retry
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{stats.total}</div>
+                <div className="text-xs text-blue-600/70">Total Couriers</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{stats.online}</div>
+                <div className="text-xs text-emerald-600/70">Online Now</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                <Truck className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{stats.active}</div>
+                <div className="text-xs text-amber-600/70">Delivering</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/30 dark:to-gray-900/20 border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center">
+                <XCircle className="h-5 w-5 text-gray-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">{stats.offline}</div>
+                <div className="text-xs text-gray-600/70">Offline</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Main Content - Map and Sidebar */}
+        <div className="grid lg:grid-cols-[320px_1fr] gap-6">
           {/* Sidebar */}
-          <div className="w-80 border-r bg-muted/30 flex flex-col overflow-hidden">
-            {/* Stats */}
-            <div className="p-4 border-b grid grid-cols-3 gap-2">
-              <Card className="p-3 bg-emerald-500/10 border-emerald-500/30">
-                <div className="text-2xl font-bold text-emerald-600">{stats.online}</div>
-                <div className="text-xs text-muted-foreground">Online</div>
-              </Card>
-              <Card className="p-3 bg-blue-500/10 border-blue-500/30">
-                <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
-                <div className="text-xs text-muted-foreground">Delivering</div>
-              </Card>
-              <Card className="p-3 bg-amber-500/10 border-amber-500/30">
-                <div className="text-2xl font-bold text-amber-600">{stats.idle}</div>
-                <div className="text-xs text-muted-foreground">Available</div>
-              </Card>
+          <div className="space-y-4 order-2 lg:order-1">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search drivers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
 
-            {/* Search */}
-            <div className="p-4 border-b">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search drivers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            {/* Toggle offline */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showOffline ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowOffline(!showOffline)}
+                className="w-full"
+              >
+                {showOffline ? 'Showing All' : 'Show Offline'}
+              </Button>
             </div>
 
             {/* Courier List */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-2">
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <RefreshCw className="h-6 w-6 mx-auto animate-spin mb-2" />
-                  Loading drivers...
-                </div>
-              ) : filteredCouriers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No drivers online</p>
-                </div>
-              ) : (
-                filteredCouriers.map((courier) => (
-                  <Card
-                    key={courier.id}
-                    className={cn(
-                      "p-3 cursor-pointer transition-all hover:shadow-md hover:border-emerald-500/50",
-                      selectedCourier === courier.id && "border-emerald-500 bg-emerald-500/10"
-                    )}
-                    onClick={() => focusOnCourier(courier)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold shadow-sm">
-                        {courier.full_name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{courier.full_name}</div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          Online
+            <Card className="max-h-[400px] overflow-y-auto">
+              <CardContent className="p-2 space-y-2">
+                {loading ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <RefreshCw className="h-6 w-6 mx-auto animate-spin mb-2" />
+                    Loading drivers...
+                  </div>
+                ) : filteredCouriers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-medium">No couriers found</p>
+                    <p className="text-xs mt-1">Add a courier to get started</p>
+                  </div>
+                ) : (
+                  filteredCouriers.map((courier) => (
+                    <div
+                      key={courier.id}
+                      className={cn(
+                        "p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md",
+                        selectedCourier === courier.id && "border-emerald-500 bg-emerald-500/10",
+                        !courier.is_online && "opacity-60"
+                      )}
+                      onClick={() => courier.is_online && courier.current_lat && focusOnCourier(courier)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm",
+                          courier.is_online 
+                            ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
+                            : "bg-gray-400"
+                        )}>
+                          {courier.full_name.charAt(0).toUpperCase()}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{courier.full_name}</div>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <span className={cn(
+                              "h-1.5 w-1.5 rounded-full",
+                              courier.is_online ? "bg-emerald-500" : "bg-gray-400"
+                            )} />
+                            {courier.is_online ? 'Online' : 'Offline'}
+                            {!courier.current_lat && courier.is_online && (
+                              <span className="text-amber-500 ml-1">• No GPS</span>
+                            )}
+                          </div>
+                        </div>
+                        {courier.is_online && courier.current_lat && (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      {courier.phone && (
+                        <a
+                          href={`tel:${courier.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-2 flex items-center gap-2 text-xs text-emerald-600 hover:text-emerald-700"
+                        >
+                          <Phone className="h-3 w-3" />
+                          {courier.phone}
+                        </a>
+                      )}
                     </div>
-                    {courier.phone && (
-                      <a
-                        href={`tel:${courier.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="mt-2 flex items-center gap-2 text-xs text-emerald-600 hover:text-emerald-700"
-                      >
-                        <Phone className="h-3 w-3" />
-                        {courier.phone}
-                      </a>
-                    )}
-                  </Card>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Map Container */}
-          <div className="flex-1 relative">
-            {/* Map Controls Overlay */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-              <Card className="p-1 flex gap-1 bg-background/95 backdrop-blur-sm shadow-lg">
+          <Card className="overflow-hidden order-1 lg:order-2">
+            {/* Map Controls */}
+            <div className="p-3 border-b flex flex-wrap gap-2 bg-muted/30">
+              <div className="flex gap-1">
                 <Button
                   variant={mapStyle === 'dark' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setMapStyle('dark')}
-                  className="gap-1"
                 >
-                  <MapIcon className="h-4 w-4" />
                   Dark
                 </Button>
                 <Button
                   variant={mapStyle === 'streets' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setMapStyle('streets')}
-                  className="gap-1"
                 >
-                  <MapIcon className="h-4 w-4" />
                   Streets
                 </Button>
                 <Button
                   variant={mapStyle === 'satellite' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setMapStyle('satellite')}
-                  className="gap-1"
                 >
-                  <Layers className="h-4 w-4" />
                   Satellite
                 </Button>
-              </Card>
-              
+              </div>
               <Button
                 variant={showHeatmap ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setShowHeatmap(!showHeatmap)}
-                className="gap-2 bg-background/95 backdrop-blur-sm shadow-lg"
+                className="gap-1"
               >
                 <Activity className="h-4 w-4" />
                 Heatmap
@@ -601,9 +736,9 @@ export default function LiveMap() {
             {/* Map */}
             <div
               ref={mapContainer}
-              className="w-full h-full"
+              className="w-full h-[500px]"
             />
-          </div>
+          </Card>
         </div>
       </div>
 
@@ -646,5 +781,90 @@ export default function LiveMap() {
         }
       `}</style>
     </>
+  );
+}
+
+// Separate component for courier list (used when map is unavailable)
+function CourierList({ 
+  couriers, 
+  loading, 
+  error, 
+  onRefresh,
+  stats 
+}: { 
+  couriers: CourierLocation[];
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+  stats: { total: number; online: number; active: number; offline: number };
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            All Couriers ({stats.total})
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={onRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <RefreshCw className="h-6 w-6 mx-auto animate-spin mb-2" />
+            Loading...
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">
+            <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+            <p>{error}</p>
+          </div>
+        ) : couriers.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p>No couriers registered yet</p>
+            <p className="text-sm mt-1">Use the "Add Courier" button to register your first driver</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {couriers.map((courier) => (
+              <Card key={courier.id} className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold",
+                    courier.is_online ? "bg-emerald-500" : "bg-gray-400"
+                  )}>
+                    {courier.full_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{courier.full_name}</div>
+                    <div className="flex items-center gap-1 text-xs">
+                      <span className={cn(
+                        "h-2 w-2 rounded-full",
+                        courier.is_online ? "bg-emerald-500" : "bg-gray-400"
+                      )} />
+                      {courier.is_online ? 'Online' : 'Offline'}
+                    </div>
+                  </div>
+                </div>
+                {courier.phone && (
+                  <a
+                    href={`tel:${courier.phone}`}
+                    className="mt-2 flex items-center gap-2 text-xs text-emerald-600"
+                  >
+                    <Phone className="h-3 w-3" />
+                    {courier.phone}
+                  </a>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
