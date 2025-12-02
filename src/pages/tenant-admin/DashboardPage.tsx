@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanner';
 import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
+import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotificationsCenter';
 
 interface DashboardOrderRow {
   total_amount: number | null;
