@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 
 export function StrategicDecisionsWidget() {
     const { tenant } = useTenantAdminAuth();
-    const navigate = useNavigate();
+    const navigate = useTenantNavigate();
 
     const { data: decisions, isLoading } = useQuery({
         queryKey: ['hotbox-strategic', tenant?.id],
@@ -41,7 +41,7 @@ export function StrategicDecisionsWidget() {
                     title: 'High-Value Wholesale Pipeline',
                     description: `$${wholesalePipelineValue.toLocaleString()} in pending approvals`,
                     priority: wholesalePipelineValue > 50000 ? 'critical' : 'high',
-                    action: '/admin/wholesale-orders',
+                    action: 'wholesale-orders',
                 });
             }
 
@@ -63,7 +63,7 @@ export function StrategicDecisionsWidget() {
                     title: 'Inventory Investment Review',
                     description: `$${inventoryValue.toLocaleString()} tied up in inventory`,
                     priority: inventoryValue > 100000 ? 'high' : 'medium',
-                    action: '/admin/inventory-dashboard',
+                    action: 'advanced-inventory',
                 });
             }
 
@@ -85,7 +85,7 @@ export function StrategicDecisionsWidget() {
                     title: 'Accounts Receivable',
                     description: `$${arOutstanding.toLocaleString()} outstanding from customers`,
                     priority: arOutstanding > 20000 ? 'critical' : 'high',
-                    action: '/admin/customer-tabs',
+                    action: 'customer-management',
                 });
             }
 
@@ -103,7 +103,7 @@ export function StrategicDecisionsWidget() {
                     title: 'Team Scaling Review',
                     description: `${teamSize} team members - consider organizational structure`,
                     priority: 'medium',
-                    action: '/admin/team',
+                    action: 'team-members',
                 });
             }
 
@@ -118,7 +118,7 @@ export function StrategicDecisionsWidget() {
                     title: 'Month-End Close',
                     description: `${daysUntilMonthEnd} days until month-end`,
                     priority: daysUntilMonthEnd <= 2 ? 'critical' : 'high',
-                    action: '/admin/financial-center',
+                    action: 'crm/invoices',
                 });
             }
 
@@ -142,7 +142,7 @@ export function StrategicDecisionsWidget() {
                     title: 'Expansion Opportunity',
                     description: 'Revenue supports new market entry',
                     priority: 'medium',
-                    action: '/admin/analytics',
+                    action: 'analytics',
                 });
             }
 
@@ -173,7 +173,7 @@ export function StrategicDecisionsWidget() {
                     <div
                         key={decision.id}
                         className="flex items-center justify-between p-3 bg-background rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => navigate(decision.action)}
+                        onClick={() => navigate(`/${tenant?.slug}/admin/${decision.action}`)}
                     >
                         <div className="flex items-center gap-3">
                             <span className="text-2xl">{decision.emoji}</span>
