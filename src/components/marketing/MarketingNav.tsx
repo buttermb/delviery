@@ -105,43 +105,43 @@ export function MarketingNav() {
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="container mx-auto px-4 py-4 space-y-4 safe-area-bottom">
+          <div className="container mx-auto px-4 py-4 space-y-1 safe-area-bottom">
             <Link
               to="/features"
-              className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
+              className="block py-3 px-4 text-base font-medium rounded-xl hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))] transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => setMobileMenuOpen(false)}
             >
               Features
             </Link>
             <Link
               to="/pricing"
-              className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
+              className="block py-3 px-4 text-base font-medium rounded-xl hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))] transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => setMobileMenuOpen(false)}
             >
               Pricing
             </Link>
             <Link
               to="/about"
-              className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
+              className="block py-3 px-4 text-base font-medium rounded-xl hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))] transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               to="/contact"
-              className="block text-sm hover:text-[hsl(var(--marketing-primary))] transition-colors"
+              className="block py-3 px-4 text-base font-medium rounded-xl hover:bg-[hsl(var(--marketing-bg-subtle))] hover:text-[hsl(var(--marketing-primary))] transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
             </Link>
-            <div className="pt-4 border-t border-[hsl(var(--marketing-border))] space-y-2">
+            <div className="pt-4 mt-4 border-t border-[hsl(var(--marketing-border))] space-y-3">
               <Link to="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button variant="outline" size="lg" className="w-full min-h-[48px] rounded-xl touch-manipulation active:scale-[0.98]">
                   Login
                 </Button>
               </Link>
               <Link to="/signup" className="block" onClick={() => setMobileMenuOpen(false)}>
-                <Button size="sm" className="w-full bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
+                <Button size="lg" className="w-full min-h-[48px] rounded-xl bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white touch-manipulation active:scale-[0.98]">
                   Start Free Trial
                 </Button>
               </Link>

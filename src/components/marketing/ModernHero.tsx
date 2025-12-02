@@ -1,13 +1,14 @@
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Zap, Lock, Smartphone, CheckCircle, TrendingUp, ShoppingBag, QrCode, Clock, Users, DollarSign } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Lock, Smartphone, CheckCircle, TrendingUp, ShoppingBag, QrCode, Clock, Users, DollarSign, Sparkles } from "lucide-react";
 import { ConfettiButton } from "@/components/marketing/ConfettiButton";
 import { AnimatedMeshBackground } from "@/components/marketing/AnimatedMeshBackground";
 import { MagneticButton } from "@/components/marketing/MagneticButton";
 import { CursorSpotlight } from "@/components/marketing/CursorSpotlight";
 import { FloatingBadges } from "@/components/marketing/FloatingBadges";
 import { TypewriterText } from "@/components/marketing/TypewriterText";
+import { LiveUserCount } from "@/components/marketing/LiveSocialProof";
 import { useState, useEffect, useRef } from "react";
 
 const HERO_TABS = [
@@ -68,15 +69,24 @@ export function ModernHero() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-left"
           >
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))/0.1] border border-[hsl(var(--marketing-primary))/0.2] text-[hsl(var(--marketing-primary))] text-sm font-medium mb-6 backdrop-blur-sm"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Bank-Level Security for Cannabis</span>
-            </motion.div>
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))/0.1] border border-[hsl(var(--marketing-primary))/0.2] text-[hsl(var(--marketing-primary))] text-sm font-medium backdrop-blur-sm"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Bank-Level Security</span>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <LiveUserCount />
+              </motion.div>
+            </div>
 
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 text-[hsl(var(--marketing-text))] leading-[1.1]">
               The Operating System for <br />

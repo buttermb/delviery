@@ -21,6 +21,9 @@ import { KeyboardNavigationHelper } from "@/components/marketing/KeyboardNavigat
 import { LiveChatWidget } from "@/components/LiveChatWidget";
 import { PerformanceMonitor } from "@/components/marketing/PerformanceMonitor";
 import { MarketingErrorBoundary } from "@/components/marketing/MarketingErrorBoundary";
+import { TestimonialsCarousel } from "@/components/marketing/TestimonialsCarousel";
+import { LiveSocialProof } from "@/components/marketing/LiveSocialProof";
+import { VideoShowcase } from "@/components/marketing/VideoShowcase";
 
 import { StatsSection } from "@/components/marketing/StatsSection";
 import { StickyMobileCTA } from "@/components/marketing/StickyMobileCTA";
@@ -124,15 +127,14 @@ export default function MarketingHome() {
       </MarketingErrorBoundary>
 
 
-      {/* SECTION 5: CUSTOMER SUCCESS */}
-      <MarketingErrorBoundary section="CustomerSuccess">
-        <section className="py-12 md:py-16 bg-[hsl(var(--marketing-bg-subtle))]/30 relative">
-          <div className="container mx-auto px-4">
-            <Suspense fallback={<SectionLoader />}>
-              <CustomerSuccessTimeline />
-            </Suspense>
-          </div>
-        </section>
+      {/* SECTION 5: TESTIMONIALS CAROUSEL */}
+      <MarketingErrorBoundary section="Testimonials">
+        <TestimonialsCarousel />
+      </MarketingErrorBoundary>
+
+      {/* SECTION 5.5: VIDEO SHOWCASE */}
+      <MarketingErrorBoundary section="VideoShowcase">
+        <VideoShowcase />
       </MarketingErrorBoundary>
 
       {/* SECTION 6: PRODUCT SHOWCASE - INTERACTIVE DASHBOARD */}
@@ -221,43 +223,61 @@ export default function MarketingHome() {
             {[
               {
                 name: "BASIC",
-                price: "$79/mo",
+                price: "$79",
+                period: "/mo",
+                description: "Perfect for getting started",
                 features: ["28 Core Features", "50 customers", "100 products", "2 locations", "3 team members"],
               },
               {
                 name: "PROFESSIONAL",
-                price: "$150/mo",
+                price: "$150",
+                period: "/mo",
                 popular: true,
+                description: "Most popular for growing teams",
                 features: ["55 Total Features", "500 customers", "1,000 products", "5 locations", "Advanced CRM"],
               },
               {
                 name: "ENTERPRISE",
-                price: "$499/mo",
+                price: "$499",
+                period: "/mo",
+                description: "For large-scale operations",
                 features: ["All 87 Features", "Unlimited everything", "Fleet management", "API & webhooks", "White-label"],
               },
             ].map((plan, index) => (
-              <div
+              <motion.div
                 key={index}
-                className={`p-6 rounded-2xl border transition-transform duration-300 hover:scale-105 ${plan.popular
-                  ? "border-[hsl(var(--marketing-primary))] bg-[hsl(var(--marketing-primary))/0.05] shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className={`p-6 md:p-8 rounded-3xl border transition-all duration-300 hover:scale-[1.02] relative overflow-hidden ${plan.popular
+                  ? "border-[hsl(var(--marketing-primary))] bg-gradient-to-b from-[hsl(var(--marketing-primary))]/10 to-[hsl(var(--marketing-bg-subtle))] shadow-[0_0_40px_rgba(16,185,129,0.15)] md:scale-105"
                   : "border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))]"
                   }`}
               >
                 {plan.popular && (
-                  <div className="text-center mb-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold">
-                      ⭐ POPULAR
-                    </span>
-                  </div>
+                  <>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--marketing-primary))]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                    <div className="text-center mb-6">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[hsl(var(--marketing-primary))] text-white text-xs font-bold shadow-lg">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        MOST POPULAR
+                      </span>
+                    </div>
+                  </>
                 )}
-                <h3 className="text-xl font-bold mb-2 text-center text-[hsl(var(--marketing-text))]">{plan.name}</h3>
-                <div className="text-center mb-4">
-                  <span className="text-4xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
+                <h3 className="text-lg font-bold mb-1 text-center text-[hsl(var(--marketing-text-light))] tracking-wide">{plan.name}</h3>
+                <div className="text-center mb-2">
+                  <span className="text-5xl font-bold text-[hsl(var(--marketing-text))]">{plan.price}</span>
+                  <span className="text-lg text-[hsl(var(--marketing-text-light))]">{plan.period}</span>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <p className="text-sm text-center text-[hsl(var(--marketing-text-light))] mb-6">{plan.description}</p>
+                <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-[hsl(var(--marketing-text-light))]">
-                      <CheckCircle className="h-4 w-4 text-[hsl(var(--marketing-primary))] flex-shrink-0" />
+                    <li key={i} className="flex items-center gap-3 text-sm text-[hsl(var(--marketing-text))]">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-[hsl(var(--marketing-primary))]' : 'bg-[hsl(var(--marketing-primary))]/20'}`}>
+                        <CheckCircle className={`h-3 w-3 ${plan.popular ? 'text-white' : 'text-[hsl(var(--marketing-primary))]'}`} />
+                      </div>
                       {feature}
                     </li>
                   ))}
@@ -265,10 +285,10 @@ export default function MarketingHome() {
                 <Link to="/signup">
                   <ConfettiButton
                     variant={plan.popular ? "default" : "outline"}
-                    size="default"
-                    className={`w-full rounded-xl ${plan.popular
-                      ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white"
-                      : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))]"
+                    size="lg"
+                    className={`w-full rounded-xl min-h-[52px] font-semibold touch-manipulation active:scale-[0.98] transition-transform ${plan.popular
+                      ? "bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white shadow-lg shadow-[hsl(var(--marketing-primary))]/25"
+                      : "border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-bg))] hover:border-[hsl(var(--marketing-primary))]/50"
                       }`}
                     confettiConfig={{
                       particleCount: plan.popular ? 150 : 100,
@@ -276,10 +296,10 @@ export default function MarketingHome() {
                     }}
                     onClick={() => navigate('/signup')}
                   >
-                    {plan.name === "ENTERPRISE" ? "Contact Us" : "Try Free"}
+                    {plan.name === "ENTERPRISE" ? "Contact Sales" : "Start Free Trial"}
                   </ConfettiButton>
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -361,6 +381,9 @@ export default function MarketingHome() {
 
       {/* Sticky Mobile CTA */}
       <StickyMobileCTA />
+
+      {/* Live Social Proof Notifications */}
+      <LiveSocialProof />
     </div>
   );
 }

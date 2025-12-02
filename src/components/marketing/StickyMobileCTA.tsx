@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function StickyMobileCTA() {
@@ -14,7 +14,7 @@ export function StickyMobileCTA() {
             setIsVisible(show);
         };
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -26,26 +26,33 @@ export function StickyMobileCTA() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="fixed bottom-4 left-4 right-4 z-50 md:hidden"
+                    className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom"
                 >
-                    <div className="bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))] p-3 rounded-2xl shadow-lg flex items-center justify-between gap-3 backdrop-blur-xl bg-opacity-90">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">
-                                Ready to scale?
-                            </span>
-                            <span className="text-sm font-bold text-[hsl(var(--marketing-text))]">
-                                Start your 14-day trial
-                            </span>
+                    <div className="bg-[hsl(var(--marketing-bg))]/95 border-t border-[hsl(var(--marketing-border))] px-4 py-3 backdrop-blur-xl">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-accent))] flex items-center justify-center flex-shrink-0">
+                                    <Sparkles className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-medium text-[hsl(var(--marketing-text-light))]">
+                                        Limited Time Offer
+                                    </span>
+                                    <span className="text-sm font-bold text-[hsl(var(--marketing-text))] truncate">
+                                        14-day free trial • No credit card
+                                    </span>
+                                </div>
+                            </div>
+                            <Link to="/signup" className="flex-shrink-0">
+                                <Button
+                                    size="lg"
+                                    className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] min-h-[48px] px-6 touch-manipulation active:scale-95 transition-transform"
+                                >
+                                    Start Free
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
                         </div>
-                        <Link to="/signup">
-                            <Button
-                                size="sm"
-                                className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-secondary))] text-white rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                            >
-                                Get Started
-                                <ArrowRight className="ml-1.5 h-4 w-4" />
-                            </Button>
-                        </Link>
                     </div>
                 </motion.div>
             )}
