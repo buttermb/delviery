@@ -158,7 +158,8 @@ const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
 const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
-const WholesaleOrders = lazy(() => import("./pages/admin/NewWholesaleOrderReal"));
+const WholesaleOrdersPage = lazy(() => import("./pages/admin/WholesaleOrdersPage"));
+const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
 const InventoryDashboard = lazy(() => import("./pages/admin/InventoryDashboard"));
 const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
 const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
@@ -616,7 +617,8 @@ const App = () => {
                                       <Route path="big-plug-clients" element={<FeatureProtectedRoute featureId="customers"><BigPlugClients /></FeatureProtectedRoute>} />
                                       <Route path="big-plug-clients/:id" element={<FeatureProtectedRoute featureId="customers"><ClientDetail /></FeatureProtectedRoute>} />
                                       <Route path="generate-barcodes" element={<FeatureProtectedRoute featureId="generate-barcodes"><GenerateBarcodes /></FeatureProtectedRoute>} />
-                                      <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrders /></FeatureProtectedRoute>} />
+                                      <Route path="wholesale-orders" element={<FeatureProtectedRoute featureId="wholesale-orders"><WholesaleOrdersPage /></FeatureProtectedRoute>} />
+                                      <Route path="wholesale-orders/new" element={<FeatureProtectedRoute featureId="wholesale-orders"><NewWholesaleOrder /></FeatureProtectedRoute>} />
                                       <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
                                       <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
                                       <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
