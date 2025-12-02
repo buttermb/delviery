@@ -79,6 +79,7 @@ interface WholesaleOrder {
   id: string;
   order_number: string;
   client_id: string;
+  runner_id?: string;
   total_amount: number;
   status: string;
   payment_status: string;
@@ -92,9 +93,11 @@ interface WholesaleOrder {
     contact_name: string;
     phone?: string;
   };
-  runner?: {
+  courier?: {
     full_name: string;
     phone?: string;
+    vehicle_type?: string;
+    status?: string;
   };
   items?: Array<{
     id: string;
@@ -155,12 +158,12 @@ export default function WholesaleOrdersPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
+      // Fetch orders with client and items
       let query = supabase
         .from('wholesale_orders')
         .select(`
           *,
           client:wholesale_clients(business_name, contact_name, phone),
-          runner:wholesale_runners(full_name, phone),
           items:wholesale_order_items(id, product_name, quantity_lbs, unit_price)
         `)
         .eq('tenant_id', tenant.id)
@@ -170,15 +173,35 @@ export default function WholesaleOrdersPage() {
         query = query.eq('status', statusFilter);
       }
 
-      const { data, error } = await query;
+      const { data: ordersData, error: ordersError } = await query;
 
-      if (error) {
-        logger.error('Failed to fetch wholesale orders', error, { component: 'WholesaleOrdersPage' });
-        throw error;
+      if (ordersError) {
+        logger.error('Failed to fetch wholesale orders', ordersError, { component: 'WholesaleOrdersPage' });
+        throw ordersError;
       }
 
-      // @ts-ignore - Supabase types outdated
-      return (data || []) as WholesaleOrder[];
+      // Fetch couriers for orders that have runner_id
+      const courierIds = [...new Set((ordersData || []).map(o => o.runner_id).filter(Boolean))];
+      let couriersMap: Record<string, { full_name: string; phone?: string; vehicle_type?: string; status?: string }> = {};
+
+      if (courierIds.length > 0) {
+        const { data: couriersData } = await supabase
+          .from('couriers')
+          .select('id, full_name, phone, vehicle_type, status')
+          .in('id', courierIds);
+
+        if (couriersData) {
+          couriersMap = Object.fromEntries(couriersData.map(c => [c.id, c]));
+        }
+      }
+
+      // Merge courier data into orders
+      const ordersWithCouriers = (ordersData || []).map(order => ({
+        ...order,
+        courier: order.runner_id ? couriersMap[order.runner_id] : undefined,
+      }));
+
+      return ordersWithCouriers as WholesaleOrder[];
     },
     enabled: !!tenant?.id,
   });
@@ -191,7 +214,7 @@ export default function WholesaleOrdersPage() {
       order.order_number?.toLowerCase().includes(query) ||
       order.client?.business_name?.toLowerCase().includes(query) ||
       order.client?.contact_name?.toLowerCase().includes(query) ||
-      order.runner?.full_name?.toLowerCase().includes(query)
+      order.courier?.full_name?.toLowerCase().includes(query)
     );
   });
 
@@ -274,7 +297,7 @@ export default function WholesaleOrdersPage() {
       Total: formatCurrency(order.total_amount),
       Status: STATUS_CONFIG[order.status]?.label || order.status,
       'Payment Status': PAYMENT_STATUS_CONFIG[order.payment_status]?.label || order.payment_status,
-      Runner: order.runner?.full_name || 'Unassigned',
+      Courier: order.courier?.full_name || 'Unassigned',
       Created: formatSmartDate(order.created_at),
     }));
 
@@ -497,7 +520,7 @@ export default function WholesaleOrdersPage() {
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Payment</TableHead>
-                    <TableHead>Runner</TableHead>
+                    <TableHead>Courier</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
@@ -576,7 +599,7 @@ export default function WholesaleOrdersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {order.runner?.full_name || (
+                          {order.courier?.full_name || (
                             <span className="text-muted-foreground">Unassigned</span>
                           )}
                         </TableCell>
@@ -738,9 +761,9 @@ export default function WholesaleOrdersPage() {
                     <Card className="p-4">
                       <div className="space-y-2 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Runner: </span>
+                          <span className="text-muted-foreground">Courier: </span>
                           <span className="font-medium">
-                            {selectedOrder.runner?.full_name || 'Unassigned'}
+                            {selectedOrder.courier?.full_name || 'Unassigned'}
                           </span>
                         </div>
                         <div>

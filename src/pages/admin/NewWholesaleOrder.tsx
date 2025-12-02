@@ -31,10 +31,13 @@ import {
   Loader2,
   Sparkles,
   X,
+  ShoppingBag,
+  Warehouse,
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
-import { useWholesaleInventory, useWholesaleRunners } from '@/hooks/useWholesaleData';
+import { useWholesaleInventory, useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -74,17 +77,26 @@ interface OrderData {
 
 const QUICK_QTY_PRESETS = [1, 5, 10, 25];
 
+type ProductSource = 'products' | 'wholesale_inventory';
+
 export default function NewWholesaleOrder() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   
-  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
-  const { data: runners = [], isLoading: runnersLoading } = useWholesaleRunners();
+  // Product sources - user can choose between main catalog or wholesale inventory
+  const { data: wholesaleInventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
+  const { data: productsCatalog = [], isLoading: productsLoading } = useProductsForWholesale();
+  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productSearch, setProductSearch] = useState('');
+  const [productSource, setProductSource] = useState<ProductSource>('products');
+
+  // Combined inventory based on selected source
+  const inventory = productSource === 'products' ? productsCatalog : wholesaleInventory;
+  const isInventoryLoading = productSource === 'products' ? productsLoading : inventoryLoading;
   const [orderData, setOrderData] = useState<OrderData>({
     client: null,
     products: [],
@@ -407,17 +419,44 @@ export default function NewWholesaleOrder() {
           {/* Step 2: Products */}
           {currentStep === 'products' && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Package className="h-5 w-5 text-muted-foreground" />
-                Select Products
-              </h2>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Package className="h-5 w-5 text-muted-foreground" />
+                  Select Products
+                </h2>
+
+                {/* Product Source Toggle */}
+                <ToggleGroup
+                  type="single"
+                  value={productSource}
+                  onValueChange={(value) => value && setProductSource(value as ProductSource)}
+                  className="border rounded-lg p-1"
+                >
+                  <ToggleGroupItem
+                    value="products"
+                    aria-label="Products Catalog"
+                    className="gap-2 data-[state=on]:bg-emerald-500 data-[state=on]:text-white"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    <span className="hidden sm:inline">Products</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="wholesale_inventory"
+                    aria-label="Wholesale Inventory"
+                    className="gap-2 data-[state=on]:bg-emerald-500 data-[state=on]:text-white"
+                  >
+                    <Warehouse className="h-4 w-4" />
+                    <span className="hidden sm:inline">Wholesale</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Available Inventory */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-muted-foreground">
-                      Available Inventory
+                      {productSource === 'products' ? 'Products Catalog' : 'Wholesale Inventory'}
                     </h3>
                     <Badge variant="outline">{inventory.length} items</Badge>
                   </div>
@@ -434,7 +473,7 @@ export default function NewWholesaleOrder() {
                   </div>
 
                   {/* Product List */}
-                  {inventoryLoading ? (
+                  {isInventoryLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
@@ -447,6 +486,8 @@ export default function NewWholesaleOrder() {
                       ) : (
                         filteredInventory.map((product: any) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
+                          const stockQty = product.quantity_lbs ?? product.quantity_available ?? 0;
+                          const stockLabel = productSource === 'products' ? 'Stock' : 'Stock';
                           return (
                             <Card
                               key={product.id}
@@ -462,9 +503,9 @@ export default function NewWholesaleOrder() {
                                 <div className="min-w-0 flex-1">
                                   <div className="font-medium truncate">{product.product_name}</div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                    <span>Stock: {product.quantity_lbs} lbs</span>
+                                    <span>{stockLabel}: {stockQty} {productSource === 'products' ? 'units' : 'lbs'}</span>
                                     <span>|</span>
-                                    <span className="font-mono">{formatCurrency(product.base_price)}/lb</span>
+                                    <span className="font-mono">{formatCurrency(product.base_price)}/{productSource === 'products' ? 'unit' : 'lb'}</span>
                                   </div>
                                 </div>
                                 {inCart ? (
@@ -714,29 +755,37 @@ export default function NewWholesaleOrder() {
               </h2>
 
               <div className="space-y-4">
-                {/* Runner Selection */}
+                {/* Courier Selection */}
                 <div className="space-y-2">
-                  <Label>Assign Runner</Label>
+                  <Label>Assign Courier</Label>
                   <Select
                     value={orderData.runnerId}
                     onValueChange={(value) => setOrderData((prev) => ({ ...prev, runnerId: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a runner..." />
+                      <SelectValue placeholder="Select a courier..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {runnersLoading ? (
-                        <div className="p-2 text-center text-muted-foreground">Loading runners...</div>
-                      ) : runners.length === 0 ? (
-                        <div className="p-2 text-center text-muted-foreground">No runners available</div>
+                      {couriersLoading ? (
+                        <div className="p-2 text-center text-muted-foreground">Loading couriers...</div>
+                      ) : couriers.length === 0 ? (
+                        <div className="p-2 text-center text-muted-foreground">No couriers available</div>
                       ) : (
-                        runners.map((runner: any) => (
-                          <SelectItem key={runner.id} value={runner.id}>
+                        couriers.map((courier: any) => (
+                          <SelectItem key={courier.id} value={courier.id}>
                             <div className="flex items-center gap-2">
-                              <span>{runner.full_name}</span>
-                              {runner.vehicle_type && (
+                              <span>{courier.full_name}</span>
+                              {courier.vehicle_type && (
                                 <Badge variant="outline" className="text-xs">
-                                  {runner.vehicle_type}
+                                  {courier.vehicle_type}
+                                </Badge>
+                              )}
+                              {courier.status && (
+                                <Badge 
+                                  variant={courier.status === 'available' ? 'default' : 'secondary'}
+                                  className="text-xs"
+                                >
+                                  {courier.status}
                                 </Badge>
                               )}
                             </div>

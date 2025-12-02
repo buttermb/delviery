@@ -27,9 +27,20 @@ export const useDisposableMenus = (tenantId?: string) => {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Add computed stats for each menu
+      return (data || []).map((menu: any) => ({
+        ...menu,
+        view_count: menu.menu_access_logs?.[0]?.count || 0,
+        customer_count: menu.menu_access_whitelist?.[0]?.count || 0,
+        order_count: menu.menu_orders?.length || 0,
+        total_revenue: menu.menu_orders?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) || 0,
+      }));
     },
     enabled: tenantId !== undefined,
+    // Performance: cache for 30 seconds, keep in memory for 5 minutes
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 };
 
@@ -193,7 +204,9 @@ export const useMenuWhitelist = (menuId: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!menuId
+    enabled: !!menuId,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 };
 
@@ -249,7 +262,8 @@ export const useMenuOrders = (menuId?: string) => {
         .select(`
           *,
           menu:disposable_menus(name),
-          whitelist:menu_access_whitelist(customer_name, customer_phone)
+          whitelist:menu_access_whitelist(customer_name, customer_phone),
+          items:menu_order_items(*)
         `)
         .order('created_at', { ascending: false });
 
@@ -260,7 +274,10 @@ export const useMenuOrders = (menuId?: string) => {
       const { data, error } = await query;
       if (error) throw error;
       return data;
-    }
+    },
+    // Performance: cache for 15 seconds (orders change more frequently)
+    staleTime: 15 * 1000,
+    gcTime: 2 * 60 * 1000,
   });
 };
 
@@ -285,7 +302,9 @@ export const useMenuSecurityEvents = (menuId?: string) => {
       const { data, error } = await query;
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 60 * 1000, // Security events change less frequently
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -306,6 +325,8 @@ export const useMenuAccessLogs = (menuId: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!menuId
+    enabled: !!menuId,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 };

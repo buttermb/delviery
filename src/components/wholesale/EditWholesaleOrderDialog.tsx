@@ -27,7 +27,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { useWholesaleRunners } from '@/hooks/useWholesaleData';
+import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
 
 interface OrderItem {
   id: string;
@@ -51,8 +51,10 @@ interface WholesaleOrder {
     business_name: string;
     contact_name: string;
   };
-  runner?: {
+  courier?: {
     full_name: string;
+    vehicle_type?: string;
+    status?: string;
   };
   items?: OrderItem[];
 }
@@ -71,7 +73,7 @@ export function EditWholesaleOrderDialog({
   onSuccess,
 }: EditWholesaleOrderDialogProps) {
   const queryClient = useQueryClient();
-  const { data: runners = [] } = useWholesaleRunners();
+  const { data: couriers = [] } = useWholesaleCouriers();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -333,16 +335,29 @@ export function EditWholesaleOrderDialog({
           {/* Delivery Details */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Assign Runner</Label>
+              <Label>Assign Courier</Label>
               <Select value={runnerId} onValueChange={setRunnerId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a runner..." />
+                  <SelectValue placeholder="Select a courier..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Unassigned</SelectItem>
-                  {runners.map((runner: any) => (
-                    <SelectItem key={runner.id} value={runner.id}>
-                      {runner.full_name}
+                  {couriers.map((courier: any) => (
+                    <SelectItem key={courier.id} value={courier.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{courier.full_name}</span>
+                        {courier.vehicle_type && (
+                          <span className="text-xs text-muted-foreground">({courier.vehicle_type})</span>
+                        )}
+                        {courier.status && (
+                          <Badge 
+                            variant={courier.status === 'available' ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {courier.status}
+                          </Badge>
+                        )}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>

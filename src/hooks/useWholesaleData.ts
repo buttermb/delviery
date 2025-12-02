@@ -179,12 +179,20 @@ export const useWholesaleInventory = (tenantId?: string) => {
       const { data, error } = await query.order("product_name");
 
       if (error) throw error;
-      return data;
+      
+      // Add source field for consistency with products
+      return (data || []).map(item => ({
+        ...item,
+        source: 'wholesale_inventory' as const,
+      }));
     },
     enabled: tenantId !== undefined,
   });
 };
 
+/**
+ * @deprecated Use useWholesaleCouriers instead - integrates with the main couriers table
+ */
 export const useWholesaleRunners = () => {
   return useQuery({
     queryKey: ["wholesale-runners"],
@@ -197,6 +205,69 @@ export const useWholesaleRunners = () => {
       if (error) throw error;
       return data;
     }
+  });
+};
+
+/**
+ * Fetch couriers for wholesale deliveries
+ * Uses the main couriers table with tenant isolation
+ */
+export const useWholesaleCouriers = () => {
+  const { tenant } = useTenantAdminAuth();
+
+  return useQuery({
+    queryKey: ["wholesale-couriers", tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      const { data, error } = await supabase
+        .from("couriers")
+        .select("id, full_name, phone, vehicle_type, status, current_location")
+        .eq("tenant_id", tenant.id)
+        .order("full_name");
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tenant?.id
+  });
+};
+
+/**
+ * Fetch products from the main products catalog for wholesale orders
+ * Includes wholesale_price field for B2B pricing
+ */
+export const useProductsForWholesale = () => {
+  const { tenant } = useTenantAdminAuth();
+
+  return useQuery({
+    queryKey: ["products-for-wholesale", tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price, wholesale_price, cost_per_unit, stock_quantity, category, image_url, in_stock")
+        .eq("tenant_id", tenant.id)
+        .eq("in_stock", true)
+        .order("name");
+
+      if (error) throw error;
+      
+      // Map to consistent format for wholesale orders
+      return (data || []).map(product => ({
+        id: product.id,
+        product_name: product.name,
+        base_price: product.wholesale_price || product.price || 0,
+        retail_price: product.price || 0,
+        cost_per_unit: product.cost_per_unit || 0,
+        quantity_available: product.stock_quantity || 0,
+        category: product.category,
+        image_url: product.image_url,
+        source: 'products' as const,
+      }));
+    },
+    enabled: !!tenant?.id
   });
 };
 

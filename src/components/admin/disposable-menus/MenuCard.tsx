@@ -1,11 +1,27 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Users, ShoppingCart, Flame, Settings, BarChart3, Copy, ExternalLink, Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, Key, MessageSquare } from 'lucide-react';
+import { 
+  Eye, Users, ShoppingCart, Flame, Copy, ExternalLink, 
+  Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus, 
+  MoreHorizontal, MessageSquare, DollarSign
+} from 'lucide-react';
 import { useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { BurnMenuDialog } from './BurnMenuDialog';
 import { ManageAccessDialog } from './ManageAccessDialog';
-import { MenuShareDialog } from './MenuShareDialog';
 import { MenuShareDialogEnhanced } from './MenuShareDialogEnhanced';
 import { MenuAnalyticsDialog } from './MenuAnalyticsDialog';
 import { QRCodeDialog } from './QRCodeDialog';
@@ -13,14 +29,17 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { format } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
-import { jsonToString, jsonToStringOrNumber, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
+import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { cn } from '@/lib/utils';
 import type { DisposableMenu } from '@/types/admin';
 
 interface MenuCardProps {
   menu: DisposableMenu;
+  compact?: boolean;
 }
 
-export const MenuCard = ({ menu }: MenuCardProps) => {
+export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -32,227 +51,266 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
   const viewCount = (menu as any).view_count || 0;
   const customerCount = (menu as any).customer_count || 0;
   const orderCount = (menu as any).order_count || 0;
-  
   const totalRevenue = (menu as any).total_revenue || 0;
+  const productCount = menu.disposable_menu_products?.length || 0;
 
-  const statusColors = {
-    active: 'bg-primary',
-    soft_burned: 'bg-orange-500',
-    hard_burned: 'bg-destructive'
+  const isActive = menu.status === 'active';
+  const isBurned = menu.status === 'soft_burned' || menu.status === 'hard_burned';
+  const isForumMenu = extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum';
+
+  const statusConfig = {
+    active: { label: 'Active', color: 'bg-emerald-500 text-white' },
+    soft_burned: { label: 'Soft Burned', color: 'bg-orange-500 text-white' },
+    hard_burned: { label: 'Burned', color: 'bg-red-500 text-white' },
+  };
+  const status = statusConfig[menu.status as keyof typeof statusConfig] || statusConfig.active;
+
+  const menuUrl = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`;
+
+  const copyUrl = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    navigator.clipboard.writeText(menuUrl);
+    showSuccessToast('Copied!', 'Menu link copied to clipboard');
   };
 
-  const statusLabels = {
-    active: 'Active',
-    soft_burned: 'Soft Burned',
-    hard_burned: 'Hard Burned'
+  const openMenu = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    window.open(`/m/${menu.encrypted_url_token}`, '_blank');
   };
 
-  const copyUrl = () => {
-    const url = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`;
-    navigator.clipboard.writeText(url);
-    showSuccessToast('URL Copied', 'Menu URL copied to clipboard');
-  };
-
-  const openMenu = () => {
-    const menuUrl = `/m/${menu.encrypted_url_token}`;
-    window.open(menuUrl, '_blank');
-  };
+  // Security badges
+  const securityFeatures = [];
+  if (menu.is_encrypted) securityFeatures.push({ icon: Lock, label: 'Encrypted' });
+  if (jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence'))) {
+    securityFeatures.push({ icon: MapPin, label: 'Geofenced' });
+  }
+  if (menu.device_locking_enabled) securityFeatures.push({ icon: Shield, label: 'Device Lock' });
+  if ((menu as any).max_views_per_period) {
+    securityFeatures.push({ icon: Clock, label: `${(menu as any).max_views_per_period} views` });
+  }
 
   return (
     <>
-      <Card className="p-6 hover:shadow-lg transition-shadow">
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
+      <Card className={cn(
+        "group relative overflow-hidden transition-all duration-200",
+        isActive && "hover:shadow-lg hover:border-violet-500/50",
+        isBurned && "opacity-75"
+      )}>
+        {/* Status Banner */}
+        <div className={cn(
+          "absolute top-0 left-0 right-0 h-1",
+          isActive ? "bg-gradient-to-r from-violet-500 to-indigo-500" : "bg-muted"
+        )} />
+
+        <div className="p-4 pt-5 space-y-3">
+          {/* Header Row */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-lg font-bold">{menu.name}</h3>
-                {extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum' && (
-                  <Badge variant="secondary" className="gap-1 text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
-                    <MessageSquare className="h-3 w-3" />
-                    Forum Menu
-                  </Badge>
-                )}
-                {menu.is_encrypted && (
-                  <Badge variant="default" className="gap-1 text-xs">
-                    <Lock className="h-3 w-3" />
-                    AES-256
+                <h3 className="font-semibold truncate">{menu.name}</h3>
+                {isForumMenu && (
+                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-700 shrink-0">
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    Forum
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                {jsonToString(menu.description) || 'No description'}
-              </p>
+              {!compact && (
+                <p className="text-sm text-muted-foreground truncate mt-0.5">
+                  {jsonToString(menu.description) || `${productCount} products`}
+                </p>
+              )}
             </div>
-            <Badge className={statusColors[menu.status as keyof typeof statusColors]}>
-              {statusLabels[menu.status as keyof typeof statusLabels]}
+            <Badge className={cn("shrink-0 text-xs", status.color)}>
+              {status.label}
             </Badge>
           </div>
 
+          {/* Quick Stats Row */}
+          <div className="flex items-center gap-4 text-sm">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Eye className="h-3.5 w-3.5" />
+                    <span className="font-medium text-foreground">{viewCount}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Total Views</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" />
+                    <span className="font-medium text-foreground">{customerCount}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Customers</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                    <span className="font-medium text-foreground">{orderCount}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Orders</TooltipContent>
+              </Tooltip>
+
+              {totalRevenue > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 text-emerald-600 ml-auto">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      <span className="font-semibold">{formatCurrency(totalRevenue)}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Total Revenue</TooltipContent>
+                </Tooltip>
+              )}
+            </TooltipProvider>
+          </div>
+
           {/* Security Features */}
-          {((menu as any).screenshot_protection || jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) || menu.device_locking_enabled || (menu as any).max_views_per_period) && (
-            <div className="flex flex-wrap gap-2">
-              {(menu as any).screenshot_protection && (
-                <Badge variant="outline" className="text-xs">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Screenshot Protection
+          {securityFeatures.length > 0 && !compact && (
+            <div className="flex flex-wrap gap-1.5">
+              {securityFeatures.map((feature, i) => (
+                <Badge key={i} variant="outline" className="text-xs gap-1 py-0">
+                  <feature.icon className="h-3 w-3" />
+                  {feature.label}
                 </Badge>
-              )}
-              {jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence')) && (
-                <Badge variant="outline" className="text-xs">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  Geofencing
-                </Badge>
-              )}
-              {menu.device_locking_enabled && (
-                <Badge variant="outline" className="text-xs">
-                  <Lock className="h-3 w-3 mr-1" />
-                  Device Lock
-                </Badge>
-              )}
-              {(menu as any).max_views_per_period && (
-                <Badge variant="outline" className="text-xs">
-                  <Clock className="h-3 w-3 mr-1" />
-                  View Limit: {(menu as any).max_views_per_period}
-                </Badge>
-              )}
+              ))}
             </div>
           )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Eye className="h-4 w-4 text-muted-foreground" />
-              <span>{viewCount} views</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span>{customerCount} customers</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-              <span>{orderCount} orders</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              ${totalRevenue.toLocaleString()}
-            </div>
+          {/* Quick Actions Row */}
+          <div className="flex items-center gap-1.5 pt-2 border-t">
+            <TooltipProvider delayDuration={0}>
+              {/* Copy Link - Always visible */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={copyUrl}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Copy Link</TooltipContent>
+              </Tooltip>
+
+              {/* QR Code */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => setQrCodeOpen(true)}
+                  >
+                    <QrCode className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>QR Code</TooltipContent>
+              </Tooltip>
+
+              {/* Share */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => setShareDialogOpen(true)}
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Share</TooltipContent>
+              </Tooltip>
+
+              {/* Open in new tab */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={openMenu}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Preview Menu</TooltipContent>
+              </Tooltip>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* More Actions Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setAccessDetailsOpen(true)}>
+                    <Lock className="h-4 w-4 mr-2" />
+                    Access Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setAnalyticsOpen(true)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Analytics
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setManageAccessOpen(true)}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Manage Access
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setCloneDialogOpen(true)}>
+                    <CopyPlus className="h-4 w-4 mr-2" />
+                    Duplicate Menu
+                  </DropdownMenuItem>
+                  {isActive && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setBurnDialogOpen(true)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Flame className="h-4 w-4 mr-2" />
+                        Burn Menu
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TooltipProvider>
           </div>
 
-          {/* URL */}
-          <div className="bg-muted p-3 rounded-lg">
-            <div className="text-xs text-muted-foreground mb-1">Encrypted URL</div>
-            <div className="flex items-center gap-2">
-              <code className="text-xs flex-1 truncate">
-                /m/{menu.encrypted_url_token}
-              </code>
-              <Button size="sm" variant="ghost" onClick={copyUrl}>
-                <Copy className="h-3 w-3" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={openMenu}>
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Metadata */}
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div>Created: {format(new Date(menu.created_at), 'MMM dd, yyyy')}</div>
-            {menu.burned_at && (
-              <div>Burned: {format(new Date(menu.burned_at), 'MMM dd, yyyy')}</div>
-            )}
-            {menu.expiration_date && !menu.never_expires && (
-              <div>Expires: {format(new Date(menu.expiration_date), 'MMM dd, yyyy')}</div>
-            )}
-          </div>
-
-          {/* Actions */}
-          {menu.status === 'active' ? (
-            <div className="space-y-2 pt-2 border-t">
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setAccessDetailsOpen(true)}
-                >
-                  <Key className="h-4 w-4 mr-1" />
-                  Access
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setQrCodeOpen(true)}
-                >
-                  <QrCode className="h-4 w-4 mr-1" />
-                  QR Code
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setShareDialogOpen(true)}
-                >
-                  <Share2 className="h-4 w-4 mr-1" />
-                  Share
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setManageAccessOpen(true)}
-                >
-                  <Settings className="h-4 w-4 mr-1" />
-                  Manage
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setAnalyticsOpen(true)}
-                  data-tutorial="analytics"
-                >
-                  <BarChart3 className="h-4 w-4 mr-1" />
-                  Analytics
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={() => setCloneDialogOpen(true)}
-                >
-                  <CopyPlus className="h-4 w-4 mr-1" />
-                  Clone
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setBurnDialogOpen(true)}
-                >
-                  <Flame className="h-4 w-4 mr-1" />
-                  Burn
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-2 border-t">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => setCloneDialogOpen(true)}
-              >
-                <CopyPlus className="h-4 w-4 mr-1" />
-                Clone Menu
-              </Button>
+          {/* Expiration/Created Info */}
+          {!compact && (
+            <div className="text-xs text-muted-foreground flex items-center justify-between">
+              <span>Created {format(new Date(menu.created_at), 'MMM d, yyyy')}</span>
+              {menu.expiration_date && !menu.never_expires && (
+                <span className="text-orange-600">
+                  Expires {format(new Date(menu.expiration_date), 'MMM d')}
+                </span>
+              )}
+              {menu.never_expires && (
+                <span className="text-emerald-600">Never expires</span>
+              )}
             </div>
           )}
         </div>
       </Card>
 
+      {/* Dialogs */}
       <BurnMenuDialog 
         menu={menu}
         open={burnDialogOpen}
@@ -265,20 +323,12 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         onOpenChange={setManageAccessOpen}
       />
 
-      {/* Enhanced Share Dialog with QR, SMS, and Customer Management */}
       <MenuShareDialogEnhanced
         menu={menu}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}
       />
-      
-      {/* Keep original share dialog as fallback */}
-      {/* <MenuShareDialog
-        menu={menu}
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-      /> */}
 
       <MenuAnalyticsDialog
         menu={menu}
@@ -290,7 +340,7 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         open={qrCodeOpen}
         onClose={() => setQrCodeOpen(false)}
         menuTitle={menu.name}
-        accessUrl={`${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`}
+        accessUrl={menuUrl}
         menuId={menu.id}
       />
 
@@ -305,9 +355,11 @@ export const MenuCard = ({ menu }: MenuCardProps) => {
         open={accessDetailsOpen}
         onOpenChange={setAccessDetailsOpen}
         accessCode={menu.access_code || 'N/A'}
-        shareableUrl={`${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`}
+        shareableUrl={menuUrl}
         menuName={menu.name}
       />
     </>
   );
 };
+
+export default MenuCard;
