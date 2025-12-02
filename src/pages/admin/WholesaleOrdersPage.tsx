@@ -421,8 +421,7 @@ export default function WholesaleOrdersPage() {
             </div>
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            {/* @ts-ignore - LastUpdated prop mismatch */}
-            <LastUpdated timestamp={lastUpdated} onRefresh={handleRefresh} />
+            <LastUpdated date={lastUpdated} onRefresh={handleRefresh} />
             <Button variant="ghost" size="sm" onClick={handleRefresh} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Refresh
