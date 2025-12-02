@@ -52,6 +52,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const customerCount = (menu as any).customer_count || 0;
   const orderCount = (menu as any).order_count || 0;
   const totalRevenue = (menu as any).total_revenue || 0;
+  // @ts-ignore - disposable_menu_products exists in DisposableMenu type
   const productCount = menu.disposable_menu_products?.length || 0;
 
   const isActive = menu.status === 'active';

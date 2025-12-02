@@ -23,7 +23,10 @@ import { cn } from '@/lib/utils';
 
 interface OrderKanbanProps {
   onViewDetails?: (order: any) => void;
+  onUpdate?: () => void;
 }
+
+type OrderStatusType = 'pending' | 'confirmed' | 'processing' | 'completed' | 'delivered';
 
 const COLUMNS = [
   { 
@@ -32,7 +35,7 @@ const COLUMNS = [
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-500/10',
     dotColor: 'bg-yellow-500',
-    statuses: ['pending']
+    statuses: ['pending'] as OrderStatusType[]
   },
   { 
     id: 'confirmed', 
@@ -40,7 +43,7 @@ const COLUMNS = [
     color: 'text-blue-600',
     bgColor: 'bg-blue-500/10',
     dotColor: 'bg-blue-500',
-    statuses: ['confirmed', 'processing']
+    statuses: ['confirmed', 'processing'] as OrderStatusType[]
   },
   { 
     id: 'completed', 
@@ -48,7 +51,7 @@ const COLUMNS = [
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-500/10',
     dotColor: 'bg-emerald-500',
-    statuses: ['completed', 'delivered']
+    statuses: ['completed', 'delivered'] as OrderStatusType[]
   },
 ];
 
