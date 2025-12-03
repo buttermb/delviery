@@ -1,11 +1,13 @@
 /**
- * Page Header Component
- * Consistent header for super admin pages
+ * Super Admin Page Header Component
+ * 
+ * @deprecated Use PageHeader from '@/components/shared/PageHeader' directly
+ * This file is maintained for backward compatibility.
  */
 
 import { ReactNode } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
-import { Button } from '@/components/ui/button';
+import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
 import { LucideIcon } from 'lucide-react';
 
 interface PageHeaderProps {
@@ -15,23 +17,17 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export function PageHeader({ title, description, icon: Icon, actions }: PageHeaderProps) {
+export function PageHeader({ title, description, icon, actions }: PageHeaderProps) {
   return (
     <div className="space-y-4 mb-6">
       <Breadcrumbs />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            {Icon && <Icon className="h-8 w-8" />}
-            {title}
-          </h1>
-          {description && (
-            <p className="text-muted-foreground mt-2">{description}</p>
-          )}
-        </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
+      <SharedPageHeader
+        title={title}
+        description={description}
+        icon={icon}
+        actions={actions}
+        className="mb-0"
+      />
     </div>
   );
 }
-

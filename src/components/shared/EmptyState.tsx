@@ -1,11 +1,12 @@
 /**
- * Reusable Empty State Component
- * Shows helpful empty states with CTAs
+ * EmptyState - Backward Compatible Wrapper
+ * 
+ * @deprecated Use EnhancedEmptyState from '@/components/shared/EnhancedEmptyState' directly
+ * This file is maintained for backward compatibility only.
  */
 
-import { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -17,7 +18,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   actionLabel,
@@ -25,15 +26,16 @@ export function EmptyState({
   actionVariant = "default",
 }: EmptyStateProps) {
   return (
-    <div className="text-center py-12 px-4">
-      <Icon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-      <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
-      <p className="text-gray-600 mb-6 max-w-md mx-auto">{description}</p>
-      {actionLabel && onAction && (
-        <Button onClick={onAction} variant={actionVariant}>
-          {actionLabel}
-        </Button>
-      )}
-    </div>
+    <EnhancedEmptyState
+      type="generic"
+      icon={icon}
+      title={title}
+      description={description}
+      primaryAction={actionLabel && onAction ? {
+        label: actionLabel,
+        onClick: onAction,
+      } : undefined}
+      compact
+    />
   );
 }

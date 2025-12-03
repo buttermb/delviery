@@ -1,6 +1,12 @@
+/**
+ * BetterEmptyState - Backward Compatible Wrapper
+ * 
+ * @deprecated Use EnhancedEmptyState from '@/components/shared/EnhancedEmptyState' directly
+ * This file is maintained for backward compatibility only.
+ */
+
 import { LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 
 interface BetterEmptyStateProps {
   icon?: LucideIcon;
@@ -19,7 +25,7 @@ interface BetterEmptyStateProps {
 }
 
 export function BetterEmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   action,
@@ -27,40 +33,19 @@ export function BetterEmptyState({
   className,
 }: BetterEmptyStateProps) {
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center py-12 px-4 text-center",
-      className
-    )}>
-      {Icon && (
-        <div className="rounded-full bg-muted/50 p-6 mb-4 border border-border">
-          <Icon className="h-10 w-10 text-muted-foreground" />
-        </div>
-      )}
-      
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      
-      {description && (
-        <p className="text-muted-foreground text-sm max-w-md mb-6">
-          {description}
-        </p>
-      )}
-
-      {(action || secondaryAction) && (
-        <div className="flex gap-3">
-          {action && (
-            <Button onClick={action.onClick} className="gap-2">
-              {action.icon && <action.icon className="h-4 w-4" />}
-              {action.label}
-            </Button>
-          )}
-          
-          {secondaryAction && (
-            <Button variant="outline" onClick={secondaryAction.onClick}>
-              {secondaryAction.label}
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+    <EnhancedEmptyState
+      type="generic"
+      icon={icon}
+      title={title}
+      description={description}
+      primaryAction={action ? {
+        label: action.label,
+        onClick: action.onClick,
+        icon: action.icon,
+      } : undefined}
+      secondaryAction={secondaryAction}
+      className={className}
+      compact
+    />
   );
 }

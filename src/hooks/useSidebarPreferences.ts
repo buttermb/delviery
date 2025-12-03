@@ -177,7 +177,8 @@ export function useSidebarPreferences() {
       // Invalidate related queries
       await queryClient.invalidateQueries({ queryKey: ['sidebar-config'] });
 
-      toast.success('Preferences saved');
+      // Note: Toast removed - was showing on every auto-save and background update
+      // Toast should only be shown for explicit user actions in the calling component
     },
     onError: (error: unknown) => {
       logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });

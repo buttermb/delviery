@@ -61,20 +61,6 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
   // Run storage migration on mount
   useSidebarMigration();
 
-  // Phase 3: Debug logging for mobile sidebar
-  logger.debug('AdaptiveSidebar Render', {
-    component: 'AdaptiveSidebar',
-    tenantSlug,
-    hasTenant: !!tenant,
-    tenantId: tenant?.id,
-    sidebarConfigLength: sidebarConfig?.length || 0,
-    hotItemsLength: hotItems?.length || 0,
-    favoritesLength: favorites?.length || 0,
-    layoutPreset: preferences?.layoutPreset || 'none',
-    operationSize,
-    sidebarSections: sidebarConfig?.map(s => s.section) || []
-  });
-
   const currentPreset = preferences?.layoutPreset || 'default';
   const presetNames: Record<string, string> = {
     default: 'Default',

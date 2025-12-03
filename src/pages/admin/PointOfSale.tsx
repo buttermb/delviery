@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,6 +65,12 @@ export default function PointOfSale() {
   const [activeTab, setActiveTab] = useState('register');
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  // Handle image load error - fall back to placeholder
+  const handleImageError = useCallback((productId: string) => {
+    setFailedImages(prev => new Set(prev).add(productId));
+  }, []);
 
   useInventorySync({ tenantId, enabled: !!tenantId });
 
@@ -475,9 +481,15 @@ export default function PointOfSale() {
                     onClick={() => addToCart(product)}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" loading="lazy" />
+                      <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                        {product.image_url && !failedImages.has(product.id) ? (
+                          <img 
+                            src={product.image_url} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover rounded-lg" 
+                            loading="lazy"
+                            onError={() => handleImageError(product.id)}
+                          />
                         ) : (
                           <ShoppingCart className="w-12 h-12 text-muted-foreground" />
                         )}

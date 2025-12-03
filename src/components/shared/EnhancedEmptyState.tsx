@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
+import { LucideIcon } from "lucide-react";
 
 export type EmptyStateType = 
   | "no_tenants" 
@@ -13,21 +14,31 @@ export type EmptyStateType =
   | "generic";
 
 interface EnhancedEmptyStateProps {
+  /** Pre-configured type with default icon/title/description */
   type?: EmptyStateType;
+  /** Custom title (overrides type default) */
   title?: string;
+  /** Custom description (overrides type default) */
   description?: string;
-  icon?: React.ReactNode;
+  /** Custom icon - can be React node or LucideIcon */
+  icon?: React.ReactNode | LucideIcon;
+  /** Primary action button */
   primaryAction?: {
     label: string;
     onClick: () => void;
-    icon?: React.ReactNode;
+    icon?: React.ReactNode | LucideIcon;
   };
+  /** Secondary action button */
   secondaryAction?: {
     label: string;
     onClick: () => void;
   };
+  /** Additional className */
   className?: string;
+  /** Design system variant for theming */
   designSystem?: "marketing" | "super-admin" | "tenant-admin" | "customer";
+  /** Compact mode without card wrapper */
+  compact?: boolean;
 }
 
 const emptyStateConfig: Record<
@@ -75,6 +86,11 @@ const emptyStateConfig: Record<
   },
 };
 
+// Helper to check if something is a LucideIcon component
+const isLucideIcon = (icon: unknown): icon is LucideIcon => {
+  return typeof icon === 'function' && icon.toString().includes('createElement');
+};
+
 export function EnhancedEmptyState({
   type = "generic",
   title,
@@ -84,16 +100,34 @@ export function EnhancedEmptyState({
   secondaryAction,
   className,
   designSystem = "tenant-admin",
+  compact = false,
 }: EnhancedEmptyStateProps) {
   const { theme } = useTheme();
   const config = emptyStateConfig[type];
   const finalTitle = title || config.defaultTitle;
   const finalDescription = description || config.defaultDescription;
-  const finalIcon = icon || (
-    <div className="text-6xl mb-4 animate-bounce" style={{ animationDuration: "2s" }}>
-      {config.emoji}
-    </div>
-  );
+  
+  // Handle different icon types
+  const renderIcon = () => {
+    if (!icon) {
+      return (
+        <div className="text-6xl mb-4 animate-bounce" style={{ animationDuration: "2s" }}>
+          {config.emoji}
+        </div>
+      );
+    }
+    
+    // If it's a LucideIcon component, render it
+    if (isLucideIcon(icon)) {
+      const IconComponent = icon;
+      return <IconComponent className="h-12 w-12 text-muted-foreground" />;
+    }
+    
+    // Otherwise it's already a ReactNode
+    return icon;
+  };
+
+  const finalIcon = renderIcon();
 
   // Design system-specific styling using semantic tokens
   const bgColor = {
@@ -116,51 +150,82 @@ export function EnhancedEmptyState({
 
   const secondaryButtonClass = "border-border text-foreground hover:bg-muted";
 
+  // Render action icon (handles LucideIcon or ReactNode)
+  const renderActionIcon = (actionIcon: React.ReactNode | LucideIcon | undefined) => {
+    if (!actionIcon) return null;
+    if (isLucideIcon(actionIcon)) {
+      const IconComponent = actionIcon;
+      return <IconComponent className="h-4 w-4 mr-2" />;
+    }
+    return <span className="mr-2">{actionIcon}</span>;
+  };
+
+  const content = (
+    <div className={cn(
+      "flex flex-col items-center justify-center",
+      compact ? "py-8 px-4" : "space-y-6"
+    )}>
+      <div 
+        className={cn(
+          "inline-flex items-center justify-center rounded-full",
+          compact ? "w-16 h-16 bg-muted/50 mb-4" : "w-24 h-24 bg-gradient-to-br from-opacity-10 to-opacity-5 mb-4"
+        )}
+        aria-hidden="true"
+      >
+        {finalIcon}
+      </div>
+
+      <div className="space-y-2 text-center">
+        <h3 className={cn(compact ? "text-lg" : "text-2xl", "font-semibold", textColor)} id={`empty-state-title-${type}`}>
+          {finalTitle}
+        </h3>
+        <p className={cn("text-sm max-w-sm", textLightColor)} id={`empty-state-desc-${type}`}>
+          {finalDescription}
+        </p>
+      </div>
+
+      {(primaryAction || secondaryAction) && (
+        <div className={cn("flex gap-3", compact ? "mt-4" : "w-full")}>
+          {secondaryAction && (
+            <Button
+              variant="outline"
+              onClick={secondaryAction.onClick}
+              className={compact ? "" : "flex-1"}
+            >
+              {secondaryAction.label}
+            </Button>
+          )}
+          {primaryAction && (
+            <Button
+              onClick={primaryAction.onClick}
+              className={cn(compact ? "" : "flex-1", !compact && primaryButtonClass)}
+            >
+              {renderActionIcon(primaryAction.icon)}
+              {primaryAction.label}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // Compact mode renders without card wrapper
+  if (compact) {
+    return (
+      <div className={className} role="status" aria-live="polite">
+        {content}
+      </div>
+    );
+  }
+
   return (
     <Card 
       className={cn("p-12 text-center max-w-md mx-auto", bgColor, borderColor, className)}
       role="status"
       aria-live="polite"
     >
-      <CardContent className="flex flex-col items-center justify-center space-y-6">
-        <div 
-          className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-opacity-10 to-opacity-5 mb-4"
-          aria-hidden="true"
-        >
-          {finalIcon}
-        </div>
-
-        <div className="space-y-2">
-          <h3 className={cn("text-2xl font-semibold", textColor)} id={`empty-state-title-${type}`}>
-            {finalTitle}
-          </h3>
-          <p className={cn("text-sm max-w-sm", textLightColor)} id={`empty-state-desc-${type}`}>
-            {finalDescription}
-          </p>
-        </div>
-
-        {(primaryAction || secondaryAction) && (
-          <div className="flex gap-3 w-full">
-            {secondaryAction && (
-              <Button
-                variant="outline"
-                onClick={secondaryAction.onClick}
-                className="flex-1"
-              >
-                {secondaryAction.label}
-              </Button>
-            )}
-            {primaryAction && (
-              <Button
-                onClick={primaryAction.onClick}
-                className={cn("flex-1", primaryButtonClass)}
-              >
-                {primaryAction.icon && <span className="mr-2">{primaryAction.icon}</span>}
-                {primaryAction.label}
-              </Button>
-            )}
-          </div>
-        )}
+      <CardContent>
+        {content}
       </CardContent>
     </Card>
   );

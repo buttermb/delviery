@@ -48,15 +48,10 @@ const AdminLayout = () => {
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-  // DEBUG: Log route changes to diagnose navigation issues
+  // Log route changes only in development (not on every render)
   useEffect(() => {
-    if (tenantSlug) {
+    if (tenantSlug && import.meta.env.DEV) {
       logRouteState(tenantSlug, location.pathname);
-      logger.debug('AdminLayout route change', {
-        tenantSlug,
-        pathname: location.pathname,
-        scrollable: document.body.style.overflow !== 'hidden'
-      });
     }
   }, [tenantSlug, location.pathname]);
 
@@ -142,14 +137,24 @@ const AdminLayout = () => {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <AdminKeyboardShortcutsDialog
-                        open={shortcutsVisible}
-                        onOpenChange={setShortcutsVisible}
-                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9"
+                        onClick={() => setShortcutsVisible(true)}
+                        aria-label="Keyboard shortcuts"
+                      >
+                        <Keyboard className="h-4 w-4" />
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>Keyboard Shortcuts (? or click)</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+
+                <AdminKeyboardShortcutsDialog
+                  open={shortcutsVisible}
+                  onOpenChange={setShortcutsVisible}
+                />
 
                 <AdminNotificationCenter />
                 <ThemeToggle />

@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 /**
  * Sidebar Section Component
  * 
@@ -31,15 +30,6 @@ export function SidebarSection({
   const { toggleCollapsedSection, preferences } = useSidebar();
   const { canAccess } = useFeatureAccess();
   const [isOpen, setIsOpen] = useState(!section.collapsed && (section.defaultExpanded || section.pinned));
-
-  // Debug logging
-  logger.debug(`SidebarSection [${section.section}]:`, {
-    itemCount: section.items.length,
-    isOpen,
-    pinned: section.pinned,
-    defaultExpanded: section.defaultExpanded,
-    items: section.items.map(i => ({ id: i.id, name: i.name }))
-  });
 
   // Sync with preferences
   useEffect(() => {
@@ -95,12 +85,6 @@ export function SidebarSection({
             <SidebarMenu>
               {section.items.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;
-                
-                logger.debug(`Rendering item [${item.id}] in [${section.section}]:`, {
-                  hasAccess,
-                  featureId: item.featureId,
-                  name: item.name
-                });
                 
                 return (
                   <SidebarMenuItem
