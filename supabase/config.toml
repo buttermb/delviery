@@ -140,3 +140,9 @@ verify_jwt = false
 
 [functions.access-encrypted-menu-v2]
 verify_jwt = false
+
+[functions.menu-parse]
+verify_jwt = true
+
+[functions.menu-ocr]
+verify_jwt = true
