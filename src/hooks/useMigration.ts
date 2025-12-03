@@ -576,48 +576,50 @@ export function useMigration() {
           },
         }));
 
-        // Transform products to wholesale_inventory format
-        // Note: wholesale_inventory table has check constraint on strain_type
-        // Database uses CAPITALIZED values: 'Indica', 'Sativa', 'Hybrid', 'CBD'
-        const normalizeStrainType = (type: unknown): 'Indica' | 'Sativa' | 'Hybrid' | null => {
-          // Strict validation - only allow exact matches or null
-          if (type === null || type === undefined || type === '') return null;
-          if (typeof type !== 'string') return null;
-          
-          const lower = type.toLowerCase().trim();
-          
-          // Map to CAPITALIZED values that match database constraint
-          if (lower === 'indica' || lower.includes('indica')) return 'Indica';
-          if (lower === 'sativa' || lower.includes('sativa')) return 'Sativa';
-          if (lower === 'hybrid' || lower.includes('hybrid') || lower === 'balanced') return 'Hybrid';
-          
-          // CBD and unknown become null (safer than trying to insert 'CBD')
-          if (lower === 'cbd' || lower === 'unknown') return null;
-          
-          // Anything else becomes null (safe default)
-          return null;
+        // Transform products to products table format (not wholesale_inventory)
+        // Category must be one of: 'flower', 'edibles', 'vapes', 'concentrates'
+        const normalizeCategory = (cat: string | undefined): string => {
+          if (!cat) return 'flower';
+          const lower = cat.toLowerCase();
+          if (lower === 'flower' || lower === 'bud' || lower === 'buds') return 'flower';
+          if (lower === 'edible' || lower === 'edibles' || lower === 'gummy' || lower === 'gummies') return 'edibles';
+          if (lower === 'vape' || lower === 'vapes' || lower === 'cart' || lower === 'cartridge') return 'vapes';
+          if (lower === 'concentrate' || lower === 'concentrates' || lower === 'wax' || lower === 'shatter' || lower === 'rosin') return 'concentrates';
+          return 'flower'; // Default
         };
 
-        const inventoryItems = batch.map(product => ({
-          tenant_id: tenantUser.tenant_id,
-          product_name: product.name,
-          category: product.category || 'flower',
-          strain_type: normalizeStrainType(product.strainType),
-          thc_percentage: product.thcPercentage || null,
-          cbd_percentage: product.cbdPercentage || null,
-          base_price: product.prices?.lb || product.prices?.oz || 0,
-          prices: product.prices || {},
-          quantity_lbs: product.quantityLbs || 0,
-          quantity_units: product.quantityUnits || 0,
-          lineage: product.lineage || null,
-          grow_info: product.qualityTier || null,
-          reorder_point: 0,
-          warehouse_location: 'default',
-        }));
+        // Generate SKU from product name
+        const generateSku = (name: string, index: number): string => {
+          const prefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+          const timestamp = Date.now().toString().slice(-6);
+          return `${prefix || 'PRD'}-${timestamp}-${index}`;
+        };
+
+        const productItems = batch.map((product, idx) => {
+          // Calculate quantity based on quality tier and pack meaning
+          const quantity = product.quantityLbs ? Math.round(product.quantityLbs * 16) : (product.quantityUnits || 0);
+          
+          return {
+            tenant_id: tenantUser.tenant_id,
+            name: product.name,
+            sku: generateSku(product.name, i + idx),
+            category: normalizeCategory(product.category),
+            strain_type: product.strainType || null, // Products table may not have strict constraint
+            thc_percent: product.thcPercentage || null,
+            cbd_percent: product.cbdPercentage || null,
+            wholesale_price: product.prices?.lb || product.prices?.oz || 0,
+            retail_price: product.prices?.lb ? Math.round(product.prices.lb * 1.3) : null, // 30% markup
+            price: product.prices?.lb || product.prices?.oz || 0,
+            thca_percentage: product.thcPercentage || 0,
+            available_quantity: quantity,
+            total_quantity: quantity,
+            description: product.notes || (product.qualityTier ? `Quality: ${product.qualityTier}` : null),
+          };
+        });
 
         const { data, error } = await supabase
-          .from('wholesale_inventory')
-          .insert(inventoryItems)
+          .from('products')
+          .insert(productItems)
           .select();
 
         if (error) {
