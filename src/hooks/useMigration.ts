@@ -410,20 +410,22 @@ export function useMigration() {
         }));
 
         // Transform products to wholesale_inventory format
+        // Note: wholesale_inventory table doesn't have is_active column
         const inventoryItems = batch.map(product => ({
           tenant_id: tenantUser.tenant_id,
           product_name: product.name,
-          category: product.category,
+          category: product.category || 'flower',
           strain_type: product.strainType || null,
-          thc_percentage: product.thcPercentage,
-          cbd_percentage: product.cbdPercentage,
+          thc_percentage: product.thcPercentage || null,
+          cbd_percentage: product.cbdPercentage || null,
           base_price: product.prices?.lb || product.prices?.oz || 0,
-          prices: product.prices,
-          quantity_lbs: product.quantityLbs || null,
-          quantity_units: product.quantityUnits || null,
-          lineage: product.lineage,
-          grow_info: product.qualityTier,
-          is_active: true,
+          prices: product.prices || {},
+          quantity_lbs: product.quantityLbs || 0,
+          quantity_units: product.quantityUnits || 0,
+          lineage: product.lineage || null,
+          grow_info: product.qualityTier || null,
+          reorder_point: 0,
+          warehouse_location: 'default',
         }));
 
         const { data, error } = await supabase
