@@ -10322,7 +10322,35 @@ export type Database = {
             foreignKeyName: "unified_order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "menu_orders_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "pos_orders_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "retail_orders_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "unified_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_orders_unified"
             referencedColumns: ["id"]
           },
           {
@@ -12012,6 +12040,447 @@ export type Database = {
           },
         ]
       }
+      menu_orders_unified: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_notes: string | null
+          discount_amount: number | null
+          id: string | null
+          menu_id: string | null
+          metadata: Json | null
+          order_number: string | null
+          order_type: string | null
+          payment_method: string | null
+          payment_status: string | null
+          shift_id: string | null
+          source: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tenant_id: string | null
+          total_amount: number | null
+          updated_at: string | null
+          wholesale_client_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus_decrypted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "unified_orders_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_wholesale_client_id_fkey"
+            columns: ["wholesale_client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_orders_unified: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_notes: string | null
+          discount_amount: number | null
+          id: string | null
+          menu_id: string | null
+          metadata: Json | null
+          order_number: string | null
+          order_type: string | null
+          payment_method: string | null
+          payment_status: string | null
+          shift_id: string | null
+          source: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tenant_id: string | null
+          total_amount: number | null
+          updated_at: string | null
+          wholesale_client_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus_decrypted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "unified_orders_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_wholesale_client_id_fkey"
+            columns: ["wholesale_client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retail_orders_unified: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_notes: string | null
+          discount_amount: number | null
+          id: string | null
+          menu_id: string | null
+          metadata: Json | null
+          order_number: string | null
+          order_type: string | null
+          payment_method: string | null
+          payment_status: string | null
+          shift_id: string | null
+          source: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tenant_id: string | null
+          total_amount: number | null
+          updated_at: string | null
+          wholesale_client_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus_decrypted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "unified_orders_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_wholesale_client_id_fkey"
+            columns: ["wholesale_client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       runner_earnings_view: {
         Row: {
           client_name: string | null
@@ -12039,6 +12508,153 @@ export type Database = {
             columns: ["runner_id"]
             isOneToOne: false
             referencedRelation: "wholesale_runners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_orders_unified: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          courier_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_notes: string | null
+          discount_amount: number | null
+          id: string | null
+          menu_id: string | null
+          metadata: Json | null
+          order_number: string | null
+          order_type: string | null
+          payment_method: string | null
+          payment_status: string | null
+          shift_id: string | null
+          source: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tenant_id: string | null
+          total_amount: number | null
+          updated_at: string | null
+          wholesale_client_id: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          discount_amount?: number | null
+          id?: string | null
+          menu_id?: string | null
+          metadata?: Json | null
+          order_number?: string | null
+          order_type?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          shift_id?: string | null
+          source?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tenant_id?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+          wholesale_client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "disposable_menus_decrypted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_analytics_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "unified_orders_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unified_orders_wholesale_client_id_fkey"
+            columns: ["wholesale_client_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_clients"
             referencedColumns: ["id"]
           },
         ]
@@ -12415,6 +13031,14 @@ export type Database = {
       update_contact_balance: {
         Args: { p_amount: number; p_contact_id: string; p_operation: string }
         Returns: number
+      }
+      update_order_status: {
+        Args: {
+          p_cancellation_reason?: string
+          p_new_status: string
+          p_order_id: string
+        }
+        Returns: undefined
       }
       update_purchase_limits: {
         Args: {

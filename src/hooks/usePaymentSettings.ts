@@ -76,8 +76,9 @@ export function useTenantPaymentSettings() {
     queryFn: async () => {
       if (!tenant?.id) return DEFAULT_SETTINGS;
 
+      // @ts-ignore - tenant_payment_settings table exists but not in generated types
       const { data, error } = await supabase
-        .from('tenant_payment_settings')
+        .from('tenant_payment_settings' as any)
         .select('*')
         .eq('tenant_id', tenant.id)
         .maybeSingle();
@@ -105,9 +106,10 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       if (!menuId) return DEFAULT_SETTINGS;
 
       // First, get the menu to find its tenant_id and any payment_settings override
+      // @ts-ignore - payment_settings column exists but not in generated types
       const { data: menu, error: menuError } = await supabase
         .from('disposable_menus')
-        .select('tenant_id, payment_settings')
+        .select('tenant_id, payment_settings' as any)
         .eq('id', menuId)
         .single();
 
@@ -117,10 +119,11 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       }
 
       // Get tenant-level payment settings
+      // @ts-ignore - tenant_payment_settings table exists but not in generated types
       const { data: tenantSettings, error: settingsError } = await supabase
-        .from('tenant_payment_settings')
+        .from('tenant_payment_settings' as any)
         .select('*')
-        .eq('tenant_id', menu.tenant_id)
+        .eq('tenant_id', (menu as any).tenant_id)
         .maybeSingle();
 
       if (settingsError) {
@@ -131,13 +134,14 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       // Start with defaults, merge tenant settings, then menu overrides
       let settings: PaymentSettings = { ...DEFAULT_SETTINGS };
 
-      if (tenantSettings) {
-        settings = { ...settings, ...tenantSettings };
+      if (tenantSettings && typeof tenantSettings === 'object') {
+        settings = { ...settings, ...(tenantSettings as Partial<PaymentSettings>) };
       }
 
       // Apply per-menu overrides if they exist
-      if (menu.payment_settings && typeof menu.payment_settings === 'object') {
-        settings = { ...settings, ...(menu.payment_settings as Partial<PaymentSettings>) };
+      const menuPaymentSettings = (menu as any).payment_settings;
+      if (menuPaymentSettings && typeof menuPaymentSettings === 'object') {
+        settings = { ...settings, ...(menuPaymentSettings as Partial<PaymentSettings>) };
       }
 
       return settings;
