@@ -577,17 +577,25 @@ export function useMigration() {
         }));
 
         // Transform products to wholesale_inventory format
-        // Note: wholesale_inventory table has check constraint on strain_type (indica|sativa|hybrid)
-        const VALID_STRAIN_TYPES = ['indica', 'sativa', 'hybrid'];
-        const normalizeStrainType = (type: string | null | undefined): string | null => {
-          if (!type) return null;
+        // Note: wholesale_inventory table has check constraint on strain_type
+        // Database uses CAPITALIZED values: 'Indica', 'Sativa', 'Hybrid', 'CBD'
+        const normalizeStrainType = (type: unknown): 'Indica' | 'Sativa' | 'Hybrid' | null => {
+          // Strict validation - only allow exact matches or null
+          if (type === null || type === undefined || type === '') return null;
+          if (typeof type !== 'string') return null;
+          
           const lower = type.toLowerCase().trim();
-          if (VALID_STRAIN_TYPES.includes(lower)) return lower;
-          // Map common variations
-          if (lower.includes('indica')) return 'indica';
-          if (lower.includes('sativa')) return 'sativa';
-          if (lower.includes('hybrid') || lower === 'balanced' || lower === 'cbd') return 'hybrid';
-          return null; // Unknown types become null
+          
+          // Map to CAPITALIZED values that match database constraint
+          if (lower === 'indica' || lower.includes('indica')) return 'Indica';
+          if (lower === 'sativa' || lower.includes('sativa')) return 'Sativa';
+          if (lower === 'hybrid' || lower.includes('hybrid') || lower === 'balanced') return 'Hybrid';
+          
+          // CBD and unknown become null (safer than trying to insert 'CBD')
+          if (lower === 'cbd' || lower === 'unknown') return null;
+          
+          // Anything else becomes null (safe default)
+          return null;
         };
 
         const inventoryItems = batch.map(product => ({
