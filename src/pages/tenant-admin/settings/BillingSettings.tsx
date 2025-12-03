@@ -260,15 +260,6 @@ export default function BillingSettings() {
       return;
     }
 
-    if (!stripeHealth?.valid) {
-      toast({
-        title: 'Stripe Not Configured',
-        description: stripeHealth?.error || 'Payment processing is not available.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setSelectedPlan(targetPlan);
     setUpgradeDialogOpen(true);
   };
@@ -513,16 +504,7 @@ export default function BillingSettings() {
         </p>
       </div>
 
-      {/* Stripe Status Alerts */}
-      {stripeHealth && !stripeHealth.valid && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Payment processing unavailable:</strong> {stripeHealth.error || 'Stripe is not configured.'}
-          </AlertDescription>
-        </Alert>
-      )}
-
+      {/* Test Mode Alert (only shown when in test mode) */}
       {stripeHealth?.testMode && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
@@ -588,11 +570,11 @@ export default function BillingSettings() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleManageSubscription}
-                disabled={upgradeLoading || !stripeHealth?.valid}
-              >
+            <Button 
+              variant="outline" 
+              onClick={handleManageSubscription}
+              disabled={upgradeLoading}
+            >
                 {upgradeLoading ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -722,7 +704,7 @@ export default function BillingSettings() {
                   <Button
                     className="w-full"
                     variant={isCurrent ? 'secondary' : isUpgrade ? 'default' : 'outline'}
-                    disabled={isCurrent || upgradeLoading || !stripeHealth?.valid}
+                    disabled={isCurrent || upgradeLoading}
                     onClick={() => handlePlanChange(plan.id)}
                   >
                     {upgradeLoading && selectedPlan === plan.id ? (
