@@ -149,7 +149,7 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
     pinned: true,
     defaultExpanded: true,
     items: [
-      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
+      createItem('command-center', 'Command Center', '/admin/command-center', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
     ],
@@ -211,7 +211,7 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
     pinned: true,
     defaultExpanded: true,
     items: [
-      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
+      createItem('command-center', 'Command Center', '/admin/command-center', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Overview', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('live-orders', 'Live Orders', '/admin/live-orders', Activity),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPin),
@@ -269,7 +269,7 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('analytics', 'Analytics', '/admin/analytics/comprehensive', BarChart3),
       createItem('revenue-reports', 'Revenue', '/admin/revenue-reports', DollarSign),
-      createItem('invoice-management', 'Financial Center', '/admin/financial-center', Briefcase),
+      createItem('command-center', 'Command Center', '/admin/command-center', Briefcase),
       createItem('reports', 'Reports', '/admin/reports', FileSpreadsheet),
     ],
   },
@@ -296,7 +296,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     pinned: true,
     defaultExpanded: true,
     items: [
-      createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { shortcut: '⌘H', hot: true }),
+      createItem('command-center', 'Command Center', '/admin/command-center', Flame, { shortcut: '⌘H', hot: true }),
       createItem('dashboard', 'Executive Dashboard', '/admin/dashboard', LayoutDashboard),
       createItem('realtime-dashboard', 'Real-Time Monitor', '/admin/realtime-dashboard', Activity),
       createItem('live-map', 'Global Map', '/admin/live-map', Globe),
@@ -353,7 +353,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('predictive-analytics', 'Predictive AI', '/admin/predictive-analytics', Brain),
       createItem('advanced-reporting', 'Custom Reports', '/admin/advanced-reporting', FileSpreadsheet),
       createItem('revenue-reports', 'Financial Performance', '/admin/revenue-reports', TrendingUp),
-      createItem('invoice-management', 'Financial Center', '/admin/financial-center', Briefcase),
+      createItem('command-center', 'Command Center', '/admin/command-center', Briefcase),
       createItem('fronted-inventory', 'Fronted Inventory', '/admin/fronted-inventory', CreditCard),
       createItem('cash-register', 'Cash Register', '/admin/cash-register', Wallet),
       createItem('data-export', 'Data Warehouse', '/admin/data-export', Download),

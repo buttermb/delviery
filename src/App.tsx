@@ -143,6 +143,7 @@ const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdm
 const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
+const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
 // Billing is now handled in Settings - redirect below
 // const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
@@ -590,9 +591,13 @@ const App = () => {
                                       />
                                       <Route
                                         path="hotbox"
+                                        element={<Navigate to="command-center" replace />}
+                                      />
+                                      <Route
+                                        path="command-center"
                                         element={
                                           <Suspense fallback={<SkeletonDashboard />}>
-                                            <HotboxPage />
+                                            <FinancialCommandCenterPage />
                                           </Suspense>
                                         }
                                       />
@@ -666,7 +671,7 @@ const App = () => {
                                       <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
                                       <Route path="delivery-tracking" element={<FeatureProtectedRoute featureId="delivery-tracking"><DeliveryTracking /></FeatureProtectedRoute>} />
                                       <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
-                                      <Route path="financial-center" element={<FeatureProtectedRoute featureId="financial-center"><FinancialCenter /></FeatureProtectedRoute>} />
+                                      <Route path="financial-center" element={<Navigate to="command-center" replace />} />
                                       <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
                                       <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
                                       <Route path="suppliers" element={<FeatureProtectedRoute featureId="suppliers"><SupplierManagementPage /></FeatureProtectedRoute>} />
