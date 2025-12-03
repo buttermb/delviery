@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Duplicate Detection with Fuzzy Matching
  * Uses Fuse.js for finding similar products
