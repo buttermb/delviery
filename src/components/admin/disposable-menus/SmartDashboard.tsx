@@ -32,6 +32,7 @@ const SecurityAlertsPanel = lazy(() => import('./SecurityAlertsPanel').then(m =>
 const AutomatedSecuritySettings = lazy(() => import('./AutomatedSecuritySettings').then(m => ({ default: m.AutomatedSecuritySettings })));
 const NotificationSettings = lazy(() => import('./NotificationSettings').then(m => ({ default: m.NotificationSettings })));
 const CustomerMessaging = lazy(() => import('./CustomerMessaging').then(m => ({ default: m.CustomerMessaging })));
+const EncryptionMigrationTool = lazy(() => import('./EncryptionMigrationTool').then(m => ({ default: m.EncryptionMigrationTool })));
 
 // Enhanced Order Card with more details
 function OrderCard({ order, onStatusChange }: { order: any; onStatusChange?: (id: string, status: string) => void }) {
@@ -389,7 +390,9 @@ function OrdersTab() {
 
 // Setup Tab with collapsible sections
 function SetupTab() {
+  const { tenant } = useTenantAdminAuth();
   const [openSection, setOpenSection] = useState<string | null>('security');
+  const [migrationOpen, setMigrationOpen] = useState(false);
 
   const sections = [
     { id: 'security', label: 'Security Rules', icon: Shield, component: AutomatedSecuritySettings },
@@ -400,6 +403,29 @@ function SetupTab() {
 
   return (
     <div className="space-y-4">
+      {/* Migration Tool Card */}
+      <Card className="overflow-hidden border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+        <div className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+              <RefreshCw className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <span className="font-medium">Menu Migration</span>
+              <p className="text-xs text-muted-foreground">Encrypt unencrypted menus for security</p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+            onClick={() => setMigrationOpen(true)}
+          >
+            Open Migration Tool
+          </Button>
+        </div>
+      </Card>
+
       {sections.map((section) => (
         <Card key={section.id} className="overflow-hidden">
           <button
@@ -426,6 +452,15 @@ function SetupTab() {
           )}
         </Card>
       ))}
+
+      {/* Migration Tool Dialog */}
+      <Suspense fallback={null}>
+        <EncryptionMigrationTool 
+          open={migrationOpen} 
+          onOpenChange={setMigrationOpen} 
+          tenantId={tenant?.id || ''} 
+        />
+      </Suspense>
     </div>
   );
 }
