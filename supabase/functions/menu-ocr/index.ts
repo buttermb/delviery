@@ -14,7 +14,7 @@ const MenuOcrRequestSchema = z.object({
   }).optional().default({}),
 });
 
-// OCR-specific Claude prompt
+// OCR-specific prompt
 const OCR_CANNABIS_PROMPT = `You are an expert OCR and cannabis menu data extractor. Your task is to:
 
 1. First, extract ALL text visible in this image with high accuracy
@@ -139,7 +139,7 @@ serve(withZenProtection(async (req: Request) => {
     // Create Supabase client and verify auth
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error("Missing Supabase environment variables");
@@ -149,10 +149,10 @@ serve(withZenProtection(async (req: Request) => {
       );
     }
 
-    if (!anthropicApiKey) {
-      console.error("Missing ANTHROPIC_API_KEY environment variable");
+    if (!lovableApiKey) {
+      console.error("Missing LOVABLE_API_KEY environment variable");
       return new Response(
-        JSON.stringify({ error: "AI service not configured" }),
+        JSON.stringify({ error: "AI service not configured. LOVABLE_API_KEY is required." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -221,52 +221,72 @@ serve(withZenProtection(async (req: Request) => {
       contextAdditions += "\nLook for tabular structures and maintain row/column relationships.\n";
     }
 
-    // Call Claude API with vision
-    const claudeResponse = await fetch("https://api.anthropic.com/v1/messages", {
+    console.log("Calling Lovable AI Gateway for OCR...");
+
+    // Create data URL for the image
+    const imageDataUrl = `data:${mimeType};base64,${cleanImageData}`;
+
+    // Call Lovable AI Gateway with vision-capable model
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${lovableApiKey}`,
         "Content-Type": "application/json",
-        "x-api-key": anthropicApiKey,
-        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 8192,
+        model: "google/gemini-2.5-pro", // Use Pro model for better vision capabilities
         messages: [
           {
             role: "user",
             content: [
               {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mimeType,
-                  data: cleanImageData,
-                },
+                type: "text",
+                text: OCR_CANNABIS_PROMPT + contextAdditions,
               },
               {
-                type: "text",
-                text: `${OCR_CANNABIS_PROMPT}${contextAdditions}`,
+                type: "image_url",
+                image_url: {
+                  url: imageDataUrl,
+                },
               },
             ],
           },
         ],
+        max_tokens: 8192,
       }),
     });
 
-    if (!claudeResponse.ok) {
-      const errorText = await claudeResponse.text();
-      console.error("Claude Vision API error:", errorText);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error("Lovable AI Gateway error:", aiResponse.status, errorText);
+      
+      // Handle rate limiting
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      // Handle payment required
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: "AI OCR service error", details: errorText }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const claudeResult = await claudeResponse.json();
-    const aiContent = claudeResult.content?.[0]?.text;
+    const aiResult = await aiResponse.json();
+    const aiContent = aiResult.choices?.[0]?.message?.content;
 
     if (!aiContent) {
+      console.error("No content in AI response:", JSON.stringify(aiResult));
       return new Response(
         JSON.stringify({ error: "No response from AI OCR service" }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -364,6 +384,8 @@ serve(withZenProtection(async (req: Request) => {
       summary.averageConfidence /= enhancedProducts.length;
     }
 
+    console.log(`Successfully extracted ${enhancedProducts.length} products from image`);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -374,7 +396,7 @@ serve(withZenProtection(async (req: Request) => {
           parsedAt: new Date().toISOString(),
           inputType: "image",
           mimeType,
-          model: "claude-sonnet-4-20250514",
+          model: "google/gemini-2.5-pro",
         },
       }),
       { 
@@ -391,7 +413,3 @@ serve(withZenProtection(async (req: Request) => {
     );
   }
 }));
-
-
-
-
