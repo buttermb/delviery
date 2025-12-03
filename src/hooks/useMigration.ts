@@ -371,15 +371,16 @@ export function useMigration() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Get tenant ID from user metadata or context
-      const { data: profile } = await supabase
-        .from('profiles')
+      // Get tenant ID from tenant_users table (correct table for tenant associations)
+      const { data: tenantUser } = await supabase
+        .from('tenant_users')
         .select('tenant_id')
-        .eq('id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .maybeSingle();
 
-      if (!profile?.tenant_id) {
-        throw new Error('Tenant not found');
+      if (!tenantUser?.tenant_id) {
+        throw new Error('Tenant not found. Please ensure you are logged in as a tenant admin.');
       }
 
       const results: ImportResult = {
@@ -410,7 +411,7 @@ export function useMigration() {
 
         // Transform products to wholesale_inventory format
         const inventoryItems = batch.map(product => ({
-          tenant_id: profile.tenant_id,
+          tenant_id: tenantUser.tenant_id,
           product_name: product.name,
           category: product.category,
           strain_type: product.strainType || null,
