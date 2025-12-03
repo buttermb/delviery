@@ -393,11 +393,17 @@ export interface ValidationWarning {
 
 export interface ImportResult {
   success: boolean;
-  productName: string;
+  productName?: string;
   productId?: string;
   error?: string;
   skipped?: boolean;
   updated?: boolean;
+  // Batch import results
+  totalProcessed?: number;
+  successfulImports?: number;
+  failedImports?: number;
+  skippedDuplicates?: number;
+  errors?: Array<{ row: number; message: string }>;
 }
 
 export interface ImportProgress {

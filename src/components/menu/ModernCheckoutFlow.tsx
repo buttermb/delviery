@@ -54,9 +54,22 @@ const DELIVERY_METHODS = [
   { id: 'pickup', label: 'Pickup', icon: Store, description: 'Pick up at our location', eta: '15-20 min' },
 ];
 
+// Payment method type
+type PaymentMethod = {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  description: string;
+  category: 'traditional' | 'crypto';
+  apiValue: 'cash' | 'card' | 'crypto' | 'other';
+  address?: string;
+  username?: string;
+  instructions?: string;
+};
+
 // Default payment methods (used as fallback when settings not loaded)
-const DEFAULT_PAYMENT_METHODS = [
-  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional', apiValue: 'cash' as const },
+const DEFAULT_PAYMENT_METHODS: PaymentMethod[] = [
+  { id: 'cash', label: 'Cash', icon: Banknote, description: 'Pay on delivery/pickup', category: 'traditional', apiValue: 'cash' },
 ];
 
 // Build payment methods from settings
@@ -182,8 +195,7 @@ function buildPaymentMethods(settings: PaymentSettings | null | undefined) {
   return methods;
 }
 
-// Type for payment method
-type PaymentMethod = ReturnType<typeof buildPaymentMethods>[number];
+// PaymentMethod type is defined above (line 58)
 
 // Format phone number as user types
 const formatPhoneNumber = (value: string) => {
