@@ -89,27 +89,25 @@ export default function TenantAdminSettingsPage() {
   }, [activeSection, sectionParam, setSearchParams]);
 
   const renderContent = () => {
-    const props = { key: activeSection };
-
     switch (activeSection) {
       case 'account':
-        return <AccountSettings {...props} />;
+        return <AccountSettings key="account" />;
       case 'security':
-        return <SecuritySettings {...props} />;
+        return <SecuritySettings key="security" />;
       case 'business':
-        return <BusinessSettings {...props} />;
+        return <BusinessSettings key="business" />;
       case 'notifications':
-        return <NotificationSettings {...props} />;
+        return <NotificationSettings key="notifications" />;
       case 'billing':
-        return <BillingSettings {...props} />;
+        return <BillingSettings key="billing" />;
       case 'team':
-        return <TeamSettings {...props} />;
+        return <TeamSettings key="team" />;
       case 'integrations':
-        return <IntegrationsSettings {...props} />;
+        return <IntegrationsSettings key="integrations" />;
       case 'appearance':
-        return <AppearanceSettings {...props} />;
+        return <AppearanceSettings key="appearance" />;
       default:
-        return <AccountSettings {...props} />;
+        return <AccountSettings key="account" />;
     }
   };
 
