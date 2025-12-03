@@ -410,12 +410,24 @@ export function useMigration() {
         }));
 
         // Transform products to wholesale_inventory format
-        // Note: wholesale_inventory table doesn't have is_active column
+        // Note: wholesale_inventory table has check constraint on strain_type (indica|sativa|hybrid)
+        const VALID_STRAIN_TYPES = ['indica', 'sativa', 'hybrid'];
+        const normalizeStrainType = (type: string | null | undefined): string | null => {
+          if (!type) return null;
+          const lower = type.toLowerCase().trim();
+          if (VALID_STRAIN_TYPES.includes(lower)) return lower;
+          // Map common variations
+          if (lower.includes('indica')) return 'indica';
+          if (lower.includes('sativa')) return 'sativa';
+          if (lower.includes('hybrid') || lower === 'balanced' || lower === 'cbd') return 'hybrid';
+          return null; // Unknown types become null
+        };
+
         const inventoryItems = batch.map(product => ({
           tenant_id: tenantUser.tenant_id,
           product_name: product.name,
           category: product.category || 'flower',
-          strain_type: product.strainType || null,
+          strain_type: normalizeStrainType(product.strainType),
           thc_percentage: product.thcPercentage || null,
           cbd_percentage: product.cbdPercentage || null,
           base_price: product.prices?.lb || product.prices?.oz || 0,
