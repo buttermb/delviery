@@ -132,6 +132,8 @@ serve(withZenProtection(async (req: Request) => {
   }
 
   try {
+    console.log("menu-parse: Request received");
+    
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -153,27 +155,45 @@ serve(withZenProtection(async (req: Request) => {
       );
     }
 
-    // Verify user authentication
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
     // Extract token from Authorization header
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    console.log("menu-parse: Auth header present:", !!authHeader);
+    
+    if (!authHeader?.startsWith("Bearer ")) {
+      console.error("menu-parse: No valid authorization header");
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    
+    // Create client with the user's JWT to verify auth
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: {
+        headers: { Authorization: `Bearer ${token}` }
+      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    
+    // Verify the JWT by getting the user
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    console.log("menu-parse: Auth result - user:", !!user, "error:", authError?.message);
+    
     if (authError || !user) {
-      console.error("Auth error:", authError?.message);
+      console.error("menu-parse: Auth failed:", authError?.message);
       return new Response(
         JSON.stringify({ error: "Unauthorized", details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    console.log("menu-parse: User authenticated:", user.id);
 
     // Parse and validate request body
     let body: unknown;
