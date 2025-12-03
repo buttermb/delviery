@@ -128,3 +128,15 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.menu-order-place]
+verify_jwt = false
+
+[functions.notify-order-placed]
+verify_jwt = false
+
+[functions.access-encrypted-menu]
+verify_jwt = false
+
+[functions.access-encrypted-menu-v2]
+verify_jwt = false
