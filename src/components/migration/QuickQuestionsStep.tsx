@@ -82,6 +82,7 @@ export function QuickQuestionsStep({
     packMeaning: suggestedDefaults?.packMeaning || 'lb',
     qualityTier: suggestedDefaults?.qualityTier || 'indoor',
     priceType: suggestedDefaults?.priceType || 'wholesale',
+    priceFormat: suggestedDefaults?.priceFormat || 'abbreviated',
     retailMarkup: suggestedDefaults?.retailMarkup || 30,
     defaultPricePerLb: suggestedDefaults?.defaultPricePerLb,
     defaultRetailPricePerOz: suggestedDefaults?.defaultRetailPricePerOz,
@@ -98,6 +99,11 @@ export function QuickQuestionsStep({
   const exampleRetailOz = answers.defaultPricePerLb 
     ? Math.round((answers.defaultPricePerLb / 16) * (1 + (answers.retailMarkup || 30) / 100))
     : null;
+  
+  // Example price conversion based on format
+  const priceExamples = answers.priceFormat === 'abbreviated' 
+    ? { input: '32', output: '$3,200/lb' }
+    : { input: '3200', output: '$3,200/lb' };
 
   const handleSubmit = () => {
     onConfirm(answers);
@@ -235,7 +241,62 @@ export function QuickQuestionsStep({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
-            {/* Price Type - More Prominent */}
+            {/* Price Format - Critical for informal menus */}
+            <div className="space-y-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <span className="text-amber-600">⚡</span>
+                How are prices written in your menu?
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Most people text prices as &quot;32&quot; meaning $3,200/lb
+              </p>
+              <RadioGroup
+                value={answers.priceFormat}
+                onValueChange={(v) => setAnswers(prev => ({ ...prev, priceFormat: v as 'abbreviated' | 'full' }))}
+                className="grid grid-cols-2 gap-3"
+              >
+                <div
+                  className={`flex items-start space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    answers.priceFormat === 'abbreviated' 
+                      ? 'border-amber-500 bg-amber-500/10' 
+                      : 'border-border hover:border-amber-500/50'
+                  }`}
+                  onClick={() => setAnswers(prev => ({ ...prev, priceFormat: 'abbreviated' }))}
+                >
+                  <RadioGroupItem value="abbreviated" id="price-abbrev" className="mt-1" />
+                  <div className="space-y-1">
+                    <Label htmlFor="price-abbrev" className="font-semibold cursor-pointer">
+                      Abbreviated
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      &quot;32&quot; = $3,200/lb<br />
+                      &quot;18&quot; = $1,800/lb
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`flex items-start space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    answers.priceFormat === 'full' 
+                      ? 'border-amber-500 bg-amber-500/10' 
+                      : 'border-border hover:border-amber-500/50'
+                  }`}
+                  onClick={() => setAnswers(prev => ({ ...prev, priceFormat: 'full' }))}
+                >
+                  <RadioGroupItem value="full" id="price-full" className="mt-1" />
+                  <div className="space-y-1">
+                    <Label htmlFor="price-full" className="font-semibold cursor-pointer">
+                      Full Prices
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      &quot;3200&quot; = $3,200/lb<br />
+                      &quot;1800&quot; = $1,800/lb
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Price Type - Wholesale vs Retail */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">What type of prices are in your menu?</Label>
               <RadioGroup

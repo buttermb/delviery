@@ -429,8 +429,18 @@ export function useMigration() {
   // Apply quick answers to all parsed products
   const applyQuickAnswers = useCallback((answers: QuickAnswers) => {
     setState(prev => {
+      // For informal text, re-parse with the user's selected price format
+      // This ensures "32" is correctly interpreted as $3200 or $32 based on their choice
+      let productsToUpdate = prev.parsedProducts;
+      
+      if (prev.isInformalText && prev.rawInput && typeof prev.rawInput === 'string') {
+        // Re-parse with the confirmed quick answers (especially priceFormat)
+        const reParseResult = parseTextMenu(prev.rawInput, answers);
+        productsToUpdate = reParseResult.products;
+      }
+      
       // Apply answers to all products
-      const updatedProducts = prev.parsedProducts.map(product => {
+      const updatedProducts = productsToUpdate.map(product => {
         const updated = { ...product };
         
         // Apply category if not set
@@ -438,17 +448,16 @@ export function useMigration() {
           updated.category = answers.category;
         }
         
-        // Apply quality tier if not set
+        // Apply quality tier if not set (but respect per-product quality from parsing like "gh", "deps")
         if (!updated.qualityTier) {
           updated.qualityTier = answers.qualityTier;
         }
         
-        // Apply/calculate prices based on price type
+        // Apply/calculate prices based on price type (only if no price detected from text)
         if (!updated.prices || (!updated.prices.lb && !updated.prices.oz)) {
           if (answers.priceType === 'wholesale' && answers.defaultPricePerLb) {
             // Set wholesale prices
             const wholesaleLb = answers.defaultPricePerLb;
-            const retailMarkup = (answers.retailMarkup || 30) / 100;
             
             updated.prices = {
               ...updated.prices,

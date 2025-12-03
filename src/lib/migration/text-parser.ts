@@ -200,24 +200,51 @@ function expandStrainName(name: string): { expandedName: string; strainInfo?: St
 }
 
 /**
- * Determine if a number is likely THC% or price
- * THC%: typically 10-40
- * Price per lb: typically $500-$5000
- * Price per pack/unit: typically $10-$500
+ * Determine if a number is likely THC%, abbreviated price, or full price
+ * 
+ * Common patterns in informal menus:
+ * - "gary p - 32 - 15 packs" → 32 = $3200/lb (abbreviated), 15 = quantity
+ * - "runtz - 26 - 40 packs" → 26 = $2600/lb (abbreviated), 40 = quantity
+ * - THC%: typically 15-35% (but abbreviated prices overlap!)
+ * 
+ * Key insight: If there's a second number (quantity), the first is almost always 
+ * an abbreviated price in wholesale menus (15-40 = $1500-$4000/lb)
  */
-function interpretNumber(num: number, hasSecondNumber: boolean): 'thc' | 'price' | 'quantity' | 'unknown' {
-  // If there's a second number, first is likely THC%, second is quantity
+function interpretNumber(
+  num: number, 
+  hasSecondNumber: boolean,
+  context?: { hasPacksOrUnits?: boolean }
+): { type: 'price' | 'thc' | 'quantity' | 'unknown'; multiplier?: number } {
+  
+  // If there's a second number AND packs/units mentioned, first number is abbreviated price
   if (hasSecondNumber) {
-    if (num >= 10 && num <= 45) return 'thc';
-    if (num >= 100 && num <= 5000) return 'price';
-    return 'unknown';
+    // Numbers 12-50 with a second number = abbreviated price (multiply by 100)
+    // e.g., 32 → $3200, 18 → $1800, 26 → $2600
+    if (num >= 12 && num <= 50) {
+      return { type: 'price', multiplier: 100 };
+    }
+    // Higher numbers might be full prices already
+    if (num >= 100 && num <= 5000) {
+      return { type: 'price', multiplier: 1 };
+    }
+    return { type: 'unknown' };
   }
 
-  // Single number heuristics
-  if (num >= 10 && num <= 45) return 'thc';
-  if (num >= 100 && num <= 5000) return 'price';
-  if (num >= 1 && num <= 500) return 'quantity';
-  return 'unknown';
+  // Single number - could be THC% or price
+  // Full prices (no multiplier needed)
+  if (num >= 500 && num <= 5000) {
+    return { type: 'price', multiplier: 1 };
+  }
+  // Abbreviated prices
+  if (num >= 12 && num <= 50) {
+    return { type: 'price', multiplier: 100 };
+  }
+  // Very small numbers might be THC for concentrates or quantity
+  if (num >= 1 && num <= 10) {
+    return { type: 'quantity' };
+  }
+  
+  return { type: 'unknown' };
 }
 
 // ==================== Quick Answers Interface ====================
@@ -227,6 +254,7 @@ export interface QuickAnswers {
   packMeaning: 'lb' | 'oz' | 'unit' | 'hp' | 'qp';
   qualityTier: QualityTier;
   priceType: 'wholesale' | 'retail';
+  priceFormat: 'abbreviated' | 'full'; // 32 = $3200 vs 3200 = $3200
   retailMarkup?: number; // Percentage, e.g., 30 for 30%
   defaultPricePerLb?: number;
   defaultRetailPricePerOz?: number; // For retail storefronts
@@ -243,6 +271,7 @@ export const DEFAULT_QUICK_ANSWERS: QuickAnswers = {
   packMeaning: 'lb',
   qualityTier: 'indoor',
   priceType: 'wholesale',
+  priceFormat: 'abbreviated', // Most informal menus use abbreviated (32 = $3200)
   retailMarkup: 30,
   allInStock: true,
   labTested: false,
@@ -272,6 +301,12 @@ export function parseTextMenu(
   const parseNotes: string[] = [];
   let skippedLines = 0;
 
+  // Detect if text mentions packs/units (helps with number interpretation)
+  const hasPacks = /pack|packs|unit|units|lb|lbs/i.test(text);
+  
+  // Use price format from answers to determine multiplier
+  const priceMultiplier = answers.priceFormat === 'abbreviated' ? 100 : 1;
+
   for (const line of lines) {
     const parsed = parseTextLine(line);
     if (!parsed) {
@@ -282,38 +317,46 @@ export function parseTextMenu(
     // Expand strain name
     const { expandedName, strainInfo, confidence: nameConfidence } = expandStrainName(parsed.name);
 
-    // Interpret numbers
-    let thcPercentage: number | undefined;
+    // Interpret numbers with context
     let quantity: number | undefined;
-    let price: number | undefined;
+    let detectedPrice: number | undefined;
 
-    if (parsed.number1 !== undefined) {
-      const interpretation = interpretNumber(parsed.number1, parsed.number2 !== undefined);
-      if (interpretation === 'thc') {
-        thcPercentage = parsed.number1;
-      } else if (interpretation === 'price') {
-        price = parsed.number1;
-      } else if (interpretation === 'quantity') {
+    if (parsed.number1 !== undefined && parsed.number2 !== undefined) {
+      // Two numbers: first is price, second is quantity
+      // Apply user-selected price format multiplier
+      if (parsed.number1 >= 10 && parsed.number1 <= 100) {
+        // Looks like abbreviated price (10-100 range)
+        detectedPrice = parsed.number1 * priceMultiplier;
+      } else {
+        // Might be full price already
+        detectedPrice = parsed.number1;
+      }
+      quantity = parsed.number2;
+    } else if (parsed.number1 !== undefined) {
+      // Single number - use interpretation
+      const interpretation = interpretNumber(
+        parsed.number1, 
+        false,
+        { hasPacksOrUnits: hasPacks }
+      );
+      
+      if (interpretation.type === 'price') {
+        detectedPrice = parsed.number1 * (interpretation.multiplier || 1);
+      } else if (interpretation.type === 'quantity') {
         quantity = parsed.number1;
       }
     }
 
-    if (parsed.number2 !== undefined) {
-      // Second number is typically quantity
-      quantity = parsed.number2;
-    }
-
-    // Build prices object based on quick answers
+    // Build prices object
+    // Priority: detected price from line > default price from quick answers
     const prices: ParsedProduct['prices'] = {};
-    if (answers.defaultPricePerLb) {
-      prices.lb = answers.defaultPricePerLb;
-      // Calculate other prices from lb
-      prices.hp = Math.round(answers.defaultPricePerLb / 2);
-      prices.qp = Math.round(answers.defaultPricePerLb / 4);
-      prices.oz = Math.round(answers.defaultPricePerLb / 16);
-    } else if (price) {
-      // Use detected price
-      prices.lb = price;
+    const pricePerLb = detectedPrice || answers.defaultPricePerLb;
+    
+    if (pricePerLb) {
+      prices.lb = pricePerLb;
+      prices.hp = Math.round(pricePerLb / 2);
+      prices.qp = Math.round(pricePerLb / 4);
+      prices.oz = Math.round(pricePerLb / 16);
     }
 
     // Convert quantity based on pack meaning
@@ -339,18 +382,22 @@ export function parseTextMenu(
       }
     }
 
+    // Use quality tier from line (gh, deps) if detected, otherwise use default
+    // This allows mixed quality in the same menu
+    const qualityTier = parsed.qualityTier || answers.qualityTier;
+
     // Build product
     const product: ParsedProduct = {
       name: expandedName,
       category: answers.category,
       strainType: strainInfo?.type || null,
-      thcPercentage: thcPercentage || null,
+      thcPercentage: null, // Don't guess THC - let user fill in if needed
       prices: Object.keys(prices).length > 0 ? prices : undefined,
       quantityLbs,
       quantityUnits,
-      qualityTier: parsed.qualityTier || answers.qualityTier,
+      qualityTier,
       stockStatus: answers.allInStock ? 'available' : undefined,
-      confidence: nameConfidence,
+      confidence: detectedPrice ? Math.min(nameConfidence + 0.15, 0.95) : nameConfidence,
       rawText: parsed.rawLine,
     };
 
@@ -361,9 +408,19 @@ export function parseTextMenu(
 
     products.push(product);
 
-    // Add note if name was expanded
+    // Add parsing notes for transparency
+    const notes: string[] = [];
     if (expandedName !== parsed.name) {
-      parseNotes.push(`"${parsed.name}" → "${expandedName}"`);
+      notes.push(`"${parsed.name}" → "${expandedName}"`);
+    }
+    if (detectedPrice && parsed.number1) {
+      notes.push(`Price: ${parsed.number1} → $${detectedPrice}/lb`);
+    }
+    if (parsed.qualityTier) {
+      notes.push(`Quality: ${parsed.qualityTier}`);
+    }
+    if (notes.length > 0) {
+      parseNotes.push(notes.join(', '));
     }
   }
 
