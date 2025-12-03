@@ -443,15 +443,29 @@ export function useMigration() {
           updated.qualityTier = answers.qualityTier;
         }
         
-        // Apply/calculate prices
+        // Apply/calculate prices based on price type
         if (!updated.prices || (!updated.prices.lb && !updated.prices.oz)) {
-          if (answers.defaultPricePerLb) {
+          if (answers.priceType === 'wholesale' && answers.defaultPricePerLb) {
+            // Set wholesale prices
+            const wholesaleLb = answers.defaultPricePerLb;
+            const retailMarkup = (answers.retailMarkup || 30) / 100;
+            
             updated.prices = {
               ...updated.prices,
-              lb: answers.defaultPricePerLb,
-              hp: Math.round(answers.defaultPricePerLb / 2),
-              qp: Math.round(answers.defaultPricePerLb / 4),
-              oz: Math.round(answers.defaultPricePerLb / 16),
+              lb: wholesaleLb,
+              hp: Math.round(wholesaleLb / 2),
+              qp: Math.round(wholesaleLb / 4),
+              oz: Math.round(wholesaleLb / 16),
+            };
+          } else if (answers.priceType === 'retail' && answers.defaultRetailPricePerOz) {
+            // Set retail prices (convert oz to other units)
+            const retailOz = answers.defaultRetailPricePerOz;
+            updated.prices = {
+              ...updated.prices,
+              oz: retailOz,
+              qp: Math.round(retailOz * 4 * 0.9), // Small bulk discount
+              hp: Math.round(retailOz * 8 * 0.85),
+              lb: Math.round(retailOz * 16 * 0.8),
             };
           }
         }
@@ -459,6 +473,11 @@ export function useMigration() {
         // Apply stock status
         if (answers.allInStock) {
           updated.stockStatus = 'available';
+        }
+        
+        // Apply grow info for lab tested (could add to notes or a custom field)
+        if (answers.labTested && !updated.notes) {
+          updated.notes = 'Lab tested - COA available';
         }
         
         // Recalculate quantities based on pack meaning

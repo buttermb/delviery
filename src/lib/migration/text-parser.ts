@@ -229,8 +229,13 @@ export interface QuickAnswers {
   priceType: 'wholesale' | 'retail';
   retailMarkup?: number; // Percentage, e.g., 30 for 30%
   defaultPricePerLb?: number;
+  defaultRetailPricePerOz?: number; // For retail storefronts
   allInStock: boolean;
   minOrderQuantity?: number;
+  // Additional useful fields
+  labTested: boolean;
+  supplierName?: string;
+  notes?: string;
 }
 
 export const DEFAULT_QUICK_ANSWERS: QuickAnswers = {
@@ -240,6 +245,7 @@ export const DEFAULT_QUICK_ANSWERS: QuickAnswers = {
   priceType: 'wholesale',
   retailMarkup: 30,
   allInStock: true,
+  labTested: false,
 };
 
 // ==================== Main Parser ====================
