@@ -1,0 +1,3084 @@
+<!-- 12688f80-ce45-4168-b9ac-38487f2e7b9f a3bea117-6669-47de-b907-e78a0a684b77 -->
+# Admin Panel UX/UI Comprehensive Fixes
+
+## Issues Found
+
+### Critical Bugs
+
+1. **React ref warning** in `AdminKeyboardShortcutsDialog` - "Function components cannot be given refs"
+2. **Multiple console errors** - `[ERROR] [Error Reporter]` and `[WARN] [Bug Finder]` messages
+3. **Broken product images** in POS System - images show placeholder text instead of actual images
+4. **Excessive debug logging** - sidebar renders flood console with DEBUG messages
+
+### Visual Polish
+
+1. **Multiple empty state components** - 5 different implementations causing inconsistency
+2. **"Preferences saved" toast** appears on navigation unnecessarily  
+3. **Missing loading skeletons** on some data tables
+
+### Navigation & Flow
+
+1. **Sidebar excessive re-renders** - renders 6+ times per page load
+2. **Missing breadcrumbs** on nested pages
+3. **Inconsistent page headers** - some pages have back buttons, others don't
+
+## Proposed Fixes
+
+### 1. Fix React Ref Warning
+
+- File: [src/components/admin/AdminKeyboardShortcutsDialog.tsx](src/components/admin/AdminKeyboardShortcutsDialog.tsx)
+- Wrap component with `React.forwardRef`
+
+### 2. Reduce Debug Logging in Production
+
+- File: [src/lib/logger.ts](src/lib/logger.ts)
+- Add environment check to disable DEBUG logs in production mode
+
+### 3. Fix POS Product Images
+
+- File: [src/pages/admin/PointOfSale.tsx](src/pages/admin/PointOfSale.tsx)
+- Add proper fallback images and error handling
+
+### 4. Consolidate Empty State Components
+
+- Keep `EnhancedEmptyState.tsx` as the single source
+- Update other components to use it
+
+### 5. Fix Unnecessary "Preferences saved" Toast
+
+- File: [src/lib/sidebar/](src/lib/sidebar/)
+- Only show toast on actual user preference changes, not page loads
+
+### 6. Optimize Sidebar Re-renders
+
+- Add `useMemo` and `useCallback` to prevent unnecessary re-renders
+- File: [src/components/admin/sidebar/AdaptiveSidebar.tsx](src/components/admin/sidebar/AdaptiveSidebar.tsx)
+
+### 7. Add Consistent Page Headers
+
+- Create shared `PageHeader` component with optional back button and breadcrumbs
+
+### To-dos
+
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix Strategic Decisions widget navigation to use tenant-relative paths
+- [x] Improve LiveMap UX/UI with better controls, stats, and mobile responsiveness
+- [x] Improve LiveDeliveryMap with better visuals and driver cards
+- [x] Fix LiveMap scroll issues and add Add Courier button
+- [x] Fix courier loading errors with better fallbacks
+- [x] Enhance Disposable Menus with better UX/UI and features
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Redesign SecureMenuAccess with OTP-style inputs and modern UI
+- [x] Enhance SecureMenuView with filters, search, and better product cards
+- [x] Improve ModernCheckoutFlow with bottom sheet and streamlined steps
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance cart step with thumbnails, swipe-delete, promo codes, breakdown
+- [x] Add required customer details with validation and auto-save
+- [x] Add map-based drop-off location with address autocomplete
+- [x] Add Bitcoin, Lightning, Ethereum payment options with QR codes
+- [x] Enhance confirmation with animations, tracking, and sharing
+- [x] Add transitions, haptics, loading states, and dark mode polish
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix Strategic Decisions widget navigation to use tenant-relative paths
+- [x] Improve LiveMap UX/UI with better controls, stats, and mobile responsiveness
+- [x] Improve LiveDeliveryMap with better visuals and driver cards
+- [x] Fix LiveMap scroll issues and add Add Courier button
+- [x] Fix courier loading errors with better fallbacks
+- [x] Enhance Disposable Menus with better UX/UI and features
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Redesign SecureMenuAccess with OTP-style inputs and modern UI
+- [x] Enhance SecureMenuView with filters, search, and better product cards
+- [x] Improve ModernCheckoutFlow with bottom sheet and streamlined steps
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Build PaymentSettingsForm component with toggles, inputs, and validation
+- [x] Add Payments tab to SettingsPage with PaymentSettingsForm
+- [x] Create usePaymentSettings hook to fetch settings for menu/tenant
+- [x] Update ModernCheckoutFlow to show only enabled payment methods with real addresses
+- [x] Add payment overrides section to menu settings dialog
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix Strategic Decisions widget navigation to use tenant-relative paths
+- [x] Improve LiveMap UX/UI with better controls, stats, and mobile responsiveness
+- [x] Improve LiveDeliveryMap with better visuals and driver cards
+- [x] Fix LiveMap scroll issues and add Add Courier button
+- [x] Fix courier loading errors with better fallbacks
+- [x] Enhance Disposable Menus with better UX/UI and features
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Redesign SecureMenuAccess with OTP-style inputs and modern UI
+- [x] Enhance SecureMenuView with filters, search, and better product cards
+- [x] Improve ModernCheckoutFlow with bottom sheet and streamlined steps
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance cart step with thumbnails, swipe-delete, promo codes, breakdown
+- [x] Add required customer details with validation and auto-save
+- [x] Add map-based drop-off location with address autocomplete
+- [x] Add Bitcoin, Lightning, Ethereum payment options with QR codes
+- [x] Enhance confirmation with animations, tracking, and sharing
+- [x] Add transitions, haptics, loading states, and dark mode polish
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix Strategic Decisions widget navigation to use tenant-relative paths
+- [x] Improve LiveMap UX/UI with better controls, stats, and mobile responsiveness
+- [x] Improve LiveDeliveryMap with better visuals and driver cards
+- [x] Fix LiveMap scroll issues and add Add Courier button
+- [x] Fix courier loading errors with better fallbacks
+- [x] Enhance Disposable Menus with better UX/UI and features
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Fix QuickActionsHub navigation paths (8 buttons)
+- [x] Fix MarketingHome.tsx lazy import syntax error
+- [x] Test all button navigations work correctly
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Redesign SecureMenuAccess with OTP-style inputs and modern UI
+- [x] Enhance SecureMenuView with filters, search, and better product cards
+- [x] Improve ModernCheckoutFlow with bottom sheet and streamlined steps
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Enhance hero section with animated gradient text and better CTAs
+- [x] Add testimonials carousel with real customer quotes
+- [x] Add video demo section with play button overlay
+- [x] Add social proof elements (live user count, recent signups)
+- [x] Polish mobile experience with better spacing and touch targets
+- [x] Add SwipeBackWrapper to detail pages (Invoice, Client, Customer, PreOrder)
+- [x] Add haptic feedback to ConfirmDeleteDialog and OptimisticButton
+- [x] Create TierUpgradeCard component with real-time progress tracking
+- [x] Add attention queue badge/notifications to sidebar
+- [x] Add user preference to override auto-detected tier
+- [x] Hook up real data for Team Today panel
+- [x] Hook up real data for Location Overview panel
+- [x] Hook up real data for Executive Summary panel
+- [x] Hook up real data for Weekly Progress panel
+- [x] Hook up real data for Strategic Decisions panel
+- [x] Build and test all changes
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create enhanced production logger with category-based logging and in-memory storage
+- [x] Create AdminDebugPanel component with real-time log viewer and export functionality
+- [x] Create query logger wrapper to verify tenant isolation in all queries
+- [x] Instrument order creation flows (edge function, OrderFormDialog, ModernCheckoutFlow)
+- [x] Instrument admin order queries (Orders.tsx, useRealtimeOrders.ts, LiveOrders.tsx)
+- [x] Instrument realtime subscriptions (useRealtimeOrders.ts subscription events)
+- [x] Instrument auth state changes (AuthContext, TenantAdminAuthContext, CustomerAuthContext)
+- [x] Integrate AdminDebugPanel into App.tsx and test all logging scenarios
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Trace complete order data flow from creation to admin display
+- [x] Map authentication and ID sources through system
+- [x] Compare working vs broken patterns across codebase
+- [x] Create diagnostic report with root causes for all critical issues
+- [x] Fix order creation and query flow with proper RLS and tenant isolation
+- [x] Build complete POS system with payment processing and inventory deduction
+- [x] Complete customer registration and portal flow
+- [x] Run comprehensive test suites for all fixed features
+- [x] Complete production readiness checklist and deploy
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Update validateOrder to proper type guard for Order interface
+- [x] Run TypeScript check and build to verify fix
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Create database migration for business_tier column, revenue calculation function, and tier detection function
+- [x] Create businessTiers.ts with preset definitions for all five tiers
+- [x] Integrate business tier with sidebar system - filter features by tier
+- [x] Create HotboxDashboard page and integrate with admin routes
+- [x] Create tier detection UI and navigation system
+- [x] Run build to verify Hotbox system compiles correctly
+- [x] Commit and push changes to git
+- [x] Add smart pattern detection hook to track user feature usage
+- [x] Create tier-specific Hotbox views with customized content
+- [x] Enhance attention queue with more item types
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Create database migration: Add portal_token to wholesale_clients and client_id to menu_orders
+- [x] Verify invoices table has client_id column, add if missing
+- [x] Create edge function convert-menu-order-to-invoice to snapshot order data into invoice
+- [x] Create ConvertToInvoiceDialog component with client selector
+- [x] Add Convert to Invoice button to DisposableMenuOrders page
+- [x] Create ClientPortalPage component at /p/:portalToken route
+- [x] Create portal UI components: InvoiceTable, OrderHistory, PortalHeader
+- [x] Add /p/:portalToken route to App.tsx
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [x] Verify fix-duplicate-logger-imports.cjs script exists and is ready to run
+- [x] Execute the script to fix all duplicate logger imports across src/
+- [x] Verify specific files (ProductCatalog.tsx, AddCourierDialog.tsx, TicketForm.tsx) are fixed and check for any remaining duplicates
+- [x] Run TypeScript check and build to confirm TS2300 errors are resolved
+- [ ] Create database migration for product_imports and product_import_items tables
+- [x] Create migration types (InputFormat, ParsedProduct, ValidationResult, etc.)
+- [x] Build format detection for Excel, CSV, text, image inputs
+- [x] Implement Excel/CSV parser with header detection and column mapping
+- [x] Create cannabis normalizers (weight, price, category, strain)
