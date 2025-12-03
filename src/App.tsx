@@ -143,7 +143,8 @@ const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdm
 const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
-const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
+// Billing is now handled in Settings - redirect below
+// const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
 const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
@@ -625,7 +626,8 @@ const App = () => {
                                       <Route path="inventory-dashboard" element={<FeatureProtectedRoute featureId="inventory-dashboard"><InventoryDashboard /></FeatureProtectedRoute>} />
                                       <Route path="inventory-monitoring" element={<FeatureProtectedRoute featureId="inventory-monitoring"><InventoryMonitoringPage /></FeatureProtectedRoute>} />
                                       <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
-                                      <Route path="billing" element={<FeatureProtectedRoute featureId="billing"><TenantAdminBillingPage /></FeatureProtectedRoute>} />
+                                      {/* Billing redirects to Settings */}
+                                      <Route path="billing" element={<Navigate to="../settings?section=billing" replace />} />
                                       <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
 
                                       {/* Marketplace Routes */}

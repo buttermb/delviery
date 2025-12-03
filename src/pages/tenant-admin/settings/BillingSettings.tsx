@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
@@ -22,6 +23,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   CreditCard,
   Receipt,
   TrendingUp,
@@ -36,31 +42,93 @@ import {
   AlertCircle,
   Zap,
   Diamond,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
+  ArrowUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useToast } from '@/hooks/use-toast';
-import { TIER_PRICES, TIER_NAMES, type SubscriptionTier } from '@/lib/featureConfig';
+import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier } from '@/lib/featureConfig';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
 import { AddPaymentMethodDialog } from '@/components/billing/AddPaymentMethodDialog';
 import type { Database } from '@/integrations/supabase/types';
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 
+// Map database invoice to PDF-compatible format
+function mapInvoiceToPdfData(invoice: Invoice, tenant: any) {
+  return {
+    invoiceNumber: invoice.invoice_number || `INV-${invoice.id.slice(0, 8)}`,
+    issueDate: invoice.issue_date || new Date().toISOString(),
+    dueDate: invoice.due_date || new Date().toISOString(),
+    customerName: tenant?.name || 'Customer',
+    customerAddress: tenant?.address || '',
+    customerEmail: tenant?.contact_email || '',
+    companyName: 'BigMike Wholesale',
+    companyAddress: '123 Business Ave, Suite 100',
+    lineItems: Array.isArray(invoice.line_items) 
+      ? (invoice.line_items as any[]).map(item => ({
+          description: item.description || item.name || 'Subscription',
+          quantity: item.quantity || 1,
+          unitPrice: item.amount || item.unit_price || invoice.total || 0,
+          total: item.total || item.amount || invoice.total || 0,
+        }))
+      : [{
+          description: 'Monthly Subscription',
+          quantity: 1,
+          unitPrice: invoice.total || 0,
+          total: invoice.total || 0,
+        }],
+    subtotal: invoice.subtotal || invoice.total || 0,
+    tax: invoice.tax || 0,
+    taxRate: invoice.tax_rate || 0,
+    total: invoice.total || 0,
+    notes: invoice.notes || '',
+  };
+}
+
 export default function BillingSettings() {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { currentTier, currentTierName } = useFeatureAccess();
   const { isTrial, needsPaymentMethod } = useSubscriptionStatus();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [featureComparisonOpen, setFeatureComparisonOpen] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
+  const comparisonRef = useRef<HTMLDivElement>(null);
 
   const tenantId = tenant?.id;
+
+  // Handle Stripe redirect success
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const paymentMethod = searchParams.get('payment_method');
+
+    if (success === 'true' && paymentMethod === 'true') {
+      logger.info('[BillingSettings] Payment method added successfully via Stripe');
+
+      toast({
+        title: 'Payment Method Added',
+        description: 'Your payment method has been successfully added.',
+      });
+
+      // Clean up URL params
+      setSearchParams({});
+
+      // Refresh tenant data
+      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+    }
+  }, [searchParams, setSearchParams, queryClient, toast]);
 
   // Check Stripe configuration health
   const { data: stripeHealth, isLoading: stripeLoading } = useQuery({
@@ -129,6 +197,18 @@ export default function BillingSettings() {
     const current = usage[resource] || 0;
     if (limit === Infinity) return 0;
     return Math.min((current / limit) * 100, 100);
+  };
+
+  const getUsageColor = (percentage: number) => {
+    if (percentage >= 80) return 'text-red-600';
+    if (percentage >= 60) return 'text-amber-600';
+    return 'text-emerald-600';
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 80) return '[&>div]:bg-red-500';
+    if (percentage >= 60) return '[&>div]:bg-amber-500';
+    return '[&>div]:bg-emerald-500';
   };
 
   // Subscription update mutation
@@ -244,11 +324,151 @@ export default function BillingSettings() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!tenantId) return;
+    
+    setCancelDialogOpen(false);
+    
+    try {
+      setUpgradeLoading(true);
+      // Open Stripe portal to the cancellation page
+      const { data, error } = await supabase.functions.invoke('stripe-customer-portal', {
+        body: { tenant_id: tenantId }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: 'Manage Subscription',
+          description: 'Opening Stripe portal to manage your subscription...',
+        });
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to open customer portal';
+      toast({
+        title: 'Error',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
+
+  const handleDownloadInvoice = async (invoice: Invoice) => {
+    setDownloadingInvoice(invoice.id);
+    
+    try {
+      // Generate HTML invoice and download it
+      const invoiceData = mapInvoiceToPdfData(invoice, tenant);
+      
+      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invoice ${invoiceData.invoiceNumber}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; }
+    .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+    .title { font-size: 24px; font-weight: bold; }
+    .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .section { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #f5f5f5; }
+    .totals { text-align: right; margin-top: 20px; }
+    .total-row { font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">INVOICE</div>
+    <div>${invoiceData.companyName}</div>
+  </div>
+  <div class="section">
+    <div class="row"><strong>Invoice #:</strong> ${invoiceData.invoiceNumber}</div>
+    <div class="row"><strong>Date:</strong> ${new Date(invoiceData.issueDate).toLocaleDateString()}</div>
+    <div class="row"><strong>Due:</strong> ${new Date(invoiceData.dueDate).toLocaleDateString()}</div>
+  </div>
+  <div class="section">
+    <strong>Bill To:</strong><br/>
+    ${invoiceData.customerName}<br/>
+    ${invoiceData.customerEmail || ''}
+  </div>
+  <table>
+    <thead>
+      <tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+      ${invoiceData.lineItems.map(item => `
+        <tr>
+          <td>${item.description}</td>
+          <td>${item.quantity}</td>
+          <td>$${item.unitPrice.toFixed(2)}</td>
+          <td>$${item.total.toFixed(2)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+  <div class="totals">
+    <div>Subtotal: $${invoiceData.subtotal.toFixed(2)}</div>
+    ${invoiceData.tax > 0 ? `<div>Tax: $${invoiceData.tax.toFixed(2)}</div>` : ''}
+    <div class="total-row">Total: $${invoiceData.total.toFixed(2)}</div>
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${invoiceData.invoiceNumber}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Invoice Downloaded',
+        description: `Invoice ${invoiceData.invoiceNumber} downloaded successfully`,
+      });
+    } catch (error) {
+      logger.error('Failed to download invoice', { error });
+      toast({
+        title: 'Download Failed',
+        description: 'Could not download the invoice. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingInvoice(null);
+    }
+  };
+
+  const scrollToComparison = () => {
+    setFeatureComparisonOpen(true);
+    setTimeout(() => {
+      comparisonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
   const trialDaysLeft = tenant?.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
   const currentSubscriptionTier = businessTierToSubscriptionTier(currentTier);
+
+  // Calculate next billing date (30 days from now or subscription start)
+  const nextBillingDate = tenant?.created_at 
+    ? new Date(new Date(tenant.created_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  // Get actual plan name from tenant
+  const displayPlanName = tenant?.subscription_plan 
+    ? (tenant.subscription_plan as string).charAt(0).toUpperCase() + (tenant.subscription_plan as string).slice(1)
+    : currentTierName;
 
   const PLANS = [
     {
@@ -257,6 +477,7 @@ export default function BillingSettings() {
       price: TIER_PRICES.starter,
       icon: Zap,
       color: 'text-green-600',
+      borderColor: 'border-green-500/50',
       features: ['50 customers', '3 menus', '100 products', '12 core features'],
     },
     {
@@ -265,6 +486,7 @@ export default function BillingSettings() {
       price: TIER_PRICES.professional,
       icon: Star,
       color: 'text-blue-600',
+      borderColor: 'border-blue-500/50',
       popular: true,
       features: ['200 customers', '10 menus', '500 products', 'Advanced analytics', 'Team management'],
     },
@@ -274,9 +496,12 @@ export default function BillingSettings() {
       price: TIER_PRICES.enterprise,
       icon: Diamond,
       color: 'text-purple-600',
+      borderColor: 'border-purple-500/50',
       features: ['Unlimited everything', 'All 56 features', 'Fleet management', 'POS system', 'API access', '24/7 support'],
     },
   ];
+
+  const featureCategories = getFeaturesByCategory();
 
   return (
     <div className="space-y-8">
@@ -344,34 +569,53 @@ export default function BillingSettings() {
           <div className="flex items-start justify-between pb-6 border-b flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold">{currentTierName}</h3>
+                <h3 className="text-xl font-bold">{displayPlanName}</h3>
                 <Badge variant="secondary">{isTrial ? 'Trial' : 'Active'}</Badge>
               </div>
               <p className="text-2xl font-bold mt-2">
                 {formatCurrency(TIER_PRICES[currentSubscriptionTier])}
                 <span className="text-sm font-normal text-muted-foreground">/month</span>
               </p>
-              {tenant?.mrr && (
+              {!isTrial && (
                 <p className="text-sm text-muted-foreground mt-1">
+                  Next billing: {nextBillingDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+              )}
+              {tenant?.mrr && (
+                <p className="text-sm text-muted-foreground">
                   Current MRR: {formatCurrency(tenant.mrr as number)}
                 </p>
               )}
             </div>
-            <Button 
-              variant="outline" 
-              onClick={handleManageSubscription}
-              disabled={upgradeLoading || !stripeHealth?.valid}
-            >
-              {upgradeLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <ExternalLink className="h-4 w-4 mr-2" />
+            <div className="flex flex-col gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleManageSubscription}
+                disabled={upgradeLoading || !stripeHealth?.valid}
+              >
+                {upgradeLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                )}
+                Manage Subscription
+              </Button>
+              {!isTrial && currentSubscriptionTier !== 'starter' && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setCancelDialogOpen(true)}
+                  disabled={upgradeLoading}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancel Subscription
+                </Button>
               )}
-              Manage Subscription
-            </Button>
+            </div>
           </div>
 
-          {/* Usage Meters */}
+          {/* Usage Meters with Color Coding */}
           {Object.keys(limits).length > 0 && (
             <div className="pt-6 space-y-4">
               <h4 className="font-medium text-sm text-muted-foreground">Usage This Month</h4>
@@ -383,23 +627,39 @@ export default function BillingSettings() {
                   const isUnlimited = limit === -1;
                   const percentage = getUsagePercentage(resource);
                   const isOverLimit = !isUnlimited && current > limit;
+                  const showUpgradePrompt = !isUnlimited && percentage >= 80 && currentSubscriptionTier !== 'enterprise';
 
                   return (
                     <div key={resource} className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="capitalize">{resource.replace(/_/g, ' ')}</span>
                         <span className={cn(
-                          "text-muted-foreground",
-                          isOverLimit && "text-red-600 font-medium"
+                          "font-medium",
+                          isOverLimit ? "text-red-600" : getUsageColor(percentage)
                         )}>
                           {current.toLocaleString()} / {isUnlimited ? '∞' : limit.toLocaleString()}
+                          {!isUnlimited && ` (${Math.round(percentage)}%)`}
                         </span>
                       </div>
                       {!isUnlimited && (
                         <Progress 
                           value={percentage} 
-                          className={cn("h-2", isOverLimit && "[&>div]:bg-red-500")}
+                          className={cn("h-2", getProgressColor(percentage))}
                         />
+                      )}
+                      {showUpgradePrompt && (
+                        <div className="flex items-center gap-2 text-xs text-amber-600">
+                          <ArrowUp className="h-3 w-3" />
+                          <span>Running low! Consider upgrading for more capacity.</span>
+                          <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="h-auto p-0 text-xs"
+                            onClick={scrollToComparison}
+                          >
+                            Compare plans
+                          </Button>
+                        </div>
                       )}
                     </div>
                   );
@@ -420,18 +680,20 @@ export default function BillingSettings() {
           {PLANS.map((plan) => {
             const isCurrent = currentSubscriptionTier === plan.id;
             const Icon = plan.icon;
+            const tierOrder = ['starter', 'professional', 'enterprise'];
+            const isUpgrade = tierOrder.indexOf(plan.id) > tierOrder.indexOf(currentSubscriptionTier);
             
             return (
               <div
                 key={plan.id}
                 className={cn(
-                  'relative rounded-xl border p-6 transition-all',
-                  plan.popular && 'border-primary shadow-lg shadow-primary/10',
-                  isCurrent && 'bg-primary/5 border-primary'
+                  'relative rounded-xl border-2 p-6 transition-all',
+                  plan.popular && !isCurrent && plan.borderColor,
+                  isCurrent && 'bg-primary/5 border-primary shadow-lg'
                 )}
               >
                 {plan.popular && !isCurrent && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600">
                     <Star className="h-3 w-3 mr-1" /> Most Popular
                   </Badge>
                 )}
@@ -440,7 +702,7 @@ export default function BillingSettings() {
                   <div className="flex items-center gap-2">
                     <Icon className={cn("h-6 w-6", plan.color)} />
                     <h3 className="font-semibold text-lg">{plan.name}</h3>
-                    {isCurrent && <Badge>Current</Badge>}
+                    {isCurrent && <Badge variant="secondary">Current</Badge>}
                   </div>
                   
                   <p className="text-3xl font-bold">
@@ -459,22 +721,78 @@ export default function BillingSettings() {
                   
                   <Button
                     className="w-full"
-                    variant={isCurrent ? 'secondary' : 'default'}
+                    variant={isCurrent ? 'secondary' : isUpgrade ? 'default' : 'outline'}
                     disabled={isCurrent || upgradeLoading || !stripeHealth?.valid}
                     onClick={() => handlePlanChange(plan.id)}
                   >
                     {upgradeLoading && selectedPlan === plan.id ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : null}
-                    {isCurrent ? 'Current Plan' : currentSubscriptionTier === 'enterprise' || 
-                      (['starter', 'professional', 'enterprise'].indexOf(plan.id) < 
-                       ['starter', 'professional', 'enterprise'].indexOf(currentSubscriptionTier)) 
-                      ? 'Downgrade' : 'Upgrade'}
+                    {isCurrent ? 'Current Plan' : isUpgrade ? 'Upgrade' : 'Downgrade'}
                   </Button>
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Feature Comparison (Collapsible) */}
+        <div ref={comparisonRef} className="mt-6">
+          <Collapsible open={featureComparisonOpen} onOpenChange={setFeatureComparisonOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between">
+                <span className="font-medium">Full Feature Comparison</span>
+                {featureComparisonOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div className="border rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  {Object.entries(featureCategories).map(([category, features]) => (
+                    <div key={category} className="border-b last:border-b-0">
+                      <div className="bg-muted/50 px-4 py-2 font-semibold text-sm">
+                        {category}
+                      </div>
+                      <div className="divide-y">
+                        {features.map((feature, idx) => (
+                          <div key={`${feature.name}-${idx}`} className="grid grid-cols-4 gap-4 px-4 py-2 text-sm">
+                            <div className="col-span-1">{feature.name}</div>
+                            <div className="text-center">
+                              {feature.tier === 'starter' ? (
+                                <Check className="h-4 w-4 text-emerald-500 mx-auto" />
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </div>
+                            <div className="text-center">
+                              {feature.tier === 'starter' || feature.tier === 'professional' ? (
+                                <Check className="h-4 w-4 text-emerald-500 mx-auto" />
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </div>
+                            <div className="text-center">
+                              <Check className="h-4 w-4 text-emerald-500 mx-auto" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-4 gap-4 px-4 py-3 bg-muted/30 text-sm font-medium border-t">
+                  <div>Feature</div>
+                  <div className="text-center">Basic</div>
+                  <div className="text-center">Professional</div>
+                  <div className="text-center">Enterprise</div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </SettingsSection>
 
@@ -499,12 +817,12 @@ export default function BillingSettings() {
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">Default</Badge>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="sm"
                   onClick={handleManageSubscription}
                   disabled={upgradeLoading}
                 >
-                  Update
+                  {upgradeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
                 </Button>
               </div>
             </div>
@@ -523,7 +841,7 @@ export default function BillingSettings() {
         </SettingsCard>
       </SettingsSection>
 
-      {/* Invoices */}
+      {/* Invoices / Billing History */}
       <SettingsSection
         title="Billing History"
         description="Download past invoices"
@@ -565,8 +883,17 @@ export default function BillingSettings() {
                     >
                       {invoice.status?.toUpperCase() || 'PENDING'}
                     </Badge>
-                    <Button variant="ghost" size="icon">
-                      <Download className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleDownloadInvoice(invoice)}
+                      disabled={downloadingInvoice === invoice.id}
+                    >
+                      {downloadingInvoice === invoice.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -601,6 +928,10 @@ export default function BillingSettings() {
                   <strong>{TIER_NAMES[selectedPlan]}</strong>.
                   <br /><br />
                   New monthly price: <strong>{formatCurrency(TIER_PRICES[selectedPlan])}</strong>
+                  <br />
+                  <span className="text-xs text-muted-foreground">
+                    Changes take effect immediately. You'll be redirected to Stripe to complete the change.
+                  </span>
                 </>
               )}
             </DialogDescription>
@@ -625,6 +956,41 @@ export default function BillingSettings() {
               ) : (
                 'Confirm'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Subscription Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5" />
+              Cancel Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel your subscription? You'll be redirected to Stripe to manage your cancellation.
+              <br /><br />
+              <strong>Note:</strong> You can choose to cancel immediately or at the end of your billing period.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+            >
+              Keep Subscription
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleCancelSubscription}
+              disabled={upgradeLoading}
+            >
+              {upgradeLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Proceed to Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
