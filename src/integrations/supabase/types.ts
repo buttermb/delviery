@@ -12692,6 +12692,10 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: boolean
       }
+      cancel_reservation: {
+        Args: { p_reason?: string; p_reservation_id: string }
+        Returns: Json
+      }
       check_is_admin: { Args: { _user_id: string }; Returns: boolean }
       check_tenant_subscription_valid: {
         Args: { p_tenant_id: string }
@@ -12704,6 +12708,15 @@ export type Database = {
           p_version_a: number
           p_version_b: number
           p_workflow_id: string
+        }
+        Returns: Json
+      }
+      confirm_menu_order: {
+        Args: {
+          p_order_data: Json
+          p_payment_info: Json
+          p_reservation_id: string
+          p_trace_id?: string
         }
         Returns: Json
       }
