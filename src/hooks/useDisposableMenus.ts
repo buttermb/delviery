@@ -13,7 +13,7 @@ export const useDisposableMenus = (tenantId?: string) => {
           *,
           disposable_menu_products(
             *,
-            product:wholesale_inventory(*)
+            product:products(*)
           ),
           menu_access_whitelist(count),
           menu_access_logs(count),
@@ -29,8 +29,20 @@ export const useDisposableMenus = (tenantId?: string) => {
       if (error) throw error;
       
       // Add computed stats for each menu
+      // Also map product data from products table format
       return (data || []).map((menu: any) => ({
         ...menu,
+        // Map disposable_menu_products to include product data from products table
+        disposable_menu_products: menu.disposable_menu_products?.map((dmp: any) => ({
+          ...dmp,
+          product: dmp.product ? {
+            ...dmp.product,
+            // Map products table columns to expected interface
+            product_name: dmp.product.name,
+            base_price: dmp.product.wholesale_price || dmp.product.price,
+            quantity_lbs: dmp.product.available_quantity || dmp.product.stock_quantity,
+          } : null,
+        })),
         view_count: menu.menu_access_logs?.[0]?.count || 0,
         customer_count: menu.menu_access_whitelist?.[0]?.count || 0,
         order_count: menu.menu_orders?.length || 0,

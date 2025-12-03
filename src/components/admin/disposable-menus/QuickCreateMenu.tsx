@@ -56,18 +56,25 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   };
   const [accessCode] = useState(generateAccessCode());
 
-  // Fetch products
+  // Fetch products from products table (unified with Product Management, POS, Migration)
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['menu-products', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
-        .from('wholesale_inventory')
-        .select('id, product_name, base_price, quantity_lbs, category')
+        .from('products')
+        .select('id, name, wholesale_price, price, available_quantity, stock_quantity, category')
         .eq('tenant_id', tenant.id)
-        .order('product_name');
+        .order('name');
       if (error) throw error;
-      return data || [];
+      // Map to consistent interface
+      return (data || []).map(p => ({
+        id: p.id,
+        product_name: p.name,
+        base_price: p.wholesale_price || p.price || 0,
+        quantity_lbs: p.available_quantity || p.stock_quantity || 0,
+        category: p.category,
+      }));
     },
     enabled: !!tenant?.id && open,
   });
