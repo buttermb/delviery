@@ -1,4 +1,3 @@
-// @ts-nocheck - Payment method types need updating
 import { logger } from '@/lib/logger';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -1122,15 +1121,15 @@ function PaymentStep({
                               className="shrink-0 h-8 w-8"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                copyToClipboard(method.address!);
-                              }}
-                            >
-                              {copiedAddress ? (
-                                <Check className="h-4 w-4 text-emerald-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
+                              copyToClipboard(method.address!);
+                            }}
+                          >
+                            {copiedAddress ? (
+                              <Check className="h-4 w-4 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
                           </div>
                         </div>
                       )}

@@ -140,6 +140,15 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
         minOperationSize: 'street',
         minBusinessTier: 'street'
     },
+    'menu-migration': {
+        id: 'menu-migration',
+        name: 'Menu Migration',
+        icon: Download,
+        path: '/admin/menu-migration',
+        category: 'Sales & Orders',
+        minOperationSize: 'small',
+        minBusinessTier: 'trap'
+    },
     'wholesale-orders': {
         id: 'wholesale-orders',
         name: 'Wholesale',

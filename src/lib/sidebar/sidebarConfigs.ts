@@ -169,6 +169,7 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Package),
       createItem('products', 'Products', '/admin/inventory/products', Box),
+      createItem('menu-migration', 'Import Products', '/admin/menu-migration', Download),
       createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', Bell),
     ],
   },
@@ -307,6 +308,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     defaultExpanded: true,
     items: [
       createItem('products', 'Product Catalog', '/admin/inventory/products', Box),
+      createItem('menu-migration', 'Menu Migration', '/admin/menu-migration', Download),
       createItem('basic-orders', 'Order Management', '/admin/disposable-menu-orders', ShoppingCart),
       createItem('disposable-menus', 'Menu Management', '/admin/disposable-menus', Menu),
       createItem('pos-system', 'POS System', '/admin/pos-system', Store),
@@ -335,6 +337,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('inventory-dashboard', 'Inventory Control', '/admin/inventory-dashboard', Warehouse),
       createItem('stock-alerts', 'Stock Alerts', '/admin/stock-alerts', AlertCircle),
       createItem('stock-check', 'Stock Check', '/admin/inventory/products', Package),
+      createItem('quality-control', 'Quality Control', '/admin/quality-control', Shield),
       createItem('delivery-management', 'Fleet Logistics', '/admin/delivery-management', Truck),
       createItem('locations', 'Location Management', '/admin/locations', Building2),
       createItem('team-members', 'Workforce', '/admin/staff-management', Users),
@@ -346,9 +349,11 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: '📊 Intelligence',
     items: [
       createItem('analytics', 'BI Dashboard', '/admin/analytics/comprehensive', BarChart3),
+      createItem('reports', 'Reports', '/admin/reports', TrendingUp),
       createItem('predictive-analytics', 'Predictive AI', '/admin/predictive-analytics', Brain),
       createItem('advanced-reporting', 'Custom Reports', '/admin/advanced-reporting', FileSpreadsheet),
       createItem('revenue-reports', 'Financial Performance', '/admin/revenue-reports', TrendingUp),
+      createItem('invoice-management', 'Financial Center', '/admin/financial-center', Briefcase),
       createItem('fronted-inventory', 'Fronted Inventory', '/admin/fronted-inventory', CreditCard),
       createItem('cash-register', 'Cash Register', '/admin/cash-register', Wallet),
       createItem('data-export', 'Data Warehouse', '/admin/data-export', Download),
@@ -360,6 +365,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('settings', 'Global Settings', '/admin/settings', Settings),
       createItem('billing', 'Billing & Contracts', '/admin/billing', CreditCard),
+      createItem('custom-integrations', 'Integrations', '/admin/custom-integrations', Zap),
       createItem('api-access', 'API & Webhooks', '/admin/api-access', Zap),
       createItem('white-label', 'White Label', '/admin/white-label', Layers),
       createItem('audit-trail', 'Audit Logs', '/admin/audit-trail', ScrollText),

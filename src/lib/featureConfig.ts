@@ -55,6 +55,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Menus',
     route: '/admin/disposable-menus',
   },
+  'menu-migration': {
+    id: 'menu-migration',
+    name: 'Menu Migration',
+    description: 'AI-powered bulk import from spreadsheets and images',
+    tier: 'starter',
+    category: 'Menus',
+    route: '/admin/menu-migration',
+  },
   'customers': {
     id: 'customers',
     name: 'Customers',

@@ -154,6 +154,7 @@ const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
 const DisposableMenuOrders = lazy(() => import("./pages/admin/DisposableMenuOrders"));
 const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
 const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
+const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
 const ProductManagement = lazy(() => import("./pages/admin/ProductManagement"));
 const BigPlugClients = lazy(() => import("./pages/admin/CustomerManagement"));
 const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
@@ -607,6 +608,7 @@ const App = () => {
                                       <Route path="inventory/barcodes" element={<Navigate to="../generate-barcodes" replace />} />
                                       <Route path="analytics/comprehensive" element={<FeatureProtectedRoute featureId="analytics"><AnalyticsPage /></FeatureProtectedRoute>} />
                                       <Route path="disposable-menus" element={<FeatureProtectedRoute featureId="disposable-menus"><DisposableMenus /></FeatureProtectedRoute>} />
+                                      <Route path="menu-migration" element={<FeatureProtectedRoute featureId="menu-migration"><MenuMigration /></FeatureProtectedRoute>} />
                                       <Route path="disposable-menu-orders" element={<FeatureProtectedRoute featureId="basic-orders"><DisposableMenuOrders /></FeatureProtectedRoute>} />
                                       <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                                       <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics"><MenuAnalytics /></FeatureProtectedRoute>} />
