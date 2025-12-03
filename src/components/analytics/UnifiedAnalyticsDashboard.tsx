@@ -38,7 +38,7 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
             // 2. Fetch POS Transactions
             const { data: pos } = await supabase
                 .from('pos_transactions')
-                .select('id, total_amount, created_at, status')
+                .select('id, total_amount, created_at, payment_status')
                 .eq('tenant_id', tenantId)
                 .order('created_at', { ascending: false })
                 .limit(50);
@@ -64,7 +64,7 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
                     source: 'pos' as const,
                     amount: Number(o.total_amount) || 0,
                     created_at: o.created_at,
-                    status: o.status
+                    status: o.payment_status || 'completed'
                 })),
                 ...(menu as any[] || []).map(o => ({
                     id: o.id,

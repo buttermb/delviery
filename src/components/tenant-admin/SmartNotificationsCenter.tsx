@@ -93,7 +93,7 @@ export function SmartNotificationsCenter() {
 
             const { data: pendingOrders } = await supabase
                 .from('wholesale_orders')
-                .select('id, customer_name, created_at')
+                .select('id, client_id, created_at')
                 .eq('tenant_id', tenantId)
                 .eq('status', 'pending')
                 .lt('created_at', oneDayAgo.toISOString());
@@ -120,7 +120,7 @@ export function SmartNotificationsCenter() {
 
             const { data: newCustomers } = await supabase
                 .from('wholesale_clients')
-                .select('id, company_name')
+                .select('id, business_name')
                 .eq('tenant_id', tenantId)
                 .gte('created_at', today.toISOString());
 
