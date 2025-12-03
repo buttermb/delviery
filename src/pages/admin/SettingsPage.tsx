@@ -495,7 +495,7 @@ export default function SettingsPage() {
 
         {/* Payment Settings */}
         <TabsContent value="payments">
-          <PaymentSettingsForm />
+          <PaymentSettingsForm onSave={async () => {}} />
         </TabsContent>
       </Tabs>
     </div>

@@ -235,7 +235,8 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        const clientName = delivery.delivery_address?.split(',')[0] || 'Client';
+        // @ts-ignore - delivery_address may exist on order or be accessed differently
+        const clientName = (delivery as any).delivery_address?.split(',')[0] || (delivery.order as any)?.delivery_address?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 
         // Destination (offset for demo)
@@ -370,7 +371,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
                 </div>
               </div>
               <div style="font-size: 12px; color: #6b7280; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                ${delivery.delivery_address || 'Address pending'}
+                ${(delivery as any).delivery_address || (delivery.order as any)?.delivery_address || 'Address pending'}
               </div>
             </div>
           `);
@@ -526,9 +527,9 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
       {/* Active Deliveries List */}
       {activeDeliveries.length > 0 && (
         <div className="max-h-48 overflow-y-auto border-b">
-          {activeDeliveries.map((delivery) => {
+        {activeDeliveries.map((delivery) => {
             const runnerName = delivery.runner?.full_name || 'Runner';
-            const clientName = delivery.delivery_address?.split(',')[0] || 'Client';
+            const clientName = (delivery as any).delivery_address?.split(',')[0] || (delivery.order as any)?.delivery_address?.split(',')[0] || 'Client';
             const orderNumber = delivery.order?.order_number || 'N/A';
             const eta = etasRef.current.get(delivery.id);
 

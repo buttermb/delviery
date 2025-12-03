@@ -88,7 +88,7 @@ export default function LiveMap() {
       // Load all couriers first (for total count)
       const { data: allData, error: allError } = await supabase
         .from('couriers')
-        .select('id, full_name, is_online, current_lat, current_lng, phone, status')
+        .select('id, full_name, is_online, current_lat, current_lng, phone')
         .eq('tenant_id', tenant.id);
 
       if (allError) {
