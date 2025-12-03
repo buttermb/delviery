@@ -34,16 +34,21 @@ export function InventoryAlertsWidget() {
         warehouse_location: string | null;
       }
 
-      // @ts-expect-error - Complex Supabase query exceeds TypeScript recursion depth limit
+      // Fetch low stock products
       const { data } = await supabase
-        .from('wholesale_inventory')
-        .select('product_name, quantity_lbs, warehouse_location')
-        .eq('account_id', account.id)
-        .lt('quantity_lbs', 30)
-        .order('quantity_lbs', { ascending: true })
+        .from('products')
+        .select('name, stock_quantity, category')
+        .eq('tenant_id', account.id)
+        .lt('stock_quantity', 30)
+        .order('stock_quantity', { ascending: true })
         .limit(5);
 
-      return (data || []) as AlertRow[];
+      // Map to AlertRow interface for compatibility
+      return (data || []).map(p => ({
+        product_name: p.name,
+        quantity_lbs: p.stock_quantity,
+        warehouse_location: p.category || 'Unknown'
+      })) as AlertRow[];
     },
     enabled: !!account?.id,
     // Use real-time updates via useRealtimeSync instead of polling

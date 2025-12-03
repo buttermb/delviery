@@ -49,9 +49,9 @@ interface DashboardOrderRow {
 
 interface DashboardInventoryRow {
   id: string;
-  product_name: string | null;
-  quantity_lbs: number | null;
-  reorder_point: number | null;
+  name: string | null;
+  stock_quantity: number | null;
+  available_quantity: number | null;
 }
 
 export default function TenantAdminDashboardPage() {
@@ -79,7 +79,7 @@ export default function TenantAdminDashboardPage() {
   // Enable real-time sync for dashboard data (MOVED BEFORE EARLY RETURN)
   useRealtimeSync({
     tenantId,
-    tables: ['wholesale_orders', 'wholesale_inventory', 'disposable_menus', 'customers'],
+    tables: ['wholesale_orders', 'products', 'disposable_menus', 'customers'],
     enabled: !!tenantId,
   });
 
@@ -146,22 +146,19 @@ export default function TenantAdminDashboardPage() {
         const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
         const orderCount = orders?.length || 0;
 
-        // Get low stock items with error handling - handle missing tenant_id gracefully
-
-        // Try with tenant_id filter first
+        // Get low stock items from products table
         let inventoryResult = await supabase
-          .from("wholesale_inventory")
-          .select("id, product_name, quantity_lbs, reorder_point")
+          .from("products")
+          .select("id, name, stock_quantity, available_quantity")
           .eq("tenant_id", tenantId)
           .returns<DashboardInventoryRow[]>();
 
-        // Check if error is 400 (bad request) - likely means tenant_id column doesn't exist
+        // Fallback without tenant filter if column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id column may not exist in wholesale_inventory, querying without filter", inventoryResult.error, { component: 'DashboardPage' });
-          // Retry without tenant_id filter
+          logger.warn("tenant_id filter failed for products, retrying without filter", inventoryResult.error, { component: 'DashboardPage' });
           inventoryResult = await supabase
-            .from("wholesale_inventory")
-            .select("id, product_name, quantity_lbs, reorder_point")
+            .from("products")
+            .select("id, name, stock_quantity, available_quantity")
             .limit(100)
             .returns<DashboardInventoryRow[]>();
         }
@@ -172,14 +169,15 @@ export default function TenantAdminDashboardPage() {
           logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
         }
 
+        const LOW_STOCK_THRESHOLD = 10;
         const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => ({
           id: item.id,
-          strain: item.product_name || 'Unknown',
-          product_name: item.product_name,
-          quantity_lbs: item.quantity_lbs ?? 0,
-          reorder_point: item.reorder_point ?? 10,
+          strain: item.name || 'Unknown',
+          product_name: item.name,
+          quantity_lbs: item.available_quantity ?? item.stock_quantity ?? 0,
+          reorder_point: LOW_STOCK_THRESHOLD,
         })).filter(
-          (item) => Number(item.quantity_lbs || 0) <= Number(item.reorder_point || 10)
+          (item) => Number(item.quantity_lbs || 0) <= LOW_STOCK_THRESHOLD
         );
 
         return {

@@ -69,10 +69,10 @@ export function ModernDashboard() {
         .in('status', ['assigned', 'picked_up', 'in_transit']);
 
       const lowStockResult = await supabase
-        .from('wholesale_inventory')
+        .from('products')
         .select('id')
         .eq('tenant_id', tenantId)
-        .lt('quantity_lbs', 30);
+        .lt('stock_quantity', 30);
 
       // Revenue calculation
       const todayRevenue = (todayOrdersResult.data || []).reduce((sum: number, o: { total_amount?: number | null }) => 

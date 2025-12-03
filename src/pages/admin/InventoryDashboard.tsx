@@ -53,7 +53,7 @@ export default function InventoryDashboard() {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Realtime Subscription for Inventory Updates
+  // Realtime Subscription for Inventory Updates (products table)
   useEffect(() => {
     const channel = supabase
       .channel('inventory-dashboard-updates')
@@ -62,7 +62,7 @@ export default function InventoryDashboard() {
         {
           event: '*',
           schema: 'public',
-          table: 'wholesale_inventory'
+          table: 'products'
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });

@@ -36,12 +36,12 @@ export function InventoryForecastWidget() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            // 1. Get current inventory
+            // 1. Get current inventory from products table
             const { data: inventory } = await supabase
-                .from('wholesale_inventory')
-                .select('id, product_name, quantity_lbs, reorder_point')
+                .from('products')
+                .select('id, name, stock_quantity, available_quantity')
                 .eq('tenant_id', tenantId)
-                .gt('quantity_lbs', 0); // Only items in stock
+                .gt('stock_quantity', 0); // Only items in stock
 
             if (!inventory || inventory.length === 0) return [];
 
@@ -53,21 +53,22 @@ export function InventoryForecastWidget() {
             // In a real app, we'd fetch order items and calculate daily average
 
             // Fallback: Mock velocity for demo if no order history
-            const mockVelocity = 0.5; // 0.5 lbs per day
+            const mockVelocity = 0.5; // 0.5 units per day
 
+            const LOW_STOCK_THRESHOLD = 10;
             const forecasts: ForecastItem[] = inventory.map(item => {
                 // Calculate actual velocity if possible, else use mock
                 const velocity = mockVelocity + (Math.random() * 2); // Randomize slightly for demo
-
-                const daysRemaining = Math.floor(item.quantity_lbs / velocity);
+                const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
+                const daysRemaining = Math.floor(currentStock / velocity);
 
                 return {
                     id: item.id,
-                    product_name: item.product_name,
-                    quantity_lbs: item.quantity_lbs,
+                    product_name: item.name,
+                    quantity_lbs: currentStock,
                     daily_velocity: velocity,
                     days_remaining: daysRemaining,
-                    reorder_point: item.reorder_point || 10
+                    reorder_point: LOW_STOCK_THRESHOLD
                 };
             });
 
