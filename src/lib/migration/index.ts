@@ -93,6 +93,15 @@ export {
 } from './deduplication';
 export type { DuplicateMatch, DeduplicationResult } from './deduplication';
 
+// Text Parser (informal menu format)
+export {
+  parseTextMenu,
+  isInformalTextMenu,
+  analyzeTextForDefaults,
+  DEFAULT_QUICK_ANSWERS,
+} from './text-parser';
+export type { QuickAnswers, TextParseResult } from './text-parser';
+
 // Import service
 export {
   importProducts,

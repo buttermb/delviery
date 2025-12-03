@@ -9,7 +9,15 @@ import type {
   ValidationResult,
   MigrationStep,
   ColumnMappingItem,
+  QualityTier,
 } from '@/types/migration';
+import { 
+  parseTextMenu, 
+  isInformalTextMenu, 
+  analyzeTextForDefaults,
+  type QuickAnswers,
+  DEFAULT_QUICK_ANSWERS,
+} from '@/lib/migration/text-parser';
 
 // Local interface for detected columns (different from the AI parsing types)
 interface DetectedColumns {
@@ -51,6 +59,10 @@ export interface MigrationState {
   importProgress: ImportProgress | null;
   importResult: ImportResult | null;
   error: string | null;
+  // Quick questions support
+  suggestedDefaults: Partial<QuickAnswers> | null;
+  quickAnswers: QuickAnswers | null;
+  isInformalText: boolean;
 }
 
 const initialState: MigrationState = {
@@ -64,6 +76,9 @@ const initialState: MigrationState = {
   importProgress: null,
   importResult: null,
   error: null,
+  suggestedDefaults: null,
+  quickAnswers: null,
+  isInformalText: false,
 };
 
 export function useMigration() {
@@ -173,8 +188,33 @@ export function useMigration() {
         logger.error('CSV paste parsing error', { error: errorMessage });
         setState(prev => ({ ...prev, error: errorMessage }));
       }
+    } else if (isInformalTextMenu(text)) {
+      // Detect informal text menu format (e.g., "gary p - 32 - 15 packs")
+      // Parse immediately and go to questions step
+      const suggestedDefaults = analyzeTextForDefaults(text);
+      const parseResult = parseTextMenu(text, suggestedDefaults);
+      
+      if (parseResult.products.length === 0) {
+        setState(prev => ({ 
+          ...prev, 
+          error: 'Could not parse any products from the text. Please check the format.' 
+        }));
+        return;
+      }
+      
+      setState(prev => ({
+        ...prev,
+        inputFormat: 'text',
+        rawInput: text,
+        fileName: null,
+        parsedProducts: parseResult.products,
+        suggestedDefaults,
+        isInformalText: true,
+        step: 'questions',
+        error: null,
+      }));
     } else {
-      // For non-CSV text, go to AI parsing (requires edge function)
+      // For other non-CSV text, go to AI parsing (requires edge function)
       setState(prev => ({
         ...prev,
         inputFormat: 'text',
@@ -365,6 +405,105 @@ export function useMigration() {
     }));
   }, []);
 
+  // Get missing fields from parsed products
+  const getMissingFields = useCallback((): string[] => {
+    const missing: string[] = [];
+    const products = state.parsedProducts;
+    
+    if (products.length === 0) return missing;
+    
+    // Check what fields are missing across products
+    const hasCategory = products.some(p => p.category);
+    const hasQuality = products.some(p => p.qualityTier);
+    const hasPrice = products.some(p => p.prices && (p.prices.lb || p.prices.oz));
+    const hasQuantity = products.some(p => p.quantityLbs || p.quantityUnits);
+    
+    if (!hasCategory) missing.push('category');
+    if (!hasQuality) missing.push('qualityTier');
+    if (!hasPrice) missing.push('price');
+    if (!hasQuantity) missing.push('quantity');
+    
+    return missing;
+  }, [state.parsedProducts]);
+
+  // Apply quick answers to all parsed products
+  const applyQuickAnswers = useCallback((answers: QuickAnswers) => {
+    setState(prev => {
+      // Apply answers to all products
+      const updatedProducts = prev.parsedProducts.map(product => {
+        const updated = { ...product };
+        
+        // Apply category if not set
+        if (!updated.category) {
+          updated.category = answers.category;
+        }
+        
+        // Apply quality tier if not set
+        if (!updated.qualityTier) {
+          updated.qualityTier = answers.qualityTier;
+        }
+        
+        // Apply/calculate prices
+        if (!updated.prices || (!updated.prices.lb && !updated.prices.oz)) {
+          if (answers.defaultPricePerLb) {
+            updated.prices = {
+              ...updated.prices,
+              lb: answers.defaultPricePerLb,
+              hp: Math.round(answers.defaultPricePerLb / 2),
+              qp: Math.round(answers.defaultPricePerLb / 4),
+              oz: Math.round(answers.defaultPricePerLb / 16),
+            };
+          }
+        }
+        
+        // Apply stock status
+        if (answers.allInStock) {
+          updated.stockStatus = 'available';
+        }
+        
+        // Recalculate quantities based on pack meaning
+        // If we have raw quantity data, convert it
+        if (updated.quantityUnits && !updated.quantityLbs) {
+          const qty = updated.quantityUnits;
+          switch (answers.packMeaning) {
+            case 'lb':
+              updated.quantityLbs = qty;
+              updated.quantityUnits = 0;
+              break;
+            case 'hp':
+              updated.quantityLbs = qty * 0.5;
+              updated.quantityUnits = 0;
+              break;
+            case 'qp':
+              updated.quantityLbs = qty * 0.25;
+              updated.quantityUnits = 0;
+              break;
+            case 'oz':
+              updated.quantityLbs = qty / 16;
+              updated.quantityUnits = 0;
+              break;
+            case 'unit':
+              // Keep as units
+              break;
+          }
+        }
+        
+        // Boost confidence since we've filled in missing data
+        updated.confidence = Math.min((updated.confidence || 0.5) + 0.3, 0.95);
+        
+        return updated;
+      });
+      
+      return {
+        ...prev,
+        parsedProducts: updatedProducts,
+        quickAnswers: answers,
+        step: 'preview',
+        error: null,
+      };
+    });
+  }, []);
+
   // Import mutation
   const importMutation = useMutation({
     mutationFn: async (products: ParsedProduct[]) => {
@@ -497,6 +636,8 @@ export function useMigration() {
     updateProduct,
     removeProduct,
     startImport,
+    getMissingFields,
+    applyQuickAnswers,
     isParsingLoading: parseWithAIMutation.isPending || parseWithOCRMutation.isPending,
     isImportLoading: importMutation.isPending,
   };

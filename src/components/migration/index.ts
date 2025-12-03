@@ -7,6 +7,7 @@ export { ImportingStep } from './ImportingStep';
 export { CompleteStep } from './CompleteStep';
 export { EditableCell } from './EditableCell';
 export { ConfidenceBar } from './ConfidenceBar';
+export { QuickQuestionsStep } from './QuickQuestionsStep';
 
 
 

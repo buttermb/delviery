@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ArrowLeft,
   ArrowRight,
+  HelpCircle,
 } from 'lucide-react';
 import type { MigrationStep } from '@/types/migration';
 import { useMigration } from '@/hooks/useMigration';
@@ -20,10 +21,12 @@ import { MappingStep } from './MappingStep';
 import { PreviewStep } from './PreviewStep';
 import { ImportingStep } from './ImportingStep';
 import { CompleteStep } from './CompleteStep';
+import { QuickQuestionsStep } from './QuickQuestionsStep';
 
 const STEPS: { id: MigrationStep; label: string; icon: React.ReactNode }[] = [
   { id: 'upload', label: 'Upload', icon: <Upload className="h-4 w-4" /> },
   { id: 'parsing', label: 'Parse', icon: <Loader2 className="h-4 w-4" /> },
+  { id: 'questions', label: 'Setup', icon: <HelpCircle className="h-4 w-4" /> },
   { id: 'mapping', label: 'Map', icon: <Columns className="h-4 w-4" /> },
   { id: 'preview', label: 'Preview', icon: <Eye className="h-4 w-4" /> },
   { id: 'importing', label: 'Import', icon: <Download className="h-4 w-4" /> },
@@ -46,7 +49,8 @@ export function MigrationWizard() {
   const canGoBack = currentStepIndex > 0 && 
     migration.state.step !== 'parsing' && 
     migration.state.step !== 'importing' &&
-    migration.state.step !== 'complete';
+    migration.state.step !== 'complete' &&
+    migration.state.step !== 'questions'; // Questions step has its own back button
 
   const handleBack = () => {
     if (currentStepIndex > 0) {
@@ -134,6 +138,16 @@ export function MigrationWizard() {
               format={migration.state.inputFormat}
               fileName={migration.state.fileName}
               onStartParsing={migration.startAIParsing}
+            />
+          )}
+          
+          {migration.state.step === 'questions' && (
+            <QuickQuestionsStep
+              suggestedDefaults={migration.state.suggestedDefaults}
+              parsedProductCount={migration.state.parsedProducts.length}
+              missingFields={migration.getMissingFields()}
+              onConfirm={migration.applyQuickAnswers}
+              onBack={() => migration.goToStep('upload')}
             />
           )}
           

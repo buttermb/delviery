@@ -268,6 +268,7 @@ export interface AIParseResponse {
 export type MigrationStep = 
   | 'upload'
   | 'parsing'
+  | 'questions'
   | 'mapping'
   | 'preview'
   | 'importing'
