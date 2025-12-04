@@ -104,7 +104,8 @@ export default function CashRegister() {
       }));
 
       // Try atomic RPC first (prevents race conditions on inventory)
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
         p_tenant_id: tenantId,
         p_items: items,
         p_payment_method: paymentMethod,

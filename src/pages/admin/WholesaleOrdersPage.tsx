@@ -877,7 +877,7 @@ export default function WholesaleOrdersPage() {
 
         {/* Cancel Order Dialog */}
         <CancelWholesaleOrderDialog
-          order={selectedOrder}
+          order={selectedOrder as any}
           open={cancelDialogOpen}
           onOpenChange={setCancelDialogOpen}
           onSuccess={() => {

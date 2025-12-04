@@ -239,7 +239,8 @@ export default function PointOfSale() {
       }));
 
       // Try atomic RPC first (prevents race conditions on inventory)
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic' as any, {
         p_tenant_id: tenantId,
         p_items: transactionItems,
         p_payment_method: paymentMethod,
@@ -353,17 +354,17 @@ export default function PointOfSale() {
         // @ts-ignore - Outdated Supabase types
         await supabase
           // @ts-ignore - Table not in types
-          .from('disposable_menu_orders')
+          .from('disposable_menu_orders' as any)
           .update({
             status: 'completed',
-            pos_transaction_id: transaction?.id,
+            pos_transaction_id: transactionId,
             completed_at: new Date().toISOString()
           })
           .eq('id', activeOrderId);
 
         logger.info('Linked disposable order to transaction', {
           orderId: activeOrderId,
-          transactionId: transaction?.id
+          transactionId
         });
       }
 

@@ -83,8 +83,9 @@ export default function BusinessSettings() {
       if (productsError) throw productsError;
 
       // Delete demo clients without orders
+      // @ts-ignore - Table not in auto-generated types
       const { error: clientsError } = await supabase
-        .from('clients')
+        .from('clients' as any)
         .delete()
         .eq('tenant_id', tenant.id)
         .or('business_name.ilike.%demo%,business_name.ilike.%sample%,business_name.ilike.%test%');

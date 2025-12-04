@@ -44,7 +44,7 @@ export default function WholesaleInventory() {
   const warehouseMap = new Map();
 
   inventory.forEach(item => {
-    const location = item.warehouse_location || "Unassigned";
+    const location = (item as any).warehouse_location || "Unassigned";
     if (!warehouseMap.has(location)) {
       warehouseMap.set(location, {
         id: location,
