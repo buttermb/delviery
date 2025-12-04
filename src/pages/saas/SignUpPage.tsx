@@ -30,10 +30,11 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Building2, User, Mail, Lock, Phone, MapPin, Briefcase, Users, Sparkles, Loader2, ChevronDown, ChevronUp, Check, Shield, Zap } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { SignupFeaturesShowcase } from '@/components/signup/SignupFeaturesShowcase';
 import { TurnstileWrapper } from '@/components/signup/TurnstileWrapper';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { cn } from '@/lib/utils';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -448,6 +449,21 @@ export default function SignUpPage() {
                       </p>
                     </div>
 
+                    {/* Google OAuth - Prominent placement */}
+                    <div className="space-y-3">
+                      <GoogleSignInButton 
+                        mode="signup"
+                        className="w-full h-12"
+                      />
+                      
+                      {/* Divider */}
+                      <div className="relative flex items-center py-2">
+                        <div className="flex-grow border-t border-border" />
+                        <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase tracking-wide">or continue with email</span>
+                        <div className="flex-grow border-t border-border" />
+                      </div>
+                    </div>
+
                     {/* Required Fields */}
                     <div className="space-y-5">
                       <FormField
@@ -460,11 +476,19 @@ export default function SignUpPage() {
                               Business Name *
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="Big Mike's Wholesale"
-                                {...field}
-                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                              />
+                              <div className="relative">
+                                <Input
+                                  placeholder="Big Mike's Wholesale"
+                                  {...field}
+                                  className={cn(
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    field.value && !form.formState.errors.business_name && "border-emerald-500/50"
+                                  )}
+                                />
+                                {field.value && !form.formState.errors.business_name && (
+                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                )}
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -481,7 +505,19 @@ export default function SignUpPage() {
                               Your Name *
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="John Doe" {...field} className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all" />
+                              <div className="relative">
+                                <Input 
+                                  placeholder="John Doe" 
+                                  {...field} 
+                                  className={cn(
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
+                                  )}
+                                />
+                                {field.value && !form.formState.errors.owner_name && (
+                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                )}
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -498,12 +534,20 @@ export default function SignUpPage() {
                               Email *
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="you@business.com"
-                                {...field}
-                                className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
-                              />
+                              <div className="relative">
+                                <Input
+                                  type="email"
+                                  placeholder="you@business.com"
+                                  {...field}
+                                  className={cn(
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    field.value && !form.formState.errors.email && "border-emerald-500/50"
+                                  )}
+                                />
+                                {field.value && !form.formState.errors.email && (
+                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                                )}
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -736,23 +780,37 @@ export default function SignUpPage() {
                     </div>
 
                     {/* Submit Button */}
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating Account...
-                        </>
-                      ) : (
-                        <>
-                          Start Free Trial
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
+                    <div className="space-y-4">
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full h-14 text-base font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] transition-all duration-200"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            Creating Account...
+                          </>
+                        ) : (
+                          <>
+                            Start Free Trial
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                          </>
+                        )}
+                      </Button>
+                      
+                      {/* Trust indicators below button */}
+                      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                          <span>Bank-level security</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="h-3.5 w-3.5 text-amber-500" />
+                          <span>Setup in 2 min</span>
+                        </div>
+                      </div>
+                    </div>
                   </form>
                 </Form>
               </CardContent>
