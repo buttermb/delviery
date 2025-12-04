@@ -218,6 +218,19 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         return;
       }
 
+      // Skip token refresh on login/signup pages - user is trying to authenticate
+      const isAuthPage = location.pathname.includes('/login') || 
+                         location.pathname.includes('/signup') || 
+                         location.pathname.includes('/forgot-password');
+      if (isAuthPage) {
+        // Clear any stale tokens on auth pages to prevent refresh loops
+        safeStorage.removeItem(ACCESS_TOKEN_KEY);
+        safeStorage.removeItem(REFRESH_TOKEN_KEY);
+        clearAuthState();
+        setLoading(false);
+        return;
+      }
+
       let parsedTenant: Tenant | null = null;
 
       try {
