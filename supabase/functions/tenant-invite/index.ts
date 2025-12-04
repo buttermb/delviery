@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { checkUserPermission } from '../_shared/permissions.ts';
+import { validateTenantInvite, type TenantInviteInput } from './validation.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,7 +14,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { action, tenantId, email, role, token: inviteToken, invitationId } = await req.json();
+    // Parse and validate request body
+    let requestBody: TenantInviteInput;
+    try {
+      const rawBody = await req.json();
+      requestBody = validateTenantInvite(rawBody);
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request body',
+          details: error instanceof Error ? error.message : 'Validation failed'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract validated fields
+    const action = requestBody.action;
+    const tenantId = 'tenantId' in requestBody ? requestBody.tenantId : undefined;
+    const email = 'email' in requestBody ? requestBody.email : undefined;
+    const role = 'role' in requestBody ? requestBody.role : undefined;
+    const inviteToken = 'token' in requestBody ? requestBody.token : undefined;
+    const invitationId = 'invitationId' in requestBody ? requestBody.invitationId : undefined;
 
     // Public actions that don't require authentication
     const publicActions = ['get_invitation_details'];
