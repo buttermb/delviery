@@ -346,6 +346,12 @@ const ApprovalPage = lazy(() => import("./pages/community/ApprovalPage").then(m 
 const MenuAccess = lazy(() => import("./pages/MenuAccess"));
 const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
 
+// Auth Callback Pages
+const TenantAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.TenantAdminAuthCallback })));
+const SuperAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.SuperAdminAuthCallback })));
+const CustomerAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.CustomerAuthCallback })));
+const MFAChallengePage = lazy(() => import("./pages/auth/MFAChallengePage"));
+
 // Create optimized QueryClient from centralized config
 const queryClient = createQueryClient();
 
@@ -512,6 +518,8 @@ const App = () => {
                                     {/* ==================== LEVEL 1: SUPER ADMIN (Platform) ==================== */}
                                     <Route path="/super-admin/login" element={<SuperAdminLoginPage />} />
                                     <Route path="/super-admin/reset/:token" element={<PasswordResetPage />} />
+                                    <Route path="/super-admin/auth/callback" element={<SuperAdminAuthCallback />} />
+                                    <Route path="/super-admin/auth/mfa-challenge" element={<MFAChallengePage portal="super-admin" />} />
                                     <Route path="/super-admin/*" element={
                                       <SuperAdminProtectedRouteNew>
                                         <SuperAdminLayout />
@@ -544,6 +552,8 @@ const App = () => {
                                     {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
                                     <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginPage />} />
                                     <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
+                                    <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
+                                    <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />
 
                                     {/* Welcome Page (must be before AdminLayout) */}
                                     <Route path="/:tenantSlug/admin/welcome" element={<TenantAdminProtectedRoute><TenantAdminWelcomePage /></TenantAdminProtectedRoute>} />
@@ -816,6 +826,8 @@ const App = () => {
                                     <Route path="/:tenantSlug/customer/verify-email" element={<CustomerVerifyEmailPage />} />
                                     <Route path="/:tenantSlug/customer/forgot-password" element={<CustomerForgotPasswordPage />} />
                                     <Route path="/:tenantSlug/customer/reset-password" element={<CustomerResetPasswordPage />} />
+                                    <Route path="/:tenantSlug/customer/auth/callback" element={<CustomerAuthCallback />} />
+                                    <Route path="/:tenantSlug/customer/auth/mfa-challenge" element={<MFAChallengePage portal="customer" />} />
                                     <Route path="/:tenantSlug/shop/login" element={<CustomerLoginPage />} />
                                     <Route path="/:tenantSlug/shop/reset/:token" element={<PasswordResetPage />} />
                                     {/* Public Routes */}

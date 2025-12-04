@@ -1,5 +1,21 @@
 import { toast } from 'sonner';
 
+// Re-export enhanced toast actions
+export {
+  showUndoableToast,
+  showDeleteToast,
+  showArchiveToast,
+  showNavigableToast,
+  showActionToast,
+  showProgressToast,
+  showPersistentErrorToast,
+  showBatchToast,
+  showCreateSuccessToast,
+  showCopyToast,
+  dismissAllToasts,
+  cancelPendingUndo,
+} from '@/lib/toastActions';
+
 // Standardized toast notifications for consistent UX
 
 export const showSuccessToast = (message: string, description?: string) => {

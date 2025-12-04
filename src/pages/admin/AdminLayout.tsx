@@ -29,6 +29,7 @@ import {
 import { TutorialProvider } from "@/components/tutorial/TutorialProvider";
 import { logRouteState } from "@/utils/routeDebugger";
 import { useEffect } from "react";
+import { QuickActionsButton } from "@/components/QuickActionsButton";
 
 /**
  * Admin Layout Component - v2.1.1
@@ -180,6 +181,11 @@ const AdminLayout = () => {
 
       {/* Mobile bottom navigation */}
       <MobileBottomNav />
+
+      {/* Quick Actions FAB - hidden on mobile (use bottom nav) */}
+      <div className="hidden lg:block">
+        <QuickActionsButton />
+      </div>
 
       {/* PWA install */}
       <InstallPWA />

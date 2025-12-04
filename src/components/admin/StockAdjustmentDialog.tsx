@@ -54,9 +54,9 @@ export function StockAdjustmentDialog({
 
       // Simple direct update for MVP
       const { error: updateError } = await supabase
-        .from("wholesale_inventory")
+        .from("products")
         .update({ 
-          quantity_lbs: adjustedQuantity,
+          stock_quantity: adjustedQuantity,
           updated_at: new Date().toISOString()
         })
         .eq("id", productId)
@@ -69,9 +69,10 @@ export function StockAdjustmentDialog({
     onSuccess: (newQuantity) => {
       showSuccessToast(
         "Stock Adjusted", 
-        `New quantity: ${newQuantity.toFixed(2)} lbs`
+        `New quantity: ${newQuantity.toFixed(2)} units`
       );
-      queryClient.invalidateQueries({ queryKey: ["wholesale-inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-for-wholesale"] });
       onOpenChange(false);
       setQuantity("");
       setReason("");

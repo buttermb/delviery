@@ -1,7 +1,4 @@
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,13 +10,11 @@ import {
   Zap, 
   Check, 
   ArrowRight,
-  Sparkles,
   PlayCircle,
   BookOpen,
   MessageCircle,
 } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 interface SetupStep {
   id: string;
@@ -35,9 +30,7 @@ interface SetupStep {
 export default function TenantAdminWelcomePage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tenant, admin } = useTenantAdminAuth();
-  const { toast } = useToast();
-  const [isGeneratingDemo, setIsGeneratingDemo] = useState(false);
+  const { tenant } = useTenantAdminAuth();
 
   // Use tenant usage data for setup status
   const setupStatus = {
@@ -45,79 +38,6 @@ export default function TenantAdminWelcomePage() {
     hasCustomers: ((tenant as any)?.usage?.customers || 0) > 0,
     hasMenus: ((tenant as any)?.usage?.menus || 0) > 0,
     hasOrders: false, // Will be checked via orders existence
-  };
-
-  const refetch = () => {}; // Placeholder for refetch
-
-  const generateDemoData = useMutation({
-    mutationFn: async () => {
-      if (!tenant?.id) throw new Error("No tenant ID");
-
-      // Generate 10 demo products
-      const demoProducts = Array.from({ length: 10 }, (_, i) => ({
-        tenant_id: tenant.id,
-        product_name: `Demo Strain ${i + 1}`,
-        strain: `Demo Strain ${i + 1}`,
-        category: "flower",
-        quantity_lbs: Math.floor(Math.random() * 50) + 10,
-        quantity_units: Math.floor(Math.random() * 100) + 20,
-        thca_percentage: (Math.random() * 15 + 15).toFixed(1),
-        price_per_lb: Math.floor(Math.random() * 500) + 500,
-        low_stock_threshold: 10,
-      }));
-
-      await supabase.from("wholesale_inventory").insert(demoProducts);
-
-      // Generate 5 demo customers
-      const demoCustomers = Array.from({ length: 5 }, (_, i) => ({
-        tenant_id: tenant.id,
-        business_name: `Demo Customer ${i + 1}`,
-        contact_name: `Contact Person ${i + 1}`,
-        email: `demo${i + 1}@example.com`,
-        phone: `555-${String(i).padStart(3, "0")}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`,
-        address: "123 Demo Street, Demo City, NY 10001",
-        client_type: "retail",
-        credit_limit: Math.floor(Math.random() * 5000) + 1000,
-        payment_terms: 30,
-        status: "active",
-      }));
-
-      await supabase.from("wholesale_clients").insert(demoCustomers);
-
-      // Update tenant usage
-      await supabase
-        .from("tenants")
-        .update({
-          usage: {
-            ...((tenant as any).usage || {}),
-            products: 10,
-            customers: 5,
-          },
-        })
-        .eq("id", tenant.id);
-
-      return { success: true };
-    },
-    onSuccess: () => {
-      toast({
-        title: "Demo Data Generated! 🎉",
-        description: "10 products and 5 customers have been added to your account",
-      });
-      refetch();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to Generate Demo Data",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleGenerateDemo = async () => {
-    setIsGeneratingDemo(true);
-    await generateDemoData.mutateAsync();
-    setIsGeneratingDemo(false);
   };
 
   const steps: SetupStep[] = [
@@ -128,7 +48,7 @@ export default function TenantAdminWelcomePage() {
       icon: Package,
       completed: setupStatus?.hasProducts || false,
       action: "Add Products",
-      link: `/${tenantSlug}/admin/inventory`,
+      link: `/${tenantSlug}/admin/inventory/products`,
       tip: "💡 You can import products via CSV to save time",
     },
     {
@@ -206,34 +126,6 @@ export default function TenantAdminWelcomePage() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Demo Data Button */}
-        {completedSteps === 0 && (
-          <Card className="mb-4 sm:mb-6 md:mb-8 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-            <CardContent className="pt-4 sm:pt-6 p-3 sm:p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-base sm:text-lg mb-1">Want to explore first?</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      Generate demo data to see how everything works (10 products + 5 customers)
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleGenerateDemo}
-                  disabled={isGeneratingDemo}
-                  className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto min-h-[44px] touch-manipulation text-sm sm:text-base"
-                >
-                  {isGeneratingDemo ? "Generating..." : "Generate Demo Data"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Setup Steps */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-12">

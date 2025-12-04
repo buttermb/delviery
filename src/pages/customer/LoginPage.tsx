@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
@@ -206,6 +207,23 @@ export default function CustomerLoginPage() {
                 </>
               )}
             </Button>
+
+            {/* Divider */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-700/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-slate-800/80 px-2 text-slate-400">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign In */}
+            <GoogleSignInButton
+              redirectTo={`${window.location.origin}/${tenantSlug}/customer/auth/callback`}
+              disabled={loading}
+              className="h-12 bg-slate-900/50 border-slate-700 text-white hover:bg-slate-900/70 rounded-lg"
+            />
           </form>
 
           {/* Footer Links */}

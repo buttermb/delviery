@@ -48,14 +48,23 @@ export function usePrefetchDashboard() {
               .gte('created_at', new Date().toISOString().split('T')[0]);
 
             const { data: inventory } = await supabase
-              .from('wholesale_inventory')
-              .select('id, product_name, quantity_lbs, reorder_point')
+              .from('products')
+              .select('id, name, stock_quantity, available_quantity, low_stock_alert')
               .eq('tenant_id', tenantId)
               .limit(100);
 
             const lowStock = (inventory || []).filter(
-              (item: any) => Number(item.quantity_lbs || 0) <= Number(item.reorder_point || 10)
-            ).slice(0, 5);
+              (item: any) => {
+                const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
+                const reorderPoint = item.low_stock_alert ?? 10;
+                return Number(currentStock) <= Number(reorderPoint);
+              }
+            ).map((item: any) => ({
+              id: item.id,
+              product_name: item.name,
+              quantity_lbs: item.available_quantity ?? item.stock_quantity ?? 0,
+              reorder_point: item.low_stock_alert ?? 10,
+            })).slice(0, 5);
 
             return {
               sales,

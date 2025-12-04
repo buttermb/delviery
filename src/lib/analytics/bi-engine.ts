@@ -76,8 +76,8 @@ export class BusinessIntelligenceEngine {
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
         const { data: products } = await supabase
-            .from('wholesale_inventory')
-            .select('id, product_name')
+            .from('products')
+            .select('id, name')
             .eq('tenant_id', tenantId);
 
         if (products && products.length > 0) {

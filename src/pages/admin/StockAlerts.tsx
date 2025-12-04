@@ -23,30 +23,34 @@ export default function StockAlerts() {
           .order('created_at', { ascending: false });
 
         if (error && error.code === '42P01') {
-          // Table doesn't exist, try to calculate from wholesale_inventory
-          const { data: inventory, error: invError } = await supabase
-            .from('wholesale_inventory' as any)
-            .select('*, products(*)')
+          // Table doesn't exist, calculate from products table
+          const { data: products, error: prodError } = await supabase
+            .from('products')
+            .select('id, name, stock_quantity, available_quantity, low_stock_alert, updated_at, created_at')
             .eq('tenant_id', tenantId);
 
-          if (invError && invError.code === '42P01') return [];
-          if (invError) throw invError;
+          if (prodError && prodError.code === '42P01') return [];
+          if (prodError) throw prodError;
 
-          // Generate alerts from inventory
-          return (inventory || [])
+          // Generate alerts from products
+          return (products || [])
             .filter((item: any) => {
-              const quantity = item.quantity || 0;
-              const minThreshold = item.min_threshold || 10;
-              return quantity <= minThreshold;
+              const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
+              const threshold = item.low_stock_alert ?? 10;
+              return quantity <= threshold;
             })
-            .map((item: any) => ({
-              id: item.id,
-              product_name: item.products?.name || 'Unknown',
-              current_quantity: item.quantity || 0,
-              threshold: item.min_threshold || 10,
-              severity: item.quantity <= (item.min_threshold || 10) * 0.5 ? 'critical' : 'warning',
-              created_at: item.updated_at || item.created_at,
-            }));
+            .map((item: any) => {
+              const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
+              const threshold = item.low_stock_alert ?? 10;
+              return {
+                id: item.id,
+                product_name: item.name || 'Unknown',
+                current_quantity: quantity,
+                threshold: threshold,
+                severity: quantity <= threshold * 0.5 ? 'critical' : 'warning',
+                created_at: item.updated_at || item.created_at,
+              };
+            });
         }
         if (error) throw error;
         return data || [];

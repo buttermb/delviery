@@ -1,6 +1,6 @@
 /**
  * Inventory Forecast Widget
- * Predicts when items will run out of stock based on sales velocity
+ * Predicts when items will run out of stock based on REAL sales velocity
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     CalendarClock,
-    ArrowRight
+    ArrowRight,
+    AlertTriangle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InventoryStatusBadge } from './InventoryStatusBadge';
+import { logger } from '@/lib/logger';
 
 interface ForecastItem {
     id: string;
@@ -23,7 +25,23 @@ interface ForecastItem {
     daily_velocity: number;
     days_remaining: number;
     reorder_point: number;
+    has_sales_data: boolean;
 }
+
+interface ProductWithStock {
+    id: string;
+    name: string;
+    stock_quantity: number | null;
+    available_quantity: number | null;
+    low_stock_alert: number | null;
+}
+
+interface SalesDataItem {
+    product_name: string;
+    quantity: number;
+}
+
+const DEFAULT_LOW_STOCK_THRESHOLD = 10;
 
 export function InventoryForecastWidget() {
     const navigate = useNavigate();
@@ -36,49 +54,121 @@ export function InventoryForecastWidget() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            // 1. Get current inventory from products table
-            const { data: inventory } = await supabase
+            // 1. Get ALL products to find low stock items
+            const { data: products, error: productsError } = await supabase
                 .from('products')
-                .select('id, name, stock_quantity, available_quantity')
-                .eq('tenant_id', tenantId)
-                .gt('stock_quantity', 0); // Only items in stock
+                .select('id, name, stock_quantity, available_quantity, low_stock_alert')
+                .eq('tenant_id', tenantId);
 
-            if (!inventory || inventory.length === 0) return [];
+            if (productsError) {
+                logger.error('Failed to fetch products for forecast', productsError, { component: 'InventoryForecastWidget' });
+                return [];
+            }
 
-            // 2. Get sales history (last 30 days) to calculate velocity
+            if (!products || products.length === 0) return [];
+
+            // 2. Get REAL sales history from wholesale_order_items (last 30 days)
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            // Note: We're skipping the complex join for now and using a mock velocity
-            // In a real app, we'd fetch order items and calculate daily average
+            // Query wholesale_order_items joined with wholesale_orders to filter by tenant and date
+            const { data: salesData, error: salesError } = await supabase
+                .from('wholesale_order_items')
+                .select(`
+                    product_name,
+                    quantity,
+                    wholesale_orders!inner(
+                        tenant_id,
+                        created_at
+                    )
+                `)
+                .eq('wholesale_orders.tenant_id', tenantId)
+                .gte('wholesale_orders.created_at', thirtyDaysAgo.toISOString());
 
-            // Fallback: Mock velocity for demo if no order history
-            const mockVelocity = 0.5; // 0.5 units per day
+            if (salesError) {
+                logger.warn('Failed to fetch sales data for velocity calculation', salesError, { component: 'InventoryForecastWidget' });
+                // Continue without sales data - will show items with no velocity
+            }
 
-            const LOW_STOCK_THRESHOLD = 10;
-            const forecasts: ForecastItem[] = inventory.map(item => {
-                // Calculate actual velocity if possible, else use mock
-                const velocity = mockVelocity + (Math.random() * 2); // Randomize slightly for demo
+            // 3. Calculate daily velocity per product from REAL sales data
+            const velocityMap = new Map<string, number>();
+            const salesItems = (salesData || []) as SalesDataItem[];
+            
+            salesItems.forEach(item => {
+                const productName = item.product_name?.toLowerCase().trim();
+                if (productName) {
+                    const current = velocityMap.get(productName) || 0;
+                    velocityMap.set(productName, current + (item.quantity || 0));
+                }
+            });
+
+            // Convert total sales to daily average (divide by 30 days)
+            velocityMap.forEach((totalSold, productName) => {
+                velocityMap.set(productName, totalSold / 30);
+            });
+
+            // 4. Build forecast for each product
+            const forecasts: ForecastItem[] = (products as ProductWithStock[]).map(item => {
                 const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
-                const daysRemaining = Math.floor(currentStock / velocity);
+                const reorderPoint = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
+                
+                // Look up velocity by product name (case-insensitive)
+                const productNameKey = item.name?.toLowerCase().trim() || '';
+                const dailyVelocity = velocityMap.get(productNameKey) || 0;
+                const hasSalesData = dailyVelocity > 0;
+
+                // Calculate days remaining
+                let daysRemaining: number;
+                if (currentStock <= 0) {
+                    daysRemaining = 0; // Already out of stock
+                } else if (dailyVelocity <= 0) {
+                    daysRemaining = 999; // No sales = won't run out (or no data)
+                } else {
+                    daysRemaining = Math.floor(currentStock / dailyVelocity);
+                }
 
                 return {
                     id: item.id,
                     product_name: item.name,
                     quantity_lbs: currentStock,
-                    daily_velocity: velocity,
+                    daily_velocity: dailyVelocity,
                     days_remaining: daysRemaining,
-                    reorder_point: LOW_STOCK_THRESHOLD
+                    reorder_point: reorderPoint,
+                    has_sales_data: hasSalesData
                 };
             });
 
-            // Filter for items running out soon (< 14 days)
-            return forecasts
-                .filter(item => item.days_remaining < 14)
-                .sort((a, b) => a.days_remaining - b.days_remaining)
+            // 5. Filter for items that are:
+            //    - Already at or below reorder point (low stock)
+            //    - OR will run out within 14 days based on velocity
+            //    - Prioritize items with actual sales data
+            const atRisk = forecasts.filter(item => {
+                const isLowStock = item.quantity_lbs <= item.reorder_point;
+                const willRunOutSoon = item.has_sales_data && item.days_remaining < 14;
+                const isOutOfStock = item.quantity_lbs <= 0;
+                return isLowStock || willRunOutSoon || isOutOfStock;
+            });
+
+            // Sort: out of stock first, then by days remaining, then by stock level
+            return atRisk
+                .sort((a, b) => {
+                    // Out of stock items first
+                    if (a.quantity_lbs <= 0 && b.quantity_lbs > 0) return -1;
+                    if (b.quantity_lbs <= 0 && a.quantity_lbs > 0) return 1;
+                    // Then by days remaining (items with sales data)
+                    if (a.has_sales_data && b.has_sales_data) {
+                        return a.days_remaining - b.days_remaining;
+                    }
+                    // Items with sales data before those without
+                    if (a.has_sales_data && !b.has_sales_data) return -1;
+                    if (!a.has_sales_data && b.has_sales_data) return 1;
+                    // Finally by stock level
+                    return a.quantity_lbs - b.quantity_lbs;
+                })
                 .slice(0, 5); // Top 5 at risk
         },
         enabled: !!tenantId,
+        staleTime: 60000, // Cache for 1 minute
     });
 
     if (isLoading) {
@@ -126,24 +216,43 @@ export function InventoryForecastWidget() {
                                     />
                                 </div>
                                 <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                    <span>{item.quantity_lbs} lbs left</span>
+                                    <span>{item.quantity_lbs.toFixed(1)} lbs left</span>
                                     <span>•</span>
-                                    <span>~{item.daily_velocity.toFixed(1)} lbs/day</span>
+                                    {item.has_sales_data ? (
+                                        <span>~{item.daily_velocity.toFixed(1)} lbs/day</span>
+                                    ) : (
+                                        <span className="text-amber-600 flex items-center gap-1">
+                                            <AlertTriangle className="h-3 w-3" />
+                                            No recent sales
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <div className="text-right">
-                                    <div className={`text-sm font-bold ${item.days_remaining < 3 ? 'text-red-600' : 'text-orange-600'}`}>
-                                        {item.days_remaining < 1 ? '< 1 day' : `${item.days_remaining} days`}
+                                    {item.quantity_lbs <= 0 ? (
+                                        <div className="text-sm font-bold text-red-600">
+                                            Out of Stock
+                                        </div>
+                                    ) : item.has_sales_data ? (
+                                        <div className={`text-sm font-bold ${item.days_remaining < 3 ? 'text-red-600' : 'text-orange-600'}`}>
+                                            {item.days_remaining < 1 ? '< 1 day' : `${item.days_remaining} days`}
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm font-bold text-amber-600">
+                                            Low Stock
+                                        </div>
+                                    )}
+                                    <div className="text-[10px] text-muted-foreground">
+                                        {item.quantity_lbs <= 0 ? 'restock needed' : item.has_sales_data ? 'until empty' : `below ${item.reorder_point}`}
                                     </div>
-                                    <div className="text-[10px] text-muted-foreground">until empty</div>
                                 </div>
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     className="h-8 w-8 p-0"
-                                    onClick={() => navigate(`/${tenantSlug}/admin/inventory?action=restock&id=${item.id}`)}
+                                    onClick={() => navigate(`/${tenantSlug}/admin/inventory/products?highlight=${item.id}&search=${encodeURIComponent(item.product_name)}`)}
                                 >
                                     <ArrowRight className="h-4 w-4" />
                                 </Button>

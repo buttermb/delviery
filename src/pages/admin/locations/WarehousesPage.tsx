@@ -60,11 +60,10 @@ export default function WarehousesPage() {
       if (!tenantId) return [];
 
       try {
-        // Get inventory grouped by warehouse location
-        // @ts-ignore - Type inference issue, will resolve after migration
+        // Get inventory grouped by category (simulating warehouse locations)
         const { data: inventory, error } = await supabase
-          .from('wholesale_inventory')
-          .select('warehouse_location, quantity_lbs, cost_per_lb')
+          .from('products')
+          .select('category, stock_quantity, cost_per_unit')
           .eq('tenant_id', tenantId);
 
         // Gracefully handle missing table
@@ -76,15 +75,15 @@ export default function WarehousesPage() {
         setTableMissing(false);
 
         interface InventoryItem {
-          warehouse_location?: string | null;
-          quantity_lbs?: number | null;
-          cost_per_lb?: number | null;
+          category?: string | null;
+          stock_quantity?: number | null;
+          cost_per_unit?: number | null;
         }
 
         const warehouseMap = new Map<string, WarehouseLocation>();
 
         (inventory || []).forEach((item: InventoryItem) => {
-          const loc = item.warehouse_location || 'Unknown';
+          const loc = item.category || 'Uncategorized';
           if (!warehouseMap.has(loc)) {
             warehouseMap.set(loc, {
               location: loc,
@@ -94,8 +93,8 @@ export default function WarehousesPage() {
             });
           }
           const wh = warehouseMap.get(loc)!;
-          wh.total_quantity += Number(item.quantity_lbs || 0);
-          wh.total_value += Number(item.quantity_lbs || 0) * Number(item.cost_per_lb || 0);
+          wh.total_quantity += Number(item.stock_quantity || 0);
+          wh.total_value += Number(item.stock_quantity || 0) * Number(item.cost_per_unit || 0);
           wh.product_count += 1;
         });
 

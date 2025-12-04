@@ -62,24 +62,31 @@ export function SmartNotificationsCenter() {
             // Generate smart notifications based on business data
             const notifs: Notification[] = [];
 
-            // Check for low stock items (CRITICAL)
-            const { data: lowStock } = await supabase
-                .from('wholesale_inventory')
-                .select('product_name, quantity_lbs, reorder_point')
-                .eq('tenant_id', tenantId)
-                .lte('quantity_lbs', (supabase.rpc as any)('reorder_point', {}));
+            // Check for low stock items from products table (CRITICAL)
+            const { data: products } = await supabase
+                .from('products')
+                .select('name, available_quantity, stock_quantity, low_stock_alert')
+                .eq('tenant_id', tenantId);
 
-            if (lowStock && lowStock.length > 0) {
-                lowStock.forEach((item) => {
+            const DEFAULT_LOW_STOCK_THRESHOLD = 10;
+            const lowStockProducts = products?.filter(item => {
+                const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+                const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
+                return currentQty <= threshold;
+            }) || [];
+
+            if (lowStockProducts.length > 0) {
+                lowStockProducts.forEach((item) => {
+                    const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
                     notifs.push({
-                        id: `low-stock-${item.product_name}`,
+                        id: `low-stock-${item.name}`,
                         type: 'inventory',
                         priority: 'critical',
-                        title: `${item.product_name} is low`,
-                        message: `Only ${item.quantity_lbs} lbs left. Restock now to avoid stockouts.`,
+                        title: `${item.name} is low`,
+                        message: `Only ${currentQty.toFixed(1)} units left. Restock now to avoid stockouts.`,
                         action: {
                             label: 'Restock Now',
-                            href: `/${tenantSlug}/admin/inventory?product=${item.product_name}`
+                            href: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`
                         },
                         read: false,
                         created_at: new Date().toISOString()

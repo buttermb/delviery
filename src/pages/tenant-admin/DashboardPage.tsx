@@ -52,6 +52,7 @@ interface DashboardInventoryRow {
   name: string | null;
   stock_quantity: number | null;
   available_quantity: number | null;
+  low_stock_alert: number | null;
 }
 
 export default function TenantAdminDashboardPage() {
@@ -146,10 +147,10 @@ export default function TenantAdminDashboardPage() {
         const sales = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
         const orderCount = orders?.length || 0;
 
-        // Get low stock items from products table
+        // Get low stock items from products table (including low_stock_alert field)
         let inventoryResult = await supabase
           .from("products")
-          .select("id, name, stock_quantity, available_quantity")
+          .select("id, name, stock_quantity, available_quantity, low_stock_alert")
           .eq("tenant_id", tenantId)
           .returns<DashboardInventoryRow[]>();
 
@@ -158,7 +159,7 @@ export default function TenantAdminDashboardPage() {
           logger.warn("tenant_id filter failed for products, retrying without filter", inventoryResult.error, { component: 'DashboardPage' });
           inventoryResult = await supabase
             .from("products")
-            .select("id, name, stock_quantity, available_quantity")
+            .select("id, name, stock_quantity, available_quantity, low_stock_alert")
             .limit(100)
             .returns<DashboardInventoryRow[]>();
         }
@@ -169,15 +170,21 @@ export default function TenantAdminDashboardPage() {
           logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
         }
 
-        const LOW_STOCK_THRESHOLD = 10;
-        const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => ({
-          id: item.id,
-          strain: item.name || 'Unknown',
-          product_name: item.name,
-          quantity_lbs: item.available_quantity ?? item.stock_quantity ?? 0,
-          reorder_point: LOW_STOCK_THRESHOLD,
-        })).filter(
-          (item) => Number(item.quantity_lbs || 0) <= LOW_STOCK_THRESHOLD
+        const DEFAULT_LOW_STOCK_THRESHOLD = 10;
+        const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => {
+          // Use product's low_stock_alert if set, otherwise use default threshold
+          const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
+          const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+          return {
+            id: item.id,
+            strain: item.name || 'Unknown',
+            product_name: item.name,
+            quantity_lbs: currentQty,
+            reorder_point: threshold,
+            weight_lbs: currentQty, // For display consistency
+          };
+        }).filter(
+          (item) => Number(item.quantity_lbs || 0) <= item.reorder_point
         );
 
         return {
@@ -885,7 +892,7 @@ export default function TenantAdminDashboardPage() {
                 <Button
                   variant="outline"
                   className="w-full min-h-[44px] sm:min-h-[56px] h-auto py-3 sm:py-4 flex flex-col items-center gap-2 touch-manipulation"
-                  onClick={() => navigate(`/${tenant?.slug}/admin/customers`)}
+                  onClick={() => navigate(`/${tenant?.slug}/admin/big-plug-clients`)}
                 >
                   <Plus className="h-5 w-5" />
                   <span className="text-sm sm:text-base">Add Customer</span>
@@ -976,7 +983,7 @@ export default function TenantAdminDashboardPage() {
                 ))}
               </div>
               <Button variant="outline" className="w-full mt-3 sm:mt-4 min-h-[44px] touch-manipulation" asChild>
-                <Link to={`/${tenant?.slug}/admin/inventory`}>
+                <Link to={`/${tenant?.slug}/admin/inventory/products`}>
                   <span className="text-sm sm:text-base">Manage Inventory</span> <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>

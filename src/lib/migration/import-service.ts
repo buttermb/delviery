@@ -113,7 +113,7 @@ async function createImportItem(
 }
 
 /**
- * Convert ParsedProduct to wholesale_inventory format
+ * Convert ParsedProduct to products table format
  */
 function toInventoryRecord(
   product: Partial<ParsedProduct>,
@@ -121,19 +121,16 @@ function toInventoryRecord(
 ): Record<string, unknown> {
   return {
     tenant_id: tenantId,
-    product_name: product.name,
+    name: product.name,
     category: product.category || 'flower',
     strain_type: product.strainType || null,
-    thc_percentage: product.thcPercentage || null,
-    cbd_percentage: product.cbdPercentage || null,
-    base_price: product.prices?.lb || product.prices?.oz || null,
-    prices: product.prices ? JSON.stringify(product.prices) : null,
-    quantity_lbs: product.quantityLbs || null,
-    quantity_units: product.quantityUnits || null,
-    lineage: product.lineage || null,
-    terpenes: product.terpenes || null,
-    grow_info: product.growInfo || null,
-    notes: product.notes || null,
+    thc_percent: product.thcPercentage || null,
+    cbd_percent: product.cbdPercentage || null,
+    price: product.prices?.lb || product.prices?.oz || null,
+    wholesale_price: product.prices?.lb || null,
+    stock_quantity: product.quantityLbs || product.quantityUnits || null,
+    description: product.notes || null,
+    in_stock: true,
   };
 }
 
@@ -158,10 +155,10 @@ async function importSingleProduct(
   try {
     // Check for existing product
     const { data: existing } = await supabase
-      .from('wholesale_inventory')
-      .select('id, product_name')
+      .from('products')
+      .select('id, name')
       .eq('tenant_id', tenantId)
-      .ilike('product_name', product.name)
+      .ilike('name', product.name)
       .maybeSingle();
 
     if (existing) {
@@ -173,7 +170,7 @@ async function importSingleProduct(
 
       if (options.updateExisting) {
         const { error } = await supabase
-          .from('wholesale_inventory')
+          .from('products')
           .update(toInventoryRecord(product, tenantId))
           .eq('id', existing.id);
 
@@ -188,7 +185,7 @@ async function importSingleProduct(
 
     // Insert new product
     const { data, error } = await supabase
-      .from('wholesale_inventory')
+      .from('products')
       .insert(toInventoryRecord(product, tenantId))
       .select('id')
       .single();
@@ -358,12 +355,12 @@ export async function rollbackImport(importId: string): Promise<{
       .map(item => (item.parsed_data as Partial<ParsedProduct>)?.name)
       .filter((name): name is string => !!name);
 
-    // Delete from wholesale_inventory
+    // Delete from products
     // Note: This is a simplified rollback - in production you'd track actual inserted IDs
     const { error: deleteError, count } = await supabase
-      .from('wholesale_inventory')
+      .from('products')
       .delete()
-      .in('product_name', productNames);
+      .in('name', productNames);
 
     if (deleteError) throw deleteError;
 

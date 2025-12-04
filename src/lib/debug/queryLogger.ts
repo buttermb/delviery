@@ -19,16 +19,18 @@ const TENANT_SCOPED_TABLES = [
   'deliveries',
   'wholesale_clients',
   'wholesale_orders',
+  'wholesale_runners',
+  'wholesale_deliveries',
   'disposable_menus',
   'inventory_alerts',
-  'wholesale_inventory',
   'invoices',
   'merchants',
   'addresses',
   'loyalty_points',
   'fraud_flags',
   'age_verifications',
-  'audit_logs'
+  'audit_logs',
+  'product_movements'
 ];
 
 interface QueryLogOptions {

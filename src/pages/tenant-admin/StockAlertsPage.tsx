@@ -22,25 +22,34 @@ export default function StockAlertsPage() {
         .order('created_at', { ascending: false });
 
       if (alertError && alertError.code === '42P01') {
-        // Fallback: Calculate from wholesale_inventory
-        const { data: inventory, error: invError } = await supabase
-          .from('wholesale_inventory' as any)
-          .select('*')
+        // Fallback: Calculate from products table
+        const { data: products, error: prodError } = await supabase
+          .from('products')
+          .select('id, name, available_quantity, stock_quantity, low_stock_alert')
           .eq('tenant_id', tenant.id);
 
-        if (invError && invError.code === '42P01') return [];
-        if (invError) throw invError;
+        if (prodError && prodError.code === '42P01') return [];
+        if (prodError) throw prodError;
 
-        return (inventory || [])
-          .filter((item: any) => item.quantity_lbs < 50)
-          .map((item: any) => ({
-            id: item.id,
-            product_name: item.product_name,
-            current_stock: item.quantity_lbs,
-            threshold: 50,
-            severity: item.quantity_lbs < 20 ? 'critical' : 'warning',
-            created_at: new Date().toISOString(),
-          }));
+        const DEFAULT_THRESHOLD = 10;
+        return (products || [])
+          .filter((item: any) => {
+            const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+            const threshold = item.low_stock_alert ?? DEFAULT_THRESHOLD;
+            return currentQty <= threshold;
+          })
+          .map((item: any) => {
+            const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+            const threshold = item.low_stock_alert ?? DEFAULT_THRESHOLD;
+            return {
+              id: item.id,
+              product_name: item.name,
+              current_stock: currentQty,
+              threshold: threshold,
+              severity: currentQty <= threshold * 0.5 ? 'critical' : 'warning',
+              created_at: new Date().toISOString(),
+            };
+          });
       }
 
       if (alertError) throw alertError;

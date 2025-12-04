@@ -624,7 +624,7 @@ export function WorkflowCanvas() {
                           <SelectItem value="orders">orders</SelectItem>
                           <SelectItem value="wholesale_orders">wholesale_orders</SelectItem>
                           <SelectItem value="inventory">inventory</SelectItem>
-                          <SelectItem value="wholesale_inventory">wholesale_inventory</SelectItem>
+                          <SelectItem value="products">products</SelectItem>
                         </SelectContent>
                       </Select>
                       

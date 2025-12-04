@@ -74,10 +74,10 @@ export default function PointOfSale() {
 
   useInventorySync({ tenantId, enabled: !!tenantId });
 
-  // Enable realtime sync for wholesale_orders and wholesale_inventory
+  // Enable realtime sync for wholesale_orders and products
   useRealtimeSync({
     tenantId,
-    tables: ['wholesale_orders', 'wholesale_inventory'],
+    tables: ['wholesale_orders', 'products'],
     enabled: !!tenantId,
   });
 

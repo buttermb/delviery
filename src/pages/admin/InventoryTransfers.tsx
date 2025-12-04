@@ -35,7 +35,7 @@ export default function InventoryTransfers() {
       try {
         const { data, error } = await supabase
           .from('inventory_transfers' as any)
-          .select('*, product:wholesale_inventory(*)')
+          .select('*, product:products(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(100);

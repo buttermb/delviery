@@ -52,15 +52,18 @@ export function QuickActionsHub() {
                 .eq('tenant_id', tenantId)
                 .eq('status', 'pending');
 
-            // Get low stock items count
-            const { data: inventory } = await supabase
-                .from('wholesale_inventory')
-                .select('quantity_lbs, reorder_point')
+            // Get low stock items count from products table
+            const { data: products } = await supabase
+                .from('products')
+                .select('available_quantity, stock_quantity, low_stock_alert')
                 .eq('tenant_id', tenantId);
 
-            const lowStockItems = inventory?.filter(
-                item => (item.quantity_lbs || 0) <= (item.reorder_point || 0)
-            ).length || 0;
+            const DEFAULT_LOW_STOCK_THRESHOLD = 10;
+            const lowStockItems = products?.filter(item => {
+                const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
+                const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
+                return currentQty <= threshold;
+            }).length || 0;
 
             // Get today's deliveries count (orders ready for delivery)
             const today = new Date();
@@ -158,8 +161,8 @@ export function QuickActionsHub() {
             id: 'send-message',
             label: 'Message',
             icon: MessageSquare,
-            action: () => navigate(`/${tenantSlug}/admin/big-plug-clients`),
-            description: 'Send customer SMS'
+            action: () => navigate(`/${tenantSlug}/admin/notifications`),
+            description: 'Send SMS/notifications'
         }
     ];
 

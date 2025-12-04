@@ -1,6 +1,6 @@
 /**
  * Multi-Channel Order List
- * Aggregates orders from Wholesale, POS, and Online channels
+ * Aggregates orders from Wholesale, POS, and Online channels using REAL data
  */
 
 import { useState } from 'react';
@@ -13,7 +13,6 @@ import {
     Store,
     Globe,
     Search,
-    Filter,
     ArrowUpRight
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +20,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 type OrderChannel = 'wholesale' | 'pos' | 'online';
 
@@ -35,8 +35,38 @@ interface ChannelOrder {
     order_number: string;
 }
 
+interface WholesaleOrderRow {
+    id: string;
+    total_amount: number | null;
+    status: string;
+    created_at: string;
+    wholesale_clients: { business_name: string | null } | null;
+}
+
+interface POSTransactionRow {
+    id: string;
+    total_amount: number;
+    payment_status: string;
+    created_at: string;
+    transaction_number: string;
+    customer_name: string | null;
+}
+
+interface UnifiedOrderRow {
+    id: string;
+    total_amount?: number;
+    subtotal: number;
+    status: string;
+    created_at: string;
+    order_number: string;
+    source: string;
+    order_type: string;
+    contact_name: string | null;
+}
+
 export function MultiChannelOrderList() {
     const navigate = useNavigate();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const { tenant } = useTenantAdminAuth();
     const tenantId = tenant?.id;
     const [searchTerm, setSearchTerm] = useState('');
@@ -47,49 +77,103 @@ export function MultiChannelOrderList() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            // Fetch Wholesale Orders
-            // @ts-ignore - Outdated Supabase types
-            const { data: wholesale } = await supabase
-                .from('wholesale_orders')
-                .select(`
-          id, 
-          total_amount, 
-          status, 
-          created_at,
-          wholesale_clients(business_name)
-        `)
-                .eq('tenant_id', tenantId)
-                .order('created_at', { ascending: false })
-                .limit(20);
+            const unifiedOrders: ChannelOrder[] = [];
 
-            // Fetch POS Orders (Mock for now if table doesn't exist or is separate)
-            // In a real scenario, this would query a 'pos_orders' table or filter a unified 'orders' table
-            const pos: ChannelOrder[] = []; // Placeholder
+            // 1. Fetch Wholesale Orders
+            try {
+                const { data: wholesale, error: wholesaleError } = await supabase
+                    .from('wholesale_orders')
+                    .select(`
+                        id, 
+                        total_amount, 
+                        status, 
+                        created_at,
+                        wholesale_clients(business_name)
+                    `)
+                    .eq('tenant_id', tenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
 
-            // Fetch Online Orders (Mock)
-            const online: ChannelOrder[] = []; // Placeholder
+                if (wholesaleError) {
+                    logger.warn('Failed to fetch wholesale orders', wholesaleError, { component: 'MultiChannelOrderList' });
+                } else if (wholesale) {
+                    const wholesaleOrders = (wholesale as unknown as WholesaleOrderRow[]).map((o) => ({
+                        id: o.id,
+                        channel: 'wholesale' as OrderChannel,
+                        customer_name: o.wholesale_clients?.business_name || 'Unknown Client',
+                        total_amount: Number(o.total_amount) || 0,
+                        status: o.status || 'pending',
+                        created_at: o.created_at,
+                        order_number: `WS-${o.id.substring(0, 6).toUpperCase()}`
+                    }));
+                    unifiedOrders.push(...wholesaleOrders);
+                }
+            } catch (error) {
+                logger.error('Error fetching wholesale orders', error, { component: 'MultiChannelOrderList' });
+            }
 
-            // Map to unified format
-            const unifiedOrders: ChannelOrder[] = [
-                ...(wholesale || []).map((o: any) => ({
-                    id: o.id,
-                    channel: 'wholesale' as OrderChannel,
-                    customer_name: o.wholesale_clients?.business_name || 'Unknown Client',
-                    total_amount: Number(o.total_amount),
-                    status: o.status,
-                    created_at: o.created_at,
-                    order_number: `WS-${o.id.substring(0, 6).toUpperCase()}`
-                })),
-                ...pos,
-                ...online
-            ];
+            // 2. Fetch POS Transactions (REAL DATA)
+            try {
+                const { data: posData, error: posError } = await supabase
+                    .from('pos_transactions')
+                    .select('id, total_amount, payment_status, created_at, transaction_number, customer_name')
+                    .eq('tenant_id', tenantId)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
 
-            // Sort by date
+                if (posError) {
+                    logger.warn('Failed to fetch POS transactions', posError, { component: 'MultiChannelOrderList' });
+                } else if (posData) {
+                    const posOrders = (posData as POSTransactionRow[]).map((t) => ({
+                        id: t.id,
+                        channel: 'pos' as OrderChannel,
+                        customer_name: t.customer_name || 'Walk-in Customer',
+                        total_amount: Number(t.total_amount) || 0,
+                        status: t.payment_status || 'completed',
+                        created_at: t.created_at,
+                        order_number: t.transaction_number || `POS-${t.id.substring(0, 6).toUpperCase()}`
+                    }));
+                    unifiedOrders.push(...posOrders);
+                }
+            } catch (error) {
+                logger.error('Error fetching POS transactions', error, { component: 'MultiChannelOrderList' });
+            }
+
+            // 3. Fetch from unified_orders table (for online orders and any other sources)
+            try {
+                const { data: unifiedData, error: unifiedError } = await supabase
+                    .from('unified_orders')
+                    .select('id, subtotal, status, created_at, order_number, source, order_type, contact_name')
+                    .eq('tenant_id', tenantId)
+                    .in('source', ['online', 'web', 'app', 'marketplace'])
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (unifiedError) {
+                    logger.warn('Failed to fetch unified orders', unifiedError, { component: 'MultiChannelOrderList' });
+                } else if (unifiedData) {
+                    const onlineOrders = (unifiedData as UnifiedOrderRow[]).map((o) => ({
+                        id: o.id,
+                        channel: 'online' as OrderChannel,
+                        customer_name: o.contact_name || 'Online Customer',
+                        total_amount: Number(o.subtotal) || 0,
+                        status: o.status || 'pending',
+                        created_at: o.created_at,
+                        order_number: o.order_number || `ON-${o.id.substring(0, 6).toUpperCase()}`
+                    }));
+                    unifiedOrders.push(...onlineOrders);
+                }
+            } catch (error) {
+                logger.error('Error fetching unified orders', error, { component: 'MultiChannelOrderList' });
+            }
+
+            // Sort all orders by date (newest first)
             return unifiedOrders.sort((a, b) =>
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             );
         },
         enabled: !!tenantId,
+        staleTime: 30000, // Cache for 30 seconds
     });
 
     const filteredOrders = orders.filter(order => {
@@ -99,6 +183,13 @@ export function MultiChannelOrderList() {
         const matchesChannel = channelFilter === 'all' || order.channel === channelFilter;
         return matchesSearch && matchesChannel;
     });
+
+    // Count orders per channel for badges
+    const channelCounts = {
+        wholesale: orders.filter(o => o.channel === 'wholesale').length,
+        pos: orders.filter(o => o.channel === 'pos').length,
+        online: orders.filter(o => o.channel === 'online').length,
+    };
 
     const getChannelIcon = (channel: OrderChannel) => {
         switch (channel) {
@@ -124,35 +215,74 @@ export function MultiChannelOrderList() {
         }
     };
 
+    const handleOrderClick = (order: ChannelOrder) => {
+        // Navigate to appropriate order detail based on channel
+        if (order.channel === 'wholesale') {
+            navigate(`/${tenantSlug}/admin/wholesale-orders/${order.id}`);
+        } else if (order.channel === 'pos') {
+            navigate(`/${tenantSlug}/admin/pos/history?transaction=${order.id}`);
+        } else {
+            navigate(`/${tenantSlug}/admin/orders/${order.id}`);
+        }
+    };
+
     return (
         <Card>
             <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     <CardTitle>Recent Orders</CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <Button
                             variant={channelFilter === 'all' ? 'secondary' : 'ghost'}
                             size="sm"
                             onClick={() => setChannelFilter('all')}
                         >
                             All
+                            {orders.length > 0 && (
+                                <Badge variant="outline" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                                    {orders.length}
+                                </Badge>
+                            )}
                         </Button>
                         <Button
                             variant={channelFilter === 'wholesale' ? 'secondary' : 'ghost'}
                             size="sm"
                             onClick={() => setChannelFilter('wholesale')}
                         >
-                            <Store className="h-4 w-4 mr-2" />
+                            <Store className="h-4 w-4 mr-1" />
                             Wholesale
+                            {channelCounts.wholesale > 0 && (
+                                <Badge variant="outline" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                                    {channelCounts.wholesale}
+                                </Badge>
+                            )}
                         </Button>
                         <Button
                             variant={channelFilter === 'pos' ? 'secondary' : 'ghost'}
                             size="sm"
                             onClick={() => setChannelFilter('pos')}
                         >
-                            <ShoppingBag className="h-4 w-4 mr-2" />
+                            <ShoppingBag className="h-4 w-4 mr-1" />
                             POS
+                            {channelCounts.pos > 0 && (
+                                <Badge variant="outline" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                                    {channelCounts.pos}
+                                </Badge>
+                            )}
                         </Button>
+                        {channelCounts.online > 0 && (
+                            <Button
+                                variant={channelFilter === 'online' ? 'secondary' : 'ghost'}
+                                size="sm"
+                                onClick={() => setChannelFilter('online')}
+                            >
+                                <Globe className="h-4 w-4 mr-1" />
+                                Online
+                                <Badge variant="outline" className="ml-1.5 h-5 px-1.5 text-[10px]">
+                                    {channelCounts.online}
+                                </Badge>
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <div className="relative mt-2">
@@ -172,13 +302,13 @@ export function MultiChannelOrderList() {
                     ) : filteredOrders.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">No orders found</div>
                     ) : (
-                        filteredOrders.map((order) => {
+                        filteredOrders.slice(0, 10).map((order) => {
                             const Icon = getChannelIcon(order.channel);
                             return (
                                 <div
-                                    key={order.id}
+                                    key={`${order.channel}-${order.id}`}
                                     className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
-                                    onClick={() => navigate(`/admin/orders/${order.id}`)}
+                                    onClick={() => handleOrderClick(order)}
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2 rounded-full ${getChannelColor(order.channel)}`}>

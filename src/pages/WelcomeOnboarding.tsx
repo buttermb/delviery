@@ -3,14 +3,13 @@ import { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Package, Users, Smartphone, UserPlus, ArrowRight, CheckCircle2, Circle, Sparkles } from "lucide-react";
+import { Package, Users, Smartphone, UserPlus, CheckCircle2, Circle } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { generateDemoData } from "@/lib/demoData";
 import { OnboardingCompletionModal } from "@/components/onboarding/OnboardingCompletionModal";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { handleError } from "@/utils/errorHandling/handlers";
@@ -27,7 +26,6 @@ export default function WelcomeOnboarding() {
   const tenantSlug = routeSlug || stateData.tenantSlug || tenant?.slug || "";
   const tenantId = tenant?.id || stateData.tenantId || "";
   const name = admin?.name || stateData.name || "there";
-  const [isGenerating, setIsGenerating] = useState(false);
   const [skippedSteps, setSkippedSteps] = useState<Set<string>>(new Set());
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
@@ -150,36 +148,6 @@ export default function WelcomeOnboarding() {
     },
   ];
 
-  const handleGenerateDemoData = async () => {
-    if (!effectiveTenantId) {
-      toast({
-        title: "Error",
-        description: "Tenant ID is missing",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      await generateDemoData(effectiveTenantId);
-      toast({
-        title: "Demo Data Generated!",
-        description: "10 products, 5 customers, and 1 menu have been created",
-      });
-      // Refetch tenant data to update usage counts
-      await refetchTenant();
-    } catch (error) {
-      handleError(error, {
-        component: 'WelcomeOnboarding.handleGenerateDemoData',
-        toastTitle: "Error",
-        showToast: true
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   const handleSkipStep = (stepId: string) => {
     const newSkipped = new Set(skippedSteps);
     newSkipped.add(stepId);
@@ -229,36 +197,6 @@ export default function WelcomeOnboarding() {
               Your account is ready. Let's get you set up.
             </p>
           </div>
-
-          {/* Use Demo Data Button */}
-          {!tenantInfo?.demo_data_generated && (
-            <div className="mb-8">
-              <Card className="border-2 border-[hsl(var(--marketing-primary))] bg-gradient-to-r from-[hsl(var(--marketing-primary))]/5 to-[hsl(var(--marketing-secondary))]/5">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Sparkles className="h-8 w-8 text-[hsl(var(--marketing-primary))]" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-[hsl(var(--marketing-text))]">
-                          Want to explore quickly?
-                        </h3>
-                        <p className="text-sm text-[hsl(var(--marketing-text-light))]">
-                          Generate demo data: 10 products, 5 customers, 1 menu
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleGenerateDemoData}
-                      disabled={isGenerating}
-                      className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white min-h-[44px] w-full sm:w-auto px-6 touch-manipulation"
-                    >
-                      {isGenerating ? "Generating..." : "Use Demo Data"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           {/* Progress Tracking */}
           <div className="mb-8">

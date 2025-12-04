@@ -48,23 +48,22 @@ export function LocationMapWidget() {
       if (!account?.id) return null;
 
       interface InventoryItem {
-        warehouse_location: string | null;
-        quantity_lbs: number | null;
+        category: string | null;
+        stock_quantity: number | null;
       }
 
-      // Get warehouses from inventory
-      // @ts-ignore - Deep instantiation error from Supabase types
+      // Get warehouses from products (grouped by category)
       const { data: inventory } = await supabase
-        .from('wholesale_inventory')
-        .select('warehouse_location, quantity_lbs')
-        .eq('account_id', account.id);
+        .from('products')
+        .select('category, stock_quantity')
+        .eq('tenant_id', account.id);
 
       const warehouses = (inventory || []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
-        const wh = item.warehouse_location || 'Main Warehouse';
+        const wh = item.category || 'Uncategorized';
         if (!acc[wh]) {
           acc[wh] = { lbs: 0, count: 0 };
         }
-        acc[wh].lbs += Number(item.quantity_lbs || 0);
+        acc[wh].lbs += Number(item.stock_quantity || 0);
         acc[wh].count += 1;
         return acc;
       }, {});

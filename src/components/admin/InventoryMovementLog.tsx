@@ -20,14 +20,42 @@ export function InventoryMovementLog() {
   const { data: movements = [], isLoading } = useQuery({
     queryKey: ["inventory-movements"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wholesale_inventory_movements")
+      // Try product_movements table first (the current standard)
+      const { data: productMovements, error: productError } = await supabase
+        .from("product_movements")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
-      return data as InventoryMovement[];
+      // If product_movements exists, use it
+      if (!productError) {
+        return (productMovements || []).map((m: any) => ({
+          id: m.id,
+          product_name: m.product_name || 'Unknown Product',
+          movement_type: m.movement_type,
+          quantity_change: m.quantity_change,
+          from_location: m.from_location || '',
+          to_location: m.to_location || '',
+          notes: m.notes || '',
+          created_at: m.created_at,
+        })) as InventoryMovement[];
+      }
+
+      // Fallback to inventory_movements table
+      if (productError && productError.code === '42P01') {
+        const { data, error } = await supabase
+          .from("inventory_movements")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (error && error.code === '42P01') return []; // Neither table exists
+        if (error) throw error;
+        return data as InventoryMovement[];
+      }
+
+      if (productError) throw productError;
+      return [];
     },
     refetchInterval: 30000, // Refresh every 30 seconds
   });

@@ -18,7 +18,7 @@ interface UseRealtimeSyncOptions {
 
 const DEFAULT_TABLES = [
   'wholesale_orders',
-  'wholesale_inventory',
+  'products',
   'deliveries',
   'courier_earnings',
 ];
@@ -145,14 +145,17 @@ export function useRealtimeSync({
                     }
                     break;
 
-                  case 'wholesale_inventory':
+                  case 'products':
                     queryClient.invalidateQueries({ queryKey: ['inventory'] });
-                    queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
                     queryClient.invalidateQueries({ queryKey: ['products'] });
+                    queryClient.invalidateQueries({ queryKey: ['products-inventory'] });
+                    queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
                     queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
+                    queryClient.invalidateQueries({ queryKey: ['inventory-forecast'] });
+                    queryClient.invalidateQueries({ queryKey: ['low-stock'] });
                     // Invalidate product-specific queries
-                    if (payload.new && hasProductId(payload.new)) {
-                      queryClient.invalidateQueries({ queryKey: ['product', payload.new.product_id] });
+                    if (payload.new && hasId(payload.new)) {
+                      queryClient.invalidateQueries({ queryKey: ['product', payload.new.id] });
                     }
                     break;
 

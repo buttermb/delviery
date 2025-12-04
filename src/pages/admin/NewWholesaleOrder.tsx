@@ -31,13 +31,10 @@ import {
   Loader2,
   Sparkles,
   X,
-  ShoppingBag,
-  Warehouse,
 } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
-import { useWholesaleInventory, useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
+import { useWholesaleCouriers, useProductsForWholesale } from '@/hooks/useWholesaleData';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -77,26 +74,18 @@ interface OrderData {
 
 const QUICK_QTY_PRESETS = [1, 5, 10, 25];
 
-type ProductSource = 'products' | 'wholesale_inventory';
-
 export default function NewWholesaleOrder() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   
-  // Product sources - user can choose between main catalog or wholesale inventory
-  const { data: wholesaleInventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
-  const { data: productsCatalog = [], isLoading: productsLoading } = useProductsForWholesale();
+  // Products catalog for wholesale orders
+  const { data: inventory = [], isLoading: isInventoryLoading } = useProductsForWholesale();
   const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [productSearch, setProductSearch] = useState('');
-  const [productSource, setProductSource] = useState<ProductSource>('products');
-
-  // Combined inventory based on selected source
-  const inventory = productSource === 'products' ? productsCatalog : wholesaleInventory;
-  const isInventoryLoading = productSource === 'products' ? productsLoading : inventoryLoading;
   const [orderData, setOrderData] = useState<OrderData>({
     client: null,
     products: [],
@@ -424,31 +413,6 @@ export default function NewWholesaleOrder() {
                   <Package className="h-5 w-5 text-muted-foreground" />
                   Select Products
                 </h2>
-
-                {/* Product Source Toggle */}
-                <ToggleGroup
-                  type="single"
-                  value={productSource}
-                  onValueChange={(value) => value && setProductSource(value as ProductSource)}
-                  className="border rounded-lg p-1"
-                >
-                  <ToggleGroupItem
-                    value="products"
-                    aria-label="Products Catalog"
-                    className="gap-2 data-[state=on]:bg-emerald-500 data-[state=on]:text-white"
-                  >
-                    <ShoppingBag className="h-4 w-4" />
-                    <span className="hidden sm:inline">Products</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="wholesale_inventory"
-                    aria-label="Wholesale Inventory"
-                    className="gap-2 data-[state=on]:bg-emerald-500 data-[state=on]:text-white"
-                  >
-                    <Warehouse className="h-4 w-4" />
-                    <span className="hidden sm:inline">Wholesale</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -456,7 +420,7 @@ export default function NewWholesaleOrder() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-muted-foreground">
-                      {productSource === 'products' ? 'Products Catalog' : 'Wholesale Inventory'}
+                      Products Catalog
                     </h3>
                     <Badge variant="outline">{inventory.length} items</Badge>
                   </div>
@@ -486,8 +450,7 @@ export default function NewWholesaleOrder() {
                       ) : (
                         filteredInventory.map((product: any) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
-                          const stockQty = product.quantity_lbs ?? product.quantity_available ?? 0;
-                          const stockLabel = productSource === 'products' ? 'Stock' : 'Stock';
+                          const stockQty = product.quantity_available ?? 0;
                           return (
                             <Card
                               key={product.id}
@@ -503,9 +466,9 @@ export default function NewWholesaleOrder() {
                                 <div className="min-w-0 flex-1">
                                   <div className="font-medium truncate">{product.product_name}</div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                    <span>{stockLabel}: {stockQty} {productSource === 'products' ? 'units' : 'lbs'}</span>
+                                    <span>Stock: {stockQty} units</span>
                                     <span>|</span>
-                                    <span className="font-mono">{formatCurrency(product.base_price)}/{productSource === 'products' ? 'unit' : 'lb'}</span>
+                                    <span className="font-mono">{formatCurrency(product.base_price)}/unit</span>
                                   </div>
                                 </div>
                                 {inCart ? (

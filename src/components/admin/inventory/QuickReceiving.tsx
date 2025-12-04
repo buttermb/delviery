@@ -31,18 +31,22 @@ export function QuickReceiving() {
   const [quantity, setQuantity] = useState('');
 
   const { data: products } = useQuery({
-    queryKey: ['wholesale-inventory', tenant?.id],
+    queryKey: ['products-for-receiving', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
       
       const { data, error } = await supabase
-        .from('wholesale_inventory')
-        .select('id, product_name')
+        .from('products')
+        .select('id, name')
         .eq('tenant_id', tenant.id)
-        .order('product_name');
+        .order('name');
 
       if (error) throw error;
-      return data;
+      // Map to legacy format for compatibility
+      return (data || []).map(p => ({
+        id: p.id,
+        product_name: p.name,
+      }));
     },
     enabled: !!tenant?.id,
   });
@@ -84,39 +88,45 @@ export function QuickReceiving() {
         if (!tenant?.id) throw new Error("Tenant ID required");
         
         const { data: currentInventory, error: fetchError } = await supabase
-          .from('wholesale_inventory')
-          .select('quantity_lbs')
+          .from('products')
+          .select('stock_quantity')
           .eq('id', item.product_id)
           .eq('tenant_id', tenant.id)
           .maybeSingle();
 
         if (fetchError) throw fetchError;
 
-        const newQuantity = (currentInventory.quantity_lbs || 0) + item.quantity_lbs;
+        const newQuantity = (currentInventory?.stock_quantity || 0) + item.quantity_lbs;
 
         const { error: updateError } = await supabase
-          .from('wholesale_inventory')
+          .from('products')
           .update({
-            quantity_lbs: newQuantity,
-            last_restock_date: new Date().toISOString(),
+            stock_quantity: newQuantity,
+            updated_at: new Date().toISOString(),
           })
           .eq('id', item.product_id)
           .eq('tenant_id', tenant.id);
 
         if (updateError) throw updateError;
 
-        // Log movement
-        await supabase.from('wholesale_inventory_movements').insert({
-          inventory_id: item.product_id,
-          product_name: item.product_name,
-          movement_type: 'receiving',
-          quantity_change: item.quantity_lbs,
-          notes: 'Quick receiving',
-        });
+        // Log movement (optional - may not exist)
+        try {
+          await supabase.from('inventory_movements').insert({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            movement_type: 'receiving',
+            quantity_change: item.quantity_lbs,
+            notes: 'Quick receiving',
+            tenant_id: tenant.id,
+          });
+        } catch {
+          // Silently ignore if table doesn't exist
+        }
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products-for-receiving'] });
       queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
       toast.success(`Successfully received ${items.length} items`);
       setItems([]);

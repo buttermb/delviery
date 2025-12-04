@@ -12,6 +12,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { Database } from "@/integrations/supabase/types";
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
@@ -226,6 +227,23 @@ export default function TenantAdminLoginPage() {
                 <span>Sign In to Dashboard</span>
               )}
             </Button>
+
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign In */}
+            <GoogleSignInButton
+              redirectTo={`${window.location.origin}/${tenantSlug}/admin/auth/callback`}
+              disabled={loading}
+              className="bg-background/50 backdrop-blur-sm border-border hover:bg-background/80"
+            />
           </form>
 
           {/* Links */}

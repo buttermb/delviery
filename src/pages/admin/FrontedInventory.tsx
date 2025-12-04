@@ -52,7 +52,7 @@ export default function FrontedInventory() {
   // Enable realtime sync for inventory changes
   useRealtimeSync({
     tenantId,
-    tables: ['wholesale_inventory'],
+    tables: ['products'],
     enabled: !!tenantId,
   });
 

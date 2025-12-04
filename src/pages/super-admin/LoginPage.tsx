@@ -9,6 +9,7 @@ import { Shield, Loader2, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();
@@ -141,6 +142,23 @@ export default function SuperAdminLoginPage() {
                 "Sign In"
               )}
             </Button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[hsl(var(--super-admin-surface))]/80 px-2 text-[hsl(var(--super-admin-text))]/50">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Sign In */}
+            <GoogleSignInButton
+              redirectTo={`${window.location.origin}/super-admin/auth/callback`}
+              disabled={loading}
+              className="bg-[hsl(var(--super-admin-bg))]/50 border-white/10 text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-bg))]/70"
+            />
           </form>
 
           {/* Forgot Password */}

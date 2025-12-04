@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -71,8 +72,13 @@ type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 export default function ProductManagement() {
   const navigateTenant = useTenantNavigate();
+  const [searchParams] = useSearchParams();
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
+
+  // Read URL search params for filtering
+  const urlSearch = searchParams.get('search') || '';
+  const highlightId = searchParams.get('highlight') || '';
 
   // Use optimistic list for products
   const {
@@ -85,7 +91,7 @@ export default function ProductManagement() {
   } = useOptimisticList<Product>([]);
 
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(urlSearch);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -126,6 +132,19 @@ export default function ProductManagement() {
       setLoading(false);
     }
   }, [tenant, tenantLoading]);
+
+  // Handle URL search params for low stock alerts navigation
+  useEffect(() => {
+    if (urlSearch) {
+      setSearchTerm(urlSearch);
+    }
+    if (highlightId && urlSearch) {
+      toast.info(`Showing "${urlSearch}"`, {
+        description: "This item is low on stock. Consider restocking.",
+        duration: 5000,
+      });
+    }
+  }, [urlSearch, highlightId]);
 
   const loadProducts = async () => {
     if (!tenant?.id) return;

@@ -38,7 +38,7 @@ export const useMenuAnalytics = (menuId: string) => {
           *,
           disposable_menu_products(
             *,
-            product:wholesale_inventory(*)
+            product:products(*)
           ),
           menu_access_logs(count),
           menu_orders(total_amount)
@@ -104,11 +104,10 @@ export const useProductImageAnalytics = (menuId: string) => {
         .from('disposable_menu_products')
         .select(`
           *,
-          product:wholesale_inventory(
+          product:products(
             id,
-            product_name,
-            image_url,
-            images
+            name,
+            image_url
           )
         `)
         .eq('menu_id', menuId);
@@ -124,7 +123,7 @@ export const useProductImageAnalytics = (menuId: string) => {
 
       // Calculate per-product analytics
       const analytics: ProductImageAnalytics[] = menuProducts.map((mp: any) => {
-        const hasImage = !!(mp.product?.image_url || mp.product?.images?.length > 0);
+        const hasImage = !!mp.product?.image_url;
 
         const productLogs = logs?.filter((log: any) =>
           log.actions_taken?.product_id === mp.product_id
@@ -138,7 +137,7 @@ export const useProductImageAnalytics = (menuId: string) => {
 
         return {
           product_id: mp.product_id,
-          product_name: mp.product?.product_name || 'Unknown',
+          product_name: mp.product?.name || 'Unknown',
           has_image: hasImage,
           view_count: viewCount,
           zoom_count: zoomCount,

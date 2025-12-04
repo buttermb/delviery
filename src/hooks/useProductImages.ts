@@ -61,7 +61,7 @@ export const useGenerateProductImage = () => {
 
       // Update product with image URL
       const { error: updateError } = await supabase
-        .from('wholesale_inventory')
+        .from('products')
         .update({ image_url: publicUrl })
         .eq('id', productId);
 
@@ -70,7 +70,8 @@ export const useGenerateProductImage = () => {
       return { publicUrl };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
       toast.success('Product image generated successfully');
     },
     onError: (error) => {
@@ -154,7 +155,7 @@ export const useBulkGenerateImages = () => {
 
           // Update product with image URL
           const { error: updateError } = await supabase
-            .from('wholesale_inventory')
+            .from('products')
             .update({ image_url: publicUrl })
             .eq('id', product.id);
 
@@ -180,7 +181,8 @@ export const useBulkGenerateImages = () => {
       return results;
     },
     onSuccess: (results) => {
-      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
       const successCount = results.filter(r => r.success).length;
       toast.success(`Generated ${successCount}/${results.length} images successfully`);
     },

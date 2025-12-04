@@ -164,26 +164,38 @@ export const useUpdateDeliveryStatus = () => {
   });
 };
 
+/**
+ * @deprecated Use useProductsForWholesale instead - products table is the source of truth
+ */
 export const useWholesaleInventory = (tenantId?: string) => {
   return useQuery({
-    queryKey: ["wholesale-inventory", tenantId],
+    queryKey: ["products-inventory", tenantId],
     queryFn: async () => {
       let query = supabase
-        .from("wholesale_inventory")
-        .select("*");
+        .from("products")
+        .select("id, name, category, stock_quantity, available_quantity, low_stock_alert, price, wholesale_price, cost_per_unit, image_url, in_stock");
 
       if (tenantId) {
         query = query.eq("tenant_id", tenantId);
       }
 
-      const { data, error } = await query.order("product_name");
+      const { data, error } = await query.order("name");
 
       if (error) throw error;
       
-      // Add source field for consistency with products
+      // Map to legacy format for compatibility
       return (data || []).map(item => ({
-        ...item,
-        source: 'wholesale_inventory' as const,
+        id: item.id,
+        product_name: item.name,
+        category: item.category,
+        quantity_lbs: item.stock_quantity || 0,
+        quantity_units: item.available_quantity || 0,
+        reorder_point: item.low_stock_alert || 10,
+        price_per_lb: item.wholesale_price || item.price || 0,
+        cost_per_lb: item.cost_per_unit || 0,
+        image_url: item.image_url,
+        in_stock: item.in_stock,
+        source: 'products' as const,
       }));
     },
     enabled: tenantId !== undefined,

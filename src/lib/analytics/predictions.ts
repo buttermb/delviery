@@ -67,10 +67,10 @@ export class MenuAnalyticsEngine {
 
         // 4. Product Recommendations based on top sellers
         const { data: topProducts } = await supabase
-            .from('wholesale_inventory')
+            .from('products')
             .select('id')
             .eq('tenant_id', menu.tenant_id)
-            .order('quantity_lbs', { ascending: false })
+            .order('stock_quantity', { ascending: false })
             .limit(3);
 
         const suggestedProducts = topProducts?.map(p => p.id) || [];
