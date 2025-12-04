@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, TrendingUp, TrendingDown, RefreshCw, FileDown } from "lucide-react";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface InventoryMovement {
   id: string;
@@ -17,54 +18,63 @@ interface InventoryMovement {
 }
 
 export function InventoryMovementLog() {
+  const { tenant } = useTenantAdminAuth();
+
   const { data: movements = [], isLoading } = useQuery({
-    queryKey: ["inventory-movements"],
+    queryKey: ["inventory-movements", tenant?.id],
     queryFn: async () => {
-      // Try product_movements table first (the current standard)
-      const { data: productMovements, error: productError } = await supabase
-        .from("product_movements")
-        .select("*")
+      if (!tenant?.id) return [];
+
+      // Query wholesale_inventory_movements with product info via wholesale_inventory
+      // @ts-ignore - Type instantiation depth issue
+      const { data, error } = await supabase
+        .from("wholesale_inventory_movements")
+        .select(`
+          id,
+          movement_type,
+          quantity_lbs,
+          previous_quantity_lbs,
+          new_quantity_lbs,
+          notes,
+          created_at,
+          wholesale_inventory:wholesale_inventory_id (
+            strain_name,
+            location
+          )
+        `)
+        .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
         .limit(50);
 
-      // If product_movements exists, use it
-      if (!productError) {
-        return (productMovements || []).map((m: any) => ({
-          id: m.id,
-          product_name: m.product_name || 'Unknown Product',
-          movement_type: m.movement_type,
-          quantity_change: m.quantity_change,
-          from_location: m.from_location || '',
-          to_location: m.to_location || '',
-          notes: m.notes || '',
-          created_at: m.created_at,
-        })) as InventoryMovement[];
+      if (error) {
+        console.error("Error fetching inventory movements:", error);
+        return [];
       }
 
-      // Fallback to inventory_movements table
-      if (productError && productError.code === '42P01') {
-        const { data, error } = await supabase
-          .from("inventory_movements")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (error && error.code === '42P01') return []; // Neither table exists
-        if (error) throw error;
-        return data as InventoryMovement[];
-      }
-
-      if (productError) throw productError;
-      return [];
+      // Map to our interface
+      return (data || []).map((m: any) => ({
+        id: m.id,
+        product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
+        movement_type: m.movement_type || 'adjustment',
+        quantity_change: m.quantity_lbs || (m.new_quantity_lbs - m.previous_quantity_lbs) || 0,
+        from_location: m.wholesale_inventory?.location || '',
+        to_location: '',
+        notes: m.notes || '',
+        created_at: m.created_at,
+      })) as InventoryMovement[];
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    enabled: !!tenant?.id,
+    refetchInterval: 30000,
   });
 
   const getMovementIcon = (type: string) => {
     switch (type) {
       case "sale":
+      case "deduction":
         return <TrendingDown className="h-4 w-4 text-red-500" />;
       case "restock":
+      case "addition":
+      case "received":
         return <TrendingUp className="h-4 w-4 text-emerald-500" />;
       case "adjustment":
         return <RefreshCw className="h-4 w-4 text-blue-500" />;
@@ -78,8 +88,11 @@ export function InventoryMovementLog() {
   const getMovementColor = (type: string) => {
     switch (type) {
       case "sale":
+      case "deduction":
         return "bg-red-500/10 text-red-500 border-red-500/20";
       case "restock":
+      case "addition":
+      case "received":
         return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
       case "adjustment":
         return "bg-blue-500/10 text-blue-500 border-blue-500/20";
@@ -91,7 +104,7 @@ export function InventoryMovementLog() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Date", "Time", "Product", "Type", "Quantity", "From", "To", "Notes"];
+    const headers = ["Date", "Time", "Product", "Type", "Quantity", "Location", "Notes"];
     const rows = movements.map(m => [
       new Date(m.created_at).toLocaleDateString(),
       new Date(m.created_at).toLocaleTimeString(),
@@ -99,7 +112,6 @@ export function InventoryMovementLog() {
       m.movement_type,
       m.quantity_change,
       m.from_location || "-",
-      m.to_location || "-",
       m.notes || "-"
     ]);
 
@@ -170,11 +182,9 @@ export function InventoryMovementLog() {
                       })}
                     </span>
 
-                    {movement.from_location && movement.to_location && (
+                    {movement.from_location && (
                       <span className="flex items-center gap-1">
-                        {movement.from_location}
-                        <ArrowRight className="h-3 w-3" />
-                        {movement.to_location}
+                        📍 {movement.from_location}
                       </span>
                     )}
 
