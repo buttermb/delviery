@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateAdminDashboard, type AdminDashboardInput } from './validation.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +39,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Authenticate admin
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
@@ -65,14 +73,26 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     
-    // Get endpoint from either query params or request body
+    // Get endpoint from query params first
     let endpoint = url.searchParams.get("endpoint");
-    if (!endpoint && req.method === "POST") {
+    let validatedBody: AdminDashboardInput | null = null;
+    
+    // For POST requests, parse and validate the body
+    if (req.method === "POST") {
       try {
-        const body = await req.json();
-        endpoint = body.endpoint || null;
-      } catch (e) {
-        // If body parsing fails, endpoint remains null
+        const rawBody = await req.json();
+        validatedBody = validateAdminDashboard(rawBody);
+        if (!endpoint && validatedBody.endpoint) {
+          endpoint = validatedBody.endpoint;
+        }
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Invalid request body",
+            details: error instanceof Error ? error.message : "Validation failed"
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
     
