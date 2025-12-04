@@ -23,9 +23,20 @@ import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
+
+// Initialize Vercel Speed Insights (client-side only)
+if (typeof window !== 'undefined') {
+  try {
+    injectSpeedInsights();
+    logger.debug('[APP] Vercel Speed Insights initialized');
+  } catch (error) {
+    logger.error('[APP] Speed Insights initialization failed:', error);
+  }
+}
 
 // Chunk loading error recovery with retry limit
 let chunkReloadCount = 0;
