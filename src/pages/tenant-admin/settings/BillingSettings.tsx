@@ -84,9 +84,9 @@ function mapInvoiceToPdfData(invoice: Invoice, tenant: any) {
         }],
     subtotal: invoice.subtotal || invoice.total || 0,
     tax: invoice.tax || 0,
-    taxRate: invoice.tax_rate || 0,
+    taxRate: (invoice as any).tax_rate || 0,
     total: invoice.total || 0,
-    notes: invoice.notes || '',
+    notes: (invoice as any).notes || '',
   };
 }
 
