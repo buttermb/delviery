@@ -452,7 +452,6 @@ export default function SignUpPage() {
                     {/* Google OAuth - Prominent placement */}
                     <div className="space-y-3">
                       <GoogleSignInButton 
-                        mode="signup"
                         className="w-full h-12"
                       />
                       
