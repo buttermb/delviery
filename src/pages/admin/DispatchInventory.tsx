@@ -255,7 +255,8 @@ export default function DispatchInventory() {
       }));
 
       // Try atomic RPC first (preferred method - prevents race conditions)
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic' as any, {
         p_tenant_id: tenant.id,
         p_client_id: selectedClient.id,
         p_items: items,
@@ -379,7 +380,8 @@ export default function DispatchInventory() {
     await Promise.all(promises);
 
     // Update client's outstanding balance using atomic RPC if available, else direct update
-    const { error: balanceError } = await supabase.rpc('adjust_client_balance', {
+    // @ts-ignore - RPC function not in auto-generated types
+    const { error: balanceError } = await supabase.rpc('adjust_client_balance' as any, {
       p_client_id: selectedClient.id,
       p_amount: totalExpectedRevenue,
       p_operation: 'add'
@@ -474,8 +476,8 @@ export default function DispatchInventory() {
           </CardHeader>
           <CardContent className="space-y-4">
             <SmartClientPicker
+              selectedClient={selectedClient}
               onSelect={(client) => setSelectedClient(client as SelectedClient)}
-              placeholder="Search for client..."
             />
             
             {selectedClient && (

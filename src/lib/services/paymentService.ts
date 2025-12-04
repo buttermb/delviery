@@ -125,7 +125,8 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data, error } = await supabase.rpc('adjust_client_balance', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data, error } = await supabase.rpc('adjust_client_balance' as any, {
         p_client_id: clientId,
         p_amount: amount,
         p_operation: operation
@@ -326,7 +327,8 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('record_fronted_payment_atomic', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('record_fronted_payment_atomic' as any, {
         p_fronted_id: frontedId,
         p_payment_amount: amount,
         p_payment_method: paymentMethod,
@@ -430,9 +432,9 @@ class PaymentService {
         .eq('id', frontedId);
 
       // Update client balance
-      if (frontedItem.client_id) {
+      if ((frontedItem as any).client_id) {
         await this.adjustClientBalance({
-          clientId: frontedItem.client_id,
+          clientId: (frontedItem as any).client_id,
           amount,
           operation: 'subtract'
         });
@@ -443,7 +445,7 @@ class PaymentService {
         newStatus,
         paymentReceived: newTotalReceived,
         remaining: Math.max(0, remaining),
-        clientName: frontedItem.client?.business_name
+        clientName: (frontedItem as any).client?.business_name
       };
     } catch (error) {
       logger.error('Legacy fronted payment failed', error, { frontedId });
@@ -466,7 +468,8 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('complete_delivery_with_collection', {
+      // @ts-ignore - RPC function not in auto-generated types
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('complete_delivery_with_collection' as any, {
         p_delivery_id: deliveryId,
         p_amount_collected: amountCollected,
         p_proof_photo_url: proofPhotoUrl || null
@@ -594,7 +597,8 @@ class PaymentService {
     try {
       // Get all unpaid fronted inventory for the client
       const { data: frontedItems } = await supabase
-        .from('fronted_inventory')
+        // @ts-ignore - Type instantiation too deep
+        .from('fronted_inventory' as any)
         .select('id, expected_revenue, payment_received, payment_due_date, created_at')
         .eq('client_id', clientId)
         .in('status', ['active', 'partial'])
@@ -614,11 +618,11 @@ class PaymentService {
         total: 0
       };
 
-      for (const item of frontedItems) {
-        const remaining = (item.expected_revenue || 0) - (item.payment_received || 0);
+      for (const item of (frontedItems as any[])) {
+        const remaining = ((item as any).expected_revenue || 0) - ((item as any).payment_received || 0);
         if (remaining <= 0) continue;
 
-        const dueDate = item.payment_due_date ? new Date(item.payment_due_date) : new Date(item.created_at);
+        const dueDate = (item as any).payment_due_date ? new Date((item as any).payment_due_date) : new Date((item as any).created_at);
         const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
 
         if (daysOverdue <= 0) {

@@ -23,7 +23,7 @@ export default function InventoryManagement() {
   // Memoize grouped inventory to prevent recalculation
   const groupedInventory = useMemo(() => {
     return inventory.reduce((acc, item) => {
-      const warehouse = item.warehouse_location || "Warehouse A";
+      const warehouse = (item as any).warehouse_location || "Warehouse A";
       if (!acc[warehouse]) {
         acc[warehouse] = [];
       }

@@ -173,7 +173,7 @@ export function TenantAdminCommandPalette() {
       if (!search || !tenant?.id || search.length < 2) return [];
       const { data } = await supabase
         .from('orders')
-        .select('id, status, total, created_at')
+        .select('id, status, total_amount, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -435,7 +435,7 @@ export function TenantAdminCommandPalette() {
                   <div className="flex flex-col">
                     <span>Order #{order.id.slice(0, 8)}</span>
                     <span className="text-xs text-muted-foreground">
-                      {order.status} • ${order.total?.toFixed(2) || '0.00'}
+                      {(order as any).status} • ${((order as any).total_amount || (order as any).total)?.toFixed(2) || '0.00'}
                     </span>
                   </div>
                   <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />

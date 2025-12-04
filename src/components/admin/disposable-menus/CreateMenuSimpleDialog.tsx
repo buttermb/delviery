@@ -313,7 +313,7 @@ export const CreateMenuSimpleDialog = ({ open, onOpenChange }: CreateMenuSimpleD
                               {product.category || 'Product'}
                             </p>
                             <p className="text-sm font-semibold mt-1">
-                              {formatCurrency(product.base_price || 0)}/unit
+                              {formatCurrency((product as any).base_price || product.price_per_lb || 0)}/unit
                             </p>
                             {(product as { available_weight?: number }).available_weight && (
                               <p className="text-xs text-muted-foreground mt-1">

@@ -127,13 +127,14 @@ function useCollectionData() {
       if (error) throw error;
       
       // Fetch total payments per client
+      // @ts-ignore - Type instantiation too deep
       const { data: payments } = await supabase
-        .from('wholesale_payments')
+        .from('wholesale_payments' as any)
         .select('client_id, amount')
         .eq('tenant_id', tenant?.id);
       
       const paymentsByClient: Record<string, number> = {};
-      payments?.forEach(p => {
+      (payments as any[])?.forEach((p: any) => {
         paymentsByClient[p.client_id] = (paymentsByClient[p.client_id] || 0) + Number(p.amount || 0);
       });
       
