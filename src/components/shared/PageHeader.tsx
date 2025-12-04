@@ -30,9 +30,14 @@ interface PageHeaderProps {
   compact?: boolean;
 }
 
-// Helper to check if something is a LucideIcon
+// Helper to check if something is a LucideIcon (forwardRef component)
 const isLucideIcon = (icon: unknown): icon is LucideIcon => {
-  return typeof icon === 'function' && icon.toString().includes('createElement');
+  if (typeof icon === 'function') return true;
+  // LucideIcon is a forwardRef, check for $$typeof and render
+  if (icon && typeof icon === 'object' && '$$typeof' in icon && 'render' in icon) {
+    return true;
+  }
+  return false;
 };
 
 export function PageHeader({

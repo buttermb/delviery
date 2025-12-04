@@ -124,6 +124,7 @@ export const STREET_OPERATION_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('reports', "Today's Sales", '/admin/reports', TrendingUp, { hot: true }),
       createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
+      createItem('fronted-inventory', 'Dispatch/Front', '/admin/dispatch-inventory', Truck),
       createItem('cash-register', 'Cash Count', '/admin/cash-register', Wallet),
       createItem('billing', 'Billing', '/admin/billing', DollarSign),
     ],
@@ -169,6 +170,8 @@ export const SMALL_BUSINESS_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-dashboard', Package),
       createItem('products', 'Products', '/admin/inventory/products', Box),
+      createItem('fronted-inventory', 'Dispatch/Front', '/admin/dispatch-inventory', Truck),
+      createItem('fronted-inventory', 'Fronted Items', '/admin/fronted-inventory', CreditCard),
       createItem('menu-migration', 'Import Products', '/admin/menu-migration', Download),
       createItem('stock-alerts', 'Alerts', '/admin/stock-alerts', Bell),
     ],
@@ -253,6 +256,8 @@ export const MEDIUM_BUSINESS_SIDEBAR: SidebarSection[] = [
       createItem('inventory-dashboard', 'Inventory', '/admin/inventory-dashboard', Warehouse, {
         submenu: [
           { name: 'Stock Levels', path: '/admin/inventory-dashboard' },
+          { name: 'Dispatch/Front', path: '/admin/dispatch-inventory' },
+          { name: 'Fronted Items', path: '/admin/fronted-inventory' },
           { name: 'Transfers', path: '/admin/inventory-transfers' },
           { name: 'Receiving', path: '/admin/operations/receiving' },
           { name: 'Alerts', path: '/admin/stock-alerts' },
@@ -335,6 +340,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: '⚙️ Global Operations',
     items: [
       createItem('inventory-dashboard', 'Inventory Control', '/admin/inventory-dashboard', Warehouse),
+      createItem('fronted-inventory', 'Dispatch/Front Inventory', '/admin/dispatch-inventory', Truck),
       createItem('stock-alerts', 'Stock Alerts', '/admin/stock-alerts', AlertCircle),
       createItem('stock-check', 'Stock Check', '/admin/inventory/products', Package),
       createItem('quality-control', 'Quality Control', '/admin/quality-control', Shield),

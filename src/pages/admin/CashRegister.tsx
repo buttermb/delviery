@@ -93,34 +93,63 @@ export default function CashRegister() {
 
       const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
-      // Create POS transaction
-      const { error: txError } = await supabase
-        .from('pos_transactions' as any)
-        .insert({
-          tenant_id: tenantId,
-          total_amount: total,
-          subtotal: total,
-          payment_method: paymentMethod,
-          payment_status: 'completed',
-          items: cart.map(item => ({
-            product_id: item.id,
-            product_name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            subtotal: item.subtotal
-          }))
-        });
+      // Prepare items for RPC
+      const items = cart.map(item => ({
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.subtotal,
+        stock_quantity: item.stock_quantity
+      }));
 
-      if (txError) throw txError;
+      // Try atomic RPC first (prevents race conditions on inventory)
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+        p_tenant_id: tenantId,
+        p_items: items,
+        p_payment_method: paymentMethod,
+        p_subtotal: total,
+        p_tax_amount: 0,
+        p_discount_amount: 0,
+        p_customer_id: null,
+        p_shift_id: null
+      });
 
-      // Update inventory
-      for (const item of cart) {
-        const { error: invError } = await supabase
-          .from('products')
-          .update({ stock_quantity: item.stock_quantity - item.quantity })
-          .eq('id', item.id);
+      if (rpcError) {
+        // If RPC doesn't exist, fall back to legacy method
+        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
+          // Create POS transaction (legacy method)
+          const { error: txError } = await supabase
+            .from('pos_transactions' as any)
+            .insert({
+              tenant_id: tenantId,
+              total_amount: total,
+              subtotal: total,
+              payment_method: paymentMethod,
+              payment_status: 'completed',
+              items
+            });
 
-        if (invError) throw invError;
+          if (txError) throw txError;
+
+          // Update inventory (has race condition risk)
+          for (const item of cart) {
+            const { error: invError } = await supabase
+              .from('products')
+              .update({ stock_quantity: item.stock_quantity - item.quantity })
+              .eq('id', item.id);
+
+            if (invError) throw invError;
+          }
+          return;
+        }
+        throw rpcError;
+      }
+
+      // RPC succeeded
+      const result = rpcResult as { success: boolean; transaction_number: string };
+      if (!result.success) {
+        throw new Error('Transaction failed');
       }
     },
     onSuccess: () => {

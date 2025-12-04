@@ -227,60 +227,96 @@ export default function PointOfSale() {
     try {
       const { subtotal, tax, discount, total } = calculateTotals();
 
-      // Generate transaction number
-      const transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
-
-      // 1. Create POS transaction record FIRST
+      // Prepare transaction items
       const transactionItems = cart.map(item => ({
         product_id: item.id,
         product_name: item.name,
         quantity: item.quantity,
         unit_price: item.price,
         total_price: item.subtotal,
-        category: item.category
+        category: item.category,
+        stock_quantity: item.stock_quantity
       }));
 
-      const { data: transaction, error: transactionError } = await supabase
-        .from('pos_transactions')
-        .insert({
-          tenant_id: tenantId,
-          transaction_number: transactionNumber,
-          customer_id: selectedCustomer?.id || null,
-          items: transactionItems,
-          subtotal: subtotal,
-          tax_amount: tax,
-          discount_amount: discount,
-          total_amount: total,
-          payment_method: paymentMethod,
-          payment_status: 'completed',
-          status: 'completed',
-          notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
-        } as any)
-        .select()
-        .maybeSingle();
+      // Try atomic RPC first (prevents race conditions on inventory)
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
+        p_tenant_id: tenantId,
+        p_items: transactionItems,
+        p_payment_method: paymentMethod,
+        p_subtotal: subtotal,
+        p_tax_amount: tax,
+        p_discount_amount: discount,
+        p_customer_id: selectedCustomer?.id || null,
+        p_shift_id: null
+      });
 
-      if (transactionError) {
-        logger.error('Error creating POS transaction', transactionError, { component: 'PointOfSale' });
-        throw transactionError;
+      let transactionId: string | null = null;
+      let transactionNumber: string;
+
+      if (rpcError) {
+        // If RPC doesn't exist, fall back to legacy method
+        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
+          logger.warn('Atomic POS RPC not available, using legacy method', { component: 'PointOfSale' });
+          
+          transactionNumber = `POS-${Date.now().toString(36).toUpperCase()}`;
+
+          const { data: transaction, error: transactionError } = await supabase
+            .from('pos_transactions')
+            .insert({
+              tenant_id: tenantId,
+              transaction_number: transactionNumber,
+              customer_id: selectedCustomer?.id || null,
+              items: transactionItems,
+              subtotal: subtotal,
+              tax_amount: tax,
+              discount_amount: discount,
+              total_amount: total,
+              payment_method: paymentMethod,
+              payment_status: 'completed',
+              status: 'completed',
+              notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
+            } as any)
+            .select()
+            .maybeSingle();
+
+          if (transactionError) throw transactionError;
+          transactionId = transaction?.id;
+
+          // Update inventory for each item (legacy - has race condition risk)
+          for (const item of cart) {
+            await supabase
+              .from('products')
+              .update({ stock_quantity: item.stock_quantity - item.quantity })
+              .eq('id', item.id);
+          }
+
+          // Update customer loyalty points
+          if (selectedCustomer) {
+            const pointsEarned = Math.floor(total);
+            await supabase
+              .from('customers')
+              .update({ loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned })
+              .eq('id', selectedCustomer.id);
+          }
+        } else {
+          throw rpcError;
+        }
+      } else {
+        // RPC succeeded
+        const result = rpcResult as { success: boolean; transaction_id: string; transaction_number: string; total: number };
+        transactionId = result.transaction_id;
+        transactionNumber = result.transaction_number;
       }
 
       logger.info('POS transaction created', {
-        transactionId: transaction?.id,
+        transactionId,
         transactionNumber,
         total,
         component: 'PointOfSale'
       });
 
-      // 2. Update inventory for each item
+      // Log activity (after transaction regardless of method)
       for (const item of cart) {
-        const { error } = await supabase
-          .from('products')
-          .update({ stock_quantity: item.stock_quantity - item.quantity })
-          .eq('id', item.id);
-
-        if (error) throw error;
-
-        // Log inventory update activity
         await logActivityAuto(
           tenantId,
           ActivityActions.UPDATE_INVENTORY,
@@ -290,17 +326,16 @@ export default function PointOfSale() {
             quantity_sold: item.quantity,
             previous_stock: item.stock_quantity,
             new_stock: item.stock_quantity - item.quantity,
-            pos_transaction_id: transaction?.id
+            pos_transaction_id: transactionId
           }
         );
       }
 
-      // 3. Log sale completion activity
       await logActivityAuto(
         tenantId,
         ActivityActions.COMPLETE_ORDER,
         'pos_transaction',
-        transaction?.id,
+        transactionId,
         {
           transaction_number: transactionNumber,
           total,
@@ -312,17 +347,6 @@ export default function PointOfSale() {
           customer_id: selectedCustomer?.id
         }
       );
-
-      // 4. Update customer loyalty points if applicable
-      if (selectedCustomer) {
-        const pointsEarned = Math.floor(total); // 1 point per dollar
-        await supabase
-          .from('customers')
-          .update({
-            loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned
-          })
-          .eq('id', selectedCustomer.id);
-      }
 
       // 5. Update disposable menu order status if applicable
       if (activeOrderId) {

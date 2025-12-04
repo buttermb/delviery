@@ -437,4 +437,36 @@ export const queryKeys = {
   // Payment Settings
   tenantPaymentSettings: (tenantId: string) => ['tenant-payment-settings', tenantId] as const,
   menuPaymentSettings: (menuId: string) => ['menu-payment-settings', menuId] as const,
+
+  // Payments
+  payments: {
+    all: ['payments'] as const,
+    lists: () => [...queryKeys.payments.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.payments.lists(), filters] as const,
+    byClient: (clientId: string) => 
+      [...queryKeys.payments.all, 'client', clientId] as const,
+    history: (clientId: string, limit?: number) => 
+      [...queryKeys.payments.byClient(clientId), 'history', limit] as const,
+    aging: (clientId: string) => 
+      [...queryKeys.payments.byClient(clientId), 'aging'] as const,
+  },
+
+  // Fronted Inventory
+  frontedInventory: {
+    all: ['fronted-inventory'] as const,
+    lists: () => [...queryKeys.frontedInventory.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) => 
+      [...queryKeys.frontedInventory.lists(), filters] as const,
+    detail: (id: string) => [...queryKeys.frontedInventory.all, id] as const,
+    payments: (frontedId: string) => 
+      [...queryKeys.frontedInventory.detail(frontedId), 'payments'] as const,
+  },
+
+  // Collections
+  collections: {
+    all: ['collections'] as const,
+    mode: (tenantId?: string) => ['collection-mode', tenantId] as const,
+    activities: (clientId: string) => ['collection-activities', clientId] as const,
+  },
 } as const;

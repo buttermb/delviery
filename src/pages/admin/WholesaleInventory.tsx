@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { showInfoToast } from "@/utils/toastHelpers";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useWholesaleInventory, useWholesaleDeliveries, useWholesaleOrders } from "@/hooks/useWholesaleData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export default function WholesaleInventory() {
   const navigate = useNavigate();
@@ -87,13 +90,64 @@ export default function WholesaleInventory() {
       eta: "TBD"
     }));
 
-  // Process Top Movers (simplified based on orders)
-  // In a real app, we'd aggregate order items by product
-  const topMovers = [
-    { strain: "Blue Dream", lbs_moved: 124, revenue: 347000, profit: 112000 },
-    { strain: "Wedding Cake", lbs_moved: 98, revenue: 294000, profit: 98000 },
-    { strain: "Gelato", lbs_moved: 87, revenue: 270000, profit: 89000 },
-  ]; // Keeping mock for now as calculating this from raw orders requires more complex logic/queries
+  // Fetch Top Movers from wholesale_order_items (last 30 days)
+  const { data: topMovers = [] } = useQuery({
+    queryKey: ['wholesale-top-movers', tenant?.id],
+    queryFn: async () => {
+      if (!tenant?.id) return [];
+
+      // Get orders from last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      // Fetch order items with product names
+      const { data: items, error } = await supabase
+        .from('wholesale_order_items')
+        .select(`
+          product_name,
+          quantity,
+          unit_price,
+          subtotal,
+          order_id,
+          wholesale_orders!inner(tenant_id, status, created_at)
+        `)
+        .eq('wholesale_orders.tenant_id', tenant.id)
+        .gte('wholesale_orders.created_at', thirtyDaysAgo.toISOString())
+        .in('wholesale_orders.status', ['delivered', 'in_transit', 'assigned', 'pending']);
+
+      if (error) {
+        logger.error('Failed to fetch top movers', { error, component: 'WholesaleInventory' });
+        return [];
+      }
+
+      if (!items || items.length === 0) {
+        return [];
+      }
+
+      // Aggregate by product name
+      const productMap = new Map<string, { quantity: number; revenue: number }>();
+      items.forEach(item => {
+        const existing = productMap.get(item.product_name) || { quantity: 0, revenue: 0 };
+        existing.quantity += item.quantity || 0;
+        existing.revenue += Number(item.subtotal) || 0;
+        productMap.set(item.product_name, existing);
+      });
+
+      // Convert to array and sort by quantity
+      const aggregated = Array.from(productMap.entries())
+        .map(([name, data]) => ({
+          strain: name,
+          lbs_moved: data.quantity,
+          revenue: data.revenue,
+          profit: Math.round(data.revenue * 0.32) // Estimate ~32% profit margin
+        }))
+        .sort((a, b) => b.lbs_moved - a.lbs_moved)
+        .slice(0, 5);
+
+      return aggregated;
+    },
+    enabled: !!tenant?.id,
+  });
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -363,18 +417,30 @@ export default function WholesaleInventory() {
         <div>
           <h3 className="font-semibold mb-3">Restock Alerts</h3>
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-destructive">🔴</span>
-              <span>Sundae Driver: Only 11 lbs left (restock by Dec 5)</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-yellow-500">🟡</span>
-              <span>OG Kush: 22 lbs left (will need more in 10 days)</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-yellow-500">🟡</span>
-              <span>Purple Punch: 18 lbs left (restock by Dec 8)</span>
-            </div>
+            {inventory
+              .filter(item => (Number(item.quantity_lbs) || 0) < 25)
+              .sort((a, b) => (Number(a.quantity_lbs) || 0) - (Number(b.quantity_lbs) || 0))
+              .slice(0, 5)
+              .map((item, idx) => {
+                const qty = Number(item.quantity_lbs) || 0;
+                const isVeryLow = qty < 10;
+                return (
+                  <div key={idx} className="flex items-center gap-2 text-sm">
+                    <span className={isVeryLow ? "text-destructive" : "text-yellow-500"}>
+                      {isVeryLow ? "🔴" : "🟡"}
+                    </span>
+                    <span>
+                      {item.product_name}: {qty} lbs left
+                      {isVeryLow ? " (restock urgently)" : " (consider restocking)"}
+                    </span>
+                  </div>
+                );
+              })}
+            {inventory.filter(item => (Number(item.quantity_lbs) || 0) < 25).length === 0 && (
+              <div className="text-sm text-muted-foreground">
+                All inventory levels are healthy
+              </div>
+            )}
           </div>
         </div>
 

@@ -85,33 +85,33 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
         </div>
       </div>
 
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         <Button
           size="sm"
           variant="ghost"
-          className="h-7 px-2 text-xs hover:bg-blue-500/20 hover:text-blue-400"
+          className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-blue-500/20 hover:text-blue-400"
           onClick={onCheckStatus}
         >
-          <Eye className="h-3 w-3 mr-1" />
+          <Eye className="h-3 w-3 mr-0.5 sm:mr-1" />
           Status
         </Button>
         <Button
           size="sm"
           variant="ghost"
-          className="h-7 px-2 text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
+          className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
           onClick={onConvertToSale}
         >
-          <DollarSign className="h-3 w-3 mr-1" />
+          <DollarSign className="h-3 w-3 mr-0.5 sm:mr-1" />
           Convert
         </Button>
         {item.status !== 'healthy' && (
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 px-2 text-xs hover:bg-red-500/20 hover:text-red-400"
+            className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-red-500/20 hover:text-red-400"
             onClick={onRecall}
           >
-            <RefreshCw className="h-3 w-3 mr-1" />
+            <RefreshCw className="h-3 w-3 mr-0.5 sm:mr-1" />
             Recall
           </Button>
         )}
@@ -119,10 +119,10 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 px-2 text-xs hover:bg-amber-500/20 hover:text-amber-400"
+            className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-amber-500/20 hover:text-amber-400"
             onClick={onExtend}
           >
-            <Clock className="h-3 w-3 mr-1" />
+            <Clock className="h-3 w-3 mr-0.5 sm:mr-1" />
             Extend
           </Button>
         )}
@@ -190,18 +190,18 @@ export function FrontedInventoryZone() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-              <div className="text-xl font-bold text-zinc-100">{data?.activeConsignments}</div>
-              <div className="text-[10px] text-zinc-500 uppercase">Active</div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
+            <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+              <div className="text-lg sm:text-xl font-bold text-zinc-100">{data?.activeConsignments}</div>
+              <div className="text-[9px] sm:text-[10px] text-zinc-500 uppercase">Active</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-              <div className="text-xl font-bold text-zinc-100">{data?.totalUnits}</div>
-              <div className="text-[10px] text-zinc-500 uppercase">Units Out</div>
+            <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+              <div className="text-lg sm:text-xl font-bold text-zinc-100">{data?.totalUnits}</div>
+              <div className="text-[9px] sm:text-[10px] text-zinc-500 uppercase">Units Out</div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-              <div className="text-xl font-bold text-zinc-100">{data?.avgDaysOut}</div>
-              <div className="text-[10px] text-zinc-500 uppercase">Avg Days</div>
+            <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+              <div className="text-lg sm:text-xl font-bold text-zinc-100">{data?.avgDaysOut}</div>
+              <div className="text-[9px] sm:text-[10px] text-zinc-500 uppercase">Avg Days</div>
             </div>
           </div>
 
@@ -210,49 +210,49 @@ export function FrontedInventoryZone() {
             <div className="text-xs text-zinc-500 uppercase mb-2">By Aging</div>
             
             {/* 0-7 Days (Healthy) */}
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-zinc-400 w-16">0-7 days</span>
-              <span className="text-xs font-mono text-zinc-300 w-12">{data?.aging.healthy.units} units</span>
-              <div className="flex-1">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span className="text-[10px] sm:text-xs text-zinc-400 w-12 sm:w-16 flex-shrink-0">0-7 days</span>
+              <span className="text-[10px] sm:text-xs font-mono text-zinc-300 w-10 sm:w-12 flex-shrink-0 hidden xs:inline">{data?.aging.healthy.units} units</span>
+              <div className="flex-1 min-w-0">
                 <Progress 
                   value={data?.totalValue ? (data.aging.healthy.value / data.totalValue) * 100 : 0}
                   className="h-2 bg-zinc-800 [&>div]:bg-emerald-500"
                 />
               </div>
-              <span className="text-xs font-mono text-emerald-400 w-16 text-right">
+              <span className="text-[10px] sm:text-xs font-mono text-emerald-400 w-12 sm:w-16 text-right flex-shrink-0">
                 {formatCurrency(data?.aging.healthy.value || 0)}
               </span>
             </div>
 
             {/* 8-14 Days (Warning) */}
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-xs text-zinc-400 w-16">8-14 days</span>
-              <span className="text-xs font-mono text-zinc-300 w-12">{data?.aging.warning.units} units</span>
-              <div className="flex-1">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
+              <span className="text-[10px] sm:text-xs text-zinc-400 w-12 sm:w-16 flex-shrink-0">8-14 days</span>
+              <span className="text-[10px] sm:text-xs font-mono text-zinc-300 w-10 sm:w-12 flex-shrink-0 hidden xs:inline">{data?.aging.warning.units} units</span>
+              <div className="flex-1 min-w-0">
                 <Progress 
                   value={data?.totalValue ? (data.aging.warning.value / data.totalValue) * 100 : 0}
                   className="h-2 bg-zinc-800 [&>div]:bg-amber-500"
                 />
               </div>
-              <span className="text-xs font-mono text-amber-400 w-16 text-right">
+              <span className="text-[10px] sm:text-xs font-mono text-amber-400 w-12 sm:w-16 text-right flex-shrink-0">
                 {formatCurrency(data?.aging.warning.value || 0)}
               </span>
             </div>
 
             {/* 15+ Days (Overdue) */}
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs text-zinc-400 w-16">15+ days</span>
-              <span className="text-xs font-mono text-zinc-300 w-12">{data?.aging.overdue.units} units</span>
-              <div className="flex-1">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+              <span className="text-[10px] sm:text-xs text-zinc-400 w-12 sm:w-16 flex-shrink-0">15+ days</span>
+              <span className="text-[10px] sm:text-xs font-mono text-zinc-300 w-10 sm:w-12 flex-shrink-0 hidden xs:inline">{data?.aging.overdue.units} units</span>
+              <div className="flex-1 min-w-0">
                 <Progress 
                   value={data?.totalValue ? (data.aging.overdue.value / data.totalValue) * 100 : 0}
                   className="h-2 bg-zinc-800 [&>div]:bg-red-500"
                 />
               </div>
-              <span className="text-xs font-mono text-red-400 w-16 text-right">
+              <span className="text-[10px] sm:text-xs font-mono text-red-400 w-12 sm:w-16 text-right flex-shrink-0">
                 {formatCurrency(data?.aging.overdue.value || 0)}
               </span>
             </div>

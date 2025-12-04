@@ -4,22 +4,19 @@
  */
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
-  Truck, Navigation, Phone, CheckCircle2,
-  AlertCircle, MapPin, DollarSign, Package
+  Navigation, Phone, CheckCircle2, MapPin
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
-import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
+import { showErrorToast } from '@/utils/toastHelpers';
+import { useStandalonePayment } from '@/hooks/useRecordPayment';
 
 export function BigPlugRunnerPortal() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { completeDelivery, isLoading: isCompletingDelivery } = useStandalonePayment();
   const [runnerId, setRunnerId] = useState('');
 
   // Get runner ID from auth or params
@@ -92,68 +89,18 @@ export function BigPlugRunnerPortal() {
     enabled: !!runnerId,
   });
 
-  // Mark delivery complete
-  const markComplete = useMutation({
-    mutationFn: async ({ deliveryId, collected }: { deliveryId: string; collected: number }) => {
-      const { error } = await supabase
-        .from('wholesale_deliveries')
-        .update({
-          status: 'delivered',
-          delivered_at: new Date().toISOString(),
-          collection_amount: collected,
-        })
-        .eq('id', deliveryId);
-
-      if (error) throw error;
-
-      // Update order status
-      const { data: delivery } = await supabase
-        .from('wholesale_deliveries')
-        .select('order_id')
-        .eq('id', deliveryId)
-        .maybeSingle();
-
-      if (delivery?.order_id) {
-        await supabase
-          .from('wholesale_orders')
-          .update({ status: 'delivered', delivered_at: new Date().toISOString() })
-          .eq('id', delivery.order_id);
-      }
-
-      // If collected payment, update client balance
-      if (collected > 0 && delivery) {
-        const { data: order } = await supabase
-          .from('wholesale_orders')
-          .select('client_id')
-          .eq('id', delivery.order_id)
-          .maybeSingle();
-
-        if (order?.client_id) {
-          const { data: client } = await supabase
-            .from('wholesale_clients')
-            .select('outstanding_balance')
-            .eq('id', order.client_id)
-            .maybeSingle();
-
-          if (client) {
-            const newBalance = Math.max(0, Number(client.outstanding_balance || 0) - collected);
-            await supabase
-              .from('wholesale_clients')
-              .update({ outstanding_balance: newBalance })
-              .eq('id', order.client_id);
-          }
-        }
-      }
-    },
-    onSuccess: () => {
-      showSuccessToast('Delivery marked complete');
-      queryClient.invalidateQueries({ queryKey: ['runner-active-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['runner-today-stats'] });
-    },
-    onError: (error: any) => {
-      showErrorToast(error.message || 'Failed to complete delivery');
-    },
-  });
+  // Mark delivery complete - uses centralized payment service
+  const handleMarkComplete = async (deliveryId: string, collected: number) => {
+    try {
+      await completeDelivery({
+        deliveryId,
+        amountCollected: collected,
+        showToast: true
+      });
+    } catch (error) {
+      // Error handling is done in the hook
+    }
+  };
 
   if (!runnerId) {
     return (
@@ -302,11 +249,9 @@ export function BigPlugRunnerPortal() {
           <div className="mt-4 pt-4 border-t">
             <DeliveryCompleteDialog
               delivery={activeDelivery}
+              isLoading={isCompletingDelivery}
               onComplete={(collected) => {
-                markComplete.mutate({
-                  deliveryId: activeDelivery.id,
-                  collected: parseFloat(collected) || 0,
-                });
+                handleMarkComplete(activeDelivery.id, parseFloat(collected) || 0);
               }}
             />
           </div>
@@ -342,7 +287,15 @@ export function BigPlugRunnerPortal() {
   );
 }
 
-function DeliveryCompleteDialog({ delivery, onComplete }: { delivery: any; onComplete: (collected: string) => void }) {
+function DeliveryCompleteDialog({ 
+  delivery, 
+  onComplete, 
+  isLoading 
+}: { 
+  delivery: any; 
+  onComplete: (collected: string) => void;
+  isLoading?: boolean;
+}) {
   const [showDialog, setShowDialog] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState('');
   const [needsCollection] = useState(Number(delivery.collection_amount || 0) > 0);
@@ -389,11 +342,11 @@ function DeliveryCompleteDialog({ delivery, onComplete }: { delivery: any; onCom
             )}
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowDialog(false)}>
+              <Button variant="outline" className="flex-1" onClick={() => setShowDialog(false)} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button className="flex-1" onClick={handleComplete}>
-                Complete
+              <Button className="flex-1" onClick={handleComplete} disabled={isLoading}>
+                {isLoading ? 'Completing...' : 'Complete'}
               </Button>
             </div>
           </Card>

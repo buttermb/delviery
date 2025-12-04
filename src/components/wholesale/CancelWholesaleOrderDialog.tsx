@@ -26,7 +26,9 @@ interface WholesaleOrder {
   total_amount: number;
   status: string;
   payment_status: string;
+  client_id?: string;
   client?: {
+    id: string;
     business_name: string;
     outstanding_balance?: number;
     credit_limit?: number;
@@ -72,22 +74,32 @@ export function CancelWholesaleOrderDialog({
       if (orderError) throw orderError;
 
       // If the order was on credit and we're reversing the credit impact
-      if (reverseCreditImpact && order.payment_status !== 'paid' && order.client) {
-        // Reduce the client's outstanding balance by the order amount
-        const currentBalance = order.client.outstanding_balance || 0;
-        const newBalance = Math.max(0, currentBalance - order.total_amount);
-
-        const { error: clientError } = await supabase
-          .from('wholesale_clients')
-          .update({
-            outstanding_balance: newBalance,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('business_name', order.client.business_name);
+      // Use client_id (not business_name) for reliable lookup
+      const clientId = order.client_id || order.client?.id;
+      if (reverseCreditImpact && order.payment_status !== 'paid' && clientId) {
+        // Use atomic RPC to prevent race conditions on balance update
+        const { error: clientError } = await supabase.rpc('adjust_client_balance', {
+          p_client_id: clientId,
+          p_amount: order.total_amount,
+          p_operation: 'subtract'
+        });
 
         if (clientError) {
-          logger.warn('Failed to reverse credit impact', { error: clientError, component: 'CancelWholesaleOrderDialog' });
-          // Don't throw - order is already cancelled
+          // Fallback to direct update if RPC doesn't exist yet
+          if (clientError.code === 'PGRST202') {
+            const currentBalance = order.client?.outstanding_balance || 0;
+            const newBalance = Math.max(0, currentBalance - order.total_amount);
+            
+            await supabase
+              .from('wholesale_clients')
+              .update({
+                outstanding_balance: newBalance,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', clientId);
+          } else {
+            logger.warn('Failed to reverse credit impact', { error: clientError, component: 'CancelWholesaleOrderDialog' });
+          }
         }
       }
 

@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2 } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, Package, DollarSign, AlertCircle, Star, Edit, Flag, Trash2, Truck } from "lucide-react";
 import { ClientNotesPanel } from "@/components/admin/ClientNotesPanel";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
@@ -341,13 +341,20 @@ export default function ClientDetail() {
       <ClientNotesPanel clientId={id || ""} />
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button 
           className="bg-emerald-500 hover:bg-emerald-600"
           onClick={() => navigate("/admin/wholesale-orders/new", { state: { clientId: id, clientName: displayClient.business_name } })}
         >
           <Package className="h-4 w-4 mr-2" />
           New Order
+        </Button>
+        <Button 
+          className="bg-amber-600 hover:bg-amber-700"
+          onClick={() => navigate(`/admin/dispatch-inventory?clientId=${id}`)}
+        >
+          <Truck className="h-4 w-4 mr-2" />
+          Front Inventory
         </Button>
         <Button 
           variant="outline"

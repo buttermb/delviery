@@ -2,10 +2,10 @@ import { z } from '../_shared/deps.ts';
 
 const orderItemSchema = z.object({
   inventory_id: z.string().uuid(),
-  product_name: z.string().min(1).max(500),
+  product_name: z.string().min(1).max(500).optional(),
   quantity_lbs: z.number().positive().max(10000),
-  quantity_units: z.number().int().nonnegative().max(100000),
-  price_per_lb: z.number().nonnegative().max(1000000),
+  quantity_units: z.number().int().nonnegative().max(100000).optional(),
+  price_per_lb: z.number().nonnegative().max(1000000).optional(),
 });
 
 export const wholesaleOrderCreateSchema = z.object({
@@ -14,6 +14,8 @@ export const wholesaleOrderCreateSchema = z.object({
   delivery_address: z.string().min(1).max(500).optional(),
   delivery_notes: z.string().max(2000).optional(),
   payment_terms: z.enum(['net30', 'net60', 'net90', 'immediate']).optional().default('net30'),
+  tenant_id: z.string().uuid().optional(),
+  idempotency_key: z.string().max(100).optional(),
 });
 
 export type WholesaleOrderCreateInput = z.infer<typeof wholesaleOrderCreateSchema>;

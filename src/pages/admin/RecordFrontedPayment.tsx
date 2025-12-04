@@ -19,6 +19,8 @@ import {
 import { ArrowLeft, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useToast } from '@/hooks/use-toast';
+import { useRecordPayment } from '@/hooks/useRecordPayment';
+import type { PaymentMethod } from '@/lib/services/paymentService';
 
 export default function RecordFrontedPayment() {
   const navigate = useNavigate();
@@ -26,12 +28,13 @@ export default function RecordFrontedPayment() {
   const { id } = useParams();
   const { tenant } = useTenantAdminAuth();
   const { toast } = useToast();
+  const { recordFrontedPayment, isRecordingFrontedPayment } = useRecordPayment();
+  
   const [frontedItem, setFrontedItem] = useState<any>(null);
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadFrontedItem();
@@ -43,7 +46,7 @@ export default function RecordFrontedPayment() {
       // @ts-ignore
       const { data } = await supabase
         .from('fronted_inventory')
-        .select('*, product:products(name)')
+        .select('*, product:products(name), client:wholesale_clients(id, business_name, outstanding_balance)')
         .eq('id', id)
         .eq('account_id', tenant.id)
         .maybeSingle();
@@ -57,10 +60,10 @@ export default function RecordFrontedPayment() {
   };
 
   const handleRecordPayment = async () => {
-    if (!tenant?.id) {
+    if (!tenant?.id || !id) {
       toast({
         title: 'Error',
-        description: 'Tenant not found',
+        description: 'Tenant or fronted inventory ID not found',
         variant: 'destructive'
       });
       return;
@@ -76,43 +79,19 @@ export default function RecordFrontedPayment() {
       return;
     }
 
-    setLoading(true);
     try {
-      // Create payment record
-      await supabase.from('fronted_payments').insert({
-        account_id: tenant.id,
-        fronted_inventory_id: id,
+      const result = await recordFrontedPayment({
+        frontedId: id,
         amount: paymentAmount,
-        payment_method: paymentMethod,
-        payment_reference: reference || null,
-        notes
+        paymentMethod,
+        notes: notes || undefined,
+        reference: reference || undefined,
+        showToast: false // We handle toast manually for custom message
       });
-
-      // Update fronted inventory payment status
-      const newTotalReceived = (frontedItem.payment_received || 0) + paymentAmount;
-      const expectedRevenue = frontedItem.expected_revenue || 0;
-
-      let newPaymentStatus = 'pending';
-      if (newTotalReceived >= expectedRevenue) {
-        newPaymentStatus = 'paid';
-      } else if (newTotalReceived > 0) {
-        newPaymentStatus = 'partial';
-      }
-
-      await supabase
-        .from('fronted_inventory')
-        .update({
-          payment_received: newTotalReceived,
-          payment_status: newPaymentStatus,
-          status: newPaymentStatus === 'paid' ? 'completed' : 'active',
-          completed_at: newPaymentStatus === 'paid' ? new Date().toISOString() : null
-        })
-        .eq('id', id)
-        .eq('account_id', tenant.id);
 
       toast({
         title: 'Success!',
-        description: `Payment of $${paymentAmount.toFixed(2)} recorded`
+        description: `Payment of $${paymentAmount.toFixed(2)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${result.remaining > 0 ? `Remaining: $${result.remaining.toFixed(2)}` : 'Fully paid!'}`
       });
 
       navigateToAdmin('inventory/fronted');
@@ -120,11 +99,9 @@ export default function RecordFrontedPayment() {
       logger.error('Error recording payment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to record payment',
+        description: error instanceof Error ? error.message : 'Failed to record payment',
         variant: 'destructive'
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -199,7 +176,7 @@ export default function RecordFrontedPayment() {
 
             <div>
               <Label>Payment Method *</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -237,12 +214,12 @@ export default function RecordFrontedPayment() {
 
         <Button
           onClick={handleRecordPayment}
-          disabled={loading}
+          disabled={isRecordingFrontedPayment}
           className="w-full"
           size="lg"
         >
           <CreditCard className="w-4 h-4 mr-2" />
-          {loading ? 'Recording...' : 'Record Payment'}
+          {isRecordingFrontedPayment ? 'Recording...' : 'Record Payment'}
         </Button>
       </div>
     </div>

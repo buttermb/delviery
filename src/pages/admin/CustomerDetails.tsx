@@ -57,6 +57,8 @@ export default function CustomerDetails() {
   const [notes, setNotes] = useState<any[]>([]);
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(true);
+  const [storeCredit, setStoreCredit] = useState(0);
+  const [outstandingBalance, setOutstandingBalance] = useState(0);
 
   // Get tenant_id from tenant context or customer data
   const tenantId = tenant?.id || customer?.tenant_id;
@@ -122,6 +124,30 @@ export default function CustomerDetails() {
 
       if (notesError) throw notesError;
       setNotes(notesData || []);
+
+      // Load store credit balance
+      const { data: creditData } = await supabase
+        .from('customer_credits')
+        .select('amount, transaction_type')
+        .eq('customer_id', id)
+        .eq('tenant_id', tenantId);
+
+      if (creditData) {
+        const totalCredit = creditData.reduce((sum, credit) => {
+          if (credit.transaction_type === 'issued' || credit.transaction_type === 'refund') {
+            return sum + (credit.amount || 0);
+          } else if (credit.transaction_type === 'used') {
+            return sum - (credit.amount || 0);
+          }
+          return sum;
+        }, 0);
+        setStoreCredit(Math.max(0, totalCredit));
+      }
+
+      // Calculate outstanding balance (total orders - total payments)
+      const ordersTotal = (ordersData || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
+      const paymentsTotal = (paymentsData || []).reduce((sum, payment) => sum + (payment.amount || 0), 0);
+      setOutstandingBalance(Math.max(0, ordersTotal - paymentsTotal));
     } catch (error) {
       logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
       toast.error('Failed to load customer data');
@@ -388,7 +414,17 @@ export default function CustomerDetails() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
-                      <Badge>VIP Member</Badge>
+                      <Badge className={
+                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800' :
+                        (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800' :
+                        (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }>
+                        {(customer.loyalty_points || 0) >= 1000 ? '⭐ VIP' :
+                         (customer.loyalty_points || 0) >= 500 ? '🥇 Gold' :
+                         (customer.loyalty_points || 0) >= 100 ? '🥈 Silver' :
+                         '🥉 Bronze'}
+                      </Badge>
                     </div>
                   </CardContent>
                 </Card>
@@ -485,11 +521,13 @@ export default function CustomerDetails() {
                       </div>
                       <div className="border rounded-lg p-4">
                         <p className="text-sm text-muted-foreground">Store Credit</p>
-                        <p className="text-2xl font-bold">$0.00</p>
+                        <p className="text-2xl font-bold text-green-600">${storeCredit.toFixed(2)}</p>
                       </div>
                       <div className="border rounded-lg p-4">
                         <p className="text-sm text-muted-foreground">Outstanding Balance</p>
-                        <p className="text-2xl font-bold">$0.00</p>
+                        <p className={`text-2xl font-bold ${outstandingBalance > 0 ? 'text-red-600' : ''}`}>
+                          ${outstandingBalance.toFixed(2)}
+                        </p>
                       </div>
                     </div>
 

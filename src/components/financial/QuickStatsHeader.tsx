@@ -31,17 +31,18 @@ function StatItem({ icon, label, value, color = 'default', onClick }: StatItemPr
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2 px-3 py-2 rounded-lg transition-all',
+        'flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-all',
         'hover:bg-white/5 active:scale-95',
-        'focus:outline-none focus:ring-2 focus:ring-emerald-500/50'
+        'focus:outline-none focus:ring-2 focus:ring-emerald-500/50',
+        'flex-shrink-0 min-w-fit'
       )}
     >
       <span className={cn('opacity-70', colorClasses[color])}>{icon}</span>
       <div className="text-left">
-        <div className={cn('text-lg font-bold font-mono', colorClasses[color])}>
+        <div className={cn('text-sm sm:text-lg font-bold font-mono', colorClasses[color])}>
           {value}
         </div>
-        <div className="text-[10px] uppercase tracking-wider text-zinc-500">
+        <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-zinc-500">
           {label}
         </div>
       </div>
@@ -81,8 +82,8 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 shadow-xl shadow-black/20">
-      <div className="flex items-center justify-between px-2 md:px-4 py-2 overflow-x-auto scrollbar-hide gap-1">
+    <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 shadow-lg shadow-black/10">
+      <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between px-2 sm:px-4 md:px-6 py-2 overflow-x-auto scrollbar-hide gap-1 sm:gap-2">
         <StatItem
           icon={<Wallet className="h-5 w-5" />}
           label="Cash"
@@ -129,12 +130,13 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <button
           onClick={() => onStatClick?.('alerts')}
           className={cn(
-            'relative flex items-center gap-2 px-3 py-2 rounded-lg transition-all',
+            'relative flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg transition-all',
             'hover:bg-white/5 active:scale-95',
-            'focus:outline-none focus:ring-2 focus:ring-emerald-500/50'
+            'focus:outline-none focus:ring-2 focus:ring-emerald-500/50',
+            'flex-shrink-0'
           )}
         >
-          <Bell className="h-5 w-5 text-zinc-400" />
+          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400" />
           {(stats?.alertCount || 0) > 0 && (
             <Badge 
               variant="destructive" 

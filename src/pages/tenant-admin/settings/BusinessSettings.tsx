@@ -20,6 +20,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Building2,
   MapPin,
   Phone,
@@ -28,9 +39,14 @@ import {
   Image as ImageIcon,
   Palette,
   Upload,
+  Database,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const TIMEZONES = [
   { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
@@ -47,8 +63,52 @@ interface BusinessHours {
 
 export default function BusinessSettings() {
   const { tenant } = useTenantAdminAuth();
+  const queryClient = useQueryClient();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [clearDemoDialogOpen, setClearDemoDialogOpen] = useState(false);
+
+  // Clear demo data mutation
+  const clearDemoDataMutation = useMutation({
+    mutationFn: async () => {
+      if (!tenant?.id) throw new Error('No tenant ID');
+
+      // Delete demo products (products without orders)
+      const { error: productsError } = await supabase
+        .from('products')
+        .delete()
+        .eq('tenant_id', tenant.id)
+        .or('sku.ilike.%DEMO%,sku.ilike.%SAMPLE%,name.ilike.%demo%,name.ilike.%sample%,name.ilike.%test%');
+
+      if (productsError) throw productsError;
+
+      // Delete demo clients without orders
+      const { error: clientsError } = await supabase
+        .from('clients')
+        .delete()
+        .eq('tenant_id', tenant.id)
+        .or('business_name.ilike.%demo%,business_name.ilike.%sample%,business_name.ilike.%test%');
+
+      if (clientsError) throw clientsError;
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast({
+        title: 'Demo data cleared',
+        description: 'Sample products and test clients have been removed.',
+      });
+      setClearDemoDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to clear demo data',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const [businessInfo, setBusinessInfo] = useState({
     name: tenant?.business_name || '',
@@ -329,6 +389,61 @@ export default function BusinessSettings() {
               <Button size="sm" variant="outline" style={{ borderColor: brandColors.accent, color: brandColors.accent }}>Accent</Button>
             </div>
           </div>
+        </SettingsCard>
+      </SettingsSection>
+
+      {/* Data Management */}
+      <SettingsSection
+        title="Data Management"
+        description="Manage your business data and clean up test records"
+        icon={Database}
+      >
+        <SettingsCard>
+          <SettingsRow 
+            label="Clear Demo Data" 
+            description="Remove sample products, test clients, and demo inventory that may have been added during onboarding"
+          >
+            <AlertDialog open={clearDemoDialogOpen} onOpenChange={setClearDemoDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear Demo Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear Demo Data?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete:
+                    <ul className="list-disc ml-6 mt-2 space-y-1">
+                      <li>Products with "demo", "sample", or "test" in their name/SKU</li>
+                      <li>Clients with "demo", "sample", or "test" in their business name</li>
+                    </ul>
+                    <p className="mt-2 font-medium text-foreground">
+                      This action cannot be undone. Real business data will not be affected.
+                    </p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => clearDemoDataMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={clearDemoDataMutation.isPending}
+                  >
+                    {clearDemoDataMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Clearing...
+                      </>
+                    ) : (
+                      'Clear Demo Data'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </SettingsRow>
         </SettingsCard>
       </SettingsSection>
     </div>

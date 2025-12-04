@@ -144,6 +144,7 @@ const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout"));
 const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
 const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
+const CollectionModePage = lazy(() => import("./pages/admin/CollectionMode"));
 // Billing is now handled in Settings - redirect below
 // const TenantAdminBillingPage = lazy(() => import("./pages/tenant-admin/BillingPage"));
 const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
@@ -601,11 +602,27 @@ const App = () => {
                                           </Suspense>
                                         }
                                       />
+                                      <Route
+                                        path="collection-mode"
+                                        element={
+                                          <Suspense fallback={<SkeletonDashboard />}>
+                                            <CollectionModePage />
+                                          </Suspense>
+                                        }
+                                      />
+                                      {/* Collection mode aliases */}
+                                      <Route path="collections" element={<Navigate to="../collection-mode" replace />} />
                                       {/* Legacy route redirects - redirect old paths to new paths */}
                                       <Route path="big-plug-dashboard" element={<Navigate to="dashboard" replace />} />
                                       <Route path="big-plug-order" element={<Navigate to="wholesale-orders" replace />} />
                                       <Route path="big-plug-inventory" element={<Navigate to="inventory-dashboard" replace />} />
                                       <Route path="big-plug-financial" element={<Navigate to="financial-center" replace />} />
+                                      {/* Common URL aliases - redirect to correct routes */}
+                                      <Route path="product-catalog" element={<Navigate to="../inventory/products" replace />} />
+                                      <Route path="wholesale-clients" element={<Navigate to="../big-plug-clients" replace />} />
+                                      <Route path="products" element={<Navigate to="../inventory/products" replace />} />
+                                      <Route path="clients" element={<Navigate to="../big-plug-clients" replace />} />
+                                      <Route path="customers" element={<Navigate to="../big-plug-clients" replace />} />
                                       <Route path="inventory/dispatch" element={<Navigate to="../dispatch-inventory" replace />} />
                                       <Route path="admin-notifications" element={<Navigate to="notifications" replace />} />
                                       <Route path="reports-new" element={<Navigate to="reports" replace />} />

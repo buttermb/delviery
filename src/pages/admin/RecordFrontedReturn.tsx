@@ -108,19 +108,82 @@ export default function RecordFrontedReturn() {
       const goodReturns = scannedReturns.filter((r) => r.condition === "good").length;
       const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;
 
-      // Update fronted inventory
-      const { error: updateError } = await supabase
-        .from("fronted_inventory")
-        .update({
-          quantity_returned: (front as any).quantity_returned + goodReturns,
-          quantity_damaged: (front as any).quantity_damaged + damagedReturns,
-        })
-        .eq("id", id)
-        .eq("account_id", tenant.id);
+      // Try atomic RPC first (handles inventory, balance update, and movement logging)
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('process_fronted_return_atomic', {
+        p_fronted_id: id,
+        p_good_returns: goodReturns,
+        p_damaged_returns: damagedReturns,
+        p_notes: notes || null
+      });
 
-      if (updateError) throw updateError;
+      if (rpcError) {
+        // If RPC doesn't exist, fall back to legacy method
+        if (rpcError.code === 'PGRST202' || rpcError.message?.includes('function') || rpcError.message?.includes('does not exist')) {
+          // Legacy method
+          const { error: updateError } = await supabase
+            .from("fronted_inventory")
+            .update({
+              quantity_returned: ((front as any).quantity_returned || 0) + goodReturns,
+              quantity_damaged: ((front as any).quantity_damaged || 0) + damagedReturns,
+            })
+            .eq("id", id)
+            .eq("account_id", tenant.id);
 
-      // Create scan records
+          if (updateError) throw updateError;
+
+          // Update product inventory for good returns
+          if (goodReturns > 0) {
+            const { data: product } = await supabase
+              .from("products")
+              .select("available_quantity, fronted_quantity")
+              .eq("id", (front as any).product_id)
+              .eq("tenant_id", tenant.id)
+              .maybeSingle();
+
+            if (product) {
+              await supabase
+                .from("products")
+                .update({ 
+                  available_quantity: ((product as any).available_quantity || 0) + goodReturns,
+                  fronted_quantity: Math.max(0, ((product as any).fronted_quantity || 0) - goodReturns)
+                })
+                .eq("id", (front as any).product_id)
+                .eq("tenant_id", tenant.id);
+            }
+
+            // Update client balance (return value reduces debt)
+            if ((front as any).client_id && (front as any).price_per_unit) {
+              const returnValue = goodReturns * (front as any).price_per_unit;
+              const { error: balanceError } = await supabase.rpc('adjust_client_balance', {
+                p_client_id: (front as any).client_id,
+                p_amount: returnValue,
+                p_operation: 'subtract'
+              });
+
+              if (balanceError) {
+                // Fallback to direct update
+                const { data: client } = await supabase
+                  .from('wholesale_clients')
+                  .select('outstanding_balance')
+                  .eq('id', (front as any).client_id)
+                  .maybeSingle();
+
+                if (client) {
+                  const newBalance = Math.max(0, (client.outstanding_balance || 0) - returnValue);
+                  await supabase
+                    .from('wholesale_clients')
+                    .update({ outstanding_balance: newBalance })
+                    .eq('id', (front as any).client_id);
+                }
+              }
+            }
+          }
+        } else {
+          throw rpcError;
+        }
+      }
+
+      // Create scan records (after either method)
       for (const returnItem of scannedReturns) {
         await supabase.from("fronted_inventory_scans").insert({
           account_id: tenant.id,
@@ -131,24 +194,6 @@ export default function RecordFrontedReturn() {
           quantity: 1,
           notes: returnItem.reason || notes,
         } as any);
-      }
-
-      // Update product inventory for good returns
-      if (goodReturns > 0) {
-        const { data: product } = await supabase
-          .from("products")
-          .select("available_quantity")
-          .eq("id", (front as any).product_id)
-          .eq("tenant_id", tenant.id)
-          .maybeSingle();
-
-        if (product) {
-          await supabase
-            .from("products")
-            .update({ available_quantity: (product as any).available_quantity + goodReturns })
-            .eq("id", (front as any).product_id)
-            .eq("tenant_id", tenant.id);
-        }
       }
 
       toast.success(

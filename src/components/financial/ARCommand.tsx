@@ -66,41 +66,41 @@ function ClientCard({ client, onCall, onText, onInvoice, onRemind }: ClientCardP
         className="h-1.5 mb-3 bg-zinc-800 [&>div]:bg-emerald-500"
       />
 
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         <Button 
           size="sm" 
           variant="ghost" 
-          className="h-8 px-2 text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
+          className="h-7 sm:h-8 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-emerald-500/20 hover:text-emerald-400 min-h-[44px] sm:min-h-0"
           onClick={onCall}
         >
-          <Phone className="h-3.5 w-3.5 mr-1" />
+          <Phone className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
           Call
         </Button>
         <Button 
           size="sm" 
           variant="ghost" 
-          className="h-8 px-2 text-xs hover:bg-blue-500/20 hover:text-blue-400"
+          className="h-7 sm:h-8 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-blue-500/20 hover:text-blue-400 min-h-[44px] sm:min-h-0"
           onClick={onText}
         >
-          <MessageSquare className="h-3.5 w-3.5 mr-1" />
+          <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
           Text
         </Button>
         <Button 
           size="sm" 
           variant="ghost" 
-          className="h-8 px-2 text-xs hover:bg-amber-500/20 hover:text-amber-400"
+          className="h-7 sm:h-8 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-amber-500/20 hover:text-amber-400 min-h-[44px] sm:min-h-0"
           onClick={onInvoice}
         >
-          <Mail className="h-3.5 w-3.5 mr-1" />
+          <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
           Invoice
         </Button>
         <Button 
           size="sm" 
           variant="ghost" 
-          className="h-8 px-2 text-xs hover:bg-purple-500/20 hover:text-purple-400"
+          className="h-7 sm:h-8 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-purple-500/20 hover:text-purple-400 min-h-[44px] sm:min-h-0"
           onClick={onRemind}
         >
-          <Clock className="h-3.5 w-3.5 mr-1" />
+          <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
           Remind
         </Button>
       </div>
@@ -212,7 +212,7 @@ export function ARCommand() {
               size="sm" 
               variant="outline"
               className="border-zinc-700 hover:bg-zinc-800"
-              onClick={() => navigateToAdmin('wholesale-clients')}
+              onClick={() => navigateToAdmin('collection-mode')}
             >
               Collection Mode
             </Button>

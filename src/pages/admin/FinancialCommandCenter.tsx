@@ -127,122 +127,114 @@ export default function FinancialCommandCenter() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <>
+    <div className="min-h-screen bg-zinc-950">
       <SEOHead 
         title="Financial Command Center" 
         description="Your unified financial dashboard - cash flow, AR, inventory, performance"
       />
 
-      {/* Quick Stats Header - Sticky */}
-      <QuickStatsHeader onStatClick={handleStatClick} />
-
-      <div className="min-h-screen bg-zinc-950">
-        {/* Page Header */}
-        <div className="px-4 md:px-6 py-6 border-b border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-zinc-100">
-                {greeting}, {userName}
-              </h1>
-              <p className="text-sm text-zinc-500 mt-1">
-                Financial Command Center • {format(new Date(), 'EEEE, MMMM d, yyyy')}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-zinc-700 hover:bg-zinc-800"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-zinc-700 hover:bg-zinc-800"
-                onClick={() => navigateToAdmin('settings')}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
+      {/* Page Header - Compact */}
+      <div className="px-4 md:px-6 py-4 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-zinc-100">
+              {greeting}, {userName}
+            </h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            </p>
           </div>
-        </div>
-
-        {/* Desktop Layout - 2 Column Grid */}
-        <div className="hidden md:block p-6">
-          <div className="grid grid-cols-5 gap-6">
-            {/* Left Column (60%) - Zone A & C */}
-            <div className="col-span-3 space-y-6">
-              {/* Zone A: Cash Flow Pulse */}
-              <div ref={cashFlowRef} className="scroll-mt-20">
-                <CashFlowPulse />
-              </div>
-
-              {/* Zone C: Fronted Inventory */}
-              <div ref={frontedRef} className="scroll-mt-20">
-                <FrontedInventoryZone />
-              </div>
-            </div>
-
-            {/* Right Column (40%) - Zone B & D */}
-            <div className="col-span-2 space-y-6">
-              {/* Zone B: AR Command */}
-              <div ref={arRef} className="scroll-mt-20">
-                <ARCommand />
-              </div>
-
-              {/* Zone D: Performance Pulse */}
-              <div ref={performanceRef} className="scroll-mt-20">
-                <PerformancePulse />
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 border-zinc-700 hover:bg-zinc-800"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+              Refresh
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-zinc-700 hover:bg-zinc-800"
+              onClick={() => navigateToAdmin('settings')}
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
           </div>
-        </div>
-
-        {/* Mobile Layout - Collapsible Sections */}
-        <div className="md:hidden p-4 space-y-3">
-          {/* Cash Flow - Default Open */}
-          <MobileSection
-            title="Today's Cash Flow"
-            icon={<span className="text-lg">💰</span>}
-            defaultOpen={true}
-          >
-            <CashFlowPulse />
-          </MobileSection>
-
-          {/* AR - Badge for count */}
-          <MobileSection
-            title="Needs Action"
-            icon={<span className="text-lg">🚨</span>}
-          >
-            <ARCommand />
-          </MobileSection>
-
-          {/* Fronted Inventory */}
-          <MobileSection
-            title="Fronted Inventory"
-            icon={<span className="text-lg">📦</span>}
-          >
-            <FrontedInventoryZone />
-          </MobileSection>
-
-          {/* Performance */}
-          <MobileSection
-            title="This Month"
-            icon={<span className="text-lg">📈</span>}
-          >
-            <PerformancePulse />
-          </MobileSection>
-        </div>
-
-        {/* Footer Attribution */}
-        <div className="text-center py-8 text-xs text-zinc-600">
-          Financial Command Center • Powered by FloraIQ
         </div>
       </div>
-    </>
+
+      {/* Quick Stats Header - Sticky below page header */}
+      <QuickStatsHeader onStatClick={handleStatClick} />
+
+      {/* Desktop Layout - Organized Bento Grid */}
+      <div className="hidden md:block px-4 lg:px-6 py-4">
+        <div className="max-w-7xl mx-auto space-y-4">
+          {/* Row 1: Cash Flow (wide) + AR Command (narrow) */}
+          <div className="grid grid-cols-12 gap-4">
+            <div ref={cashFlowRef} className="col-span-7 scroll-mt-32">
+              <CashFlowPulse />
+            </div>
+            <div ref={arRef} className="col-span-5 scroll-mt-32">
+              <ARCommand />
+            </div>
+          </div>
+
+          {/* Row 2: Fronted Inventory (wide) + Performance (narrow) */}
+          <div className="grid grid-cols-12 gap-4">
+            <div ref={frontedRef} className="col-span-7 scroll-mt-32">
+              <FrontedInventoryZone />
+            </div>
+            <div ref={performanceRef} className="col-span-5 scroll-mt-32">
+              <PerformancePulse />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Layout - Collapsible Sections */}
+      <div className="md:hidden p-4 space-y-3">
+        {/* Cash Flow - Default Open */}
+        <MobileSection
+          title="Today's Cash Flow"
+          icon={<span className="text-lg">💰</span>}
+          defaultOpen={true}
+        >
+          <CashFlowPulse />
+        </MobileSection>
+
+        {/* AR - Badge for count */}
+        <MobileSection
+          title="Needs Action"
+          icon={<span className="text-lg">🚨</span>}
+        >
+          <ARCommand />
+        </MobileSection>
+
+        {/* Fronted Inventory */}
+        <MobileSection
+          title="Fronted Inventory"
+          icon={<span className="text-lg">📦</span>}
+        >
+          <FrontedInventoryZone />
+        </MobileSection>
+
+        {/* Performance */}
+        <MobileSection
+          title="This Month"
+          icon={<span className="text-lg">📈</span>}
+        >
+          <PerformancePulse />
+        </MobileSection>
+      </div>
+
+      {/* Footer Attribution */}
+      <div className="text-center py-6 text-xs text-zinc-600">
+        Financial Command Center • Powered by FloraIQ
+      </div>
+    </div>
   );
 }
 

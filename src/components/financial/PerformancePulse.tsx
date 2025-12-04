@@ -79,22 +79,22 @@ export function PerformancePulse() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-3 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             {/* Header Row */}
-            <div className="grid grid-cols-4 text-[10px] uppercase text-zinc-500 pb-2 border-b border-zinc-800">
+            <div className="grid grid-cols-3 sm:grid-cols-4 text-[9px] sm:text-[10px] uppercase text-zinc-500 pb-2 border-b border-zinc-800 min-w-[200px]">
               <div />
               <div className="text-center">This Month</div>
-              <div className="text-center">Last Month</div>
+              <div className="text-center hidden sm:block">Last Month</div>
               <div className="text-right">Change</div>
             </div>
 
             {/* Revenue */}
-            <div className="grid grid-cols-4 items-center">
-              <div className="text-xs text-zinc-400">Revenue</div>
-              <div className="text-center font-mono text-sm text-zinc-100">
+            <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Revenue</div>
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
                 {formatCurrency(data?.thisMonth.revenue || 0)}
               </div>
-              <div className="text-center font-mono text-sm text-zinc-500">
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
                 {formatCurrency(data?.lastMonth.revenue || 0)}
               </div>
               <div className="text-right">
@@ -103,12 +103,12 @@ export function PerformancePulse() {
             </div>
 
             {/* COGS */}
-            <div className="grid grid-cols-4 items-center">
-              <div className="text-xs text-zinc-400">COGS</div>
-              <div className="text-center font-mono text-sm text-zinc-100">
+            <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
+              <div className="text-[10px] sm:text-xs text-zinc-400">COGS</div>
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
                 {formatCurrency(data?.thisMonth.cost || 0)}
               </div>
-              <div className="text-center font-mono text-sm text-zinc-500">
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
                 {formatCurrency(data?.lastMonth.cost || 0)}
               </div>
               <div className="text-right">
@@ -117,12 +117,12 @@ export function PerformancePulse() {
             </div>
 
             {/* Profit */}
-            <div className="grid grid-cols-4 items-center">
-              <div className="text-xs text-zinc-400">Profit</div>
-              <div className="text-center font-mono text-sm text-emerald-400 font-bold">
+            <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Profit</div>
+              <div className="text-center font-mono text-xs sm:text-sm text-emerald-400 font-bold">
                 {formatCurrency(data?.thisMonth.profit || 0)}
               </div>
-              <div className="text-center font-mono text-sm text-zinc-500">
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
                 {formatCurrency(data?.lastMonth.profit || 0)}
               </div>
               <div className="text-right">
@@ -131,12 +131,12 @@ export function PerformancePulse() {
             </div>
 
             {/* Margin */}
-            <div className="grid grid-cols-4 items-center">
-              <div className="text-xs text-zinc-400">Margin</div>
-              <div className="text-center font-mono text-sm text-zinc-100">
+            <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Margin</div>
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
                 {data?.thisMonth.margin || 0}%
               </div>
-              <div className="text-center font-mono text-sm text-zinc-500">
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
                 {data?.lastMonth.margin || 0}%
               </div>
               <div className="text-right">
@@ -145,12 +145,12 @@ export function PerformancePulse() {
             </div>
 
             {/* Deals */}
-            <div className="grid grid-cols-4 items-center">
-              <div className="text-xs text-zinc-400">Deals</div>
-              <div className="text-center font-mono text-sm text-zinc-100">
+            <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
+              <div className="text-[10px] sm:text-xs text-zinc-400">Deals</div>
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
                 {data?.thisMonth.deals || 0}
               </div>
-              <div className="text-center font-mono text-sm text-zinc-500">
+              <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
                 {data?.lastMonth.deals || 0}
               </div>
               <div className="text-right">
@@ -190,17 +190,17 @@ export function PerformancePulse() {
             </div>
           ) : (
             data?.topClients.map((client, index) => (
-              <div key={client.name} className="flex items-center gap-3">
-                <span className="text-xs font-bold text-zinc-500 w-4">
+              <div key={client.name} className="flex items-center gap-2 sm:gap-3">
+                <span className="text-[10px] sm:text-xs font-bold text-zinc-500 w-4 flex-shrink-0">
                   {index + 1}.
                 </span>
-                <span className="text-sm text-zinc-300 flex-1 truncate">
+                <span className="text-xs sm:text-sm text-zinc-300 flex-1 truncate min-w-0">
                   {client.name}
                 </span>
-                <span className="text-sm font-mono text-zinc-100 w-20 text-right">
+                <span className="text-xs sm:text-sm font-mono text-zinc-100 w-14 sm:w-20 text-right flex-shrink-0">
                   {formatCurrency(client.revenue)}
                 </span>
-                <div className="w-24">
+                <div className="w-16 sm:w-24 flex-shrink-0">
                   <Progress 
                     value={(client.revenue / maxClientRevenue) * 100}
                     className="h-2 bg-zinc-800 [&>div]:bg-emerald-500"

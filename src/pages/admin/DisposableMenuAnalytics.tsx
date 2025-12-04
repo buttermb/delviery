@@ -79,14 +79,65 @@ const DisposableMenuAnalytics = () => {
   // Calculate analytics
   const totalViews = accessLogs?.length || 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id || log.ip_address)).size;
-  const avgViewDuration = accessLogs?.reduce((sum, log) => {
-    // Calculate duration if we had timestamps
-    return sum + 180; // Mock: 3 minutes average
-  }, 0) / (totalViews || 1);
 
-  const conversionRate = menu?.menu_orders?.length
+  // Calculate average session duration from access logs
+  // Since we don't have end timestamps, we estimate based on typical browsing patterns
+  // Real implementation would track session start/end times
+  const avgViewDuration = totalViews > 0 ? 180 : 0; // 3 min default until we have real session tracking
+
+  const conversionRate = menu?.menu_orders?.length && totalViews > 0
     ? ((menu.menu_orders.length / totalViews) * 100).toFixed(1)
     : '0';
+
+  // Calculate period-over-period change (compare current week vs previous week)
+  const now = new Date();
+  const oneWeekAgo = subDays(now, 7);
+  const twoWeeksAgo = subDays(now, 14);
+
+  const currentPeriodLogs = accessLogs?.filter(log => 
+    parseISO(log.accessed_at) >= oneWeekAgo
+  ) || [];
+  const previousPeriodLogs = accessLogs?.filter(log => {
+    const date = parseISO(log.accessed_at);
+    return date >= twoWeeksAgo && date < oneWeekAgo;
+  }) || [];
+
+  const currentViews = currentPeriodLogs.length;
+  const previousViews = previousPeriodLogs.length;
+  const viewsChange = previousViews > 0 
+    ? Math.round(((currentViews - previousViews) / previousViews) * 100)
+    : currentViews > 0 ? 100 : 0;
+
+  const currentUniqueVisitors = new Set(currentPeriodLogs.map(log => log.access_whitelist_id || log.ip_address)).size;
+  const previousUniqueVisitors = new Set(previousPeriodLogs.map(log => log.access_whitelist_id || log.ip_address)).size;
+  const visitorsChange = previousUniqueVisitors > 0 
+    ? Math.round(((currentUniqueVisitors - previousUniqueVisitors) / previousUniqueVisitors) * 100)
+    : currentUniqueVisitors > 0 ? 100 : 0;
+
+  // Calculate peak access times from actual logs
+  const hourBuckets: Record<string, number> = {};
+  accessLogs?.forEach(log => {
+    const hour = parseISO(log.accessed_at).getHours();
+    let bucket = '';
+    if (hour >= 6 && hour < 9) bucket = '6am - 9am';
+    else if (hour >= 9 && hour < 12) bucket = '9am - 12pm';
+    else if (hour >= 12 && hour < 14) bucket = '12pm - 2pm';
+    else if (hour >= 14 && hour < 17) bucket = '2pm - 5pm';
+    else if (hour >= 17 && hour < 19) bucket = '5pm - 7pm';
+    else if (hour >= 19 && hour < 22) bucket = '7pm - 10pm';
+    else bucket = 'Other';
+    
+    hourBuckets[bucket] = (hourBuckets[bucket] || 0) + 1;
+  });
+
+  const peakTimesSorted = Object.entries(hourBuckets)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([time, count]) => ({
+      time,
+      count,
+      percentage: totalViews > 0 ? Math.round((count / totalViews) * 100) : 0
+    }));
 
   // Group views by date for chart
   const viewsByDate = accessLogs?.reduce((acc, log) => {
@@ -180,25 +231,25 @@ const DisposableMenuAnalytics = () => {
           {
             label: 'Total Views',
             value: totalViews,
-            change: 23,
-            trend: 'up' as const,
+            change: viewsChange,
+            trend: viewsChange >= 0 ? 'up' as const : 'down' as const,
           },
           {
             label: 'Unique Visitors',
             value: uniqueVisitors,
-            change: 15,
-            trend: 'up' as const,
+            change: visitorsChange,
+            trend: visitorsChange >= 0 ? 'up' as const : 'down' as const,
           },
           {
             label: 'Conversion Rate',
             value: `${conversionRate}%`,
-            change: -5,
-            trend: 'down' as const,
+            change: 0, // Would need historical order data to calculate
+            trend: 'up' as const,
           },
           {
             label: 'Avg Duration',
-            value: `${Math.round(avgViewDuration)}s`,
-            change: 8,
+            value: totalViews > 0 ? `${Math.round(avgViewDuration)}s` : '-',
+            change: 0, // Would need session tracking to calculate
             trend: 'up' as const,
           },
         ] as AnalyticsStat[]}
@@ -222,33 +273,26 @@ const DisposableMenuAnalytics = () => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Peak Access Times</h3>
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">9am - 12pm</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-48 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: '65%' }} />
+              {peakTimesSorted.length > 0 ? (
+                peakTimesSorted.map((peak, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <span className="text-sm">{peak.time}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-48 bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full" 
+                          style={{ width: `${peak.percentage}%` }} 
+                        />
+                      </div>
+                      <span className="text-sm font-medium">{peak.percentage}%</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium">34%</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">2pm - 5pm</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-48 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: '48%' }} />
-                  </div>
-                  <span className="text-sm font-medium">28%</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">7pm - 10pm</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-48 bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: '38%' }} />
-                  </div>
-                  <span className="text-sm font-medium">25%</span>
-                </div>
-              </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-4">
+                  No access data to analyze
+                </p>
+              )}
             </div>
           </Card>
         </TabsContent>
@@ -319,7 +363,7 @@ const DisposableMenuAnalytics = () => {
               conversionRate,
               securityIncidents: securityEvents?.filter(e => e.severity === 'high' || e.severity === 'critical').length || 0,
               avgSessionDuration: avgViewDuration,
-              peakAccessTime: '2-5pm'
+              peakAccessTime: peakTimesSorted[0]?.time || 'N/A'
             }}
           />
         </TabsContent>

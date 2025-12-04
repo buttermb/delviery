@@ -47,11 +47,11 @@ export function CashFlowPulse() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {/* Money In */}
-            <div className="text-center p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <ArrowDownRight className="h-5 w-5 text-emerald-400 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-emerald-400 font-mono">
+            <div className="text-center p-3 sm:p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 mx-auto mb-1.5 sm:mb-2" />
+              <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">
                 {formatCurrency(data?.todayIn || 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">IN</div>
@@ -61,9 +61,9 @@ export function CashFlowPulse() {
             </div>
 
             {/* Money Out */}
-            <div className="text-center p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-              <ArrowUpRight className="h-5 w-5 text-red-400 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-red-400 font-mono">
+            <div className="text-center p-3 sm:p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 mx-auto mb-1.5 sm:mb-2" />
+              <div className="text-xl sm:text-2xl font-bold text-red-400 font-mono">
                 {formatCurrency(data?.todayOut || 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">OUT</div>
@@ -74,12 +74,12 @@ export function CashFlowPulse() {
 
             {/* Net */}
             <div className={cn(
-              "text-center p-4 rounded-lg border",
+              "text-center p-3 sm:p-4 rounded-lg border",
               (data?.todayNet || 0) >= 0 
                 ? "bg-emerald-500/10 border-emerald-500/20" 
                 : "bg-red-500/10 border-red-500/20"
             )}>
-              <div className="text-2xl font-bold font-mono" style={{
+              <div className="text-xl sm:text-2xl font-bold font-mono" style={{
                 color: (data?.todayNet || 0) >= 0 ? '#34d399' : '#f87171'
               }}>
                 {(data?.todayNet || 0) >= 0 ? '+' : ''}{formatCurrency(data?.todayNet || 0)}
@@ -134,23 +134,23 @@ export function CashFlowPulse() {
             })}
           </div>
 
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-4 border-t border-zinc-800">
             <div className="text-center">
-              <div className="text-xs text-zinc-500">Expected In</div>
-              <div className="text-sm font-bold text-emerald-400 font-mono">
+              <div className="text-[10px] sm:text-xs text-zinc-500">Expected In</div>
+              <div className="text-xs sm:text-sm font-bold text-emerald-400 font-mono">
                 {formatCurrency(data?.expectedCollections || 0)}
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-zinc-500">Scheduled Out</div>
-              <div className="text-sm font-bold text-red-400 font-mono">
+              <div className="text-[10px] sm:text-xs text-zinc-500">Scheduled Out</div>
+              <div className="text-xs sm:text-sm font-bold text-red-400 font-mono">
                 {formatCurrency(data?.scheduledPayouts || 0)}
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-zinc-500">Projected Net</div>
+              <div className="text-[10px] sm:text-xs text-zinc-500">Projected Net</div>
               <div className={cn(
-                "text-sm font-bold font-mono",
+                "text-xs sm:text-sm font-bold font-mono",
                 (data?.projectedNet || 0) >= 0 ? "text-emerald-400" : "text-red-400"
               )}>
                 {(data?.projectedNet || 0) >= 0 ? '+' : ''}{formatCurrency(data?.projectedNet || 0)}
