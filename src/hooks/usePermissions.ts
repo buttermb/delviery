@@ -23,7 +23,8 @@ export function usePermissions() {
   const { data: userRole } = useQuery<Role>({
     queryKey: ['user-role', admin?.userId, tenant?.id],
     queryFn: async () => {
-      if (!admin?.userId || !tenant?.id) return ROLES.OWNER;
+      // SECURITY: Default to least privilege (VIEWER) when context is missing
+      if (!admin?.userId || !tenant?.id) return ROLES.VIEWER;
 
       try {
         // Check if user is super admin first (highest privilege)
@@ -57,12 +58,13 @@ export function usePermissions() {
 
         if (error) {
           logger.warn('Error fetching user roles', error, { component: 'usePermissions' });
-          return ROLES.OWNER;
+          // SECURITY: Default to least privilege on error
+          return ROLES.VIEWER;
         }
 
         if (!userRoles || userRoles.length === 0) {
-          // Default to owner if no roles found
-          return ROLES.OWNER;
+          // SECURITY: Default to least privilege if no roles found
+          return ROLES.VIEWER;
         }
 
         // Get highest privilege role
@@ -77,7 +79,8 @@ export function usePermissions() {
         return ROLES.VIEWER; // Default to viewer if no matching role
       } catch (error) {
         logger.warn('Error fetching user role', error, { component: 'usePermissions' });
-        return ROLES.OWNER;
+        // SECURITY: Default to least privilege on error
+        return ROLES.VIEWER;
       }
     },
     enabled: !!admin?.userId && !!tenant?.id,
@@ -85,8 +88,8 @@ export function usePermissions() {
     retry: 1,
   });
 
-  // Default to 'owner' for tenant admins if role not yet loaded
-  const role: Role = userRole || ROLES.OWNER;
+  // SECURITY: Default to least privilege (VIEWER) while role is loading
+  const role: Role = userRole || ROLES.VIEWER;
 
   const checkPermission = useMemo(() => {
     return (permission: Permission): boolean => {
