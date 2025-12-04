@@ -521,7 +521,7 @@ export interface ParsedProduct {
   lineage?: string;
   terpenes?: string[];
   growInfo?: string;
-  qualityTier?: 'exotic' | 'indoor' | 'greenhouse' | 'outdoor';
+  qualityTier?: QualityTier;
   stockStatus?: 'available' | 'limited' | 'out';
   notes?: string;
   confidence?: number;

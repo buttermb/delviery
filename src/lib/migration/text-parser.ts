@@ -62,6 +62,10 @@ const QUALITY_ABBREVIATIONS: Record<string, QualityTier> = {
   'exo': 'exotic',
   'fire': 'exotic',
   'premium': 'exotic',
+  'ml': 'mixed_light',
+  'mixed': 'mixed_light',
+  'mixed light': 'mixed_light',
+  'mixed_light': 'mixed_light',
 };
 
 // ==================== Pattern Detection ====================
