@@ -41,6 +41,7 @@ import { handleError } from "@/utils/errorHandling/handlers";
 import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanner';
 import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
 import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotificationsCenter';
+import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -996,6 +997,12 @@ export default function TenantAdminDashboardPage() {
       <WelcomeModal
         open={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
+      />
+
+      {/* Trial Welcome Modal - shown when redirected from Stripe checkout */}
+      <TrialWelcomeModal
+        tenantSlug={tenant?.slug}
+        businessName={tenant?.business_name}
       />
 
       {/* Quick Start Wizard for empty accounts */}

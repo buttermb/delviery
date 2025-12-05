@@ -63,7 +63,7 @@ serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     // Get or create Stripe customer
@@ -106,8 +106,10 @@ serve(async (req) => {
           plan_id: plan.id,
         },
       },
-      success_url: `${req.headers.get("origin")}/${tenant.slug}/admin/billing?success=true&trial=true`,
-      cancel_url: `${req.headers.get("origin")}/${tenant.slug}/admin/billing?canceled=true`,
+      // Redirect to dashboard with welcome flag on success
+      success_url: `${req.headers.get("origin")}/${tenant.slug}/admin/dashboard?welcome=true&trial=true`,
+      // Return to plan selection on cancel
+      cancel_url: `${req.headers.get("origin")}/select-plan?tenant_id=${tenant.id}&canceled=true`,
       metadata: {
         tenant_id: tenant.id,
         plan_id: plan.id,
