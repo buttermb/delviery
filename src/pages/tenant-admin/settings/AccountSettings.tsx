@@ -81,11 +81,11 @@ export default function AccountSettings() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Account</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Account</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Manage your personal information and account preferences
         </p>
       </div>
@@ -97,12 +97,12 @@ export default function AccountSettings() {
         icon={User}
       >
         <SettingsCard>
-          {/* Avatar */}
-          <div className="flex items-center gap-6 pb-6 border-b">
-            <div className="relative group">
-              <Avatar className="h-24 w-24 ring-4 ring-background shadow-xl">
+          {/* Avatar - responsive layout */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 pb-6 border-b text-center sm:text-left">
+            <div className="relative group flex-shrink-0">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-background shadow-xl">
                 <AvatarImage src={avatarUrl || undefined} alt={admin?.name || 'User'} />
-                <AvatarFallback className="text-2xl bg-gradient-to-br from-primary/80 to-primary text-primary-foreground">
+                <AvatarFallback className="text-xl sm:text-2xl bg-gradient-to-br from-primary/80 to-primary text-primary-foreground">
                   {getInitials(admin?.name)}
                 </AvatarFallback>
               </Avatar>
@@ -110,8 +110,10 @@ export default function AccountSettings() {
                 onClick={handleAvatarClick}
                 className={cn(
                   'absolute inset-0 rounded-full flex items-center justify-center',
-                  'bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity',
-                  'cursor-pointer'
+                  'bg-black/50 opacity-0 group-hover:opacity-100 sm:group-hover:opacity-100 transition-opacity',
+                  'cursor-pointer touch-manipulation',
+                  // Always show overlay on touch devices
+                  'active:opacity-100'
                 )}
               >
                 <Camera className="h-6 w-6 text-white" />
@@ -124,9 +126,9 @@ export default function AccountSettings() {
                 onChange={handleAvatarChange}
               />
             </div>
-            <div className="space-y-1">
-              <h3 className="font-semibold text-lg">{admin?.name || 'User'}</h3>
-              <p className="text-sm text-muted-foreground">{admin?.email}</p>
+            <div className="space-y-1 min-w-0">
+              <h3 className="font-semibold text-lg truncate">{admin?.name || 'User'}</h3>
+              <p className="text-sm text-muted-foreground truncate">{admin?.email}</p>
               <Badge variant="secondary" className="mt-2">
                 {(admin as any)?.role || 'Admin'}
               </Badge>
@@ -138,12 +140,12 @@ export default function AccountSettings() {
             label="Display name"
             description="Your name as it appears across the platform"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="Enter your name"
-                className="w-64"
+                className="w-full sm:w-64 min-h-[44px]"
               />
               <SaveStatusIndicator status={nameStatus} />
             </div>
@@ -154,13 +156,13 @@ export default function AccountSettings() {
             label="Email address"
             description="Your email is used for login and notifications"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{admin?.email}</span>
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-muted text-sm min-h-[44px] flex-1 sm:flex-none">
+                <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="truncate">{admin?.email}</span>
+                <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
               </div>
-              <Button variant="outline" size="sm" disabled>
+              <Button variant="outline" size="sm" disabled className="min-h-[44px] w-full sm:w-auto">
                 Change
               </Button>
             </div>
@@ -174,21 +176,21 @@ export default function AccountSettings() {
         description="The business account you're currently managing"
       >
         <SettingsCard>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <span className="text-xl font-bold text-primary">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg sm:text-xl font-bold text-primary">
                   {tenant?.business_name?.[0]?.toUpperCase() || 'B'}
                 </span>
               </div>
-              <div>
-                <p className="font-semibold">{tenant?.business_name}</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{tenant?.business_name}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {tenant?.slug}.bigmikewholesale.com
                 </p>
               </div>
             </div>
-            <Badge variant="outline">
+            <Badge variant="outline" className="flex-shrink-0">
               {tenant?.subscription_status === 'trial' ? 'Trial' : 'Active'}
             </Badge>
           </div>
@@ -201,8 +203,8 @@ export default function AccountSettings() {
         description="Irreversible and destructive actions"
       >
         <SettingsCard className="border-destructive/50">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0">
               <p className="font-medium text-destructive">Delete Account</p>
               <p className="text-sm text-muted-foreground">
                 Permanently delete your account and all associated data
@@ -210,12 +212,12 @@ export default function AccountSettings() {
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" className="min-h-[44px] w-full sm:w-auto">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Account
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="sm:max-w-md mx-4 sm:mx-auto">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -223,9 +225,9 @@ export default function AccountSettings() {
                     account and remove all your data from our servers.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="min-h-[44px] w-full sm:w-auto">Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90 min-h-[44px] w-full sm:w-auto">
                     Yes, delete my account
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -237,4 +239,3 @@ export default function AccountSettings() {
     </div>
   );
 }
-

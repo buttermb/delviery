@@ -51,7 +51,11 @@ const NOTIFICATION_TYPES = [
   { id: 'system', label: 'System Alerts', description: 'Security and system notifications', icon: AlertTriangle },
 ];
 
-const CHANNELS = ['email', 'sms', 'push'] as const;
+const CHANNELS = [
+  { id: 'email', label: 'Email', icon: Mail },
+  { id: 'sms', label: 'SMS', icon: Smartphone },
+  { id: 'push', label: 'Push', icon: MessageSquare },
+] as const;
 
 export default function NotificationSettings() {
   const [settings, setSettings] = useState<NotificationSettings>({
@@ -103,21 +107,21 @@ export default function NotificationSettings() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Notifications</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Notifications</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Control how and when you receive notifications
         </p>
       </div>
 
       {/* Quick Actions */}
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={handleEnableAll}>
+        <Button variant="outline" size="sm" onClick={handleEnableAll} className="min-h-[44px]">
           Enable All
         </Button>
-        <Button variant="outline" size="sm" onClick={handleDisableAll}>
+        <Button variant="outline" size="sm" onClick={handleDisableAll} className="min-h-[44px]">
           Disable All
         </Button>
       </div>
@@ -129,22 +133,19 @@ export default function NotificationSettings() {
         icon={Bell}
       >
         <SettingsCard>
-          {/* Header Row */}
-          <div className="flex items-center border-b pb-4 mb-4">
+          {/* Desktop Header Row - hidden on mobile */}
+          <div className="hidden sm:flex items-center border-b pb-4 mb-4">
             <div className="flex-1" />
-            <div className="flex gap-8">
-              <div className="w-16 text-center">
-                <Mail className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                <span className="text-xs font-medium">Email</span>
-              </div>
-              <div className="w-16 text-center">
-                <Smartphone className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                <span className="text-xs font-medium">SMS</span>
-              </div>
-              <div className="w-16 text-center">
-                <MessageSquare className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                <span className="text-xs font-medium">Push</span>
-              </div>
+            <div className="flex gap-6 md:gap-8">
+              {CHANNELS.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <div key={channel.id} className="w-14 md:w-16 text-center">
+                    <Icon className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                    <span className="text-xs font-medium">{channel.label}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -157,26 +158,63 @@ export default function NotificationSettings() {
               return (
                 <div
                   key={type.id}
-                  className="flex items-center py-4 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors"
+                  className="py-4 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors"
                 >
-                  <div className="flex-1 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-primary" />
+                  {/* Desktop Layout */}
+                  <div className="hidden sm:flex items-center">
+                    <div className="flex-1 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{type.label}</p>
+                        <p className="text-xs text-muted-foreground">{type.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{type.label}</p>
-                      <p className="text-xs text-muted-foreground">{type.description}</p>
+                    <div className="flex gap-6 md:gap-8">
+                      {CHANNELS.map((channel) => (
+                        <div key={channel.id} className="w-14 md:w-16 flex justify-center">
+                          <Switch
+                            checked={prefs[channel.id as keyof NotificationPreference]}
+                            onCheckedChange={() => handleToggle(type.id as keyof NotificationSettings, channel.id as keyof NotificationPreference)}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex gap-8">
-                    {CHANNELS.map((channel) => (
-                      <div key={channel} className="w-16 flex justify-center">
-                        <Switch
-                          checked={prefs[channel]}
-                          onCheckedChange={() => handleToggle(type.id as keyof NotificationSettings, channel)}
-                        />
+
+                  {/* Mobile Layout */}
+                  <div className="sm:hidden space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-5 w-5 text-primary" />
                       </div>
-                    ))}
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{type.label}</p>
+                        <p className="text-xs text-muted-foreground truncate">{type.description}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pl-13">
+                      {CHANNELS.map((channel) => {
+                        const ChannelIcon = channel.icon;
+                        const isEnabled = prefs[channel.id as keyof NotificationPreference];
+                        return (
+                          <button
+                            key={channel.id}
+                            onClick={() => handleToggle(type.id as keyof NotificationSettings, channel.id as keyof NotificationPreference)}
+                            className={cn(
+                              "flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-medium transition-colors min-h-[44px] touch-manipulation active:scale-95",
+                              isEnabled 
+                                ? "bg-primary text-primary-foreground" 
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            <ChannelIcon className="h-3.5 w-3.5" />
+                            {channel.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               );
@@ -203,27 +241,29 @@ export default function NotificationSettings() {
           </SettingsRow>
 
           {quietHours.enabled && (
-            <div className="flex items-center gap-4 pt-4 border-t">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Start</label>
-                <Input
-                  type="time"
-                  value={quietHours.start}
-                  onChange={(e) => setQuietHours({ ...quietHours, start: e.target.value })}
-                  className="w-28"
-                />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 pt-4 border-t">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <div className="space-y-1 flex-1 sm:flex-none">
+                  <label className="text-xs text-muted-foreground">Start</label>
+                  <Input
+                    type="time"
+                    value={quietHours.start}
+                    onChange={(e) => setQuietHours({ ...quietHours, start: e.target.value })}
+                    className="w-full sm:w-28 min-h-[44px]"
+                  />
+                </div>
+                <span className="text-muted-foreground mt-5 hidden sm:inline">to</span>
+                <div className="space-y-1 flex-1 sm:flex-none">
+                  <label className="text-xs text-muted-foreground">End</label>
+                  <Input
+                    type="time"
+                    value={quietHours.end}
+                    onChange={(e) => setQuietHours({ ...quietHours, end: e.target.value })}
+                    className="w-full sm:w-28 min-h-[44px]"
+                  />
+                </div>
               </div>
-              <span className="text-muted-foreground mt-5">to</span>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">End</label>
-                <Input
-                  type="time"
-                  value={quietHours.end}
-                  onChange={(e) => setQuietHours({ ...quietHours, end: e.target.value })}
-                  className="w-28"
-                />
-              </div>
-              <Badge variant="secondary" className="mt-5">
+              <Badge variant="secondary" className="sm:mt-5">
                 {quietHours.start} - {quietHours.end}
               </Badge>
             </div>
@@ -252,7 +292,7 @@ export default function NotificationSettings() {
 
       {/* Preview */}
       <SettingsCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
           <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
             <Bell className="h-6 w-6 text-primary" />
           </div>
@@ -261,7 +301,7 @@ export default function NotificationSettings() {
             <p className="text-sm text-muted-foreground mt-1">
               This is how notifications will appear. You can test your settings here.
             </p>
-            <Button variant="outline" size="sm" className="mt-3">
+            <Button variant="outline" size="sm" className="mt-3 min-h-[44px] w-full sm:w-auto">
               Send Test Notification
             </Button>
           </div>
@@ -270,4 +310,3 @@ export default function NotificationSettings() {
     </div>
   );
 }
-

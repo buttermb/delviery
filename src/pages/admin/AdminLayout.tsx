@@ -111,11 +111,12 @@ const AdminLayout = () => {
           </SidebarErrorBoundary>
           <div className="flex-1 flex flex-col min-w-0">
             <AccountSwitcher />
-            <header className="h-12 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
-              <SidebarTrigger className="h-9 w-9 sm:h-10 sm:w-10 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50" />
+            <header className="h-14 sm:h-14 border-b border-border flex items-center px-2 sm:px-3 md:px-4 lg:px-6 gap-2 sm:gap-3 md:gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0 pt-safe shadow-sm safe-area-top">
+              {/* Sidebar trigger - 48px minimum touch target */}
+              <SidebarTrigger className="h-12 w-12 min-h-[48px] min-w-[48px] touch-manipulation active:scale-95 transition-transform z-50 -ml-1 sm:ml-0 flex items-center justify-center" />
 
-              {/* Breadcrumbs */}
-              <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide">
+              {/* Breadcrumbs - hidden on mobile */}
+              <nav className="hidden md:flex items-center gap-1.5 text-sm overflow-x-auto scrollbar-hide flex-1 min-w-0">
                 {breadcrumbs.map((crumb, index) => (
                   <div key={crumb.url} className="flex items-center gap-1.5 flex-shrink-0">
                     {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />}
@@ -133,15 +134,25 @@ const AdminLayout = () => {
                 ))}
               </nav>
 
+              {/* Mobile page title - show current page on mobile */}
+              <div className="md:hidden flex-1 min-w-0">
+                {breadcrumbs.length > 0 && (
+                  <span className="font-semibold text-sm truncate block">
+                    {breadcrumbs[breadcrumbs.length - 1]?.label || 'Dashboard'}
+                  </span>
+                )}
+              </div>
+
               {/* Header Actions */}
-              <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+              <div className="flex items-center gap-1 sm:gap-2 ml-auto flex-shrink-0">
+                {/* Keyboard shortcuts - hidden on mobile */}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9"
+                        className="h-10 w-10 min-h-[44px] min-w-[44px] hidden sm:flex items-center justify-center"
                         onClick={() => setShortcutsVisible(true)}
                         aria-label="Keyboard shortcuts"
                       >
@@ -157,16 +168,23 @@ const AdminLayout = () => {
                   onOpenChange={setShortcutsVisible}
                 />
 
-                <AdminNotificationCenter />
-                <ThemeToggle />
+                {/* Notifications - optimized touch target */}
+                <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
+                  <AdminNotificationCenter />
+                </div>
+                
+                {/* Theme toggle - optimized touch target */}
+                <div className="[&>button]:h-10 [&>button]:w-10 [&>button]:min-h-[44px] [&>button]:min-w-[44px]">
+                  <ThemeToggle />
+                </div>
               </div>
             </header>
             <main
-              className="custom-mobile-padding flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom -webkit-overflow-scrolling-touch"
+              className="flex-1 overflow-y-auto overflow-x-hidden bg-muted/30 pb-24 lg:pb-6 safe-area-bottom p-3 sm:p-4 md:p-6"
               style={{
                 WebkitOverflowScrolling: 'touch',
                 height: '100%',
-                minHeight: 0
+                minHeight: 0,
               }}
             >
               <AdminErrorBoundary>

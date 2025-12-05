@@ -167,11 +167,11 @@ export default function SecuritySettings() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Security</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Security</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Protect your account with passwords, 2FA, and session management
         </p>
       </div>
@@ -195,12 +195,12 @@ export default function SecuritySettings() {
                     setPasswordData({ ...passwordData, currentPassword: e.target.value })
                   }
                   placeholder="Enter current password"
-                  className="pr-10"
+                  className="pr-10 min-h-[44px]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1"
                 >
                   {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -218,12 +218,12 @@ export default function SecuritySettings() {
                     setPasswordData({ ...passwordData, newPassword: e.target.value })
                   }
                   placeholder="Enter new password"
-                  className="pr-10"
+                  className="pr-10 min-h-[44px]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center -mr-1"
                 >
                   {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -257,6 +257,7 @@ export default function SecuritySettings() {
                   setPasswordData({ ...passwordData, confirmPassword: e.target.value })
                 }
                 placeholder="Confirm new password"
+                className="min-h-[44px]"
               />
               {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
                 <p className="text-xs text-destructive flex items-center gap-1">
@@ -270,7 +271,11 @@ export default function SecuritySettings() {
               )}
             </div>
 
-            <Button onClick={handleUpdatePassword} disabled={loading}>
+            <Button 
+              onClick={handleUpdatePassword} 
+              disabled={loading}
+              className="w-full sm:w-auto min-h-[44px]"
+            >
               {loading ? 'Updating...' : 'Update Password'}
             </Button>
           </div>
@@ -299,26 +304,35 @@ export default function SecuritySettings() {
         description="Manage devices where you're currently logged in"
         icon={Monitor}
         action={
-          <Button variant="outline" size="sm" onClick={handleRevokeAllSessions}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign out all
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRevokeAllSessions}
+            className="min-h-[44px] text-xs sm:text-sm"
+          >
+            <LogOut className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Sign out all</span>
+            <span className="sm:hidden">Sign out</span>
           </Button>
         }
       >
         <SettingsCard>
           <div className="divide-y">
             {sessions.map((session) => (
-              <div key={session.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+              <div 
+                key={session.id} 
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0"
+              >
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     {session.device.includes('iPhone') ? (
                       <Smartphone className="h-5 w-5 text-muted-foreground" />
                     ) : (
                       <Monitor className="h-5 w-5 text-muted-foreground" />
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{session.device}</span>
                       {session.current && (
                         <Badge variant="secondary" className="text-[10px]">
@@ -326,14 +340,18 @@ export default function SecuritySettings() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-0.5">
                       <span>{session.browser}</span>
-                      <span>•</span>
-                      <Globe className="h-3 w-3" />
-                      <span>{session.location}</span>
-                      <span>•</span>
-                      <Clock className="h-3 w-3" />
-                      <span>{session.lastActive}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        {session.location}
+                      </span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {session.lastActive}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -342,7 +360,7 @@ export default function SecuritySettings() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRevokeSession(session.id)}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive hover:text-destructive min-h-[44px] w-full sm:w-auto"
                   >
                     Revoke
                   </Button>
@@ -355,11 +373,11 @@ export default function SecuritySettings() {
 
       {/* Security Tips */}
       <SettingsCard className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="font-medium text-amber-800 dark:text-amber-200">Security Recommendations</h4>
-            <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-300">
+            <ul className="mt-2 space-y-1 text-xs sm:text-sm text-amber-700 dark:text-amber-300">
               <li>• Enable two-factor authentication for extra protection</li>
               <li>• Use a strong, unique password with at least 12 characters</li>
               <li>• Review your active sessions regularly</li>
@@ -371,4 +389,3 @@ export default function SecuritySettings() {
     </div>
   );
 }
-
