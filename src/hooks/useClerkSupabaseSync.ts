@@ -141,13 +141,14 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
         }
       } else {
         // User exists in Clerk but no tenant - might be super admin or new signup
-        logger.debug('[ClerkSync] User has no tenant_id, checking super_admins');
+        logger.debug('[ClerkSync] User has no tenant_id, checking super_admin_users');
         
+        // @ts-ignore - Type instantiation too deep, using direct query
         const { data: superAdmin } = await supabase
-          .from('super_admins')
+          .from('super_admin_users')
           .select('id, email, role')
           .eq('email', email.toLowerCase())
-          .maybeSingle();
+          .maybeSingle() as { data: { id: string; email: string; role: string } | null; error: unknown };
 
         if (superAdmin) {
           setSyncedUser({
