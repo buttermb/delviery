@@ -249,17 +249,23 @@ serve(async (req) => {
     console.log('[SIGNUP] Auth user created', { userId: authData.user.id });
 
     // Generate Supabase session for immediate login
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
+    // Use anon client to sign in (admin client can't generate sessions)
+    const anonClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+    
+    const { data: signInData, error: signInError } = await anonClient.auth.signInWithPassword({
       email: email.toLowerCase(),
+      password: password,
     });
 
-    if (sessionError || !sessionData) {
-      console.error('[SIGNUP] Failed to generate session', sessionError);
+    if (signInError || !signInData.session) {
+      console.error('[SIGNUP] Failed to generate session', signInError);
       // Continue with signup but warn about login requirement
+    } else {
+      console.log('[SIGNUP] Supabase session generated successfully');
     }
-
-    console.log('[SIGNUP] Supabase session generated');
 
     // Call atomic function to create all database records in single transaction
     console.log('[SIGNUP] Creating tenant records atomically', { slug });
@@ -378,9 +384,9 @@ serve(async (req) => {
           tenant_id: tenantUser.tenant_id,
         },
         // Include Supabase session tokens for immediate authentication
-        session: sessionData ? {
-          access_token: sessionData.properties.access_token,
-          refresh_token: sessionData.properties.refresh_token,
+        session: signInData?.session ? {
+          access_token: signInData.session.access_token,
+          refresh_token: signInData.session.refresh_token,
         } : null,
       }),
       {
