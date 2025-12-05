@@ -393,6 +393,23 @@ export function getSubscriptionTier(businessTier: BusinessTier): SubscriptionTie
 }
 
 /**
+ * Convert subscription tier to a representative business tier
+ * Used for backwards compatibility with components expecting BusinessTier
+ */
+export function subscriptionTierToBusinessTier(subscriptionTier: SubscriptionTier): BusinessTier {
+  switch (subscriptionTier) {
+    case 'starter':
+      return 'street';
+    case 'professional':
+      return 'block';
+    case 'enterprise':
+      return 'empire';
+    default:
+      return 'street';
+  }
+}
+
+/**
  * Get next tier upgrade path
  */
 export function getNextTier(currentTier: BusinessTier): BusinessTier | null {
