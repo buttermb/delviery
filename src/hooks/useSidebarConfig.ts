@@ -147,36 +147,16 @@ export function useSidebarConfig() {
     return config.filter(section => section.items.length > 0);
   }, [securityFilteredConfig, safePreferences.hiddenFeatures, safePreferences.enabledIntegrations, preferences?.layoutPreset, preferences?.customPresets]);
 
-  // 3. Apply Business Tier Filters - ONLY if Default Preset
+  // 3. Apply Business Tier Sorting - ONLY if Default Preset
+  // Note: Feature filtering is now done by subscription tier in useFeatureAccess
+  // Business tier only controls section ordering now
   const businessTierFilteredConfig = useMemo(() => {
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
 
-    // If user explicitly chose a preset (other than default), OVERRIDE business tier hiding
-    // We still apply sorting if available, but we don't hide features based on tier
-    const shouldApplyTierFiltering = currentLayoutPreset === 'default';
-
-    if (!shouldApplyTierFiltering || !businessPreset || businessPreset.enabledFeatures.includes('all')) {
-      // Even if we don't filter, we might want to sort?
-      // For now, just return the visibility filtered config
+    // If user explicitly chose a preset (other than default), skip business tier processing
+    if (currentLayoutPreset !== 'default' || !businessPreset) {
       return visibilityFilteredConfig;
     }
-
-    const enabledFeatures = businessPreset.enabledFeatures;
-    const hiddenFeatures = businessPreset.hiddenFeatures;
-
-    // Use centralized essential features
-    const TIER_ESSENTIAL = ESSENTIAL_FEATURES;
-
-    // Filter items
-    const filteredSections = visibilityFilteredConfig.map(section => ({
-      ...section,
-      items: section.items.filter(item => {
-        if (TIER_ESSENTIAL.includes(item.id)) return true;
-        if (hiddenFeatures.includes(item.id) || hiddenFeatures.includes(item.featureId || '')) return false;
-        if (enabledFeatures.includes(item.id) || enabledFeatures.includes(item.featureId || '')) return true;
-        return !hiddenFeatures.includes(item.id);
-      }),
-    })).filter(section => section.items.length > 0);
 
     // Map internal section IDs to display titles
     const SECTION_MAPPING: Record<string, string[]> = {
@@ -190,11 +170,11 @@ export function useSidebarConfig() {
       'all': [],
     };
 
-    // Sort sections based on navSections order
+    // Sort sections based on navSections order from business preset
     if (businessPreset.navSections && !businessPreset.navSections.includes('all')) {
       const preferredOrder = businessPreset.navSections;
 
-      return filteredSections.sort((a, b) => {
+      return [...visibilityFilteredConfig].sort((a, b) => {
         const getSectionIndex = (title: string) => {
           const index = preferredOrder.findIndex(prefId => {
             const mappedTitles = SECTION_MAPPING[prefId] || [];
@@ -210,7 +190,7 @@ export function useSidebarConfig() {
       });
     }
 
-    return filteredSections;
+    return visibilityFilteredConfig;
   }, [visibilityFilteredConfig, businessPreset, preferences?.layoutPreset]);
 
   // Generate hot items

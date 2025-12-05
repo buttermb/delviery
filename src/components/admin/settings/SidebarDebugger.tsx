@@ -164,7 +164,7 @@ export function SidebarDebugger() {
                             </Badge >
                         </div >
                         <p className="text-xs text-muted-foreground mt-1">
-                            {businessPreset?.enabledFeatures.includes('all') ? 'All Features Unlocked' : 'Restricted Mode'}
+                            {businessPreset?.subscriptionTier === 'enterprise' ? 'All Features Unlocked' : `${businessPreset?.subscriptionTier || 'starter'} tier`}
                         </p>
                     </CardContent >
                 </Card >
@@ -288,9 +288,8 @@ export function SidebarDebugger() {
                                 const isVisible = sidebarConfig.some(s => s.items.some(i => i.id === feature.id));
 
                                 // Check why it might be hidden
-                                const isHiddenByTier = businessPreset &&
-                                    !businessPreset.enabledFeatures.includes('all') &&
-                                    !businessPreset.enabledFeatures.includes(feature.id);
+                                // Business tier no longer hides features - subscription tier does
+                                const isHiddenByTier = false;
 
                                 const isHiddenByUser = preferences?.hiddenFeatures?.includes(feature.id);
 
@@ -313,7 +312,7 @@ export function SidebarDebugger() {
                                             <div>
                                                 <p className="font-medium text-sm">{feature.name}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    ID: {feature.id} • Min Tier: {feature.minBusinessTier || feature.minTier || 'starter'}
+                                                    ID: {feature.id} • Min Tier: {feature.minTier || 'starter'}
                                                     {isEssential && ' • Essential'}
                                                 </p>
                                             </div>

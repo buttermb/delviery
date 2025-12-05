@@ -92,9 +92,19 @@ export function TierComparisonModal({ open, onOpenChange, currentTier }: TierCom
                                     {/* Features */}
                                     <div className="space-y-4 pt-2">
                                         {comparisonFeatures.map(f => {
-                                            const hasAccess = preset.enabledFeatures.includes('all')
-                                                ? !preset.hiddenFeatures.includes(f.id)
-                                                : preset.enabledFeatures.includes(f.id);
+                                            // Determine access based on subscription tier mapping
+                                            // Enterprise tier has all features, Professional has most, Starter has basics
+                                            const subscriptionTier = preset.subscriptionTier;
+                                            const advancedFeatures = ['advanced-analytics', 'api-access', 'white-label', 'multi-location'];
+                                            const proFeatures = ['team-management', 'wholesale-portal', ...advancedFeatures];
+                                            
+                                            let hasAccess = true;
+                                            if (subscriptionTier === 'starter') {
+                                                hasAccess = !proFeatures.includes(f.id);
+                                            } else if (subscriptionTier === 'professional') {
+                                                hasAccess = !advancedFeatures.includes(f.id) || f.id === 'multi-location';
+                                            }
+                                            // Enterprise has access to everything
 
                                             return (
                                                 <div key={f.id} className="h-8 flex items-center justify-center">

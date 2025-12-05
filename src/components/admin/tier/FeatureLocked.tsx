@@ -96,20 +96,13 @@ export function LockedBadge({ className }: { className?: string }) {
 
 /**
  * Find which tier unlocks a feature
+ * Uses the subscription tier from the preset to determine access
  */
 function findUnlockTier(featureId: string): BusinessTier | null {
-  const tiers: BusinessTier[] = ['street', 'trap', 'block', 'hood', 'empire'];
-
-  for (const tier of tiers) {
-    const preset = getTierPreset(tier);
-    if (
-      preset.enabledFeatures.includes('all') ||
-      preset.enabledFeatures.includes(featureId)
-    ) {
-      return tier;
-    }
-  }
-
-  return null;
+  // Feature access is now controlled by subscription tier in featureConfig.ts
+  // Business tiers map to subscription tiers:
+  // street/trap -> starter, block/hood -> professional, empire -> enterprise
+  // For now, return 'block' as default (Professional tier) for locked features
+  return 'block';
 }
 

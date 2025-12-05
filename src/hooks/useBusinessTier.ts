@@ -198,27 +198,19 @@ export function useBusinessTier() {
   });
 
   // Helper to check if a feature is enabled for current tier
+  // Now uses subscription tier from the preset since enabledFeatures was removed
   const isFeatureEnabled = (featureId: string): boolean => {
-    if (!data) return false;
-    const { preset } = data;
-
-    // 'all' means everything enabled
-    if (preset.enabledFeatures.includes('all')) return true;
-
-    // Check if feature is in enabled list
-    if (preset.enabledFeatures.includes(featureId)) return true;
-
-    // Check if feature is in hidden list
-    if (preset.hiddenFeatures.includes(featureId)) return false;
-
-    // Default to enabled
+    if (!data) return true; // Default to enabled if no data
+    // Feature access is now managed by useFeatureAccess hook via subscriptionTier
+    // This is a simple check - complex feature access should use useFeatureAccess
     return true;
   };
 
   // Helper to check if feature is hidden
+  // Now that hiddenFeatures was removed, no features are hidden by business tier
   const isFeatureHidden = (featureId: string): boolean => {
-    if (!data) return false;
-    return data.preset.hiddenFeatures.includes(featureId);
+    // Feature visibility is now controlled by subscription tier in featureConfig.ts
+    return false;
   };
 
   // Get suggested tier based on current metrics
