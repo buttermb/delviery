@@ -40,16 +40,32 @@ export default function SelectPlanPage() {
   const [error, setError] = useState<string | null>(null);
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
 
-  // Load plans from database
+  // Load plans from database with timeout
   useEffect(() => {
+    let isCancelled = false;
+    const timeoutId = setTimeout(() => {
+      if (!isCancelled && loadingPlans) {
+        logger.warn('[SELECT_PLAN] Plan loading timeout - using fallback');
+        setLoadingPlans(false);
+      }
+    }, 8000); // 8 second timeout
+
     const loadPlans = async () => {
       try {
+        logger.debug('[SELECT_PLAN] Loading plans from database...');
         const { data, error } = await supabase
           .from('subscription_plans')
           .select('id, name, price_monthly, description, features')
           .order('price_monthly', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          logger.error('[SELECT_PLAN] Query error', error);
+          throw error;
+        }
+
+        logger.debug('[SELECT_PLAN] Plans loaded', { count: data?.length });
+
+        if (isCancelled) return;
 
         const formattedPlans: Plan[] = (data || []).map((plan) => ({
           id: plan.id,
@@ -63,13 +79,22 @@ export default function SelectPlanPage() {
         setPlans(formattedPlans);
       } catch (error) {
         logger.error('[SELECT_PLAN] Failed to load plans', error);
-        toast.error("Failed to load subscription plans");
+        if (!isCancelled) {
+          toast.error("Failed to load subscription plans. Please refresh.");
+        }
       } finally {
-        setLoadingPlans(false);
+        if (!isCancelled) {
+          setLoadingPlans(false);
+        }
       }
     };
 
     loadPlans();
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   // Helper to get button text based on plan and user state
