@@ -3110,6 +3110,7 @@ export type Database = {
         Row: {
           business_license_number: string | null
           business_name: string | null
+          clerk_user_id: string | null
           created_at: string | null
           date_of_birth: string | null
           email: string
@@ -3130,6 +3131,7 @@ export type Database = {
         Insert: {
           business_license_number?: string | null
           business_name?: string | null
+          clerk_user_id?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email: string
@@ -3150,6 +3152,7 @@ export type Database = {
         Update: {
           business_license_number?: string | null
           business_name?: string | null
+          clerk_user_id?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string
@@ -9796,6 +9799,7 @@ export type Database = {
       }
       super_admin_users: {
         Row: {
+          clerk_user_id: string | null
           created_at: string | null
           email: string
           first_name: string | null
@@ -9809,6 +9813,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          clerk_user_id?: string | null
           created_at?: string | null
           email: string
           first_name?: string | null
@@ -9822,6 +9827,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          clerk_user_id?: string | null
           created_at?: string | null
           email?: string
           first_name?: string | null
@@ -10020,6 +10026,8 @@ export type Database = {
       tenant_users: {
         Row: {
           accepted_at: string | null
+          avatar_url: string | null
+          clerk_user_id: string | null
           created_at: string | null
           email: string
           email_verification_sent_at: string | null
@@ -10028,6 +10036,7 @@ export type Database = {
           first_name: string | null
           id: string
           invited_at: string | null
+          last_login_at: string | null
           name: string
           role: string
           status: string
@@ -10038,6 +10047,8 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          avatar_url?: string | null
+          clerk_user_id?: string | null
           created_at?: string | null
           email: string
           email_verification_sent_at?: string | null
@@ -10046,6 +10057,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           invited_at?: string | null
+          last_login_at?: string | null
           name: string
           role: string
           status?: string
@@ -10056,6 +10068,8 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          avatar_url?: string | null
+          clerk_user_id?: string | null
           created_at?: string | null
           email?: string
           email_verification_sent_at?: string | null
@@ -10064,6 +10078,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           invited_at?: string | null
+          last_login_at?: string | null
           name?: string
           role?: string
           status?: string
