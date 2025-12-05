@@ -56,6 +56,10 @@ export interface TierPreset {
     products: number;
     ordersPerMonth: number;
   };
+
+  // Feature visibility (optional - for backward compatibility)
+  enabledFeatures?: string[];
+  hiddenFeatures?: string[];
 }
 
 export interface TierThresholds {

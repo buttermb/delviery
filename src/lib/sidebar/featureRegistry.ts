@@ -69,6 +69,9 @@ export interface FeatureDef {
   category: string;
   minTier: SubscriptionTier;
   description?: string;
+  // Legacy/compatibility properties
+  minBusinessTier?: string;
+  minOperationSize?: OperationSize;
 }
 
 /**

@@ -32,7 +32,8 @@ export function FeatureVisibilityManager() {
   const currentSizeIndex = operationSizes.indexOf(operationSize || 'medium');
 
   const availableFeatures = allFeatures.filter(f => {
-    const minSizeIndex = operationSizes.indexOf(f.minOperationSize);
+    const minSize = f.minOperationSize || 'street';
+    const minSizeIndex = operationSizes.indexOf(minSize);
     return minSizeIndex <= currentSizeIndex;
   });
 
@@ -113,7 +114,8 @@ export function FeatureVisibilityManager() {
                   <div className="p-4 pt-0 space-y-2">
                     {features.map((feature) => {
                       const visible = isFeatureVisible(feature.id);
-                      const minTierIndex = tiers.indexOf(feature.minBusinessTier);
+                      const featureTier = feature.minBusinessTier || feature.minTier || 'street';
+                      const minTierIndex = tiers.indexOf(featureTier);
                       const isLocked = minTierIndex > currentTierIndex;
                       const isEssential = ESSENTIAL_FEATURES.includes(feature.id);
 
@@ -132,7 +134,7 @@ export function FeatureVisibilityManager() {
                             </Label>
                             {isLocked && (
                               <Badge variant="secondary" className="text-xs">
-                                {feature.minBusinessTier} tier
+                                {featureTier} tier
                               </Badge>
                             )}
                             {isEssential && (
