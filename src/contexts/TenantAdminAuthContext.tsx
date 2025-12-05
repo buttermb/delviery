@@ -1374,13 +1374,26 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
-  // Detect tenant slug changes in URL
+  // Detect tenant slug changes in URL (only on tenant admin routes)
   useEffect(() => {
     const handleTenantChange = () => {
       const currentPath = window.location.pathname;
+
+      // Only check tenant slug on tenant admin routes (/:tenantSlug/admin/*)
+      // Skip check for global routes like /select-plan, /signup, /saas/*, etc.
+      if (!currentPath.includes('/admin/')) {
+        return; // Not a tenant admin route, skip tenant slug check
+      }
+
       const urlTenantSlug = currentPath.split('/')[1];
 
-      if (tenant && urlTenantSlug && tenant.slug !== urlTenantSlug) {
+      // Ensure we have a valid slug (not empty and not a known global route prefix)
+      const globalPrefixes = ['saas', 'super-admin', 'select-plan', 'auth', 'callback'];
+      if (!urlTenantSlug || globalPrefixes.includes(urlTenantSlug)) {
+        return; // Global route, skip tenant slug check
+      }
+
+      if (tenant && tenant.slug !== urlTenantSlug) {
         logger.debug(`URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
         logout();
       }
