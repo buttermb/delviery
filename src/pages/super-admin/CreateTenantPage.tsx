@@ -263,9 +263,9 @@ export default function CreateTenantPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="starter">Starter - $99/month</SelectItem>
-                    <SelectItem value="professional">Professional - $299/month</SelectItem>
-                    <SelectItem value="enterprise">Enterprise - $799/month</SelectItem>
+                    <SelectItem value="starter">Starter - $79/month</SelectItem>
+                    <SelectItem value="professional">Professional - $150/month</SelectItem>
+                    <SelectItem value="enterprise">Enterprise - $499/month</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">

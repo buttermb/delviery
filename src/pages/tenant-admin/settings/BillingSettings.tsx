@@ -465,30 +465,33 @@ export default function BillingSettings() {
     {
       id: 'starter' as SubscriptionTier,
       name: 'Basic',
-      price: TIER_PRICES.starter,
+      priceMonthly: TIER_PRICES.starter,
+      priceYearly: 790,
       icon: Zap,
       color: 'text-green-600',
       borderColor: 'border-green-500/50',
-      features: ['50 customers', '3 menus', '100 products', '12 core features'],
+      features: ['50 customers', '3 menus', '100 products', '28 core features'],
     },
     {
       id: 'professional' as SubscriptionTier,
       name: 'Professional',
-      price: TIER_PRICES.professional,
+      priceMonthly: TIER_PRICES.professional,
+      priceYearly: 1500,
       icon: Star,
       color: 'text-blue-600',
       borderColor: 'border-blue-500/50',
       popular: true,
-      features: ['200 customers', '10 menus', '500 products', 'Advanced analytics', 'Team management'],
+      features: ['500 customers', '10 menus', '1000 products', 'Advanced analytics', 'Team management'],
     },
     {
       id: 'enterprise' as SubscriptionTier,
       name: 'Enterprise',
-      price: TIER_PRICES.enterprise,
+      priceMonthly: TIER_PRICES.enterprise,
+      priceYearly: 4990,
       icon: Diamond,
       color: 'text-purple-600',
       borderColor: 'border-purple-500/50',
-      features: ['Unlimited everything', 'All 56 features', 'Fleet management', 'POS system', 'API access', '24/7 support'],
+      features: ['Unlimited everything', 'All 87 features', 'Fleet management', 'POS system', 'API access', '24/7 support'],
     },
   ];
 
@@ -541,6 +544,33 @@ export default function BillingSettings() {
         </div>
       )}
 
+      {/* Annual Savings Banner - for monthly subscribers */}
+      {!isTrial && (tenant as any)?.billing_cycle !== 'yearly' && (
+        <div className="bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent border border-green-500/20 rounded-xl p-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-green-800 dark:text-green-200">
+                  Save 17% with Annual Billing
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Switch to yearly billing and get 2 months free - that's ${Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17)} savings!
+                </p>
+              </div>
+            </div>
+            <Button 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={handleManageSubscription}
+            >
+              Switch to Annual
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Current Plan & Usage */}
       <SettingsSection
         title="Current Plan"
@@ -553,11 +583,23 @@ export default function BillingSettings() {
               <div className="flex items-center gap-2">
                 <h3 className="text-xl font-bold">{displayPlanName}</h3>
                 <Badge variant="secondary">{isTrial ? 'Trial' : 'Active'}</Badge>
+                {(tenant as any)?.billing_cycle === 'yearly' && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Annual
+                  </Badge>
+                )}
               </div>
               <p className="text-2xl font-bold mt-2">
                 {formatCurrency(TIER_PRICES[currentSubscriptionTier])}
-                <span className="text-sm font-normal text-muted-foreground">/month</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  /{(tenant as any)?.billing_cycle === 'yearly' ? 'year' : 'month'}
+                </span>
               </p>
+              {(tenant as any)?.billing_cycle === 'yearly' && (
+                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  Saving 17% with annual billing
+                </p>
+              )}
               {!isTrial && (
                 <p className="text-sm text-muted-foreground mt-1">
                   Next billing: {nextBillingDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -687,10 +729,15 @@ export default function BillingSettings() {
                     {isCurrent && <Badge variant="secondary">Current</Badge>}
                   </div>
                   
-                  <p className="text-3xl font-bold">
-                    {formatCurrency(plan.price)}
-                    <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-3xl font-bold">
+                      {formatCurrency(plan.priceMonthly)}
+                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      or {formatCurrency(plan.priceYearly)}/yr (save 17%)
+                    </p>
+                  </div>
                   
                   <ul className="space-y-2">
                     {plan.features.map((feature, i) => (

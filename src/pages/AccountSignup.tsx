@@ -53,9 +53,9 @@ export default function AccountSignup() {
   ];
 
   const plans = [
-    { id: "starter", name: "STARTER", price: 99, monthlyPrice: 99, yearlyPrice: 950 },
-    { id: "professional", name: "PROFESSIONAL", price: 299, monthlyPrice: 299, yearlyPrice: 2870 },
-    { id: "enterprise", name: "ENTERPRISE", price: 799, monthlyPrice: 799, yearlyPrice: 7670 },
+    { id: "starter", name: "STARTER", price: 79, monthlyPrice: 79, yearlyPrice: 790 },
+    { id: "professional", name: "PROFESSIONAL", price: 150, monthlyPrice: 150, yearlyPrice: 1500 },
+    { id: "enterprise", name: "ENTERPRISE", price: 499, monthlyPrice: 499, yearlyPrice: 4990 },
   ];
 
   const handleStep1 = async (e: React.FormEvent) => {

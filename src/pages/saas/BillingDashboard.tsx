@@ -228,8 +228,8 @@ export default function BillingDashboard() {
                     <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={SUBSCRIPTION_PLANS.PROFESSIONAL}>Professional - $299/month</SelectItem>
-                    <SelectItem value={SUBSCRIPTION_PLANS.ENTERPRISE}>Enterprise - $799/month</SelectItem>
+                    <SelectItem value={SUBSCRIPTION_PLANS.PROFESSIONAL}>Professional - $150/month</SelectItem>
+                    <SelectItem value={SUBSCRIPTION_PLANS.ENTERPRISE}>Enterprise - $499/month</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleUpgrade} className="w-full" disabled={!selectedPlan}>

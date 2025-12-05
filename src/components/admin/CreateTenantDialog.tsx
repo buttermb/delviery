@@ -342,9 +342,9 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="starter">Starter ($99/mo)</SelectItem>
-                        <SelectItem value="professional">Professional ($299/mo)</SelectItem>
-                        <SelectItem value="enterprise">Enterprise ($799/mo)</SelectItem>
+                        <SelectItem value="starter">Starter ($79/mo)</SelectItem>
+                        <SelectItem value="professional">Professional ($150/mo)</SelectItem>
+                        <SelectItem value="enterprise">Enterprise ($499/mo)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
