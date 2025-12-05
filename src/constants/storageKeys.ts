@@ -47,6 +47,7 @@ export const STORAGE_KEYS = {
   // Onboarding
   ONBOARDING_COMPLETED: 'onboarding_completed',
   ONBOARDING_STEP: 'onboarding_step',
+  ONBOARDING_DISMISSED: 'onboarding_dismissed',
   
   // Tutorials
   TUTORIAL_COMPLETED: 'tutorial_completed_',

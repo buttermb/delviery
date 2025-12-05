@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { 
   CheckCircle2, 
   Sparkles, 
@@ -16,10 +18,14 @@ import {
   Users, 
   FileSpreadsheet,
   ArrowRight,
-  PartyPopper
+  PartyPopper,
+  Clock,
+  Crown,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface TrialWelcomeModalProps {
   tenantSlug?: string;
@@ -31,14 +37,30 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(0);
+  const { tenant } = useTenantAdminAuth();
 
   const isWelcome = searchParams.get("welcome") === "true";
   const isTrial = searchParams.get("trial") === "true";
+  const isSuccess = searchParams.get("success") === "true";
 
-  // Show modal if welcome=true in URL
+  // Calculate trial days remaining
+  const trialEndsAt = tenant?.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
+  const daysRemaining = trialEndsAt 
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 14;
+  const trialProgress = Math.min(100, ((14 - daysRemaining) / 14) * 100);
+
+  // Get subscription tier display
+  const subscriptionTier = tenant?.subscription_plan || 'starter';
+  const tierDisplayNames: Record<string, string> = {
+    starter: 'Starter',
+    professional: 'Professional',
+    enterprise: 'Enterprise'
+  };
+
+  // Show modal if welcome=true or success=true in URL
   useEffect(() => {
-    if (isWelcome) {
+    if (isWelcome || (isSuccess && isTrial)) {
       setOpen(true);
       
       // Trigger confetti on open
@@ -51,13 +73,14 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
         });
       }, 300);
     }
-  }, [isWelcome]);
+  }, [isWelcome, isSuccess, isTrial]);
 
   const handleClose = () => {
     setOpen(false);
-    // Remove welcome and trial params from URL
+    // Remove URL params
     searchParams.delete("welcome");
     searchParams.delete("trial");
+    searchParams.delete("success");
     setSearchParams(searchParams, { replace: true });
     onClose?.();
   };
@@ -92,7 +115,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
     },
   ];
 
-  if (!isWelcome) return null;
+  if (!isWelcome && !(isSuccess && isTrial)) return null;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -110,7 +133,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
           </div>
           
           <DialogTitle className="text-2xl font-bold">
-            Welcome to FloraIQ! 🎉
+            Welcome to FloraIQ!
           </DialogTitle>
           
           <DialogDescription className="text-base mt-2">
@@ -119,22 +142,76 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
                 {businessName}
               </span>
             )}
-            Your 14-day free trial has started. Let's get you set up!
+            Your account is ready. Let's get you set up!
           </DialogDescription>
         </DialogHeader>
 
-        {/* Trial Info */}
-        <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-green-700 dark:text-green-300">Trial Activated</p>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                Full access for 14 days. No charges until then.
-              </p>
+        {/* Subscription Info */}
+        <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-500" />
+              <span className="font-semibold">{tierDisplayNames[subscriptionTier]} Plan</span>
+            </div>
+            {isTrial && (
+              <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                Trial Active
+              </Badge>
+            )}
+          </div>
+          
+          {isTrial && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  <span>{daysRemaining} days remaining</span>
+                </div>
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  No charges until trial ends
+                </span>
+              </div>
+              <Progress value={trialProgress} className="h-2" />
+            </div>
+          )}
+
+          {!isTrial && (
+            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-medium">Subscription active - Full access enabled</span>
+            </div>
+          )}
+        </div>
+
+        {/* Annual Upgrade Promo - Only show for trial users */}
+        {isTrial && subscriptionTier !== 'enterprise' && (
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-lg p-4 mb-4 border border-purple-200 dark:border-purple-800">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-purple-900 dark:text-purple-100">
+                  Save 17% with Annual Billing
+                </p>
+                <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
+                  Switch to yearly billing and get 2 months free!
+                </p>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900"
+                  onClick={() => {
+                    handleClose();
+                    navigate(`/${tenantSlug}/admin/billing`);
+                  }}
+                >
+                  View Billing Options
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Quick Start Items */}
         <div className="space-y-3 mb-6">
@@ -182,4 +259,3 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
     </Dialog>
   );
 }
-

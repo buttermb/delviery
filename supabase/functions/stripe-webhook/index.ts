@@ -39,6 +39,8 @@ serve(async (req) => {
       case 'checkout.session.completed': {
         const tenantId = object.metadata?.tenant_id;
         const planId = object.metadata?.plan_id;
+        const billingCycleFromMetadata = object.metadata?.billing_cycle || 'monthly';
+        const skipTrialFromMetadata = object.metadata?.skip_trial === 'true';
 
         if (!tenantId || !planId) {
           return new Response('Missing tenant_id or plan_id', { status: 400 });
@@ -77,22 +79,15 @@ serve(async (req) => {
           }
         }
 
-        console.log('[STRIPE-WEBHOOK] Plan lookup:', { 
-          planId, 
-          planName: plan?.name, 
-          planSlug: plan?.slug,
-          planDisplayName: plan?.display_name,
-          resolvedTier: subscriptionTier 
-        });
-
         // Check if this is a trial subscription
         const subscriptionId = object.subscription as string;
         let subscriptionStatus = 'active';
         let trialEndsAt = null;
         let paymentMethodAdded = false;
+        let billingCycle = billingCycleFromMetadata;
 
         if (subscriptionId) {
-          // Fetch subscription details from Stripe to check trial
+          // Fetch subscription details from Stripe to check trial and billing interval
           const Stripe = (await import('https://esm.sh/stripe@14.21.0')).default;
           const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
             apiVersion: '2023-10-16',
@@ -106,9 +101,24 @@ serve(async (req) => {
           
           // Check if payment method was added
           paymentMethodAdded = !!subscription.default_payment_method;
+
+          // Get billing interval from subscription items
+          if (subscription.items?.data?.[0]?.price?.recurring?.interval) {
+            const interval = subscription.items.data[0].price.recurring.interval;
+            billingCycle = interval === 'year' ? 'yearly' : 'monthly';
+          }
         }
 
-        // Update tenant subscription with the TIER NAME, not the plan UUID
+        console.log('[STRIPE-WEBHOOK] Checkout completed:', { 
+          planId, 
+          planName: plan?.name, 
+          resolvedTier: subscriptionTier,
+          billingCycle,
+          subscriptionStatus,
+          skipTrial: skipTrialFromMetadata
+        });
+
+        // Update tenant subscription with the TIER NAME and billing cycle
         await supabase
           .from('tenants')
           .update({
@@ -119,6 +129,7 @@ serve(async (req) => {
             trial_ends_at: trialEndsAt,
             trial_started_at: trialEndsAt ? new Date().toISOString() : null,
             payment_method_added: paymentMethodAdded,
+            billing_cycle: billingCycle,
             updated_at: new Date().toISOString(),
           })
           .eq('id', tenantId);
@@ -131,10 +142,12 @@ serve(async (req) => {
             plan_id: planId,
             subscription_id: subscriptionId,
             trial_ends_at: trialEndsAt,
+            billing_cycle: billingCycle,
+            skip_trial: skipTrialFromMetadata,
           },
         });
 
-        // Log trial event
+        // Log trial event if applicable
         if (subscriptionStatus === 'trial') {
           await supabase.from('trial_events').insert({
             tenant_id: tenantId,
@@ -144,6 +157,18 @@ serve(async (req) => {
               subscription_id: subscriptionId,
               trial_ends_at: trialEndsAt,
               payment_method_added: paymentMethodAdded,
+              billing_cycle: billingCycle,
+            },
+          });
+        } else if (skipTrialFromMetadata) {
+          // Log immediate purchase event
+          await supabase.from('trial_events').insert({
+            tenant_id: tenantId,
+            event_type: 'immediate_purchase',
+            event_data: {
+              plan_id: planId,
+              subscription_id: subscriptionId,
+              billing_cycle: billingCycle,
             },
           });
         }

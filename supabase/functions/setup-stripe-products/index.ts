@@ -16,6 +16,7 @@ interface PlanConfig {
   slug: string;
   description: string;
   price_monthly: number;
+  price_yearly: number; // ~17% discount (2 months free)
   features: string[];
 }
 
@@ -25,6 +26,7 @@ const PLANS: PlanConfig[] = [
     slug: "starter",
     description: "Perfect for small operations - Up to 50 customers, 3 menus, 100 products",
     price_monthly: 79,
+    price_yearly: 790, // $65.83/mo effective (17% discount)
     features: [
       "Up to 50 customers",
       "3 disposable menus",
@@ -39,6 +41,7 @@ const PLANS: PlanConfig[] = [
     slug: "professional",
     description: "For growing businesses - Up to 500 customers, unlimited menus, API access",
     price_monthly: 150,
+    price_yearly: 1500, // $125/mo effective (17% discount)
     features: [
       "Up to 500 customers",
       "Unlimited disposable menus",
@@ -55,6 +58,7 @@ const PLANS: PlanConfig[] = [
     slug: "enterprise",
     description: "Unlimited power for your operation - White label, dedicated support, SLA",
     price_monthly: 499,
+    price_yearly: 4990, // $415.83/mo effective (17% discount)
     features: [
       "Unlimited customers",
       "Unlimited disposable menus",
@@ -103,7 +107,8 @@ serve(async (req) => {
     const results: Array<{
       plan: string;
       product_id: string;
-      price_id: string;
+      price_id_monthly: string;
+      price_id_yearly: string;
       status: string;
     }> = [];
 
@@ -116,44 +121,61 @@ serve(async (req) => {
       });
 
       let product: Stripe.Product;
-      let price: Stripe.Price;
+      let monthlyPrice: Stripe.Price;
+      let yearlyPrice: Stripe.Price;
 
       if (existingProducts.data.length > 0) {
-        // Product exists, get it and its default price
+        // Product exists, get it and its prices
         product = existingProducts.data[0];
         console.log(`[SETUP-STRIPE] Found existing product: ${product.id}`);
 
-        // Get the active price for this product
+        // Get all active prices for this product
         const prices = await stripe.prices.list({
           product: product.id,
           active: true,
           type: "recurring",
-          limit: 1,
+          limit: 10,
         });
 
-        if (prices.data.length > 0) {
-          price = prices.data[0];
-          console.log(`[SETUP-STRIPE] Found existing price: ${price.id}`);
+        // Find monthly and yearly prices
+        const existingMonthly = prices.data.find(p => p.recurring?.interval === "month");
+        const existingYearly = prices.data.find(p => p.recurring?.interval === "year");
+
+        // Create or use monthly price
+        if (existingMonthly) {
+          monthlyPrice = existingMonthly;
+          console.log(`[SETUP-STRIPE] Found existing monthly price: ${monthlyPrice.id}`);
         } else {
-          // Create a new price if none exists
-          price = await stripe.prices.create({
+          monthlyPrice = await stripe.prices.create({
             product: product.id,
-            unit_amount: plan.price_monthly * 100, // Convert to cents
+            unit_amount: plan.price_monthly * 100,
             currency: "usd",
-            recurring: {
-              interval: "month",
-            },
-            metadata: {
-              plan_slug: plan.slug,
-            },
+            recurring: { interval: "month" },
+            metadata: { plan_slug: plan.slug, billing_cycle: "monthly" },
           });
-          console.log(`[SETUP-STRIPE] Created new price: ${price.id}`);
+          console.log(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
+        }
+
+        // Create or use yearly price
+        if (existingYearly) {
+          yearlyPrice = existingYearly;
+          console.log(`[SETUP-STRIPE] Found existing yearly price: ${yearlyPrice.id}`);
+        } else {
+          yearlyPrice = await stripe.prices.create({
+            product: product.id,
+            unit_amount: plan.price_yearly * 100,
+            currency: "usd",
+            recurring: { interval: "year" },
+            metadata: { plan_slug: plan.slug, billing_cycle: "yearly" },
+          });
+          console.log(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
         }
 
         results.push({
           plan: plan.name,
           product_id: product.id,
-          price_id: price.id,
+          price_id_monthly: monthlyPrice.id,
+          price_id_yearly: yearlyPrice.id,
           status: "existing",
         });
       } else {
@@ -168,43 +190,51 @@ serve(async (req) => {
         });
         console.log(`[SETUP-STRIPE] Created product: ${product.id}`);
 
-        // Create price for the product
-        price = await stripe.prices.create({
+        // Create monthly price
+        monthlyPrice = await stripe.prices.create({
           product: product.id,
-          unit_amount: plan.price_monthly * 100, // Convert to cents
+          unit_amount: plan.price_monthly * 100,
           currency: "usd",
-          recurring: {
-            interval: "month",
-          },
-          metadata: {
-            plan_slug: plan.slug,
-          },
+          recurring: { interval: "month" },
+          metadata: { plan_slug: plan.slug, billing_cycle: "monthly" },
         });
-        console.log(`[SETUP-STRIPE] Created price: ${price.id}`);
+        console.log(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
+
+        // Create yearly price (17% discount)
+        yearlyPrice = await stripe.prices.create({
+          product: product.id,
+          unit_amount: plan.price_yearly * 100,
+          currency: "usd",
+          recurring: { interval: "year" },
+          metadata: { plan_slug: plan.slug, billing_cycle: "yearly" },
+        });
+        console.log(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
 
         results.push({
           plan: plan.name,
           product_id: product.id,
-          price_id: price.id,
+          price_id_monthly: monthlyPrice.id,
+          price_id_yearly: yearlyPrice.id,
           status: "created",
         });
       }
 
-      // Update subscription_plans table with the price ID
+      // Update subscription_plans table with BOTH price IDs
       const { error: updateError } = await supabase
         .from("subscription_plans")
         .update({
-          stripe_price_id: price.id,
+          stripe_price_id: monthlyPrice.id,
+          stripe_price_id_yearly: yearlyPrice.id,
           stripe_product_id: product.id,
+          price_yearly: plan.price_yearly,
           updated_at: new Date().toISOString(),
         })
         .eq("slug", plan.slug);
 
       if (updateError) {
         console.error(`[SETUP-STRIPE] Failed to update plan ${plan.slug}:`, updateError);
-        // Don't fail the whole operation, just log it
       } else {
-        console.log(`[SETUP-STRIPE] Updated subscription_plans for ${plan.slug}`);
+        console.log(`[SETUP-STRIPE] Updated subscription_plans for ${plan.slug} with monthly and yearly prices`);
       }
     }
 
