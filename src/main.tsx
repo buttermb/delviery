@@ -85,6 +85,33 @@ window.addEventListener('error', (event) => {
   }
 });
 
+// Fix encoded URLs BEFORE React Router processes them
+// This catches URLs like /select-plan%3Ftenant_id=xxx and fixes them immediately
+(function fixEncodedUrl() {
+  const currentPath = window.location.pathname;
+  
+  // Check if path contains encoded query string characters
+  if (currentPath.includes('%3F') || currentPath.includes('%3D') || currentPath.includes('%26')) {
+    const decodedPath = decodeURIComponent(currentPath);
+    
+    // If decoded path contains ?, split and redirect
+    if (decodedPath.includes('?')) {
+      const [path, queryString] = decodedPath.split('?');
+      const existingSearch = window.location.search ? window.location.search.substring(1) : '';
+      const newSearch = existingSearch ? `${queryString}&${existingSearch}` : queryString;
+      const newUrl = `${path}?${newSearch}${window.location.hash}`;
+      
+      logger.info('[URL_FIX] Fixing encoded URL before React mounts', { 
+        from: window.location.href, 
+        to: newUrl 
+      });
+      
+      // Use replaceState to fix URL without page reload
+      window.history.replaceState(null, '', newUrl);
+    }
+  }
+})();
+
 // Log app initialization
 logger.debug('[APP] Starting app initialization...');
 
