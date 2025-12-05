@@ -23,6 +23,10 @@ import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
+import { injectSpeedInsights } from '@vercel/speed-insights';
+
+// Initialize Vercel Speed Insights (client-side only)
+injectSpeedInsights();
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
