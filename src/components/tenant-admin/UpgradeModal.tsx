@@ -24,7 +24,8 @@ import {
 import { CheckCircle2, Lock, Star, Diamond, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { TierComparisonModal } from './TierComparisonModal';
-import { subscriptionTierToBusinessTier, type BusinessTier } from '@/lib/presets/businessTiers';
+import { subscriptionTierToBusinessTier } from '@/lib/tierMapping';
+import { type BusinessTier } from '@/lib/presets/businessTiers';
 
 interface UpgradeModalProps {
   open: boolean;
