@@ -64,24 +64,50 @@ export default function SelectPlanPage() {
     loadPlans();
   }, []);
 
-  // Check authentication status on mount
+  // Check authentication status on mount with retry logic for race condition
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      logger.debug('[SELECT_PLAN] Starting auth check', { fromSignup, tenantId });
+      
+      // If coming from signup or has tenant_id, allow time for session to establish
+      const isFromSignupFlow = fromSignup || !!tenantId;
+      
+      if (isFromSignupFlow) {
+        // Wait for session to propagate from signup
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Try multiple times to get session (handles race condition)
+      let session = null;
+      for (let i = 0; i < 3; i++) {
+        const { data } = await supabase.auth.getSession();
+        session = data.session;
+        if (session) {
+          logger.debug('[SELECT_PLAN] Session found on attempt', { attempt: i + 1 });
+          break;
+        }
+        logger.debug('[SELECT_PLAN] No session yet, retrying...', { attempt: i + 1 });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
 
-      if (!session && !fromSignup) {
+      // Only redirect to login if:
+      // 1. No session found after retries
+      // 2. AND not coming from signup flow (no fromSignup state and no tenant_id)
+      if (!session && !isFromSignupFlow) {
+        logger.warn('[SELECT_PLAN] No session and not from signup, redirecting to login');
         toast.error("Please log in to select a plan");
-        // Redirect to login with return URL
-        navigate(`/saas/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        navigate('/saas/login?returnUrl=/select-plan');
         return;
       }
 
+      // Trust the signup flow - session may still be establishing but that's okay
+      logger.info('[SELECT_PLAN] Auth check passed', { hasSession: !!session, isFromSignupFlow });
       setIsAuthenticated(true);
       setCheckingAuth(false);
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, fromSignup, tenantId]);
 
   const handleSelectPlan = async (planId: string) => {
     if (!tenantId) {
