@@ -52,18 +52,13 @@ export default function SelectPlanPage() {
       
       const { data: freshTenant } = await supabase
         .from('tenants')
-        .select('payment_method_added, subscription_status, slug, billing_cycle')
+        .select('payment_method_added, subscription_status, slug')
         .eq('id', tenant.id)
         .maybeSingle();
       
-      if (freshTenant?.payment_method_added && freshTenant?.subscription_status === 'active') {
+      if ((freshTenant as any)?.payment_method_added && (freshTenant as any)?.subscription_status === 'active') {
         logger.info('[SELECT_PLAN] Already has active subscription, redirecting to dashboard');
-        navigate(`/${freshTenant.slug || tenant.slug}/admin/dashboard`, { replace: true });
-      }
-
-      // Set current billing cycle if available
-      if (freshTenant?.billing_cycle) {
-        setBillingCycle(freshTenant.billing_cycle as BillingCycle);
+        navigate(`/${(freshTenant as any).slug || tenant.slug}/admin/dashboard`, { replace: true });
       }
     };
     
@@ -83,18 +78,18 @@ export default function SelectPlanPage() {
       try {
         const { data, error } = await supabase
           .from('subscription_plans')
-          .select('id, name, price_monthly, price_yearly, description, features')
+          .select('id, name, price_monthly, description, features')
           .order('price_monthly', { ascending: true });
 
         if (error) throw error;
 
         if (isCancelled) return;
 
-        const formattedPlans: Plan[] = (data || []).map((plan) => ({
+        const formattedPlans: Plan[] = ((data || []) as any[]).map((plan) => ({
           id: plan.id,
           name: plan.name,
           priceMonthly: plan.price_monthly || 0,
-          priceYearly: plan.price_yearly || (plan.price_monthly * 10),
+          priceYearly: Math.round((plan.price_monthly || 0) * 10), // ~17% discount
           description: plan.description || '',
           features: Array.isArray(plan.features) ? plan.features as string[] : [],
           popular: plan.name.toLowerCase() === 'professional',

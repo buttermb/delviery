@@ -313,7 +313,7 @@ export function SidebarDebugger() {
                                             <div>
                                                 <p className="font-medium text-sm">{feature.name}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    ID: {feature.id} • Min Tier: {feature.minBusinessTier}
+                                                    ID: {feature.id} • Min Tier: {feature.minBusinessTier || feature.minTier || 'starter'}
                                                     {isEssential && ' • Essential'}
                                                 </p>
                                             </div>
@@ -326,7 +326,7 @@ export function SidebarDebugger() {
                                                 </Badge>
                                             ) : (
                                                 <div className="flex gap-1 flex-wrap justify-end">
-                                                    {isHiddenByTier && <Badge variant="secondary">Tier: {feature.minBusinessTier}</Badge>}
+                                                    {isHiddenByTier && <Badge variant="secondary">Tier: {feature.minBusinessTier || feature.minTier || 'starter'}</Badge>}
                                                     {isHiddenByUser && <Badge variant="secondary">User Hidden</Badge>}
                                                     {isHiddenByIntegration && hidingIntegration && (
                                                         <Badge variant="secondary">{hidingIntegration.name} Disabled</Badge>

@@ -44,16 +44,16 @@ export default function SelectPlanPage() {
       try {
         const { data, error } = await supabase
           .from('subscription_plans')
-          .select('id, name, price_monthly, price_yearly, description, features')
+          .select('id, name, price_monthly, description, features')
           .order('price_monthly', { ascending: true });
 
         if (error) throw error;
 
-        const formattedPlans: Plan[] = (data || []).map((plan) => ({
+        const formattedPlans: Plan[] = ((data || []) as any[]).map((plan) => ({
           id: plan.id,
           name: plan.name,
           priceMonthly: plan.price_monthly || 0,
-          priceYearly: plan.price_yearly || (plan.price_monthly * 10), // Default: ~17% discount
+          priceYearly: Math.round((plan.price_monthly || 0) * 10), // ~17% discount for yearly
           description: plan.description || '',
           features: Array.isArray(plan.features) ? plan.features as string[] : [],
           popular: plan.name.toLowerCase() === SUBSCRIPTION_PLANS.PROFESSIONAL,

@@ -99,6 +99,7 @@ describe('AdaptiveSidebar', () => {
         revenueRange: '<$10K',
         typicalLocations: '1',
         typicalTeam: '1',
+        subscriptionTier: 'starter' as const,
         enabledFeatures: ['all'],
         hiddenFeatures: [],
         dashboardWidgets: [],
