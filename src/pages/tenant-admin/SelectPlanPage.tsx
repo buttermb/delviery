@@ -40,6 +40,28 @@ export default function SelectPlanPage() {
   const [error, setError] = useState<string | null>(null);
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
 
+  // Check if user already completed payment and redirect to dashboard
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (!tenant?.id) return;
+      
+      // Fetch fresh tenant data from database
+      const { data: freshTenant } = await supabase
+        .from('tenants')
+        .select('payment_method_added, subscription_status, slug')
+        .eq('id', tenant.id)
+        .maybeSingle();
+      
+      // If payment method already added, redirect to dashboard
+      if (freshTenant?.payment_method_added) {
+        logger.info('[SELECT_PLAN] Payment method already added, redirecting to dashboard');
+        navigate(`/${freshTenant.slug || tenant.slug}/admin/dashboard`, { replace: true });
+      }
+    };
+    
+    checkPaymentStatus();
+  }, [tenant?.id, tenant?.slug, navigate]);
+
   // Load plans from database with timeout
   useEffect(() => {
     let isCancelled = false;

@@ -13,7 +13,7 @@ import { safeStorage } from '@/utils/safeStorage';
 export function useStripeRedirectHandler() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { admin, tenant } = useTenantAdminAuth();
+  const { admin, tenant, refreshTenant } = useTenantAdminAuth();
 
   useEffect(() => {
     // Accept both 'success' and 'welcome' parameters for backward compatibility
@@ -79,13 +79,16 @@ export function useStripeRedirectHandler() {
 
         logger.info('[StripeRedirect] Trial status updated successfully');
 
+        // Refresh tenant data in context to sync with database
+        await refreshTenant();
+
         toast.success('Payment method added successfully!', {
           description: 'Your 14-day trial has started.',
         });
 
-        // Clean up URL params and redirect to admin
+        // Clean up URL params and redirect to admin dashboard
         if (tenantSlug) {
-          navigate(`/${tenantSlug}/admin`, { replace: true });
+          navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
         } else {
           logger.error('[StripeRedirect] No tenant slug available for redirect');
           navigate('/saas/login', { replace: true });
@@ -99,7 +102,7 @@ export function useStripeRedirectHandler() {
         // Try to get tenant slug from storage as fallback
         const fallbackSlug = safeStorage.getItem('lastTenantSlug');
         if (fallbackSlug) {
-          navigate(`/${fallbackSlug}/admin`, { replace: true });
+          navigate(`/${fallbackSlug}/admin/dashboard`, { replace: true });
         } else {
           navigate('/saas/login', { replace: true });
         }
@@ -107,5 +110,5 @@ export function useStripeRedirectHandler() {
     };
 
     handleStripeSuccess();
-  }, [searchParams, navigate, admin, tenant]);
+  }, [searchParams, navigate, admin, tenant, refreshTenant]);
 }

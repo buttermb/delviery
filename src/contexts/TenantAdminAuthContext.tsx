@@ -83,6 +83,7 @@ interface TenantAdminAuthContextType {
   login: (email: string, password: string, tenantSlug: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuthToken: () => Promise<void>;
+  refreshTenant: () => Promise<void>; // Refresh tenant data from database
   handleSignupSuccess?: (signupResult: SignupResult) => Promise<void>; // For signup flow
   mfaRequired: boolean;
   verifyMfa: (code: string) => Promise<void>;
@@ -1505,6 +1506,41 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     logout();
   };
 
+  // Refresh tenant data from database
+  const refreshTenant = useCallback(async () => {
+    if (!tenant?.id) {
+      logger.warn('[AUTH] Cannot refresh tenant - no tenant ID');
+      return;
+    }
+
+    try {
+      logger.info('[AUTH] Refreshing tenant data from database', { tenantId: tenant.id });
+      const { data: freshTenant, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', tenant.id)
+        .maybeSingle();
+
+      if (error) {
+        logger.error('[AUTH] Failed to refresh tenant', error);
+        return;
+      }
+
+      if (freshTenant) {
+        const updatedTenant = freshTenant as unknown as Tenant;
+        setTenant(updatedTenant);
+        safeStorage.setItem(TENANT_KEY, JSON.stringify(updatedTenant));
+        logger.info('[AUTH] Tenant data refreshed', { 
+          tenantId: updatedTenant.id,
+          paymentMethodAdded: updatedTenant.payment_method_added,
+          subscriptionStatus: updatedTenant.subscription_status
+        });
+      }
+    } catch (error) {
+      logger.error('[AUTH] Error refreshing tenant', error);
+    }
+  }, [tenant?.id]);
+
   return (
     <TenantAdminAuthContext.Provider value={{
       admin,
@@ -1518,6 +1554,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       login,
       logout,
       refreshAuthToken,
+      refreshTenant,
       handleSignupSuccess,
       mfaRequired,
       verifyMfa,
