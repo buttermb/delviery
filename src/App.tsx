@@ -136,6 +136,7 @@ const SelectPlanPage = lazy(() => import("./pages/saas/SelectPlanPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
+import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 
@@ -463,6 +464,8 @@ const App = () => {
 
                                 <Sonner />
                                 <Suspense fallback={<SuspenseProgressFallback />}>
+                                  {/* Global URL encoding fixer - catches %3F encoding issues */}
+                                  <UrlEncodingFixer />
                                   <Routes>
                                     {/* Marketing & Public Routes */}
                                     <Route path="/" element={<SmartRootRedirect />} />
@@ -499,7 +502,8 @@ const App = () => {
                                     {/* Public Authentication */}
                                     <Route path="/signup" element={<SignUpPage />} />
                                     <Route path="/select-plan" element={<SelectPlanPage />} />
-                                    {/* Handle encoded select-plan URL - catches %3F encoding issues */}
+                                    {/* Handle encoded URLs with %3F - React Router doesn't match encoded chars */}
+                                    <Route path="/select-plan%3Ftenant_id=*" element={<EncodedUrlRedirect />} />
                                     <Route path="/select-plan%3F*" element={<EncodedUrlRedirect />} />
                                     <Route path="/saas/login" element={<SaasLoginPage />} />
                                     <Route path="/verify-email" element={<VerifyEmailPage />} />
