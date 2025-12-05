@@ -1,6 +1,13 @@
+/**
+ * Tenant Admin Sidebar
+ * 
+ * Displays navigation menu filtered by subscription tier.
+ * Features are organized by category and only shows features the user has access to,
+ * with upgrade prompts for higher-tier features.
+ */
+
 import { logger } from '@/lib/logger';
 import { NavLink, useParams, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +36,6 @@ import {
   TrendingUp,
   Lock,
   Star,
-  Navigation,
   Diamond,
   Truck,
   MapPin,
@@ -39,10 +45,8 @@ import {
   Globe,
   HelpCircle,
   Bell,
-  FolderKanban,
   Building,
   Shield,
-  ClipboardList,
   Box,
   AlertCircle,
   ArrowRightLeft,
@@ -58,185 +62,192 @@ import {
   Headphones,
   Store,
   Brain,
-  LineChart,
-  Image,
   Tag,
   Mail,
   Calendar,
+  Flame,
+  ChevronUp,
+  Wallet,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { UpgradeModal } from "./UpgradeModal";
-import { useState } from "react";
-import { type FeatureId } from "@/lib/featureConfig";
-import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
+import { useState, useMemo } from "react";
+import {
+  type FeatureId,
+  type SubscriptionTier,
+  FEATURES,
+  TIER_NAMES,
+  hasFeatureAccess,
+} from "@/lib/featureConfig";
 
-interface MenuItem {
-  featureId: FeatureId;
-  title: string;
-  url: string;
-  icon: any;
-  tier: 'starter' | 'professional' | 'enterprise';
-}
+// Icon mapping for features
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  // Command Center
+  'dashboard': LayoutDashboard,
+  'hotbox': Flame,
+  'live-orders': Activity,
+  'notifications': Bell,
+  'realtime-dashboard': Activity,
+  'live-map': MapPin,
+  
+  // Sales & Orders
+  'basic-orders': ShoppingCart,
+  'disposable-menus': Menu,
+  'wholesale-orders': FileText,
+  'loyalty-program': Star,
+  'coupons': Tag,
+  'menu-migration': Download,
+  'marketplace': Globe,
+  'sales-dashboard': DollarSign,
+  'pos-system': Store,
+  
+  // Inventory
+  'products': Package,
+  'inventory-dashboard': Warehouse,
+  'stock-alerts': AlertCircle,
+  'generate-barcodes': Barcode,
+  'advanced-inventory': Box,
+  'inventory-transfers': ArrowRightLeft,
+  'fronted-inventory': CreditCard,
+  'operations': Warehouse,
+  'dispatch-inventory': Truck,
+  'vendor-management': Building2,
+  
+  // Customers
+  'customers': Users,
+  'customer-crm': Users,
+  'crm-invoices': FileText,
+  'customer-insights': TrendingUp,
+  'marketing-automation': Mail,
+  'customer-analytics': BarChart3,
+  'live-chat': MessageSquare,
+  
+  // Operations
+  'suppliers': Building2,
+  'purchase-orders': FileText,
+  'returns': ArrowRightLeft,
+  'team-members': Users,
+  'role-management': UserCog,
+  'activity-logs': ScrollText,
+  'quality-control': Shield,
+  'appointments': Calendar,
+  'support-tickets': Headphones,
+  'locations': Building,
+  'user-management': UserCog,
+  'permissions': Key,
+  
+  // Delivery & Fleet
+  'delivery-management': Truck,
+  'fleet-management': Building2,
+  'couriers': Users,
+  'route-optimization': MapPinned,
+  'delivery-tracking': MapPin,
+  'delivery-analytics': BarChart3,
+  
+  // Point of Sale
+  'cash-register': Wallet,
+  'pos-analytics': PieChart,
+  'location-analytics': MapPin,
+  
+  // Analytics & Finance
+  'reports': FileSpreadsheet,
+  'analytics': BarChart3,
+  'revenue-reports': TrendingUp,
+  'financial-center': DollarSign,
+  'invoice-management': Receipt,
+  'commission-tracking': DollarSign,
+  'expense-tracking': Receipt,
+  'menu-analytics': BarChart3,
+  'order-analytics': PieChart,
+  'advanced-reporting': BarChart3,
+  'predictive-analytics': TrendingUp,
+  'advanced-analytics': Brain,
+  'custom-reports': FileText,
+  'data-export': Download,
+  'risk-management': Shield,
+  
+  // Integrations
+  'bulk-operations': Box,
+  'vendor-portal': Building2,
+  'api-access': Zap,
+  'webhooks': Activity,
+  'custom-integrations': Zap,
+  'automation': Zap,
+  'ai': Brain,
+  
+  // Security & Compliance
+  'batch-recall': AlertCircle,
+  'compliance-vault': FileText,
+  'audit-trail': ScrollText,
+  'compliance': Shield,
+  
+  // Settings
+  'settings': Settings,
+  'billing': CreditCard,
+  'help': HelpCircle,
+  'white-label': Globe,
+  'custom-domain': Globe,
+  'system-settings': Settings,
+  'priority-support': Headphones,
+};
 
-interface MenuGroup {
+// Sidebar menu structure organized by category
+interface SidebarCategory {
   label: string;
-  items: MenuItem[];
+  features: FeatureId[];
+  showForTiers?: SubscriptionTier[]; // Only show category for these tiers (optional)
 }
 
-const menuGroups: MenuGroup[] = [
+const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   {
-    label: "Dashboard",
-    items: [
-      { featureId: "dashboard", title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, tier: "starter" },
-    ],
+    label: 'Command Center',
+    features: ['dashboard', 'hotbox', 'live-orders', 'notifications', 'realtime-dashboard', 'live-map'],
   },
   {
-    label: "Products & Inventory",
-    items: [
-      { featureId: "products", title: "Products", url: "/admin/inventory/products", icon: Package, tier: "starter" },
-      { featureId: "inventory-dashboard", title: "Inventory Overview", url: "/admin/inventory-dashboard", icon: Warehouse, tier: "starter" },
-      { featureId: "generate-barcodes", title: "Generate Barcodes", url: "/admin/generate-barcodes", icon: Barcode, tier: "starter" },
-      { featureId: "advanced-inventory", title: "Advanced Inventory", url: "/admin/advanced-inventory", icon: Box, tier: "professional" },
-      { featureId: "stock-alerts", title: "Stock Alerts", url: "/admin/stock-alerts", icon: AlertCircle, tier: "professional" },
-      { featureId: "inventory-transfers", title: "Inventory Transfers", url: "/admin/inventory-transfers", icon: ArrowRightLeft, tier: "professional" },
-      { featureId: "fronted-inventory", title: "Fronted Inventory", url: "/admin/fronted-inventory", icon: ClipboardList, tier: "professional" },
-      { featureId: "products", title: "Receiving & Packaging", url: "/admin/operations/receiving", icon: Warehouse, tier: "professional" },
-      { featureId: "returns", title: "Returns & Refunds", url: "/admin/returns", icon: ArrowRightLeft, tier: "starter" },
-      { featureId: "products", title: "Images & Media", url: "/admin/catalog/images", icon: Image, tier: "professional" },
-      { featureId: "products", title: "Batches & Lots", url: "/admin/catalog/batches", icon: Tag, tier: "professional" },
-      { featureId: "products", title: "Categories & Tags", url: "/admin/catalog/categories", icon: Tag, tier: "professional" },
-    ],
+    label: 'Sales & Orders',
+    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'sales-dashboard', 'pos-system'],
   },
   {
-    label: "Menus & Orders",
-    items: [
-      { featureId: "disposable-menus", title: "Disposable Menus", url: "/admin/disposable-menus", icon: Menu, tier: "starter" },
-      { featureId: "basic-orders", title: "Menu Orders", url: "/admin/disposable-menu-orders", icon: ShoppingCart, tier: "starter" },
-      { featureId: "wholesale-orders", title: "Wholesale Orders", url: "/admin/wholesale-orders", icon: FileText, tier: "starter" },
-      { featureId: "loyalty-program", title: "Loyalty Program", url: "/admin/loyalty-program", icon: Star, tier: "starter" },
-      { featureId: "coupons", title: "Coupons", url: "/admin/coupons", icon: Tag, tier: "starter" },
-      { featureId: "live-orders", title: "Live Orders Dashboard", url: "/admin/live-orders", icon: Activity, tier: "professional" },
-      { featureId: "order-analytics", title: "Order Analytics", url: "/admin/order-analytics", icon: PieChart, tier: "professional" },
-    ],
+    label: 'Inventory',
+    features: ['products', 'inventory-dashboard', 'stock-alerts', 'generate-barcodes', 'advanced-inventory', 'inventory-transfers', 'fronted-inventory', 'operations', 'dispatch-inventory'],
   },
   {
-    label: "Customers",
-    items: [
-      { featureId: "customers", title: "Customers", url: "/admin/big-plug-clients", icon: Users, tier: "starter" },
-      { featureId: "customer-crm", title: "Advanced CRM", url: "/admin/customer-crm", icon: TrendingUp, tier: "professional" },
-      { featureId: "customer-analytics", title: "Customer Analytics", url: "/admin/customer-analytics", icon: BarChart3, tier: "professional" },
-      { featureId: "customer-insights", title: "Customer Insights", url: "/admin/customer-insights", icon: TrendingUp, tier: "professional" },
-    ],
+    label: 'Customers',
+    features: ['customers', 'customer-crm', 'crm-invoices', 'customer-insights', 'marketing-automation', 'customer-analytics', 'live-chat'],
   },
   {
-    label: "Marketing",
-    items: [
-      { featureId: "marketing-automation", title: "Marketing Automation", url: "/admin/marketing-automation", icon: Mail, tier: "professional" },
-    ],
+    label: 'Operations',
+    features: ['suppliers', 'purchase-orders', 'returns', 'team-members', 'role-management', 'activity-logs', 'quality-control', 'appointments', 'support-tickets', 'locations', 'user-management', 'permissions'],
   },
   {
-    label: "Analytics & Reports",
-    items: [
-      { featureId: "reports", title: "Basic Reports", url: "/admin/reports", icon: FileSpreadsheet, tier: "starter" },
-      { featureId: "menu-analytics", title: "Menu Analytics", url: "/admin/menu-analytics", icon: BarChart3, tier: "professional" },
-      { featureId: "disposable-menu-analytics", title: "Disposable Menu Analytics", url: "/admin/disposable-menu-analytics", icon: PieChart, tier: "professional" },
-      { featureId: "sales-dashboard", title: "Sales Dashboard", url: "/admin/sales-dashboard", icon: DollarSign, tier: "professional" },
-      { featureId: "analytics", title: "Analytics", url: "/admin/analytics/comprehensive", icon: BarChart3, tier: "professional" },
-      { featureId: "advanced-reporting", title: "Advanced Reporting & BI", url: "/admin/advanced-reporting", icon: BarChart3, tier: "professional" },
-      { featureId: "predictive-analytics", title: "Predictive Analytics", url: "/admin/predictive-analytics", icon: TrendingUp, tier: "professional" },
-      { featureId: "advanced-analytics", title: "Advanced Analytics", url: "/admin/advanced-analytics", icon: TrendingUp, tier: "enterprise" },
-      { featureId: "realtime-dashboard", title: "Realtime Dashboard", url: "/admin/realtime-dashboard", icon: Activity, tier: "enterprise" },
-      { featureId: "custom-reports", title: "Custom Reports", url: "/admin/custom-reports", icon: FileText, tier: "enterprise" },
-    ],
+    label: 'Delivery & Fleet',
+    features: ['delivery-management', 'fleet-management', 'couriers', 'route-optimization', 'delivery-tracking', 'delivery-analytics'],
+    showForTiers: ['enterprise'], // Only show this category if any enterprise feature is accessible
   },
   {
-    label: "Financial",
-    items: [
-      { featureId: "billing", title: "Billing", url: "/admin/billing", icon: CreditCard, tier: "starter" },
-      { featureId: "suppliers", title: "Suppliers", url: "/admin/suppliers", icon: Building2, tier: "starter" },
-      { featureId: "purchase-orders", title: "Purchase Orders", url: "/admin/purchase-orders", icon: FileText, tier: "starter" },
-      { featureId: "invoice-management", title: "Financial Center", url: "/admin/financial-center", icon: DollarSign, tier: "professional" },
-      { featureId: "commission-tracking", title: "Commission Tracking", url: "/admin/commission-tracking", icon: DollarSign, tier: "professional" },
-      { featureId: "revenue-reports", title: "Revenue Reports", url: "/admin/revenue-reports", icon: TrendingUp, tier: "professional" },
-      { featureId: "invoice-management", title: "Advanced Invoice", url: "/admin/advanced-invoice", icon: Receipt, tier: "professional" },
-    ],
+    label: 'Point of Sale',
+    features: ['pos-system', 'cash-register', 'pos-analytics', 'location-analytics'],
+    showForTiers: ['enterprise'],
   },
   {
-    label: "Delivery & Fleet",
-    items: [
-      { featureId: "delivery-management", title: "Delivery Management", url: "/admin/delivery-management", icon: Truck, tier: "enterprise" },
-      { featureId: "fleet-management", title: "Fleet Management", url: "/admin/fleet-management", icon: Building2, tier: "enterprise" },
-      { featureId: "live-map", title: "Live Map Tracking", url: "/admin/live-map", icon: MapPin, tier: "enterprise" },
-      { featureId: "fleet-management", title: "GPS Tracking & Replay", url: "/admin/gps-tracking", icon: Navigation, tier: "enterprise" },
-      { featureId: "route-optimization", title: "Route Optimizer", url: "/admin/route-optimizer", icon: MapPinned, tier: "enterprise" },
-      { featureId: "delivery-analytics", title: "Delivery Analytics", url: "/admin/delivery-analytics", icon: BarChart3, tier: "enterprise" },
-      { featureId: "appointments", title: "Appointments", url: "/admin/appointments", icon: Calendar, tier: "professional" },
-    ],
+    label: 'Analytics & Finance',
+    features: ['reports', 'analytics', 'revenue-reports', 'financial-center', 'invoice-management', 'commission-tracking', 'expense-tracking', 'menu-analytics', 'order-analytics', 'advanced-reporting', 'predictive-analytics', 'advanced-analytics', 'custom-reports', 'data-export', 'risk-management'],
   },
   {
-    label: "Point of Sale",
-    items: [
-      { featureId: "pos-system", title: "POS System", url: "/admin/pos-system", icon: Store, tier: "enterprise" },
-      { featureId: "cash-register", title: "Cash Register", url: "/admin/cash-register", icon: DollarSign, tier: "enterprise" },
-      { featureId: "pos-analytics", title: "POS Analytics", url: "/admin/pos-analytics", icon: PieChart, tier: "enterprise" },
-    ],
+    label: 'Integrations',
+    features: ['bulk-operations', 'vendor-portal', 'api-access', 'webhooks', 'custom-integrations', 'automation', 'ai'],
   },
   {
-    label: "Team & Locations",
-    items: [
-      { featureId: "team-members", title: "Staff Management", url: "/admin/staff-management", icon: Users, tier: "professional" },
-      { featureId: "role-management", title: "Role Management", url: "/admin/role-management", icon: UserCog, tier: "professional" },
-      { featureId: "activity-logs", title: "Activity Logs", url: "/admin/activity-logs", icon: ScrollText, tier: "professional" },
-      { featureId: "locations", title: "Locations", url: "/admin/locations", icon: Building, tier: "enterprise" },
-      { featureId: "locations", title: "Warehouses", url: "/admin/locations/warehouses", icon: Warehouse, tier: "enterprise" },
-      { featureId: "locations", title: "Runners & Vehicles", url: "/admin/locations/runners", icon: Truck, tier: "enterprise" },
-      { featureId: "location-analytics", title: "Location Analytics", url: "/admin/location-analytics", icon: MapPin, tier: "enterprise" },
-      { featureId: "user-management", title: "User Management", url: "/admin/user-management", icon: UserCog, tier: "enterprise" },
-      { featureId: "permissions", title: "Permissions", url: "/admin/permissions", icon: Key, tier: "enterprise" },
-    ],
+    label: 'Security & Compliance',
+    features: ['batch-recall', 'compliance-vault', 'audit-trail', 'compliance'],
   },
   {
-    label: "Integrations & Automation",
-    items: [
-      { featureId: "bulk-operations", title: "Bulk Operations", url: "/admin/bulk-operations", icon: FolderKanban, tier: "professional" },
-      { featureId: "notifications", title: "Notifications", url: "/admin/notifications", icon: Bell, tier: "professional" },
-      { featureId: "ai", title: "Local AI", url: "/admin/local-ai", icon: Brain, tier: "enterprise" },
-      { featureId: "api-access", title: "API Access", url: "/admin/api-access", icon: Zap, tier: "enterprise" },
-      { featureId: "webhooks", title: "Webhooks", url: "/admin/webhooks", icon: Activity, tier: "enterprise" },
-      { featureId: "custom-integrations", title: "Custom Integrations", url: "/admin/custom-integrations", icon: Zap, tier: "enterprise" },
-      { featureId: "automation", title: "Workflow Automation", url: "/admin/workflow-automation", icon: Zap, tier: "enterprise" },
-      { featureId: "data-export", title: "Data Export", url: "/admin/data-export", icon: Download, tier: "enterprise" },
-    ],
-  },
-  {
-    label: "Security & Compliance",
-    items: [
-      { featureId: "quality-control", title: "Quality Control", url: "/admin/quality-control", icon: Shield, tier: "professional" },
-      { featureId: "batch-recall", title: "Batch Recall", url: "/admin/batch-recall", icon: AlertCircle, tier: "professional" },
-      { featureId: "compliance-vault", title: "Compliance Vault", url: "/admin/compliance-vault", icon: FileText, tier: "professional" },
-      { featureId: "audit-trail", title: "Audit Trail", url: "/admin/audit-trail", icon: ScrollText, tier: "enterprise" },
-      { featureId: "compliance", title: "Compliance", url: "/admin/compliance", icon: Shield, tier: "enterprise" },
-    ],
-  },
-  {
-    label: "Branding & Customization",
-    items: [
-      { featureId: "white-label", title: "White Label", url: "/admin/white-label", icon: Globe, tier: "enterprise" },
-      { featureId: "custom-domain", title: "Custom Domain", url: "/admin/custom-domain", icon: Globe, tier: "enterprise" },
-    ],
-  },
-  {
-    label: "Settings & Support",
-    items: [
-      { featureId: "settings", title: "Settings", url: "/admin/settings", icon: Settings, tier: "starter" },
-      { featureId: "support-tickets", title: "Support Tickets", url: "/admin/support-tickets", icon: Headphones, tier: "professional" },
-      { featureId: "help", title: "Help & Support", url: "/admin/help", icon: HelpCircle, tier: "starter" },
-      { featureId: "priority-support", title: "24/7 Priority Support", url: "/admin/priority-support", icon: Headphones, tier: "enterprise" },
-    ],
+    label: 'Settings',
+    features: ['settings', 'billing', 'help', 'white-label', 'custom-domain', 'system-settings', 'priority-support'],
   },
 ];
 
@@ -244,22 +255,49 @@ export function TenantAdminSidebar() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { tenant, logout } = useTenantAdminAuth();
-  const { canAccess, currentTier } = useFeatureAccess();
+  const { canAccess, currentTier, subscriptionValid } = useFeatureAccess();
   const [upgradeFeatureId, setUpgradeFeatureId] = useState<FeatureId | null>(null);
-  const { prefetchRoute } = useRoutePrefetch();
-
-  // Debug logging - remove in production
-  // log.debug('TenantAdminSidebar:', {
-  //   currentTier,
-  //   subscriptionPlan: tenant?.subscription_plan,
-  //   tenantSlug,
-  // });
 
   // Guard against missing tenant slug
   if (!tenantSlug) {
     logger.error('TenantAdminSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'TenantAdminSidebar' });
     return null;
   }
+
+  // Build filtered sidebar based on current tier
+  const filteredCategories = useMemo(() => {
+    return SIDEBAR_CATEGORIES.map(category => {
+      // Get features user has access to
+      const accessibleFeatures = category.features.filter(featureId => {
+        const feature = FEATURES[featureId];
+        if (!feature) return false;
+        return canAccess(featureId);
+      });
+
+      // Get locked features (show first few as upgrade hints)
+      const lockedFeatures = category.features.filter(featureId => {
+        const feature = FEATURES[featureId];
+        if (!feature) return false;
+        return !canAccess(featureId);
+      });
+
+      // Show up to 2 locked features as upgrade hints per category
+      const upgradeHints = lockedFeatures.slice(0, 2);
+
+      return {
+        ...category,
+        accessibleFeatures,
+        lockedFeatures,
+        upgradeHints,
+        hasAccessibleFeatures: accessibleFeatures.length > 0,
+        hasLockedFeatures: lockedFeatures.length > 0,
+      };
+    }).filter(category => {
+      // Filter out categories with no accessible features AND no upgrade hints
+      // But always show categories with accessible features
+      return category.hasAccessibleFeatures || category.upgradeHints.length > 0;
+    });
+  }, [canAccess]);
 
   const isActive = (url: string) => {
     const fullPath = `/${tenantSlug}${url}`;
@@ -274,25 +312,38 @@ export function TenantAdminSidebar() {
     setUpgradeFeatureId(featureId);
   };
 
-  const getTierBadge = (tier: 'starter' | 'professional' | 'enterprise') => {
+  const getIcon = (featureId: FeatureId) => {
+    return ICON_MAP[featureId] || Package;
+  };
+
+  const getTierBadge = (tier: SubscriptionTier) => {
     if (tier === 'enterprise') {
       return (
-        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-xs border-purple-500 text-purple-700 dark:text-purple-300">
-          <Diamond className="h-3 w-3" />
-          Enterprise
+        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-purple-500/50 text-purple-600 dark:text-purple-400">
+          <Diamond className="h-2.5 w-2.5" />
+          Pro+
         </Badge>
       );
     }
     if (tier === 'professional') {
       return (
-        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-xs border-blue-500 text-blue-700 dark:text-blue-300">
-          <Star className="h-3 w-3" />
+        <Badge variant="outline" className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0 h-5 border-blue-500/50 text-blue-600 dark:text-blue-400">
+          <Star className="h-2.5 w-2.5" />
           Pro
         </Badge>
       );
     }
     return null;
   };
+
+  // Get current tier display info
+  const tierDisplay = {
+    starter: { name: 'Starter', color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+    professional: { name: 'Professional', color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+    enterprise: { name: 'Enterprise', color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+  };
+
+  const currentTierInfo = tierDisplay[currentTier as SubscriptionTier] || tierDisplay.starter;
 
   return (
     <>
@@ -302,54 +353,90 @@ export function TenantAdminSidebar() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
               {tenant?.slug?.charAt(0).toUpperCase() || "T"}
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-xs sm:text-sm truncate min-w-0">{tenant?.slug || "Tenant Admin"}</span>
-              <span className="text-xs text-muted-foreground hidden sm:block">Admin Panel</span>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="font-semibold text-xs sm:text-sm truncate min-w-0">
+                {tenant?.slug || "Tenant Admin"}
+              </span>
+              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 h-4 w-fit ${currentTierInfo.bgColor} ${currentTierInfo.color}`}>
+                {currentTierInfo.name}
+              </Badge>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent>
-          {menuGroups.map((group) => {
-            const hasActiveItem = group.items.some(item => isActive(item.url));
+          {filteredCategories.map((category) => (
+            <SidebarGroup key={category.label}>
+              <SidebarGroupLabel className="flex items-center justify-between">
+                <span>{category.label}</span>
+                {category.hasLockedFeatures && category.lockedFeatures.length > 2 && (
+                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 opacity-50">
+                    +{category.lockedFeatures.length}
+                  </Badge>
+                )}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {/* Accessible features */}
+                  {category.accessibleFeatures.map((featureId) => {
+                    const feature = FEATURES[featureId];
+                    if (!feature) return null;
+                    
+                    const Icon = getIcon(featureId);
+                    const itemIsActive = isActive(feature.route);
 
-            return (
-              <SidebarGroup key={group.label}>
-                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.items.map((item) => {
-                      const hasAccess = canAccess(item.featureId);
-                      const itemIsActive = isActive(item.url);
+                    return (
+                      <SidebarMenuItem key={featureId}>
+                        <SidebarMenuButton asChild isActive={itemIsActive}>
+                          <NavLink to={`/${tenantSlug}${feature.route}`}>
+                            <Icon className="h-4 w-4" />
+                            <span className="truncate min-w-0">{feature.name}</span>
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
 
-                      return (
-                        <SidebarMenuItem key={`${group.label}-${item.url}`}>
-                          {hasAccess ? (
-                            <SidebarMenuButton asChild isActive={itemIsActive}>
-                              <NavLink to={`/${tenantSlug}${item.url}`}>
-                                <item.icon className="h-4 w-4" />
-                                <span className="truncate min-w-0">{item.title}</span>
-                              </NavLink>
-                            </SidebarMenuButton>
-                          ) : (
-                            <SidebarMenuButton
-                              onClick={() => handleLockedItemClick(item.featureId)}
-                              className="cursor-pointer opacity-60 hover:opacity-100"
-                            >
-                              <item.icon className="h-4 w-4" />
-                              <span className="truncate min-w-0">{item.title}</span>
-                              <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
-                              {getTierBadge(item.tier)}
-                            </SidebarMenuButton>
-                          )}
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            );
-          })}
+                  {/* Upgrade hint features (locked) */}
+                  {category.upgradeHints.map((featureId) => {
+                    const feature = FEATURES[featureId];
+                    if (!feature) return null;
+                    
+                    const Icon = getIcon(featureId);
+
+                    return (
+                      <SidebarMenuItem key={`locked-${featureId}`}>
+                        <SidebarMenuButton
+                          onClick={() => handleLockedItemClick(featureId)}
+                          className="cursor-pointer opacity-50 hover:opacity-80 transition-opacity"
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span className="truncate min-w-0">{feature.name}</span>
+                          <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
+                          {getTierBadge(feature.tier)}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+
+                  {/* Show "View more" if there are additional locked features */}
+                  {category.lockedFeatures.length > 2 && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        onClick={() => handleLockedItemClick(category.lockedFeatures[0])}
+                        className="cursor-pointer opacity-40 hover:opacity-60 text-xs"
+                      >
+                        <ChevronUp className="h-3 w-3 rotate-180" />
+                        <span className="text-muted-foreground">
+                          Upgrade to unlock {category.lockedFeatures.length - 2} more
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
         </SidebarContent>
 
         <SidebarFooter className="p-3 sm:p-4 border-t">

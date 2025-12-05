@@ -1,23 +1,53 @@
 /**
- * Hook to check feature access based on tenant business tier
+ * useFeatureAccess Hook
+ * 
+ * Provides feature access checking based on tenant subscription tier.
+ * Uses the simplified 3-tier subscription model: starter, professional, enterprise.
  */
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
-  BUSINESS_TIER_PRESETS,
-  getTierPreset,
-  getNextTier,
-  getTierRequirements,
-  type BusinessTier
-} from '@/lib/presets/businessTiers';
-import { FEATURES, TIER_PRICES, type FeatureId } from '@/lib/featureConfig';
+  FEATURES,
+  TIER_PRICES,
+  TIER_NAMES,
+  hasFeatureAccess,
+  getRequiredTier,
+  getUpgradeRequirement,
+  isEssentialFeature,
+  type FeatureId,
+  type SubscriptionTier,
+} from '@/lib/featureConfig';
+
+// Map business tier (G-Wagon system) to subscription tier for backwards compatibility
+function businessTierToSubscription(businessTier: string | null | undefined): SubscriptionTier {
+  switch (businessTier) {
+    case 'street':
+    case 'trap':
+      return 'starter';
+    case 'block':
+    case 'hood':
+      return 'professional';
+    case 'empire':
+      return 'enterprise';
+    // Direct subscription tier values
+    case 'starter':
+      return 'starter';
+    case 'professional':
+      return 'professional';
+    case 'enterprise':
+      return 'enterprise';
+    default:
+      return 'starter';
+  }
+}
 
 export function useFeatureAccess() {
   const { tenant } = useTenantAdminAuth();
 
-  // Get current tier from tenant data, default to 'street'
-  const currentTier: BusinessTier = (tenant?.business_tier as BusinessTier) || 'street';
-  const preset = getTierPreset(currentTier);
+  // Determine current subscription tier
+  // Check subscription_plan first, then business_tier for backwards compatibility
+  const rawTier = tenant?.subscription_plan || tenant?.business_tier;
+  const currentTier: SubscriptionTier = businessTierToSubscription(rawTier as string);
 
   // Check if subscription is valid
   const isSubscriptionValid = (): boolean => {
@@ -28,7 +58,7 @@ export function useFeatureAccess() {
     // Guard: Null check for status
     if (!status) return false;
 
-    // Blocked statuses
+    // Blocked statuses - no access
     if (status === 'suspended' || status === 'cancelled') {
       return false;
     }
@@ -56,6 +86,7 @@ export function useFeatureAccess() {
 
   const subscriptionValid = isSubscriptionValid();
 
+  // Subscription status flags
   const isTrialExpired = tenant?.subscription_status === 'trial' &&
     tenant?.trial_ends_at &&
     new Date(tenant.trial_ends_at) < new Date();
@@ -64,9 +95,12 @@ export function useFeatureAccess() {
   const isCancelled = tenant?.subscription_status === 'cancelled';
   const isPastDue = tenant?.subscription_status === 'past_due';
 
+  /**
+   * Check if user can access a specific feature
+   */
   const canAccess = (featureId: FeatureId): boolean => {
-    // Always allow access to billing and settings
-    if (featureId === 'billing' || featureId === 'settings') {
+    // Essential features are always accessible
+    if (isEssentialFeature(featureId)) {
       return true;
     }
 
@@ -75,29 +109,20 @@ export function useFeatureAccess() {
       return false;
     }
 
-    // Check if feature is enabled in the current tier preset
-    if (preset.enabledFeatures.includes('all')) {
-      // If 'all' is enabled, check if it's explicitly hidden
-      return !preset.hiddenFeatures.includes(featureId);
-    }
-
-    return preset.enabledFeatures.includes(featureId);
+    // Check tier-based access
+    return hasFeatureAccess(currentTier, featureId);
   };
 
-  const getFeatureTier = (featureId: FeatureId): BusinessTier | null => {
-    // Find the lowest tier that has this feature
-    const tiers: BusinessTier[] = ['street', 'trap', 'block', 'hood', 'empire'];
-    for (const tier of tiers) {
-      const tierPreset = BUSINESS_TIER_PRESETS[tier];
-      if (tierPreset.enabledFeatures.includes('all')) {
-        if (!tierPreset.hiddenFeatures.includes(featureId)) return tier;
-      } else if (tierPreset.enabledFeatures.includes(featureId)) {
-        return tier;
-      }
-    }
-    return null;
+  /**
+   * Get the required tier for a feature
+   */
+  const getFeatureTier = (featureId: FeatureId): SubscriptionTier | null => {
+    return getRequiredTier(featureId);
   };
 
+  /**
+   * Check if upgrade is required and get upgrade info
+   */
   const checkUpgrade = (featureId: FeatureId) => {
     const hasAccess = canAccess(featureId);
 
@@ -105,31 +130,52 @@ export function useFeatureAccess() {
       return { required: false, targetTier: null, priceDifference: 0 };
     }
 
-    const targetTier = getFeatureTier(featureId);
-
-    // Calculate price difference (approximate based on revenue range or fixed pricing if we had it)
-    // For now, returning 0 as pricing is dynamic/revenue based in this model
-    // You might want to map tiers to base subscription prices if they exist
-
+    const upgradeInfo = getUpgradeRequirement(currentTier, featureId);
+    
     return {
-      required: true,
-      targetTier,
-      priceDifference: 0 // Placeholder
+      required: upgradeInfo.required,
+      targetTier: upgradeInfo.targetTier,
+      priceDifference: upgradeInfo.priceDifference,
+    };
+  };
+
+  /**
+   * Get display info for current tier
+   */
+  const getTierDisplayInfo = () => {
+    return {
+      name: TIER_NAMES[currentTier],
+      price: TIER_PRICES[currentTier],
     };
   };
 
   return {
+    // Current tier info
     currentTier,
-    currentTierName: preset.displayName,
-    currentTierEmoji: preset.emoji,
+    currentTierName: TIER_NAMES[currentTier],
+    currentTierPrice: TIER_PRICES[currentTier],
+    
+    // Access checking
     canAccess,
     subscriptionValid,
+    
+    // Subscription status
     isTrialExpired,
     isSuspended,
     isCancelled,
     isPastDue,
+    
+    // Upgrade helpers
     getFeatureTier,
     checkUpgrade,
+    getTierDisplayInfo,
+    
+    // Raw tenant for additional checks
     tenant,
   };
 }
+
+/**
+ * Type export for components that need to type the hook return value
+ */
+export type UseFeatureAccessReturn = ReturnType<typeof useFeatureAccess>;

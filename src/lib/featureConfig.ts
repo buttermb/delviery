@@ -1,6 +1,12 @@
 /**
  * Feature Configuration & Tier Management
- * Maps all 56 admin features to subscription tiers
+ * 
+ * SINGLE SOURCE OF TRUTH for all features and subscription tiers.
+ * 
+ * Pricing:
+ * - Starter ($79/mo): Core features for solo operators - 20 features
+ * - Professional ($150/mo): Team & analytics for growing businesses - 35 additional = 55 total
+ * - Enterprise ($499/mo): Full platform for large operations - 32 additional = 87 total
  */
 
 export type SubscriptionTier = 'starter' | 'professional' | 'enterprise';
@@ -11,10 +17,24 @@ export interface Feature {
   name: string;
   description: string;
   tier: SubscriptionTier;
-  category: string;
+  category: FeatureCategory;
   route: string;
   icon?: string;
 }
+
+// Standardized categories matching sidebar structure
+export type FeatureCategory = 
+  | 'Command Center'
+  | 'Sales & Orders'
+  | 'Inventory'
+  | 'Customers'
+  | 'Operations'
+  | 'Analytics & Finance'
+  | 'Delivery & Fleet'
+  | 'Point of Sale'
+  | 'Integrations'
+  | 'Security & Compliance'
+  | 'Settings';
 
 export const TIER_PRICES = {
   starter: 79,
@@ -23,22 +43,106 @@ export const TIER_PRICES = {
 } as const;
 
 export const TIER_NAMES = {
-  starter: 'Basic',
+  starter: 'Starter',
   professional: 'Professional',
   enterprise: 'Enterprise',
 } as const;
 
-// All 87 features organized by tier and category
+export const TIER_TAGLINES = {
+  starter: 'Run Your Business',
+  professional: 'Scale Your Operation',
+  enterprise: 'Dominate Your Market',
+} as const;
+
+// Category display order for sidebar
+export const CATEGORY_ORDER: FeatureCategory[] = [
+  'Command Center',
+  'Sales & Orders',
+  'Inventory',
+  'Customers',
+  'Operations',
+  'Analytics & Finance',
+  'Delivery & Fleet',
+  'Point of Sale',
+  'Integrations',
+  'Security & Compliance',
+  'Settings',
+];
+
+/**
+ * =============================================================================
+ * FEATURE DEFINITIONS
+ * =============================================================================
+ * Organized by tier, then by category within each tier.
+ * Each higher tier includes all features from lower tiers.
+ */
+
 export const FEATURES: Record<FeatureId, Feature> = {
-  // ===== BASIC TIER (28 features) =====
+  // ==========================================================================
+  // STARTER TIER ($79/mo) - 20 Core Features
+  // ==========================================================================
+
+  // --- Command Center (Starter) ---
   'dashboard': {
     id: 'dashboard',
     name: 'Dashboard',
-    description: 'Overview of your business metrics',
+    description: 'Overview of your business metrics and key performance indicators',
     tier: 'starter',
-    category: 'Core',
+    category: 'Command Center',
     route: '/admin/dashboard',
   },
+  'hotbox': {
+    id: 'hotbox',
+    name: 'Hotbox',
+    description: 'Quick action command center for daily operations',
+    tier: 'starter',
+    category: 'Command Center',
+    route: '/admin/hotbox',
+  },
+
+  // --- Sales & Orders (Starter) ---
+  'basic-orders': {
+    id: 'basic-orders',
+    name: 'Orders',
+    description: 'View and manage customer orders',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/disposable-menu-orders',
+  },
+  'disposable-menus': {
+    id: 'disposable-menus',
+    name: 'Menus',
+    description: 'Create and share disposable menus with customers',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/disposable-menus',
+  },
+  'wholesale-orders': {
+    id: 'wholesale-orders',
+    name: 'Wholesale Orders',
+    description: 'Manage bulk B2B orders',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/wholesale-orders',
+  },
+  'loyalty-program': {
+    id: 'loyalty-program',
+    name: 'Loyalty Program',
+    description: 'Configure rewards, earning rules, and track customer loyalty',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/loyalty-program',
+  },
+  'coupons': {
+    id: 'coupons',
+    name: 'Coupons',
+    description: 'Create and manage discount coupons and promotions',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/coupons',
+  },
+
+  // --- Inventory (Starter) ---
   'products': {
     id: 'products',
     name: 'Products',
@@ -47,38 +151,78 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Inventory',
     route: '/admin/inventory/products',
   },
-  'disposable-menus': {
-    id: 'disposable-menus',
-    name: 'Disposable Menus',
-    description: 'Create shareable menus',
+  'inventory-dashboard': {
+    id: 'inventory-dashboard',
+    name: 'Stock Levels',
+    description: 'Overview of inventory levels and stock status',
     tier: 'starter',
-    category: 'Menus',
-    route: '/admin/disposable-menus',
+    category: 'Inventory',
+    route: '/admin/inventory-dashboard',
   },
-  'menu-migration': {
-    id: 'menu-migration',
-    name: 'Menu Migration',
-    description: 'AI-powered bulk import from spreadsheets and images',
+  'stock-alerts': {
+    id: 'stock-alerts',
+    name: 'Stock Alerts',
+    description: 'Low stock notifications and reorder reminders',
     tier: 'starter',
-    category: 'Menus',
-    route: '/admin/menu-migration',
+    category: 'Inventory',
+    route: '/admin/stock-alerts',
   },
+  'generate-barcodes': {
+    id: 'generate-barcodes',
+    name: 'Barcodes',
+    description: 'Generate and print product barcodes',
+    tier: 'starter',
+    category: 'Inventory',
+    route: '/admin/generate-barcodes',
+  },
+
+  // --- Customers (Starter) ---
   'customers': {
     id: 'customers',
     name: 'Customers',
-    description: 'Customer management',
+    description: 'Basic customer list and contact management',
     tier: 'starter',
     category: 'Customers',
     route: '/admin/big-plug-clients',
   },
-  'basic-orders': {
-    id: 'basic-orders',
-    name: 'Orders',
-    description: 'View basic order information',
+
+  // --- Operations (Starter) ---
+  'suppliers': {
+    id: 'suppliers',
+    name: 'Suppliers',
+    description: 'Manage supplier contacts and relationships',
     tier: 'starter',
-    category: 'Orders',
-    route: '/admin/disposable-menu-orders',
+    category: 'Operations',
+    route: '/admin/suppliers',
   },
+  'purchase-orders': {
+    id: 'purchase-orders',
+    name: 'Purchase Orders',
+    description: 'Create and track purchase orders from suppliers',
+    tier: 'starter',
+    category: 'Operations',
+    route: '/admin/purchase-orders',
+  },
+  'returns': {
+    id: 'returns',
+    name: 'Returns & Refunds',
+    description: 'Manage product returns, refunds, and exchanges',
+    tier: 'starter',
+    category: 'Operations',
+    route: '/admin/returns',
+  },
+
+  // --- Analytics & Finance (Starter) ---
+  'reports': {
+    id: 'reports',
+    name: 'Reports',
+    description: 'Basic sales and inventory reports',
+    tier: 'starter',
+    category: 'Analytics & Finance',
+    route: '/admin/reports',
+  },
+
+  // --- Settings (Starter) ---
   'settings': {
     id: 'settings',
     name: 'Settings',
@@ -95,275 +239,75 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Settings',
     route: '/admin/billing',
   },
-  'suppliers': {
-    id: 'suppliers',
-    name: 'Suppliers',
-    description: 'Manage suppliers and track performance',
-    tier: 'starter',
-    category: 'Financial',
-    route: '/admin/suppliers',
-  },
-  'purchase-orders': {
-    id: 'purchase-orders',
-    name: 'Purchase Orders',
-    description: 'Create and manage purchase orders from suppliers',
-    tier: 'starter',
-    category: 'Operations',
-    route: '/admin/purchase-orders',
-  },
-  'returns': {
-    id: 'returns',
-    name: 'Returns & Refunds',
-    description: 'Manage product returns, refunds, and exchanges',
-    tier: 'starter',
-    category: 'Operations',
-    route: '/admin/returns',
-  },
-  'loyalty-program': {
-    id: 'loyalty-program',
-    name: 'Loyalty Program',
-    description: 'Configure earning rules, manage rewards, and track customer loyalty',
-    tier: 'starter',
-    category: 'Sales',
-    route: '/admin/loyalty-program',
-  },
-  'coupons': {
-    id: 'coupons',
-    name: 'Coupons',
-    description: 'Create and manage discount coupons and promotions',
-    tier: 'starter',
-    category: 'Sales',
-    route: '/admin/coupons',
-  },
-  'quality-control': {
-    id: 'quality-control',
-    name: 'Quality Control',
-    description: 'Manage COAs, track test results, and ensure compliance',
-    tier: 'professional',
-    category: 'Compliance',
-    route: '/admin/quality-control',
-  },
-  'customer-crm': {
-    id: 'customer-crm',
-    name: 'Advanced CRM',
-    description: 'Customer lifecycle, RFM analysis, segmentation, and communication timeline',
-    tier: 'professional',
-    category: 'Customers',
-    route: '/admin/customer-crm',
-  },
-  'marketing-automation': {
-    id: 'marketing-automation',
-    name: 'Marketing Automation',
-    description: 'Create campaigns, automate workflows, and track engagement',
-    tier: 'professional',
-    category: 'Marketing',
-    route: '/admin/marketing-automation',
-  },
-  'appointments': {
-    id: 'appointments',
-    name: 'Appointment Scheduling',
-    description: 'Manage customer appointments, consultations, and deliveries',
-    tier: 'professional',
-    category: 'Operations',
-    route: '/admin/appointments',
-  },
-  'support-tickets': {
-    id: 'support-tickets',
-    name: 'Support Ticket Management',
-    description: 'Manage customer support requests and track resolution',
-    tier: 'professional',
-    category: 'Support',
-    route: '/admin/support-tickets',
-  },
-  'batch-recall': {
-    id: 'batch-recall',
-    name: 'Batch Recall & Traceability',
-    description: 'Manage product recalls, track affected customers, and generate regulatory reports',
-    tier: 'professional',
-    category: 'Compliance',
-    route: '/admin/batch-recall',
-  },
-  'compliance-vault': {
-    id: 'compliance-vault',
-    name: 'Compliance Document Vault',
-    description: 'Manage compliance documents, track expiration dates, and maintain audit trails',
-    tier: 'professional',
-    category: 'Compliance',
-    route: '/admin/compliance-vault',
-  },
-  'advanced-reporting': {
-    id: 'advanced-reporting',
-    name: 'Advanced Reporting & BI',
-    description: 'Build custom reports, schedule automated deliveries, and create visual dashboards',
-    tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/advanced-reporting',
-  },
-  'vendor-portal': {
-    id: 'vendor-portal',
-    name: 'Vendor/Supplier Portal',
-    description: 'External portal for vendors to view POs, upload invoices, and track payments',
-    tier: 'professional',
-    category: 'Integrations',
-    route: '/vendor/dashboard',
-  },
-  'predictive-analytics': {
-    id: 'predictive-analytics',
-    name: 'Predictive Analytics & Forecasting',
-    description: 'AI-powered demand forecasting, inventory optimization, and cash flow projections',
-    tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/predictive-analytics',
-  },
   'help': {
     id: 'help',
     name: 'Help & Support',
-    description: 'Get assistance and documentation',
+    description: 'Documentation and support resources',
     tier: 'starter',
     category: 'Settings',
     route: '/admin/help',
   },
-  'generate-barcodes': {
-    id: 'generate-barcodes',
-    name: 'Generate Barcodes',
-    description: 'Create product barcodes',
-    tier: 'starter',
-    category: 'Tools',
-    route: '/admin/generate-barcodes',
-  },
-  'wholesale-orders': {
-    id: 'wholesale-orders',
-    name: 'Wholesale Orders',
-    description: 'Manage bulk orders',
-    tier: 'starter',
-    category: 'Orders',
-    route: '/admin/wholesale-orders',
-  },
-  'reports': {
-    id: 'reports',
-    name: 'Basic Reports',
-    description: 'View basic business reports',
-    tier: 'starter',
-    category: 'Reports',
-    route: '/admin/reports',
-  },
-  'inventory-dashboard': {
-    id: 'inventory-dashboard',
-    name: 'Inventory Overview',
-    description: 'Basic inventory dashboard',
-    tier: 'starter',
-    category: 'Inventory',
-    route: '/admin/inventory-dashboard',
-  },
 
-  // ===== PROFESSIONAL TIER (19 additional features = 31 total) =====
-  'menu-analytics': {
-    id: 'menu-analytics',
-    name: 'Menu Analytics',
-    description: 'Advanced menu performance analytics',
-    tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/menu-analytics',
-  },
-  'disposable-menu-analytics': {
-    id: 'disposable-menu-analytics',
-    name: 'Disposable Menu Analytics',
-    description: 'Track disposable menu performance',
-    tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/disposable-menu-analytics',
-  },
+  // ==========================================================================
+  // PROFESSIONAL TIER ($150/mo) - 35 Additional Features
+  // ==========================================================================
+
+  // --- Command Center (Professional) ---
   'live-orders': {
     id: 'live-orders',
-    name: 'Live Orders Dashboard',
-    description: 'Real-time order monitoring',
+    name: 'Live Orders',
+    description: 'Real-time order monitoring and status updates',
     tier: 'professional',
-    category: 'Orders',
+    category: 'Command Center',
     route: '/admin/live-orders',
   },
-  'order-analytics': {
-    id: 'order-analytics',
-    name: 'Order Analytics',
-    description: 'Deep insights into order performance, trends, and patterns',
+  'notifications': {
+    id: 'notifications',
+    name: 'Notifications',
+    description: 'Email & SMS alert management',
     tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/order-analytics',
+    category: 'Command Center',
+    route: '/admin/notifications',
   },
-  'customer-analytics': {
-    id: 'customer-analytics',
-    name: 'Customer Analytics',
-    description: 'Customer behavior insights',
-    tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/customer-analytics',
-  },
-  'sales-dashboard': {
-    id: 'sales-dashboard',
-    name: 'Sales Dashboard',
-    description: 'Comprehensive sales metrics, revenue trends, and profit analysis',
-    tier: 'professional',
-    category: 'Sales',
-    route: '/admin/sales-dashboard',
+
+  // --- Sales & Orders (Starter - moved from Professional for all users) ---
+  'menu-migration': {
+    id: 'menu-migration',
+    name: 'Menu Migration',
+    description: 'AI-powered bulk import from spreadsheets and images',
+    tier: 'starter',
+    category: 'Sales & Orders',
+    route: '/admin/menu-migration',
   },
   'marketplace': {
     id: 'marketplace',
-    name: 'Wholesale Marketplace',
-    description: 'List products on B2B marketplace, manage wholesale orders, and communicate with buyers',
+    name: 'Marketplace',
+    description: 'List products on B2B marketplace and manage wholesale buyers',
     tier: 'professional',
-    category: 'Marketplace',
+    category: 'Sales & Orders',
     route: '/admin/marketplace/listings',
   },
-  'commission-tracking': {
-    id: 'commission-tracking',
-    name: 'Commission Tracking',
-    description: 'Monitor team commissions',
+  'sales-dashboard': {
+    id: 'sales-dashboard',
+    name: 'Deals & Pricing',
+    description: 'Sales metrics, revenue trends, and pricing strategy',
     tier: 'professional',
-    category: 'Financial',
-    route: '/admin/commission-tracking',
+    category: 'Sales & Orders',
+    route: '/admin/sales-dashboard',
   },
-  'team-members': {
-    id: 'team-members',
-    name: 'Team Members',
-    description: 'Manage staff and permissions',
-    tier: 'professional',
-    category: 'Team',
-    route: '/admin/team-members',
-  },
-  'role-management': {
-    id: 'role-management',
-    name: 'Role Management',
-    description: 'Configure user roles',
-    tier: 'professional',
-    category: 'Team',
-    route: '/admin/role-management',
-  },
-  'activity-logs': {
-    id: 'activity-logs',
-    name: 'Activity Logs',
-    description: 'Audit team actions',
-    tier: 'professional',
-    category: 'Team',
-    route: '/admin/activity-logs',
-  },
+
+  // --- Inventory (Professional) ---
   'advanced-inventory': {
     id: 'advanced-inventory',
     name: 'Advanced Inventory',
-    description: 'Full inventory management',
+    description: 'Full inventory management with tracking and history',
     tier: 'professional',
     category: 'Inventory',
     route: '/admin/advanced-inventory',
   },
-  'stock-alerts': {
-    id: 'stock-alerts',
-    name: 'Stock Alerts',
-    description: 'Low stock notifications',
-    tier: 'professional',
-    category: 'Inventory',
-    route: '/admin/stock-alerts',
-  },
   'inventory-transfers': {
     id: 'inventory-transfers',
-    name: 'Inventory Transfers',
+    name: 'Transfers',
     description: 'Move stock between locations',
     tier: 'professional',
     category: 'Inventory',
@@ -371,8 +315,8 @@ export const FEATURES: Record<FeatureId, Feature> = {
   },
   'fronted-inventory': {
     id: 'fronted-inventory',
-    name: 'Fronted Inventory',
-    description: 'Manage fronted products',
+    name: 'Who Owes Me',
+    description: 'Track fronted products and outstanding debts',
     tier: 'professional',
     category: 'Inventory',
     route: '/admin/fronted-inventory',
@@ -385,56 +329,48 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Inventory',
     route: '/admin/operations/receiving',
   },
-  'revenue-reports': {
-    id: 'revenue-reports',
-    name: 'Revenue Reports',
-    description: 'Financial performance analysis',
+
+  // --- Customers (Professional) ---
+  'customer-crm': {
+    id: 'customer-crm',
+    name: 'CRM',
+    description: 'Customer lifecycle, RFM analysis, and segmentation',
     tier: 'professional',
-    category: 'Financial',
-    route: '/admin/revenue-reports',
+    category: 'Customers',
+    route: '/admin/crm/clients',
   },
-  'invoice-management': {
-    id: 'invoice-management',
-    name: 'Advanced Invoice',
-    description: 'Create and manage invoices',
+  'crm-invoices': {
+    id: 'crm-invoices',
+    name: 'Invoices',
+    description: 'Create and manage customer invoices',
     tier: 'professional',
-    category: 'Financial',
-    route: '/admin/advanced-invoice',
+    category: 'Customers',
+    route: '/admin/crm/invoices',
   },
   'customer-insights': {
     id: 'customer-insights',
-    name: 'Customer Insights',
-    description: 'Understand customer behavior, segments, and lifetime value',
+    name: 'Insights',
+    description: 'Customer behavior, segments, and lifetime value analysis',
     tier: 'professional',
     category: 'Customers',
     route: '/admin/customer-insights',
   },
-  'bulk-operations': {
-    id: 'bulk-operations',
-    name: 'Bulk Operations',
-    description: 'Mass update products/orders',
+  'marketing-automation': {
+    id: 'marketing-automation',
+    name: 'Marketing',
+    description: 'Create campaigns, automate workflows, and track engagement',
     tier: 'professional',
-    category: 'Tools',
-    route: '/admin/bulk-operations',
+    category: 'Customers',
+    route: '/admin/marketing-automation',
   },
-  'notifications': {
-    id: 'notifications',
-    name: 'Notifications',
-    description: 'Email & SMS alerts',
+  'customer-analytics': {
+    id: 'customer-analytics',
+    name: 'Customer Analytics',
+    description: 'Customer behavior insights and trends',
     tier: 'professional',
-    category: 'Tools',
-    route: '/admin/notifications',
+    category: 'Customers',
+    route: '/admin/customer-analytics',
   },
-  'expense-tracking': {
-    id: 'expense-tracking',
-    name: 'Expense Tracking',
-    description: 'Track business expenses',
-    tier: 'professional',
-    category: 'Financial',
-    route: '/admin/expense-tracking',
-  },
-  
-  // Additional Professional features (Hidden Gems)
   'live-chat': {
     id: 'live-chat',
     name: 'Live Chat',
@@ -443,94 +379,308 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Customers',
     route: '/admin/live-chat',
   },
-  'customer-details': {
-    id: 'customer-details',
-    name: 'Customer Details',
-    description: 'Detailed customer profiles',
+
+  // --- Operations (Professional) ---
+  'team-members': {
+    id: 'team-members',
+    name: 'Team',
+    description: 'Manage staff and permissions',
     tier: 'professional',
-    category: 'Customers',
-    route: '/admin/customer-details',
+    category: 'Operations',
+    route: '/admin/staff-management',
   },
-  'customer-reports': {
-    id: 'customer-reports',
-    name: 'Customer Reports',
-    description: 'Generate customer-specific reports',
+  'role-management': {
+    id: 'role-management',
+    name: 'Roles',
+    description: 'Configure user roles and access levels',
     tier: 'professional',
-    category: 'Reports',
-    route: '/admin/customer-reports',
+    category: 'Operations',
+    route: '/admin/role-management',
   },
-  'fronted-inventory-analytics': {
-    id: 'fronted-inventory-analytics',
-    name: 'Fronted Inventory Analytics',
-    description: 'Analyze fronted product performance',
+  'activity-logs': {
+    id: 'activity-logs',
+    name: 'Activity Logs',
+    description: 'Audit team actions and changes',
     tier: 'professional',
-    category: 'Analytics',
-    route: '/admin/fronted-inventory-analytics',
+    category: 'Operations',
+    route: '/admin/activity-logs',
   },
-  'global-search': {
-    id: 'global-search',
-    name: 'Global Search',
-    description: 'Search across all data',
+  'quality-control': {
+    id: 'quality-control',
+    name: 'Quality Control',
+    description: 'Manage COAs, test results, and compliance',
     tier: 'professional',
-    category: 'Tools',
-    route: '/admin/global-search',
+    category: 'Operations',
+    route: '/admin/quality-control',
+  },
+  'appointments': {
+    id: 'appointments',
+    name: 'Appointments',
+    description: 'Schedule customer appointments and consultations',
+    tier: 'professional',
+    category: 'Operations',
+    route: '/admin/appointments',
+  },
+  'support-tickets': {
+    id: 'support-tickets',
+    name: 'Support Desk',
+    description: 'Manage customer support requests and tickets',
+    tier: 'professional',
+    category: 'Operations',
+    route: '/admin/support-tickets',
   },
 
-  // ===== ENTERPRISE TIER (25 additional features = 56 total) =====
-  'fleet-management': {
-    id: 'fleet-management',
-    name: 'Fleet Management',
-    description: 'Manage delivery fleet',
-    tier: 'enterprise',
-    category: 'Delivery',
-    route: '/admin/fleet-management',
+  // --- Analytics & Finance (Professional) ---
+  'analytics': {
+    id: 'analytics',
+    name: 'Analytics',
+    description: 'Comprehensive business analytics dashboard',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/analytics/comprehensive',
   },
-  'delivery-management': {
-    id: 'delivery-management',
-    name: 'Delivery Management',
-    description: 'Coordinate deliveries',
+  'revenue-reports': {
+    id: 'revenue-reports',
+    name: 'Revenue',
+    description: 'Financial performance and revenue analysis',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/revenue-reports',
+  },
+  'financial-center': {
+    id: 'financial-center',
+    name: 'Financial Center',
+    description: 'Cash flow, P&L, and financial management',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/financial-center',
+  },
+  'invoice-management': {
+    id: 'invoice-management',
+    name: 'Invoice Management',
+    description: 'Create and manage professional invoices',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/advanced-invoice',
+  },
+  'commission-tracking': {
+    id: 'commission-tracking',
+    name: 'Commissions',
+    description: 'Track and manage team commissions',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/commission-tracking',
+  },
+  'expense-tracking': {
+    id: 'expense-tracking',
+    name: 'Expenses',
+    description: 'Track and categorize business expenses',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/expense-tracking',
+  },
+  'menu-analytics': {
+    id: 'menu-analytics',
+    name: 'Menu Analytics',
+    description: 'Menu performance and product insights',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/menu-analytics',
+  },
+  'order-analytics': {
+    id: 'order-analytics',
+    name: 'Order Analytics',
+    description: 'Order trends, patterns, and performance',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/order-analytics',
+  },
+  'advanced-reporting': {
+    id: 'advanced-reporting',
+    name: 'Advanced Reporting',
+    description: 'Build custom reports and schedule automated delivery',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/advanced-reporting',
+  },
+  'predictive-analytics': {
+    id: 'predictive-analytics',
+    name: 'Forecasting',
+    description: 'AI-powered demand forecasting and predictions',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/predictive-analytics',
+  },
+
+  // --- Security & Compliance (Professional) ---
+  'batch-recall': {
+    id: 'batch-recall',
+    name: 'Batch Recall',
+    description: 'Manage product recalls and traceability',
+    tier: 'professional',
+    category: 'Security & Compliance',
+    route: '/admin/batch-recall',
+  },
+  'compliance-vault': {
+    id: 'compliance-vault',
+    name: 'Compliance Vault',
+    description: 'Document management and compliance tracking',
+    tier: 'professional',
+    category: 'Security & Compliance',
+    route: '/admin/compliance-vault',
+  },
+
+  // --- Integrations (Professional) ---
+  'bulk-operations': {
+    id: 'bulk-operations',
+    name: 'Bulk Operations',
+    description: 'Mass update products, prices, and inventory',
+    tier: 'professional',
+    category: 'Integrations',
+    route: '/admin/bulk-operations',
+  },
+  'vendor-portal': {
+    id: 'vendor-portal',
+    name: 'Vendor Portal',
+    description: 'External portal for vendors to manage POs and invoices',
+    tier: 'professional',
+    category: 'Integrations',
+    route: '/vendor/dashboard',
+  },
+
+  // ==========================================================================
+  // ENTERPRISE TIER ($499/mo) - 32 Additional Features
+  // ==========================================================================
+
+  // --- Command Center (Enterprise) ---
+  'realtime-dashboard': {
+    id: 'realtime-dashboard',
+    name: 'Real-Time Monitor',
+    description: 'Live business metrics and operational status',
     tier: 'enterprise',
-    category: 'Delivery',
-    route: '/admin/delivery-management',
+    category: 'Command Center',
+    route: '/admin/realtime-dashboard',
   },
   'live-map': {
     id: 'live-map',
-    name: 'Live Map Tracking',
-    description: 'Real-time driver tracking',
+    name: 'Live Map',
+    description: 'Real-time driver and delivery tracking map',
     tier: 'enterprise',
-    category: 'Delivery',
+    category: 'Command Center',
     route: '/admin/live-map',
+  },
+
+  // --- Sales & Orders (Enterprise) ---
+  'pos-system': {
+    id: 'pos-system',
+    name: 'POS Register',
+    description: 'Point of sale interface for in-person transactions',
+    tier: 'enterprise',
+    category: 'Sales & Orders',
+    route: '/admin/pos-system',
+  },
+
+  // --- Inventory (Enterprise) ---
+  'dispatch-inventory': {
+    id: 'dispatch-inventory',
+    name: 'Dispatch',
+    description: 'Manage outbound inventory and delivery assignments',
+    tier: 'enterprise',
+    category: 'Inventory',
+    route: '/admin/dispatch-inventory',
+  },
+  'vendor-management': {
+    id: 'vendor-management',
+    name: 'Vendor Management',
+    description: 'Advanced supplier relationship management',
+    tier: 'enterprise',
+    category: 'Inventory',
+    route: '/admin/vendor-management',
+  },
+
+  // --- Operations (Enterprise) ---
+  'locations': {
+    id: 'locations',
+    name: 'Locations',
+    description: 'Multi-location and warehouse management',
+    tier: 'enterprise',
+    category: 'Operations',
+    route: '/admin/locations',
+  },
+  'user-management': {
+    id: 'user-management',
+    name: 'User Management',
+    description: 'Advanced user controls and access management',
+    tier: 'enterprise',
+    category: 'Operations',
+    route: '/admin/user-management',
+  },
+  'permissions': {
+    id: 'permissions',
+    name: 'Permissions',
+    description: 'Granular role-based access control',
+    tier: 'enterprise',
+    category: 'Operations',
+    route: '/admin/permissions',
+  },
+
+  // --- Delivery & Fleet (Enterprise) ---
+  'delivery-management': {
+    id: 'delivery-management',
+    name: 'Delivery',
+    description: 'Coordinate deliveries and driver assignments',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/delivery-management',
+  },
+  'fleet-management': {
+    id: 'fleet-management',
+    name: 'Fleet',
+    description: 'Manage delivery vehicles and fleet operations',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/fleet-management',
+  },
+  'couriers': {
+    id: 'couriers',
+    name: 'Couriers',
+    description: 'Manage delivery drivers and couriers',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/couriers',
   },
   'route-optimization': {
     id: 'route-optimization',
     name: 'Route Optimizer',
     description: 'AI-powered delivery route planning',
     tier: 'enterprise',
-    category: 'Delivery',
+    category: 'Delivery & Fleet',
     route: '/admin/route-optimizer',
+  },
+  'delivery-tracking': {
+    id: 'delivery-tracking',
+    name: 'Tracking',
+    description: 'Track individual delivery status and ETAs',
+    tier: 'enterprise',
+    category: 'Delivery & Fleet',
+    route: '/admin/delivery-tracking',
   },
   'delivery-analytics': {
     id: 'delivery-analytics',
     name: 'Delivery Analytics',
-    description: 'Comprehensive delivery performance metrics',
+    description: 'Delivery performance metrics and optimization',
     tier: 'enterprise',
-    category: 'Delivery',
+    category: 'Delivery & Fleet',
     route: '/admin/delivery-analytics',
   },
-  'pos-system': {
-    id: 'pos-system',
-    name: 'POS System',
-    description: 'Point of sale interface',
-    tier: 'enterprise',
-    category: 'POS',
-    route: '/admin/pos-system',
-  },
+
+  // --- Point of Sale (Enterprise) ---
   'cash-register': {
     id: 'cash-register',
     name: 'Cash Register',
-    description: 'Manage cash transactions',
+    description: 'Manage cash transactions and drawer counts',
     tier: 'enterprise',
-    category: 'POS',
+    category: 'Point of Sale',
     route: '/admin/cash-register',
   },
   'pos-analytics': {
@@ -538,29 +688,57 @@ export const FEATURES: Record<FeatureId, Feature> = {
     name: 'POS Analytics',
     description: 'Point of sale performance insights',
     tier: 'enterprise',
-    category: 'POS',
+    category: 'Point of Sale',
     route: '/admin/pos-analytics',
-  },
-  'locations': {
-    id: 'locations',
-    name: 'Locations',
-    description: 'Multi-location management',
-    tier: 'enterprise',
-    category: 'Locations',
-    route: '/admin/locations',
   },
   'location-analytics': {
     id: 'location-analytics',
     name: 'Location Analytics',
     description: 'Per-location performance analysis',
     tier: 'enterprise',
-    category: 'Locations',
+    category: 'Point of Sale',
     route: '/admin/location-analytics',
   },
+
+  // --- Analytics & Finance (Enterprise) ---
+  'advanced-analytics': {
+    id: 'advanced-analytics',
+    name: 'AI Analytics',
+    description: 'AI-powered predictive analytics and insights',
+    tier: 'enterprise',
+    category: 'Analytics & Finance',
+    route: '/admin/advanced-analytics',
+  },
+  'custom-reports': {
+    id: 'custom-reports',
+    name: 'Custom Reports',
+    description: 'Build and schedule custom report templates',
+    tier: 'enterprise',
+    category: 'Analytics & Finance',
+    route: '/admin/custom-reports',
+  },
+  'data-export': {
+    id: 'data-export',
+    name: 'Data Warehouse',
+    description: 'Export data to Excel, CSV, PDF, and external systems',
+    tier: 'enterprise',
+    category: 'Analytics & Finance',
+    route: '/admin/data-export',
+  },
+  'risk-management': {
+    id: 'risk-management',
+    name: 'Risk Management',
+    description: 'Identify and manage business risks',
+    tier: 'enterprise',
+    category: 'Analytics & Finance',
+    route: '/admin/risk-management',
+  },
+
+  // --- Integrations (Enterprise) ---
   'api-access': {
     id: 'api-access',
-    name: 'API Access',
-    description: 'Developer API access and documentation',
+    name: 'API & Webhooks',
+    description: 'Developer API access and webhook integrations',
     tier: 'enterprise',
     category: 'Integrations',
     route: '/admin/api-access',
@@ -568,41 +746,61 @@ export const FEATURES: Record<FeatureId, Feature> = {
   'webhooks': {
     id: 'webhooks',
     name: 'Webhooks',
-    description: 'Real-time event notifications',
+    description: 'Real-time event notifications to external systems',
     tier: 'enterprise',
     category: 'Integrations',
     route: '/admin/webhooks',
   },
   'custom-integrations': {
     id: 'custom-integrations',
-    name: 'Custom Integrations',
-    description: 'Build custom third-party connections',
+    name: 'Integrations',
+    description: 'Connect third-party apps and services',
     tier: 'enterprise',
     category: 'Integrations',
     route: '/admin/custom-integrations',
   },
-  'ai': {
-    id: 'ai',
-    name: 'Local AI',
-    description: 'On-premise AI processing and machine learning capabilities',
-    tier: 'enterprise',
-    category: 'Integrations',
-    route: '/admin/local-ai',
-  },
   'automation': {
     id: 'automation',
-    name: 'Workflow Automation',
-    description: 'Automate workflows and processes',
+    name: 'Workflows',
+    description: 'Automate business workflows and processes',
     tier: 'enterprise',
     category: 'Integrations',
     route: '/admin/workflow-automation',
   },
+  'ai': {
+    id: 'ai',
+    name: 'Local AI',
+    description: 'On-premise AI processing and ML capabilities',
+    tier: 'enterprise',
+    category: 'Integrations',
+    route: '/admin/local-ai',
+  },
+
+  // --- Security & Compliance (Enterprise) ---
+  'audit-trail': {
+    id: 'audit-trail',
+    name: 'Audit Logs',
+    description: 'Complete action history and audit trail',
+    tier: 'enterprise',
+    category: 'Security & Compliance',
+    route: '/admin/audit-trail',
+  },
+  'compliance': {
+    id: 'compliance',
+    name: 'Compliance',
+    description: 'Regulatory compliance tools and reporting',
+    tier: 'enterprise',
+    category: 'Security & Compliance',
+    route: '/admin/compliance',
+  },
+
+  // --- Settings (Enterprise) ---
   'white-label': {
     id: 'white-label',
     name: 'White Label',
     description: 'Custom branding and white-label options',
     tier: 'enterprise',
-    category: 'Branding',
+    category: 'Settings',
     route: '/admin/white-label',
   },
   'custom-domain': {
@@ -610,130 +808,8 @@ export const FEATURES: Record<FeatureId, Feature> = {
     name: 'Custom Domain',
     description: 'Use your own custom domain',
     tier: 'enterprise',
-    category: 'Branding',
+    category: 'Settings',
     route: '/admin/custom-domain',
-  },
-  'analytics': {
-    id: 'analytics',
-    name: 'Analytics Dashboard',
-    description: 'Self-hosted analytics with privacy-first tracking',
-    tier: 'enterprise',
-    category: 'Analytics',
-    route: '/admin/analytics-dashboard',
-  },
-  'advanced-analytics': {
-    id: 'advanced-analytics',
-    name: 'Advanced Analytics',
-    description: 'AI-powered predictive analytics',
-    tier: 'enterprise',
-    category: 'Analytics',
-    route: '/admin/advanced-analytics',
-  },
-  'realtime-dashboard': {
-    id: 'realtime-dashboard',
-    name: 'Realtime Dashboard',
-    description: 'Real-time business metrics',
-    tier: 'enterprise',
-    category: 'Analytics',
-    route: '/admin/realtime-dashboard',
-  },
-  'custom-reports': {
-    id: 'custom-reports',
-    name: 'Custom Reports',
-    description: 'Build and schedule custom reports',
-    tier: 'enterprise',
-    category: 'Reports',
-    route: '/admin/custom-reports',
-  },
-  'data-export': {
-    id: 'data-export',
-    name: 'Data Export',
-    description: 'Export data to Excel, CSV, PDF',
-    tier: 'enterprise',
-    category: 'Tools',
-    route: '/admin/data-export',
-  },
-  'user-management': {
-    id: 'user-management',
-    name: 'User Management',
-    description: 'Advanced user controls',
-    tier: 'enterprise',
-    category: 'Team',
-    route: '/admin/user-management',
-  },
-  'permissions': {
-    id: 'permissions',
-    name: 'Permissions',
-    description: 'Granular access control',
-    tier: 'enterprise',
-    category: 'Team',
-    route: '/admin/permissions',
-  },
-  'audit-trail': {
-    id: 'audit-trail',
-    name: 'Audit Trail',
-    description: 'Complete action history',
-    tier: 'enterprise',
-    category: 'Security',
-    route: '/admin/audit-trail',
-  },
-  'compliance': {
-    id: 'compliance',
-    name: 'Compliance',
-    description: 'Regulatory compliance tools',
-    tier: 'enterprise',
-    category: 'Security',
-    route: '/admin/compliance',
-  },
-  'priority-support': {
-    id: 'priority-support',
-    name: '24/7 Priority Support',
-    description: 'Dedicated account manager',
-    tier: 'enterprise',
-    category: 'Support',
-    route: '/admin/priority-support',
-  },
-  
-  // Additional Enterprise features (Hidden Gems)
-  'couriers': {
-    id: 'couriers',
-    name: 'Courier Management',
-    description: 'Manage delivery couriers',
-    tier: 'enterprise',
-    category: 'Delivery',
-    route: '/admin/couriers',
-  },
-  'delivery-tracking': {
-    id: 'delivery-tracking',
-    name: 'Delivery Tracking',
-    description: 'Track individual deliveries',
-    tier: 'enterprise',
-    category: 'Delivery',
-    route: '/admin/delivery-tracking',
-  },
-  'dispatch-inventory': {
-    id: 'dispatch-inventory',
-    name: 'Dispatch Inventory',
-    description: 'Manage outbound inventory',
-    tier: 'enterprise',
-    category: 'Inventory',
-    route: '/admin/dispatch-inventory',
-  },
-  'financial-center': {
-    id: 'financial-center',
-    name: 'Financial Center',
-    description: 'Comprehensive financial management',
-    tier: 'enterprise',
-    category: 'Financial',
-    route: '/admin/financial-center',
-  },
-  'risk-management': {
-    id: 'risk-management',
-    name: 'Risk Management',
-    description: 'Identify and manage business risks',
-    tier: 'enterprise',
-    category: 'Security',
-    route: '/admin/risk-management',
   },
   'system-settings': {
     id: 'system-settings',
@@ -743,17 +819,23 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Settings',
     route: '/admin/system-settings',
   },
-  'vendor-management': {
-    id: 'vendor-management',
-    name: 'Vendor Management',
-    description: 'Manage supplier relationships',
+  'priority-support': {
+    id: 'priority-support',
+    name: 'Enterprise Support',
+    description: '24/7 priority support with dedicated account manager',
     tier: 'enterprise',
-    category: 'Inventory',
-    route: '/admin/vendor-management',
+    category: 'Settings',
+    route: '/admin/priority-support',
   },
 };
 
-// Get all features for a specific tier (includes lower tiers)
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Get all features available for a specific tier (includes all lower tier features)
+ */
 export function getFeaturesForTier(tier: SubscriptionTier): Feature[] {
   const tierHierarchy: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
   const tierIndex = tierHierarchy.indexOf(tier);
@@ -764,7 +846,9 @@ export function getFeaturesForTier(tier: SubscriptionTier): Feature[] {
   });
 }
 
-// Check if a tier has access to a feature
+/**
+ * Check if a tier has access to a specific feature
+ */
 export function hasFeatureAccess(currentTier: SubscriptionTier, featureId: FeatureId): boolean {
   const feature = FEATURES[featureId];
   if (!feature) return false;
@@ -776,12 +860,16 @@ export function hasFeatureAccess(currentTier: SubscriptionTier, featureId: Featu
   return currentTierIndex >= requiredTierIndex;
 }
 
-// Get the required tier for a feature
+/**
+ * Get the minimum required tier for a feature
+ */
 export function getRequiredTier(featureId: FeatureId): SubscriptionTier | null {
   return FEATURES[featureId]?.tier || null;
 }
 
-// Get upgrade requirement
+/**
+ * Get upgrade requirement info for a locked feature
+ */
 export function getUpgradeRequirement(currentTier: SubscriptionTier, featureId: FeatureId): {
   required: boolean;
   targetTier: SubscriptionTier | null;
@@ -804,7 +892,9 @@ export function getUpgradeRequirement(currentTier: SubscriptionTier, featureId: 
   return { required: true, targetTier, priceDifference };
 }
 
-// Get features grouped by category
+/**
+ * Get features grouped by category for a specific tier
+ */
 export function getFeaturesByCategory(tier?: SubscriptionTier): Record<string, Feature[]> {
   const features = tier ? getFeaturesForTier(tier) : Object.values(FEATURES);
   
@@ -815,4 +905,47 @@ export function getFeaturesByCategory(tier?: SubscriptionTier): Record<string, F
     acc[feature.category].push(feature);
     return acc;
   }, {} as Record<string, Feature[]>);
+}
+
+/**
+ * Get features grouped by category, ordered by CATEGORY_ORDER
+ */
+export function getFeaturesByCategoryOrdered(tier?: SubscriptionTier): Array<{ category: FeatureCategory; features: Feature[] }> {
+  const grouped = getFeaturesByCategory(tier);
+  
+  return CATEGORY_ORDER
+    .filter(cat => grouped[cat]?.length > 0)
+    .map(cat => ({
+      category: cat,
+      features: grouped[cat] || [],
+    }));
+}
+
+/**
+ * Get feature counts by tier
+ */
+export function getFeatureCountsByTier(): Record<SubscriptionTier, number> {
+  return {
+    starter: getFeaturesForTier('starter').length,
+    professional: getFeaturesForTier('professional').length,
+    enterprise: getFeaturesForTier('enterprise').length,
+  };
+}
+
+/**
+ * Essential features that are always accessible (billing, settings, dashboard)
+ */
+export const ESSENTIAL_FEATURES: FeatureId[] = [
+  'dashboard',
+  'hotbox',
+  'settings',
+  'billing',
+  'help',
+];
+
+/**
+ * Check if a feature is essential (always accessible)
+ */
+export function isEssentialFeature(featureId: FeatureId): boolean {
+  return ESSENTIAL_FEATURES.includes(featureId);
 }

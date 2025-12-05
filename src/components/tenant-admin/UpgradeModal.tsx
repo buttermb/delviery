@@ -14,17 +14,42 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
-import { FEATURES, type FeatureId } from '@/lib/featureConfig';
-import { getTierPreset, type BusinessTier } from '@/lib/presets/businessTiers';
-import { CheckCircle2, Lock, Star, Diamond, Building, Store, Truck } from 'lucide-react';
+import {
+  FEATURES,
+  TIER_NAMES,
+  TIER_PRICES,
+  type FeatureId,
+  type SubscriptionTier,
+} from '@/lib/featureConfig';
+import { CheckCircle2, Lock, Star, Diamond, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { TierComparisonModal } from './TierComparisonModal';
+import { subscriptionTierToBusinessTier, type BusinessTier } from '@/lib/presets/businessTiers';
 
 interface UpgradeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   featureId: FeatureId;
 }
+
+// Subscription tier display info
+const TIER_INFO: Record<SubscriptionTier, { icon: React.ReactNode; color: string; bgColor: string }> = {
+  starter: {
+    icon: <Zap className="h-5 w-5" />,
+    color: 'text-green-600',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
+  },
+  professional: {
+    icon: <Star className="h-5 w-5" />,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  enterprise: {
+    icon: <Diamond className="h-5 w-5" />,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+  },
+};
 
 export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProps) {
   const navigate = useNavigate();
@@ -38,23 +63,39 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
   // Guard: Don't show if no feature, no upgrade needed, or subscription invalid
   if (!feature || !upgradeInfo.required || !subscriptionValid || !upgradeInfo.targetTier) return null;
 
-  const targetPreset = getTierPreset(upgradeInfo.targetTier as BusinessTier);
-  const currentPreset = getTierPreset(currentTier as BusinessTier);
+  const targetTier = upgradeInfo.targetTier as SubscriptionTier;
+  const currentTierInfo = TIER_INFO[currentTier];
+  const targetTierInfo = TIER_INFO[targetTier];
 
   const handleUpgrade = () => {
     onOpenChange(false);
     navigate(`/${tenantSlug}/admin/billing`);
   };
 
-  const getTierIcon = (tier: string) => {
-    switch (tier) {
-      case 'street': return <Truck className="h-4 w-4" />;
-      case 'trap': return <Store className="h-4 w-4" />;
-      case 'block': return <Building className="h-4 w-4" />;
-      case 'hood': return <Star className="h-4 w-4" />;
-      case 'empire': return <Diamond className="h-4 w-4" />;
-      default: return <Star className="h-4 w-4" />;
-    }
+  // Feature highlights for each tier
+  const tierHighlights: Record<SubscriptionTier, string[]> = {
+    starter: [
+      'Basic orders & menus',
+      'Product catalog',
+      'Customer list',
+      'Basic reports',
+    ],
+    professional: [
+      'Everything in Starter',
+      'Live orders dashboard',
+      'Advanced CRM',
+      'Team management',
+      'Marketing automation',
+      'Analytics & forecasting',
+    ],
+    enterprise: [
+      'Everything in Professional',
+      'Fleet management',
+      'POS system',
+      'Multi-location',
+      'API access',
+      '24/7 priority support',
+    ],
   };
 
   return (
@@ -72,12 +113,12 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
 
         <div className="space-y-6">
           {/* Feature Info */}
-          <div className="p-4 bg-muted rounded-lg">
+          <div className={`p-4 rounded-lg ${targetTierInfo.bgColor}`}>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">{getTierIcon(upgradeInfo.targetTier)}</span>
+              <span className={targetTierInfo.color}>{targetTierInfo.icon}</span>
               <h3 className="font-semibold text-lg">{feature.name}</h3>
               <Badge variant="outline" className="ml-auto">
-                {targetPreset.displayName} Tier
+                {TIER_NAMES[targetTier]} Required
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -88,16 +129,26 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
             {/* Current Plan */}
             <div className="p-4 border rounded-lg">
               <div className="text-center mb-3">
-                <h4 className="font-semibold mb-1">Your Current Tier</h4>
-                <Badge variant="outline">{currentPreset.emoji} {currentPreset.displayName}</Badge>
+                <h4 className="font-semibold mb-1">Your Current Plan</h4>
+                <Badge variant="outline" className={currentTierInfo.color}>
+                  {currentTierInfo.icon}
+                  <span className="ml-1">{currentTierName}</span>
+                </Badge>
               </div>
               <div className="text-center mb-3">
-                <span className="text-sm text-muted-foreground">{currentPreset.revenueRange}</span>
+                <span className="text-2xl font-bold">${TIER_PRICES[currentTier]}</span>
+                <span className="text-sm text-muted-foreground">/month</span>
               </div>
               <div className="space-y-2">
+                {tierHighlights[currentTier].slice(0, 3).map((highlight, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>{highlight}</span>
+                  </div>
+                ))}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Lock className="h-4 w-4" />
-                  <span>Limited features</span>
+                  <span>{feature.name} not included</span>
                 </div>
               </div>
             </div>
@@ -106,27 +157,38 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
             <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
               <div className="text-center mb-3">
                 <h4 className="font-semibold mb-1">Upgrade To</h4>
-                <Badge>{targetPreset.emoji} {targetPreset.displayName}</Badge>
+                <Badge className={`${targetTierInfo.bgColor} ${targetTierInfo.color}`}>
+                  {targetTierInfo.icon}
+                  <span className="ml-1">{TIER_NAMES[targetTier]}</span>
+                </Badge>
               </div>
               <div className="text-center mb-3">
-                <span className="text-sm text-muted-foreground">{targetPreset.revenueRange}</span>
+                <span className="text-2xl font-bold">${TIER_PRICES[targetTier]}</span>
+                <span className="text-sm text-muted-foreground">/month</span>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-green-600">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Unlock {feature.name}</span>
+                  <span className="font-medium">Unlock {feature.name}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>All {currentPreset.displayName} features</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>{targetPreset.typicalLocations} locations</span>
-                </div>
+                {tierHighlights[targetTier].slice(0, 4).map((highlight, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>{highlight}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+
+          {/* Price Difference */}
+          {upgradeInfo.priceDifference > 0 && (
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <span className="text-sm text-muted-foreground">
+                Upgrade for just <strong className="text-foreground">${upgradeInfo.priceDifference}/month</strong> more
+              </span>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3">
@@ -135,7 +197,7 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
               onClick={() => setShowComparison(true)}
               className="flex-1"
             >
-              Compare All Tiers
+              Compare All Plans
             </Button>
             <Button
               onClick={handleUpgrade}
@@ -147,7 +209,7 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
 
           {/* Footer Note */}
           <p className="text-xs text-center text-muted-foreground">
-            Upgrade takes effect immediately.
+            Upgrades take effect immediately. You can cancel anytime.
           </p>
         </div>
       </DialogContent>
@@ -155,7 +217,7 @@ export function UpgradeModal({ open, onOpenChange, featureId }: UpgradeModalProp
       <TierComparisonModal
         open={showComparison}
         onOpenChange={setShowComparison}
-        currentTier={currentTier as BusinessTier}
+        currentTier={subscriptionTierToBusinessTier(currentTier) as BusinessTier}
       />
     </Dialog>
   );

@@ -1,13 +1,18 @@
 /**
  * Business Tier Preset Definitions
  * 
- * 5-Tier Hotbox System:
- * - Street: <$10K/mo, 1 location, solo
- * - Trap: $10K-50K, 1-2 locations, 2-5 team
- * - Block: $50K-200K, 2-3 locations, 5-15 team
- * - Hood: $200K-500K, 3-5 locations, 15-30 team
- * - Empire: $500K+, 5+ locations, 30+ team
+ * 5-Tier Hotbox System (maps to 3-tier subscription):
+ * - Street: <$10K/mo → Starter ($79)
+ * - Trap: $10K-50K → Starter ($79)
+ * - Block: $50K-200K → Professional ($150)
+ * - Hood: $200K-500K → Professional ($150)
+ * - Empire: $500K+ → Enterprise ($499)
+ * 
+ * Features are managed in featureConfig.ts - this file provides
+ * business context, dashboard widgets, and UI customization.
  */
+
+import { type SubscriptionTier } from '@/lib/featureConfig';
 
 export type BusinessTier = 'street' | 'trap' | 'block' | 'hood' | 'empire';
 
@@ -19,10 +24,9 @@ export interface TierPreset {
   revenueRange: string;
   typicalLocations: string;
   typicalTeam: string;
-
-  // Sidebar features
-  enabledFeatures: string[];
-  hiddenFeatures: string[];
+  
+  // Maps to subscription tier for feature access
+  subscriptionTier: SubscriptionTier;
 
   // Dashboard widgets
   dashboardWidgets: string[];
@@ -45,7 +49,7 @@ export interface TierPreset {
     rules: string[];
   };
 
-  // Feature limits
+  // Feature limits (enforced by subscription)
   limits: {
     locations: number;
     users: number;
@@ -62,7 +66,7 @@ export interface TierThresholds {
 }
 
 /**
- * STREET TIER
+ * STREET TIER → Starter ($79)
  * Solo operator - needs simplicity, speed
  */
 const STREET_TIER: TierPreset = {
@@ -73,35 +77,7 @@ const STREET_TIER: TierPreset = {
   revenueRange: '<$10K/mo',
   typicalLocations: '1',
   typicalTeam: 'Just you',
-
-  enabledFeatures: [
-    'dashboard',
-    'pos-system',
-    'products',
-    'basic-orders',
-    'customers-basic',
-    'disposable-menus',
-    'delivery-management',
-    'inventory-basic',
-    'compliance-basic',
-    'settings',
-  ],
-
-  hiddenFeatures: [
-    'advanced-analytics',
-    'multi-location',
-    'wholesale-marketplace',
-    'fleet-management',
-    'api-access',
-    'white-label',
-    'predictive-par',
-    'custom-integrations',
-    'metrc-integration',
-    'team-management',
-    'marketing-automation',
-    'customer-insights',
-    'financial-center',
-  ],
+  subscriptionTier: 'starter',
 
   dashboardWidgets: [
     'street-tips',
@@ -115,20 +91,19 @@ const STREET_TIER: TierPreset = {
   pulseMetrics: ['revenue', 'profit', 'orders_today', 'pending_actions'],
 
   quickActions: [
-    { id: 'new-sale', label: '+ New Sale', icon: 'DollarSign', path: '/admin/pos-system' },
-    { id: 'view-orders', label: 'Orders', icon: 'Package', path: '/admin/orders' },
+    { id: 'new-sale', label: '+ New Sale', icon: 'DollarSign', path: '/admin/disposable-menu-orders' },
+    { id: 'view-orders', label: 'Orders', icon: 'Package', path: '/admin/disposable-menu-orders' },
     { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory/products' },
     { id: 'menu', label: 'View Menu', icon: 'Menu', path: '/admin/disposable-menus' },
   ],
 
-  navSections: ['operations', 'settings'],
+  navSections: ['command-center', 'sales', 'inventory', 'settings'],
 
   automation: {
     enabled: true,
     rules: [
       'low_stock_alert',
       'daily_revenue_summary',
-      'compliance_reminders',
     ],
   },
 
@@ -141,7 +116,7 @@ const STREET_TIER: TierPreset = {
 };
 
 /**
- * TRAP TIER
+ * TRAP TIER → Starter ($79)
  * Small team - needs visibility across crew
  */
 const TRAP_TIER: TierPreset = {
@@ -152,36 +127,7 @@ const TRAP_TIER: TierPreset = {
   revenueRange: '$10K-50K/mo',
   typicalLocations: '1-2',
   typicalTeam: '2-5',
-
-  enabledFeatures: [
-    'dashboard',
-    'pos-system',
-    'products',
-    'basic-orders',
-    'customers-basic',
-    'disposable-menus',
-    'delivery-management',
-    'inventory-dashboard',
-    'team-management',
-    'compliance-basic',
-    'settings',
-    'reports',
-    'loyalty-program',
-    'stock-alerts',
-  ],
-
-  hiddenFeatures: [
-    'advanced-analytics',
-    'wholesale-marketplace',
-    'fleet-management',
-    'api-access',
-    'white-label',
-    'predictive-par',
-    'custom-integrations',
-    'metrc-integration',
-    'financial-center',
-    'marketing-automation',
-  ],
+  subscriptionTier: 'starter',
 
   dashboardWidgets: [
     'team-activity',
@@ -190,20 +136,19 @@ const TRAP_TIER: TierPreset = {
     'pending-orders',
     'low-stock-alerts',
     'customer-tabs',
-    'delivery-status',
     'weekly-trends',
   ],
 
   pulseMetrics: ['revenue', 'profit_margin', 'orders_today', 'team_online'],
 
   quickActions: [
-    { id: 'new-order', label: '+ New Order', icon: 'Plus', path: '/admin/orders/new' },
-    { id: 'pos', label: 'POS', icon: 'Store', path: '/admin/pos-system' },
-    { id: 'process-menu', label: 'Process Menu Orders', icon: 'Menu', path: '/admin/disposable-menu-orders' },
-    { id: 'team', label: 'Team View', icon: 'Users', path: '/admin/team' },
+    { id: 'new-order', label: '+ New Order', icon: 'Plus', path: '/admin/disposable-menu-orders' },
+    { id: 'process-menu', label: 'Process Orders', icon: 'Menu', path: '/admin/disposable-menu-orders' },
+    { id: 'inventory', label: 'Inventory', icon: 'Box', path: '/admin/inventory/products' },
+    { id: 'reports', label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   ],
 
-  navSections: ['operations', 'delivery', 'people', 'settings'],
+  navSections: ['command-center', 'sales', 'inventory', 'customers', 'settings'],
 
   automation: {
     enabled: true,
@@ -212,21 +157,20 @@ const TRAP_TIER: TierPreset = {
       'auto_reorder_top_sellers',
       'customer_winback',
       'daily_summary',
-      'delivery_eta_notifications',
       'loyalty_rewards',
     ],
   },
 
   limits: {
     locations: 2,
-    users: 10,
+    users: 5,
     products: 1000,
     ordersPerMonth: 3000,
   },
 };
 
 /**
- * BLOCK TIER
+ * BLOCK TIER → Professional ($150)
  * Multiple locations - needs comparative view
  */
 const BLOCK_TIER: TierPreset = {
@@ -237,39 +181,7 @@ const BLOCK_TIER: TierPreset = {
   revenueRange: '$50K-200K/mo',
   typicalLocations: '2-3',
   typicalTeam: '5-15',
-
-  enabledFeatures: [
-    'dashboard',
-    'pos-system',
-    'products',
-    'basic-orders',
-    'customers-advanced',
-    'disposable-menus',
-    'delivery-management',
-    'inventory-dashboard',
-    'inventory-transfers',
-    'team-management',
-    'compliance',
-    'settings',
-    'reports',
-    'loyalty-program',
-    'stock-alerts',
-    'multi-location',
-    'wholesale-portal',
-    'financial-center',
-    'route-optimization',
-    'purchase-orders',
-    'customer-insights',
-  ],
-
-  hiddenFeatures: [
-    'wholesale-marketplace',
-    'api-access',
-    'white-label',
-    'predictive-par',
-    'custom-integrations',
-    'advanced-fleet',
-  ],
+  subscriptionTier: 'professional',
 
   dashboardWidgets: [
     'location-overview',
@@ -281,8 +193,6 @@ const BLOCK_TIER: TierPreset = {
     'pending-orders-all',
     'team-performance',
     'inventory-value',
-    'delivery-efficiency',
-    'wholesale-pipeline',
     'profit-margins',
   ],
 
@@ -290,12 +200,12 @@ const BLOCK_TIER: TierPreset = {
 
   quickActions: [
     { id: 'approve-orders', label: 'Approve Orders', icon: 'CheckCircle', path: '/admin/wholesale-orders' },
-    { id: 'location-view', label: 'Locations', icon: 'MapPin', path: '/admin/locations' },
-    { id: 'transfer', label: 'Transfer Stock', icon: 'ArrowRightLeft', path: '/admin/inventory/transfers' },
+    { id: 'live-orders', label: 'Live Orders', icon: 'Activity', path: '/admin/live-orders' },
+    { id: 'transfer', label: 'Transfer Stock', icon: 'ArrowRightLeft', path: '/admin/inventory-transfers' },
     { id: 'reports', label: 'Reports', icon: 'BarChart3', path: '/admin/reports' },
   ],
 
-  navSections: ['operations', 'delivery', 'wholesale', 'people', 'compliance', 'settings'],
+  navSections: ['command-center', 'sales', 'inventory', 'customers', 'operations', 'analytics', 'settings'],
 
   automation: {
     enabled: true,
@@ -305,7 +215,6 @@ const BLOCK_TIER: TierPreset = {
       'customer_winback',
       'daily_summary',
       'weekly_reports',
-      'delivery_eta_notifications',
       'loyalty_rewards',
       'location_performance_alerts',
       'inventory_transfer_suggestions',
@@ -321,7 +230,7 @@ const BLOCK_TIER: TierPreset = {
 };
 
 /**
- * HOOD TIER
+ * HOOD TIER → Professional ($150)
  * Serious operation - executive summary
  */
 const HOOD_TIER: TierPreset = {
@@ -332,42 +241,7 @@ const HOOD_TIER: TierPreset = {
   revenueRange: '$200K-500K/mo',
   typicalLocations: '3-5',
   typicalTeam: '15-30',
-
-  enabledFeatures: [
-    'dashboard',
-    'pos-system',
-    'products',
-    'basic-orders',
-    'customers-advanced',
-    'disposable-menus',
-    'delivery-management',
-    'inventory-dashboard',
-    'inventory-transfers',
-    'team-management',
-    'compliance',
-    'settings',
-    'reports',
-    'loyalty-program',
-    'stock-alerts',
-    'multi-location',
-    'wholesale-portal',
-    'financial-center',
-    'route-optimization',
-    'purchase-orders',
-    'customer-insights',
-    'advanced-analytics',
-    'fleet-management',
-    'marketing-automation',
-    'api-access',
-    'predictive-par',
-    'audit-trail',
-  ],
-
-  hiddenFeatures: [
-    'white-label',
-    'custom-integrations',
-    'developer-tools',
-  ],
+  subscriptionTier: 'professional',
 
   dashboardWidgets: [
     'executive-summary',
@@ -390,13 +264,13 @@ const HOOD_TIER: TierPreset = {
   pulseMetrics: ['mtd_revenue', 'projected_revenue', 'net_profit', 'cash_position'],
 
   quickActions: [
-    { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/approvals' },
+    { id: 'executive-actions', label: 'Pending Approvals', icon: 'ClipboardList', path: '/admin/wholesale-orders' },
     { id: 'pnl', label: 'P&L Summary', icon: 'DollarSign', path: '/admin/financial-center' },
-    { id: 'wholesale', label: 'Wholesale Pipeline', icon: 'Building', path: '/admin/wholesale-orders' },
-    { id: 'scorecard', label: 'Team Scorecard', icon: 'Users', path: '/admin/team-performance' },
+    { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/admin/analytics/comprehensive' },
+    { id: 'team', label: 'Team', icon: 'Users', path: '/admin/staff-management' },
   ],
 
-  navSections: ['operations', 'delivery', 'wholesale', 'people', 'analytics', 'compliance', 'settings'],
+  navSections: ['command-center', 'sales', 'inventory', 'customers', 'operations', 'analytics', 'compliance', 'settings'],
 
   automation: {
     enabled: true,
@@ -404,7 +278,6 @@ const HOOD_TIER: TierPreset = {
       'predictive_inventory',
       'customer_lifecycle_campaigns',
       'loyalty_tier_upgrades',
-      'delivery_route_optimization',
       'executive_weekly_reports',
       'compliance_auto_reminders',
       'employee_performance_reviews',
@@ -423,7 +296,7 @@ const HOOD_TIER: TierPreset = {
 };
 
 /**
- * EMPIRE TIER
+ * EMPIRE TIER → Enterprise ($499)
  * Full organization - board-level view
  */
 const EMPIRE_TIER: TierPreset = {
@@ -434,18 +307,7 @@ const EMPIRE_TIER: TierPreset = {
   revenueRange: '$500K+/mo',
   typicalLocations: '5+',
   typicalTeam: '30+',
-
-  enabledFeatures: [
-    // Everything enabled
-    'all',
-  ],
-
-  hiddenFeatures: [
-    // Only debug/dev tools hidden
-    'debug-console',
-    'bug-scanner',
-    'link-checker',
-  ],
+  subscriptionTier: 'enterprise',
 
   dashboardWidgets: [
     'executive-summary',
@@ -469,10 +331,10 @@ const EMPIRE_TIER: TierPreset = {
   pulseMetrics: ['mtd_revenue', 'ebitda', 'cash_position', 'ar_outstanding'],
 
   quickActions: [
-    { id: 'board-report', label: 'Board Report', icon: 'FileText', path: '/admin/board-report' },
-    { id: 'strategic', label: 'Strategic Dashboard', icon: 'TrendingUp', path: '/admin/strategic-dashboard' },
-    { id: 'compliance', label: 'Compliance Status', icon: 'Shield', path: '/admin/compliance' },
-    { id: 'expansion', label: 'Expansion Analysis', icon: 'Globe', path: '/admin/expansion' },
+    { id: 'realtime', label: 'Real-Time', icon: 'Activity', path: '/admin/realtime-dashboard' },
+    { id: 'strategic', label: 'Strategic', icon: 'TrendingUp', path: '/admin/advanced-analytics' },
+    { id: 'compliance', label: 'Compliance', icon: 'Shield', path: '/admin/compliance' },
+    { id: 'fleet', label: 'Fleet', icon: 'Truck', path: '/admin/fleet-management' },
   ],
 
   navSections: ['all'],
@@ -524,6 +386,13 @@ export function getTierPreset(tier: BusinessTier): TierPreset {
 }
 
 /**
+ * Get subscription tier from business tier
+ */
+export function getSubscriptionTier(businessTier: BusinessTier): SubscriptionTier {
+  return getTierPreset(businessTier).subscriptionTier;
+}
+
+/**
  * Get next tier upgrade path
  */
 export function getNextTier(currentTier: BusinessTier): BusinessTier | null {
@@ -555,15 +424,12 @@ export function getTierRequirements(tier: BusinessTier): {
 
 /**
  * Check if tenant qualifies for a tier
- * Must meet revenue threshold OR (locations AND team together)
  */
 export function qualifiesForTier(
   tier: BusinessTier,
   metrics: { revenue: number; locations: number; teamSize: number }
 ): boolean {
   const req = getTierRequirements(tier);
-  // Revenue is the primary qualifier
-  // OR both locations AND team size together (can't game with just employees)
   return (
     metrics.revenue >= req.minRevenue ||
     (metrics.locations >= req.minLocations && metrics.teamSize >= req.minTeam)
@@ -593,10 +459,10 @@ export function detectBestTier(metrics: {
 export function getTierColor(tier: BusinessTier): string {
   const colors: Record<BusinessTier, string> = {
     street: 'bg-gray-500',
-    trap: 'bg-blue-500',
-    block: 'bg-purple-500',
-    hood: 'bg-orange-500',
-    empire: 'bg-yellow-500',
+    trap: 'bg-green-500',
+    block: 'bg-blue-500',
+    hood: 'bg-blue-600',
+    empire: 'bg-purple-500',
   };
   return colors[tier];
 }
@@ -607,10 +473,10 @@ export function getTierColor(tier: BusinessTier): string {
 export function getTierTextColor(tier: BusinessTier): string {
   const colors: Record<BusinessTier, string> = {
     street: 'text-gray-600',
-    trap: 'text-blue-600',
-    block: 'text-purple-600',
-    hood: 'text-orange-600',
-    empire: 'text-yellow-600',
+    trap: 'text-green-600',
+    block: 'text-blue-600',
+    hood: 'text-blue-700',
+    empire: 'text-purple-600',
   };
   return colors[tier];
 }
@@ -699,4 +565,3 @@ export function generateGreeting(userName: string, tier: BusinessTier): Greeting
     full: `${timeGreeting}, ${userName}. ${tierMessage}`,
   };
 }
-
