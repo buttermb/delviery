@@ -42,6 +42,7 @@ import { TrialExpirationBanner } from '@/components/billing/TrialExpirationBanne
 import { DashboardWidgetGrid } from '@/components/tenant-admin/DashboardWidgetGrid';
 import { SmartNotificationsCenter } from '@/components/tenant-admin/SmartNotificationsCenter';
 import { TrialWelcomeModal } from '@/components/onboarding/TrialWelcomeModal';
+import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
 interface DashboardOrderRow {
   total_amount: number | null;
@@ -585,6 +586,14 @@ export default function TenantAdminDashboardPage() {
 
         {/* Data Setup Banner - Prominent for empty accounts */}
         <DataSetupBanner />
+
+        {/* Onboarding Checklist - For new users */}
+        {tenant?.slug && isTrialActive && (
+          <OnboardingChecklist 
+            tenantSlug={tenant.slug} 
+            className="mb-4"
+          />
+        )}
 
         {/* Demo Data Generation Banner */}
         {isEmptyAccount && (
