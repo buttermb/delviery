@@ -44,6 +44,33 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { SignUp, useAuth } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 
+// Inner component that safely uses Clerk hooks (only rendered when Clerk is configured)
+function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
+  const { isSignedIn, isLoaded } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (isLoaded) {
+      if (isSignedIn) {
+        navigate('/select-plan', { replace: true });
+      } else {
+        onNotSignedIn();
+      }
+    }
+  }, [isLoaded, isSignedIn, navigate, onNotSignedIn]);
+  
+  // Show loading while checking auth
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  return null;
+}
+
 const signupSchema = z.object({
   business_name: z.string()
     .min(2, 'Business name must be at least 2 characters')
@@ -108,21 +135,24 @@ export default function SignUpPage() {
   const { handleSignupSuccess } = useTenantAdminAuth();
   const { prefetch } = usePrefetchDashboard();
   const clerkConfigured = useClerkConfigured();
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>('');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [useClerkAuth, setUseClerkAuth] = useState(false);
+  const [clerkChecked, setClerkChecked] = useState(!clerkConfigured);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
-  // Redirect if already signed in with Clerk
-  useEffect(() => {
-    if (clerkConfigured && clerkLoaded && isSignedIn) {
-      navigate('/select-plan', { replace: true });
-    }
-  }, [clerkConfigured, clerkLoaded, isSignedIn, navigate]);
+  // Handle Clerk auth check callback
+  const handleClerkNotSignedIn = useCallback(() => {
+    setClerkChecked(true);
+  }, []);
+
+  // If Clerk is configured and we haven't checked auth yet, render the auth checker
+  if (clerkConfigured && !clerkChecked && !useClerkAuth) {
+    return <ClerkAuthRedirect onNotSignedIn={handleClerkNotSignedIn} />;
+  }
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
