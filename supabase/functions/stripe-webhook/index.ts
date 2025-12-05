@@ -44,6 +44,47 @@ serve(async (req) => {
           return new Response('Missing tenant_id or plan_id', { status: 400 });
         }
 
+        // Look up the plan to get the tier name
+        const { data: plan } = await supabase
+          .from('subscription_plans')
+          .select('name, slug, display_name')
+          .eq('id', planId)
+          .maybeSingle();
+
+        // Map plan to subscription tier
+        // Plan names in DB are: 'starter', 'professional', 'enterprise'
+        // We need to ensure we save one of these exact values
+        let subscriptionTier = 'starter'; // default
+        if (plan) {
+          const planName = (plan.name || plan.slug || '').toLowerCase().trim();
+          
+          // Exact match first
+          if (planName === 'enterprise') {
+            subscriptionTier = 'enterprise';
+          } else if (planName === 'professional') {
+            subscriptionTier = 'professional';
+          } else if (planName === 'starter') {
+            subscriptionTier = 'starter';
+          } else {
+            // Fallback: check for partial matches (for legacy/custom plan names)
+            if (planName.includes('enterprise') || planName.includes('499')) {
+              subscriptionTier = 'enterprise';
+            } else if (planName.includes('professional') || planName.includes('pro') || planName.includes('150')) {
+              subscriptionTier = 'professional';
+            } else {
+              subscriptionTier = 'starter';
+            }
+          }
+        }
+
+        console.log('[STRIPE-WEBHOOK] Plan lookup:', { 
+          planId, 
+          planName: plan?.name, 
+          planSlug: plan?.slug,
+          planDisplayName: plan?.display_name,
+          resolvedTier: subscriptionTier 
+        });
+
         // Check if this is a trial subscription
         const subscriptionId = object.subscription as string;
         let subscriptionStatus = 'active';
@@ -67,11 +108,11 @@ serve(async (req) => {
           paymentMethodAdded = !!subscription.default_payment_method;
         }
 
-        // Update tenant subscription
+        // Update tenant subscription with the TIER NAME, not the plan UUID
         await supabase
           .from('tenants')
           .update({
-            subscription_plan: planId,
+            subscription_plan: subscriptionTier,
             subscription_status: subscriptionStatus,
             subscription_starts_at: new Date().toISOString(),
             stripe_subscription_id: subscriptionId,
