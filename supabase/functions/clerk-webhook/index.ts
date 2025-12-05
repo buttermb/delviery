@@ -119,14 +119,14 @@ serve(async (req) => {
           console.log('[CLERK-WEBHOOK] User has no tenant_id, checking for super admin');
           
           const { data: superAdmin } = await supabase
-            .from('super_admins')
+            .from('super_admin_users')
             .select('id')
             .eq('email', email)
             .maybeSingle();
 
           if (superAdmin) {
             await supabase
-              .from('super_admins')
+              .from('super_admin_users')
               .update({
                 clerk_user_id: user.id,
                 avatar_url: user.image_url,
@@ -134,7 +134,7 @@ serve(async (req) => {
               })
               .eq('id', superAdmin.id);
 
-            console.log('[CLERK-WEBHOOK] Updated super_admin:', email);
+            console.log('[CLERK-WEBHOOK] Updated super_admin_user:', email);
           }
         }
         break;
@@ -162,9 +162,9 @@ serve(async (req) => {
           console.error('[CLERK-WEBHOOK] Failed to update tenant_user:', tenantUserError);
         }
 
-        // Also try super_admins
+        // Also try super_admin_users
         await supabase
-          .from('super_admins')
+          .from('super_admin_users')
           .update({
             avatar_url: user.image_url,
             updated_at: new Date().toISOString(),

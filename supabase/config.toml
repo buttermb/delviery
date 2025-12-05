@@ -146,3 +146,9 @@ verify_jwt = true
 
 [functions.menu-ocr]
 verify_jwt = true
+
+[functions.clerk-webhook]
+verify_jwt = false
+
+[functions.tenant-signup]
+verify_jwt = false
