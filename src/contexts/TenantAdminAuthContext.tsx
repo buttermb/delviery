@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { logAuth, logAuthWarn, logAuthError, logStateChange } from '@/lib/debug/logger';
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getTokenExpiration } from "@/lib/auth/jwt";
@@ -14,6 +14,7 @@ import { authFlowLogger, AuthFlowStep, AuthAction } from "@/lib/utils/authFlowLo
 import { useFeatureFlags } from "@/config/featureFlags";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useTenantRouteGuard } from "@/hooks/useTenantRouteGuard";
 
 interface TenantAdmin {
   id: string;
@@ -1374,38 +1375,20 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     }
   };
 
-  // Detect tenant slug changes in URL (only on tenant admin routes)
-  useEffect(() => {
-    const handleTenantChange = () => {
-      const currentPath = window.location.pathname;
+  // Tenant mismatch handler - called when URL tenant doesn't match context tenant
+  const handleTenantMismatch = useCallback((urlSlug: string, currentSlug: string) => {
+    logger.info(`[TenantAdmin] Tenant mismatch: URL="${urlSlug}" vs Context="${currentSlug}". Logging out.`);
+    logout();
+  }, []);
 
-      // Only check tenant slug on tenant admin routes (/:tenantSlug/admin/*)
-      // Skip check for global routes like /select-plan, /signup, /saas/*, etc.
-      if (!currentPath.includes('/admin/')) {
-        return; // Not a tenant admin route, skip tenant slug check
-      }
-
-      const urlTenantSlug = currentPath.split('/')[1];
-
-      // Ensure we have a valid slug (not empty and not a known global route prefix)
-      const globalPrefixes = ['saas', 'super-admin', 'select-plan', 'auth', 'callback'];
-      if (!urlTenantSlug || globalPrefixes.includes(urlTenantSlug)) {
-        return; // Global route, skip tenant slug check
-      }
-
-      if (tenant && tenant.slug !== urlTenantSlug) {
-        logger.debug(`URL tenant changed from ${tenant.slug} to ${urlTenantSlug}. Logging out.`);
-        logout();
-      }
-    };
-
-    // Check on mount and when location changes
-    handleTenantChange();
-
-    // Listen for popstate (back/forward navigation)
-    window.addEventListener('popstate', handleTenantChange);
-    return () => window.removeEventListener('popstate', handleTenantChange);
-  }, [tenant]);
+  // Use the centralized tenant route guard for detecting tenant changes
+  // This only triggers on tenant-admin routes (/:tenantSlug/admin/*), not global routes
+  useTenantRouteGuard({
+    currentTenantSlug: tenant?.slug,
+    onTenantMismatch: handleTenantMismatch,
+    enabled: !!tenant, // Only enable when we have a tenant context
+    debounceMs: 150, // Small debounce to allow for route transitions
+  });
 
   // Real-time subscription for tenant subscription changes
   useEffect(() => {
