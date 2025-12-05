@@ -16,7 +16,8 @@ export function useStripeRedirectHandler() {
   const { admin, tenant } = useTenantAdminAuth();
 
   useEffect(() => {
-    const success = searchParams.get('success') === 'true';
+    // Accept both 'success' and 'welcome' parameters for backward compatibility
+    const success = searchParams.get('success') === 'true' || searchParams.get('welcome') === 'true';
     const trial = searchParams.get('trial') === 'true';
     const tenantId = searchParams.get('tenant_id');
 

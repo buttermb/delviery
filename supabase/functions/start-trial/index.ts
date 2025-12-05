@@ -106,8 +106,8 @@ serve(async (req) => {
           plan_id: plan.id,
         },
       },
-      // Redirect to dashboard with welcome flag on success
-      success_url: `${req.headers.get("origin")}/${tenant.slug}/admin/dashboard?welcome=true&trial=true`,
+      // Redirect to dashboard with success flag on success
+      success_url: `${req.headers.get("origin")}/${tenant.slug}/admin/dashboard?success=true&trial=true`,
       // Return to plan selection on cancel
       cancel_url: `${req.headers.get("origin")}/select-plan?tenant_id=${tenant.id}&canceled=true`,
       metadata: {
