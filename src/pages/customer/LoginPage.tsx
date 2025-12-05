@@ -13,17 +13,29 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { SignIn, useAuth } from '@clerk/clerk-react';
+import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login } = useCustomerAuth();
+  const clerkConfigured = useClerkConfigured();
+  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [useClerkAuth, setUseClerkAuth] = useState(false);
+
+  // Redirect if already signed in with Clerk
+  useEffect(() => {
+    if (clerkConfigured && clerkLoaded && isSignedIn && tenantSlug) {
+      navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
+    }
+  }, [clerkConfigured, clerkLoaded, isSignedIn, tenantSlug, navigate]);
   
   // Check for email verification success
   useEffect(() => {
@@ -141,6 +153,52 @@ export default function CustomerLoginPage() {
   const businessName = tenant.business_name || tenantSlug;
   const logo = tenant.white_label?.logo;
 
+  // Render Clerk SignIn when configured and selected
+  if (clerkConfigured && useClerkAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--customer-primary))]/10 via-transparent to-[hsl(var(--customer-secondary))]/10" />
+        
+        <div className="relative z-10 w-full max-w-md">
+          <div className="text-center mb-6">
+            <ShoppingBag className="h-12 w-12 text-[hsl(var(--customer-primary))] mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-white">{businessName}</h1>
+            <p className="text-slate-400">Customer Portal</p>
+          </div>
+          
+          <SignIn
+            routing="path"
+            path={`/${tenantSlug}/customer/login`}
+            signUpUrl={`/${tenantSlug}/customer/signup`}
+            afterSignInUrl={`/${tenantSlug}/shop/dashboard`}
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'shadow-xl border-2 border-[hsl(var(--customer-primary))]/20 rounded-xl bg-slate-800/90 backdrop-blur-xl',
+                headerTitle: 'text-white',
+                headerSubtitle: 'text-slate-400',
+                formFieldInput: 'bg-slate-700/50 border-slate-600 text-white',
+                formFieldLabel: 'text-slate-300',
+                formButtonPrimary: 'bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90',
+                socialButtonsBlockButton: 'border-slate-600 text-white hover:bg-slate-700/50 transition-colors',
+                footerActionLink: 'text-[hsl(var(--customer-primary))]',
+              },
+            }}
+          />
+          
+          <div className="text-center mt-4">
+            <button
+              onClick={() => setUseClerkAuth(false)}
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              ← Use email/password login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Subtle animated accents */}
@@ -224,6 +282,18 @@ export default function CustomerLoginPage() {
               disabled={loading}
               className="h-12 bg-slate-900/50 border-slate-700 text-white hover:bg-slate-900/70 rounded-lg"
             />
+
+            {/* Clerk Auth Option */}
+            {clerkConfigured && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setUseClerkAuth(true)}
+                className="w-full text-slate-400 hover:text-white"
+              >
+                Use Clerk SSO →
+              </Button>
+            )}
           </form>
 
           {/* Footer Links */}

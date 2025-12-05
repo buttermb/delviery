@@ -29,6 +29,8 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/geolocation": "^7.1.5",
     "@capacitor/ios": "^7.4.3",
+    "@clerk/clerk-react": "^5.58.0",
+    "@clerk/themes": "^2.4.42",
     "@formkit/auto-animate": "^0.9.0",
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^3.10.0",

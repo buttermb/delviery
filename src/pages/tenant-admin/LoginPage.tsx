@@ -14,6 +14,8 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { Database } from "@/integrations/supabase/types";
+import { SignIn, useAuth } from '@clerk/clerk-react';
+import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
 
@@ -21,12 +23,22 @@ export default function TenantAdminLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login, mfaRequired, verifyMfa } = useTenantAdminAuth();
+  const clerkConfigured = useClerkConfigured();
+  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
+  const [useClerkAuth, setUseClerkAuth] = useState(false);
+
+  // Redirect if already signed in with Clerk
+  useEffect(() => {
+    if (clerkConfigured && clerkLoaded && isSignedIn && tenantSlug) {
+      navigate(`/${tenantSlug}/admin/dashboard`, { replace: true });
+    }
+  }, [clerkConfigured, clerkLoaded, isSignedIn, tenantSlug, navigate]);
 
 
   useEffect(() => {
@@ -132,6 +144,48 @@ export default function TenantAdminLoginPage() {
 
   const businessName = tenant.business_name || tenantSlug;
   const logo = null; // White label settings not implemented yet
+
+  // Render Clerk SignIn when configured and selected
+  if (clerkConfigured && useClerkAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--tenant-primary))]/5 via-[hsl(var(--tenant-surface))] to-[hsl(var(--tenant-secondary))]/5" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[hsl(var(--tenant-primary))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[hsl(var(--tenant-secondary))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+        
+        <div className="relative z-10 w-full max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold">{businessName}</h1>
+            <p className="text-muted-foreground">Admin Portal</p>
+          </div>
+          
+          <SignIn
+            routing="path"
+            path={`/${tenantSlug}/admin/login`}
+            signUpUrl="/signup"
+            afterSignInUrl={`/${tenantSlug}/admin/dashboard`}
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'shadow-xl border-2 border-[hsl(var(--tenant-primary))]/10 rounded-xl bg-card',
+                formButtonPrimary: 'bg-gradient-to-r from-[hsl(var(--tenant-primary))] to-[hsl(var(--tenant-secondary))] hover:opacity-90',
+                socialButtonsBlockButton: 'border-2 hover:bg-muted transition-colors',
+              },
+            }}
+          />
+          
+          <div className="text-center mt-4">
+            <button
+              onClick={() => setUseClerkAuth(false)}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Use email/password login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--tenant-bg))] p-4 relative overflow-hidden">
@@ -244,6 +298,18 @@ export default function TenantAdminLoginPage() {
               disabled={loading}
               className="bg-background/50 backdrop-blur-sm border-border hover:bg-background/80"
             />
+
+            {/* Clerk Auth Option */}
+            {clerkConfigured && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setUseClerkAuth(true)}
+                className="w-full text-muted-foreground hover:text-foreground"
+              >
+                Use Clerk SSO →
+              </Button>
+            )}
           </form>
 
           {/* Links */}

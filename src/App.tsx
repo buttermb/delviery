@@ -52,6 +52,7 @@ import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
 import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
 import { PerformanceMonitor } from "./utils/performance";
+import { ClerkProviderWrapper } from "./providers/ClerkProviderWrapper";
 
 // Configure route-level progress indicator (NProgress)
 NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
@@ -448,12 +449,13 @@ const App = () => {
                 <EncryptionProvider>
                   <TooltipProvider>
                     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                      <SuperAdminAuthProvider>
-                        <TenantAdminAuthProvider>
-                          <CustomerAuthProvider>
-                            <TenantProvider>
-                              <WhiteLabelProvider>
-                                <SkipToContent />
+                      <ClerkProviderWrapper>
+                        <SuperAdminAuthProvider>
+                          <TenantAdminAuthProvider>
+                            <CustomerAuthProvider>
+                              <TenantProvider>
+                                <WhiteLabelProvider>
+                                  <SkipToContent />
                                 <OfflineBanner />
                                 <InstallPWA />
                                 <DeviceTracker />
@@ -878,12 +880,13 @@ const App = () => {
                                   </Routes>
                                 </Suspense>
                               </WhiteLabelProvider>
-                            </TenantProvider>
-                          </CustomerAuthProvider>
-                          {/* Debug Panel - Only visible to admins or in development */}
-                          <AdminDebugPanel />
-                        </TenantAdminAuthProvider>
-                      </SuperAdminAuthProvider>
+                              </TenantProvider>
+                            </CustomerAuthProvider>
+                            {/* Debug Panel - Only visible to admins or in development */}
+                            <AdminDebugPanel />
+                          </TenantAdminAuthProvider>
+                        </SuperAdminAuthProvider>
+                      </ClerkProviderWrapper>
                     </BrowserRouter>
                   </TooltipProvider>
                 </EncryptionProvider>
