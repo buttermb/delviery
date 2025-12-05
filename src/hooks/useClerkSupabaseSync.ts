@@ -3,9 +3,23 @@
  * Syncs Clerk user data to Supabase for database operations
  */
 import { useEffect, useCallback, useState } from 'react';
-import { useUser, useSession, useAuth } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe, useUserSafe } from '@/hooks/useClerkSafe';
+
+// Conditionally import Clerk session hook
+const useSessionSafe = () => {
+  const clerkConfigured = useClerkConfigured();
+  if (!clerkConfigured) {
+    return { session: null, isLoaded: true };
+  }
+  // Dynamic import to avoid hook call when not configured
+  // eslint-disable-next-line react-hooks/rules-of-hooks, @typescript-eslint/no-var-requires
+  const { useSession } = require('@clerk/clerk-react');
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useSession();
+};
 
 interface SyncedUser {
   id: string;
@@ -35,9 +49,10 @@ interface UseClerkSupabaseSyncReturn {
  * - Provides sync status for UI feedback
  */
 export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
-  const { user, isLoaded: userLoaded } = useUser();
-  const { session, isLoaded: sessionLoaded } = useSession();
-  const { getToken } = useAuth();
+  const clerkConfigured = useClerkConfigured();
+  const { user, isLoaded: userLoaded } = useUserSafe();
+  const { session, isLoaded: sessionLoaded } = useSessionSafe();
+  const { getToken } = useAuthSafe();
   
   const [syncedUser, setSyncedUser] = useState<SyncedUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +60,12 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const syncUser = useCallback(async () => {
+    // Skip sync if Clerk is not configured
+    if (!clerkConfigured) {
+      logger.debug('[ClerkSync] Clerk not configured, skipping sync');
+      return;
+    }
+    
     if (!user || !session) {
       logger.debug('[ClerkSync] No user or session to sync');
       return;
@@ -216,12 +237,12 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
  * Use this for authenticated Supabase operations
  */
 export function useClerkSupabaseClient() {
-  const { getToken } = useAuth();
+  const { getToken } = useAuthSafe();
 
   const getAuthenticatedClient = useCallback(async () => {
     try {
-      // Get Clerk JWT token
-      const token = await getToken({ template: 'supabase' });
+      // Get Clerk JWT token (if getToken is available)
+      const token = getToken ? await getToken({ template: 'supabase' }) : null;
       
       if (!token) {
         logger.warn('[ClerkSupabase] No token available');
@@ -245,7 +266,7 @@ export function useClerkSupabaseClient() {
  * Hook to check if current Clerk user has a specific role
  */
 export function useClerkRole() {
-  const { user } = useUser();
+  const { user } = useUserSafe();
 
   const hasRole = useCallback((requiredRole: string | string[]): boolean => {
     if (!user) return false;

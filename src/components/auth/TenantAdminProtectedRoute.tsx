@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { useAuth, useUser } from '@clerk/clerk-react';
+import { useAuthSafe, useUserSafe } from '@/hooks/useClerkSafe';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 import { useClerkSupabaseSync } from '@/hooks/useClerkSupabaseSync';
 
@@ -30,8 +30,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const clerkConfigured = useClerkConfigured();
-  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useAuth();
-  const { user: clerkUser } = useUser();
+  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
+  const { user: clerkUser } = useUserSafe();
   const { syncedUser, isLoading: clerkSyncLoading } = useClerkSupabaseSync();
   const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const [verified, setVerified] = useState(false);
