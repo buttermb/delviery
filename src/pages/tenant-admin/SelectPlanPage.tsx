@@ -171,10 +171,12 @@ export default function SelectPlanPage() {
         throw error;
       }
 
-      // Redirect to Stripe Checkout
+      // Open Stripe Checkout in new tab (required for iframe environments)
       if (data?.url) {
-        logger.info('[SELECT_PLAN] Redirecting to Stripe checkout', { url: data.url });
-        window.location.href = data.url;
+        logger.info('[SELECT_PLAN] Opening Stripe checkout', { url: data.url });
+        window.open(data.url, '_blank');
+        setLoading(null);
+        toast.success("Stripe checkout opened in new tab");
       } else {
         logger.error('[SELECT_PLAN] No checkout URL received', { data });
         throw new Error("No checkout URL received from Stripe. Please contact support if this persists.");
