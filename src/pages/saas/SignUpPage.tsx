@@ -317,6 +317,25 @@ export default function SignUpPage() {
           logger.error('Account created but login failed. Please try logging in manually.', null, { component: 'SignUpPage' });
         } else {
           logger.info('[SIGNUP] Supabase session established');
+          
+          // Verify session is actually active before proceeding (prevents race condition)
+          let retries = 3;
+          let sessionConfirmed = false;
+          while (retries > 0 && !sessionConfirmed) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              sessionConfirmed = true;
+              logger.info('[SIGNUP] Session confirmed active after verification');
+            } else {
+              retries--;
+              logger.debug(`[SIGNUP] Session not ready yet, retrying... (${retries} left)`);
+              await new Promise(resolve => setTimeout(resolve, 200));
+            }
+          }
+          
+          if (!sessionConfirmed) {
+            logger.warn('[SIGNUP] Session not confirmed after retries, continuing anyway');
+          }
         }
       }
 

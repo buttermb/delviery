@@ -135,6 +135,7 @@ const SignUpPage = lazy(() => import("./pages/saas/SignUpPage"));
 const SelectPlanPage = lazy(() => import("./pages/saas/SelectPlanPage"));
 const SaasLoginPage = lazy(() => import("./pages/saas/LoginPage"));
 const VerifyEmailPage = lazy(() => import("./pages/saas/VerifyEmailPage"));
+import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
 const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage"));
 
@@ -498,6 +499,8 @@ const App = () => {
                                     {/* Public Authentication */}
                                     <Route path="/signup" element={<SignUpPage />} />
                                     <Route path="/select-plan" element={<SelectPlanPage />} />
+                                    {/* Handle encoded select-plan URL - catches %3F encoding issues */}
+                                    <Route path="/select-plan%3F*" element={<EncodedUrlRedirect />} />
                                     <Route path="/saas/login" element={<SaasLoginPage />} />
                                     <Route path="/verify-email" element={<VerifyEmailPage />} />
 
