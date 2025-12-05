@@ -2,7 +2,6 @@
  * Safe Clerk hooks that don't throw when Clerk isn't configured
  * Returns default values when ClerkProvider is not available
  */
-import { useAuth, useUser } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
 
 interface GetTokenOptions {
@@ -20,9 +19,22 @@ interface SafeAuthReturn {
 }
 
 interface SafeUserReturn {
-  user: ReturnType<typeof useUser>['user'] | null;
+  user: any | null;
   isLoaded: boolean;
 }
+
+const defaultAuth: SafeAuthReturn = {
+  isSignedIn: undefined,
+  isLoaded: true,
+  userId: undefined,
+  sessionId: undefined,
+  getToken: undefined,
+};
+
+const defaultUser: SafeUserReturn = {
+  user: null,
+  isLoaded: true,
+};
 
 /**
  * Safe wrapper for useAuth that returns defaults when Clerk isn't configured
@@ -31,27 +43,26 @@ export function useAuthSafe(): SafeAuthReturn {
   const clerkConfigured = useClerkConfigured();
   
   // Only call useAuth if Clerk is configured
-  // This is safe because useClerkConfigured is a simple boolean check
-  // and the component tree structure doesn't change
   if (!clerkConfigured) {
-    return {
-      isSignedIn: undefined,
-      isLoaded: true, // Treat as loaded since we're not using Clerk
-      userId: undefined,
-      sessionId: undefined,
-      getToken: undefined,
-    };
+    return defaultAuth;
   }
   
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const auth = useAuth();
-  return {
-    isSignedIn: auth.isSignedIn,
-    isLoaded: auth.isLoaded,
-    userId: auth.userId,
-    sessionId: auth.sessionId,
-    getToken: auth.getToken,
-  };
+  // Use try-catch with dynamic require to safely call Clerk hooks
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useAuth } = require('@clerk/clerk-react');
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const auth = useAuth();
+    return {
+      isSignedIn: auth.isSignedIn,
+      isLoaded: auth.isLoaded,
+      userId: auth.userId,
+      sessionId: auth.sessionId,
+      getToken: auth.getToken,
+    };
+  } catch {
+    return defaultAuth;
+  }
 }
 
 /**
@@ -61,13 +72,16 @@ export function useUserSafe(): SafeUserReturn {
   const clerkConfigured = useClerkConfigured();
   
   if (!clerkConfigured) {
-    return {
-      user: null,
-      isLoaded: true, // Treat as loaded since we're not using Clerk
-    };
+    return defaultUser;
   }
   
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { user, isLoaded } = useUser();
-  return { user, isLoaded };
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useUser } = require('@clerk/clerk-react');
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { user, isLoaded } = useUser();
+    return { user, isLoaded };
+  } catch {
+    return defaultUser;
+  }
 }

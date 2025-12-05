@@ -10,14 +10,15 @@ import { toast } from "@/hooks/use-toast";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { SignIn, useAuth } from '@clerk/clerk-react';
+import { SignIn } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe } from '@/hooks/useClerkSafe';
 
 export default function SuperAdminLoginPage() {
   const navigate = useNavigate();
   const { login } = useSuperAdminAuth();
   const clerkConfigured = useClerkConfigured();
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
+  const { isSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -2,7 +2,7 @@
  * Clerk Sign In Component
  * Wraps Clerk's SignIn with custom styling and tenant support
  */
-import { SignIn, useAuth, useUser } from '@clerk/clerk-react';
+import { SignIn } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { logger } from '@/lib/logger';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe, useUserSafe } from '@/hooks/useClerkSafe';
 
 interface ClerkSignInProps {
   portal: 'tenant-admin' | 'super-admin' | 'customer';
@@ -21,8 +22,8 @@ interface ClerkSignInProps {
 export function ClerkSignIn({ portal, afterSignInUrl, afterSignUpUrl }: ClerkSignInProps) {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
-  const { isSignedIn, isLoaded } = useAuth();
-  const { user } = useUser();
+  const { isSignedIn, isLoaded } = useAuthSafe();
+  const { user } = useUserSafe();
   const clerkConfigured = useClerkConfigured();
   
   const [tenant, setTenant] = useState<any>(null);

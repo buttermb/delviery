@@ -13,15 +13,16 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { SignIn, useAuth } from '@clerk/clerk-react';
+import { SignIn } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe } from '@/hooks/useClerkSafe';
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login } = useCustomerAuth();
   const clerkConfigured = useClerkConfigured();
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
+  const { isSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -41,12 +41,13 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePrefetchDashboard } from '@/hooks/usePrefetchDashboard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { handleError } from '@/utils/errorHandling/handlers';
-import { SignUp, useAuth } from '@clerk/clerk-react';
+import { SignUp } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe } from '@/hooks/useClerkSafe';
 
 // Inner component that safely uses Clerk hooks (only rendered when Clerk is configured)
 function ClerkAuthRedirect({ onNotSignedIn }: { onNotSignedIn: () => void }) {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded } = useAuthSafe();
   const navigate = useNavigate();
   
   useEffect(() => {

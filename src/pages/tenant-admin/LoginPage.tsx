@@ -14,8 +14,9 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { Database } from "@/integrations/supabase/types";
-import { SignIn, useAuth } from '@clerk/clerk-react';
+import { SignIn } from '@clerk/clerk-react';
 import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useAuthSafe } from '@/hooks/useClerkSafe';
 
 type Tenant = Database['public']['Tables']['tenants']['Row'];
 
@@ -24,7 +25,7 @@ export default function TenantAdminLoginPage() {
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { login, mfaRequired, verifyMfa } = useTenantAdminAuth();
   const clerkConfigured = useClerkConfigured();
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
+  const { isSignedIn, isLoaded: clerkLoaded } = useAuthSafe();
   useAuthRedirect(); // Redirect if already logged in
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
