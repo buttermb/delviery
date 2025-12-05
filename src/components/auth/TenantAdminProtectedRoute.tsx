@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { useAuth, useUser } from '@clerk/clerk-react';
+import { useClerkConfigured } from '@/providers/ClerkProviderWrapper';
+import { useClerkSupabaseSync } from '@/hooks/useClerkSupabaseSync';
 
 interface TenantAdminProtectedRouteProps {
   children: ReactNode;
@@ -26,12 +29,22 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const { admin, tenant, token, loading } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
+  const clerkConfigured = useClerkConfigured();
+  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useAuth();
+  const { user: clerkUser } = useUser();
+  const { syncedUser, isLoading: clerkSyncLoading } = useClerkSupabaseSync();
   const [verifying, setVerifying] = useState(false); // CRITICAL FIX: Start as false, not true
   const [verified, setVerified] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [skipVerification, setSkipVerification] = useState(false);
   const location = useLocation();
   const totalWaitStartRef = useRef<number | null>(null);
+
+  // If Clerk is configured and user is signed in, check Clerk auth first
+  const useClerkAuth = clerkConfigured && clerkSignedIn;
+  const effectiveLoading = useClerkAuth ? !clerkLoaded || clerkSyncLoading : loading;
+  const effectiveAdmin = useClerkAuth ? syncedUser : admin;
+  const effectiveTenant = useClerkAuth ? (syncedUser?.tenantId ? { slug: tenantSlug, id: syncedUser.tenantId } : null) : tenant;
 
   // Use lock to prevent concurrent verification requests
   const verificationLockRef = useRef(false);
@@ -40,12 +53,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   const verificationCache = useRef<Record<string, { verified: boolean; timestamp: number }>>({});
 
   // Track auth values in refs to avoid re-triggering verification
-  const authRef = useRef({ token, admin, tenant });
+  const authRef = useRef({ token, admin: effectiveAdmin, tenant: effectiveTenant });
 
   // Update auth refs when auth changes (doesn't trigger verification)
   useEffect(() => {
-    authRef.current = { token, admin, tenant };
-  }, [token, admin, tenant]);
+    authRef.current = { token, admin: effectiveAdmin, tenant: effectiveTenant };
+  }, [token, effectiveAdmin, effectiveTenant]);
 
   // Cleanup verification lock on unmount - MUST be before any conditional returns
   useEffect(() => {
@@ -74,11 +87,12 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     logger.debug('[PROTECTED ROUTE] 🔒 Verification check starting', {
       verified,
       skipVerification,
-      loading,
-      hasAdmin: !!admin,
-      hasTenant: !!tenant,
+      loading: effectiveLoading,
+      hasAdmin: !!effectiveAdmin,
+      hasTenant: !!effectiveTenant,
       tenantSlug,
       pathname: location.pathname,
+      useClerkAuth,
     });
 
     // Skip if already verified or skipped - MUST be first check to prevent loops
@@ -89,7 +103,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
     // CRITICAL FIX: If auth is complete (not loading) and we have admin/tenant, skip verification
     // This prevents infinite loading when auth completes successfully
-    if (!loading && admin && tenant && tenant.slug === tenantSlug) {
+    if (!effectiveLoading && effectiveAdmin && effectiveTenant && effectiveTenant.slug === tenantSlug) {
       logger.debug('[PROTECTED ROUTE] ✅ Auth complete and valid - bypassing verification');
       setVerified(true);
       setSkipVerification(true);
@@ -116,10 +130,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     }, TOTAL_WAIT_TIMEOUT_MS);
 
     // If auth is still loading, wait (but with timeout protection)
-    if (loading) {
+    if (effectiveLoading) {
       logger.debug('[PROTECTED ROUTE] ⏳ Auth context still loading, waiting...');
       const loadingTimeout = setTimeout(() => {
-        if (loading && !verified && !skipVerification) {
+        if (effectiveLoading && !verified && !skipVerification) {
           logger.debug('[PROTECTED ROUTE] ⚠️ Auth context loading timeout (>10s)');
           logger.warn('Auth context loading timeout (>10s) - skipping verification', undefined, 'TenantAdminProtectedRoute');
           setSkipVerification(true);
@@ -136,7 +150,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     }
 
     // If not authenticated, don't verify - let the redirect happen
-    if (!admin || !tenant) {
+    if (!effectiveAdmin || !effectiveTenant) {
       logger.debug('[PROTECTED ROUTE] ❌ Not authenticated, will redirect to login');
       clearTimeout(totalWaitTimeout);
       setVerifying(false);
@@ -145,8 +159,9 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     }
 
     logger.debug('[PROTECTED ROUTE] ✅ Auth context loaded', {
-      adminEmail: admin.email,
-      tenantSlug: tenant.slug,
+      adminEmail: effectiveAdmin.email || clerkUser?.primaryEmailAddress?.emailAddress,
+      tenantSlug: effectiveTenant.slug,
+      authMethod: useClerkAuth ? 'Clerk' : 'Supabase',
     });
 
     // Skip if already checking
@@ -194,10 +209,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
       try {
         // Local verification: compare tenant slug from URL with authenticated tenant
-        const isValidSlug = tenant.slug === tenantSlug;
+        const isValidSlug = effectiveTenant.slug === tenantSlug;
         logger.debug('[PROTECTED ROUTE] 🔍 Slug validation', {
           urlSlug: tenantSlug,
-          tenantSlug: tenant.slug,
+          tenantSlug: effectiveTenant.slug,
           isValid: isValidSlug,
           attempt: retryCount + 1,
         });
@@ -289,16 +304,20 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(verificationTimeout);
     };
     // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
-  }, [tenantSlug, location.pathname, admin, tenant, loading]);
+  }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading, useClerkAuth, clerkUser]);
 
   // Loading state - wait for auth AND verification (unless skipped OR not authenticated)
   // If user is not authenticated (no admin/tenant), let it fall through to redirect
-  if ((loading || verifying || (!verified && (admin || tenant))) && !skipVerification) {
+  if ((effectiveLoading || verifying || (!verified && (effectiveAdmin || effectiveTenant))) && !skipVerification) {
     return <LoadingFallback />;
   }
 
-  // Not authenticated
-  if (!admin || !tenant) {
+  // Not authenticated - redirect to login
+  if (!effectiveAdmin || !effectiveTenant) {
+    // If using Clerk and not signed in, Clerk will handle redirect
+    if (clerkConfigured && !clerkSignedIn && clerkLoaded) {
+      return <Navigate to={tenantSlug ? `/${tenantSlug}/admin/login` : '/saas/login'} replace />;
+    }
     // Extract tenant slug from URL path
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const tenantSlugFromUrl = pathSegments[0];
@@ -322,12 +341,13 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
   }
 
   // Tenant slug mismatch
-  if (tenant.slug !== tenantSlug) {
-    return <Navigate to={`/${tenant.slug}/admin`} replace />;
+  if (effectiveTenant.slug !== tenantSlug) {
+    return <Navigate to={`/${effectiveTenant.slug}/admin`} replace />;
   }
 
   // Check if payment method is required and not added
-  const tenantData = tenant as any;
+  // For Clerk users, we need to fetch tenant data from Supabase
+  const tenantData = effectiveTenant as any;
   const needsPaymentMethod = !tenantData?.payment_method_added &&
     tenantData?.subscription_status !== 'active';
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
@@ -335,9 +355,10 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     location.pathname.includes('/admin/onboarding');
 
   // Redirect to plan selection if payment method not added (except if already on select-plan or onboarding)
-  if (needsPaymentMethod && !isOnSelectPlanPage && !isOnboardingRoute) {
+  // Note: For Clerk users, payment method check may need to be fetched from Supabase
+  if (needsPaymentMethod && !isOnSelectPlanPage && !isOnboardingRoute && effectiveTenant) {
     logger.debug('[PROTECTED ROUTE] Payment method not added, redirecting to plan selection');
-    return <Navigate to={`/${tenant.slug}/admin/select-plan`} replace state={{ fromDashboard: true }} />;
+    return <Navigate to={`/${effectiveTenant.slug}/admin/select-plan`} replace state={{ fromDashboard: true }} />;
   }
 
   // Show error UI after multiple failures
