@@ -65,13 +65,14 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   };
 
   if (!hasAccess && item.featureId) {
+    const IconComponent = item.icon;
     return (
       <UISidebarMenuItem>
         <SidebarMenuButton
           onClick={() => onLockedItemClick(item.featureId!)}
           className="cursor-pointer opacity-60 hover:opacity-100"
         >
-          <item.icon className="h-4 w-4" />
+          {IconComponent && <IconComponent className="h-4 w-4" />}
           <span>{item.name}</span>
           <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
           {item.badge && (
@@ -84,6 +85,8 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
     );
   }
 
+  const IconComponent = item.icon;
+  
   return (
     <UISidebarMenuItem>
       <SidebarMenuButton
@@ -99,7 +102,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
             item.hot && "font-semibold"
           )}
         >
-          <item.icon className="h-4 w-4" />
+          {IconComponent && <IconComponent className="h-4 w-4" />}
           <span className="flex-1">{item.name}</span>
 
           {/* Favorite star */}
