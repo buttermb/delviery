@@ -53,10 +53,10 @@ export function SidebarFavorites() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-yellow-600 dark:text-yellow-400">
-        ⭐ Favorites
+      <SidebarGroupLabel className="text-yellow-600 dark:text-yellow-400 px-3 py-2 min-h-[40px]">
+        <span className="text-xs font-semibold uppercase tracking-wider">⭐ Favorites</span>
       </SidebarGroupLabel>
-      <SidebarGroupContent>
+      <SidebarGroupContent className="mt-1">
         <SidebarMenu>
           {favoriteItems.map((item) => {
             const hasAccess = item.featureId ? canAccess(item.featureId) : true;

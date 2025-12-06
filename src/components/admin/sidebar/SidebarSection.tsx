@@ -67,21 +67,21 @@ export function SidebarSection({
         disabled={section.pinned}
       >
         <CollapsibleTrigger asChild>
-          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 px-2 py-1.5 rounded-md">
-            <span>{section.section}</span>
+          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 px-3 py-2 rounded-md min-h-[40px]">
+            <span className="text-xs font-semibold uppercase tracking-wider">{section.section}</span>
             {!section.pinned && (
               <div className="flex items-center">
                 {isOpen ? (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
             )}
           </SidebarGroupLabel>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="mt-1">
             <SidebarMenu>
               {section.items.map((item, index) => {
                 const hasAccess = item.featureId ? canAccess(item.featureId) : true;

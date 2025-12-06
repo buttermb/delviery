@@ -72,14 +72,9 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           onClick={() => onLockedItemClick(item.featureId!)}
           className="cursor-pointer opacity-60 hover:opacity-100"
         >
-          {IconComponent && <IconComponent className="h-4 w-4" />}
-          <span>{item.name}</span>
-          <Lock className="h-3 w-3 ml-auto text-muted-foreground" />
-          {item.badge && (
-            <Badge variant="secondary" className="ml-auto">
-              {item.badge}
-            </Badge>
-          )}
+          {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
+          <span className="flex-1 truncate text-sm">{item.name}</span>
+          <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         </SidebarMenuButton>
       </UISidebarMenuItem>
     );
@@ -98,49 +93,26 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
           to={`/${tenantSlug}${item.path}`}
           onClick={handleClick}
           className={cn(
-            "flex items-center gap-2 w-full transition-all duration-200 hover:translate-x-1 hover:bg-accent/50 p-2 rounded-md",
+            "flex items-center gap-3 w-full",
             item.hot && "font-semibold"
           )}
         >
-          {IconComponent && <IconComponent className="h-4 w-4" />}
-          <span className="flex-1">{item.name}</span>
+          {IconComponent && <IconComponent className="h-5 w-5 flex-shrink-0" />}
+          <span className="flex-1 truncate text-sm">{item.name}</span>
 
-          {/* Favorite star */}
-          <button
-            type="button"
-            onClick={handleFavoriteClick}
-            className={cn(
-              "ml-auto p-1 rounded hover:bg-accent transition-colors",
-              isFavorite && "text-yellow-500"
-            )}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          >
-            <Star
-              className={cn(
-                "h-3 w-3",
-                isFavorite ? "fill-current" : "fill-none"
-              )}
-            />
-          </button>
-
-          {/* Badge */}
-          {item.badge && (
-            <Badge variant="secondary" className="ml-auto">
+          {/* Show only the most important indicator */}
+          {item.badge ? (
+            <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs flex-shrink-0">
               {item.badge}
             </Badge>
-          )}
-
-          {/* Hot indicator */}
-          {item.hot && (
-            <span className="ml-1 text-xs text-orange-500">🔥</span>
-          )}
-
-          {/* Shortcut */}
-          {item.shortcut && (
-            <kbd className="ml-auto hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-              {item.shortcut}
-            </kbd>
-          )}
+          ) : item.hot ? (
+            <span className="flex-shrink-0 text-orange-500">🔥</span>
+          ) : isFavorite ? (
+            <Star
+              className="h-4 w-4 flex-shrink-0 text-yellow-500 fill-yellow-500"
+              onClick={handleFavoriteClick}
+            />
+          ) : null}
         </NavLink>
       </SidebarMenuButton>
     </UISidebarMenuItem>

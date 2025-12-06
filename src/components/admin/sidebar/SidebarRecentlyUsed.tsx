@@ -97,11 +97,11 @@ export function SidebarRecentlyUsed() {
 
     return (
         <SidebarGroup>
-            <SidebarGroupLabel className="text-muted-foreground/70 flex items-center gap-2 px-2 py-1.5 text-xs font-medium">
-                <Clock className="h-3 w-3" />
-                <span>Recently Used</span>
+            <SidebarGroupLabel className="text-muted-foreground/70 flex items-center gap-2 px-3 py-2 min-h-[40px]">
+                <Clock className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Recently Used</span>
             </SidebarGroupLabel>
-            <SidebarGroupContent>
+            <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
                     {recentItems.map((item) => (
                         <SidebarMenuItem

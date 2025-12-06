@@ -102,31 +102,31 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         <SidebarHeader className="p-0 border-b">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full p-3 sm:p-4 flex items-center gap-2 hover:bg-accent/50 transition-colors group cursor-pointer relative overflow-hidden">
+              <button className="w-full p-4 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer relative overflow-hidden min-h-[64px]">
                 {/* Subtle pulse animation on the background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 relative z-10 group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg flex-shrink-0 relative z-10 group-hover:scale-105 transition-transform">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 relative z-10">
-                  <span className="font-semibold text-xs sm:text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">Business Admin</span>
+                <div className="flex flex-col min-w-0 flex-1 relative z-10 gap-0.5">
+                  <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Admin</span>
                     <Badge
                       variant="secondary"
-                      className="text-[9px] px-1.5 py-0 h-4 cursor-pointer hover:bg-primary/10 transition-colors"
+                      className="text-[10px] px-1.5 py-0.5 h-5 cursor-pointer hover:bg-primary/10 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/${tenantSlug}/admin/settings?tab=sidebar`);
                       }}
                     >
-                      <Layout className="h-2.5 w-2.5 mr-0.5" />
+                      <Layout className="h-3 w-3 mr-1" />
                       {presetNames[currentPreset]}
                     </Badge>
                   </div>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10 group-hover:translate-y-0.5 transition-transform" />
+                <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors relative z-10 flex-shrink-0" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -223,9 +223,9 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </Suspense>
         </SidebarContent>
 
-        <SidebarFooter className="p-3 sm:p-4 border-t">
-          <div className="text-xs text-muted-foreground text-center">
-            Click header for quick actions
+        <SidebarFooter className="p-4 border-t">
+          <div className="text-xs text-muted-foreground text-center py-1">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘B</kbd> to toggle
           </div>
         </SidebarFooter>
       </Sidebar>
