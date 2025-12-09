@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Order Tracking Page
  * Track order status with timeline

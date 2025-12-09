@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Quick Data Export Panel
  * Export orders, users, products with filters

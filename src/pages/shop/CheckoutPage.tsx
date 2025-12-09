@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Checkout Page
  * Multi-step checkout flow

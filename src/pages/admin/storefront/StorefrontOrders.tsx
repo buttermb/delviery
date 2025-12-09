@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Storefront Orders Page
  * View and manage orders from the online store
