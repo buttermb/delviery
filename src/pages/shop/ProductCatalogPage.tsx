@@ -71,19 +71,32 @@ export default function ProductCatalogPage() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
 
-  // Fetch products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  // Fetch products with error handling for missing RPC
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery({
     queryKey: ['shop-products', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
 
-      const { data, error } = await supabase
-        .rpc('get_marketplace_products', { p_store_id: store.id });
+      try {
+        const { data, error } = await supabase
+          .rpc('get_marketplace_products', { p_store_id: store.id });
 
-      if (error) throw error;
-      return data as ProductWithSettings[];
+        // Handle missing RPC function gracefully
+        if (error) {
+          if (error.code === 'PGRST202' || error.message?.includes('does not exist')) {
+            console.warn('get_marketplace_products RPC not found, returning empty array');
+            return [];
+          }
+          throw error;
+        }
+        return (data || []) as ProductWithSettings[];
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        return [];
+      }
     },
     enabled: !!store?.id,
+    retry: false,
   });
 
   // Fetch categories
