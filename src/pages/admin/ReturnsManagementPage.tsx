@@ -108,11 +108,12 @@ export default function ReturnsManagementPage() {
       const { data, error } = await query;
 
       if (error) {
-        logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
-        // If table doesn't exist, show a helpful message once
-        if (error.code === '42P01') { // undefined_table
-          toast.error("Returns module is not enabled for this tenant (table missing).");
+        // Table doesn't exist - this is expected if returns module isn't enabled
+        if (error.code === 'PGRST205' || error.code === '42P01') {
+          logger.info('Returns table not configured', { component: 'ReturnsManagementPage' });
+          return [];
         }
+        logger.error('Failed to fetch returns', error, { component: 'ReturnsManagementPage' });
         return [];
       }
 
