@@ -273,7 +273,7 @@ export default function TenantAdminBillingPage() {
     const currentIndex = tierHierarchy.indexOf(currentSubscriptionTier);
     const targetIndex = tierHierarchy.indexOf(targetPlan);
 
-    if (currentIndex === targetIndex) {
+    if (currentIndex === targetIndex && !isOnTrial) {
       toast({
         title: 'Already on this plan',
         description: `You're already on the ${TIER_NAMES[targetPlan]} plan.`,

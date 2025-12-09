@@ -30,13 +30,17 @@ import {
   Image,
   Save,
   Eye,
-  Upload
+  Upload,
+  Share2
 } from 'lucide-react';
+import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
+import { generateUrlToken } from '@/utils/menuHelpers';
 
 interface StoreSettings {
   id: string;
   store_name: string;
   slug: string;
+  encrypted_url_token: string | null;
   tagline: string | null;
   description: string | null;
   logo_url: string | null;
@@ -82,6 +86,7 @@ export default function StorefrontSettings() {
 
   const [formData, setFormData] = useState<Partial<StoreSettings>>({});
   const [isDirty, setIsDirty] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -201,6 +206,34 @@ export default function StorefrontSettings() {
     },
   });
 
+  // Regenerate encrypted URL token mutation
+  const regenerateTokenMutation = useMutation({
+    mutationFn: async () => {
+      if (!store?.id) throw new Error('No store');
+
+      const newToken = generateUrlToken();
+      
+      const { error } = await supabase
+        .from('marketplace_stores')
+        .update({ encrypted_url_token: newToken })
+        .eq('id', store.id);
+
+      if (error) throw error;
+      return newToken;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+    },
+    onError: (error) => {
+      logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
+      toast({
+        title: 'Error',
+        description: 'Failed to generate new link.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -250,6 +283,10 @@ export default function StorefrontSettings() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShareDialogOpen(true)}>
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
           <Button variant="outline" asChild>
             <a href={storeUrl} target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-2" />
@@ -265,6 +302,23 @@ export default function StorefrontSettings() {
           </Button>
         </div>
       </div>
+
+      {/* Share Dialog */}
+      {store && (
+        <StoreShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          store={{
+            id: store.id,
+            store_name: store.store_name,
+            slug: store.slug,
+            encrypted_url_token: store.encrypted_url_token,
+            is_active: store.is_active,
+            is_public: store.is_public,
+          }}
+          onRegenerateToken={() => regenerateTokenMutation.mutateAsync()}
+        />
+      )}
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general" className="space-y-6">
@@ -337,7 +391,7 @@ export default function StorefrontSettings() {
 
               <div className="space-y-4">
                 <h3 className="font-medium">Store Visibility</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Public Store</Label>
@@ -465,7 +519,7 @@ export default function StorefrontSettings() {
 
               <div className="space-y-4">
                 <h3 className="font-medium">Logo & Images</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="logo_url">Logo URL</Label>

@@ -53,9 +53,34 @@ export type MarketplaceProfile = {
   shipping_states?: string[];
   shipping_policy?: string | null;
   return_policy?: string | null;
+  layout_config?: any[] | null;
+  theme_config?: any | null;
   average_rating?: number;
   total_reviews?: number;
   total_orders?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type MarketplaceStore = {
+  id: string;
+  tenant_id: string;
+  store_name: string;
+  slug: string;
+  tagline?: string | null;
+  description?: string | null;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  primary_color?: string | null;
+  secondary_color?: string | null;
+  accent_color?: string | null;
+  font_family?: string | null;
+  is_active?: boolean;
+  is_public?: boolean;
+  layout_config?: any[] | null;
+  theme_config?: any | null;
+  operating_hours?: any | null;
+  checkout_settings?: any | null;
   created_at?: string;
   updated_at?: string;
 };

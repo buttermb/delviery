@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "@/components/shared/SearchInput";
 import { toast } from "sonner";
 import {
   Package,
@@ -28,7 +29,8 @@ import {
   Printer,
   MoreVertical, // Changed to MoreVertical for consistency
   Eye,
-  EyeOff
+  EyeOff,
+  Store // Added Store icon
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -135,6 +137,24 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  // Fetch store for publishing
+  const { data: store } = useQuery({
+    queryKey: ['marketplace-settings', tenant?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('marketplace_profiles')
+        .select('*')
+        .eq('tenant_id', tenant?.id)
+        .maybeSingle();
+      if (error) {
+        logger.error('Failed to fetch store for sync', error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!tenant?.id,
+  });
 
   // Load products
   const loadProducts = async () => {
@@ -391,6 +411,30 @@ export default function ProductManagement() {
     setScannerOpen(true);
   }
 
+  const handlePublish = async (productId: string) => {
+    if (!store?.id) {
+      toast.error("Storefront not configured. Please set up your store first.");
+      return;
+    }
+    try {
+      const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
+        p_product_id: productId,
+        p_store_id: store.id
+      });
+
+      if (error) throw error;
+
+      if ((data as any)?.success) {
+        toast.success("Product published to storefront");
+      } else {
+        toast.error((data as any)?.error || "Failed to publish product");
+      }
+    } catch (err: any) {
+      logger.error('Failed to publish product', err);
+      toast.error(err.message || "Failed to publish product");
+    }
+  };
+
 
   // --- Table Columns Definition ---
   const columns: ResponsiveColumn<Product>[] = [
@@ -484,6 +528,9 @@ export default function ProductManagement() {
             >
               <Trash2 className="mr-2 h-4 w-4" /> Delete
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePublish(product.id)}>
+              <Store className="mr-2 h-4 w-4" /> Publish to Store
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -496,6 +543,7 @@ export default function ProductManagement() {
       onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
       onDelete={() => handleDelete(product.id)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
+      onPublish={() => handlePublish(product.id)}
     />
   );
 
@@ -762,6 +810,7 @@ export default function ProductManagement() {
                         setLabelProduct(product);
                         setLabelDialogOpen(true);
                       }}
+                      onPublish={() => handlePublish(product.id)}
                     />
                   </div>
                 ))}

@@ -252,6 +252,11 @@ export const navigationSections: NavSection[] = [
         badge: 'NEW'
       },
       {
+        title: 'Customize Store',
+        href: '/admin/storefront/customize',
+        icon: Palette
+      },
+      {
         title: 'Products',
         href: '/admin/storefront/products',
         icon: Package
@@ -260,6 +265,31 @@ export const navigationSections: NavSection[] = [
         title: 'Orders',
         href: '/admin/storefront/orders',
         icon: ShoppingCart
+      },
+      {
+        title: 'Live Orders',
+        href: '/admin/storefront/live-orders',
+        icon: Activity,
+        badge: 'LIVE',
+        tier: 'professional'
+      },
+      {
+        title: 'Customers',
+        href: '/admin/storefront/customers',
+        icon: Users,
+        tier: 'professional'
+      },
+      {
+        title: 'Coupons',
+        href: '/admin/storefront/coupons',
+        icon: Tags,
+        tier: 'professional'
+      },
+      {
+        title: 'Analytics',
+        href: '/admin/storefront/analytics',
+        icon: BarChart3,
+        tier: 'professional'
       },
       {
         title: 'Bundles',
@@ -443,6 +473,12 @@ export const navigationSections: NavSection[] = [
         href: '/admin/pos-system',
         icon: Store,
         tier: 'enterprise'
+      },
+      {
+        title: 'Collections',
+        href: '/admin/collection-mode',
+        icon: Wallet,
+        tier: 'professional'
       }
     ]
   },

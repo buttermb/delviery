@@ -34,6 +34,8 @@ interface StoreInfo {
   is_public: boolean;
   require_age_verification: boolean;
   minimum_age: number;
+  layout_config?: any[] | null;
+  theme_config?: any | null;
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
 }
 

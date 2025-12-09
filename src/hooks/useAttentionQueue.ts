@@ -172,7 +172,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${lateDeliveries.data.length} late deliveries`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('deliveries'),
+          actionUrl: buildAdminUrl('delivery-tracking'),
           timestamp: oldestTimestamp,
         });
       }
@@ -252,7 +252,7 @@ export function useAttentionQueue() {
             title: `${customerTabs.data.length} open tabs`,
             value: String(totalOwed),
             actionLabel: 'Collect',
-            actionUrl: buildAdminUrl('customer-tabs'),
+            actionUrl: buildAdminUrl('customers'),
             timestamp: now.toISOString(),
           });
         }
@@ -267,7 +267,7 @@ export function useAttentionQueue() {
           category: 'delivery',
           title: `${activeDeliveries.data.length} in progress`,
           actionLabel: 'Track',
-          actionUrl: buildAdminUrl('deliveries'),
+          actionUrl: buildAdminUrl('delivery-tracking'),
           timestamp: oldestTimestamp,
         });
       }

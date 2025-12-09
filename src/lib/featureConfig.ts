@@ -295,6 +295,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Sales & Orders',
     route: '/admin/marketplace/listings',
   },
+  'marketplace-product-sync': {
+    id: 'marketplace-product-sync',
+    name: 'Product Sync',
+    description: 'Sync B2B products to Marketplace listings',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/marketplace/sync',
+  },
   'sales-dashboard': {
     id: 'sales-dashboard',
     name: 'Deals & Pricing',
@@ -302,6 +310,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     tier: 'professional',
     category: 'Sales & Orders',
     route: '/admin/sales-dashboard',
+  },
+  'storefront': {
+    id: 'storefront',
+    name: 'Storefront',
+    description: 'Manage your white-label online store',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront',
   },
 
   // --- Inventory (Professional) ---
@@ -462,6 +478,14 @@ export const FEATURES: Record<FeatureId, Feature> = {
     tier: 'professional',
     category: 'Analytics & Finance',
     route: '/admin/financial-center',
+  },
+  'collections': {
+    id: 'collections',
+    name: 'Collections',
+    description: 'Manage outstanding payments and collections',
+    tier: 'professional',
+    category: 'Analytics & Finance',
+    route: '/admin/collection-mode',
   },
   'invoice-management': {
     id: 'invoice-management',

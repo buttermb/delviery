@@ -12,7 +12,7 @@ function base64UrlEncode(data: Uint8Array): string {
 function encodeJWT(payload: any, secret: string, expiresIn: number = 7 * 24 * 60 * 60): string {
   const encoder = new TextEncoder();
   const now = Math.floor(Date.now() / 1000);
-  
+
   const jwtPayload = {
     ...payload,
     exp: now + expiresIn,
@@ -22,10 +22,10 @@ function encodeJWT(payload: any, secret: string, expiresIn: number = 7 * 24 * 60
   const header = { alg: 'HS256', typ: 'JWT' };
   const encodedHeader = base64UrlEncode(encoder.encode(JSON.stringify(header)));
   const encodedPayload = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
-  
+
   // Simple signature (in production, use proper HMAC)
   const signature = base64UrlEncode(encoder.encode(`${encodedHeader}.${encodedPayload}.${secret}`));
-  
+
   return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
 
@@ -68,7 +68,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Extract client IP for rate limiting
-    const clientIP = 
+    const clientIP =
       req.headers.get('x-forwarded-for')?.split(',')[0] ||
       req.headers.get('cf-connecting-ip') ||
       req.headers.get('x-real-ip') ||
@@ -153,8 +153,8 @@ serve(async (req) => {
 
     if (authUserExists) {
       return new Response(
-        JSON.stringify({ 
-          error: 'An account with this email already exists. Please try logging in or use a different email address.' 
+        JSON.stringify({
+          error: 'An account with this email already exists. Please try logging in or use a different email address.'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -183,7 +183,7 @@ serve(async (req) => {
 
     if (customerUserExists) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'This email is registered as a customer account',
           message: 'This email is registered as a customer account. Please use the customer login or use a different email for tenant signup.'
         }),
@@ -200,7 +200,7 @@ serve(async (req) => {
         .from('tenants')
         .select('id', { count: 'exact', head: true })
         .eq('slug', slug);
-      
+
       if (count === 0) {
         slugExists = false;
       } else {
@@ -215,7 +215,7 @@ serve(async (req) => {
       // Generate UUID and take first 8 characters for uniqueness
       const uuidSuffix = crypto.randomUUID().split('-')[0];
       slug = `${baseSlug}-${uuidSuffix}`;
-      
+
       // Log fallback usage for monitoring
       console.warn('Slug generation fallback used:', {
         business_name,
@@ -254,7 +254,7 @@ serve(async (req) => {
       supabaseUrl,
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
-    
+
     const { data: signInData, error: signInError } = await anonClient.auth.signInWithPassword({
       email: email.toLowerCase(),
       password: password,
@@ -281,13 +281,14 @@ serve(async (req) => {
         p_industry: industry || null,
         p_company_size: company_size || null,
         p_slug: slug,
+        p_plan: 'free', // Default to free tier - users get credits immediately (spec: new signups = free with 10K credits)
       });
 
     if (atomicError) {
-      console.error('[SIGNUP] Atomic creation failed', { 
+      console.error('[SIGNUP] Atomic creation failed', {
         error: atomicError,
         slug,
-        userId: authData.user.id 
+        userId: authData.user.id
       });
 
       // Rollback: Delete auth user since DB creation failed
@@ -307,9 +308,9 @@ serve(async (req) => {
       );
     }
 
-    console.log('[SIGNUP] Tenant created atomically', { 
+    console.log('[SIGNUP] Tenant created atomically', {
       tenantId: atomicResult.tenant_id,
-      slug 
+      slug
     });
 
     // Extract tenant and tenant_user from atomic result
@@ -318,7 +319,7 @@ serve(async (req) => {
 
     // Generate JWT tokens for auto-login
     const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
-    
+
     const accessToken = encodeJWT(
       {
         user_id: tenantUser.id,
@@ -436,7 +437,7 @@ serve(async (req) => {
           // Send verification email via Klaviyo or Supabase email
           const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
           const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
-          
+
           if (klaviyoApiKey) {
             // Send via Klaviyo (custom template)
             const emailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
@@ -475,7 +476,7 @@ serve(async (req) => {
         try {
           const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL') || '';
           const welcomeEmailUrl = `${siteUrl}/functions/v1/send-klaviyo-email`;
-          
+
           // Only send if email service is configured
           const klaviyoApiKey = Deno.env.get('KLAVIYO_API_KEY');
           if (klaviyoApiKey) {

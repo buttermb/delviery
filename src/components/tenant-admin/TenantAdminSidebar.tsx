@@ -109,7 +109,9 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'coupons': Tag,
   'menu-migration': Download,
   'marketplace': Globe,
+  'marketplace-product-sync': ArrowRightLeft,
   'sales-dashboard': DollarSign,
+  'storefront': Store,
   'pos-system': Store,
 
   // Inventory
@@ -165,6 +167,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'analytics': BarChart3,
   'revenue-reports': TrendingUp,
   'financial-center': DollarSign,
+  'collections': Wallet,
   'invoice-management': Receipt,
   'commission-tracking': DollarSign,
   'expense-tracking': Receipt,
@@ -216,7 +219,7 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Sales & Orders',
-    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'sales-dashboard', 'pos-system'],
+    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'marketplace-product-sync', 'storefront', 'sales-dashboard', 'pos-system'],
   },
   {
     label: 'Inventory',
@@ -242,7 +245,7 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Analytics & Finance',
-    features: ['reports', 'analytics', 'revenue-reports', 'financial-center', 'invoice-management', 'commission-tracking', 'expense-tracking', 'menu-analytics', 'order-analytics', 'advanced-reporting', 'predictive-analytics', 'advanced-analytics', 'custom-reports', 'data-export', 'risk-management'],
+    features: ['reports', 'analytics', 'revenue-reports', 'financial-center', 'collections', 'invoice-management', 'commission-tracking', 'expense-tracking', 'menu-analytics', 'order-analytics', 'advanced-reporting', 'predictive-analytics', 'advanced-analytics', 'custom-reports', 'data-export', 'risk-management'],
   },
   {
     label: 'Integrations',

@@ -269,10 +269,15 @@ const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomati
 
 // White-Label Storefront Pages (Admin)
 const StorefrontDashboard = lazy(() => import("./pages/admin/storefront/StorefrontDashboard"));
-const StorefrontSettings = lazy(() => import("./pages/admin/storefront/StorefrontSettings"));
+const StorefrontSettings = lazy(() => import("@/pages/admin/storefront/StorefrontSettings"));
+const StorefrontBuilder = lazy(() => import("@/pages/admin/storefront/StorefrontBuilder"));
 const StorefrontProducts = lazy(() => import("./pages/admin/storefront/StorefrontProducts"));
 const StorefrontOrders = lazy(() => import("./pages/admin/storefront/StorefrontOrders"));
 const StorefrontBundles = lazy(() => import("./pages/admin/storefront/StorefrontBundles"));
+const StorefrontLiveOrders = lazy(() => import("./pages/admin/storefront/StorefrontLiveOrders"));
+const StorefrontCustomers = lazy(() => import("./pages/admin/storefront/StorefrontCustomers"));
+const StorefrontCoupons = lazy(() => import("./pages/admin/storefront/StorefrontCoupons"));
+const StorefrontAnalytics = lazy(() => import("./pages/admin/storefront/StorefrontAnalytics"));
 
 // Marketplace Admin (B2C)
 const MarketplaceDashboard = lazy(() => import("./pages/admin/marketplace/MarketplaceDashboard"));
@@ -280,6 +285,7 @@ const StoreSettings = lazy(() => import("./pages/admin/marketplace/StoreSettings
 const ProductVisibilityManager = lazy(() => import("./pages/admin/marketplace/ProductVisibilityManager"));
 const CouponManager = lazy(() => import("./pages/admin/marketplace/CouponManager"));
 const MarketplaceCategoryManager = lazy(() => import("./pages/admin/marketplace/MarketplaceCategoryManager"));
+const ProductSyncPage = lazy(() => import("./pages/admin/marketplace/ProductSyncPage"));
 
 // Customer-Facing Shop Pages
 const ShopLayout = lazy(() => import("./pages/shop/ShopLayout"));
@@ -291,6 +297,7 @@ const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
 const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
 const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
 const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
+const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
 
 // Coming Soon Pages - Professional & Enterprise Features
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
@@ -556,6 +563,9 @@ const App = () => {
                                         <Route path="/marketplace" element={<PublicMarketplacePage />} />
                                         <Route path="/marketplace/listings/:listingId" element={<PublicListingDetailPage />} />
 
+                                        {/* Encrypted Store Link (Private Shareable) */}
+                                        <Route path="/s/:token" element={<EncryptedStorePage />} />
+
                                         {/* White-Label Shop (Customer Storefront) */}
                                         <Route path="/shop/:storeSlug" element={<ShopLayout />}>
                                           <Route index element={<ShopStorefrontPage />} />
@@ -722,9 +732,11 @@ const App = () => {
                                           <Route
                                             path="collection-mode"
                                             element={
-                                              <Suspense fallback={<SkeletonDashboard />}>
-                                                <CollectionModePage />
-                                              </Suspense>
+                                              <FeatureProtectedRoute featureId="collections">
+                                                <Suspense fallback={<SkeletonDashboard />}>
+                                                  <CollectionModePage />
+                                                </Suspense>
+                                              </FeatureProtectedRoute>
                                             }
                                           />
                                           {/* Collection mode aliases */}
@@ -805,14 +817,31 @@ const App = () => {
                                           <Route path="marketplace/purchases/:orderId" element={<PurchaseOrderDetailPage />} />
 
                                           {/* White-Label Storefront Routes */}
-                                          <Route path="storefront" element={<StorefrontDashboard />} />
-                                          <Route path="storefront/settings" element={<StorefrontSettings />} />
-                                          <Route path="storefront/products" element={<StorefrontProducts />} />
-                                          <Route path="storefront/orders" element={<StorefrontOrders />} />
-                                          <Route path="storefront/orders/:orderId" element={<StorefrontOrders />} />
-                                          <Route path="storefront/bundles" element={<StorefrontBundles />} />
-
-                                          <Route path="storefront/bundles" element={<StorefrontBundles />} />
+                                          <Route
+                                            path="storefront"
+                                            element={
+                                              <FeatureProtectedRoute featureId="storefront">
+                                                <StorefrontSettings />
+                                              </FeatureProtectedRoute>
+                                            }
+                                          />
+                                          <Route
+                                            path="storefront/customize"
+                                            element={
+                                              <FeatureProtectedRoute featureId="storefront">
+                                                <StorefrontBuilder />
+                                              </FeatureProtectedRoute>
+                                            }
+                                          />
+                                          <Route path="storefront/settings" element={<FeatureProtectedRoute featureId="storefront"><StorefrontSettings /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/products" element={<FeatureProtectedRoute featureId="storefront"><StorefrontProducts /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/orders" element={<FeatureProtectedRoute featureId="storefront"><StorefrontOrders /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/orders/:orderId" element={<FeatureProtectedRoute featureId="storefront"><StorefrontOrders /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/live-orders" element={<FeatureProtectedRoute featureId="storefront"><StorefrontLiveOrders /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/customers" element={<FeatureProtectedRoute featureId="storefront"><StorefrontCustomers /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/coupons" element={<FeatureProtectedRoute featureId="storefront"><StorefrontCoupons /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/analytics" element={<FeatureProtectedRoute featureId="storefront"><StorefrontAnalytics /></FeatureProtectedRoute>} />
+                                          <Route path="storefront/bundles" element={<FeatureProtectedRoute featureId="storefront"><StorefrontBundles /></FeatureProtectedRoute>} />
 
 
                                           {/* Marketplace Admin (B2C) */}
@@ -821,6 +850,7 @@ const App = () => {
                                           <Route path="marketplace/products" element={<FeatureProtectedRoute featureId="marketplace"><ProductVisibilityManager /></FeatureProtectedRoute>} />
                                           <Route path="marketplace/coupons" element={<FeatureProtectedRoute featureId="marketplace"><CouponManager /></FeatureProtectedRoute>} />
                                           <Route path="marketplace/categories" element={<FeatureProtectedRoute featureId="marketplace"><MarketplaceCategoryManager /></FeatureProtectedRoute>} />
+                                          <Route path="marketplace/sync" element={<FeatureProtectedRoute featureId="marketplace-product-sync"><ProductSyncPage /></FeatureProtectedRoute>} />
 
 
 

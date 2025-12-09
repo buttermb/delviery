@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Printer } from "lucide-react";
+import { MoreVertical, Printer, Store } from "lucide-react";
 
 interface Product {
   id: string;
@@ -36,6 +36,7 @@ interface ProductCardProps {
   onDelete?: (productId: string) => void;
   onAddToMenu?: (productId: string) => void;
   onPrintLabel?: () => void;
+  onPublish?: (productId: string) => void;
 }
 
 export function ProductCard({
@@ -43,7 +44,8 @@ export function ProductCard({
   onEdit,
   onDelete,
   onAddToMenu,
-  onPrintLabel
+  onPrintLabel,
+  onPublish
 }: ProductCardProps) {
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
@@ -142,6 +144,12 @@ export function ProductCard({
                 <DropdownMenuItem onClick={onPrintLabel}>
                   <Printer className="h-4 w-4 mr-2" />
                   Print Label
+                </DropdownMenuItem>
+              )}
+              {onPublish && (
+                <DropdownMenuItem onClick={() => onPublish(product.id)}>
+                  <Store className="h-4 w-4 mr-2" />
+                  Publish to Store
                 </DropdownMenuItem>
               )}
               {onDelete && (
