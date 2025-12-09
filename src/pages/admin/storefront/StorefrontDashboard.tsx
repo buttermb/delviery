@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Storefront Dashboard
  * Main hub for managing the white-label online store

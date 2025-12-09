@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";

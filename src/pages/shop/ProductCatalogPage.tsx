@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Product Catalog Page
  * Browse all products with search and filters

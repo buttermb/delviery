@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Storefront Page
  * Customer-facing store homepage

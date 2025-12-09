@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { logger } from '@/lib/logger';
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

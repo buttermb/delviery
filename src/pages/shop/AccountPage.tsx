@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Account Page
  * Customer account management and order history

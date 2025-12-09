@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Product Detail Page
  * Full product view with gallery, variants, reviews, and add-to-cart

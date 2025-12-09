@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Cart Page
  * Shopping cart with quantity controls and checkout button

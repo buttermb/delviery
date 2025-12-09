@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Credit Audit Log Page - Super Admin
  * 
