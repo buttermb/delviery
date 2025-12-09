@@ -71,7 +71,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
 
         // Fetch profiles manually for accuracy
         const userIds = [...new Set(orders.map((o: any) => o.user_id).filter(Boolean))];
-        let profilesMap: Record<string, any> = {};
+        const profilesMap: Record<string, any> = {};
 
         if (userIds.length > 0) {
           const { data: profiles } = await supabase

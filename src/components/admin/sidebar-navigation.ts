@@ -241,6 +241,40 @@ export const navigationSections: NavSection[] = [
     ]
   },
 
+  // 🏬 STOREFRONT (White-Label Shop)
+  {
+    title: 'Storefront',
+    items: [
+      {
+        title: 'Store Dashboard',
+        href: '/admin/storefront',
+        icon: Store,
+        badge: 'NEW'
+      },
+      {
+        title: 'Products',
+        href: '/admin/storefront/products',
+        icon: Package
+      },
+      {
+        title: 'Orders',
+        href: '/admin/storefront/orders',
+        icon: ShoppingCart
+      },
+      {
+        title: 'Bundles',
+        href: '/admin/storefront/bundles',
+        icon: Boxes,
+        tier: 'professional'
+      },
+      {
+        title: 'Store Settings',
+        href: '/admin/storefront/settings',
+        icon: Settings
+      }
+    ]
+  },
+
   // 🏪 MARKETPLACE
   {
     title: 'Marketplace',

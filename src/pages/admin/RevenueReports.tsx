@@ -88,10 +88,10 @@ export default function RevenueReports() {
     if (!rawOrders || rawOrders.length === 0) return null;
 
     let totalRevenue = 0;
-    let orderCount = rawOrders.length;
-    let productSales: Record<string, number> = {};
-    let statusCounts: Record<string, number> = {};
-    let revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
+    const orderCount = rawOrders.length;
+    const productSales: Record<string, number> = {};
+    const statusCounts: Record<string, number> = {};
+    const revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
 
     rawOrders.forEach(order => {
       // Revenue

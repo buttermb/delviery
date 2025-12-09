@@ -574,8 +574,8 @@ const App = () => {
                                         <Route path="/signup" element={<SignUpPage />} />
                                         <Route path="/select-plan" element={<SelectPlanPage />} />
                                         {/* Handle encoded URLs with %3F - React Router doesn't match encoded chars */}
-                                        <Route path="/select-plan%3Ftenant_id=*" element={<EncodedUrlRedirect />} />
-                                        <Route path="/select-plan%3F*" element={<EncodedUrlRedirect />} />
+                                        <Route path="/select-plan%3Ftenant_id/*" element={<EncodedUrlRedirect />} />
+                                        <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
                                         <Route path="/saas/login" element={<SaasLoginPage />} />
                                         <Route path="/verify-email" element={<VerifyEmailPage />} />
 

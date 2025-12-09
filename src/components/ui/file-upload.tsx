@@ -544,3 +544,4 @@ function FileList({ files, onRemove, showPreview = true, compact = false }: File
 export { FileUpload, FileList, formatFileSize, getFileIcon };
 export type { FileUploadProps, UploadedFile };
 
+

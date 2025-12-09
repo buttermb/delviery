@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logger } from '@/lib/logger';
 
 interface CreditContextType {
     credits: number;
@@ -43,7 +44,7 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 .single();
 
             if (error && error.code !== 'PGRST116') { // PGRST116 is "No result", which we handle as 0
-                console.error('Error fetching credits:', error);
+                logger.error('Error fetching credits', error, { component: 'CreditContext' });
             }
             return data?.balance || 0;
         },

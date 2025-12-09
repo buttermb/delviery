@@ -51,11 +51,11 @@ serve(async (req) => {
         // But standard JSON.stringify can handle 50k objects (~10MB-50MB) in memory on Edge usually.
         // If truly massive, we generate CSV line by line.
 
-        let data = [];
-        let csvContent = "";
+        const data = [];
+        const csvContent = "";
 
         // Fetch Query based on type
-        let query = supabaseAdmin.from(job.data_type).select('*').eq('tenant_id', job.tenant_id);
+        const query = supabaseAdmin.from(job.data_type).select('*').eq('tenant_id', job.tenant_id);
 
         // For orders, we might want relations like in AdminQuickExport, but let's stick to base table for "Raw Data Export" 
         // or try to match the "Detailed" expectation if possible.
@@ -65,7 +65,7 @@ serve(async (req) => {
         const batchSize = 1000;
         let hasMore = true;
         let page = 0;
-        let allRows = [];
+        const allRows = [];
 
         while (hasMore) {
             const { data: batch, error: fetchError } = await query

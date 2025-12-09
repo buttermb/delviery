@@ -220,3 +220,4 @@ COMMENT ON FUNCTION log_upgrade_trigger IS 'Logs when an upgrade trigger is show
 
 
 
+

@@ -321,3 +321,4 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 export default SearchAutocomplete;
 
 
+

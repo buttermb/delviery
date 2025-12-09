@@ -176,7 +176,7 @@ export async function detectFormat(input: File | string): Promise<FormatDetectio
   // Determine final format
   let format: InputFormat = 'text';
   let confidence = 0.5;
-  let mimeType = file.type;
+  const mimeType = file.type;
 
   if (bytesFormat) {
     format = bytesFormat;
