@@ -219,7 +219,11 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [
   },
   {
     label: 'Sales & Orders',
-    features: ['basic-orders', 'disposable-menus', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'menu-migration', 'marketplace', 'marketplace-product-sync', 'storefront', 'sales-dashboard', 'pos-system'],
+    features: ['basic-orders', 'wholesale-orders', 'wholesale-pricing-tiers', 'loyalty-program', 'coupons', 'marketplace', 'marketplace-product-sync', 'sales-dashboard', 'pos-system'],
+  },
+  {
+    label: 'Menus',
+    features: ['disposable-menus', 'menu-migration', 'storefront'],
   },
   {
     label: 'Inventory',

@@ -26,6 +26,7 @@ export interface Feature {
 export type FeatureCategory =
   | 'Command Center'
   | 'Sales & Orders'
+  | 'Menus'
   | 'Inventory'
   | 'Customers'
   | 'Operations'
@@ -58,6 +59,7 @@ export const TIER_TAGLINES = {
 export const CATEGORY_ORDER: FeatureCategory[] = [
   'Command Center',
   'Sales & Orders',
+  'Menus',
   'Inventory',
   'Customers',
   'Operations',
@@ -109,12 +111,13 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Sales & Orders',
     route: '/admin/disposable-menu-orders',
   },
+  // --- Menus (Starter) ---
   'disposable-menus': {
     id: 'disposable-menus',
     name: 'Menus',
     description: 'Create and share disposable menus with customers',
     tier: 'starter',
-    category: 'Sales & Orders',
+    category: 'Menus',
     route: '/admin/disposable-menus',
   },
   'wholesale-orders': {
@@ -278,13 +281,13 @@ export const FEATURES: Record<FeatureId, Feature> = {
     route: '/admin/notifications',
   },
 
-  // --- Sales & Orders (Starter - moved from Professional for all users) ---
+  // --- sales & Orders / Menus ---
   'menu-migration': {
     id: 'menu-migration',
     name: 'Menu Migration',
     description: 'AI-powered bulk import from spreadsheets and images',
     tier: 'starter',
-    category: 'Sales & Orders',
+    category: 'Menus',
     route: '/admin/menu-migration',
   },
   'marketplace': {
@@ -316,7 +319,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     name: 'Storefront',
     description: 'Manage your white-label online store',
     tier: 'professional',
-    category: 'Sales & Orders',
+    category: 'Menus',
     route: '/admin/storefront',
   },
 
