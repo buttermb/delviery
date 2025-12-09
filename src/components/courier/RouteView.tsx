@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-// @ts-expect-error - react-map-gl type definitions
+// @ts-ignore - react-map-gl type definitions
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';

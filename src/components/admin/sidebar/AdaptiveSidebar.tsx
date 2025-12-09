@@ -4,6 +4,7 @@
  * Main sidebar component that replaces TenantAdminSidebar
  * Adapts based on operation size, role, tier, and user preferences
  */
+import { logger } from '@/lib/logger';
 
 import { NavLink, useParams, useLocation, useNavigate } from 'react-router-dom';
 import {

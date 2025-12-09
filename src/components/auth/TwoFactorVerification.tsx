@@ -18,8 +18,27 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
     const [loading, setLoading] = useState(false);
     const [isRecoveryMode, setIsRecoveryMode] = useState(false);
     const [backupCode, setBackupCode] = useState("");
+    const [verificationCode, setVerificationCode] = useState("");
+    const [selectedFactorId, setSelectedFactorId] = useState<string | null>(null);
+    const [factors, setFactors] = useState<Array<{ id: string; factor_type: string }>>([]);
 
-    // ... (loadFactors)
+    // Load MFA factors on mount
+    useEffect(() => {
+        const loadFactors = async () => {
+            try {
+                const { data, error } = await supabase.auth.mfa.listFactors();
+                if (error) throw error;
+                const totpFactors = data?.totp || [];
+                setFactors(totpFactors);
+                if (totpFactors.length > 0) {
+                    setSelectedFactorId(totpFactors[0].id);
+                }
+            } catch (error) {
+                logger.error('Failed to load MFA factors', error as Error);
+            }
+        };
+        loadFactors();
+    }, []);
 
     const verifyCode = async (e?: React.FormEvent) => {
         // ... (existing TOTP verification)

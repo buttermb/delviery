@@ -5,13 +5,10 @@
  */
 
 export { CreditBalance } from './CreditBalance';
-export type { CreditBalanceProps } from './CreditBalance';
 
 export { CreditPurchaseModal } from './CreditPurchaseModal';
-export type { CreditPurchaseModalProps } from './CreditPurchaseModal';
 
 export { LowCreditWarning } from './LowCreditWarning';
-export type { LowCreditWarningProps } from './LowCreditWarning';
 
 export { OutOfCreditsModal } from './OutOfCreditsModal';
 export type { OutOfCreditsModalProps } from './OutOfCreditsModal';

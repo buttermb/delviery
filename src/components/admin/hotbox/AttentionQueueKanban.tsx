@@ -25,7 +25,8 @@ import {
     Calendar,
     DollarSign,
 } from 'lucide-react';
-import { AttentionItem, getCategoryColor } from '@/lib/hotbox/attentionQueue';
+import { getCategoryColor } from '@/lib/hotbox/attentionQueue';
+import { AttentionItem } from '@/types/hotbox';
 
 interface AttentionQueueKanbanProps {
     items: AttentionItem[];
