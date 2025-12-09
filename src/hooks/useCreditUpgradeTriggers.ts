@@ -313,10 +313,8 @@ export function useCreditUpgradeTriggers(): UseCreditUpgradeTriggersReturn {
 }
 
 // ============================================================================
-// Export Types
+// Export Types (already exported inline)
 // ============================================================================
-
-export type { UpgradeTrigger, TriggerType };
 
 
 

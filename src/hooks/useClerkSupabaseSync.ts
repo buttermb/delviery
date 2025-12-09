@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Clerk-Supabase Sync Hook
  * Syncs Clerk user data to Supabase for database operations

@@ -1,3 +1,4 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { AlertTriangle, Plus } from "lucide-react";
