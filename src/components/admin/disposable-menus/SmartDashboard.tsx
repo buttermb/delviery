@@ -668,10 +668,10 @@ export function SmartDashboard() {
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <SearchInput
-                  value={searchQuery}
-                  onChange={setSearchQuery}
+                  onSearch={setSearchQuery}
                   placeholder="Search menus..."
                   className="bg-background"
+                  defaultValue={searchQuery}
                 />
               </div>
               <div className="flex gap-2">
