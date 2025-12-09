@@ -88,7 +88,7 @@ export default function PricingTiersPage() {
                 .from('account_settings')
                 .select('integration_settings')
                 .eq('account_id', tenant.id)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;
@@ -108,7 +108,7 @@ export default function PricingTiersPage() {
                 .from('account_settings')
                 .select('integration_settings')
                 .eq('account_id', tenant.id)
-                .single();
+                .maybeSingle();
 
             const currentIntegrationSettings = (currentSettings?.integration_settings as any) || {};
 

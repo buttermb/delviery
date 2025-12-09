@@ -59,7 +59,7 @@ export async function validatePromoCode(code: string): Promise<{
       .select('*')
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return { valid: false, error: 'Invalid promo code' };
@@ -100,7 +100,7 @@ export async function hasRedeemedPromoCode(
     .select('id')
     .eq('tenant_id', tenantId)
     .eq('promo_code_id', promoCodeId)
-    .single();
+    .maybeSingle();
 
   return !!data;
 }
@@ -216,7 +216,7 @@ export async function createPromoCode(params: {
         uses_count: 0,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Error creating promo code', { error });

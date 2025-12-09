@@ -159,7 +159,7 @@ export default function StorefrontDashboard() {
           is_public: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

@@ -112,7 +112,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
         .from('disposable_menus')
         .select('tenant_id, payment_settings' as any)
         .eq('id', menuId)
-        .single();
+        .maybeSingle();
 
       if (menuError || !menu) {
         logger.error('Error fetching menu:', menuError);

@@ -5003,6 +5003,7 @@ export type Database = {
           reorder_point: number | null
           resolved_at: string | null
           severity: string
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -5017,6 +5018,7 @@ export type Database = {
           reorder_point?: number | null
           resolved_at?: string | null
           severity: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -5031,6 +5033,7 @@ export type Database = {
           reorder_point?: number | null
           resolved_at?: string | null
           severity?: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -5039,6 +5042,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "wholesale_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

@@ -88,7 +88,7 @@ export default function DataExport() {
           status: 'pending'
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (dbError) throw dbError;
 

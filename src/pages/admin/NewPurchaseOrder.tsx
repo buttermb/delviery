@@ -154,7 +154,7 @@ export default function NewPurchaseOrder() {
                     notes: poData.notes || null
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (poError) throw poError;
 

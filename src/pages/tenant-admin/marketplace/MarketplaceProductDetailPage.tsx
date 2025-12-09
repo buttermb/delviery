@@ -65,7 +65,7 @@ export default function MarketplaceProductDetailPage() {
           )
         `)
                 .eq('id', productId)
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;

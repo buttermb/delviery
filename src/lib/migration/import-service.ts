@@ -53,7 +53,7 @@ async function createImportRecord(
       status: 'processing',
     })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (error) throw new Error(`Failed to create import record: ${error.message}`);
   return data.id;
@@ -103,7 +103,7 @@ async function createImportItem(
       confidence_score: product.confidence || 0,
     })
     .select('id')
-    .single();
+    .maybeSingle();
 
   if (error) {
     logger.error('Failed to create import item', { error });
@@ -188,7 +188,7 @@ async function importSingleProduct(
       .from('products')
       .insert(toInventoryRecord(product, tenantId))
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
@@ -447,7 +447,7 @@ export async function getImportDetails(importId: string): Promise<{
     .from('product_imports')
     .select('*')
     .eq('id', importId)
-    .single();
+    .maybeSingle();
 
   if (importError || !importData) return null;
 

@@ -114,7 +114,7 @@ export default function SelectPlanPage() {
         .from('tenants')
         .select('subscription_status, subscription_plan, slug')
         .eq('id', tenantId)
-        .single();
+        .maybeSingle();
 
       if (error || !tenant) return;
 

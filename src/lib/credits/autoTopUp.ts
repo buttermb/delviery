@@ -68,7 +68,7 @@ export async function getAutoTopUpConfig(tenantId: string): Promise<AutoTopUpCon
       .from('credit_auto_topup')
       .select('*')
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return null;
@@ -117,7 +117,7 @@ export async function setupAutoTopUp(request: SetupAutoTopUpRequest): Promise<Au
         .update(configData)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -135,7 +135,7 @@ export async function setupAutoTopUp(request: SetupAutoTopUpRequest): Promise<Au
           month_reset_at: getNextMonthReset(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

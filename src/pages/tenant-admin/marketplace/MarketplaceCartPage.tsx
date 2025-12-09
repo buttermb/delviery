@@ -113,7 +113,7 @@ export default function MarketplaceCartPage() {
                         // Simplified for MVP.
                     })
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (orderError) throw orderError;
 

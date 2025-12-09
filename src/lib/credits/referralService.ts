@@ -84,7 +84,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return mapDbToReferralCode(existing);
@@ -104,7 +104,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
       .from('referral_codes')
       .select('*')
       .eq('code', newCode)
-      .single();
+      .maybeSingle();
 
     if (refetchError || !created) {
       logger.error('Failed to fetch created referral code', { refetchError });
@@ -128,7 +128,7 @@ export async function getReferralCode(tenantId: string): Promise<ReferralCode | 
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return null;
@@ -155,7 +155,7 @@ export async function validateReferralCode(code: string): Promise<{
       .select('*')
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return { valid: false, error: 'Invalid referral code' };
@@ -347,7 +347,7 @@ export async function grantConversionBonus(
       .select('id, referrer_tenant_id, conversion_bonus_granted')
       .eq('referee_tenant_id', convertedTenantId)
       .eq('conversion_bonus_granted', false)
-      .single();
+      .maybeSingle();
 
     if (findError || !redemption) {
       // No pending conversion bonus
