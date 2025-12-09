@@ -184,31 +184,42 @@ export default function CheckoutPage() {
         image_url: item.imageUrl,
       }));
 
-      const { data, error } = await supabase.rpc('create_marketplace_order', {
-        p_store_id: store.id,
-        p_items: orderItems,
-        p_customer_name: `${formData.firstName} ${formData.lastName}`,
-        p_customer_email: formData.email,
-        p_customer_phone: formData.phone,
-        p_delivery_address: {
-          street: formData.street,
-          apartment: formData.apartment,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip,
-        },
-        p_delivery_notes: formData.deliveryNotes,
-        p_payment_method: formData.paymentMethod,
-      });
+      try {
+        const { data, error } = await supabase.rpc('create_marketplace_order', {
+          p_store_id: store.id,
+          p_items: orderItems,
+          p_customer_name: `${formData.firstName} ${formData.lastName}`,
+          p_customer_email: formData.email,
+          p_customer_phone: formData.phone,
+          p_delivery_address: {
+            street: formData.street,
+            apartment: formData.apartment,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+          },
+          p_delivery_notes: formData.deliveryNotes,
+          p_payment_method: formData.paymentMethod,
+        });
 
-      if (error) throw error;
+        if (error) {
+          // Handle case where RPC function doesn't exist
+          if (error.message?.includes('function') || error.code === '42883') {
+            throw new Error('Order system is not configured. Please contact the store.');
+          }
+          throw error;
+        }
 
-      const result = data?.[0];
-      if (!result?.success) {
-        throw new Error(result?.error_message || 'Failed to place order');
+        const result = data?.[0];
+        if (!result?.success) {
+          throw new Error(result?.error_message || 'Failed to place order');
+        }
+
+        return result;
+      } catch (err: any) {
+        logger.error('Order RPC error', err);
+        throw err;
       }
-
-      return result;
     },
     onSuccess: (data) => {
       // Clear cart
@@ -225,11 +236,11 @@ export default function CheckoutPage() {
         },
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
       toast({
         title: 'Order failed',
-        description: 'Something went wrong. Please try again.',
+        description: error?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     },

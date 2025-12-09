@@ -114,13 +114,21 @@ export default function ProductDetailPage() {
     queryFn: async () => {
       if (!store?.id || !productId) return null;
 
-      const { data, error } = await supabase
-        .rpc('get_marketplace_products', { p_store_id: store.id })
-        .eq('product_id', productId)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .rpc('get_marketplace_products', { p_store_id: store.id })
+          .eq('product_id', productId)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data as ProductDetails;
+        if (error) {
+          logger.error('Failed to fetch product', error);
+          return null;
+        }
+        return data as ProductDetails | null;
+      } catch (err) {
+        logger.error('Error fetching product', err);
+        return null;
+      }
     },
     enabled: !!store?.id && !!productId,
   });

@@ -121,7 +121,18 @@ export default function CartPage() {
           p_subtotal: subtotal,
         });
 
-      if (error) throw error;
+      if (error) {
+        // Handle case where RPC function doesn't exist yet
+        if (error.message?.includes('function') || error.code === '42883') {
+          toast({
+            title: 'Coupons not available',
+            description: 'Coupon feature is not configured for this store.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        throw error;
+      }
 
       const result = data?.[0];
       if (result?.is_valid) {

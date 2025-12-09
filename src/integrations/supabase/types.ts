@@ -6384,6 +6384,66 @@ export type Database = {
           },
         ]
       }
+      marketplace_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string | null
+          id: string
+          is_approved: boolean | null
+          is_verified_purchase: boolean | null
+          product_id: string
+          rating: number
+          store_id: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id: string
+          rating: number
+          store_id: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          rating?: number
+          store_id?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_stores: {
         Row: {
           accent_color: string | null
@@ -13374,6 +13434,26 @@ export type Database = {
         }
         Returns: Json
       }
+      create_marketplace_order: {
+        Args: {
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone?: string
+          p_delivery_address?: Json
+          p_delivery_notes?: string
+          p_items: Json
+          p_payment_method?: string
+          p_store_id: string
+        }
+        Returns: {
+          error_message: string
+          order_id: string
+          order_number: string
+          success: boolean
+          total: number
+          tracking_token: string
+        }[]
+      }
       create_super_admin_with_password: {
         Args: {
           p_email: string
@@ -13827,6 +13907,15 @@ export type Database = {
       validate_courier_pin_session: {
         Args: { p_courier_id: string; p_session_token: string }
         Returns: boolean
+      }
+      validate_marketplace_coupon: {
+        Args: { p_code: string; p_store_id: string; p_subtotal: number }
+        Returns: {
+          discount_amount: number
+          discount_type: string
+          error_message: string
+          is_valid: boolean
+        }[]
       }
       verify_admin_pin: {
         Args: { courier_user_id: string; pin: string }
