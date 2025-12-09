@@ -28,15 +28,27 @@ interface FunnelData {
 export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: StorefrontFunnelProps) {
   const { data: funnel, isLoading } = useQuery({
     queryKey: ['storefront-funnel', storeId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc('get_marketplace_funnel', { p_store_id: storeId });
+    queryFn: async (): Promise<FunnelData | null> => {
+      try {
+        const { data, error } = await supabase
+          .rpc('get_marketplace_funnel' as any, { p_store_id: storeId });
 
-      if (error) throw error;
-      return data?.[0] as FunnelData | null;
+        // Function doesn't exist yet - return placeholder data
+        if (error) {
+          if (error.code === 'PGRST202' || error.message?.includes('does not exist')) {
+            return null;
+          }
+          console.warn('Funnel query error:', error);
+          return null;
+        }
+        return data?.[0] as FunnelData | null;
+      } catch {
+        return null;
+      }
     },
     enabled: !!storeId,
     refetchInterval: 60000, // Refresh every minute
+    retry: false,
   });
 
   if (isLoading) {

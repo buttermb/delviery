@@ -10028,6 +10028,47 @@ export type Database = {
           },
         ]
       }
+      storefront_analytics: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          session_id: string | null
+          store_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          session_id?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          session_id?: string | null
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_analytics_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_events: {
         Row: {
           created_at: string | null
@@ -13476,6 +13517,17 @@ export type Database = {
           today_earnings: number
           total_deliveries: number
           vehicle_type: string
+        }[]
+      }
+      get_marketplace_funnel: {
+        Args: { p_store_id: string }
+        Returns: {
+          add_to_cart: number
+          checkout_starts: number
+          conversion_rate: number
+          page_views: number
+          product_views: number
+          purchases: number
         }[]
       }
       get_marketplace_store_by_slug: {

@@ -94,6 +94,15 @@ export default function ShopLayout() {
     retry: false,
   });
 
+  // SEO: Update page title - MUST be before conditional returns
+  useEffect(() => {
+    if (store?.store_name) {
+      document.title = store.tagline
+        ? `${store.store_name} | ${store.tagline}`
+        : `${store.store_name} | Best Cannabis Delivery`;
+    }
+  }, [store?.store_name, store?.tagline]);
+
   // Load cart from localStorage
   useEffect(() => {
     if (store?.id) {
@@ -118,7 +127,6 @@ export default function ShopLayout() {
       setAgeVerified(true);
     }
   }, [store]);
-
   // Check if store is open
   const isStoreOpen = () => {
     if (!store?.operating_hours) return true;
@@ -245,14 +253,7 @@ export default function ShopLayout() {
     '--store-accent': store.accent_color,
   } as React.CSSProperties;
 
-  // SEO: Update page title
-  useEffect(() => {
-    if (store?.store_name) {
-      document.title = store.tagline
-        ? `${store.store_name} | ${store.tagline}`
-        : `${store.store_name} | Best Cannabis Delivery`;
-    }
-  }, [store?.store_name, store?.tagline]);
+  // Theme styles applied inline
 
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
