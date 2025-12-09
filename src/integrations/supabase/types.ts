@@ -2299,7 +2299,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
-          invite_token?: string
+          invite_token: string
           name: string
           phone?: string | null
           status?: string | null
@@ -2364,7 +2364,7 @@ export type Database = {
           invoice_number: string
           line_items?: Json | null
           paid_at?: string | null
-          public_token?: string
+          public_token: string
           status?: string | null
           subtotal: number
           tax_amount?: number | null
