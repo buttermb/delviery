@@ -41,9 +41,9 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 .from('tenant_credits')
                 .select('balance')
                 .eq('tenant_id', tenant.id)
-                .single();
+                .maybeSingle();
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 is "No result", which we handle as 0
+            if (error) {
                 logger.error('Error fetching credits', error, { component: 'CreditContext' });
             }
             return data?.balance || 0;

@@ -53,25 +53,53 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         queryKey: ["products", storeId],
         queryFn: async () => {
             if (storeId) {
-                // Public Storefront View
-                // Public Storefront View
-                const { data, error } = await (supabase as any)
-                    .rpc('get_marketplace_products', { p_store_id: storeId });
+                // Public Storefront View - try RPC first, fallback to direct query
+                try {
+                    const { data, error } = await (supabase as any)
+                        .rpc('get_marketplace_products', { p_store_id: storeId });
 
-                if (error) throw error;
+                    if (error) {
+                        // RPC might not exist, fallback to direct query
+                        console.warn('RPC get_marketplace_products failed, using fallback:', error.message);
+                        const { data: fallbackData, error: fallbackError } = await supabase
+                            .from('marketplace_product_settings')
+                            .select(`
+                                product_id,
+                                is_visible,
+                                custom_price,
+                                products:product_id (
+                                    id, name, description, price, category, images, in_stock
+                                )
+                            `)
+                            .eq('store_id', storeId)
+                            .eq('is_visible', true);
+                        
+                        if (fallbackError) throw fallbackError;
+                        
+                        return ((fallbackData as any[]) || []).map((item: any) => ({
+                            ...item.products,
+                            id: item.product_id,
+                            price: item.custom_price || item.products?.price || 0,
+                            images: item.products?.images || [],
+                        }));
+                    }
 
-                // Normalize RPC data (marketplace_listings) to match Product interface
-                return ((data as any[]) || []).map((p: any) => ({
-                    ...p,
-                    id: p.product_id || p.id,
-                    name: p.product_name, // Map product_name -> name
-                    price: p.base_price,  // Map base_price -> price
-                    description: p.description,
-                    images: p.images || [],
-                    category: p.category,
-                    in_stock: (p.quantity_available || 0) > 0,
-                    vendor_name: '' // Listings might not have vendor_name joined yet
-                }));
+                    // Normalize RPC data to match Product interface
+                    return ((data as any[]) || []).map((p: any) => ({
+                        ...p,
+                        id: p.product_id || p.id,
+                        name: p.product_name || p.name,
+                        price: p.base_price || p.price || 0,
+                        description: p.description,
+                        images: p.images || [],
+                        category: p.category,
+                        in_stock: (p.quantity_available || 0) > 0,
+                        vendor_name: ''
+                    }));
+                } catch (err) {
+                    console.error('Error fetching marketplace products:', err);
+                    return [];
+                }
             } else {
                 // Admin Builder Preview (uses generic products)
                 const { data, error } = await supabase
@@ -83,6 +111,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                 return (data || []) as any[];
             }
         },
+        retry: 1,
     });
 
     const productIds = allProducts.map(p => p.id);
