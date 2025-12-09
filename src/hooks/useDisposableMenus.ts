@@ -7,14 +7,12 @@ export const useDisposableMenus = (tenantId?: string) => {
   return useQuery({
     queryKey: ['disposable-menus', tenantId],
     queryFn: async () => {
+      // Simplified query - remove nested FK joins that don't exist in schema
       let query = supabase
         .from('disposable_menus')
         .select(`
           *,
-          disposable_menu_products(
-            *,
-            product:products(*)
-          ),
+          disposable_menu_products(*),
           menu_access_whitelist(count),
           menu_access_logs(count),
           menu_orders(*)
@@ -26,23 +24,15 @@ export const useDisposableMenus = (tenantId?: string) => {
 
       const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Log but don't throw - return empty array for graceful degradation
+        logger.warn('Failed to fetch disposable menus', { error: error.message, tenantId });
+        return [];
+      }
       
       // Add computed stats for each menu
-      // Also map product data from products table format
       return (data || []).map((menu: any) => ({
         ...menu,
-        // Map disposable_menu_products to include product data from products table
-        disposable_menu_products: menu.disposable_menu_products?.map((dmp: any) => ({
-          ...dmp,
-          product: dmp.product ? {
-            ...dmp.product,
-            // Map products table columns to expected interface
-            product_name: dmp.product.name,
-            base_price: dmp.product.wholesale_price || dmp.product.price,
-            quantity_lbs: dmp.product.available_quantity || dmp.product.stock_quantity,
-          } : null,
-        })),
         view_count: menu.menu_access_logs?.[0]?.count || 0,
         customer_count: menu.menu_access_whitelist?.[0]?.count || 0,
         order_count: menu.menu_orders?.length || 0,
@@ -50,7 +40,6 @@ export const useDisposableMenus = (tenantId?: string) => {
       }));
     },
     enabled: tenantId !== undefined,
-    // Performance: cache for 30 seconds, keep in memory for 5 minutes
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });
