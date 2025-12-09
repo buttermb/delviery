@@ -317,9 +317,9 @@ export const FEATURES: Record<FeatureId, Feature> = {
   'storefront': {
     id: 'storefront',
     name: 'Storefront',
-    description: 'Manage your white-label online store',
+    description: 'Manage your white-label online store with products, orders, and customers',
     tier: 'professional',
-    category: 'Menus',
+    category: 'Sales & Orders',
     route: '/admin/storefront',
   },
 
