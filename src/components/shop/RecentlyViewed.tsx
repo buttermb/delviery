@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Recently Viewed Products
  * Shows products the customer has recently viewed

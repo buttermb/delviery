@@ -7,6 +7,9 @@
 
 import { AttentionItem, AlertPriority, AlertCategory } from '@/types/hotbox';
 
+// Re-export for consumers
+export type { AttentionItem, AlertPriority, AlertCategory };
+
 // Base Priority Scores
 const PRIORITY_SCORES: Record<AlertPriority, number> = {
   critical: 1000,

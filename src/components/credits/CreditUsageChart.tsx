@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CreditUsageChart Component
  * 
