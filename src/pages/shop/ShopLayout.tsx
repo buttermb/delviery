@@ -3,8 +3,8 @@
  * Customer-facing storefront layout wrapper with navigation
  */
 
-import { useEffect, useState } from 'react';
-import { Outlet, Link, useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, createContext, useContext } from 'react';
+import { Outlet, Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,8 @@ import {
   X,
   User,
   Search,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
@@ -39,14 +40,12 @@ interface StoreInfo {
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
 }
 
-// Context for store info
-import { createContext, useContext } from 'react';
-
 interface ShopContextType {
   store: StoreInfo | null;
   isLoading: boolean;
   cartItemCount: number;
   setCartItemCount: (count: number) => void;
+  isPreviewMode: boolean;
 }
 
 const ShopContext = createContext<ShopContextType>({
@@ -54,16 +53,21 @@ const ShopContext = createContext<ShopContextType>({
   isLoading: true,
   cartItemCount: 0,
   setCartItemCount: () => { },
+  isPreviewMode: false,
 });
 
 export const useShop = () => useContext(ShopContext);
 
 export default function ShopLayout() {
   const { storeSlug } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [ageVerified, setAgeVerified] = useState(false);
+
+  // Check if in preview mode
+  const isPreviewMode = searchParams.get('preview') === 'true';
 
   // Fetch store by slug
   const { data: store, isLoading, error } = useQuery({
@@ -174,23 +178,23 @@ export default function ShopLayout() {
     );
   }
 
-  // Store inactive
-  if (!store.is_active) {
+  // Store inactive - show different message for public vs preview
+  if (!store.is_active && !isPreviewMode) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-2xl font-bold mb-2">Store Currently Closed</h1>
+          <h1 className="text-2xl font-bold mb-2">Coming Soon</h1>
           <p className="text-muted-foreground">
-            This store is temporarily unavailable. Please check back later.
+            This store is getting ready to launch. Check back soon!
           </p>
         </div>
       </div>
     );
   }
 
-  // Age verification gate
-  if (store.require_age_verification && !ageVerified) {
+  // Age verification gate (skip in preview mode)
+  if (store.require_age_verification && !ageVerified && !isPreviewMode) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
@@ -246,14 +250,27 @@ export default function ShopLayout() {
   }, [store?.store_name, store?.tagline]);
 
   return (
-    <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount }}>
+    <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode }}>
       <div className="min-h-screen bg-background" style={themeStyles}>
+        {/* Admin Preview Banner */}
+        {isPreviewMode && (
+          <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            <span>Preview Mode - This store is not yet live</span>
+            {!store.is_active && (
+              <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+                Draft
+              </Badge>
+            )}
+          </div>
+        )}
+
         {/* Header */}
         <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
-              <Link to={`/shop/${storeSlug}`} className="flex items-center gap-3">
+              <Link to={`/shop/${storeSlug}${isPreviewMode ? '?preview=true' : ''}`} className="flex items-center gap-3">
                 {store.logo_url ? (
                   <img
                     src={store.logo_url}
@@ -273,12 +290,12 @@ export default function ShopLayout() {
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
                 <Link
-                  to={`/shop/${storeSlug}/products`}
+                  to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
                   className="text-sm font-medium hover:text-primary transition-colors"
                 >
                   Products
                 </Link>
-                {!isStoreOpen() && (
+                {!isStoreOpen() && !isPreviewMode && (
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
@@ -291,24 +308,28 @@ export default function ShopLayout() {
                 <Button variant="ghost" size="icon" className="hidden md:flex">
                   <Search className="w-5 h-5" />
                 </Button>
-                <Link to={`/shop/${storeSlug}/cart`}>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <ShoppingCart className="w-5 h-5" />
-                    {cartItemCount > 0 && (
-                      <Badge
-                        className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                        style={{ backgroundColor: store.primary_color }}
-                      >
-                        {cartItemCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </Link>
-                <Link to={`/shop/${storeSlug}/account`}>
-                  <Button variant="ghost" size="icon">
-                    <User className="w-5 h-5" />
-                  </Button>
-                </Link>
+                {!isPreviewMode && (
+                  <>
+                    <Link to={`/shop/${storeSlug}/cart`}>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <ShoppingCart className="w-5 h-5" />
+                        {cartItemCount > 0 && (
+                          <Badge
+                            className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                            style={{ backgroundColor: store.primary_color }}
+                          >
+                            {cartItemCount}
+                          </Badge>
+                        )}
+                      </Button>
+                    </Link>
+                    <Link to={`/shop/${storeSlug}/account`}>
+                      <Button variant="ghost" size="icon">
+                        <User className="w-5 h-5" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
 
                 {/* Mobile Menu Button */}
                 <Button
@@ -327,26 +348,30 @@ export default function ShopLayout() {
               <nav className="md:hidden py-4 border-t mt-3">
                 <div className="flex flex-col gap-2">
                   <Link
-                    to={`/shop/${storeSlug}/products`}
+                    to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
                     className="py-2 px-4 rounded-lg hover:bg-muted"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Products
                   </Link>
-                  <Link
-                    to={`/shop/${storeSlug}/cart`}
-                    className="py-2 px-4 rounded-lg hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Cart ({cartItemCount})
-                  </Link>
-                  <Link
-                    to={`/shop/${storeSlug}/account`}
-                    className="py-2 px-4 rounded-lg hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Account
-                  </Link>
+                  {!isPreviewMode && (
+                    <>
+                      <Link
+                        to={`/shop/${storeSlug}/cart`}
+                        className="py-2 px-4 rounded-lg hover:bg-muted"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Cart ({cartItemCount})
+                      </Link>
+                      <Link
+                        to={`/shop/${storeSlug}/account`}
+                        className="py-2 px-4 rounded-lg hover:bg-muted"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Account
+                      </Link>
+                    </>
+                  )}
                 </div>
               </nav>
             )}
@@ -368,15 +393,17 @@ export default function ShopLayout() {
                   <p className="text-sm text-muted-foreground">{store.tagline}</p>
                 )}
               </div>
-              <div className="flex gap-4 text-sm text-muted-foreground">
-                <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
-                  Track Order
-                </Link>
-                <span>•</span>
-                <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
-                  Account
-                </Link>
-              </div>
+              {!isPreviewMode && (
+                <div className="flex gap-4 text-sm text-muted-foreground">
+                  <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
+                    Track Order
+                  </Link>
+                  <span>•</span>
+                  <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
+                    Account
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
               © {new Date().getFullYear()} {store.store_name}. All rights reserved.
@@ -384,17 +411,14 @@ export default function ShopLayout() {
           </div>
         </footer>
 
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNav
-          cartItemCount={cartItemCount}
-          primaryColor={store.primary_color}
-        />
+        {/* Mobile Bottom Navigation - hide in preview mode */}
+        {!isPreviewMode && (
+          <MobileBottomNav
+            cartItemCount={cartItemCount}
+            primaryColor={store.primary_color}
+          />
+        )}
       </div>
     </ShopContext.Provider>
   );
 }
-
-
-
-
-
