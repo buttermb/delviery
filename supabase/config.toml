@@ -40,6 +40,12 @@ verify_jwt = false
 [functions.check-twilio-config]
 verify_jwt = false
 
+[functions.portal-data]
+verify_jwt = false
+
+[functions.api]
+verify_jwt = false
+
 # ===========================================
 # MENU ACCESS (public-facing, no JWT)
 # ===========================================
@@ -65,6 +71,9 @@ verify_jwt = false
 [functions.leafly-suggestions]
 verify_jwt = false
 
+[functions.send-menu-access-link]
+verify_jwt = false
+
 # ===========================================
 # SCHEDULED/CRON JOBS (no JWT - service calls)
 # ===========================================
@@ -75,7 +84,19 @@ verify_jwt = false
 [functions.check-trial-reminders]
 verify_jwt = false
 
+[functions.check-expired-trials]
+verify_jwt = false
+
+[functions.send-trial-expiration-notice]
+verify_jwt = false
+
+[functions.send-trial-expired-notice]
+verify_jwt = false
+
 [functions.enforce-tenant-limits]
+verify_jwt = false
+
+[functions.check-usage-limits]
 verify_jwt = false
 
 [functions.invoice-management]
@@ -84,31 +105,82 @@ verify_jwt = false
 [functions.admin-api-operations]
 verify_jwt = false
 
-[functions.scheduled-jobs]
+[functions.credit-threshold-alerts]
 verify_jwt = false
 
-[functions.cron-handler]
+[functions.credit-usage-reset]
 verify_jwt = false
 
-[functions.batch-processor]
+[functions.credit-warning-emails]
 verify_jwt = false
 
-[functions.cleanup-expired-menus]
+[functions.collect-metrics]
 verify_jwt = false
 
-[functions.cleanup-expired-sessions]
+[functions.uptime-checker]
 verify_jwt = false
 
-[functions.process-pending-notifications]
+[functions.weekly-encryption-report]
 verify_jwt = false
 
-[functions.sync-inventory-levels]
+[functions.process-delivery-notifications]
 verify_jwt = false
 
-[functions.generate-daily-reports]
+# ===========================================
+# VERIFICATION ENDPOINTS (public for OTP/email flows)
+# ===========================================
+
+[functions.send-otp]
 verify_jwt = false
 
-[functions.process-scheduled-campaigns]
+[functions.verify-phone]
+verify_jwt = false
+
+[functions.validate-phone]
+verify_jwt = false
+
+[functions.validate-email]
+verify_jwt = false
+
+[functions.send-verification-email]
+verify_jwt = false
+
+[functions.send-verification-sms]
+verify_jwt = false
+
+[functions.request-password-reset]
+verify_jwt = false
+
+[functions.reset-password]
+verify_jwt = false
+
+# ===========================================
+# COURIER APP (public for driver access)
+# ===========================================
+
+[functions.courier-app]
+verify_jwt = false
+
+[functions.runner-location-update]
+verify_jwt = false
+
+[functions.calculate-eta]
+verify_jwt = false
+
+[functions.check-geofence]
+verify_jwt = false
+
+[functions.realtime-tracking]
+verify_jwt = false
+
+# ===========================================
+# MARKETPLACE (public storefront access)
+# ===========================================
+
+[functions.create-marketplace-order]
+verify_jwt = false
+
+[functions.create-marketplace-profile]
 verify_jwt = false
 
 # ===========================================
@@ -137,6 +209,33 @@ verify_jwt = true
 [functions.create-setup-session]
 verify_jwt = true
 
+[functions.tenant-stripe-checkout]
+verify_jwt = true
+
+[functions.create-stripe-connect]
+verify_jwt = true
+
+[functions.setup-stripe-products]
+verify_jwt = true
+
+[functions.billing]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.process-payment]
+verify_jwt = true
+
+[functions.purchase-credits]
+verify_jwt = true
+
+[functions.grant-free-credits]
+verify_jwt = true
+
+[functions.process-auto-topup]
+verify_jwt = true
+
 # Menu Management
 [functions.menu-generate]
 verify_jwt = true
@@ -156,16 +255,7 @@ verify_jwt = true
 [functions.create-encrypted-menu]
 verify_jwt = true
 
-[functions.update-menu-settings]
-verify_jwt = true
-
-[functions.duplicate-menu]
-verify_jwt = true
-
-[functions.archive-menu]
-verify_jwt = true
-
-[functions.export-menu-data]
+[functions.convert-menu-order-to-invoice]
 verify_jwt = true
 
 # Product Management
@@ -178,16 +268,10 @@ verify_jwt = true
 [functions.sync-product-to-menu]
 verify_jwt = true
 
-[functions.bulk-import-products]
+[functions.process-product-image]
 verify_jwt = true
 
-[functions.bulk-update-products]
-verify_jwt = true
-
-[functions.product-image-upload]
-verify_jwt = true
-
-[functions.generate-product-description]
+[functions.update-all-products]
 verify_jwt = true
 
 # Tenant & Team Management
@@ -197,39 +281,23 @@ verify_jwt = true
 [functions.impersonate-tenant]
 verify_jwt = true
 
-[functions.update-tenant-settings]
+[functions.apply-tier-preset]
 verify_jwt = true
 
-[functions.manage-team-members]
+[functions.staff-management]
 verify_jwt = true
 
-[functions.update-user-role]
-verify_jwt = true
-
-[functions.deactivate-user]
-verify_jwt = true
-
-# Customer Management
-[functions.create-customer]
-verify_jwt = true
-
-[functions.update-customer]
-verify_jwt = true
-
-[functions.delete-customer]
-verify_jwt = true
-
-[functions.import-customers]
-verify_jwt = true
-
-[functions.export-customers]
-verify_jwt = true
-
-[functions.merge-customers]
+[functions.create-user-profile]
 verify_jwt = true
 
 # Orders & Payments
-[functions.process-payment]
+[functions.create-order]
+verify_jwt = true
+
+[functions.update-order-status]
+verify_jwt = true
+
+[functions.check-order-fraud]
 verify_jwt = true
 
 [functions.process-return]
@@ -238,19 +306,7 @@ verify_jwt = true
 [functions.create-purchase-order]
 verify_jwt = true
 
-[functions.update-order-status]
-verify_jwt = true
-
-[functions.cancel-order]
-verify_jwt = true
-
-[functions.refund-order]
-verify_jwt = true
-
-[functions.process-pos-transaction]
-verify_jwt = true
-
-[functions.void-transaction]
+[functions.receive-purchase-order]
 verify_jwt = true
 
 # Notifications & Communications
@@ -260,7 +316,16 @@ verify_jwt = true
 [functions.send-sms]
 verify_jwt = true
 
-[functions.send-email]
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.send-invitation-email]
+verify_jwt = true
+
+[functions.send-klaviyo-email]
+verify_jwt = true
+
+[functions.send-klaviyo-sms]
 verify_jwt = true
 
 [functions.send-marketing-campaign]
@@ -275,30 +340,33 @@ verify_jwt = true
 [functions.notify-recall]
 verify_jwt = true
 
+[functions.send-webhook]
+verify_jwt = true
+
+[functions.customer-chat]
+verify_jwt = true
+
 # Loyalty & Rewards
 [functions.redeem-loyalty-reward]
 verify_jwt = true
 
-[functions.award-loyalty-points]
-verify_jwt = true
-
-[functions.update-loyalty-tier]
-verify_jwt = true
-
-[functions.process-referral]
-verify_jwt = true
-
 # Reports & Analytics
+[functions.reports]
+verify_jwt = true
+
+[functions.generate-report]
+verify_jwt = true
+
 [functions.generate-custom-report]
 verify_jwt = true
 
-[functions.export-analytics]
+[functions.export-customer-data]
 verify_jwt = true
 
-[functions.generate-compliance-report]
+[functions.process-data-export]
 verify_jwt = true
 
-[functions.calculate-metrics]
+[functions.compliance-report]
 verify_jwt = true
 
 # GDPR & Compliance
@@ -311,111 +379,101 @@ verify_jwt = true
 [functions.gdpr-portability]
 verify_jwt = true
 
-[functions.audit-log-export]
-verify_jwt = true
-
-# Inventory Management
-[functions.adjust-inventory]
-verify_jwt = true
-
-[functions.transfer-inventory]
-verify_jwt = true
-
-[functions.receive-inventory]
-verify_jwt = true
-
-[functions.inventory-count]
-verify_jwt = true
-
-[functions.create-inventory-alert]
+[functions.delete-customer-account]
 verify_jwt = true
 
 # Wholesale Operations
-[functions.create-wholesale-order]
+[functions.wholesale-order-create]
 verify_jwt = true
 
-[functions.update-wholesale-pricing]
+[functions.wholesale-delivery-assign]
 verify_jwt = true
 
-[functions.manage-wholesale-client]
+[functions.wholesale-delivery-update]
 verify_jwt = true
 
-[functions.generate-invoice]
-verify_jwt = true
-
-[functions.process-wholesale-payment]
+[functions.wholesale-payment-process]
 verify_jwt = true
 
 # Delivery & Logistics
 [functions.assign-courier]
 verify_jwt = true
 
-[functions.update-delivery-status]
+[functions.add-courier]
 verify_jwt = true
 
 [functions.optimize-route]
 verify_jwt = true
 
-[functions.track-delivery]
-verify_jwt = true
-
-[functions.calculate-delivery-fee]
-verify_jwt = true
-
 # AI & Automation
-[functions.ai-chat]
+[functions.predict-revenue]
 verify_jwt = true
 
-[functions.ai-product-suggest]
+[functions.assess-risk]
 verify_jwt = true
 
-[functions.ai-analyze-sales]
+[functions.marketing-automation]
 verify_jwt = true
 
-[functions.workflow-execute]
+[functions.run-automation]
 verify_jwt = true
 
-[functions.automation-trigger]
+[functions.workflow-executor]
 verify_jwt = true
 
-# File & Media
-[functions.upload-file]
+[functions.workflows]
 verify_jwt = true
 
-[functions.delete-file]
+# Security & Sessions
+[functions.get-active-sessions]
 verify_jwt = true
 
-[functions.process-image]
+[functions.revoke-all-sessions]
 verify_jwt = true
 
-[functions.generate-qr-code]
+[functions.verify-backup-code]
 verify_jwt = true
 
-# Settings & Configuration
-[functions.update-account-settings]
+[functions.log-security-event]
 verify_jwt = true
 
-[functions.update-notification-preferences]
+[functions.verify-age-jumio]
 verify_jwt = true
 
-[functions.configure-integration]
-verify_jwt = true
-
-[functions.test-integration]
+[functions.detect-fraud]
 verify_jwt = true
 
 # Admin Operations
-[functions.admin-dashboard-stats]
+[functions.admin-dashboard]
 verify_jwt = true
 
-[functions.super-admin-operations]
+[functions.admin-actions]
 verify_jwt = true
 
-[functions.platform-analytics]
+[functions.admin-database-backup]
 verify_jwt = true
 
-[functions.tenant-health-check]
+[functions.admin-database-maintenance]
 verify_jwt = true
 
-[functions.system-maintenance]
+[functions.create-admin-user]
+verify_jwt = true
+
+[functions.create-super-admin]
+verify_jwt = true
+
+# Other Protected Functions
+[functions.forum-approvals]
+verify_jwt = true
+
+[functions.seed-demo-data]
+verify_jwt = true
+
+[functions.encrypt-all-data]
+verify_jwt = true
+
+[functions.encrypted-operations]
+verify_jwt = true
+
+[functions.panic-reset]
 verify_jwt = true
