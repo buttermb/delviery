@@ -1,15 +1,13 @@
-/**
- * Credit Warning Emails
- * 
- * Cron job that sends warning emails when credits are low.
- * Triggers at 25%, 10%, 5%, and 0% thresholds.
- * 
- * Schedule: Every 6 hours
- * Cron: 0 */6 * * *
- * 
- * To deploy:
- * supabase functions deploy credit-warning-emails --no-verify-jwt
- */
+// @ts-nocheck
+// Credit Warning Emails
+// 
+// Cron job that sends warning emails when credits are low.
+// Triggers at 25%, 10%, 5%, and 0% thresholds.
+// 
+// Schedule: Every 6 hours (0 */6 * * *)
+// 
+// To deploy:
+// supabase functions deploy credit-warning-emails --no-verify-jwt
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 

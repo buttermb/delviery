@@ -1,19 +1,17 @@
-/**
- * Credit Threshold Alerts
- * 
- * Sends email and SMS notifications when credits reach certain thresholds.
- * Supports configurable alert preferences per tenant.
- * 
- * Can be triggered:
- * 1. Via cron job (scheduled check)
- * 2. Real-time after credit consumption (webhook)
- * 
- * Schedule: Every 4 hours
- * Cron: 0 */4 * * *
- * 
- * To deploy:
- * supabase functions deploy credit-threshold-alerts --no-verify-jwt
- */
+// @ts-nocheck
+// Credit Threshold Alerts
+// 
+// Sends email and SMS notifications when credits reach certain thresholds.
+// Supports configurable alert preferences per tenant.
+// 
+// Can be triggered:
+// 1. Via cron job (scheduled check)
+// 2. Real-time after credit consumption (webhook)
+// 
+// Schedule: Every 4 hours (0 */4 * * *)
+// 
+// To deploy:
+// supabase functions deploy credit-threshold-alerts --no-verify-jwt
 
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 

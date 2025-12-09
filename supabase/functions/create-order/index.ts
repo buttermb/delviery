@@ -10,6 +10,7 @@ Deno.serve(async (req) => {
 
   // Wrap the handler with credit gating for free tier users
   return withCreditGate(req, CREDIT_ACTIONS.CREATE_ORDER, async (tenantId, serviceClient) => {
+    try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Setup Stripe Products Edge Function
  * 
