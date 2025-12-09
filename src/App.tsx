@@ -303,6 +303,10 @@ const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"))
 const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
 const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
 const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
+
+// Credit Purchase Pages
+const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseSuccessPage"));
+const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
 const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
 const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
@@ -787,6 +791,9 @@ const App = () => {
                                           <Route path="reports" element={<FeatureProtectedRoute featureId="reports"><ReportsPage /></FeatureProtectedRoute>} />
                                           {/* Billing redirects to Settings */}
                                           <Route path="billing" element={<Navigate to="../settings?section=billing" replace />} />
+                                          {/* Credit Purchase Routes */}
+                                          <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
+                                          <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
                                           <Route path="settings" element={<FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute>} />
 
                                           {/* Marketplace Routes (B2B) */}
