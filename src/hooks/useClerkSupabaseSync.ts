@@ -148,7 +148,7 @@ export function useClerkSupabaseSync(): UseClerkSupabaseSyncReturn {
             email_verified: user.primaryEmailAddress?.verification?.status === 'verified',
           })
           .select('id')
-          .single();
+          .maybeSingle();
 
         if (insertError) {
           // User might already exist with different criteria

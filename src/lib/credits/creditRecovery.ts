@@ -68,7 +68,7 @@ export async function refundCredits(request: RefundRequest): Promise<RefundResul
       .select('*')
       .eq('id', transactionId)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (txError || !transaction) {
       logger.error('Transaction not found for refund', { transactionId, tenantId });
@@ -93,7 +93,7 @@ export async function refundCredits(request: RefundRequest): Promise<RefundResul
       .eq('tenant_id', tenantId)
       .eq('metadata->original_transaction_id', transactionId)
       .eq('transaction_type', 'refund')
-      .single();
+      .maybeSingle();
 
     if (existingRefund) {
       return {
@@ -110,7 +110,7 @@ export async function refundCredits(request: RefundRequest): Promise<RefundResul
       .from('tenant_credits')
       .select('balance')
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (creditsError || !credits) {
       logger.error('Credits record not found', { tenantId });
@@ -156,7 +156,7 @@ export async function refundCredits(request: RefundRequest): Promise<RefundResul
         },
       })
       .select('id')
-      .single();
+      .maybeSingle();
 
     if (txInsertError) {
       logger.error('Failed to create refund transaction', { txInsertError });
@@ -207,7 +207,7 @@ export async function recoverFailedAction(
       .eq('transaction_type', 'usage')
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (findError || !recentTx) {
       logger.warn('Could not find recent transaction to recover', {
@@ -282,7 +282,7 @@ export async function directRefund(
       .from('tenant_credits')
       .select('balance')
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (creditsError || !credits) {
       return {
@@ -327,7 +327,7 @@ export async function directRefund(
         },
       })
       .select('id')
-      .single();
+      .maybeSingle();
 
     logger.info('Direct refund processed', {
       tenantId,
@@ -454,7 +454,7 @@ export async function isTransactionRefunded(
     .eq('tenant_id', tenantId)
     .eq('metadata->original_transaction_id', transactionId)
     .eq('transaction_type', 'refund')
-    .single();
+    .maybeSingle();
 
   return !!data;
 }

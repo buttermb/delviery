@@ -244,7 +244,7 @@ export function useContact(contactId: string | undefined) {
         .select('*')
         .eq('id', contactId)
         .eq('tenant_id', tenant.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to fetch contact', { contactId, error });
@@ -278,7 +278,7 @@ export function useCreateContact() {
           metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : null,
         } as any)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create contact', { error });
@@ -316,7 +316,7 @@ export function useUpdateContact() {
         .eq('id', contactId)
         .eq('tenant_id', tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update contact', { contactId, error });
